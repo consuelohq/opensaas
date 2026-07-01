@@ -32,7 +32,36 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
       - name: Utils / Run Danger.js
-        run: cd packages/twenty-utils && npx nx danger:ci
+        shell: bash
+        run: |
+          set -o pipefail
+
+          max_attempts=3
+          attempt=1
+          transient_pattern='ERR_STREAM_PREMATURE_CLOSE|Invalid response body while trying to fetch https://api[.]github[.]com/.+: Premature close|Failed to fetch GitHub pull request files|Failed to fetch pull request diff'
+
+          while [ "$attempt" -le "$max_attempts" ]; do
+            log_file="$(mktemp)"
+            echo "Running Danger.js attempt ${attempt}/${max_attempts}"
+
+            set +e
+            (cd packages/twenty-utils && npx nx danger:ci) 2>&1 | tee "$log_file"
+            status=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$status" -eq 0 ]; then
+              exit 0
+            fi
+
+            if grep -Eq "$transient_pattern" "$log_file" && [ "$attempt" -lt "$max_attempts" ]; then
+              echo "Danger.js failed while fetching GitHub PR metadata. Retrying transient API/body stream failure."
+              attempt=$((attempt + 1))
+              sleep 10
+              continue
+            fi
+
+            exit "$status"
+          done
         env:
           DANGER_GITHUB_API_TOKEN: ${{ github.token }}
 

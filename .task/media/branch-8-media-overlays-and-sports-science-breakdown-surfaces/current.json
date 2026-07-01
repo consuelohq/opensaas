@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces",
+  "baseBranch": "stream/media",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1205,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1205",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1205",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1205/branch-8-media-overlays-and-sports-science-breakdown-surfaces",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1205",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1205/branch-8-media-overlays-and-sports-science-breakdown-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-branch-8-media-overlays-and-sports-science-breakdown-surfaces",
+  "taskSession": "tsk_56d8d8235878",
+  "tmuxSession": "opensaas-media-branch-8-media-overlays-and-sports-science-break-56d8d823",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-branch-8-media-overlays-and-sports-science-breakdown-surfaces/.task/media/branch-8-media-overlays-and-sports-science-breakdown-surfaces/session.json",
+  "createdAt": "2026-06-24T01:21:57.166Z"
+}

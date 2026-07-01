@@ -154,6 +154,194 @@ afterEach(() => {
 });
 
 describe('os device authority worker', () => {
+
+  it('should expose first-party OAuth authorization server metadata for ChatGPT MCP', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+    });
+
+    const metadata = await handler(new Request(`${origin}/.well-known/oauth-authorization-server`));
+    const body = await metadata.json() as Record<string, unknown>;
+
+    expect(metadata.status).toBe(200);
+    expect(body).toMatchObject({
+      issuer: origin,
+      authorization_endpoint: `${origin}/oauth/authorize`,
+      token_endpoint: `${origin}/oauth/token`,
+      introspection_endpoint: `${origin}/oauth/introspect`,
+      client_id_metadata_document_supported: true,
+      response_types_supported: ['code'],
+      grant_types_supported: ['authorization_code'],
+      code_challenge_methods_supported: ['S256'],
+      token_endpoint_auth_methods_supported: ['none'],
+    });
+    expect(body).not.toHaveProperty('registration_endpoint');
+  });
+
+  it('should support ChatGPT CIMD clients and enforce resource echo during MCP OAuth token exchange', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const verifier = 'test-cimd-pkce-verifier';
+    const challenge = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))));
+    const clientId = 'https://chatgpt.com/oauth/consuelo-os/dynamic-workspace/client.json';
+    const redirectUri = 'https://chatgpt.com/connector/oauth/callback';
+    const workspaceHost = 'dynamic-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
+    const resource = 'https://' + workspaceHost + '/mcp';
+
+    const authorize = await handler(new Request(`${origin}/oauth/authorize?${new URLSearchParams({
+      response_type: 'code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: 'mcp:read mcp:call tool:*:read',
+      resource,
+      state: 'chatgpt-state',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+    })}`));
+
+    expect(authorize.status).toBe(302);
+    const googleLocation = authorize.headers.get('location') ?? '';
+    expect(googleLocation).toContain('https://accounts.google.com/o/oauth2/v2/auth');
+    const googleUrl = new URL(googleLocation);
+    expect(googleUrl.searchParams.get('redirect_uri')).toBe(`${origin}/login/google/callback`);
+    const state = googleUrl.searchParams.get('state');
+    expect(state).toMatch(/^mcp_oauth_state_/);
+
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(302);
+    const callbackLocation = new URL(callback.headers.get('location') ?? '');
+    expect(callbackLocation.origin + callbackLocation.pathname).toBe(redirectUri);
+    const code = callbackLocation.searchParams.get('code') ?? '';
+    expect(code).toMatch(/^coa_code_/);
+
+    const mismatchedTokenResponse = await handler(new Request(`${origin}/oauth/token`, {
+      method: 'POST',
+      ...form({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        code,
+        code_verifier: verifier,
+        resource: 'https://other-workspace.consuelohq.com/mcp',
+      }),
+    }));
+    await expect(mismatchedTokenResponse.json()).resolves.toMatchObject({
+      error: 'invalid_grant',
+    });
+
+    const tokenResponse = await handler(new Request(`${origin}/oauth/token`, {
+      method: 'POST',
+      ...form({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        code,
+        code_verifier: verifier,
+        resource,
+      }),
+    }));
+    const tokenJson = await tokenResponse.json() as Record<string, unknown>;
+    expect(tokenResponse.status).toBe(200);
+    expect(tokenJson).toMatchObject({ token_type: 'Bearer', scope: 'mcp:read mcp:call tool:*:read' });
+    expect(tokenJson.access_token).toMatch(/^coa_/);
+
+    const introspection = await handler(new Request(`${origin}/oauth/introspect`, {
+      method: 'POST',
+      ...form({
+        token: String(tokenJson.access_token),
+        resource,
+        scope: 'tool:get_raw_steering:read',
+      }),
+    }));
+    await expect(introspection.json()).resolves.toMatchObject({
+      active: true,
+      client_id: clientId,
+      workspace_host: workspaceHost,
+      resource,
+      scopes: ['mcp:read', 'mcp:call', 'tool:*:read'],
+      sub: 'google:google-sub-123',
+    });
+  });
+
+  it('should issue and introspect OAuth access tokens for workspace MCP resources through Google approval', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const verifier = 'test-pkce-verifier';
+    const challenge = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))));
+    const authorize = await handler(new Request(`${origin}/oauth/authorize?${new URLSearchParams({
+      response_type: 'code',
+      client_id: 'chatgpt-consuelo-os',
+      redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+      scope: 'mcp:read mcp:call tool:*:read',
+      resource: 'https://macbook-air-test.consuelohq.com/mcp',
+      state: 'chatgpt-state',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+    })}`));
+
+    expect(authorize.status).toBe(302);
+    const googleLocation = authorize.headers.get('location') ?? '';
+    expect(googleLocation).toContain('https://accounts.google.com/o/oauth2/v2/auth');
+    const googleUrl = new URL(googleLocation);
+    expect(googleUrl.searchParams.get('redirect_uri')).toBe(`${origin}/login/google/callback`);
+    const state = googleUrl.searchParams.get('state');
+    expect(state).toMatch(/^mcp_oauth_state_/);
+
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(302);
+    const callbackLocation = new URL(callback.headers.get('location') ?? '');
+    expect(callbackLocation.origin + callbackLocation.pathname).toBe('https://chatgpt.com/connector/oauth/callback');
+    expect(callbackLocation.searchParams.get('state')).toBe('chatgpt-state');
+    const code = callbackLocation.searchParams.get('code') ?? '';
+    expect(code).toMatch(/^coa_code_/);
+
+    const tokenResponse = await handler(new Request(`${origin}/oauth/token`, {
+      method: 'POST',
+      ...form({
+        grant_type: 'authorization_code',
+        client_id: 'chatgpt-consuelo-os',
+        redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+        code,
+        code_verifier: verifier,
+      }),
+    }));
+    const tokenJson = await tokenResponse.json() as Record<string, unknown>;
+    expect(tokenResponse.status).toBe(200);
+    expect(tokenJson).toMatchObject({ token_type: 'Bearer', scope: 'mcp:read mcp:call tool:*:read' });
+    expect(tokenJson.access_token).toMatch(/^coa_/);
+
+    const introspection = await handler(new Request(`${origin}/oauth/introspect`, {
+      method: 'POST',
+      ...form({
+        token: String(tokenJson.access_token),
+        resource: 'https://macbook-air-test.consuelohq.com/mcp',
+        scope: 'tool:get_raw_steering:read',
+      }),
+    }));
+    await expect(introspection.json()).resolves.toMatchObject({
+      active: true,
+      client_id: 'chatgpt-consuelo-os',
+      workspace_host: 'macbook-air-test.consuelohq.com',
+      scope: 'mcp:read mcp:call tool:*:read',
+      scopes: ['mcp:read', 'mcp:call', 'tool:*:read'],
+      sub: 'google:google-sub-123',
+    });
+  });
+
   it('should register the approved workspace host route dynamically during Google approval', async () => {
     const routeRegistry = createCapturedRouteRegistry();
     const handler = createOsDeviceAuthorityHandler({
@@ -242,7 +430,7 @@ describe('os device authority worker', () => {
 
     const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(200);
-    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
+    await expect(callback.text()).resolves.toContain('Device authorized');
 
     const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
       method: 'POST',
@@ -263,6 +451,37 @@ describe('os device authority worker', () => {
       workspace_host: 'testing.consuelohq.com',
       device_public_key_bound: true,
     });
+  });
+
+
+  it('should hide the device code box when terminal-return pages are rendered', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const { codeJson } = await startGrant(handler);
+
+    const start = await handler(
+      new Request(
+        `${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`,
+      ),
+    );
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(
+      new Request(
+        `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+    const html = await callback.text();
+
+    expect(html).toContain('Device authorized');
+    expect(html).toContain('return to your terminal');
+    expect(html).not.toContain('data-device-code');
+    expect(html).not.toContain(String(codeJson.user_code));
   });
 
   it('should call the default global fetch with the Cloudflare global receiver', async () => {
@@ -303,7 +522,7 @@ describe('os device authority worker', () => {
 
     const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
     expect(callback.status).toBe(200);
-    await expect(callback.text()).resolves.toContain('Approved for ko@example.com');
+    await expect(callback.text()).resolves.toContain('Device authorized');
   });
 
   it('should reject Google OAuth callback when state is unknown', async () => {
@@ -424,7 +643,7 @@ describe('os device authority worker', () => {
 
     const page = await handler(new Request(String(codeJson.verification_uri_complete)));
     expect(page.status).toBe(200);
-    await expect(page.text()).resolves.toContain('Approve this Mac');
+    await expect(page.text()).resolves.toContain('Sign in to Consuelo OS');
 
     const forgedApprove = await handler(new Request(`${origin}/login/device/approve`, {
       method: 'POST',

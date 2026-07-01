@@ -214,6 +214,39 @@ describe('typed facade executor', () => {
     expect(result.ok).toBe(false);
   });
 
+
+  it('plans media.svg.convert facade calls with required CLI arguments', async () => {
+    const schema = getInputSchema('MediaSvgConvertInput');
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({ input: 'image.png', out: 'image.svg', strategy: 'both', traceEngine: 'auto', optimize: true }).success).toBe(true);
+
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('media.svg.convert', {
+      input: 'image.png',
+      out: 'image.svg',
+      strategy: 'both',
+      traceEngine: 'auto',
+      optimize: true,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'media',
+      'svg:convert',
+      '--input',
+      'image.png',
+      '--out',
+      'image.svg',
+      '--strategy',
+      'both',
+      '--trace-engine',
+      'auto',
+      '--optimize',
+      '--json',
+    ]));
+  });
+
   it.each(manifestEntries.map((entry) => entry.name))('validates input for %s', async (toolName) => {
     const entry = manifestEntries.find((item) => item.name === toolName);
     if (!entry) throw new Error(`missing entry: ${toolName}`);

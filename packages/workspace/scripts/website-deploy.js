@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-// website-deploy.js — build and deploy consuelo-website to cloudflare pages
+// website-deploy.js - build and deploy consuelo-website to Cloudflare Pages
 // usage: bun run website:deploy -- [options]
 
 const { execSync } = require('child_process');
@@ -12,6 +12,26 @@ const DEFAULT_BRANCH = 'main';
 
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
+
+function hasCloudflareApiToken(env = process.env) {
+  return Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_API_TOKEN.trim());
+}
+
+function isCiDeploy(env = process.env) {
+  return env.CI === 'true' || env.GITHUB_ACTIONS === 'true';
+}
+
+function ensureDeployAuth(env = process.env) {
+  if (hasCloudflareApiToken(env)) return;
+
+  if (isCiDeploy(env)) {
+    writeStderr('CLOUDFLARE_API_TOKEN is required in CI to deploy consuelo-website to Cloudflare Pages.');
+    writeStderr('Set the GitHub Actions secret CLOUDFLARE_API_TOKEN, CLOUDFLARE_PAGES_API_TOKEN, or CF_API_TOKEN.');
+    process.exit(1);
+  }
+
+  writeStderr('CLOUDFLARE_API_TOKEN is not set; using existing Wrangler auth if available.');
+}
 
 function run(cmd, opts = {}) {
   writeStderr(`> ${cmd}`);
@@ -67,7 +87,7 @@ function main() {
   if (!args.skipBuild) {
     writeStderr('building consuelo-website...');
     try {
-      run('npm run build', { timeout: 180000 });
+      run('bun run build', { timeout: 180000 });
       writeStderr('build complete.');
     } catch (err) {
       writeStdout('build failed:');
@@ -82,10 +102,12 @@ function main() {
   }
 
   // deploy
+  ensureDeployAuth();
+
   writeStderr(`deploying to cloudflare pages (branch: ${branch})...`);
   try {
     const output = run(
-      `npx wrangler pages deploy dist --project-name=${PROJECT_NAME} --branch=${branch}`,
+      `bunx wrangler pages deploy dist --project-name=${PROJECT_NAME} --branch=${branch}`,
       { timeout: 120000 },
     );
 

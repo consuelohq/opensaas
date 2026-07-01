@@ -1,0 +1,56 @@
+---
+title: media.probe
+description: Inspect media duration, dimensions, streams, codecs, and metadata.
+---
+
+# media.probe
+
+Inspect media duration, dimensions, streams, codecs, and metadata.
+
+## When to use it
+
+Use this before writing a timeline, extracting frames, running QA, or making claims about source media.
+
+## Mental model
+
+Probe reads a media file with `ffprobe` and returns structured facts. It does not edit the source file.
+
+## Inputs
+
+| Field | Meaning |
+| --- | --- |
+| `input` | Path to the media file to inspect. |
+
+## Output
+
+Returns media asset metadata with duration, dimensions, streams, codecs, byte size, and tool evidence.
+
+## Recommended call
+
+```json
+{
+  "input": "artifacts/media/source.mp4"
+}
+```
+
+## CLI fallback
+
+```bash
+bun run --cwd packages/os media -- probe --input artifacts/media/source.mp4 --json
+```
+
+## Good agent instruction
+
+```text
+Use `media.probe` before making timing, dimension, codec, or stream claims.
+Return JSON.
+Report duration, width, height, video streams, and audio streams.
+```
+
+## Validation
+
+| Check | Expected result |
+| --- | --- |
+| Duration | The result contains a numeric duration. |
+| Dimensions | Width and height are present when video is present. |
+| Streams | Video and audio streams are reported when available. |

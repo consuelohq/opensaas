@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/os-launcher-astro-onboarding-and-installer-selector-ux",
+  "base": "HEAD",
+  "headSha": "e73adaacc05d9a1c8980db139b33cf5ab227c5d0",
+  "changeHash": "29eeb8492722e8454bdb5cb79a99c09dfdf908e33e858e96066dd2b8c5ec60b8",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/os/launcher.astro",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/lib/launcher-onboarding.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/launcher-astro-source.test.ts",
+    "packages/os/tests/launcher-onboarding.test.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "verifiedAt": "2026-06-30T23:57:36.481Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/os-launcher-astro-onboarding-and-installer-selector-ux/current.json",
+        ".task/os/os-launcher-astro-onboarding-and-installer-selector-ux/session.json",
+        ".task/os/os-launcher-astro-onboarding-and-installer-selector-ux/verify.json",
+        ".task/os/os-launcher-astro-onboarding-and-installer-selector-ux/workpad.md",
+        ".task/tasks/os/os-launcher-astro-onboarding-and-installer-selector-ux.json",
+        "packages/consuelo-website/src/pages/os/launcher.astro",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/launcher-astro-source.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts",
+        "packages/os/tests/sites-cli.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

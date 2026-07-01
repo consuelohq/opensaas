@@ -1,23 +1,23 @@
 ---
-import LaunchFooter from '../../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../../layouts/LaunchLayout.astro';
+import SiteFooter from '../../components/site/SiteFooter.astro';
+import SiteHeader from '../../components/site/SiteHeader.astro';
+import MarketingLayout from '../../layouts/MarketingLayout.astro';
 
 const description = 'Authorize Consuelo OS on this device.';
 ---
 
-<LaunchLayout title="Authorize Consuelo OS" description={description}>
-  <LaunchHeader />
+<MarketingLayout title="Authorize Consuelo OS" description={description}>
+  <SiteHeader />
 
-  <section class="launch-section device-auth">
+  <section class="launch-section device-auth" aria-labelledby="device-auth-title">
     <div class="launch-content device-auth__content">
       <p class="device-auth__eyebrow launch-mono">Consuelo OS</p>
-      <h1 class="device-auth__title launch-mono">Authorize this device</h1>
+      <h1 id="device-auth-title" class="device-auth__title launch-mono">Authorize this device</h1>
       <p class="launch-copy device-auth__copy">
         Consuelo OS is asking to connect this Mac to your workspace. Confirm the code below matches the code shown in your terminal.
       </p>
 
-      <div class="device-auth__card">
+      <div class="device-auth__card" aria-live="polite">
         <span class="device-auth__label launch-mono">Device code</span>
         <strong class="device-auth__code launch-mono" data-device-code>Waiting for code</strong>
       </div>
@@ -27,6 +27,7 @@ const description = 'Authorize Consuelo OS on this device.';
       </p>
       <a
         class="device-auth__button launch-mono"
+        data-device-continue
         data-os-device-approve-link
         href="https://app.consuelohq.com/auth/google?action=os-device-approval"
       >
@@ -35,8 +36,8 @@ const description = 'Authorize Consuelo OS on this device.';
     </div>
   </section>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <script is:inline>
   const deviceCodeNode = document.querySelector('[data-device-code]');
@@ -67,15 +68,15 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 
   .device-auth__eyebrow {
-    color: var(--color-accent, #7c3aed);
+    color: var(--site-color-accent);
     letter-spacing: 0.16em;
     text-transform: uppercase;
   }
 
   .device-auth__title {
-    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-size: clamp(var(--site-text-2xl), 7vw, var(--site-text-4xl));
     line-height: 0.9;
-    margin: 1rem 0;
+    margin: var(--site-space-4) 0;
   }
 
   .device-auth__copy {
@@ -85,25 +86,26 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 
   .device-auth__card {
-    margin: 2rem auto;
-    padding: clamp(1.5rem, 4vw, 2.5rem);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+    margin: var(--site-space-6) auto;
+    padding: clamp(var(--site-space-5), 4vw, var(--site-space-7));
+    border: 1px solid var(--site-color-line);
+    border-radius: var(--site-radius-card);
+    background: var(--site-color-panel);
+    box-shadow: var(--site-shadow-raised);
   }
 
   .device-auth__label {
     display: block;
-    margin-bottom: 0.75rem;
-    opacity: 0.72;
+    margin-bottom: var(--site-space-3);
+    color: var(--site-color-muted);
     text-transform: uppercase;
     letter-spacing: 0.14em;
   }
 
   .device-auth__code {
     display: block;
-    font-size: clamp(2rem, 8vw, 4.5rem);
+    color: var(--site-color-ink);
+    font-size: clamp(var(--site-text-xl), 8vw, var(--site-text-4xl));
     letter-spacing: 0.08em;
   }
 
@@ -111,18 +113,18 @@ const description = 'Authorize Consuelo OS on this device.';
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0.5rem;
+    margin-top: var(--site-space-2);
     padding: 0.95rem 1.25rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    color: inherit;
+    border: 1px solid var(--site-color-line-strong);
+    border-radius: var(--site-radius-pill);
+    background: var(--site-color-panel-strong);
+    color: var(--site-color-ink);
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    background: rgba(255, 255, 255, 0.12);
   }
 
   .device-auth__button:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--site-color-soft);
   }
 </style>

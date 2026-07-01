@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_55f888708db6",
+  "tmuxSession": "opensaas-ci-fix-consuelo-workspace-contracts-gate-55f88870",
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/fix-consuelo-workspace-contracts-gate",
+  "branch": "task/ci/fix-consuelo-workspace-contracts-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workspace-contracts-gate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workspace-contracts-gate",
+  "prNumber": 1240,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1240",
+  "createdAt": "2026-06-28T00:27:48.537Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workspace-contracts-gate/.task/ci/fix-consuelo-workspace-contracts-gate/session.json"
+}

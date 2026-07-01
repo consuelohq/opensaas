@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bf9ead9b209e",
+  "tmuxSession": "opensaas-release-fix-os-launcher-links-and-release-gate-bf9ead9b",
+  "area": "release",
+  "stream": "stream/release",
+  "taskBranch": "task/release/fix-os-launcher-links-and-release-gate",
+  "branch": "task/release/fix-os-launcher-links-and-release-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-os-launcher-links-and-release-gate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-os-launcher-links-and-release-gate",
+  "prNumber": 1284,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1284",
+  "createdAt": "2026-06-30T04:29:11.366Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-os-launcher-links-and-release-gate/.task/release/fix-os-launcher-links-and-release-gate/session.json"
+}

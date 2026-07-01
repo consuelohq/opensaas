@@ -1,0 +1,53 @@
+name: Consuelo Website Deploy
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/consuelo-website-deploy.yaml
+      - package.json
+      - bun.lock
+      - packages/consuelo-website/**
+      - packages/workspace/scripts/website-deploy.js
+      - packages/os/scripts/website-deploy.js
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Cloudflare Pages branch label to deploy.
+        required: true
+        default: main
+
+concurrency:
+  group: consuelo-website-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-website:
+    name: Consuelo / website deploy
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install website dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/consuelo-website
+
+      - name: Deploy Consuelo website
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            bun run website:deploy -- --branch "${{ inputs.branch }}" --json
+          else
+            bun run website:deploy -- --branch main --json
+          fi
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CF_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CF_API_TOKEN }}

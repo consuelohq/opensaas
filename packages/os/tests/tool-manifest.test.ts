@@ -242,20 +242,23 @@ describe('tool manifest generator', () => {
   it('preserves every regular and dev manifest entry in the generated full manifest', () => {
     const regularEntries = readJsonArray('tooling/tool-manifest.json');
     const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
+    const mediaEntries = readJsonArray('tooling/media-tool-manifest.json');
+    const facadeEntries = [...devEntries, ...mediaEntries];
 
     const registry = buildToolManifest({ write: false });
     const generatedNames = registry.full.tools.map((entry) => entry.name).sort();
     const expectedNames = Array.from(new Set([
       ...regularEntries.map((entry) => String(entry.name)),
-      ...devEntries.map((entry) => String(entry.name)),
+      ...facadeEntries.map((entry) => String(entry.name)),
     ])).sort();
 
     expect(generatedNames).toEqual(expectedNames);
     expect(generatedNames).toContain('batch');
     expect(generatedNames).toContain('code.run');
+    expect(generatedNames).toContain('media.svg.convert');
     expect(registry.full.tools).toHaveLength(expectedNames.length);
     expect(registry.report.oldRegularToolCount).toBe(regularEntries.length);
-    expect(registry.report.oldDevToolCount).toBe(devEntries.length);
+    expect(registry.report.oldDevToolCount).toBe(facadeEntries.length);
     expect(registry.report.duplicateNames).toEqual([]);
 
     for (const original of regularEntries) {
@@ -264,7 +267,7 @@ describe('tool manifest generator', () => {
       expect(generated?.definition).toEqual(original);
     }
 
-    for (const original of devEntries) {
+    for (const original of facadeEntries) {
       const generated = registry.full.tools.find((entry) => entry.name === original.name);
       expect(generated?.kind).toBe('facade-tool');
       expect(generated?.definition).toEqual(original);

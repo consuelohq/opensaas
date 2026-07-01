@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-google-oauth-redirect-uri-mismatch",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1303,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1303",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1303",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1303/fix-os-google-oauth-redirect-uri-mismatch",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1303",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1303/fix-os-google-oauth-redirect-uri-mismatch",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-google-oauth-redirect-uri-mismatch",
+  "taskSession": "tsk_8f70494b6afe",
+  "tmuxSession": "opensaas-security-fix-os-google-oauth-redirect-uri-mismatch-8f70494b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-google-oauth-redirect-uri-mismatch/.task/security/fix-os-google-oauth-redirect-uri-mismatch/session.json",
+  "createdAt": "2026-06-30T23:36:17.440Z"
+}

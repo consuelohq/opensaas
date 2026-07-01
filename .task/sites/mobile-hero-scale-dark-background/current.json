@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/mobile-hero-scale-dark-background",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1266,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1266",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1266",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1266/mobile-hero-scale-dark-background",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1266",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1266/mobile-hero-scale-dark-background",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-mobile-hero-scale-dark-background",
+  "taskSession": "tsk_a46309a57d82",
+  "tmuxSession": "opensaas-sites-mobile-hero-scale-dark-background-a46309a5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-mobile-hero-scale-dark-background/.task/sites/mobile-hero-scale-dark-background/session.json",
+  "createdAt": "2026-06-28T06:33:27.583Z"
+}

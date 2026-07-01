@@ -85,8 +85,8 @@ export function getGroupedOnboardingSkillOptions(
       [CORE_SKILL_GROUP_LABEL]: coreOptions.map(toPromptOption),
       [OPTIONAL_SKILL_GROUP_LABEL]: optionalOptions.map(toPromptOption),
     },
-    initialValues: [],
-    cursorAt: CORE_SKILL_GROUP_LABEL,
+    initialValues: coreOptions.map((option) => option.value),
+    cursorAt: coreOptions[0]?.value ?? optionalOptions[0]?.value ?? CORE_SKILL_GROUP_LABEL,
     selectableGroups: true,
     groupSpacing: 1,
   };

@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/weekly-changelog-structure",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1295,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1295",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1295",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1295/weekly-changelog-structure",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1295",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1295/weekly-changelog-structure",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-weekly-changelog-structure",
+  "taskSession": "tsk_80f03e3122be",
+  "tmuxSession": "opensaas-sites-weekly-changelog-structure-80f03e31",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-weekly-changelog-structure/.task/sites/weekly-changelog-structure/session.json",
+  "createdAt": "2026-06-30T21:29:34.281Z"
+}

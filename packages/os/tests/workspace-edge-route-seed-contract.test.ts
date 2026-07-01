@@ -13,6 +13,8 @@ type WorkspaceEdgeRouteSeedInput = {
   hostname?: string;
   baseDomain?: string;
   appUpstreamUrl?: string;
+  siteSnapshotKey?: string;
+  siteVersionId?: string;
   connectorId?: string;
   tunnelOriginUrl?: string;
   localServiceUrl?: string;
@@ -64,7 +66,16 @@ async function loadWorkspaceEdgeRouteSeedScriptContract(): Promise<WorkspaceEdge
 contractDescribe('workspace edge route seed contract', () => {
   it('should default the migration host to internal.consuelohq.com and route Sites shells plus Trace gateway routes', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
-    const record = seed.createWorkspaceEdgeRouteSeedRecord();
+    const record = seed.createWorkspaceEdgeRouteSeedRecord() as {
+      workspaceId: string;
+      workspaceSlug: string;
+      hostname: string;
+      baseDomain: string;
+      provider: string;
+      owner: string;
+      status: string;
+      routes: Array<{ pathPrefix: string; surface: string; auth: string; status: string; target: { kind: string; siteId?: string; manifestKey?: string; versionId?: string; cachePolicy?: string; serviceName?: string; gatewayRouteFamily?: string; publicSiteRouteFamily?: string } }>;
+    };
 
     expect(record).toMatchObject({
       workspaceId: 'workspace_internal',
@@ -74,53 +85,49 @@ contractDescribe('workspace edge route seed contract', () => {
       provider: 'cloudflare',
       owner: 'consuelo-os-cloud',
       status: 'active',
-      routes: [
-        {
-          surface: 'sites',
-          pathPrefix: '/',
-          auth: 'public',
-          status: 'active',
-          target: {
-            kind: 'site-snapshot',
-            siteId: 'launcher',
-            versionId: 'seeded-workspace-site-shell',
-            manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html',
-            cachePolicy: 'static-shell',
-          },
-        },
-        {
-          surface: 'sites',
-          pathPrefix: '/traces',
-          auth: 'public',
-          status: 'active',
-          target: { kind: 'site-snapshot' },
-        },
-        {
-          surface: 'sites',
-          pathPrefix: '/gateway/traces/events',
-          auth: 'required',
-          status: 'active',
-          target: {
-            kind: 'consuelo-gateway-service',
-            serviceName: 'trace-sites-live-endpoints',
-            gatewayRouteFamily: '/gateway/traces/*',
-            publicSiteRouteFamily: '/traces/*',
-          },
-        },
-        {
-          surface: 'sites',
-          pathPrefix: '/gateway/traces',
-          auth: 'required',
-          status: 'active',
-          target: {
-            kind: 'consuelo-gateway-service',
-            serviceName: 'trace-sites-read-layer',
-            gatewayRouteFamily: '/gateway/traces/*',
-            publicSiteRouteFamily: '/traces/*',
-          },
-        },
-      ],
     });
+    expect(record.routes.map((route) => route.pathPrefix)).toEqual([
+      '/',
+      '/office',
+      '/observability',
+      '/traces',
+      '/tracing',
+      '/diffs',
+      '/docs',
+      '/gateway/traces/events',
+      '/gateway/traces',
+    ]);
+    expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
+      expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
+      expect.objectContaining({ pathPrefix: '/office', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'office', manifestKey: 'sites/workspace_internal/office/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/observability', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/traces', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/tracing', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/diffs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'diffs', manifestKey: 'sites/workspace_internal/diffs/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/docs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'docs', manifestKey: 'sites/workspace_internal/docs/seeded-workspace-site-shell/index.html' }) }),
+    ]));
+    expect(record.routes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        pathPrefix: '/gateway/traces/events',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'trace-sites-live-endpoints',
+          gatewayRouteFamily: '/gateway/traces/*',
+          publicSiteRouteFamily: '/observability/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/traces',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'trace-sites-read-layer',
+          gatewayRouteFamily: '/gateway/traces/*',
+          publicSiteRouteFamily: '/observability/*',
+        }),
+      }),
+    ]));
   });
 
   it('should replace empty seed identity inputs with defaults before normalization', async () => {
@@ -174,6 +181,7 @@ contractDescribe('workspace edge route seed contract', () => {
     }
     expect(osSql).toMatch(/http:\/\/127\.0\.0\.1:8787/);
     expect(osSql).toMatch(/\/mcp/);
+    expect(osSql).toMatch(/\/observability/);
     expect(osSql).toMatch(/\/traces/);
     expect(osSql).toMatch(/consuelo-gateway-service/);
     expect(osSql).toMatch(/trace-sites-read-layer/);

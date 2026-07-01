@@ -99,6 +99,88 @@ export const OfficeDigitalEguideInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+const SvgRenderOptions = z.object({
+  format: z.enum(['png']).optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  scale: z.number().positive().optional(),
+  background: z.string().min(1).optional(),
+  colorScheme: z.enum(['light', 'dark', 'no-preference']).optional(),
+}).passthrough();
+
+const SvgDocumentSpec = z.object({
+  width: z.union([z.number(), z.string()]).optional(),
+  height: z.union([z.number(), z.string()]).optional(),
+  viewBox: optionalString,
+  attrs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
+  defs: z.array(z.string()).optional(),
+  styles: z.array(z.string()).optional(),
+  nodes: z.array(z.string()).optional(),
+}).passthrough();
+
+const SvgOperation = z.object({
+  op: z.enum([
+    'set-attr',
+    'remove-attr',
+    'set-style',
+    'set-css-var',
+    'replace-node',
+    'wrap-node',
+    'remove-node',
+    'translate',
+    'scale',
+    'set-viewbox',
+    'fit-visible-bbox',
+    'center-visible-bbox',
+    'set-text',
+    'set-font-family',
+    'set-font-size',
+    'set-font-weight',
+    'set-text-anchor',
+  ]),
+  selector: optionalString,
+}).passthrough();
+
+const SvgCheck = z.object({
+  check: z.enum([
+    'valid-svg',
+    'renderable',
+    'selector-exists',
+    'no-missing-hrefs',
+    'visible-bbox-centered',
+    'visible-bbox-inside',
+    'no-visible-clipping',
+    'text-exists',
+    'text-content-equals',
+    'text-visible-bbox-inside',
+    'font-family-declared',
+    'font-renderable',
+    'max-file-size',
+    'no-unexpected-raster-embeds',
+  ]),
+  selector: optionalString,
+}).passthrough();
+
+export const MediaSvgInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['create', 'inspect', 'render', 'measure', 'edit', 'verify', 'snapshot', 'restore']),
+  input: optionalString,
+  output: optionalString,
+  svg: z.string().optional(),
+  svgFile: optionalString,
+  document: SvgDocumentSpec.optional(),
+  operations: z.array(SvgOperation).optional(),
+  checks: z.array(SvgCheck).optional(),
+  render: SvgRenderOptions.optional(),
+  selectors: z.array(z.string().min(1)).optional(),
+  snapshot: z.boolean().optional(),
+  snapshotName: optionalString,
+  restoreFrom: optionalString,
+  timeout: z.number().int().positive().optional(),
+});
+
+
 export const CodeRunInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -137,7 +219,7 @@ export const WorkflowIntentInput = z.object({
   ...requestFields,
   ...dryRunField,
   action: z.enum(['start', 'dispatch']),
-  workflow: z.enum(['task', 'office', 'design', 'sites']).optional(),
+  workflow: z.enum(['task', 'office', 'design', 'sites', 'media']).optional(),
   area: optionalString,
   title: optionalString,
   eventFile: optionalString,
@@ -888,6 +970,17 @@ export const TmpInput = z.object({
 });
 
 
+
+export const MediaSvgConvertInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  input: z.string().min(1),
+  out: z.string().min(1),
+  strategy: z.enum(['wrapper', 'trace', 'both', 'auto']).optional(),
+  traceEngine: z.enum(['auto', 'color', 'mono']).optional(),
+  optimize: z.boolean().optional(),
+});
+
 export const ResearchIngestInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -1026,6 +1119,7 @@ export const schemaRegistry = {
   OfficeUiInput,
   OfficeSessionInput,
   OfficeDigitalEguideInput,
+  MediaSvgInput,
   CodeRunInput,
   CodeCallInput,
   WorkflowIntentInput,
@@ -1101,6 +1195,7 @@ export const schemaRegistry = {
   SentryTraceInput,
   WaitInput,
   TmpInput,
+  MediaSvgConvertInput,
   ResearchIngestInput,
   RailwayLogsInput,
   RailwayRedeployInput,
@@ -1133,9 +1228,10 @@ export const schemaTypeSignatures: Record<string, string> = {
   OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
@@ -1208,6 +1304,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   SentryTraceInput: '{ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string }',
   WaitInput: '{ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaSvgConvertInput: '{ input: string; out: string; strategy?: \"wrapper\" | \"trace\" | \"both\" | \"auto\"; traceEngine?: \"auto\" | \"color\" | \"mono\"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',

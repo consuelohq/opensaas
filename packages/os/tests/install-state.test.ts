@@ -288,11 +288,26 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
 
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
-    expect(sitesIndex).toContain('Sites');
-    expect(sitesIndex).toContain('Office');
-    expect(sitesIndex).toContain('Tracing');
-    expect(sitesIndex).toContain('Diffs');
+    expect(sitesIndex).toContain('<title>Consuelo OS</title>');
+    expect(sitesIndex).toContain('Welcome to Consuelo OS');
+    expect(sitesIndex).toContain('Here is the URL to connect');
+    expect(sitesIndex).toContain('to your workspace.');
+    expect(sitesIndex).toContain('https://chatgpt.com/apps#settings/Connectors');
+    expect(sitesIndex).toContain('<code id="mcp-url">https://local.consuelohq.com/mcp</code>');
+    expect(sitesIndex).toContain('support@consuelohq.com');
+    expect(sitesIndex).toContain('Systems Engineer');
+    expect(sitesIndex).toContain('Go to market');
+    expect(sitesIndex).toContain('Artifacts');
+    expect(sitesIndex).toContain('Observability');
+    expect(sitesIndex).toContain('Code review');
+    expect(sitesIndex).toContain('Documentation');
+    expect(sitesIndex).toContain('Decision loops');
+    expect(sitesIndex).toContain('Connect to your cloud agents');
+    expect(sitesIndex).toContain('Connected to 0 local agents');
+    expect(sitesIndex).toContain('No local agents connected to workspace yet.');
+    expect(sitesIndex).not.toContain('Consuelo OS Sites');
     expect(sitesIndex).not.toContain('GitHub Workflows');
+    expect(sitesIndex).not.toContain('[GTM]');
 
     const officeSitePage = readFileSync(officeSiteIndexPath, 'utf8');
     expect(officeSitePage).toContain('Office');
@@ -473,6 +488,64 @@ describe('local OS install state', () => {
     expect(existsSync(sidecarPath)).toBe(true);
     expect(JSON.parse(readFileSync(sidecarPath, 'utf8'))).toMatchObject({ name: 'codex', osHome: tempHome });
     expect(result.agents.some((agent: { name: string; connected: boolean }) => agent.name === 'codex' && agent.connected)).toBe(true);
+  });
+
+  it('detects common local agent footprints from the registry', () => {
+    for (const footprint of [
+      join(tempUserHome, '.codex'),
+      join(tempUserHome, 'Library', 'Application Support', 'Cursor', 'User'),
+      join(tempUserHome, '.claude'),
+      join(tempUserHome, '.config', 'opencode'),
+      join(tempUserHome, '.factory'),
+      join(tempUserHome, '.gemini'),
+      join(tempUserHome, 'Library', 'Application Support', 'Pi'),
+    ]) {
+      mkdirSync(footprint, { recursive: true });
+    }
+    writeFileSync(join(tempUserHome, '.gemini', 'consuelo-os.json'), '{}\n');
+
+    const agents = JSON.parse(runBunEval(`
+      const { detectAgents } = await import('./scripts/lib/install-state.ts');
+      const agents = detectAgents().filter((agent) => agent.detected).map((agent) => ({
+        name: agent.name,
+        label: agent.label,
+        homePath: agent.homePath,
+        configPath: agent.configPath,
+        connected: agent.connected,
+        status: agent.status,
+      }));
+      process.stdout.write(JSON.stringify(agents));
+    `)) as Array<{
+      name: string;
+      label: string;
+      homePath: string;
+      configPath: string;
+      connected: boolean;
+      status: string;
+    }>;
+
+    expect(agents.map((agent) => agent.name)).toEqual([
+      'codex',
+      'cursor',
+      'claude',
+      'opencode',
+      'factory',
+      'gemini',
+      'pi',
+    ]);
+    expect(agents.find((agent) => agent.name === 'cursor')).toMatchObject({
+      label: 'Cursor',
+      status: 'not_configured',
+    });
+    expect(agents.find((agent) => agent.name === 'gemini')).toMatchObject({
+      label: 'Gemini',
+      connected: true,
+      status: 'connected',
+    });
+    expect(agents.find((agent) => agent.name === 'pi')).toMatchObject({
+      label: 'Pi',
+      status: 'not_configured',
+    });
   });
 
   it('reports intent and task hook runtime modules in doctor checks', () => {

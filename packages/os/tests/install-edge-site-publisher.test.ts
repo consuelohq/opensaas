@@ -44,6 +44,8 @@ type InstallEdgeSitePublisherContract = {
     contentType: string;
     routeSql: string;
     verifyUrl: string;
+    verifiedUrls: string[];
+    snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string }>;
   };
   publishWorkspaceEdgeSnapshot: (input: PublishInput) => Promise<{
     status: 'succeeded';
@@ -54,6 +56,8 @@ type InstallEdgeSitePublisherContract = {
     snapshotKey: string;
     snapshotPath: string;
     verifyUrl: string;
+    verifiedUrls: string[];
+    snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string }>;
     logPath: string;
     httpStatus: number;
     cacheAuthority: string | null;
@@ -77,8 +81,18 @@ async function loadPublisher(): Promise<InstallEdgeSitePublisherContract> {
 
 function makeHome(html = '<!doctype html><title>Internal workspace</title><main>Internal workspace ready</main>') {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-install-edge-publish-'));
-  fs.mkdirSync(path.join(home, 'sites'), { recursive: true });
-  fs.writeFileSync(path.join(home, 'sites', 'index.html'), html, 'utf8');
+  const sitePaths = [
+    ['index.html'],
+    ['office', 'index.html'],
+    ['traces', 'index.html'],
+    ['diffs', 'index.html'],
+    ['docs', 'index.html'],
+  ];
+  for (const sitePath of sitePaths) {
+    const filePath = path.join(home, 'sites', ...sitePath);
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, html, 'utf8');
+  }
   return home;
 }
 
@@ -106,10 +120,21 @@ contractDescribe('install edge site publisher', () => {
     expect(first.snapshotPath).toBe(path.join(home, 'sites', 'index.html'));
     expect(first.snapshotKey).toBe(`sites/workspace_internal/launcher/${first.versionId}/index.html`);
     expect(first.verifyUrl).toBe('https://internal.consuelohq.com/');
+    expect(first.verifiedUrls).toEqual([
+      'https://internal.consuelohq.com/',
+      'https://internal.consuelohq.com/office',
+      'https://internal.consuelohq.com/traces',
+      'https://internal.consuelohq.com/diffs',
+      'https://internal.consuelohq.com/docs',
+    ]);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'office', 'traces', 'diffs', 'docs']);
     expect(first.routeSql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
     expect(first.routeSql).toMatch(/r2:\/\/consuelo-sites-snapshots\/sites\/workspace_internal\/launcher\//);
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/office\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/diffs\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/docs\"');
     expect(first.routeSql).toMatch(/static-shell/);
   });
 
@@ -147,10 +172,14 @@ contractDescribe('install edge site publisher', () => {
 
     expect(commands.map((command) => command.argv.slice(0, 4).join(' '))).toEqual([
       'wrangler r2 object put',
+      'wrangler r2 object put',
+      'wrangler r2 object put',
+      'wrangler r2 object put',
+      'wrangler r2 object put',
       'wrangler d1 execute consuelo-workspace-route-registry',
     ]);
-    expect(commands[0].argv).toContain(`consuelo-sites-snapshots/${result.snapshotKey}`);
-    expect(commands[1].argv).toContain('--file');
+    expect(commands.slice(0, 5).map((command) => command.argv[4])).toEqual(result.snapshots.map((snapshot) => `consuelo-sites-snapshots/${snapshot.snapshotKey}`));
+    expect(commands[5].argv).toContain('--file');
     expect(result).toMatchObject({
       status: 'succeeded',
       workspaceId: 'workspace_internal',
@@ -160,6 +189,13 @@ contractDescribe('install edge site publisher', () => {
       sitesCache: 'miss',
       httpStatus: 200,
       verifyUrl: 'https://internal.consuelohq.com/',
+      verifiedUrls: [
+        'https://internal.consuelohq.com/',
+        'https://internal.consuelohq.com/office',
+        'https://internal.consuelohq.com/traces',
+        'https://internal.consuelohq.com/diffs',
+        'https://internal.consuelohq.com/docs',
+      ],
     });
     expect(fs.existsSync(result.logPath)).toBe(true);
     expect(fs.readFileSync(result.logPath, 'utf8')).not.toMatch(/token|secret|credential/i);

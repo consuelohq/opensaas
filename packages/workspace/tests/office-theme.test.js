@@ -108,21 +108,26 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
   for (const marker of [
     "const DESIGN_ARCHIVE_OFFICE_PATH = '/office';",
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
-    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
+    "const DESIGN_WRITING_DECISION_LOOPS_PATH = '/writing/on-decision-loops';",
+    'href="/careers/systems-engineer">Systems Engineer</a>',
+    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_WRITING_DECISION_LOOPS_PATH}',
     'function officePathForArchiveEntry',
+    'function renderSitesLauncherHtml',
     'function renderSitesLauncher',
+    'renderSitesLauncherHtml({ includeHotkeysScript: true })',
+    'return renderSitesLauncherHtml({ includeHotkeysScript: false });',
     'CONSUELO OS █',
     'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
     'SITES:',
-    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
-    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
-    '[Diffs](</span><a href="https://diffs.consuelohq.com"',
-    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
-    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
-    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
-    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
+    '>Go to market</a>',
+    '>Artifacts</a>',
+    '>Observability</a>',
+    '>Code review</a>',
+    'GUIDES AND TIPS:',
+    '>Documentation</a>',
     'WRITING:',
-    'On Decision Loops',
+    'Decision loops',
     'const officeArchivePath = ',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'function stripArtifactAlias',
@@ -130,6 +135,19 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     'const canonicalPathname = stripArtifactAlias(routePathname);',
   ]) {
     expect(source).toContain(marker);
+  }
+
+  for (const oldMarker of [
+    '[GTM]',
+    '[Office]',
+    '[Tracing]',
+    '[Diffs]',
+    '[Documentation]',
+    '[On Decision Loops]',
+    'https://app.consuelohq.com/welcome',
+    'href="https://consuelohq.com/contact/"',
+  ]) {
+    expect(source).not.toContain(oldMarker);
   }
 });
 
@@ -143,18 +161,18 @@ test('keeps archive search data parseable as raw JSON for client interactions', 
 test('keeps root launcher copy and Office archive chrome separated', () => {
   for (const marker of [
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
-    "const DESIGN_DECISION_INFRASTRUCTURE_URL = '/writing/on-decision-loops';",
+    "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
     'CONSUELO OS █',
     'SITES:',
+    'GUIDES AND TIPS:',
     'WRITING:',
-    '[Office](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
-    '[Tracing](</span><a href="${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
-    '[Diffs](</span><a href="https://diffs.consuelohq.com"',
-    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs</a>',
-    '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
-    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm</a>',
-    '[Documentation](</span><a href="${DESIGN_DOCS_URL}"',
-    'On Decision Loops',
+    '>Go to market</a>',
+    '>Artifacts</a>',
+    '>Observability</a>',
+    '>Code review</a>',
+    '>Documentation</a>',
+    'Decision loops',
+    'href="/careers/systems-engineer">Systems Engineer</a>',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
     expect(source).toContain(marker);
@@ -169,9 +187,13 @@ test('keeps launcher routes local and theme-aware', () => {
     'color: #f2eee6',
     'color: #9aa6ff',
     'function publicRouteAlias',
-    'if (clean === "/tracing") return "/trace-burn-intelligence";',
+    'for (const alias of ["/observability", "/tracing"])',
+    'if (clean === alias) return "/trace-burn-intelligence";',
+    'if (clean.startsWith(alias + "/")) return "/trace-burn-intelligence" + clean.slice(alias.length);',
     'function proxyDiffsRoute',
     'https://diffs.consuelohq.com',
+    "[DESIGN_ARCHIVE_OBSERVABILITY_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`]",
+    "[DESIGN_ARCHIVE_TRACING_LEGACY_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`]",
     "['/diffs', `${target}/diffs`]",
     'const routePathname = publicRouteAlias(url.pathname);',
     'const canonicalPathname = stripArtifactAlias(routePathname);',
@@ -184,7 +206,9 @@ test('keeps launcher routes local and theme-aware', () => {
   expect(source).toContain('white-space: nowrap');
   expect(source).toContain('class="blog-item"');
   expect(source).toContain('font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-  expect(source).toContain('.md-label { color: #f2eee6; }');
+  expect(source).toContain('renderSitesLauncherHtml({ includeHotkeysScript: true })');
+  expect(source).toContain('return renderSitesLauncherHtml({ includeHotkeysScript: false });');
+  expect(source).toContain('${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_WRITING_DECISION_LOOPS_PATH}');
   expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
   expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });
@@ -230,10 +254,10 @@ test('adds numeric launcher hotkeys for Sites navigation', () => {
     'data-hotkey="4"',
     'data-hotkey="5"',
     'const siteHotkeys = {',
-    '"1": "https://app.consuelohq.com/welcome"',
+    '"1": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm"',
     '"2": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
-    '"3": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/tracing"',
-    '"4": "https://diffs.consuelohq.com"',
+    '"3": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OBSERVABILITY_PATH}"',
+    '"4": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/diffs"',
     '"5": "${DESIGN_DOCS_URL}"',
     'document.addEventListener("keydown"',
     'window.location.assign(href)',

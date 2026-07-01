@@ -1,0 +1,19 @@
+{
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/fix-docs-navigation-generators",
+  "baseBranch": "stream/docs",
+  "sourceBranch": "stream/docs",
+  "startFrom": "stream",
+  "prNumber": 1256,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1256",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1256",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1256/fix-docs-navigation-generators",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1256",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1256/fix-docs-navigation-generators",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-docs-navigation-generators",
+  "taskSession": "tsk_7e4f4911b4c3",
+  "tmuxSession": "opensaas-docs-fix-docs-navigation-generators-7e4f4911",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-docs-navigation-generators/.task/docs/fix-docs-navigation-generators/session.json",
+  "createdAt": "2026-06-28T04:18:01.872Z"
+}

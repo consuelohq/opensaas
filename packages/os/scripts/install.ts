@@ -3,10 +3,10 @@
 import fs from 'node:fs';
 import {
   cancel,
-  confirm,
   groupMultiselect,
   isCancel,
   multiselect,
+  note,
   select,
   text,
 } from '@clack/prompts';
@@ -20,8 +20,8 @@ import {
   printEnd,
   printOsBanner,
   spinner,
-  stepComplete,
   success,
+  type OsBannerStep,
 } from './lib/cli-ui';
 import {
   detectAgents,
@@ -37,6 +37,14 @@ import {
 } from './lib/workspace-device-login-client';
 type ArtifactMode = 'local';
 type SkillName = string;
+type InstallerProgressStep =
+  | 'dependencies'
+  | 'workspace'
+  | 'security'
+  | 'skills'
+  | 'agents'
+  | 'service'
+  | 'health';
 type InstallOptions = {
   dryRun: boolean;
   yes: boolean;
@@ -76,12 +84,52 @@ type InstallPlatformProvisioningPayload =
       message: string;
     };
 
-const AGENT_NAMES = new Set<AgentName>([
+const AGENT_NAME_LIST: AgentName[] = [
   'codex',
+  'cursor',
   'claude',
   'opencode',
   'factory',
-]);
+  'gemini',
+  'pi',
+];
+const AGENT_NAMES = new Set<AgentName>(AGENT_NAME_LIST);
+const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
+  'dependencies',
+  'workspace',
+  'security',
+  'skills',
+  'agents',
+  'service',
+  'health',
+];
+
+export function createInstallerProgressSteps(
+  activeStep: InstallerProgressStep | null,
+): OsBannerStep[] {
+  if (activeStep === null) {
+    return INSTALLER_PROGRESS_STEPS.map((label) => ({ label, state: 'complete' }));
+  }
+
+  const activeIndex = INSTALLER_PROGRESS_STEPS.indexOf(activeStep);
+  return INSTALLER_PROGRESS_STEPS.map((label, index) => ({
+    label,
+    state:
+      index < activeIndex
+        ? 'complete'
+        : index === activeIndex
+          ? 'active'
+          : 'pending',
+  }));
+}
+
+export function formatLocalAgentsPromptMessage(count: number): string {
+  return `${count} agents found — press Space to not connect to this workspace, Enter to continue`;
+}
+
+function renderInstallerProgress(activeStep: InstallerProgressStep | null): void {
+  printOsBanner(createInstallerProgressSteps(activeStep));
+}
 
 function writeStdout(value: string): void {
   process.stdout.write(value);
@@ -212,11 +260,11 @@ function parseArgs(argv: string[]): InstallOptions {
       index += 1;
       if (!AGENT_NAMES.has(agent))
         throw new Error(
-          '--connect-agent must be codex, claude, opencode, or factory',
+          `--connect-agent must be ${AGENT_NAME_LIST.join(', ')}`,
         );
       options.connectAgents.push(agent);
     } else if (arg === '--connect-agents') {
-      options.connectAgents = ['codex', 'claude', 'opencode'];
+      options.connectAgents = [...AGENT_NAME_LIST];
     } else if (arg === '--help' || arg === '-h') {
       writeStdout(
         [
@@ -230,8 +278,8 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --home <path>         override OS home',
           '  --mode <mode>         local or cloud',
           '  --workspace-name <name> workspace name',
-          '  --connect-agent <id>  connect codex, claude, opencode, or factory',
-          '  --connect-agents      connect detected Codex, Claude, and OpenCode agents',
+          `  --connect-agent <id>  connect ${AGENT_NAME_LIST.join(', ')}`,
+          '  --connect-agents      connect detected local agents',
           '  --json                machine-readable output',
           '  --quiet               reduce human output',
           '  --check-tty          print safe terminal diagnostics',
@@ -382,6 +430,67 @@ async function openDeviceVerificationUrl(url: string): Promise<boolean> {
   }
 }
 
+
+async function copyDeviceVerificationUrl(url: string): Promise<boolean> {
+  if (process.platform !== 'darwin') return false;
+
+  try {
+    const proc = Bun.spawn(['pbcopy'], {
+      stdin: 'pipe',
+      stdout: 'ignore',
+      stderr: 'ignore',
+    });
+    proc.stdin.write(url);
+    proc.stdin.end();
+    const exitCode = await proc.exited;
+
+    return exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeTerminalOutput(value: string): string {
+  return value.replace(/[\u0000-\u001f\u007f]/g, '');
+}
+
+function terminalLink(label: string, url: string): string {
+  return `\u001B]8;;${url}\u0007${label}\u001B]8;;\u0007`;
+}
+
+async function printDeviceLoginPrompt(input: {
+  userCode: string;
+  verificationUrl: string;
+}): Promise<void> {
+  const sanitizedVerificationUrl = sanitizeTerminalOutput(input.verificationUrl);
+
+  try {
+    const copied = await copyDeviceVerificationUrl(sanitizedVerificationUrl);
+    const formattedCode = input.userCode.replace(/[^a-z0-9]/gi, '').toUpperCase().replace(/(.{4})(?=.)/g, '$1-');
+    const openLink = terminalLink('click here', sanitizedVerificationUrl);
+    const copyState = copied ? 'Auth URL copied to clipboard.' : 'Copying not available; use the full URL below.';
+
+    note(
+      [
+        'Approve in your browser to finish signing in.',
+        '',
+        `    ${formattedCode}`,
+        '',
+        'Make sure your browser shows this code.',
+        copyState,
+        `Open link: ${openLink}`,
+        `Full URL: ${sanitizedVerificationUrl}`,
+      ].join('\n'),
+      'Consuelo OS',
+    );
+  } catch (error: unknown) {
+    const reason = error instanceof Error ? error.message : String(error);
+
+    info(`authorize Consuelo OS in your browser: ${sanitizedVerificationUrl}`);
+    info(`device login prompt fell back to plain URL: ${reason}`);
+  }
+}
+
 async function attemptWorkspaceDeviceLogin(input: {
   workspaceName: string;
   workspaceSlug: string;
@@ -404,7 +513,10 @@ async function attemptWorkspaceDeviceLogin(input: {
     }
 
     const session = liveDeviceCode.session;
-    info(`authorize Consuelo OS in your browser: ${session.verificationUriComplete}`);
+    await printDeviceLoginPrompt({
+      userCode: session.userCode,
+      verificationUrl: session.verificationUriComplete,
+    });
     await openDeviceVerificationUrl(session.verificationUriComplete);
 
     const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
@@ -450,15 +562,8 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
-    printOsBanner([
-      { label: 'dependencies', state: 'complete' },
-      { label: 'workspace', state: 'active' },
-      'skills',
-      'artifacts',
-      'agents',
-      'health',
-    ]);
-    info('finish workspace identity, skills, artifacts, agents, and health before the final background service step.');
+    renderInstallerProgress('workspace');
+    info('finish workspace identity, security, skills, agents, service, and health.');
     const clackIo = getClackIo();
 
     let mode: OsMode = options.mode ?? 'local';
@@ -499,6 +604,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
     const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
     const workspaceSlug = workspaceName;
     const workspaceHost = workspaceHostFromSlug(workspaceSlug);
+    renderInstallerProgress('security');
     const deviceLogin = await attemptWorkspaceDeviceLogin({
       workspaceName,
       workspaceSlug,
@@ -506,8 +612,10 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       dryRun: options.dryRun,
     });
 
+
     const home = resolveOsHome(options.home);
 
+    renderInstallerProgress('skills');
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
       ...clackIo,
@@ -523,31 +631,43 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
 
     const artifactMode = options.artifactMode;
 
+    renderInstallerProgress('agents');
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
     if (detectedAgents.length > 0) {
-      const shouldConnect = await confirm({ ...clackIo, message: 'connect detected agents to the OS portal?', initialValue: true });
-      if (!isCancel(shouldConnect) && shouldConnect) {
-        const selectedAgents = await multiselect({
-          ...clackIo,
-          message: 'select agents to connect — Use Space to select agents, press Enter to continue',
-          options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
-          required: false,
-        });
-        if (!isCancel(selectedAgents)) connectAgents = selectedAgents as AgentName[];
-      }
+      const selectedAgents = await multiselect({
+        ...clackIo,
+        message: formatLocalAgentsPromptMessage(detectedAgents.length),
+        options: detectedAgents.map((agent) => ({ value: agent.name, label: agent.label, hint: agent.homePath })),
+        initialValues: options.connectAgents.length > 0
+          ? options.connectAgents
+          : detectedAgents.map((agent) => agent.name),
+        required: false,
+      });
+      if (isCancel(selectedAgents)) { cancel('setup cancelled.'); process.exit(0); }
+      connectAgents = selectedAgents as AgentName[];
     }
 
+    renderInstallerProgress('service');
     let installDaemons = false;
     if (options.installDaemons) {
       installDaemons = true;
     } else if (options.skipDaemons) {
       installDaemons = false;
     } else {
-      const selectedInstallDaemons = await confirm({ ...clackIo, message: 'install local background service?', initialValue: true });
+      const selectedInstallDaemons = await select({
+        ...clackIo,
+        message: 'install local background service?',
+        initialValue: 'yes',
+        options: [
+          { value: 'yes' as const, label: 'Yes' },
+          { value: 'no' as const, label: 'No' },
+        ],
+      });
       if (isCancel(selectedInstallDaemons)) { cancel('setup cancelled.'); process.exit(0); }
-      installDaemons = selectedInstallDaemons;
+      installDaemons = selectedInstallDaemons === 'yes';
     }
+    renderInstallerProgress('health');
     return {
       ...options,
       mode,
@@ -625,6 +745,10 @@ async function main(): Promise<void> {
     }
 
     spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');
+
+    if (!options.quiet && !options.json) {
+      renderInstallerProgress(null);
+    }
 
     if (options.json) {
       writeStdout(`${JSON.stringify(payload, null, 2)}\n`);

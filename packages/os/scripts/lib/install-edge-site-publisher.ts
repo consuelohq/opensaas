@@ -3,11 +3,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { createWorkspaceEdgeRouteSeedSql } from './workspace-edge-route-seed';
+
 // Internal Consuelo operator helper. Public install must consume scoped bootstrap
 // material from approval and leave Cloudflare R2/D1 mutations to the control plane.
 
 export type InstallEdgePublishStage = 'snapshot_plan' | 'r2_upload' | 'd1_upsert' | 'edge_verify';
-export type WorkspaceEdgePublishResult = { status: 'succeeded'; workspaceId: string; workspaceSlug: string; workspaceHost: string; siteId: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; verifiedUrls: string[]; logPath: string; httpStatus: number; cacheAuthority: string | null; sitesCache: string | null };
+export type WorkspaceEdgePublishedSnapshot = { siteId: string; pathPrefix: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string; contentType: string };
+export type WorkspaceEdgePublishResult = { status: 'succeeded'; workspaceId: string; workspaceSlug: string; workspaceHost: string; siteId: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; verifiedUrls: string[]; snapshots: WorkspaceEdgePublishedSnapshot[]; logPath: string; httpStatus: number; cacheAuthority: string | null; sitesCache: string | null };
 export type WorkspaceEdgeSnapshotPlan = WorkspaceEdgePublishResult & { status: never; baseDomain: string; contentHash: string; contentType: string; routeSql: string };
 export type CommandRunner = (input: { argv: string[]; cwd?: string }) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
 export type PublishInput = { home: string; workspaceId: string; workspaceSlug: string; workspaceHost: string; now?: string; commandRunner?: CommandRunner; fetchImpl?: (url: string, init?: RequestInit) => Promise<Response> };
@@ -36,14 +39,11 @@ const d1 = 'consuelo-workspace-route-registry';
 const wranglerConfig = 'cloudflare/workspace-edge/wrangler.toml';
 const siteId = 'launcher';
 const contentType = 'text/html; charset=utf-8';
-const traceGatewayReadService = 'trace-sites-read-layer';
-const traceGatewayLiveService = 'trace-sites-live-endpoints';
 const forbiddenLogWords = /token|secret|credential/gi;
 const commandTimeoutMs = 120_000;
 const fetchTimeoutMs = 30_000;
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 const versionId = (value: string) => `sha256-${hash(value).slice(0, 16)}`;
-const sql = (value: string) => `'${value.replace(/'/g, "''")}'`;
 const host = (value: string) => value.trim().toLowerCase();
 const baseDomain = (value: string) => host(value).endsWith('.consuelohq.com') ? 'consuelohq.com' : host(value).split('.').slice(-2).join('.');
 const clean = (value: unknown): unknown => {
@@ -55,45 +55,73 @@ const clean = (value: unknown): unknown => {
 const logPath = (home: string, now?: string) => path.join(home, 'logs', `install-edge-publish-${(now ?? new Date().toISOString()).replace(/[^0-9A-Za-z-]/g, '-')}.log`);
 const writeLog = (file: string, entries: unknown[]) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, `${entries.map((entry) => JSON.stringify(clean(entry), null, 2)).join('\n')}\n`, { mode: 0o600 }); };
 
+const snapshotSites = [
+  { siteId: 'launcher', pathPrefix: '/', relativePath: ['index.html'] },
+  { siteId: 'office', pathPrefix: '/office', relativePath: ['office', 'index.html'] },
+  { siteId: 'traces', pathPrefix: '/observability', relativePath: ['traces', 'index.html'] },
+  { siteId: 'traces', pathPrefix: '/traces', relativePath: ['traces', 'index.html'] },
+  { siteId: 'diffs', pathPrefix: '/diffs', relativePath: ['diffs', 'index.html'] },
+  { siteId: 'docs', pathPrefix: '/docs', relativePath: ['docs', 'index.html'] },
+] as const;
+
+function readSnapshotHtml(snapshotPath: string, siteName: string): string {
+  if (!fs.existsSync(snapshotPath)) throw new Error(`installed Sites ${siteName} snapshot is missing: ${snapshotPath}`);
+  return fs.readFileSync(snapshotPath, 'utf8');
+}
+
 export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceEdgeSnapshotPlan {
-  const snapshotPath = path.join(input.home, 'sites', 'index.html');
-  if (!fs.existsSync(snapshotPath)) throw new Error(`installed Sites index is missing: ${snapshotPath}`);
-  const html = fs.readFileSync(snapshotPath, 'utf8');
-  const version = versionId(html);
   const workspaceHost = host(input.workspaceHost);
-  const snapshotKey = `sites/${input.workspaceId}/${siteId}/${version}/index.html`;
-  const snapshotTarget = { kind: 'site-snapshot', siteId, versionId: version, manifestKey: snapshotKey, contentType, cachePolicy: 'static-shell' };
-  const record = {
+  const sitesDir = path.join(input.home, 'sites');
+  const rootSnapshotPath = path.join(sitesDir, 'index.html');
+  const rootHtml = readSnapshotHtml(rootSnapshotPath, siteId);
+  const version = versionId(rootHtml);
+  const snapshots = snapshotSites.map((snapshot): WorkspaceEdgePublishedSnapshot => {
+    const snapshotPath = path.join(sitesDir, ...snapshot.relativePath);
+    const html = snapshot.siteId === siteId ? rootHtml : readSnapshotHtml(snapshotPath, snapshot.siteId);
+    const snapshotKey = `sites/${input.workspaceId}/${snapshot.siteId}/${version}/index.html`;
+    const verifyUrl = `https://${workspaceHost}${snapshot.pathPrefix === '/' ? '/' : snapshot.pathPrefix}`;
+    return {
+      siteId: snapshot.siteId,
+      pathPrefix: snapshot.pathPrefix,
+      versionId: version,
+      snapshotKey,
+      snapshotPath,
+      verifyUrl,
+      contentHash: hash(html),
+      contentType,
+    };
+  });
+  const rootSnapshot = snapshots[0];
+  if (!rootSnapshot) throw new Error('install edge snapshot plan requires a launcher snapshot');
+  const routeSql = createWorkspaceEdgeRouteSeedSql({
     workspaceId: input.workspaceId,
     workspaceSlug: input.workspaceSlug,
     hostname: workspaceHost,
     baseDomain: baseDomain(workspaceHost),
-    provider: 'cloudflare',
-    owner: 'consuelo-os-cloud',
-    status: 'active',
-    routes: [
-      { surface: 'sites', pathPrefix: '/', auth: 'public', status: 'active', target: snapshotTarget },
-      { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: snapshotTarget },
-      {
-        surface: 'sites',
-        pathPrefix: '/gateway/traces/events',
-        auth: 'required',
-        status: 'active',
-        target: { kind: 'consuelo-gateway-service', serviceName: traceGatewayLiveService, gatewayRouteFamily: '/gateway/traces/*', publicSiteRouteFamily: '/traces/*' },
-      },
-      {
-        surface: 'sites',
-        pathPrefix: '/gateway/traces',
-        auth: 'required',
-        status: 'active',
-        target: { kind: 'consuelo-gateway-service', serviceName: traceGatewayReadService, gatewayRouteFamily: '/gateway/traces/*', publicSiteRouteFamily: '/traces/*' },
-      },
-    ],
-    updatedAt: input.now ?? new Date().toISOString(),
+    siteSnapshotKey: rootSnapshot.snapshotKey,
+    siteVersionId: version,
+  });
+  return {
+    status: undefined as never,
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug,
+    workspaceHost,
+    baseDomain: baseDomain(workspaceHost),
+    siteId,
+    versionId: version,
+    snapshotKey: rootSnapshot.snapshotKey,
+    snapshotPath: rootSnapshot.snapshotPath,
+    verifyUrl: rootSnapshot.verifyUrl,
+    verifiedUrls: snapshots.map((snapshot) => snapshot.verifyUrl),
+    snapshots,
+    logPath: '',
+    httpStatus: 0,
+    cacheAuthority: null,
+    sitesCache: null,
+    contentHash: rootSnapshot.contentHash,
+    contentType,
+    routeSql,
   };
-  const routeSql = [`INSERT OR REPLACE INTO workspace_route_registry (`, `  hostname, workspace_id, workspace_slug, workspace_host, base_domain,`, `  route_path_prefix, route_surface, route_status, route_target_kind, target_origin_url,`, `  connector_id, connector_status, record_json, created_at, updated_at`, `) VALUES (`, `  ${sql(workspaceHost)}, ${sql(input.workspaceId)}, ${sql(input.workspaceSlug)}, ${sql(workspaceHost)}, ${sql(baseDomain(workspaceHost))},`, `  '/', 'sites', 'active', 'site-snapshot', ${sql(`r2://${bucket}/${snapshotKey}`)},`, `  NULL, NULL, ${sql(JSON.stringify(record))}, datetime('now'), datetime('now')`, `);`].join('\n');
-  const verifyUrl = `https://${workspaceHost}/`;
-  return { status: undefined as never, workspaceId: input.workspaceId, workspaceSlug: input.workspaceSlug, workspaceHost, baseDomain: baseDomain(workspaceHost), siteId, versionId: version, snapshotKey, snapshotPath, verifyUrl, verifiedUrls: [verifyUrl, `https://${workspaceHost}/traces`], logPath: '', httpStatus: 0, cacheAuthority: null, sitesCache: null, contentHash: hash(html), contentType, routeSql };
 }
 
 const run = async (runner: CommandRunner, plan: WorkspaceEdgeSnapshotPlan, stage: InstallEdgePublishStage, log: string, entries: unknown[], argv: string[]) => {
@@ -124,19 +152,27 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
   const log = logPath(input.home, input.now);
   const entries: unknown[] = [];
   let plan: WorkspaceEdgeSnapshotPlan;
-  try { plan = createWorkspaceEdgeSnapshotPlan(input); entries.push({ stage: 'snapshot_plan', workspaceId: plan.workspaceId, workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, contentHash: plan.contentHash }); }
+  try { plan = createWorkspaceEdgeSnapshotPlan(input); entries.push({ stage: 'snapshot_plan', workspaceId: plan.workspaceId, workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, versionId: plan.versionId, snapshots: plan.snapshots.map((snapshot) => ({ siteId: snapshot.siteId, snapshotKey: snapshot.snapshotKey, contentHash: snapshot.contentHash })) }); }
   catch (error: unknown) { entries.push({ stage: 'snapshot_plan', error: error instanceof Error ? error.message : String(error) }); writeLog(log, entries); throw new InstallEdgePublishError({ stage: 'snapshot_plan', workspaceHost: input.workspaceHost, logPath: log, message: 'install edge publish failed while planning snapshot', cause: error }); }
   const runner = input.commandRunner ?? defaultRunner;
   const routeSqlPath = path.join(input.home, 'tmp', `install-edge-route-${plan.versionId}.sql`);
   fs.mkdirSync(path.dirname(routeSqlPath), { recursive: true });
   fs.writeFileSync(routeSqlPath, `${plan.routeSql}\n`, { mode: 0o600 });
-  await run(runner, plan, 'r2_upload', log, entries, ['wrangler', 'r2', 'object', 'put', `${bucket}/${plan.snapshotKey}`, '--remote', '--file', plan.snapshotPath, '--content-type', contentType]);
+  const uploadedSnapshotKeys = new Set<string>();
+  for (const snapshot of plan.snapshots) {
+    if (uploadedSnapshotKeys.has(snapshot.snapshotKey)) continue;
+    uploadedSnapshotKeys.add(snapshot.snapshotKey);
+    await run(runner, plan, 'r2_upload', log, entries, ['wrangler', 'r2', 'object', 'put', `${bucket}/${snapshot.snapshotKey}`, '--remote', '--file', snapshot.snapshotPath, '--content-type', snapshot.contentType]);
+  }
   await run(runner, plan, 'd1_upsert', log, entries, ['wrangler', 'd1', 'execute', d1, '--remote', '--config', wranglerConfig, '--file', routeSqlPath]);
   let response: Response | null = null;
   let cacheAuthority: string | null = null;
   let sitesCache: string | null = null;
+  const snapshotsByUrl = new Map(plan.snapshots.map((snapshot) => [snapshot.verifyUrl, snapshot]));
   try {
     for (const verifyUrl of plan.verifiedUrls) {
+      const expectedSnapshot = snapshotsByUrl.get(verifyUrl);
+      if (!expectedSnapshot) throw new Error(`missing snapshot plan for ${verifyUrl}`);
       response = await (input.fetchImpl ?? defaultFetch)(verifyUrl, { headers: { 'cache-control': 'no-cache', 'user-agent': 'Consuelo-OS-Install' } });
       const body = await response.text();
       cacheAuthority = response.headers.get('x-consuelo-edge-cache-authority');
@@ -144,9 +180,9 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
       const siteVersion = response.headers.get('x-consuelo-site-version');
       const bodyHash = hash(body);
       entries.push({ stage: 'edge_verify', url: verifyUrl, status: response.status, cacheAuthority, sitesCache, siteVersion, bodyHash });
-      if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== plan.versionId || bodyHash !== plan.contentHash) {
+      if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== expectedSnapshot.versionId || bodyHash !== expectedSnapshot.contentHash) {
         writeLog(log, entries);
-        throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, logPath: log, message: `install edge publish verification failed for ${verifyUrl}`, diagnostics: { status: response.status, cacheAuthority, sitesCache, siteVersion } });
+        throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: expectedSnapshot.snapshotKey, logPath: log, message: `install edge publish verification failed for ${verifyUrl}`, diagnostics: { status: response.status, cacheAuthority, sitesCache, siteVersion } });
       }
     }
   } catch (error: unknown) {
@@ -155,5 +191,5 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
     throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, logPath: log, message: `install edge publish verification failed for ${plan.verifyUrl}`, diagnostics: { error: error instanceof Error ? error.message : String(error) }, cause: error });
   }
   writeLog(log, entries);
-  return { status: 'succeeded', workspaceId: plan.workspaceId, workspaceSlug: plan.workspaceSlug, workspaceHost: plan.workspaceHost, siteId, versionId: plan.versionId, snapshotKey: plan.snapshotKey, snapshotPath: plan.snapshotPath, verifyUrl: plan.verifyUrl, verifiedUrls: plan.verifiedUrls, logPath: log, httpStatus: response?.status ?? 0, cacheAuthority, sitesCache };
+  return { status: 'succeeded', workspaceId: plan.workspaceId, workspaceSlug: plan.workspaceSlug, workspaceHost: plan.workspaceHost, siteId, versionId: plan.versionId, snapshotKey: plan.snapshotKey, snapshotPath: plan.snapshotPath, verifyUrl: plan.verifyUrl, verifiedUrls: plan.verifiedUrls, snapshots: plan.snapshots, logPath: log, httpStatus: response?.status ?? 0, cacheAuthority, sitesCache };
 }

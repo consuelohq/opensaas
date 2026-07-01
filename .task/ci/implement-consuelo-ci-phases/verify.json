@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/ci/implement-consuelo-ci-phases",
+  "base": "origin/stream/ci",
+  "headSha": "265ec284fbde8f2db0abf5802b43eb44aa27ae28",
+  "changeHash": "c87f1868651b906542b3af253e53054d60441a8baa3a5763b88ac000f899f90f",
+  "changedFiles": [
+    ".github/CI_ALIGNMENT.md",
+    ".github/workflows/ci-website.yaml",
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/workspace/scripts/ci/check-github-workflows.cjs"
+  ],
+  "verifiedAt": "2026-06-27T23:52:08.342Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/CI_ALIGNMENT.md",
+        ".github/workflows/ci-website.yaml",
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/ci/implement-consuelo-ci-phases/current.json",
+        ".task/ci/implement-consuelo-ci-phases/session.json",
+        ".task/ci/implement-consuelo-ci-phases/workpad.md",
+        ".task/tasks/ci/implement-consuelo-ci-phases.json",
+        "packages/workspace/scripts/ci/check-github-workflows.cjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
