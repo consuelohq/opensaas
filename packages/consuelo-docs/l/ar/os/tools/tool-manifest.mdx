@@ -117,7 +117,7 @@ example error envelope:
 
 ### checkFiles
 
-run syntax checks over a set of files through task:exec
+run syntax checks over a set of files through code.call
 
 - signature: `workspace.checkFiles(\{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
 - wraps: `workspace checkFiles`
@@ -4556,67 +4556,6 @@ example error envelope:
 
 ## task lifecycle
 
-### task.call
-
-run a command inside a task worktree
-
-- signature: `workspace.task.call(\{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
-- wraps: `workspace task.call`
-- capabilities: readOnly=false, mutating=true, safeToRetry=false
-- default timeout: 300000ms
-
-example call:
-
-```ts
-await workspace.call({
-  "tool": "task.call",
-  "input": {
-    "branch": "task/workspace-agents/example",
-    "command": [
-      "git",
-      "status",
-      "--short"
-    ],
-    "dryRun": true
-  }
-});
-```
-
-example success envelope:
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-example error envelope:
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
 
 ### task.cleanup
 
@@ -4786,67 +4725,6 @@ example error envelope:
 }
 ```
 
-### task.exec
-
-legacy alias for task.call; run a command inside a task worktree
-
-- signature: `workspace.task.exec(\{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
-- wraps: `workspace task.exec`
-- capabilities: readOnly=false, mutating=true, safeToRetry=false
-- default timeout: 300000ms
-
-example call:
-
-```ts
-await workspace.call({
-  "tool": "task.exec",
-  "input": {
-    "branch": "task/workspace-agents/example",
-    "command": [
-      "git",
-      "status",
-      "--short"
-    ],
-    "dryRun": true
-  }
-});
-```
-
-example success envelope:
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-example error envelope:
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
 
 ### task.finish
 

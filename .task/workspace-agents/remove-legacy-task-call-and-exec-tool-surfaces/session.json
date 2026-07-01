@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_71fac0ff916d",
+  "tmuxSession": "opensaas-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces-71fac0ff",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces",
+  "branch": "task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces",
+  "prNumber": 1296,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1296",
+  "createdAt": "2026-06-30T21:34:16.722Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces/.task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces/session.json"
+}

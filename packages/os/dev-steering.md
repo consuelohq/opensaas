@@ -1072,11 +1072,11 @@ Before reporting completion, verify one of these is true:
 For typed facade changes, the expected validation path is:
 
 ```ts
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 120 })
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 120 })
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bash", "-lc", "cd packages/workspace && bun run test tests/facade/facade.test.ts"] }, timeout: 300000 })
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "audit", "--", "--scripts", "--json"] }, timeout: 120 })
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "review", "--", "--base", "stream/workspace-agents", "--no-tests", "--json"] }, timeout: 600000 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "run", "generate-types"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 120 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "run", "generate-docs"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 120 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/facade/facade.test.ts"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 300 })
+await workspace.call({ tool: "audit", taskSession, input: { scripts: true }, timeout: 300 })
+await workspace.call({ tool: "review.run", taskSession, input: { base: "stream/workspace-agents", noTests: true }, timeout: 900 })
 ```
 
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.

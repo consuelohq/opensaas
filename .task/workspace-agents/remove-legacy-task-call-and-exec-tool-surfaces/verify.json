@@ -1,0 +1,188 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces",
+  "base": "origin/task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces",
+  "headSha": "f87e4f1d5a961dae171d1b2e3a9d681adb718473",
+  "changeHash": "4253c112f6b83390fa457c14d84215192a480cd97d147e63433081f75683b5e2",
+  "changedFiles": [
+    "packages/consuelo-docs/l/ar/os/agent-context/scripts.mdx",
+    "packages/consuelo-docs/l/ar/os/agent-context/steering.mdx",
+    "packages/consuelo-docs/l/ar/os/agent-context/tools.mdx",
+    "packages/consuelo-docs/l/ar/os/tools/scripts.mdx",
+    "packages/consuelo-docs/l/ar/os/tools/tool-manifest.mdx",
+    "packages/os/dev-steering.md",
+    "packages/os/docs/review/stream-os-pr-362-review-packet.md",
+    "packages/os/steering/system_prompt.md",
+    "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/script-parity-classifications.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/scripts/check-files.js",
+    "packages/workspace/scripts/task-exec.js",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/trace-home/model.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/task.md",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tests/tool-manifest.test.ts",
+    "packages/workspace/tests/trace-home.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-30T22:25:10.637Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces.json",
+        ".task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces/current.json",
+        ".task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces/session.json",
+        ".task/workspace-agents/remove-legacy-task-call-and-exec-tool-surfaces/workpad.md",
+        "packages/consuelo-docs/l/ar/os/agent-context/scripts.mdx",
+        "packages/consuelo-docs/l/ar/os/agent-context/steering.mdx",
+        "packages/consuelo-docs/l/ar/os/agent-context/tools.mdx",
+        "packages/consuelo-docs/l/ar/os/tools/scripts.mdx",
+        "packages/consuelo-docs/l/ar/os/tools/tool-manifest.mdx",
+        "packages/os/dev-steering.md",
+        "packages/os/docs/review/stream-os-pr-362-review-packet.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/os/tests/audit/script-parity-audit.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tooling/script-parity-classifications.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/scripts/check-files.js",
+        "packages/workspace/scripts/task-exec.js",
+        "packages/workspace/scripts/task-fs.js",
+        "packages/workspace/scripts/trace-home/model.ts",
+        "packages/workspace/senior-engineer.md",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/task.md",
+        "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "packages/workspace/tests/server_call_test.py",
+        "packages/workspace/tests/tool-manifest.test.ts",
+        "packages/workspace/tests/trace-home.test.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md",
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 242,
+          "outputTail": "de\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.930Z\"}\n(pass) typed facade executor > validates input for stream.sync [0.14ms]\n(pass) typed facade executor > validates input for task.cleanup [0.13ms]\n(pass) typed facade executor > validates input for task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.06ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.931Z\"}\n(pass) typed facade executor > validates input for task.init [0.24ms]\n(pass) typed facade executor > validates input for task.merge [0.09ms]\n(pass) typed facade executor > validates input for task.pr [0.12ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.931Z\"}\n(pass) typed facade executor > validates input for task.push [0.25ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.931Z\"}\n(pass) typed facade executor > validates input for task.start [0.25ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.932Z\"}\n(pass) typed facade executor > validates input for tmp [0.23ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.932Z\"}\n(pass) typed facade executor > validates input for tools.search [0.25ms]\n(pass) typed facade executor > validates input for verify [0.09ms]\n(pass) typed facade executor > validates input for wait [0.14ms]\n(pass) typed facade executor > validates input for website.deploy [0.08ms]\n{\"level\":\"error\",\"tool\":\"worker.call\",\"command\":\"workspace worker.call\",\"implementationCommand\":\"workspace worker.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.932Z\"}\n(pass) typed facade executor > validates input for worker.call [0.35ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-30T22:25:09.933Z\"}\n(pass) typed facade executor > validates input for media.svg [0.36ms]\n\n 124 pass\n 434 filtered out\n 0 fail\n 57 expect() calls\nRan 124 tests across 1 file. [235.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 480,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-legacy-task-call-and-exec-tool-surfaces\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 87\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:25:10\n\u001b[2m   Duration \u001b[22m 220ms\u001b[2m (transform 63ms, setup 0ms, import 68ms, tests 87ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
