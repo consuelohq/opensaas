@@ -10,7 +10,7 @@ import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
-import { PROCESS_TERMINATION_GRACE_MS, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
+import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
 import { executeCodeCall } from '../code-call/runtime';
 import type { CodeCallInput } from '../code-call/types';
@@ -45,7 +45,7 @@ export const manifestEntries = fullToolManifest.tools
   .map((entry) => entry.definition);
 
 type TaskSessionMetadata = {
-  taskSession: string;
+  taskSession?: string;
   id?: string;
   taskId?: string;
   tmuxSession?: string;
@@ -110,6 +110,7 @@ export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resol
   let stderr = '';
   let timedOut = false;
   let killTimer: NodeJS.Timeout | null = null;
+  const cleanupProcessTree = registerProcessTreeCleanup(child);
   const timeout = setTimeout(() => {
     timedOut = true;
     terminateProcessTree(child, 'SIGTERM');
@@ -125,11 +126,13 @@ export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resol
   child.on('error', (error) => {
     clearTimeout(timeout);
     if (killTimer) clearTimeout(killTimer);
+    cleanupProcessTree();
     reject(error);
   });
   child.on('close', (code) => {
     clearTimeout(timeout);
     if (killTimer) clearTimeout(killTimer);
+    cleanupProcessTree();
     if (timedOut) {
       const error = new Error(`command timed out after ${timeoutMs}ms`) as Error & { timedOut: boolean };
       error.timedOut = true;

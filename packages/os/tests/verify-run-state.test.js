@@ -3,15 +3,24 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { expect, test } from 'vitest';
+import { afterEach, expect, test } from 'vitest';
 
 const require = createRequire(import.meta.url);
 const {
+  abortVerifyRun,
   beginVerifyRun,
   finishVerifyRun,
   makeVerifyRunIdentity,
   pathsForIdentity,
 } = require('../scripts/lib/verify-run-state.js');
+
+const repoRoots = [];
+
+afterEach(() => {
+  for (const repoRoot of repoRoots.splice(0)) {
+    fs.rmSync(repoRoot, { recursive: true, force: true });
+  }
+});
 
 function git(repoRoot, args) {
   return execFileSync('git', args, {
@@ -23,6 +32,7 @@ function git(repoRoot, args) {
 
 function createRepo() {
   const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'os-verify-run-state-'));
+  repoRoots.push(repoRoot);
   git(repoRoot, ['init', '-b', 'main']);
   git(repoRoot, ['config', 'user.email', 'test@example.com']);
   git(repoRoot, ['config', 'user.name', 'OS Test']);
@@ -51,7 +61,7 @@ function identity(repoRoot, overrides = {}) {
   });
 }
 
-test('completed verify result is replayed for the same identity', () => {
+test('should replay completed verify result when identity matches', () => {
   const repoRoot = createRepo();
   const verifyIdentity = identity(repoRoot);
 
@@ -71,7 +81,7 @@ test('completed verify result is replayed for the same identity', () => {
   expect(replay.result.exitCode).toBe(0);
 });
 
-test('verify identity changes when review arguments change', () => {
+test('should change verify identity when review arguments change', () => {
   const repoRoot = createRepo();
   const first = identity(repoRoot, { args: { reviewArgs: ['--no-tests'] } });
   const second = identity(repoRoot, { args: { reviewArgs: ['--strict'] } });
@@ -79,7 +89,7 @@ test('verify identity changes when review arguments change', () => {
   expect(first.key).not.toBe(second.key);
 });
 
-test('stale running verify lock is orphaned before acquiring a new run', () => {
+test('should orphan stale running verify lock when acquiring a new run', () => {
   const repoRoot = createRepo();
   const verifyIdentity = identity(repoRoot);
   const paths = pathsForIdentity(repoRoot, verifyIdentity);
@@ -95,4 +105,67 @@ test('stale running verify lock is orphaned before acquiring a new run', () => {
   const run = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
   expect(run.mode).toBe('run');
   finishVerifyRun(run, { stdout: '{}\n', stderr: '', exitCode: 0 });
+});
+
+test('should change verify identity when review argument order changes', () => {
+  const repoRoot = createRepo();
+  const first = identity(repoRoot, { args: { reviewArgs: ['--flag-a', '--flag-b'] } });
+  const second = identity(repoRoot, { args: { reviewArgs: ['--flag-b', '--flag-a'] } });
+
+  expect(first.key).not.toBe(second.key);
+});
+
+test('should acquire a fresh verify run when previous completed result failed', () => {
+  const repoRoot = createRepo();
+  const verifyIdentity = identity(repoRoot);
+
+  const failedRun = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
+  expect(failedRun.mode).toBe('run');
+  finishVerifyRun(failedRun, {
+    stdout: '{"passed":false}\n',
+    stderr: 'failed once\n',
+    exitCode: 1,
+  });
+
+  const retryRun = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
+  expect(retryRun.mode).toBe('run');
+  finishVerifyRun(retryRun, { stdout: '{"passed":true}\n', stderr: '', exitCode: 0 });
+});
+
+test('should remove verify lock when writing the running record fails', () => {
+  const repoRoot = createRepo();
+  const verifyIdentity = identity(repoRoot);
+  const paths = pathsForIdentity(repoRoot, verifyIdentity);
+  const originalRenameSync = fs.renameSync;
+
+  fs.renameSync = function renameSyncWithInjectedFailure(from, to) {
+    if (to === paths.recordPath) {
+      throw new Error('simulated record write failure');
+    }
+    return originalRenameSync.call(fs, from, to);
+  };
+
+  try {
+    expect(() => beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 })).toThrow('simulated record write failure');
+    expect(fs.existsSync(paths.lockPath)).toBe(false);
+  } finally {
+    fs.renameSync = originalRenameSync;
+  }
+});
+
+test('should abort acquired verify run when caller fails before finish', () => {
+  const repoRoot = createRepo();
+  const verifyIdentity = identity(repoRoot);
+
+  const run = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
+  expect(run.mode).toBe('run');
+
+  abortVerifyRun(run, 'simulated failure before finish');
+
+  const paths = pathsForIdentity(repoRoot, verifyIdentity);
+  expect(fs.existsSync(paths.lockPath)).toBe(false);
+
+  const nextRun = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
+  expect(nextRun.mode).toBe('run');
+  finishVerifyRun(nextRun, { stdout: '{}\n', stderr: '', exitCode: 0 });
 });

@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 
 import { Effect } from 'effect';
 
-import { PROCESS_TERMINATION_GRACE_MS, shouldUseDetachedProcessGroup, terminateProcessTree } from '../facade/process-tree';
+import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from '../facade/process-tree';
 
 export type RunResult = {
   stdout: string;
@@ -35,12 +35,14 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   let settled = false;
   let timedOut = false;
   let killTimer: NodeJS.Timeout | null = null;
+  const cleanupProcessTree = registerProcessTreeCleanup(child);
 
   const finish = (result: RunResult): void => {
     if (settled) return;
     settled = true;
     clearTimeout(timer);
     if (killTimer) clearTimeout(killTimer);
+    cleanupProcessTree();
     resolve(result);
   };
 

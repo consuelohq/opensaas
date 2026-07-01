@@ -79,7 +79,7 @@ function normalizeArgs(args = {}) {
     db: args.db !== false,
     dbWarnOnly: Boolean(args.dbWarnOnly),
     review: args.review !== false,
-    reviewArgs: Array.isArray(args.reviewArgs) ? [...args.reviewArgs].sort() : [],
+    reviewArgs: Array.isArray(args.reviewArgs) ? [...args.reviewArgs] : [],
     stamp: args.stamp !== false,
   };
 }
@@ -116,13 +116,15 @@ function pathsForIdentity(repoRoot, identity) {
 function readCompletedResult(paths) {
   const record = readJson(paths.recordPath);
   if (!record || record.status !== 'completed') return null;
+  const exitCode = Number.isInteger(record.exitCode) ? record.exitCode : 1;
+  if (exitCode !== 0) return null;
   if (!fs.existsSync(paths.stdoutPath) || !fs.existsSync(paths.stderrPath)) return null;
 
   return {
     record,
     stdout: fs.readFileSync(paths.stdoutPath, 'utf8'),
     stderr: fs.readFileSync(paths.stderrPath, 'utf8'),
-    exitCode: Number.isInteger(record.exitCode) ? record.exitCode : 1,
+    exitCode,
   };
 }
 
@@ -222,7 +224,17 @@ function beginVerifyRun(repoRoot, identity, options = {}) {
         stdoutPath: paths.stdoutPath,
         stderrPath: paths.stderrPath,
       };
-      writeJsonAtomic(paths.recordPath, record);
+      try {
+        writeJsonAtomic(paths.recordPath, record);
+      } catch (writeError) {
+        try {
+          fs.closeSync(lockFd);
+        } catch {
+          // best effort
+        }
+        removeLock(paths);
+        throw writeError;
+      }
       return { mode: 'run', paths, identity, lockFd };
     } catch (error) {
       if (!error || error.code !== 'EEXIST') throw error;
@@ -235,24 +247,7 @@ function beginVerifyRun(repoRoot, identity, options = {}) {
   }
 }
 
-function finishVerifyRun(run, result) {
-  if (!run || run.mode !== 'run') return;
-
-  fs.writeFileSync(run.paths.stdoutPath, result.stdout || '', 'utf8');
-  fs.writeFileSync(run.paths.stderrPath, result.stderr || '', 'utf8');
-  writeJsonAtomic(run.paths.recordPath, {
-    schema: 'verify-run-record.v1',
-    status: 'completed',
-    key: run.identity.key,
-    identity: run.identity,
-    pid: process.pid,
-    startedAt: readJson(run.paths.recordPath)?.startedAt || null,
-    completedAt: new Date().toISOString(),
-    exitCode: Number.isInteger(result.exitCode) ? result.exitCode : 0,
-    stdoutPath: run.paths.stdoutPath,
-    stderrPath: run.paths.stderrPath,
-  });
-
+function closeRunLock(run) {
   try {
     fs.closeSync(run.lockFd);
   } catch {
@@ -261,7 +256,54 @@ function finishVerifyRun(run, result) {
   removeLock(run.paths);
 }
 
+function finishVerifyRun(run, result) {
+  if (!run || run.mode !== 'run') return;
+
+  try {
+    fs.writeFileSync(run.paths.stdoutPath, result.stdout || '', 'utf8');
+    fs.writeFileSync(run.paths.stderrPath, result.stderr || '', 'utf8');
+    writeJsonAtomic(run.paths.recordPath, {
+      schema: 'verify-run-record.v1',
+      status: 'completed',
+      key: run.identity.key,
+      identity: run.identity,
+      pid: process.pid,
+      startedAt: readJson(run.paths.recordPath)?.startedAt || null,
+      completedAt: new Date().toISOString(),
+      exitCode: Number.isInteger(result.exitCode) ? result.exitCode : 0,
+      stdoutPath: run.paths.stdoutPath,
+      stderrPath: run.paths.stderrPath,
+    });
+  } finally {
+    closeRunLock(run);
+  }
+}
+
+function abortVerifyRun(run, reason = 'verify run aborted before completion') {
+  if (!run || run.mode !== 'run') return;
+
+  try {
+    const existingRecord = readJson(run.paths.recordPath) || {};
+    writeJsonAtomic(run.paths.recordPath, {
+      ...existingRecord,
+      schema: 'verify-run-record.v1',
+      status: 'aborted',
+      key: run.identity.key,
+      identity: run.identity,
+      pid: process.pid,
+      startedAt: existingRecord.startedAt || null,
+      abortedAt: new Date().toISOString(),
+      abortReason: reason,
+      stdoutPath: run.paths.stdoutPath,
+      stderrPath: run.paths.stderrPath,
+    });
+  } finally {
+    closeRunLock(run);
+  }
+}
+
 module.exports = {
+  abortVerifyRun,
   beginVerifyRun,
   finishVerifyRun,
   getVerifyRunDir,

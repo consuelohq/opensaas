@@ -13,6 +13,7 @@ const {
   writeVerifyStamp,
 } = require('./lib/verification');
 const {
+  abortVerifyRun,
   beginVerifyRun,
   finishVerifyRun,
   makeVerifyRunIdentity,
@@ -404,117 +405,125 @@ function buildJsonResult(result) {
 function replayVerifyRun(replay) {
   process.stdout.write(replay.result.stdout || '');
   process.stderr.write(replay.result.stderr || '');
-  if (replay.result.exitCode !== 0) {
-    process.exit(replay.result.exitCode);
-  }
+  process.exitCode = replay.result.exitCode;
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  let verifyRun = null;
 
   if (args.help) {
     printHelp();
     return;
   }
 
-  const repoRoot = resolveGitRoot(process.cwd());
-  process.chdir(repoRoot);
+  try {
+    const repoRoot = resolveGitRoot(process.cwd());
+    process.chdir(repoRoot);
 
-  const branch = getCurrentBranch(repoRoot);
-  const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
-  const base = detectBase(repoRoot, args, branch, taskMeta);
-  const files = readChangedFiles(repoRoot, base);
-  const headSha = getRefSha(repoRoot, 'HEAD');
-  const verificationState = computeVerificationState(repoRoot, branch);
-  const verifyRun = args.json
-    ? beginVerifyRun(repoRoot, makeVerifyRunIdentity({
-      repoRoot,
-      branch,
-      base,
-      headSha,
-      changeHash: verificationState.changeHash,
-      args,
-    }))
-    : null;
+    const branch = getCurrentBranch(repoRoot);
+    const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
+    const base = detectBase(repoRoot, args, branch, taskMeta);
+    const files = readChangedFiles(repoRoot, base);
+    const headSha = getRefSha(repoRoot, 'HEAD');
+    const verificationState = computeVerificationState(repoRoot, branch);
+    verifyRun = args.json
+      ? beginVerifyRun(repoRoot, makeVerifyRunIdentity({
+        repoRoot,
+        branch,
+        base,
+        headSha,
+        changeHash: verificationState.changeHash,
+        args,
+      }))
+      : null;
 
-  if (verifyRun && verifyRun.mode === 'replay') {
-    replayVerifyRun(verifyRun);
-    return;
-  }
-
-  const review = runReview(repoRoot, base, args);
-  const db = createDbResult(files, args);
-  const docs = createDocsResult(repoRoot, files);
-  const passed = review.passed && db.passed && docs.passed;
-  const mode = args.review && args.db ? 'full' : 'partial';
-  const publishValid = passed && mode === 'full' && !review.skipped && !db.skipped && db.warnOnly !== true;
-  let stampPath = null;
-
-  if (args.stamp && taskMeta) {
-    const stamp = {
-      result: passed ? 'pass' : 'fail',
-      publishValid,
-      mode,
-      branch,
-      base,
-      headSha,
-      changeHash: verificationState.changeHash,
-      changedFiles: files,
-      verifiedAt: new Date().toISOString(),
-      review: {
-        skipped: review.skipped,
-        passed: review.passed,
-      },
-      db: {
-        skipped: db.skipped,
-        passed: db.passed,
-        risks: db.risks,
-        findings: db.findings,
-        warnOnly: db.warnOnly === true,
-      },
-      docs: {
-        skipped: docs.skipped,
-        passed: docs.passed,
-        files: docs.files,
-        commands: docs.commands,
-      },
-      commandVersion: 1,
-    };
-
-    stampPath = writeVerifyStamp(repoRoot, stamp, taskMeta.data);
-    stampPath = getVerifyStampPath(repoRoot, taskMeta.data);
-  }
-
-  const result = {
-    repoRoot,
-    args,
-    branch,
-    base,
-    headSha,
-    files,
-    review,
-    db,
-    docs,
-    passed,
-    publishValid,
-    mode,
-    stampPath,
-  };
-
-  if (args.json) {
-    const stdout = `${JSON.stringify(buildJsonResult(result), null, 2)}\n`;
-    process.stdout.write(stdout);
-    finishVerifyRun(verifyRun, { stdout, stderr: '', exitCode: passed ? 0 : 1 });
-  } else {
-    if (review.stderr && !review.passed) {
-      writeStderr(review.stderr.trim());
+    if (verifyRun && verifyRun.mode === 'replay') {
+      replayVerifyRun(verifyRun);
+      return;
     }
 
-    printHumanResult(result);
-  }
+    const review = runReview(repoRoot, base, args);
+    const db = createDbResult(files, args);
+    const docs = createDocsResult(repoRoot, files);
+    const passed = review.passed && db.passed && docs.passed;
+    const mode = args.review && args.db ? 'full' : 'partial';
+    const publishValid = passed && mode === 'full' && !review.skipped && !db.skipped && db.warnOnly !== true;
+    let stampPath = null;
 
-  if (!passed) {
-    process.exit(1);
+    if (args.stamp && taskMeta) {
+      const stamp = {
+        result: passed ? 'pass' : 'fail',
+        publishValid,
+        mode,
+        branch,
+        base,
+        headSha,
+        changeHash: verificationState.changeHash,
+        changedFiles: files,
+        verifiedAt: new Date().toISOString(),
+        review: {
+          skipped: review.skipped,
+          passed: review.passed,
+        },
+        db: {
+          skipped: db.skipped,
+          passed: db.passed,
+          risks: db.risks,
+          findings: db.findings,
+          warnOnly: db.warnOnly === true,
+        },
+        docs: {
+          skipped: docs.skipped,
+          passed: docs.passed,
+          files: docs.files,
+          commands: docs.commands,
+        },
+        commandVersion: 1,
+      };
+
+      stampPath = writeVerifyStamp(repoRoot, stamp, taskMeta.data);
+      stampPath = getVerifyStampPath(repoRoot, taskMeta.data);
+    }
+
+    const result = {
+      repoRoot,
+      args,
+      branch,
+      base,
+      headSha,
+      files,
+      review,
+      db,
+      docs,
+      passed,
+      publishValid,
+      mode,
+      stampPath,
+    };
+
+    if (args.json) {
+      const stdout = `${JSON.stringify(buildJsonResult(result), null, 2)}\n`;
+      process.stdout.write(stdout);
+      finishVerifyRun(verifyRun, { stdout, stderr: '', exitCode: passed ? 0 : 1 });
+      verifyRun = null;
+    } else {
+      if (review.stderr && !review.passed) {
+        writeStderr(review.stderr.trim());
+      }
+
+      printHumanResult(result);
+    }
+
+    if (!passed) {
+      process.exit(1);
+    }
+  } catch (error) {
+    if (verifyRun && verifyRun.mode === 'run') {
+      abortVerifyRun(verifyRun, error instanceof Error ? error.message : 'verify failed before completion');
+      verifyRun = null;
+    }
+    throw error;
   }
 }
 

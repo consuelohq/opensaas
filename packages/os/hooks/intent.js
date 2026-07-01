@@ -50,17 +50,19 @@ function createWorkflowLookup(bundles) {
   return lookup;
 }
 
-function createGeneratedTaskSession(workflow, input = {}) {
-  const slug = String(input.title || input.area || workflow || 'intent')
+function sanitizeSlugSegment(value, fallback, maxLength) {
+  const sanitized = String(value)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40) || 'intent';
+    .replace(/^-+|-+$/g, '');
+  const truncated = maxLength ? sanitized.slice(0, maxLength) : sanitized;
+  return truncated || fallback;
+}
+
+function createGeneratedTaskSession(workflow, input = {}) {
+  const slug = sanitizeSlugSegment(input.title || input.area || workflow || 'intent', 'intent', 40);
   if (workflow === 'task') {
-    const area = String(input.area || 'task')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'task';
+    const area = sanitizeSlugSegment(input.area || 'task', 'task');
     return `task/${area}/${slug}`;
   }
   return `tsk_${workflow}_${slug}`;

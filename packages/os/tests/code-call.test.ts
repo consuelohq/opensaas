@@ -304,7 +304,7 @@ describe('code.call runtime', () => {
     }
   });
 
-  it('keeps the tail when truncating oversized output', async () => {
+  it('should keep the tail when truncating oversized output', async () => {
     const root = tempRoot();
     try {
       const result = await runCodeCall({
@@ -344,7 +344,7 @@ describe('code.call runtime', () => {
     }
   });
 
-  it('terminates process groups when grandchildren survive the timeout', async () => {
+  it('should terminate process groups when grandchildren survive the timeout', async () => {
     const root = tempRoot();
     try {
       const startedAt = Date.now();

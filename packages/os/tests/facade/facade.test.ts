@@ -62,7 +62,7 @@ function failingRunner(): ToolRunner {
 
 function timeoutRunner(): ToolRunner {
   return async () => {
-    throw { timedOut: true, message: 'timed out' };
+    throw Object.assign(new Error('timed out'), { timedOut: true });
   };
 }
 
@@ -218,13 +218,15 @@ describe('typed facade executor', () => {
     expect(result.ok).toBe(false);
   });
 
-  it('retries retry-safe facade tools after a timeout before returning success', async () => {
+  it('should retry retry-safe facade tools when the first attempt times out', async () => {
     let attempts = 0;
     const plans: CommandPlan[] = [];
     const result = await executeTool('status', exampleInput('status'), stableOptions(async () => {
       attempts += 1;
       if (attempts === 1) {
-        throw { timedOut: true, message: 'first attempt timed out' };
+        throw Object.assign(new Error('first attempt timed out'), {
+          timedOut: true,
+        });
       }
       return {
         stdout: JSON.stringify({ value: 'retried' }),
@@ -689,7 +691,43 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('accepts a task branch as a taskSession alias when metadata exists', async () => {
+
+  it('should accept task metadata aliases when taskSession is absent', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-task-id-alias-'));
+    const branch = 'task/workspace-agents/session-task-id-alias';
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        id: 'tsk_task_id_alias',
+        taskId: 'task-id-alias',
+        taskBranch: branch,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'task-id-alias',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(tempRoot);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should accept a task branch as a taskSession alias when metadata exists', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-alias-'));
     const branch = 'task/workspace-agents/session-branch-alias';
     const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
@@ -759,7 +797,7 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('compacts full verify packets instead of returning raw tails', async () => {
+  it('should compact full verify packets when raw tails are large', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-compact-'));
     try {
       writeTaskSession(tempRoot, 'tsk_verify_compact_full', TEST_BRANCH);

@@ -2,14 +2,16 @@
   "result": "pass",
   "publishValid": true,
   "mode": "full",
-  "branch": "task/os/tool-execution-scheduling-and-compact-outputs",
-  "base": "origin/task/os/tool-execution-scheduling-and-compact-outputs",
-  "headSha": "005bd35627d928e91096fffb02f2b61e070a032d",
-  "changeHash": "6da55ec055926504af3efcf74070a94d511bc0feac6b5d46aa4f2f1ce15549db",
+  "branch": "",
+  "base": "origin/main",
+  "headSha": "3c299d1c312a42c4abe5a931563cde1850dbe384",
+  "changeHash": "54bc200d15476522fe19198b849b286b35130c0ec2f3caec721f98b8056f89cc",
   "changedFiles": [
+    "packages/os/TOOLS.md",
     "packages/os/hooks/intent.js",
     "packages/os/manifests/core.manifest.json",
     "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
     "packages/os/scripts/lib/code-call/output.ts",
     "packages/os/scripts/lib/code-call/process.ts",
     "packages/os/scripts/lib/code-call/schema.ts",
@@ -20,62 +22,28 @@
     "packages/os/tests/code-call-parity.test.ts",
     "packages/os/tests/code-call.test.ts",
     "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/facade/process-tree.test.ts",
     "packages/os/tests/verify-run-state.test.js",
     "packages/os/tests/workflow-intent.test.ts",
     "packages/os/tooling/dev-tool-manifest.json"
   ],
-  "verifiedAt": "2026-07-01T17:14:37.691Z",
+  "verifiedAt": "2026-07-01T19:43:37.053Z",
   "review": {
     "skipped": false,
-    "passed": true,
-    "status": 0
-  },
-  "testSelection": {
-    "skipped": false,
-    "passed": true,
-    "status": 0,
-    "data": {
-      "kind": "selection",
-      "passed": true,
-      "changedFiles": [
-        ".task/os/tool-execution-scheduling-and-compact-outputs/current.json",
-        ".task/os/tool-execution-scheduling-and-compact-outputs/evidence-log.json",
-        ".task/os/tool-execution-scheduling-and-compact-outputs/read-log.json",
-        ".task/os/tool-execution-scheduling-and-compact-outputs/session.json",
-        ".task/os/tool-execution-scheduling-and-compact-outputs/workpad.md",
-        ".task/tasks/os/tool-execution-scheduling-and-compact-outputs.json",
-        "packages/os/hooks/intent.js",
-        "packages/os/manifests/core.manifest.json",
-        "packages/os/manifests/tool.manifest.json",
-        "packages/os/scripts/lib/code-call/output.ts",
-        "packages/os/scripts/lib/code-call/process.ts",
-        "packages/os/scripts/lib/code-call/schema.ts",
-        "packages/os/scripts/lib/facade/executor.ts",
-        "packages/os/scripts/lib/facade/process-tree.ts",
-        "packages/os/scripts/lib/verify-run-state.js",
-        "packages/os/scripts/verify.js",
-        "packages/os/tests/code-call-parity.test.ts",
-        "packages/os/tests/code-call.test.ts",
-        "packages/os/tests/facade/facade.test.ts",
-        "packages/os/tests/verify-run-state.test.js",
-        "packages/os/tests/workflow-intent.test.ts",
-        "packages/os/tooling/dev-tool-manifest.json"
-      ],
-      "matchedRules": [],
-      "selectedSuites": [],
-      "level": "warn",
-      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
-      "run": true,
-      "runResults": [],
-      "failedSuites": []
-    }
+    "passed": true
   },
   "db": {
     "skipped": false,
     "passed": true,
-    "warnOnly": false,
     "risks": [],
-    "findings": []
+    "findings": [],
+    "warnOnly": false
   },
-  "commandVersion": 2
+  "docs": {
+    "skipped": true,
+    "passed": true,
+    "files": [],
+    "commands": []
+  },
+  "commandVersion": 1
 }
