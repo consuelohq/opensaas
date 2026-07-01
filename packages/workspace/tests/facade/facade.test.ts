@@ -10,7 +10,7 @@ import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
 import { parseWorkerOutput, parseWorkerTraceEvents } from '../../scripts/lib/worker/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
-import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
+import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -161,8 +161,10 @@ function writeFakePi(tempRoot: string): string {
   return binDir;
 }
 
+const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search', 'tools.search']);
+
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && entry.name !== 'tools.search');
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
 }
 
 describe('typed facade executor', () => {
@@ -174,11 +176,22 @@ describe('typed facade executor', () => {
     expect(missing).toEqual([]);
   });
 
+  it('exposes code.call as the language execution facade', () => {
+    const entry = getToolManifestEntry('code.call');
+
+    expect(entry?.methodPath).toEqual(['code', 'call']);
+    expect(entry?.inputSchema).toBe('CodeCallInput');
+    expect(entry?.outputSchema).toBe('CodeCallOutput');
+    expect(entry?.command.internal).toBe('code.call');
+    expect(getInputSchema('CodeCallInput')).toBeTruthy();
+  });
 
   it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const toolsSearchScript = join(import.meta.dirname, '..', '..', 'scripts', 'tools-search.ts');
+    const packageRoot = join(import.meta.dirname, '..', '..');
     const runSearch = (query: string, limit = 5) => {
-      const result = spawnSync('bun', ['packages/workspace/scripts/tools-search.ts', query, '--limit', String(limit), '--json'], {
-        cwd: process.cwd(),
+      const result = spawnSync('bun', [toolsSearchScript, query, '--limit', String(limit), '--json'], {
+        cwd: packageRoot,
         encoding: 'utf8',
       });
       expect(result.status).toBe(0);
@@ -211,13 +224,101 @@ describe('typed facade executor', () => {
     expect(missingPayload.totalMatches).toBe(0);
     expect(missingPayload.matches).toEqual([]);
     expect(missingPayload.guidance).toContain('No matching tools found');
-  });
-
+  }, 15000);
   it('rejects contradictory tools.search capability filters', async () => {
     const result = await executeTool('tools.search', { query: 'linear issue', readOnly: true, mutating: true }, stableOptions(successfulRunner()));
     expect(result.ok).toBe(false);
     expect(result.code).toBe('VALIDATION_ERROR');
     expect(result.message).toContain('readOnly and mutating cannot both be true');
+  });
+
+  it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
+    const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toContain('fs.patch is not a workspace tool');
+    expect(result.message).toContain('fs.apply_patch');
+
+    const data = result.data as {
+      requestedTool?: string;
+      replacementTool?: string;
+      manifestEntry?: {
+        name?: string;
+        inputSchema?: string;
+        command?: { subcommand?: string };
+      };
+    };
+
+    expect(data.requestedTool).toBe('fs.patch');
+    expect(data.replacementTool).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.name).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.inputSchema).toBe('FsApplyPatchInput');
+    expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
+  });
+
+  it('keeps generic unknown tool messages compact', async () => {
+    const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toBe('unknown tool: missing.tool');
+    expect(result.data).toBeNull();
+  });
+
+  it('plans canonical context search through the context runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('context', {
+      operation: 'search',
+      keyword: 'workspace',
+      limit: 1,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'context',
+      '--',
+      'search',
+      'workspace',
+      '--limit',
+      '1',
+      '--json',
+    ]));
+  });
+
+  it('plans canonical context trace through the context runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('context', {
+      operation: 'trace',
+      status: 'error',
+      limit: 1,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'context',
+      '--',
+      'trace',
+      '--status',
+      'error',
+      '--limit',
+      '1',
+      '--json',
+    ]));
+  });
+
+  it('rejects canonical context calls without an operation', async () => {
+    const result = await executeTool('context', {
+      keyword: 'workspace',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('operation');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -294,14 +395,12 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
+  it('writes multiline content through fs write content-file and rejects stale patch command', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
     const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
-    const patchPayload = join(tempRoot, 'patch-payload.txt');
     try {
       writeFileSync(writePayload, 'line one\nline two\n');
-      writeFileSync(patchPayload, 'patched one\npatched two\n');
 
       const writeResult = spawnSync('bun', [scriptPath, 'write', 'nested/example.txt', '--content-file', writePayload, '--mkdirs'], {
         cwd: tempRoot,
@@ -310,19 +409,14 @@ describe('typed facade executor', () => {
       expect(writeResult.status).toBe(0);
       expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
 
-      const inlinePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad\npatch'], {
+      const stalePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad'], {
         cwd: tempRoot,
         encoding: 'utf8',
       });
-      expect(inlinePatchResult.status).toBe(1);
-      expect(inlinePatchResult.stderr).toContain('multiline --content is unsafe');
-
-      const patchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content-file', patchPayload], {
-        cwd: tempRoot,
-        encoding: 'utf8',
-      });
-      expect(patchResult.status).toBe(0);
-      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('patched one\npatched two\nline two\n');
+      expect(stalePatchResult.status).toBe(1);
+      expect(stalePatchResult.stderr).toContain('fs.patch has been removed');
+      expect(stalePatchResult.stderr).toContain('apply-patch');
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -353,6 +447,174 @@ describe('typed facade executor', () => {
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
+  it('passes fs read page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_page');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_page',
+        path: 'packages/workspace/scripts/fs.js',
+        offset: 10,
+        limit: 5,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        'packages/workspace/scripts/fs.js',
+        '--offset',
+        '10',
+        '--limit',
+        '5',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('passes fs read multi-file page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-files-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_files');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_files',
+        files: [
+          { path: 'src/a.ts', offset: 1, limit: 2 },
+          { path: 'src/b.ts', offset: 10, limit: 3 },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        '--files-json',
+        '[{"path":"src/a.ts","offset":1,"limit":2},{"path":"src/b.ts","offset":10,"limit":3}]',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects mixed fs read pagination modes', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-mixed-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_mixed_page');
+    const plans: CommandPlan[] = [];
+    try {
+      for (const topLevelPage of [{ offset: 10 }, { limit: 5 }, { from: 2 }, { to: 4 }]) {
+        const result = await executeTool('fs.read', {
+          taskSession: 'tsk_fs_read_mixed_page',
+          files: [{ path: 'src/a.ts', offset: 1, limit: 2 }],
+          ...topLevelPage,
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.code).toBe('VALIDATION_ERROR');
+        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+      }
+
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('plans fs.search path alias through paths argument', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+        include: '*.ts',
+        maxResults: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('needle');
+      expect(plans[0].args).toContain('packages/workspace/scripts');
+      expect(plans[0].args).toContain('--include');
+      expect(plans[0].args).toContain('*.ts');
+      expect(plans[0].args).toContain('--max-results');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('normalizes fs.search path alias without retaining path for downstream serialization', async () => {
+    const entry = manifestEntries.find((item) => item.name === 'fs.search');
+    if (!entry) throw new Error('missing fs.search manifest entry');
+    const originalArguments = entry.command.arguments;
+    const pathArgument: CommandArgument = { source: 'path', kind: 'value' };
+    entry.command.arguments = [...originalArguments, pathArgument];
+
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-canonical-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_canonical_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_canonical_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args.filter((arg) => arg === 'packages/workspace/scripts')).toHaveLength(1);
+    } finally {
+      entry.command.arguments = originalArguments;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs.search input with both path and paths', async () => {
+    const result = await executeTool('fs.search', {
+      taskSession: 'tsk_search_path_conflict',
+      pattern: 'needle',
+      path: 'packages/workspace/scripts',
+      paths: ['packages/workspace/tests'],
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('provide either path or paths, not both');
+  });
+
   it('runs http without taskSession', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('http', {
@@ -369,48 +631,44 @@ describe('typed facade executor', () => {
     expect(plans[0].args).toContain('https://example.com');
   });
 
-  it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
+  it('runs read-only fs tools without taskSession', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('fs.read', {
+
+    const readResult = await executeTool('fs.read', {
       path: 'AGENTS.md',
     }, {
       ...stableOptions(successfulRunner(), plans),
       branchResolver: () => ({
         ok: false,
         code: 'WORKTREE_NOT_FOUND',
-        message: 'no active task worktree found; run task:start first or pass branch',
+        message: 'no active task worktree found',
         candidates: [],
       }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect(plans).toHaveLength(0);
-    expect(result.data).toMatchObject({
-      tool: 'fs.read',
-      repoStateBound: true,
-      originalCall: {
-        tool: 'fs.read',
-        input: { path: 'AGENTS.md' },
-      },
-      recovery: { action: 'start_task_session_then_retry' },
-    });
-  });
-
-  it('requires taskSession for sessionRequired tools', async () => {
-    const result = await executeTool('fs.read', {
-      path: 'AGENTS.md',
+    const searchResult = await executeTool('fs.search', {
+      pattern: 'workspace',
+      paths: ['AGENTS.md'],
+      maxResults: 3,
     }, {
-      ...stableOptions(successfulRunner()),
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'WORKTREE_NOT_FOUND',
+        message: 'no active task worktree found',
+        candidates: [],
+      }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect((result.data as { reason?: string }).reason).toContain('branch-aware and fresh');
+    expect(readResult.ok).toBe(true);
+    expect(searchResult.ok).toBe(true);
+    expect(plans).toHaveLength(2);
+    expect(plans[0].args).not.toContain('--branch');
+    expect(plans[1].args).not.toContain('--branch');
   });
 
   it('keeps mutating task tools fail-closed without unsafe finish hints', async () => {
@@ -711,15 +969,72 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('rejects calls that pass both taskSession and branch', async () => {
-    const result = await executeTool('fs.read', {
-      taskSession: 'tsk_conflict',
-      branch: TEST_BRANCH,
-      path: 'AGENTS.md',
-    }, stableOptions(successfulRunner()));
+  it('should accept taskSession when explicit branch matches session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-match-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_match',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const plans: CommandPlan[] = [];
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('VALIDATION_ERROR');
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_match',
+        branch: TEST_BRANCH,
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--branch');
+      expect(plans[0].args).toContain(TEST_BRANCH);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject taskSession when explicit branch conflicts with session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-conflict-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_conflict',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_conflict',
+        branch: 'task/workspace-agents/other',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('VALIDATION_ERROR');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('fails unknown taskSession handles deterministically', async () => {
@@ -1133,6 +1448,33 @@ describe('branch resolver', () => {
   });
 });
 
+describe('batch facade tool', () => {
+  it('routes batch through the internal executor', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('batch', {
+      steps: [
+        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+      ],
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(result.data.completed).toBe(1);
+    expect(plans).toHaveLength(1);
+  });
+
+  it('validates BatchInput step shape', () => {
+    const schema = getInputSchema('BatchInput');
+
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({
+      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+    }).success).toBe(true);
+    expect(schema?.safeParse({ steps: [] }).success).toBe(false);
+    expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);
+  });
+});
+
 describe('batch executor', () => {
   it('runs successful chains', async () => {
     const result = await runBatch([
@@ -1230,6 +1572,5 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
-
 
 

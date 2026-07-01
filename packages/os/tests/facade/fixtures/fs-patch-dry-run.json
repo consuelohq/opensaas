@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "code": "DRY_RUN",
+  "data": {
+    "command": "bun run task:fs -- --branch task/workspace-agents/example patch tmp/example.txt --from 1 --to 1 --content hello"
+  }
+}

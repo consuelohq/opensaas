@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-sites-review-comments",
+  "base": "origin/stream/os",
+  "headSha": "eef123eff334d8a525f9ed4bd7a541af92ee7c4e",
+  "changeHash": "f3a0755af85276a16677d374458f3bbfeac73aeb9be449850f91bd952f5b2ffa",
+  "changedFiles": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "verifiedAt": "2026-06-09T17:58:33.384Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-sites-review-comments/current.json",
+        ".task/os/fix-sites-review-comments/evidence-log.json",
+        ".task/os/fix-sites-review-comments/read-log.json",
+        ".task/os/fix-sites-review-comments/session.json",
+        ".task/os/fix-sites-review-comments/verify.json",
+        ".task/os/fix-sites-review-comments/workpad.md",
+        ".task/tasks/os/fix-sites-review-comments.json",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/sites-cli.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,55 @@
+---
+title: Integrations and Capabilities
+description: How Consuelo OS adds capabilities as the workspace connects more systems.
+---
+
+# Integrations and capabilities
+
+Consuelo OS starts with a small local core and adds capabilities as you connect them.
+
+A capability is something OS can use: local storage, workspace data, artifact storage, approvals, observability, or a connected revenue system.
+
+## Local core
+
+The local core is Bun, SQLite, the OS home folder, the OS portal, at least one connected agent, local logs, and local artifact storage.
+
+That core is enough to install OS, connect an agent, run safe local skills, and create tracked local artifacts.
+
+## Capability matrix
+
+Capability | Used for | Local | Cloud
+--- | --- | --- | ---
+Workspace API | Structured workspace records | Optional | Required for team data
+Cloud artifact storage | Shared artifacts | Optional | Required for team artifacts
+Slack or Discord approvals | Human decisions | Optional | Recommended
+Twilio | Calling workflows | Skill-specific | Skill-specific
+GHL | Revenue workflow context | Skill-specific | Skill-specific
+Google Ads | Ad review workflows | Skill-specific | Skill-specific
+Meta Ads | Ad review workflows | Skill-specific | Skill-specific
+Stripe | Billing or revenue context | Skill-specific | Skill-specific
+Sentry or PostHog | Hosted observability | Optional | Recommended
+
+## Capability health
+
+OS should report capability health in product language.
+
+Status | Meaning
+--- | ---
+`connected` | Ready to use.
+`not_configured` | Supported and awaiting setup.
+`missing_capability` | Required by the skill and unavailable.
+`unhealthy` | Configured and failing checks.
+`local_only` | Available in local mode.
+`cloud_only` | Available in cloud mode.
+
+## Skill declarations
+
+Each skill should declare required and optional capabilities.
+
+The agent should see capability names. Internal reference docs can list exact configuration keys and deployment details.
+
+## Related
+
+- [Install locally](/get-started/install-local)
+- [Skills](/os/concepts/skills)
+- [Data model and GraphQL](/os/concepts/data-model-and-graphql)

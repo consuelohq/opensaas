@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0960e6a2cfb5",
+  "tmuxSession": "opensaas-workspace-operator-add-os-install-release-operator-clean-0960e6a2",
+  "area": "workspace-operator",
+  "stream": "stream/workspace-operator",
+  "taskBranch": "task/workspace-operator/add-os-install-release-operator-clean",
+  "branch": "task/workspace-operator/add-os-install-release-operator-clean",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-operator-add-os-install-release-operator-clean",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-operator-add-os-install-release-operator-clean",
+  "prNumber": 709,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/709",
+  "createdAt": "2026-06-02T21:34:04.318Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-operator-add-os-install-release-operator-clean/.task/workspace-operator/add-os-install-release-operator-clean/session.json"
+}

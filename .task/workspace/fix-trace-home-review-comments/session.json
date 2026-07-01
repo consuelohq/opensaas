@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4bc67f1a189b",
+  "tmuxSession": "opensaas-workspace-fix-trace-home-review-comments-4bc67f1a",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/fix-trace-home-review-comments",
+  "branch": "task/workspace/fix-trace-home-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-review-comments",
+  "prNumber": 697,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/697",
+  "createdAt": "2026-06-02T06:34:18.041Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-review-comments/.task/workspace/fix-trace-home-review-comments/session.json"
+}

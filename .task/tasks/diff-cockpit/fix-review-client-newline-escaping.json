@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-review-client-newline-escaping",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 731,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/731",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/731",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/731/fix-review-client-newline-escaping",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/731",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/731/fix-review-client-newline-escaping",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-client-newline-escaping",
+  "taskSession": "tsk_01f898140fd7",
+  "tmuxSession": "opensaas-diff-cockpit-fix-review-client-newline-escaping-01f89814",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-client-newline-escaping/.task/diff-cockpit/fix-review-client-newline-escaping/session.json",
+  "createdAt": "2026-06-03T06:54:37.110Z"
+}

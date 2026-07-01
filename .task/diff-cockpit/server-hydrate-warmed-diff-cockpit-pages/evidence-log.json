@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+  "events": [
+    {
+      "id": "d91ab8e7-2e00-4b0e-87e8-c1e032d5056b",
+      "occurred_at": "2026-06-13T05:13:23.453Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "e7499017-c6bc-4762-9589-95ff1e302b0d",
+      "occurred_at": "2026-06-13T05:13:35.143Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "5846f3d8-e7a4-4871-9c83-50aa8dd1e8c0",
+      "occurred_at": "2026-06-13T05:13:42.164Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "862532ee-b901-413c-b4e3-a64c3a906539",
+      "occurred_at": "2026-06-13T05:13:50.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "ca68508e-2361-4660-b5b7-78311967f51a",
+      "occurred_at": "2026-06-13T05:14:02.151Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "ce769b55-59eb-4829-b66c-155f8305ee8c",
+      "occurred_at": "2026-06-13T05:14:20.658Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "03c1b5e4-e918-46f3-8015-98af0159ed36",
+      "occurred_at": "2026-06-13T05:14:25.772Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "aa07d054-07e4-491a-a2a0-f5cea018a203",
+      "occurred_at": "2026-06-13T05:14:50.440Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "f12b3601-566b-4838-8f08-8fdb522e3456",
+      "occurred_at": "2026-06-13T05:14:55.155Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "62a07f8b-f765-44aa-8e63-0c1281109389",
+      "occurred_at": "2026-06-13T05:15:08.915Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "608edf8a-e1fd-4e66-a013-84d7017c489a",
+      "occurred_at": "2026-06-13T05:15:26.150Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "2abf0e3d-186e-4561-943f-a43af215da04",
+      "occurred_at": "2026-06-13T05:15:37.069Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "daee049c-586e-4fb4-a627-73053217f4df",
+      "occurred_at": "2026-06-13T05:15:52.895Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "d2ac45ca-9265-4de8-8854-010de858a37f",
+      "occurred_at": "2026-06-13T05:17:21.115Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "d2e72b81-2142-4877-8aae-0f186c52394c",
+      "occurred_at": "2026-06-13T05:18:05.345Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "7be86429-cfdb-45ae-9ff7-cb4c63db26db",
+      "occurred_at": "2026-06-13T05:18:31.502Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "83ee41fc-ef4c-428d-b5fd-0f7c7782a1cc",
+      "occurred_at": "2026-06-13T05:24:54.531Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    },
+    {
+      "id": "d23cbd51-6017-485f-aaf7-2f56dc8c4e0b",
+      "occurred_at": "2026-06-13T05:26:47.893Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-13T05:26:47.956Z"
+}

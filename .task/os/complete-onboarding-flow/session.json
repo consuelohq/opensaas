@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f32da41433df",
+  "tmuxSession": "opensaas-os-complete-onboarding-flow-f32da414",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/complete-onboarding-flow",
+  "branch": "task/os/complete-onboarding-flow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-onboarding-flow",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-onboarding-flow",
+  "prNumber": 751,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/751",
+  "createdAt": "2026-06-03T19:50:15.462Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-onboarding-flow/.task/os/complete-onboarding-flow/session.json"
+}

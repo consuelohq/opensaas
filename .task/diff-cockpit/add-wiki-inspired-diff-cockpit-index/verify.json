@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+  "base": "origin/task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+  "headSha": "bd2f9d55dff77635e2f22165b31e7d0ed6543abb",
+  "changeHash": "e8bcebc51250c8d0aa2a28777e1cf04a70cc1eb2cf7e689c1cbd66f6f3f7e417",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/bun-test.d.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/diff-cockpit/tsconfig.json"
+  ],
+  "verifiedAt": "2026-06-03T06:11:29.359Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/calls-expectation.patch.txt",
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/current.json",
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/evidence-log.json",
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/local-server.mjs",
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/read-log.json",
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/render-static.mjs",
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/session.json",
+        ".task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/workpad.md",
+        ".task/tasks/diff-cockpit/add-wiki-inspired-diff-cockpit-index.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/bun-test.d.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "packages/diff-cockpit/tsconfig.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

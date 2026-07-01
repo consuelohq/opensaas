@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+  "events": [
+    {
+      "id": "27abd929-ff81-47d0-be6d-f61afcdaf25f",
+      "occurred_at": "2026-06-03T03:37:22.407Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "2eee63d0-e638-43e7-b4fa-5fcb917018fd",
+      "occurred_at": "2026-06-03T03:37:35.361Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "762faf1c-6f89-4fed-b371-cb74fef7eb23",
+      "occurred_at": "2026-06-03T03:38:15.248Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/README.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "fd45e1b4-379e-4f25-8174-0671577340e1",
+      "occurred_at": "2026-06-03T03:38:15.286Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "f966c8f8-73f0-46c9-9721-96e239b98572",
+      "occurred_at": "2026-06-03T03:38:28.471Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "def60b5b-cf26-41b2-a7b0-3fe4b6e5a35d",
+      "occurred_at": "2026-06-03T03:38:40.606Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "10f85d7c-bb18-4799-8a7d-39beaf8951f1",
+      "occurred_at": "2026-06-03T03:39:04.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "e3027e20-1fe5-4995-92ba-72218b6f65d9",
+      "occurred_at": "2026-06-03T03:39:25.971Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "80c2e742-dd83-4306-a8e2-ccf1be0d3bbf",
+      "occurred_at": "2026-06-03T03:39:43.722Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-manifest/route-raw-steering-through-os-call/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "25d1e1d7-8e4d-4b99-947c-840ca17ad876",
+      "occurred_at": "2026-06-03T03:40:48.233Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/local-guardrails.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "62ce16ac-0cfe-47db-8c12-ac95f42503fa",
+      "occurred_at": "2026-06-03T03:42:07.586Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "a627f5c6-df60-45d7-99c7-ca65c322cce0",
+      "occurred_at": "2026-06-03T03:43:16.489Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "ca090e82-4d1d-45de-9789-a4411b78efb5",
+      "occurred_at": "2026-06-03T03:44:19.710Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "bbf912be-c3ad-442f-9e6d-3f210b614bdf",
+      "occurred_at": "2026-06-03T03:44:19.774Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "b3d5e58b-aa11-4568-8d89-fc4d93413adf",
+      "occurred_at": "2026-06-03T03:44:33.515Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "c1693206-6151-473e-84e4-6be08e8ef388",
+      "occurred_at": "2026-06-03T03:45:16.651Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "075bab9b-099e-45ca-81a9-39c9e8ae7810",
+      "occurred_at": "2026-06-03T03:48:42.365Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-raw-steering.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    },
+    {
+      "id": "0072dc00-85a0-4cf4-9640-24552733ff2c",
+      "occurred_at": "2026-06-03T03:49:02.777Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-raw-steering.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-manifest/route-raw-steering-through-os-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-manifest/route-raw-steering-through-os-call"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T03:49:02.836Z"
+}

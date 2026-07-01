@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/fix-review-client-newline-escaping",
+  "events": [
+    {
+      "id": "24a64835-5b42-431b-845e-4c03b09b4697",
+      "occurred_at": "2026-06-03T06:54:46.343Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/fix-review-client-newline-escaping",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/fix-review-client-newline-escaping"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T06:54:46.393Z"
+}

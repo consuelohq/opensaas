@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/persist-skill-artifacts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 432,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/432",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/432",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/432/persist-skill-artifacts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/432",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/432/persist-skill-artifacts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-persist-skill-artifacts",
+  "taskSession": "tsk_c81010ba1ced",
+  "tmuxSession": "opensaas-os-persist-skill-artifacts-c81010ba",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-persist-skill-artifacts/.task/session.json",
+  "createdAt": "2026-05-21T08:28:38.381Z"
+}

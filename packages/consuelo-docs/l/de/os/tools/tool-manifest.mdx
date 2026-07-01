@@ -1,0 +1,7417 @@
+---
+title: "Tool Manifest"
+description: "Generated documentation for the human-readable Consuelo OS tool catalog."
+---
+
+{/* Generated from packages/os/TOOLS.md. Do not edit this page directly. */}
+
+# workspace typed tools
+
+## mandatory workspace app transport
+
+You are working inside the workspace MCP app. The app exposes exactly two tools:
+
+- `workspace.get_steering()`
+- `workspace.call(\{ tool, input, taskSession, timeout \})`
+
+`get_steering` is bootstrap-only. After that, every workspace operation goes through `workspace.call` with a manifest tool name and typed input object.
+
+```ts
+await workspace.call({
+  tool: "stream.context",
+  input: { area: "workspace-agents" },
+  timeout: 120
+})
+```
+
+Task-scoped work must pass the `taskSession` returned by `task.start`. `workspace.call` resolves that session to the correct task worktree/branch before invoking the typed facade. Passing both `taskSession` and `input.branch` is rejected to avoid silent branch overrides.
+
+This file is generated from `packages/os/manifests/tool.manifest.json`. The typed facade validates inputs, invokes the restored Bun operator scripts, and wraps every result in the standard tool envelope.
+
+## quick start
+
+Inside the workspace app, invoke the same tool through `workspace.call`:
+
+```ts
+await workspace.call({
+  tool: "fs.read",
+  input: { path: "packages/workspace/package.json" },
+  timeout: 120
+})
+```
+
+The TypeScript shape below documents the facade schema and return envelope:
+
+```ts
+const result = await workspace.call({
+  tool: "fs.read",
+  input: { path: "packages/workspace/package.json" },
+  timeout: 120,
+})
+if (!result.ok) throw new Error(result.message);
+```
+
+## commands by category
+
+## codemode
+
+### code.run
+
+run workspace-native codemode JavaScript against allowed workspace tools
+
+- signature: `workspace.code.run(\{ code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace code.run`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "code.run",
+  "input": {
+    "code": "return await workspace_call(\"status\", {})",
+    "maxOperations": 25,
+    "maxResultChars": 20000
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## composed
+
+### checkFiles
+
+run syntax checks over a set of files through task:exec
+
+- signature: `workspace.checkFiles(\{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace checkFiles`
+- capabilities: readOnly=true, mutating=false, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "checkFiles",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "files": [
+      "packages/os/scripts/fs.js"
+    ],
+    "stopOnFirstError": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### editFlow
+
+run a search-read-patch-verify flow as a composed script
+
+- signature: `workspace.editFlow(\{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace editFlow`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "editFlow",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "searchPattern": "oldFn",
+    "searchPaths": [
+      "packages/os/scripts"
+    ],
+    "from": 1,
+    "to": 1,
+    "contentFile": "/tmp/new.ts",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## consuelo design
+
+### consueloDesign.check
+
+run consuelo-design package boundary and Railway checks
+
+- signature: `workspace.consueloDesign.check(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design check`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.check",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.generateDemo
+
+create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session
+
+- signature: `workspace.consueloDesign.generateDemo(\{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design generate-demo`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.generateDemo",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.generateDigitalEguide
+
+create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template
+
+- signature: `workspace.consueloDesign.generateDigitalEguide(\{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design generate-digital-eguide`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.generateDigitalEguide",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.generateEmail
+
+create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session
+
+- signature: `workspace.consueloDesign.generateEmail(\{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design generate-email`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.generateEmail",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.generateImageBrief
+
+create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session
+
+- signature: `workspace.consueloDesign.generateImageBrief(\{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design generate-image-brief`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.generateImageBrief",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.generateMotionFrame
+
+create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session
+
+- signature: `workspace.consueloDesign.generateMotionFrame(\{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design generate-motion-frame`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.generateMotionFrame",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.generateWebsite
+
+create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session
+
+- signature: `workspace.consueloDesign.generateWebsite(\{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design generate-website`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.generateWebsite",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.getDesignSystem
+
+return base Consuelo DESIGN.md and consuelo-design AGENTS.md only
+
+- signature: `workspace.consueloDesign.getDesignSystem(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design get-design-system`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.getDesignSystem",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.listDesignSystems
+
+list Consuelo default design system and upstream reference systems
+
+- signature: `workspace.consueloDesign.listDesignSystems(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design list-design-systems`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.listDesignSystems",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.listSkills
+
+list upstream Open Design skills and Consuelo workflow mappings
+
+- signature: `workspace.consueloDesign.listSkills(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design list-skills`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.listSkills",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.odBuild
+
+build the vendored Open Design daemon CLI through the Bun facade
+
+- signature: `workspace.consueloDesign.odBuild(\{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design od:build`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.odBuild",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.railwayCheck
+
+verify consuelo-design is excluded from Railway deploy paths
+
+- signature: `workspace.consueloDesign.railwayCheck(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design railway:check`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.railwayCheck",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.renderHyperframes
+
+create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session
+
+- signature: `workspace.consueloDesign.renderHyperframes(\{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design render-hyperframes`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.renderHyperframes",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.run
+
+start Open Design daemon and web UI in the foreground through the Bun facade
+
+- signature: `workspace.consueloDesign.run(\{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design run`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.run",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.uiBg
+
+start Open Design managed runtimes in the background through the Bun facade
+
+- signature: `workspace.consueloDesign.uiBg(\{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design ui:bg`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.uiBg",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.uiLogs
+
+show Open Design managed runtime logs through the Bun facade
+
+- signature: `workspace.consueloDesign.uiLogs(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design ui:logs`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.uiLogs",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.uiStatus
+
+show Open Design managed runtime status through the Bun facade
+
+- signature: `workspace.consueloDesign.uiStatus(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design ui:status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.uiStatus",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.uiStop
+
+stop Open Design managed runtimes through the Bun facade
+
+- signature: `workspace.consueloDesign.uiStop(\{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design ui:stop`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.uiStop",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### consueloDesign.upstreamStatus
+
+show vendored Open Design metadata and runtime requirements
+
+- signature: `workspace.consueloDesign.upstreamStatus(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design upstream-status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "consueloDesign.upstreamStatus",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### design.publish
+
+publish a design artifact through private Tailscale Serve and update the design wiki archive
+
+- signature: `workspace.design.publish(\{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design publish`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "design.publish",
+  "input": {
+    "portlessName": "design.localhost",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### design.refresh
+
+regenerate and publish the existing Consuelo Wiki archive without adding an artifact
+
+- signature: `workspace.design.refresh(\{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace consuelo-design refresh`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "design.refresh",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## context
+
+### context.categories
+
+list project memory categories
+
+- signature: `workspace.context.categories(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace context.categories`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.categories",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### context.find
+
+search project memory by title
+
+- signature: `workspace.context.find(\{ keyword: string; limit?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace context.find`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.find",
+  "input": {
+    "keyword": "handoff",
+    "limit": 3
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### context.get
+
+read a full project memory search result
+
+- signature: `workspace.context.get(\{ index: number; keyword: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace context.get`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.get",
+  "input": {
+    "index": 1,
+    "keyword": "workspace"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### context.list
+
+list recent project memories
+
+- signature: `workspace.context.list(\{ category?: string; limit?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace context.list`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.list",
+  "input": {
+    "category": "workpad",
+    "limit": 3
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### context.save
+
+save a file or text into project memory
+
+- signature: `workspace.context.save(\{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace context.save`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.save",
+  "input": {
+    "title": "example memory",
+    "file": "/tmp/example.md",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### context.search
+
+search project memory by content
+
+- signature: `workspace.context.search(\{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace context.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.search",
+  "input": {
+    "keyword": "workspace",
+    "limit": 3
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### context.trace
+
+query local workspace tool traces from the repo-scoped SQLite trace store
+
+- signature: `workspace.context.trace(\{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace context.trace`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.trace",
+  "input": {
+    "status": "error",
+    "limit": 20
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## decision engine
+
+### audit
+
+audit workspace scripts, docs, or index freshness
+
+- signature: `workspace.audit(\{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace audit`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "audit",
+  "input": {
+    "scripts": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### confidenceScore
+
+score confidence from evidence state
+
+- signature: `workspace.confidenceScore(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace confidenceScore`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "confidenceScore",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### confirm
+
+run verification or targeted validation through confirm
+
+- signature: `workspace.confirm(\{ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace confirm`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "confirm",
+  "input": {
+    "verify": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### decideNext
+
+recommend the next action from evidence state
+
+- signature: `workspace.decideNext(\{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace decideNext`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "decideNext",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### exploit
+
+select the highest-confidence editing target
+
+- signature: `workspace.exploit(\{ query?: string; target?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace exploit`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "exploit",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### explore
+
+run repository exploration retrieval
+
+- signature: `workspace.explore(\{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace explore`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "explore",
+  "input": {
+    "query": "workspace facade",
+    "limit": 5
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## filesystem
+
+### fs.list
+
+list or find files in the repo root or a resolved task worktree
+
+- signature: `workspace.fs.list(\{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace fs list, or task:fs list when a branch is resolved`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "fs.list",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "packages/os/scripts",
+    "depth": 1
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### fs.apply_patch
+
+replace a line range in a task worktree file
+
+- signature: `workspace.fs.apply_patch(\{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace fs.apply_patch`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "fs.apply_patch",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "tmp/example.txt",
+    "from": 1,
+    "to": 1,
+    "dryRun": true,
+    "contentFile": "/tmp/replacement.txt"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### fs.read
+
+read file contents with an optional line range
+
+- signature: `workspace.fs.read(\{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;Array&lt;\{ path: string; from: number; to: number; total: number; lines: string[] \}&gt;&gt;&gt;`
+- wraps: `workspace fs read, or task:fs read when a branch is resolved`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "fs.read",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "packages/os/package.json"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### fs.search
+
+search files with ripgrep through the workspace script
+
+- signature: `workspace.fs.search(\{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;Array&lt;\{ file: string; line: number; text: string \}&gt;&gt;&gt;`
+- wraps: `workspace fs search, or task:fs search when a branch is resolved`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "fs.search",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "pattern": "task:fs",
+    "paths": [
+      "packages/os/SCRIPTS.md"
+    ]
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### fs.trash
+
+move a task worktree file to trash
+
+- signature: `workspace.fs.trash(\{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace fs.trash`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "fs.trash",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "tmp/example.txt",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### fs.write
+
+write a file in a task worktree
+
+- signature: `workspace.fs.write(\{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace fs.write`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "fs.write",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "tmp/example.txt",
+    "contentFile": "/tmp/example.txt",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## generation
+
+### generate.docs
+
+generate TOOLS.md from the tool manifest
+
+- signature: `workspace.generate.docs(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace generate.docs`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "generate.docs",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### generate.types
+
+generate workspace.d.ts from the tool manifest
+
+- signature: `workspace.generate.types(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace generate.types`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "generate.types",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## git
+
+### git.diff
+
+inspect task or working-tree diffs as bounded structured JSON for agents
+
+- signature: `workspace.git.diff(\{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace git:diff`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "git.diff",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "base": "origin/main",
+    "stat": true,
+    "files": true,
+    "hunks": true,
+    "maxBytes": 20000
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## github
+
+### gh
+
+run the workspace GitHub helper with an explicit action
+
+- signature: `workspace.gh(\{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace gh`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "gh",
+  "input": {
+    "action": "view",
+    "args": [
+      "225"
+    ]
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### github
+
+typed GitHub facade with semantic operations and presets; prefer over raw gh
+
+- signature: `workspace.github(\{ operation: "pr.view" | "pr.checks" | "pr.reviews" | "pr.files" | "pr.diff" | "pr.list" | "pr.merge" | "branch.compare" | "repo.view" | "raw"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: "summary" | "review" | "merge" | "checks" | "files" | "full"; fields?: string[]; limit?: number; state?: "open" | "closed" | "merged" | "all"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: "merge" | "squash" | "rebase"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace github`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "github",
+  "input": {
+    "operation": "pr.view",
+    "pr": 436,
+    "preset": "review"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## http
+
+### http
+
+make HTTP requests through the workspace http wrapper (wraps xh)
+
+- signature: `workspace.http(\{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record&lt;string, string&gt;; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace http`
+- capabilities: readOnly=false, mutating=true, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "http",
+  "input": {
+    "method": "get",
+    "url": "https://example.com"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## linear
+
+### linear.createIssue
+
+create a Linear issue with DEV/open defaults and the opensaas label
+
+- signature: `workspace.linear.createIssue(\{ title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.createIssue`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.createIssue",
+  "input": {
+    "title": "add Linear facade commands",
+    "labels": [
+      "opensaas"
+    ]
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### linear.issue
+
+read a Linear issue by identifier or id
+
+- signature: `workspace.linear.issue(\{ identifier: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.issue`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.issue",
+  "input": {
+    "identifier": "DEV-123"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### linear.labels
+
+list Linear issue labels for label consistency
+
+- signature: `workspace.linear.labels(\{ first?: number; after?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.labels`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.labels",
+  "input": {
+    "first": 50
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### linear.projects
+
+list Linear projects and ids
+
+- signature: `workspace.linear.projects(\{ first?: number; after?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.projects`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.projects",
+  "input": {
+    "first": 50
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### linear.search
+
+search Linear issues with DEV default team support
+
+- signature: `workspace.linear.search(\{ search?: string; team?: string; first?: number; after?: string; filter?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.search",
+  "input": {
+    "search": "workspace facade"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### linear.states
+
+list workflow states for a Linear team
+
+- signature: `workspace.linear.states(\{ team?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.states`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.states",
+  "input": {
+    "team": "dev"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### linear.teams
+
+list Linear teams and workflow states
+
+- signature: `workspace.linear.teams(\{ first?: number; after?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.teams`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.teams",
+  "input": {
+    "first": 20
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### linear.updateIssue
+
+update Linear issue fields including labels, project, cycle, and parent
+
+- signature: `workspace.linear.updateIssue(\{ issueId: string; title?: string; description?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace linear.updateIssue`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "linear.updateIssue",
+  "input": {
+    "issueId": "DEV-123",
+    "labels": [
+      "opensaas"
+    ]
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## mac
+
+### mac.call
+
+run a non-repo shell command on the Mac
+
+- signature: `workspace.mac.call(\{ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.call",
+  "input": {
+    "command": "pwd",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.exec
+
+legacy alias for mac.call; run a non-repo shell command on the Mac
+
+- signature: `workspace.mac.exec(\{ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.exec`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.exec",
+  "input": {
+    "command": "pwd",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.list
+
+list non-repo files on the Mac
+
+- signature: `workspace.mac.list(\{ path?: string; depth?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.list`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.list",
+  "input": {
+    "path": "/tmp",
+    "depth": 1
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.port
+
+check or find a local port
+
+- signature: `workspace.mac.port(\{ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.port`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.port",
+  "input": {
+    "action": "find"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.process
+
+list or kill local Mac processes
+
+- signature: `workspace.mac.process(\{ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.process`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.process",
+  "input": {
+    "action": "list"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.read
+
+read a non-repo file on the Mac
+
+- signature: `workspace.mac.read(\{ path: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.read`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.read",
+  "input": {
+    "path": "/tmp/example.txt"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.search
+
+search non-repo files on the Mac
+
+- signature: `workspace.mac.search(\{ pattern: string; path?: string; include?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.search",
+  "input": {
+    "pattern": "hello",
+    "path": "/tmp"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### mac.write
+
+write a non-repo file on the Mac
+
+- signature: `workspace.mac.write(\{ path: string; content?: string; contentFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace mac.write`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "mac.write",
+  "input": {
+    "path": "/tmp/example.txt",
+    "content": "hello",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## review
+
+### aiReview
+
+run the AI PR review helper
+
+- signature: `workspace.aiReview(\{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace aiReview`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "aiReview",
+  "input": {
+    "pr": 226,
+    "noPost": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### prReview
+
+fetch review comments for a PR
+
+- signature: `workspace.prReview(\{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace prReview`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "prReview",
+  "input": {
+    "pr": 225,
+    "stdout": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### review.run
+
+run the workspace review checks
+
+- signature: `workspace.review.run(\{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace review.run`
+- capabilities: readOnly=true, mutating=false, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "review.run",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "noTests": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### verify
+
+run the full task safety gate
+
+- signature: `workspace.verify(\{ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace verify`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "verify",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "noStamp": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## sentry
+
+### sentry.config
+
+show Sentry API configuration status from Keychain without exposing secrets
+
+- signature: `workspace.sentry.config(\{ verify?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace sentry.config`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "sentry.config",
+  "input": {
+    "verify": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### sentry.event
+
+retrieve or resolve a Sentry event id, using a project slug when available
+
+- signature: `workspace.sentry.event(\{ eventId: string; project?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace sentry.event`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "sentry.event",
+  "input": {
+    "eventId": "0123456789abcdef0123456789abcdef"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### sentry.issue
+
+retrieve one Sentry issue by short id or numeric issue id
+
+- signature: `workspace.sentry.issue(\{ identifier: string; expand?: string[]; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace sentry.issue`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "sentry.issue",
+  "input": {
+    "identifier": "PROJECT-123"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### sentry.issueEvent
+
+retrieve a latest, recommended, oldest, or concrete Sentry event for an issue
+
+- signature: `workspace.sentry.issueEvent(\{ issueId: string; eventId?: string; full?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace sentry.issueEvent`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "sentry.issueEvent",
+  "input": {
+    "issueId": "PROJECT-123",
+    "eventId": "recommended",
+    "full": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### sentry.issues
+
+search Sentry issues across the configured organization
+
+- signature: `workspace.sentry.issues(\{ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace sentry.issues`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "sentry.issues",
+  "input": {
+    "query": "is:unresolved",
+    "limit": 10
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### sentry.projects
+
+list Sentry projects for the configured organization
+
+- signature: `workspace.sentry.projects(\{ limit?: number; cursor?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace sentry.projects`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "sentry.projects",
+  "input": {
+    "limit": 25
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### sentry.trace
+
+perform a best-effort Sentry trace lookup across organization events and issues
+
+- signature: `workspace.sentry.trace(\{ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace sentry.trace`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "sentry.trace",
+  "input": {
+    "traceId": "0123456789abcdef0123456789abcdef",
+    "limit": 10
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## stream
+
+### stream.context
+
+show recent stream context
+
+- signature: `workspace.stream.context(\{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace stream.context`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "stream.context",
+  "input": {
+    "area": "workspace-agents"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### stream.list
+
+list stream branches
+
+- signature: `workspace.stream.list(\{ repo?: string; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace stream.list`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "stream.list",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### stream.sync
+
+sync a stream branch with main
+
+- signature: `workspace.stream.sync(\{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace stream.sync`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "stream.sync",
+  "input": {
+    "area": "workspace-agents",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## task lifecycle
+
+### task.call
+
+run a command inside a task worktree
+
+- signature: `workspace.task.call(\{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.call",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.cleanup
+
+preview or remove stale task worktrees and branches
+
+- signature: `workspace.task.cleanup(\{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.cleanup`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.cleanup",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "preview": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.current
+
+resolve the current task branch without running a mutating command
+
+- signature: `workspace.task.current(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ branch: string; area: string; prNumber?: number; worktree: string \} | null&gt;&gt;`
+- wraps: `branch resolver`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.current",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.ensureSynced
+
+check whether the task stream appears synced
+
+- signature: `workspace.task.ensureSynced(\{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ synced: boolean; branch: string; area: string; behind?: number; action?: string \}&gt;&gt;`
+- wraps: `workspace task.ensureSynced`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.ensureSynced",
+  "input": {
+    "branch": "task/workspace-agents/example"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.exec
+
+legacy alias for task.call; run a command inside a task worktree
+
+- signature: `workspace.task.exec(\{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.exec`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.exec",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.finish
+
+finish a task branch after merge
+
+- signature: `workspace.task.finish(\{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.finish`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.finish",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.init
+
+write task metadata for an existing worktree
+
+- signature: `workspace.task.init(\{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.init`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.init",
+  "input": {
+    "area": "workspace-agents",
+    "branch": "task/workspace-agents/example",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.merge
+
+merge a pull request through the workspace task merge script
+
+- signature: `workspace.task.merge(\{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.merge`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.merge",
+  "input": {
+    "pr": 225,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.pr
+
+merge task to stream and create or refresh the stream review PR
+
+- signature: `workspace.task.pr(\{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.pr`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.pr",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "taskOnly": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.prs
+
+show task and review PR links
+
+- signature: `workspace.task.prs(\{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.prs`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.prs",
+  "input": {
+    "branch": "task/workspace-agents/example"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.push
+
+push changed task files to the task branch through GitHub API
+
+- signature: `workspace.task.push(\{ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.push`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.push",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "message": "feat(workspace): example",
+    "changed": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### task.start
+
+create a task branch, worktree, and draft PR
+
+- signature: `workspace.task.start(\{ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace task.start`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "task.start",
+  "input": {
+    "stream": "stream/workspace-agents",
+    "title": "example task",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### taskMeta.smoke
+
+run the task metadata smoke suite
+
+- signature: `workspace.taskMeta.smoke(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace taskMeta.smoke`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "taskMeta.smoke",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## tooling
+
+### tools.search
+
+search workspace tools by intent and return ranked usage guidance
+
+- signature: `workspace.tools.search(\{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record&lt;string, unknown&gt;; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array&lt;\{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record&lt;string, number&gt;; description?: string; capabilities: Record&lt;string, unknown&gt;; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record&lt;string, unknown&gt;; usage: \{ workspaceCall: string; script?: string; subcommand?: string; arguments: Array&lt;Record&lt;string, unknown&gt;&gt; \}; docs?: \{ heading: string; snippet: string; source: string \}; why: string[] \}&gt;; alternatives?: Array&lt;\{ intent: string; tools: string[] \}&gt;; guidance: string | Record&lt;string, unknown&gt;; catalog: \{ source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string \} \}&gt;&gt;`
+- wraps: `workspace tools.search`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 30000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "tools.search",
+  "input": {
+    "query": "linear issue",
+    "limit": 5
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## utilities
+
+### browser
+
+run the generic workspace browser wrapper command
+
+- signature: `workspace.browser(\{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser",
+  "input": {
+    "command": "open",
+    "url": "https://example.com",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.app
+
+open app.consuelohq.com with the browser wrapper
+
+- signature: `workspace.browser.app(\{ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.app`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.app",
+  "input": {
+    "preset": "desktop",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.click
+
+click a browser element by ref
+
+- signature: `workspace.browser.click(\{ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.click`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.click",
+  "input": {
+    "ref": "@e1",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.clipboard
+
+read from or write to the browser clipboard
+
+- signature: `workspace.browser.clipboard(\{ action: "read" | "write"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.clipboard`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.clipboard",
+  "input": {
+    "action": "read",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.close
+
+close active browser sessions
+
+- signature: `workspace.browser.close(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.close`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.close",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.consuelo
+
+open consuelo.consuelohq.com with the browser wrapper
+
+- signature: `workspace.browser.consuelo(\{ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.consuelo`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.consuelo",
+  "input": {
+    "preset": "desktop",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.cookies
+
+list, set, or clear browser cookies for the current browser session
+
+- signature: `workspace.browser.cookies(\{ action?: "list" | "set" | "clear"; name?: string; value?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.cookies`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.cookies",
+  "input": {
+    "action": "list",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.dialog
+
+accept or dismiss browser dialogs
+
+- signature: `workspace.browser.dialog(\{ action: "accept" | "dismiss"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.dialog`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.dialog",
+  "input": {
+    "action": "dismiss",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.download
+
+click an element and save the triggered download to a path
+
+- signature: `workspace.browser.download(\{ ref: string; path: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.download`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.download",
+  "input": {
+    "ref": "@e1",
+    "path": "/tmp/download.bin",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.eval
+
+execute JavaScript on the current browser page
+
+- signature: `workspace.browser.eval(\{ js: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.eval`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.eval",
+  "input": {
+    "js": "document.title",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.fill
+
+fill a browser input by ref
+
+- signature: `workspace.browser.fill(\{ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.fill`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.fill",
+  "input": {
+    "ref": "@e1",
+    "text": "hello",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.find
+
+find an element by role, text, label, placeholder, alt text, title, or test id and run an action
+
+- signature: `workspace.browser.find(\{ by: "role" | "text" | "label" | "placeholder" | "alt" | "title" | "testid"; value: string; action: "click" | "fill" | "type" | "hover" | "focus" | "check" | "text"; text?: string; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.find`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.find",
+  "input": {
+    "by": "role",
+    "value": "button",
+    "action": "click",
+    "name": "Submit",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.get
+
+get text, html, value, attributes, title, or URL from the current page
+
+- signature: `workspace.browser.get(\{ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.get`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.get",
+  "input": {
+    "target": "title",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.login
+
+run a saved browser auth login profile
+
+- signature: `workspace.browser.login(\{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.login`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.login",
+  "input": {
+    "name": "consuelo",
+    "headed": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.network
+
+inspect or manage browser network requests, routes, and HAR capture
+
+- signature: `workspace.browser.network(\{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.network`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.network",
+  "input": {
+    "args": [
+      "requests"
+    ],
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.open
+
+open a URL with the browser wrapper
+
+- signature: `workspace.browser.open(\{ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.open`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.open",
+  "input": {
+    "url": "https://example.com",
+    "preset": "mobile",
+    "full": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.raw
+
+pass raw arguments through to agent-browser
+
+- signature: `workspace.browser.raw(\{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.raw`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.raw",
+  "input": {
+    "args": [
+      "auth",
+      "list"
+    ],
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.reauth
+
+restart the browser daemon and run a saved auth login profile
+
+- signature: `workspace.browser.reauth(\{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.reauth`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.reauth",
+  "input": {
+    "name": "consuelo",
+    "headed": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.screenshot
+
+capture a browser screenshot
+
+- signature: `workspace.browser.screenshot(\{ name?: string; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.screenshot`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.screenshot",
+  "input": {
+    "name": "mobile-check",
+    "preset": "mobile",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.snap
+
+capture an accessibility snapshot
+
+- signature: `workspace.browser.snap(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.snap`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.snap",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.tabs
+
+list, create, select, or close browser tabs with stable labels when needed
+
+- signature: `workspace.browser.tabs(\{ action?: "list" | "new" | "select" | "switch" | "close"; target?: string; url?: string; label?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.tabs`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.tabs",
+  "input": {
+    "action": "list",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.test
+
+open a URL, wait for load, snapshot, and screenshot
+
+- signature: `workspace.browser.test(\{ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.test`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.test",
+  "input": {
+    "url": "https://example.com",
+    "preset": "mobile",
+    "full": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.trace
+
+start or stop browser tracing and optionally write a trace file
+
+- signature: `workspace.browser.trace(\{ action: "start" | "stop"; path?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.trace`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.trace",
+  "input": {
+    "action": "start",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.wait
+
+wait for a selector, duration, text, URL, load state, JavaScript condition, or download
+
+- signature: `workspace.browser.wait(\{ target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace browser.wait`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "browser.wait",
+  "input": {
+    "load": "networkidle",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### doctor
+
+run workspace diagnostics
+
+- signature: `workspace.doctor(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace doctor`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "doctor",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### git.status
+
+alias for status; use status directly in new code
+
+- signature: `workspace.git.status(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "git.status",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### railway.logs
+
+read Railway deploy/runtime logs through the workspace script
+
+- signature: `workspace.railway.logs(\{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace railway.logs`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "railway.logs",
+  "input": {
+    "service": "opensaas",
+    "lines": 10
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### railway.redeploy
+
+trigger a Railway redeploy
+
+- signature: `workspace.railway.redeploy(\{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace railway.redeploy`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "railway.redeploy",
+  "input": {
+    "service": "opensaas",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### research.ingest
+
+generate a local research packet and autosave its text bundle to context
+
+- signature: `workspace.research.ingest(\{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace research.ingest`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "research.ingest",
+  "input": {
+    "source": "https://example.com",
+    "question": "What should I learn from this?",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### server
+
+manage the workspace MCP server reload/status lifecycle
+
+- signature: `workspace.server(\{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace server`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "server",
+  "input": {
+    "action": "status"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### status
+
+show compact workspace status
+
+- signature: `workspace.status(\{ requestId?: string; taskSession?: string; dryRun?: boolean \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace status`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 120000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "status",
+  "input": {}
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### tmp
+
+run the workspace temp-file helper
+
+- signature: `workspace.tmp(\{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace tmp`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "tmp",
+  "input": {
+    "action": "write",
+    "name": "example",
+    "content": "hello",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### wait
+
+sleep or wait for a PR/deploy
+
+- signature: `workspace.wait(\{ seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace wait`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "wait",
+  "input": {
+    "seconds": 1
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### website.deploy
+
+deploy the Consuelo website
+
+- signature: `workspace.website.deploy(\{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ raw?: string; [key: string]: unknown \} | null&gt;&gt;`
+- wraps: `workspace website.deploy`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "website.deploy",
+  "input": {
+    "buildOnly": true,
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## worker
+
+### worker.call
+
+delegate a bounded instruction file to a configured local worker provider
+
+- signature: `workspace.worker.call(\{ provider: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record&lt;string, unknown&gt;; requestId?: string \}) =&gt; Promise&lt;ToolResult&lt;\{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: \{ taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean \} \}&gt;&gt;`
+- wraps: `workspace worker.call`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "worker.call",
+  "input": {
+    "provider": "cdx",
+    "mode": "work",
+    "policy": "edit",
+    "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
+    "workspaceOnly": "preferred"
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## composed methods
+
+`workspace.checkFiles` wraps `bun run check-files`. `workspace.editFlow` wraps `bun run edit-flow`. Both are real scripts; the facade does not duplicate their multi-step behavior.
+
+## batch execution
+
+Use `workspace.batch([...])` for dependent steps. Each step accepts `input`; `args` remains a compatibility alias and can be a function receiving the previous result. Read-only steps can set `parallel: true`; mutating steps are always sequential.
+
+## branch resolution
+
+Branch resolution order is: explicit `branch`, pinned branch from `workspace.task.pin`, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
+
+## dry-run
+
+Mutating tools accept `dryRun: true`. The facade validates input, resolves branch state, builds the command, returns code `DRY_RUN`, and does not execute the mutation.
+
+## error codes
+
+`OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.
+
+## tracing
+
+Every result includes `traceId`, optional echoed `requestId`, `durationMs`, `exitCode`, and `apiVersion`. The executor emits one `tool.executed` JSON event to stderr.
+
+## mac operations
+
+`workspace.mac.*` methods wrap `bun run mac` and operate outside the repository. They never perform task branch resolution.
+
+## decision engine walkthrough
+
+The decision engine wrappers call the existing scripts as-is: `workspace.explore`, `workspace.decideNext`, `workspace.confidenceScore`, and `workspace.exploit`. Retrieval is treated as a prior; confidence comes from evidence written by those scripts.
+
+## migration from lower-level scripts
+
+Do not call lower-level workspace scripts from the workspace app during normal work.
+
+Use the MCP facade instead: `workspace.call(\{ tool: "fs.read", taskSession, input: \{ path: "packages/workspace/package.json" \}, timeout: 120 \})`.
+
+## final reminder
+
+Every workspace operation above is invoked through `workspace.call(\{ tool, input, taskSession, timeout \})`. There are no per-operation MCP tools beyond `get_steering` and `call`. The workspace app is the environment, so work inside it and fix any typed facade call that does not run there.

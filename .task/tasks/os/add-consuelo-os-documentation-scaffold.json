@@ -1,0 +1,15 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-consuelo-os-documentation-scaffold",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 363,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/363",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-os-documentation-scaffold",
+  "taskSession": "tsk_53f8c7ba883c",
+  "tmuxSession": "opensaas-os-add-consuelo-os-documentation-scaffold-53f8c7ba",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-os-documentation-scaffold/.task/session.json",
+  "createdAt": "2026-05-11T07:43:40.702Z"
+}

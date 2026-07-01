@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-skills/fix-onboarding-skill-selection-and-install-seeding",
+  "base": "origin/stream/os-skills",
+  "headSha": "f4dceff39ff14aa665a88fc05fdb53dcde6abb7e",
+  "changeHash": "380e913e8b53981879d644066ff4f5f5fafb22e5335ce63c6e35d002fdf4ba3e",
+  "changedFiles": [
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/onboarding-skills.ts",
+    "packages/os/scripts/lib/skills.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/onboarding-skills.test.ts"
+  ],
+  "verifiedAt": "2026-06-04T15:20:34.589Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/current.json",
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/session.json",
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/verify.json",
+        ".task/os-skills/fix-onboarding-skill-selection-and-install-seeding/workpad.md",
+        ".task/tasks/os-skills/fix-onboarding-skill-selection-and-install-seeding.json",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/onboarding-skills.ts",
+        "packages/os/scripts/lib/skills.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/onboarding-skills.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

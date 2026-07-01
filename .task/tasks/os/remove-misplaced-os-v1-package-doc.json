@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-misplaced-os-v1-package-doc",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 415,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/415",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/415",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/415/remove-misplaced-os-v1-package-doc",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/415",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/415/remove-misplaced-os-v1-package-doc",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-os-v1-package-doc",
+  "taskSession": "tsk_0d2cf288c12b",
+  "tmuxSession": "opensaas-os-remove-misplaced-os-v1-package-doc-0d2cf288",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-os-v1-package-doc/.task/session.json",
+  "createdAt": "2026-05-21T02:10:47.099Z"
+}

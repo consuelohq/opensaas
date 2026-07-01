@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rename-agent-tdd-page-title",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 862,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/862",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/862",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/862/rename-agent-tdd-page-title",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/862",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/862/rename-agent-tdd-page-title",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-agent-tdd-page-title",
+  "taskSession": "tsk_2a9eff8e07e0",
+  "tmuxSession": "opensaas-os-rename-agent-tdd-page-title-2a9eff8e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-agent-tdd-page-title/.task/os/rename-agent-tdd-page-title/session.json",
+  "createdAt": "2026-06-09T04:52:53.983Z"
+}

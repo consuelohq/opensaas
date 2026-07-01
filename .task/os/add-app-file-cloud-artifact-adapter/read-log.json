@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/lib/app-files-client.ts",
+    "packages/os/scripts/lib/capabilities.ts",
+    "packages/os/scripts/lib/graphql-client.ts"
+  ],
+  "updatedAt": "2026-05-24T05:08:00.429Z"
+}

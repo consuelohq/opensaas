@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_95bb4c913125",
+  "tmuxSession": "opensaas-os-add-workspace-platform-safety-block-page-95bb4c91",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-platform-safety-block-page",
+  "branch": "task/os/add-workspace-platform-safety-block-page",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-platform-safety-block-page",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-platform-safety-block-page",
+  "prNumber": 1033,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1033",
+  "createdAt": "2026-06-14T04:45:22.844Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-platform-safety-block-page/.task/os/add-workspace-platform-safety-block-page/session.json"
+}

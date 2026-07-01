@@ -1,0 +1,20 @@
+{
+  "files": [
+    ".task/os/package-consuelo-os-as-installed-product-root/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/compact-daemon-output.test.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/tool-runner.ts",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/install-state.test.ts",
+    "packages/workspace/scripts/os-release-install.ts"
+  ],
+  "updatedAt": "2026-06-05T05:53:49.724Z"
+}

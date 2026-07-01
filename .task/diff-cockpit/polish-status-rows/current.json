@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-status-rows",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 738,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/738",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/738",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/738/polish-status-rows",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/738",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/738/polish-status-rows",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-status-rows",
+  "taskSession": "tsk_8149b052cb27",
+  "tmuxSession": "opensaas-diff-cockpit-polish-status-rows-8149b052",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-status-rows/.task/diff-cockpit/polish-status-rows/session.json",
+  "createdAt": "2026-06-03T08:52:13.106Z"
+}

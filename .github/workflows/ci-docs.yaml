@@ -43,5 +43,11 @@ jobs:
         uses: ./.github/actions/yarn-install
 
       - name: Docs / Lint English MDX files
-        run: npx eslint "packages/consuelo-docs/{developers,user-guide,twenty-ui,getting-started,snippets}/**/*.mdx" --max-warnings 0
+        run: npx eslint "packages/consuelo-docs/{developers,user-guide,twenty-ui,getting-started,snippets,os}/**/*.mdx" "packages/consuelo-docs/l/*/os/**/*.mdx" --max-warnings 0
+
+      - name: Docs / Check generated OS skill docs
+        run: yarn docs:check-os-skill-docs
+
+      - name: Docs / Validate OS navigation routes
+        run: yarn docs:validate-os-docs
 

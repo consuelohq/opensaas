@@ -1,0 +1,24 @@
+{
+  "name": "senior-engineer",
+  "title": "Senior Engineer",
+  "description": "Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR.",
+  "trigger": "Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/senior-engineer/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": [
+    "repo",
+    "engineering",
+    "review"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}

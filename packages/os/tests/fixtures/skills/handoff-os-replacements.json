@@ -1,0 +1,38 @@
+[
+  {
+    "from": "workspace.get_steering",
+    "to": "os.get_steering"
+  },
+  {
+    "from": "workspace.call",
+    "to": "os.call"
+  },
+  {
+    "from": "Workspace Tool Surface",
+    "to": "OS Tool Surface"
+  },
+  {
+    "from": "workspace tool",
+    "to": "OS tool"
+  },
+  {
+    "from": "workspace tools",
+    "to": "OS tools"
+  },
+  {
+    "from": "workspace context",
+    "to": "OS context"
+  },
+  {
+    "from": "workspace handoff",
+    "to": "OS handoff"
+  },
+  {
+    "from": "The workspace app exposes exactly two MCP tools:",
+    "to": "The OS app exposes exactly two MCP tools:"
+  },
+  {
+    "from": "Normal workspace calls should be task-session scoped instead of branch-threaded.",
+    "to": "Normal OS calls should be task-session scoped instead of branch-threaded."
+  }
+]

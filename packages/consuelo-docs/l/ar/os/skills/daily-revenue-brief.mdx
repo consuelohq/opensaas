@@ -1,0 +1,28 @@
+---
+title: "Daily Revenue Brief"
+description: "Builds a daily workspace revenue brief from approved structured context and writes a local artifact."
+---
+
+{/* Generated from packages/os/skills. Do not edit this page directly. */}
+
+\{
+  "name": "daily-revenue-brief",
+  "title": "Daily Revenue Brief",
+  "description": "Builds a daily workspace revenue brief from approved structured context and writes a local artifact.",
+  "trigger": "Invoke when the user asks for a daily revenue brief, revenue summary, or workspace revenue artifact.",
+  "entrypoint": "skill.json",
+  "load": \{
+    "type": "resource",
+    "path": "packages/os/skills/daily-revenue-brief/skill.json"
+  \},
+  "script": "scripts/revenue/daily-revenue-brief.ts",
+  "permission": "read",
+  "requiresApproval": false,
+  "status": "active",
+  "artifactTypes": [
+    "brief"
+  ],
+  "capabilities": [
+    "consuelo-graphql"
+  ]
+\}

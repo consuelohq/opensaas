@@ -1,0 +1,12 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/os-local-testing-readiness",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 679,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/679",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-local-testing-readiness",
+  "createdAt": "2026-06-02T00:41:04.103Z"
+}

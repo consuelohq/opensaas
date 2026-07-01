@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+  "events": [
+    {
+      "id": "1af78228-0787-4a12-a06a-61897c3674c1",
+      "occurred_at": "2026-06-14T19:11:12.400Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/fix-os-apply-patch-facade-parity/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "cc572904-cf43-49f0-ad62-91e08c2ccc10",
+      "occurred_at": "2026-06-14T19:13:44.651Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "16124d7a-d6ad-4182-a9a3-9d4f4646750d",
+      "occurred_at": "2026-06-14T19:16:10.813Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "9685b6a1-a306-4200-b764-4cf23f1ba54d",
+      "occurred_at": "2026-06-14T19:16:23.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "755b00a4-878b-45a9-9bcd-55b4cab39c7d",
+      "occurred_at": "2026-06-14T19:16:41.538Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "fba7d7ad-c032-49f1-9e15-5887b6fa89b2",
+      "occurred_at": "2026-06-14T19:18:34.839Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "a3f53e4d-b423-4f8e-b473-009ee6411c6d",
+      "occurred_at": "2026-06-14T19:18:44.313Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "24ad9589-8438-4c51-9530-5c6b6744f7ae",
+      "occurred_at": "2026-06-14T19:18:59.503Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "a227235a-7c03-46ae-8754-2bc332851077",
+      "occurred_at": "2026-06-14T19:19:09.686Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "c7cbb93b-af8c-467a-958f-f5bbee6d1664",
+      "occurred_at": "2026-06-14T20:35:39.489Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "294dc816-9781-4c4c-94f3-a7bfc5fb0c97",
+      "occurred_at": "2026-06-14T20:44:35.593Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "587beefa-5fac-4951-bdbf-0143e31f7dab",
+      "occurred_at": "2026-06-14T20:44:48.405Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "12a2a152-4dbb-4253-804f-727f383b39e9",
+      "occurred_at": "2026-06-14T20:49:46.864Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "f9e489b3-9ccd-4c88-8e40-2b96b5c1e78a",
+      "occurred_at": "2026-06-14T20:52:17.328Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "e3800134-7780-43ff-b36c-53d7125135be",
+      "occurred_at": "2026-06-14T20:52:44.388Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "cddf9490-53fb-41a6-943e-1753da017c50",
+      "occurred_at": "2026-06-14T21:04:54.907Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    },
+    {
+      "id": "e471f548-5ba2-4297-9986-4437b633549e",
+      "occurred_at": "2026-06-14T21:08:27.775Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-apply-patch-facade-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-apply-patch-facade-parity"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-14T21:08:27.841Z"
+}

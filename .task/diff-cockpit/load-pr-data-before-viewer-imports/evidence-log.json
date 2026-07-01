@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+  "events": [
+    {
+      "id": "d242fcad-1406-4092-874d-ecd2e06c8180",
+      "occurred_at": "2026-06-03T06:44:32.104Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/load-pr-data-before-viewer-imports"
+      }
+    },
+    {
+      "id": "cca289d9-7289-4362-bd56-fb3ab9eba33b",
+      "occurred_at": "2026-06-03T06:44:51.131Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/load-pr-data-before-viewer-imports"
+      }
+    },
+    {
+      "id": "bae0c9c2-0511-4e7a-8e25-de6c6063e0bf",
+      "occurred_at": "2026-06-03T06:44:56.884Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/load-pr-data-before-viewer-imports"
+      }
+    },
+    {
+      "id": "86f9b603-26f9-4640-b2fd-10db6d6a18e4",
+      "occurred_at": "2026-06-03T06:45:05.294Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/load-pr-data-before-viewer-imports"
+      }
+    },
+    {
+      "id": "4d5e7b50-54a0-4682-bee5-d42c5870a733",
+      "occurred_at": "2026-06-03T06:45:51.950Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/load-pr-data-before-viewer-imports"
+      }
+    },
+    {
+      "id": "904ab80e-1446-48c2-92be-ddb6f6165b6d",
+      "occurred_at": "2026-06-03T06:47:14.261Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/load-pr-data-before-viewer-imports"
+      }
+    },
+    {
+      "id": "191af480-a674-4088-aedd-1e3841c83b3e",
+      "occurred_at": "2026-06-03T06:47:31.592Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/load-pr-data-before-viewer-imports"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T06:47:31.644Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/setup-summary",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 717,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/717",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/717",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/717/setup-summary",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/717",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/717/setup-summary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-setup-summary",
+  "taskSession": "tsk_7dbf6b423e0a",
+  "tmuxSession": "opensaas-os-setup-summary-7dbf6b42",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-setup-summary/.task/os/setup-summary/session.json",
+  "createdAt": "2026-06-03T00:32:19.857Z"
+}

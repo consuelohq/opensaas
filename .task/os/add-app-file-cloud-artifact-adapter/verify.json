@@ -1,0 +1,34 @@
+{
+  "result": "pass",
+  "branch": "task/os/add-app-file-cloud-artifact-adapter",
+  "base": "origin/stream/os",
+  "headSha": "95c2d607b6440ff10fdb04184736860293de1aa3",
+  "changeHash": "80044e101fb56fbcf83e9a00bff39efdcb3495464dfe6b5e8e836af46eb0c5fc",
+  "changedFiles": [
+    "packages/os/README.md",
+    "packages/os/data-model.md",
+    "packages/os/decision.md",
+    "packages/os/docs/env-capability-matrix.md",
+    "packages/os/docs/skills.md",
+    "packages/os/integrations.md",
+    "packages/os/scripts/lib/app-files-client.ts",
+    "packages/os/scripts/lib/capabilities.ts",
+    "packages/os/scripts/lib/cloud-artifacts.ts",
+    "packages/os/scripts/lib/consuelo-workspace-client.ts",
+    "packages/os/scripts/lib/graphql-client.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/tests/cloud-artifacts.test.ts"
+  ],
+  "verifiedAt": "2026-05-24T05:08:41.791Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ea253c2e57db",
+  "tmuxSession": "opensaas-os-refactor-os-office-surface-into-sites-ea253c2e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refactor-os-office-surface-into-sites",
+  "branch": "task/os/refactor-os-office-surface-into-sites",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refactor-os-office-surface-into-sites",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refactor-os-office-surface-into-sites",
+  "prNumber": 857,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/857",
+  "createdAt": "2026-06-09T03:09:27.021Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refactor-os-office-surface-into-sites/.task/os/refactor-os-office-surface-into-sites/session.json"
+}

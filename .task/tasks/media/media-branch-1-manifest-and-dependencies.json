@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-1-manifest-and-dependencies",
+  "baseBranch": "stream/media",
+  "sourceBranch": "stream/media",
+  "startFrom": "stream",
+  "prNumber": 1196,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1196",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1196",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1196/media-branch-1-manifest-and-dependencies",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1196",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1196/media-branch-1-manifest-and-dependencies",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-1-manifest-and-dependencies",
+  "taskSession": "tsk_5b29e320985c",
+  "tmuxSession": "opensaas-media-media-branch-1-manifest-and-dependencies-5b29e320",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-1-manifest-and-dependencies/.task/media/media-branch-1-manifest-and-dependencies/session.json",
+  "createdAt": "2026-06-23T22:35:14.052Z"
+}

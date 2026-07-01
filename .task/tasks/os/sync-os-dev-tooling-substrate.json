@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-dev-tooling-substrate",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 658,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/658",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/658",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/658/sync-os-dev-tooling-substrate",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/658",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/658/sync-os-dev-tooling-substrate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-dev-tooling-substrate",
+  "taskSession": "tsk_bc6d01770803",
+  "tmuxSession": "opensaas-os-sync-os-dev-tooling-substrate-bc6d0177",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-dev-tooling-substrate/.task/os/sync-os-dev-tooling-substrate/session.json",
+  "createdAt": "2026-05-31T09:45:20.751Z"
+}

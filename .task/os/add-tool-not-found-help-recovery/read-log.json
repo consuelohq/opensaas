@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/scripts/workspace.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-05-28T23:07:24.921Z"
+}

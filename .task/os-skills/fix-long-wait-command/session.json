@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_289a1258abb8",
+  "tmuxSession": "opensaas-os-skills-fix-long-wait-command-289a1258",
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/fix-long-wait-command",
+  "branch": "task/os-skills/fix-long-wait-command",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-long-wait-command",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-long-wait-command",
+  "prNumber": 799,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/799",
+  "createdAt": "2026-06-05T08:11:17.158Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-long-wait-command/.task/os-skills/fix-long-wait-command/session.json"
+}

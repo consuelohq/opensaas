@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/expand-stream-os-review-packet",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 683,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/683",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/683",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/683/expand-stream-os-review-packet",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/683",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/683/expand-stream-os-review-packet",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expand-stream-os-review-packet",
+  "taskSession": "tsk_283d5329e03a",
+  "tmuxSession": "opensaas-os-expand-stream-os-review-packet-283d5329",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expand-stream-os-review-packet/.task/os/expand-stream-os-review-packet/session.json",
+  "createdAt": "2026-06-02T00:42:36.659Z"
+}

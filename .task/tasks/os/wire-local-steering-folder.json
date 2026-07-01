@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-local-steering-folder",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1052,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1052",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1052",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1052/wire-local-steering-folder",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1052",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1052/wire-local-steering-folder",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-local-steering-folder",
+  "taskSession": "tsk_f77a181ee858",
+  "tmuxSession": "opensaas-os-wire-local-steering-folder-f77a181e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-local-steering-folder/.task/os/wire-local-steering-folder/session.json",
+  "createdAt": "2026-06-15T00:48:26.718Z"
+}

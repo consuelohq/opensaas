@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/inbox-rows",
+  "events": [
+    {
+      "id": "42899c14-0283-4f18-bf26-bed5df6fb4d5",
+      "occurred_at": "2026-06-03T09:07:37.705Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/inbox-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/inbox-rows"
+      }
+    },
+    {
+      "id": "56a25a9d-ad6d-46ca-8157-a4f1c732d857",
+      "occurred_at": "2026-06-03T09:07:47.669Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/inbox-rows",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/inbox-rows"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T09:07:47.725Z"
+}

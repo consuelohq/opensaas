@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-consuelo-workspace-snapshot-and-files-facade",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 560,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/560",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/560",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/560/add-consuelo-workspace-snapshot-and-files-facade",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/560",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/560/add-consuelo-workspace-snapshot-and-files-facade",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-workspace-snapshot-and-files-facade",
+  "taskSession": "tsk_b1b19cabc262",
+  "tmuxSession": "opensaas-os-add-consuelo-workspace-snapshot-and-files-facade-b1b19cab",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-workspace-snapshot-and-files-facade/.task/os/add-consuelo-workspace-snapshot-and-files-facade/session.json",
+  "createdAt": "2026-05-24T03:30:22.801Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4158be27ef81",
+  "tmuxSession": "opensaas-workspace-agents-port-code-call-into-workspace-4158be27",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/port-code-call-into-workspace",
+  "branch": "task/workspace-agents/port-code-call-into-workspace",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-code-call-into-workspace",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-code-call-into-workspace",
+  "prNumber": 1124,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1124",
+  "createdAt": "2026-06-18T03:40:49.185Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-code-call-into-workspace/.task/workspace-agents/port-code-call-into-workspace/session.json"
+}

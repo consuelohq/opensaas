@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d32d5f477e2a",
+  "tmuxSession": "opensaas-os-productize-os-office-surface-d32d5f47",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/productize-os-office-surface",
+  "branch": "task/os/productize-os-office-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-productize-os-office-surface",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-productize-os-office-surface",
+  "prNumber": 774,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/774",
+  "createdAt": "2026-06-05T05:02:41.914Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-productize-os-office-surface/.task/os/productize-os-office-surface/session.json"
+}

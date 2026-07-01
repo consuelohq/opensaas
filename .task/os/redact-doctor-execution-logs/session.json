@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7f0134e602a0",
+  "tmuxSession": "opensaas-os-redact-doctor-execution-logs-7f0134e6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/redact-doctor-execution-logs",
+  "branch": "task/os/redact-doctor-execution-logs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redact-doctor-execution-logs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redact-doctor-execution-logs",
+  "prNumber": 588,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/588",
+  "createdAt": "2026-05-24T09:01:01.555Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redact-doctor-execution-logs/.task/os/redact-doctor-execution-logs/session.json"
+}

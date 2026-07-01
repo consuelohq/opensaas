@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_448854a048e9",
+  "tmuxSession": "opensaas-docs-simplify-docs-navigation-448854a0",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/simplify-docs-navigation",
+  "branch": "task/docs/simplify-docs-navigation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-simplify-docs-navigation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-simplify-docs-navigation",
+  "prNumber": 1250,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1250",
+  "createdAt": "2026-06-28T03:06:29.690Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-simplify-docs-navigation/.task/docs/simplify-docs-navigation/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-typed-reader-rendering-to-os-sites-clean",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 864,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/864",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/864",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/864/add-typed-reader-rendering-to-os-sites-clean",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/864",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/864/add-typed-reader-rendering-to-os-sites-clean",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-typed-reader-rendering-to-os-sites-clean",
+  "taskSession": "tsk_2a9e314496be",
+  "tmuxSession": "opensaas-os-add-typed-reader-rendering-to-os-sites-clean-2a9e3144",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-typed-reader-rendering-to-os-sites-clean/.task/os/add-typed-reader-rendering-to-os-sites-clean/session.json",
+  "createdAt": "2026-06-09T06:42:26.317Z"
+}

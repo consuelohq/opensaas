@@ -120,6 +120,26 @@ export class ConfigVariables {
   AUTH_GOOGLE_ENABLED = false;
 
   @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.OTHER,
+    description: 'Origin for the Consuelo OS device authority',
+    type: ConfigVariableType.STRING,
+    isSensitive: false,
+  })
+  @IsUrl({ require_tld: false, require_protocol: true })
+  @IsOptional()
+  OS_DEVICE_AUTH_ORIGIN = 'https://os.consuelohq.com';
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.OTHER,
+    description:
+      'Shared HMAC signing secret for Consuelo OS device approval assertions',
+    type: ConfigVariableType.STRING,
+    isSensitive: true,
+  })
+  @IsOptional()
+  OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
+
+  @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.GOOGLE_AUTH,
     isSensitive: false,
     description: 'Client ID for Google authentication',
@@ -577,6 +597,24 @@ export class ConfigVariables {
   @IsOptional()
   @CastToPositiveNumber()
   CODE_INTERPRETER_TIMEOUT_MS = 300_000;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.ANALYTICS_CONFIG,
+    description: 'PostHog API key used by backend telemetry',
+    type: ConfigVariableType.STRING,
+    isSensitive: true,
+  })
+  @IsOptional()
+  POSTHOG_API_KEY?: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.ANALYTICS_CONFIG,
+    description: 'PostHog host used by backend telemetry',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  @IsUrl({ require_tld: false, require_protocol: true })
+  POSTHOG_HOST?: string;
 
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.ANALYTICS_CONFIG,

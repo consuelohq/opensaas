@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/skills.json",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "updatedAt": "2026-06-09T17:56:23.895Z"
+}

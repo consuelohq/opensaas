@@ -1,0 +1,19 @@
+{
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/ship-os-skills-docs-to-main",
+  "baseBranch": "stream/os-skills",
+  "sourceBranch": "stream/os-skills",
+  "startFrom": "stream",
+  "prNumber": 803,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/803",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/803",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/803/ship-os-skills-docs-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/803",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/803/ship-os-skills-docs-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-ship-os-skills-docs-to-main",
+  "taskSession": "tsk_acddaae3d397",
+  "tmuxSession": "opensaas-os-skills-ship-os-skills-docs-to-main-acddaae3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-ship-os-skills-docs-to-main/.task/os-skills/ship-os-skills-docs-to-main/session.json",
+  "createdAt": "2026-06-05T09:10:53.544Z"
+}

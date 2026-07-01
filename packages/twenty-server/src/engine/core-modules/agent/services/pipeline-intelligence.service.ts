@@ -207,7 +207,7 @@ export class PipelineIntelligenceService {
 
       const recentOpps = await opportunityRepository.find({
         where: {
-          updatedAt: MoreThan(sevenDaysAgo),
+          updatedAt: MoreThan(sevenDaysAgo.toISOString()),
         },
         order: { updatedAt: 'DESC' },
         take: 10,

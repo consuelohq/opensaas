@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/upgrade-fs-read-ingestion-primitive",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1065,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1065",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1065",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1065/upgrade-fs-read-ingestion-primitive",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1065",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1065/upgrade-fs-read-ingestion-primitive",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-upgrade-fs-read-ingestion-primitive",
+  "taskSession": "tsk_9adfeae3677f",
+  "tmuxSession": "opensaas-workspace-agents-upgrade-fs-read-ingestion-primitive-9adfeae3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-upgrade-fs-read-ingestion-primitive/.task/workspace-agents/upgrade-fs-read-ingestion-primitive/session.json",
+  "createdAt": "2026-06-15T06:41:49.801Z"
+}

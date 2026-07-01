@@ -1,0 +1,12 @@
+.env
+.env.local
+.env.development
+.env.production
+BRAIN.md
+.venv/
+__pycache__/
+*.pyc
+/tmp/
+sandbox-audit.jsonl
+scripts/generated/
+.DS_Store

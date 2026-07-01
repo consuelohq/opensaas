@@ -1,0 +1,21 @@
+{
+  "id": "hyperframes",
+  "title": "HyperFrames Render",
+  "uses": [
+    "office"
+  ],
+  "workflow": "hyperframes",
+  "defaultTool": "office.renderHyperframes",
+  "primaryOpenDesignSkill": "hyperframes",
+  "fallbackOpenDesignSkills": [
+    "motion-frames"
+  ],
+  "templates": [
+    "hyperframes"
+  ],
+  "extraRules": [
+    "Use for HTML-to-MP4 render preparation and motion graphics artifacts.",
+    "Verify source dimensions, timing, and browser render before final export.",
+    "Do not publish final video externally without approval."
+  ]
+}

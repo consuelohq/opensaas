@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_01f898140fd7",
+  "tmuxSession": "opensaas-diff-cockpit-fix-review-client-newline-escaping-01f89814",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-review-client-newline-escaping",
+  "branch": "task/diff-cockpit/fix-review-client-newline-escaping",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-client-newline-escaping",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-client-newline-escaping",
+  "prNumber": 731,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/731",
+  "createdAt": "2026-06-03T06:54:37.108Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-review-client-newline-escaping/.task/diff-cockpit/fix-review-client-newline-escaping/session.json"
+}

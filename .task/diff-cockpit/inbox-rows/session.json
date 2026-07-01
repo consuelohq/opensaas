@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0edf1f4fa094",
+  "tmuxSession": "opensaas-diff-cockpit-inbox-rows-0edf1f4f",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/inbox-rows",
+  "branch": "task/diff-cockpit/inbox-rows",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-inbox-rows",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-inbox-rows",
+  "prNumber": 742,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/742",
+  "createdAt": "2026-06-03T09:07:10.951Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-inbox-rows/.task/diff-cockpit/inbox-rows/session.json"
+}

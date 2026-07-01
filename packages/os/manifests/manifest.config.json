@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "label": "regular",
+      "kind": "os-skill",
+      "path": "packages/os/tooling/tool-manifest.json"
+    },
+    {
+      "label": "dev-tooling",
+      "kind": "facade-tool",
+      "path": "packages/os/tooling/dev-tool-manifest.json"
+    },
+    {
+      "label": "media-tooling",
+      "kind": "facade-tool",
+      "path": "packages/os/tooling/media-tool-manifest.json"
+    }
+  ],
+  "outputs": {
+    "full": "packages/os/manifests/tool.manifest.json",
+    "core": "packages/os/manifests/core.manifest.json",
+    "workflows": "packages/os/manifests/workflow-bundles.json"
+  },
+  "core": {
+    "includeNames": [
+      "batch",
+      "code.call",
+      "code.run",
+      "context",
+      "explore",
+      "github",
+      "task.intent",
+      "review.run",
+      "tools.search",
+      "tmp"
+    ],
+    "includePrefixes": [
+      "fs.",
+      "stream."
+    ],
+    "includeCategories": [],
+    "excludeNames": [
+      "mac.call",
+      "mac.exec",
+      "fs.list",
+      "fs.write",
+      "gh",
+      "decideNext",
+      "exploit",
+      "confidenceScore",
+      "confirm",
+      "audit",
+      "doctor",
+      "status",
+      "mac.read",
+      "mac.write",
+      "mac.search",
+      "mac.list",
+      "mac.port",
+      "mac.process",
+      "fs.read",
+      "fs.search",
+      "git.diff",
+      "git.status",
+      "stream.list",
+      "checkFiles",
+      "verify"
+    ],
+    "excludePrefixes": [
+      "browser.",
+      "office.",
+      "design.",
+      "linear.",
+      "railway.",
+      "sentry.",
+      "task.",
+      "website.",
+      "mac."
+    ],
+    "excludeCategories": [
+      "browser",
+      "consuelo design",
+      "linear",
+      "railway",
+      "sentry"
+    ]
+  },
+  "workflows": {
+    "path": "packages/os/tooling/workflows.json"
+  }
+}

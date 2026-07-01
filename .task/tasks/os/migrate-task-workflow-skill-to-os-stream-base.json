@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/migrate-task-workflow-skill-to-os-stream-base",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 617,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/617",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/617",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/617/migrate-task-workflow-skill-to-os-stream-base",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/617",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/617/migrate-task-workflow-skill-to-os-stream-base",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-task-workflow-skill-to-os-stream-base",
+  "taskSession": "tsk_d2841c421ad0",
+  "tmuxSession": "opensaas-os-migrate-task-workflow-skill-to-os-stream-base-d2841c42",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-task-workflow-skill-to-os-stream-base/.task/os/migrate-task-workflow-skill-to-os-stream-base/session.json",
+  "createdAt": "2026-05-28T19:43:59.058Z"
+}

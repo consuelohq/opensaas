@@ -1,0 +1,14 @@
+{
+  "schema": "consuelo.cron.v1",
+  "name": "diff-cockpit",
+  "kind": "diff-cockpit",
+  "enabled": true,
+  "intervalMs": 30000,
+  "envFile": ".env",
+  "repo": "consuelohq/opensaas",
+  "prLimit": 50,
+  "origin": "https://diffs.consuelohq.com",
+  "codePaths": ["packages"],
+  "warmPullLimit": 20,
+  "warmIntervalMs": 300000
+}

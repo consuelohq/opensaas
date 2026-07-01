@@ -1,0 +1,15 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/research-consuelo-os-package-scaffold-alignment",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 361,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/361",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-research-consuelo-os-package-scaffold-alignment",
+  "taskSession": "tsk_a45070b85b21",
+  "tmuxSession": "opensaas-os-research-consuelo-os-package-scaffold-alignment-a45070b8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-research-consuelo-os-package-scaffold-alignment/.task/session.json",
+  "createdAt": "2026-05-11T01:45:55.372Z"
+}

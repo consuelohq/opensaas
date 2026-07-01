@@ -1,21 +1,23 @@
-// tool function signature — all tool functions are async
-export type ToolFunction = (...args: unknown[]) => Promise<unknown>;
+import type { ToolInput, ToolResult } from '../facade/types';
 
-// nested namespace of tool functions, such as workspace.fs.read
-export type ToolNamespace = { [key: string]: ToolValue };
+export type ToolFunction = (...args: unknown[]) => unknown | Promise<unknown>;
+export type ToolNamespace = Record<string, ToolValue>;
 export type ToolValue = ToolFunction | ToolNamespace;
-
-// registry of all helper values available in code.run
 export type ToolRegistry = Record<string, ToolValue>;
 
-// captured console output from the isolate
 export type ConsoleOutput = {
   log: string[];
   warn: string[];
   error: string[];
 };
 
-// execution result from the isolate
+export type ExecutorConfig = {
+  memoryLimit: number;
+  timeout: number;
+  workingDirectory: string;
+  maxOperations: number;
+};
+
 export type ExecutionResult = {
   success: boolean;
   result: unknown;
@@ -24,16 +26,20 @@ export type ExecutionResult = {
   operations: number;
 };
 
-// executor configuration
-export type ExecutorConfig = {
-  memoryLimit: number;
-  timeout: number;
-  workingDirectory: string;
-  maxOperations: number;
+export type CodeRunMode = 'read' | 'edit' | 'verify';
+
+export type CodeRunOperation = {
+  tool: string;
+  input: ToolInput;
+  ok: boolean;
+  code: ToolResult['code'];
+  message: string;
+  traceId: string;
+  durationMs: number;
 };
 
-// MCP tool input schema
-export type ExecuteCodeInput = {
-  code: string;
-  workingDirectory?: string;
+export type CodeRunRegistryState = {
+  operations: CodeRunOperation[];
+  blockedTools: string[];
+  changedFiles: Set<string>;
 };

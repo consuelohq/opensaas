@@ -232,19 +232,22 @@ Use cards and collapsibles to reduce wall-of-text density. Keep the reading flow
 
 ## component guidance
 
-Use:
+Use the canonical Consuelo reader renderer. Do not hand-author custom HTML for normal lesson structure. Fill the typed section/component shapes so the page inherits the same shell, font loading, neutral dark mode, header, resume-reading, rail, mobile table behavior, hover states, and back-to-top behavior as specs.
 
-- **source card** for paper metadata
-- **deep idea card** for the central insight
-- **glossary cards** for vocabulary
-- **numbered cards** for key results or mechanisms
-- **details/collapsible panels** for dense methods, math, citations, or caveats
-- **callout card** for limitations
-- **three-column or stacked examples** for intuition builder
-- **closing panel** for the final question
-- **metadata footer** for source truth, generated date, template, Open Design path, and design wiki link
+Use these typed components when they fit the teaching job:
 
-Keep citations close to the claims they support.
+- **callout** for the deep idea, why-now, what-changed-my-mind, limitation, or caution moment
+- **cards** for source metadata, vocabulary, key results, examples, and memory chunks
+- **details** for collapsible dense methods, math, citations, caveats, spoilers, or reveal-after-prediction sections
+- **table** for vocabulary maps, evidence ledgers, comparison grids, paper/source inventories, or concept contrasts
+- **metrics** for small learning checkpoints, confidence levels, source counts, benchmark scores, or before/after understanding
+- **flow** for mechanism walkthroughs, process diagrams, causal chains, or step-by-step algorithms
+- **timeline** for historical development, paper sequence, learning route, or implementation phases
+- **ranges** for confidence scales, tradeoff intensity, difficulty, maturity, or evidence strength
+- **comparisons** for model/tool/framework differences, wrong-vs-right mental models, or rejected explanations
+- **ledger** only when the lesson needs a learning checklist, practice route, or memory review list; do not force spec-style task checklists into teaching pages
+
+Prefer typed renderer components over bespoke markup. Keep citations close to the claims they support.
 
 ## pacing rules
 

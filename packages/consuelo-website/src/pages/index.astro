@@ -1,17 +1,11 @@
 ---
-import LaunchFaq from '../components/launch/LaunchFaq.astro';
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import LaunchHero from '../components/launch/LaunchHero.astro';
-import LaunchMercuryPromo from '../components/launch/LaunchMercuryPromo.astro';
-import LaunchOverview from '../components/launch/LaunchOverview.astro';
-import LaunchPrivacy from '../components/launch/LaunchPrivacy.astro';
-import LaunchStats from '../components/launch/LaunchStats.astro';
-import { launchFaqItems, launchPageSections } from '../data/launch-content';
-import { getFaqSchema, getSoftwareApplicationSchema } from '../lib/site-seo';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import { getSoftwareApplicationSchema } from '../lib/site-seo';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
 
-const description = 'Sales infrastructure for insurance sales teams with a connected crm, dialer, real-time ai coaching, and workflow surfaces that integrate everywhere your team works.';
+const description = 'Give every agent workspace superpowers with Consuelo OS, the open workspace layer for agents, teams, and tools.';
 
 const schemaEntries = [
   getSoftwareApplicationSchema({
@@ -23,36 +17,17 @@ const schemaEntries = [
       offerCount: '2',
     },
   }),
-  getFaqSchema(launchFaqItems),
 ];
 ---
 
-<LaunchLayout
-  title="Consuelo | Sales Infrastructure for Insurance Sales Teams"
+<MarketingLayout
+  title="Consuelo | Workspace superpowers for every agent"
   description={description}
   canonicalPath="/"
   image="/og.png"
   schemaEntries={schemaEntries}
 >
-  <script is:inline>
-    (() => {
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.documentElement.dataset.heroMotionReady = 'true';
-      }
-    })();
-  </script>
-  <LaunchHeader pageSections={launchPageSections} />
-  <LaunchHero sectionId="intro" />
-  <script>
-    import { bootLaunchHeroMotion, bootProofSvgMotion } from "../lib/motion";
-
-    bootLaunchHeroMotion();
-    bootProofSvgMotion();
-  </script>
-  <LaunchOverview sectionId="overview" />
-  <LaunchStats sectionId="proof" />
-  <LaunchPrivacy sectionId="privacy" />
-  <LaunchFaq sectionId="faq" items={launchFaqItems} />
-  <LaunchMercuryPromo sectionId="mercury" />
-  <LaunchFooter sectionId="waitlist" />
-</LaunchLayout>
+  <SiteHeader pageSections={[]} />
+  <HomeHero sectionId="intro" />
+  <SiteFooter />
+</MarketingLayout>

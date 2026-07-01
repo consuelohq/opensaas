@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/document-agent-tdd-contract-stream",
+  "base": "origin/task/os/document-agent-tdd-contract-stream",
+  "headSha": "209d3fa244bee8595a3891be54e5addaf0361226",
+  "changeHash": "c4e1e190f2418c165dadef1add9cef37812d347fb9466e82d6187731658eb16c",
+  "changedFiles": [
+    "packages/os/README.md",
+    "packages/os/docs/test-driven-agent-work.md",
+    "packages/os/tests/docs-agent-tdd.test.js"
+  ],
+  "verifiedAt": "2026-06-07T22:33:55.577Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/document-agent-tdd-contract-stream/current.json",
+        ".task/os/document-agent-tdd-contract-stream/session.json",
+        ".task/os/document-agent-tdd-contract-stream/workpad.md",
+        ".task/tasks/os/document-agent-tdd-contract-stream.json",
+        "packages/os/README.md",
+        "packages/os/docs/test-driven-agent-work.md",
+        "packages/os/tests/docs-agent-tdd.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

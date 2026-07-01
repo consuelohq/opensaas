@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+  "events": [
+    {
+      "id": "2efb0f62-a92b-4d03-91fd-6458807bbde5",
+      "occurred_at": "2026-06-03T05:41:45.375Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index"
+      }
+    },
+    {
+      "id": "c25ba899-1096-46a4-96d7-91eb438b5076",
+      "occurred_at": "2026-06-03T05:43:12.344Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index"
+      }
+    },
+    {
+      "id": "b02a7e8d-f42d-4bc3-ab0d-8f21270d1acb",
+      "occurred_at": "2026-06-03T05:54:08.602Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index"
+      }
+    },
+    {
+      "id": "139ca945-2be9-47f1-b688-5dfcafbae2ee",
+      "occurred_at": "2026-06-03T05:55:57.718Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index"
+      }
+    },
+    {
+      "id": "9971d3cf-a313-4969-bf91-47a9295419b0",
+      "occurred_at": "2026-06-03T05:58:49.805Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index"
+      }
+    },
+    {
+      "id": "7a8bd864-226a-43ee-8e43-2060291fd3f2",
+      "occurred_at": "2026-06-03T06:00:58.608Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T06:00:58.657Z"
+}

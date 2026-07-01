@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-subtle-os-installer-loading-dots",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 753,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/753",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/753",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/753/add-subtle-os-installer-loading-dots",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/753",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/753/add-subtle-os-installer-loading-dots",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-subtle-os-installer-loading-dots",
+  "taskSession": "tsk_2edfa16b5387",
+  "tmuxSession": "opensaas-os-add-subtle-os-installer-loading-dots-2edfa16b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-subtle-os-installer-loading-dots/.task/os/add-subtle-os-installer-loading-dots/session.json",
+  "createdAt": "2026-06-04T04:04:58.725Z"
+}

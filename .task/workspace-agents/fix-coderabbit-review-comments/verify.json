@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-coderabbit-review-comments",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "87e6f72c4d27fb92539fb30ce74acdddb73735a1",
+  "changeHash": "6ceccec1af51d9b37476fc61596c6d0a00cc5ab703d5cfcf2447c5696a68fc9b",
+  "changedFiles": [
+    "packages/os/scripts/lib/runtime-state.ts",
+    "packages/os/tests/runtime-state.test.ts",
+    "packages/workspace/server.py"
+  ],
+  "verifiedAt": "2026-06-09T17:56:12.513Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-coderabbit-review-comments.json",
+        ".task/workspace-agents/fix-coderabbit-review-comments/current.json",
+        ".task/workspace-agents/fix-coderabbit-review-comments/evidence-log.json",
+        ".task/workspace-agents/fix-coderabbit-review-comments/read-log.json",
+        ".task/workspace-agents/fix-coderabbit-review-comments/session.json",
+        ".task/workspace-agents/fix-coderabbit-review-comments/verify.json",
+        ".task/workspace-agents/fix-coderabbit-review-comments/workpad.md",
+        "packages/os/scripts/lib/runtime-state.ts",
+        "packages/os/tests/runtime-state.test.ts",
+        "packages/workspace/server.py"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,25 @@
+{
+  "name": "skill-creator",
+  "title": "Skill Creator",
+  "description": "Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite.",
+  "trigger": "Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/skill-creator/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": [
+    "skills",
+    "authoring",
+    "validation",
+    "migration"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}

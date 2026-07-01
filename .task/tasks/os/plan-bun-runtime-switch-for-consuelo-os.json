@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/plan-bun-runtime-switch-for-consuelo-os",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 419,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/419",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/419",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/419/plan-bun-runtime-switch-for-consuelo-os",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/419",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/419/plan-bun-runtime-switch-for-consuelo-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os",
+  "taskSession": "tsk_4bf4a8a6706f",
+  "tmuxSession": "opensaas-os-plan-bun-runtime-switch-for-consuelo-os-4bf4a8a6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-plan-bun-runtime-switch-for-consuelo-os/.task/session.json",
+  "createdAt": "2026-05-21T03:51:45.681Z"
+}

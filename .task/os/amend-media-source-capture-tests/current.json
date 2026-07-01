@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/amend-media-source-capture-tests",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1194,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1194",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1194",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1194/amend-media-source-capture-tests",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1194",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1194/amend-media-source-capture-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-amend-media-source-capture-tests",
+  "taskSession": "tsk_cb2daaaf2637",
+  "tmuxSession": "opensaas-os-amend-media-source-capture-tests-cb2daaaf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-amend-media-source-capture-tests/.task/os/amend-media-source-capture-tests/session.json",
+  "createdAt": "2026-06-23T18:19:42.420Z"
+}

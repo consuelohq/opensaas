@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5e67d53ed9df",
+  "tmuxSession": "opensaas-os-add-sites-section-patching-and-leases-5e67d53e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-sites-section-patching-and-leases",
+  "branch": "task/os/add-sites-section-patching-and-leases",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-sites-section-patching-and-leases",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-sites-section-patching-and-leases",
+  "prNumber": 865,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/865",
+  "createdAt": "2026-06-09T07:17:36.141Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-sites-section-patching-and-leases/.task/os/add-sites-section-patching-and-leases/session.json"
+}

@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/debug-stream-sync-conflicts/workpad.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-start.js"
+  ],
+  "updatedAt": "2026-06-05T04:00:27.643Z"
+}

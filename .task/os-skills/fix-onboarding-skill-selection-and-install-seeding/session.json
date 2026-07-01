@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5d9625a41118",
+  "tmuxSession": "opensaas-os-skills-fix-onboarding-skill-selection-and-install-seedi-5d9625a4",
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/fix-onboarding-skill-selection-and-install-seeding",
+  "branch": "task/os-skills/fix-onboarding-skill-selection-and-install-seeding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-onboarding-skill-selection-and-install-seeding",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-onboarding-skill-selection-and-install-seeding",
+  "prNumber": 754,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/754",
+  "createdAt": "2026-06-04T14:52:40.839Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-fix-onboarding-skill-selection-and-install-seeding/.task/os-skills/fix-onboarding-skill-selection-and-install-seeding/session.json"
+}

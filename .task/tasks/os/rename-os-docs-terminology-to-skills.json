@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rename-os-docs-terminology-to-skills",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 412,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/412",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/412",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/412/rename-os-docs-terminology-to-skills",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/412",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/412/rename-os-docs-terminology-to-skills",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-os-docs-terminology-to-skills",
+  "taskSession": "tsk_1d8a3f71c4f7",
+  "tmuxSession": "opensaas-os-rename-os-docs-terminology-to-skills-1d8a3f71",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-os-docs-terminology-to-skills/.task/session.json",
+  "createdAt": "2026-05-21T01:30:45.541Z"
+}

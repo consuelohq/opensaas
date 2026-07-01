@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/sites/support-workspace-site-snapshot-publishing",
+  "events": [
+    {
+      "id": "cdfd8a87-f89a-40a0-a324-8b559ee959df",
+      "occurred_at": "2026-06-14T01:11:33.217Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/support-workspace-site-snapshot-publishing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/support-workspace-site-snapshot-publishing"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-14T01:11:33.336Z"
+}

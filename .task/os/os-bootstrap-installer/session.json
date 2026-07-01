@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a8a8b2ee7650",
+  "tmuxSession": "opensaas-os-os-bootstrap-installer-a8a8b2ee",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/os-bootstrap-installer",
+  "branch": "task/os/os-bootstrap-installer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-bootstrap-installer",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-bootstrap-installer",
+  "prNumber": 687,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/687",
+  "createdAt": "2026-06-02T01:37:15.919Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-bootstrap-installer/.task/os/os-bootstrap-installer/session.json"
+}

@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+  "events": [
+    {
+      "id": "c3cc42ca-c73b-421f-8dca-c97373b4171c",
+      "occurred_at": "2026-06-02T23:54:07.366Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "8e153994-14fb-4027-a6c7-acbd70505615",
+      "occurred_at": "2026-06-02T23:54:21.590Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/contacts/tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "c324ab38-c17c-4e98-8f58-0bae429c44b9",
+      "occurred_at": "2026-06-02T23:54:26.397Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/consuelo-core/add-shared-registry-migration-guardrails/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "f561a8bb-eb02-4cfe-be13-4453df89bb9f",
+      "occurred_at": "2026-06-02T23:55:11.624Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-state.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "5ed0c8cf-3ab1-4db2-890a-154362b97348",
+      "occurred_at": "2026-06-02T23:55:11.782Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/pr-links.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "4a936b9b-37a5-4f64-ad61-802f8e63f8a9",
+      "occurred_at": "2026-06-02T23:58:41.968Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/consuelo-core/add-shared-registry-migration-guardrails/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "69abaea6-2d6c-4ede-9e00-d76021033fc6",
+      "occurred_at": "2026-06-02T23:58:58.145Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/consuelo-core/add-shared-registry-migration-guardrails/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "4bd5e5a4-8bb4-4f3a-83c1-dc8df18660bd",
+      "occurred_at": "2026-06-03T00:01:12.392Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "567a1217-3f37-4a36-bcb8-4c39589b3e6f",
+      "occurred_at": "2026-06-03T00:05:51.778Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "b3a1980f-2867-41a0-b5a3-c22cfd76a9e5",
+      "occurred_at": "2026-06-03T00:05:59.526Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "5865ad1d-dc55-41f4-ba90-4dfee22b6811",
+      "occurred_at": "2026-06-03T00:06:12.386Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "505074c0-0cdd-49bd-8557-1afd6608648e",
+      "occurred_at": "2026-06-03T00:06:17.458Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "abc07384-de65-4269-9e9b-f99816a12a96",
+      "occurred_at": "2026-06-03T00:06:58.422Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "329b2ff2-f5d8-45d2-97e1-a927b34ccc87",
+      "occurred_at": "2026-06-03T00:07:51.881Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "78dcc9c8-ddbb-47cc-bee4-5de5825f7232",
+      "occurred_at": "2026-06-03T00:08:06.328Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "d692d353-41d3-4a4e-afc2-c7a0b89e9e17",
+      "occurred_at": "2026-06-03T00:08:22.357Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "5dff9f03-13d4-45ca-b396-5ce5b17ea725",
+      "occurred_at": "2026-06-03T00:08:43.247Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "ae8a0a35-3395-4c1a-b409-20ee5a1a836f",
+      "occurred_at": "2026-06-03T00:09:00.732Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "c87210ed-5c6c-4d95-8fe2-121ab3217c63",
+      "occurred_at": "2026-06-03T00:09:58.370Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/consuelo-core/add-shared-registry-migration-guardrails/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "668ce172-358d-48b8-b79b-3870736d7eaf",
+      "occurred_at": "2026-06-03T00:11:05.135Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "341522ce-10cc-456c-950b-bf8557265070",
+      "occurred_at": "2026-06-03T00:11:06.380Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/consuelo-core/add-shared-registry-migration-guardrails/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "5bc85335-05a0-4ef2-bd2d-7fc5901bf683",
+      "occurred_at": "2026-06-03T00:11:40.517Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "b8178337-798c-4223-80ae-00768a4ae5a7",
+      "occurred_at": "2026-06-03T00:11:58.936Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "06b2040e-09e4-4e51-9818-d16921bbcaf4",
+      "occurred_at": "2026-06-03T00:12:12.090Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    },
+    {
+      "id": "7e9f2bc3-a7ae-4e94-8a4b-24881d0f996e",
+      "occurred_at": "2026-06-03T00:12:20.739Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-core/src/registry/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/consuelo-core/add-shared-registry-migration-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/consuelo-core/add-shared-registry-migration-guardrails"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T00:12:20.817Z"
+}

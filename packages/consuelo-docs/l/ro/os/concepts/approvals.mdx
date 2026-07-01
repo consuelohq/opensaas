@@ -1,0 +1,81 @@
+---
+title: Approvals
+description: Human guardrails for high-impact Consuelo OS actions.
+---
+
+# Approvals
+
+Approvals let skills pause before high-impact actions.
+
+The skill prepares the action, OS records the request, a human makes the decision, and the skill continues or stops. The approval belongs to OS, so the agent process does not need to stay alive while the human decides.
+
+## When approvals are useful
+
+Use approvals when a skill is about to do something that changes shared state, publishes something, affects an external system, or creates a result other people will trust.
+
+Examples:
+
+- publish or share an artifact
+- create campaign drafts in a connected system
+- update important workspace records
+- send a customer-facing message
+- trigger a workflow another person depends on
+
+## Approval flow
+
+```text
+skill prepares action
+  -> OS creates approval request
+  -> OS delivers request to a human surface
+  -> human approves or rejects
+  -> OS records the decision
+  -> skill continues or stops
+```
+
+Start simple. The first approval surface should support approve, reject, and details. Editing can come later once action-specific forms exist.
+
+## Approval request shape
+
+Field | Purpose
+--- | ---
+`id` | Stable approval identifier.
+`workspaceId` | Workspace that owns the request.
+`skillExecutionId` | Execution that requested the decision.
+`skillName` | Skill asking for approval.
+`title` | Human-readable decision title.
+`summary` | What will happen if approved.
+`riskLevel` | Internal impact level for sorting and policy.
+`status` | Pending, approved, rejected, expired, or cancelled.
+`proposedPayload` | Structured action details.
+`traceId` | Link back to execution logs.
+`createdAt` | Request creation time.
+`resolvedAt` | Human decision time.
+
+## Delivery surfaces
+
+Approval delivery should be adapter-based. Skills should ask OS for approval. Skills should not know whether the request goes to the app, Slack, Discord, or another surface.
+
+```text
+skill
+  -> approval service
+    -> approval record
+    -> delivery adapter
+```
+
+## Resume model
+
+The simplest useful model is explicit resume. A skill returns `approval_required`. The human decides. The agent or user then continues the skill with the approval reference.
+
+Automatic wake-up can come later after OS has durable execution checkpoints.
+
+## Product rules
+
+Approvals should be clear and specific. A request should explain what will happen, which workspace it affects, which skill asked for it, and what the human can do.
+
+Approvals should be rare enough to keep OS useful and common enough to keep high-impact actions safe.
+
+## Related
+
+- [Skills](/os/concepts/skills)
+- [OS portal](/os/concepts/portal)
+- [Observability](/os/concepts/observability)

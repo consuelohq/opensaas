@@ -1,0 +1,29 @@
+{
+  "files": [
+    ".task/os-manifest/build-os-manifest-registry-and-core-manifest/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/docs/runtime-surfaces.md",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-docs.ts",
+    "packages/os/scripts/generate-skills-registry.ts",
+    "packages/os/scripts/generate-types.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/facade/types.ts",
+    "packages/os/scripts/lib/local-guardrails.ts",
+    "packages/os/scripts/lib/manifest.ts",
+    "packages/os/scripts/lib/skills.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/tools-search.ts",
+    "packages/os/server.py",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/skills/task/skill.json",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/skills-registry.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/tool-manifest.json",
+    "packages/os/tooling/tool-manifest.schema.json"
+  ],
+  "updatedAt": "2026-06-03T02:26:42.484Z"
+}

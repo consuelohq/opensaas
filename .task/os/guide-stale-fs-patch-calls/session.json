@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4abb35b87491",
+  "tmuxSession": "opensaas-os-guide-stale-fs-patch-calls-4abb35b8",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guide-stale-fs-patch-calls",
+  "branch": "task/os/guide-stale-fs-patch-calls",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-stale-fs-patch-calls",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-stale-fs-patch-calls",
+  "prNumber": 1081,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1081",
+  "createdAt": "2026-06-16T07:54:56.967Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guide-stale-fs-patch-calls/.task/os/guide-stale-fs-patch-calls/session.json"
+}

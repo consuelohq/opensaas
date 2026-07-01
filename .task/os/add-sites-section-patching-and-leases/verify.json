@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-sites-section-patching-and-leases",
+  "base": "origin/stream/os",
+  "headSha": "4f3d9765570e4b8801985c814f3ce6ad8314b606",
+  "changeHash": "d35565af14acff48e7a3eef20c96302a5c0155158e9f72a7d5c9bb625af7bb2f",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/data-model.md",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/sites/SKILL.md",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "verifiedAt": "2026-06-09T07:42:30.630Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-sites-section-patching-and-leases/current.json",
+        ".task/os/add-sites-section-patching-and-leases/evidence-log.json",
+        ".task/os/add-sites-section-patching-and-leases/read-log.json",
+        ".task/os/add-sites-section-patching-and-leases/session.json",
+        ".task/os/add-sites-section-patching-and-leases/workpad.md",
+        ".task/tasks/os/add-sites-section-patching-and-leases.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/data-model.md",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/skills/sites/SKILL.md",
+        "packages/os/tests/sites-cli.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

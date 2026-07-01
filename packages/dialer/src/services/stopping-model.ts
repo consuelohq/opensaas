@@ -27,12 +27,7 @@ export class StoppingModelService {
     const thresholds: StoppingThreshold[] = [];
 
     for (let attemptNumber = 1; attemptNumber <= input.maxAttempts; attemptNumber += 1) {
-      const answerProbability = probabilityByAttempt.get(attemptNumber);
-      
-      if (answerProbability === undefined) {
-        continue;
-      }
-      
+      const answerProbability = probabilityByAttempt.get(attemptNumber) ?? 0;
       const expectedValue = answerProbability * economics.valuePerConnection;
       const shouldStop =
         attemptNumber > MIN_ATTEMPTS_BEFORE_STOP &&
@@ -66,11 +61,7 @@ export class StoppingModelService {
       probabilityByAttempt.set(item.attemptNumber, item.probability);
     }
 
-    if (!probabilityByAttempt.has(input.attemptNumber)) {
-      return null;
-    }
-
-    const answerProbability = probabilityByAttempt.get(input.attemptNumber)!;
+    const answerProbability = probabilityByAttempt.get(input.attemptNumber) ?? 0;
     const expectedValue = answerProbability * economics.valuePerConnection;
     const shouldStop =
       input.attemptNumber > MIN_ATTEMPTS_BEFORE_STOP &&

@@ -1,0 +1,19 @@
+{
+  "files": [
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/office-pages.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/office/SKILL.md",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/skills.json",
+    "packages/os/tests/artifacts.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/office-cli.test.ts",
+    "packages/os/tests/sites-cli.test.ts",
+    "packages/os/tests/skills-registry.test.ts"
+  ],
+  "updatedAt": "2026-06-09T03:26:34.047Z"
+}

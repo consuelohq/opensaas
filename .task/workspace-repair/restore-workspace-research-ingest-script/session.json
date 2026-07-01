@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ea1b3cf375e8",
+  "tmuxSession": "opensaas-workspace-repair-restore-workspace-research-ingest-script-ea1b3cf3",
+  "area": "workspace-repair",
+  "stream": "stream/workspace-repair",
+  "taskBranch": "task/workspace-repair/restore-workspace-research-ingest-script",
+  "branch": "task/workspace-repair/restore-workspace-research-ingest-script",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-repair-restore-workspace-research-ingest-script",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-repair-restore-workspace-research-ingest-script",
+  "prNumber": 712,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/712",
+  "createdAt": "2026-06-02T22:12:27.065Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-repair-restore-workspace-research-ingest-script/.task/workspace-repair/restore-workspace-research-ingest-script/session.json"
+}

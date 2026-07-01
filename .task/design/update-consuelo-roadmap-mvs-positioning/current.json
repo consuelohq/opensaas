@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/update-consuelo-roadmap-mvs-positioning",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 676,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/676",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/676",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/676/update-consuelo-roadmap-mvs-positioning",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/676",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/676/update-consuelo-roadmap-mvs-positioning",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-update-consuelo-roadmap-mvs-positioning",
+  "taskSession": "tsk_329bc163cdbe",
+  "tmuxSession": "opensaas-design-update-consuelo-roadmap-mvs-positioning-329bc163",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-update-consuelo-roadmap-mvs-positioning/.task/design/update-consuelo-roadmap-mvs-positioning/session.json",
+  "createdAt": "2026-06-01T15:19:58.619Z"
+}

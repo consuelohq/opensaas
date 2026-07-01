@@ -1,0 +1,19 @@
+{
+  "area": "workspace-repair",
+  "stream": "stream/workspace-repair",
+  "taskBranch": "task/workspace-repair/restore-workspace-research-ingest-script",
+  "baseBranch": "stream/workspace-repair",
+  "sourceBranch": "stream/workspace-repair",
+  "startFrom": "stream",
+  "prNumber": 712,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/712",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/712",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/712/restore-workspace-research-ingest-script",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/712",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/712/restore-workspace-research-ingest-script",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-repair-restore-workspace-research-ingest-script",
+  "taskSession": "tsk_ea1b3cf375e8",
+  "tmuxSession": "opensaas-workspace-repair-restore-workspace-research-ingest-script-ea1b3cf3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-repair-restore-workspace-research-ingest-script/.task/workspace-repair/restore-workspace-research-ingest-script/session.json",
+  "createdAt": "2026-06-02T22:12:27.066Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-phase-three-review-actions",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 727,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/727",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/727",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/727/add-phase-three-review-actions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/727",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/727/add-phase-three-review-actions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-phase-three-review-actions",
+  "taskSession": "tsk_1ec8a67e1767",
+  "tmuxSession": "opensaas-diff-cockpit-add-phase-three-review-actions-1ec8a67e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-phase-three-review-actions/.task/diff-cockpit/add-phase-three-review-actions/session.json",
+  "createdAt": "2026-06-03T04:47:16.326Z"
+}

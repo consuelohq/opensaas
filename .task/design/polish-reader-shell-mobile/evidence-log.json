@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/design/polish-reader-shell-mobile",
+  "events": [
+    {
+      "id": "a9fd2d88-e908-4ef9-bdde-04dca62eb945",
+      "occurred_at": "2026-06-07T15:19:40.812Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/polish-reader-shell-mobile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/polish-reader-shell-mobile"
+      }
+    },
+    {
+      "id": "ccce5788-2188-4fa8-90d5-273c62024fd2",
+      "occurred_at": "2026-06-07T15:19:55.632Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/polish-reader-shell-mobile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/polish-reader-shell-mobile"
+      }
+    },
+    {
+      "id": "a981c181-b755-4f2d-9466-b6c03b431eb8",
+      "occurred_at": "2026-06-07T15:20:02.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/polish-reader-shell-mobile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/polish-reader-shell-mobile"
+      }
+    },
+    {
+      "id": "c33516b2-f8f4-4100-95c2-294b88c31f46",
+      "occurred_at": "2026-06-07T15:29:29.927Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/polish-reader-shell-mobile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/polish-reader-shell-mobile"
+      }
+    },
+    {
+      "id": "9d0a9d5b-be31-47a6-9862-462d5028caea",
+      "occurred_at": "2026-06-07T15:30:09.331Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/polish-reader-shell-mobile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/polish-reader-shell-mobile"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-07T15:30:09.393Z"
+}

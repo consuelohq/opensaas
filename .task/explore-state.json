@@ -1,458 +1,2130 @@
 {
-  "query": "addObjectMemberChunks symbolPath nodeType parentName",
-  "budget": 5,
+  "query": "codemode workspace facade implementation",
+  "budget": 8,
   "results": [
     {
-      "path": "packages/workspace/scripts/lib/index/chunker.js",
-      "score": 1,
-      "belief_prior": 0.75,
-      "symbol": "addObjectMemberChunks",
+      "path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "score": 0.8995,
+      "belief_prior": 0.6998,
+      "symbol": "compactFacadeFinding",
       "chunk_type": "function",
-      "file_outline": "contentHash getLines getNodeContent getNodeName withChunkMetadata createChunk createLineChunk splitLineRange splitLiteralContent splitOversizedChunk createChunksForNode createClassShellChunk getParserForPath addCoveredLines groupImportChunks getPropertyName joinSymbolPath isFunctionLikeNode getDeclaratorValue getFunctionDeclarators getObjectDeclarators addFunctionDeclaratorChunks addObjectMemberChunks addObjectDeclaratorChunks getCallName getFirstStringArgument addTestCallChunk addClassChunks addDeclarationChunks addTopLevelNodeChunks chunkTreeSitterFile chunkMarkdown chunkJson chunkFile",
+      "file_outline": "getToolManifestEntry defaultRunner executeTool part 1 executeTool part 1 executeTool part 2 isRecord asArray previewText compactFacadeFinding summarizeFacadeFindings compactReviewData compactVerifyData compactFacadeData maybeSyncWorkpadValidation normalizeInput executeInternalTool resolveTaskSessionInput getWorktreeRoot isTaskSessionMetadata addSessionCandidates findTaskSessionMetadata resolveBranchIfNeeded buildCommandPlan appendArgument getTimeoutMs runWithRetry parseStdout findJsonStart elapsedMs formatCommand formatCommandForLog formatFacadeCommand formatFacadeCommandForLog truncateCommandForLog stripCommandEcho resolveGitRoot resolveWorkspaceCommandCwd resolveControllerRoot logResult",
       "typed_edges": [
         {
-          "path": "packages/workspace/scripts/lib/index/embedder.js",
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imported_by",
+          "symbol": "./branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imported_by",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
           "type": "sibling",
           "symbol": null
         },
         {
-          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imports",
+          "symbol": "./branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
           "type": "sibling",
           "symbol": null
         },
         {
-          "path": "packages/workspace/scripts/lib/index/indexer.js",
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
           "type": "sibling",
           "symbol": null
         },
         {
-          "path": "packages/workspace/scripts/lib/index/embedder.js",
-          "type": "sibling",
-          "symbol": null
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imports",
+          "symbol": "./errors"
         },
         {
-          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
-          "type": "sibling",
-          "symbol": null
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "imports",
+          "symbol": "./logger"
         },
         {
-          "path": "packages/workspace/scripts/lib/index/indexer.js",
-          "type": "sibling",
-          "symbol": null
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imports",
+          "symbol": "./schemas"
         },
         {
-          "path": "packages/workspace/scripts/lib/index/store.js",
-          "type": "sibling",
-          "symbol": null
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/worker/runtime.ts",
+          "type": "imports",
+          "symbol": "../worker/runtime"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-runner.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/worker.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imports",
+          "symbol": "../../../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "imported_by",
+          "symbol": "./logger"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imported_by",
+          "symbol": "./schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/worker/runtime.ts",
+          "type": "imported_by",
+          "symbol": "../worker/runtime"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-runner.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/worker.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imported_by",
+          "symbol": "../../../tooling/tool-manifest.json"
         }
       ],
       "is_implementation": true,
-      "file_size": 19463,
-      "chunk_count": 36,
-      "last_modified": 1777427306,
+      "file_size": 33684,
+      "chunk_count": 47,
+      "last_modified": 1781030560,
       "has_test": false,
       "package": "workspace",
-      "changed_in_branch": true,
+      "changed_in_branch": false,
       "evidence_state": "read",
-      "information_value": 0.7,
-      "reason": "semantic match: function addObjectMemberChunks",
-      "preview": "function addObjectMemberChunks(chunks, sourceLines, objectNode, parentName) { let added = false; for (const member of objectNode.namedChildren || []) {",
+      "information_value": 1.0807,
+      "reason": "hybrid match: function compactFacadeFinding",
+      "preview": "function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord { const finding = isRecord(value) ? value : {}; const fullMessage = finding.message ?? finding.msg ?? '';",
       "graph_connections": [
-        "packages/workspace/scripts/lib/index/embedder.js",
-        "packages/workspace/scripts/lib/index/graph-builder.js",
-        "packages/workspace/scripts/lib/index/indexer.js",
-        "packages/workspace/scripts/lib/index/store.js"
+        "packages/workspace/scripts/lib/facade/batch.ts",
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/client.ts",
+        "packages/workspace/scripts/lib/facade/errors.ts",
+        "packages/workspace/scripts/lib/facade/logger.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/facade/types.ts",
+        "packages/workspace/scripts/lib/worker/runtime.ts"
       ],
-      "graph_connection_count": 4,
+      "graph_connection_count": 8,
       "lines": {
-        "start": 348,
-        "end": 385
+        "start": 342,
+        "end": 357
       },
       "target": {
-        "key": "packages/workspace/scripts/lib/index/chunker.js:function:addObjectMemberChunks:348-385",
-        "path": "packages/workspace/scripts/lib/index/chunker.js",
+        "key": "packages/workspace/scripts/lib/facade/executor.ts:function:compactFacadeFinding:342-357",
+        "path": "packages/workspace/scripts/lib/facade/executor.ts",
         "kind": "function",
-        "name": "addObjectMemberChunks",
-        "symbol_path": "addObjectMemberChunks",
+        "name": "compactFacadeFinding",
+        "symbol_path": "compactFacadeFinding",
         "node_type": "function_declaration",
         "parent_name": null,
         "lines": {
-          "start": 348,
-          "end": 385
+          "start": 342,
+          "end": 357
         },
-        "content_hash": "3b412d911a3094d054733e8869604597546539537755e31ad461678ec6ee99a0",
-        "preview": "function addObjectMemberChunks(chunks, sourceLines, objectNode, parentName) { let added = false; for (const member of objectNode.namedChildren || []) {"
+        "content_hash": "cbc0fba0714de27124fc845a6d526ab9003a82132a90fceef3e857cd3273b782",
+        "preview": "function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord { const finding = isRecord(value) ? value : {}; const fullMessage = finding.message ?? finding.msg ?? '';"
       },
+      "retrieval_types": [
+        "lexical"
+      ],
       "score_parts": {
-        "boost": 1.37,
-        "embeddingSimilarity": 0.8705638744792026,
-        "changeRelevance": 1,
-        "connectedToOtherTopResults": false,
-        "graphCentrality": 0.07,
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.83,
+        "graphRelevance": 0.83,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
         "hasImplementation": true,
         "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
         "isTypeHeavy": false,
+        "lexicalScore": 0.375,
+        "nameMatch": 1,
+        "rawScore": 0.8995000000000002,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 24.9
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "score": 0.7497,
+      "belief_prior": 0.6249,
+      "symbol": "runBatch",
+      "chunk_type": "function",
+      "file_outline": "runBatch collectParallelGroup hasFunctionArgs isReadOnly estimateTokens cleanText commandDetail stepDetail runStep",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imported_by",
+          "symbol": "./batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imports",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-batch.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imports",
+          "symbol": "./batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imported_by",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/tool-batch.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/batch"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4676,
+      "chunk_count": 10,
+      "last_modified": 1779609324,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": "read",
+      "information_value": 1.3504,
+      "reason": "hybrid match: function runBatch",
+      "preview": "export async function runBatch( steps: BatchStep[], options: ExecuteToolOptions = {},",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/client.ts",
+        "packages/workspace/scripts/lib/facade/errors.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/types.ts",
+        "packages/workspace/scripts/tool-batch.ts",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "packages/workspace/scripts/lib/facade/logger.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 5,
+        "end": 62
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/facade/batch.ts:function:runBatch:5-62",
+        "path": "packages/workspace/scripts/lib/facade/batch.ts",
+        "kind": "function",
+        "name": "runBatch",
+        "symbol_path": "runBatch",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 5,
+          "end": 62
+        },
+        "content_hash": "68b9dadf475a7b4a9c79268658c85cae3131c035e2151f4c2666418dd6b987c3",
+        "preview": "export async function runBatch( steps: BatchStep[], options: ExecuteToolOptions = {},"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.5000000000000001,
+        "graphRelevance": 0.5000000000000001,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.7497000000000001,
         "recency": 0.5,
-        "nameMatch": 0,
-        "rawScore": 1.1926725080365077,
-        "weightedEdges": 2.1
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 15.000000000000004
       }
     },
     {
-      "path": "packages/workspace/scripts/lib/index/store.js",
-      "score": 1,
-      "belief_prior": 0.7144,
-      "symbol": "createStore part 3",
+      "path": "packages/workspace/tests/facade/facade.test.ts",
+      "score": 0.7437,
+      "belief_prior": 0.6219,
+      "symbol": "stableOptions",
       "chunk_type": "function",
-      "file_outline": "normalizePath sha256 getRepoIdentifier getRepoHash getCacheRoot vectorToBuffer bufferToVector createStore part 1 createStore part 1 createStore part 2 createStore part 2 createStore part 3 createStore part 3 createStore part 4",
+      "file_outline": "stableOptions successfulRunner failingRunner timeoutRunner passthroughRunner exampleInput writeTaskSession writeNamespacedTaskSession executableEntries",
       "typed_edges": [
         {
-          "path": "packages/workspace/scripts/lib/index/chunker.js",
-          "type": "sibling",
-          "symbol": null
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/batch"
         },
         {
-          "path": "packages/workspace/scripts/lib/index/embedder.js",
-          "type": "sibling",
-          "symbol": null
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/branch-resolver"
         },
         {
-          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
-          "type": "sibling",
-          "symbol": null
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/worker/runtime.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/worker/runtime"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/batch"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/worker/runtime.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/worker/runtime"
         }
       ],
       "is_implementation": true,
-      "file_size": 18590,
-      "chunk_count": 16,
-      "last_modified": 1778657750,
+      "file_size": 30818,
+      "chunk_count": 21,
+      "last_modified": 1780252659,
       "has_test": false,
       "package": "workspace",
-      "changed_in_branch": true,
+      "changed_in_branch": false,
       "evidence_state": "read",
-      "information_value": 0.7426,
-      "reason": "semantic match: function createStore part 3",
-      "preview": "\"  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,\", \"  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,\", \"  GROUP_CONCAT(CASE WHEN chunk_type",
+      "information_value": 1.8149,
+      "reason": "hybrid match: function stableOptions",
+      "preview": "function stableOptions(runner: ToolRunner, plans: CommandPlan[] = []) { return { cwd: '/tmp/not-a-repo',",
       "graph_connections": [
-        "packages/workspace/scripts/lib/index/chunker.js",
-        "packages/workspace/scripts/lib/index/embedder.js",
-        "packages/workspace/scripts/lib/index/graph-builder.js"
+        "packages/workspace/scripts/lib/facade/batch.ts",
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/facade/types.ts",
+        "packages/workspace/scripts/lib/worker/runtime.ts"
       ],
-      "graph_connection_count": 3,
+      "graph_connection_count": 6,
       "lines": {
-        "start": 340,
-        "end": 442
+        "start": 17,
+        "end": 46
       },
       "target": {
-        "key": "packages/workspace/scripts/lib/index/store.js:function:createStore part 3:340-442",
-        "path": "packages/workspace/scripts/lib/index/store.js",
+        "key": "packages/workspace/tests/facade/facade.test.ts:function:stableOptions:17-46",
+        "path": "packages/workspace/tests/facade/facade.test.ts",
         "kind": "function",
-        "name": "createStore part 3",
-        "symbol_path": "createStore part 3",
+        "name": "stableOptions",
+        "symbol_path": "stableOptions",
         "node_type": "function_declaration",
         "parent_name": null,
         "lines": {
-          "start": 340,
-          "end": 442
+          "start": 17,
+          "end": 46
         },
-        "content_hash": "ce8c53d516f4d7b353079f383d4d5fa965bf6d2d012808f5aca4f07629f6cc0e",
-        "preview": "\"  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,\", \"  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,\", \"  GROUP_CONCAT(CASE WHEN chunk_type"
+        "content_hash": "d45a3d67f7bcfc28a719ece90989b826a6ea0040d9ab603a9ff21dfc10d23743",
+        "preview": "function stableOptions(runner: ToolRunner, plans: CommandPlan[] = []) { return { cwd: '/tmp/not-a-repo',"
       },
+      "retrieval_types": [
+        "lexical"
+      ],
       "score_parts": {
-        "boost": 1.4520000000000002,
-        "embeddingSimilarity": 0.7563515857345342,
-        "changeRelevance": 1,
-        "connectedToOtherTopResults": false,
-        "graphCentrality": 0.029999999999999995,
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.4,
+        "graphRelevance": 0.4,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
         "hasImplementation": true,
         "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
         "isTypeHeavy": false,
-        "recency": 1,
-        "nameMatch": 0,
-        "rawScore": 1.0982225024865437,
-        "weightedEdges": 0.8999999999999999
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.7437000000000001,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 12
       }
     },
     {
-      "path": "packages/workspace/scripts/explore.js",
-      "score": 1,
-      "belief_prior": 0.7109,
-      "symbol": "targetKey",
+      "path": "packages/workspace/tests/codemode.test.ts",
+      "score": 0.7387,
+      "belief_prior": 0.6194,
+      "symbol": "scriptPath",
       "chunk_type": "function",
-      "file_outline": "writeStdout writeStderr printHelp parseArgs getPackage hasTestEdge isTestPath computeInformationValue targetKey buildTarget buildEvidenceStateMap toJsonResult printHuman main",
+      "file_outline": "scriptPath",
       "typed_edges": [
         {
-          "path": "packages/workspace/scripts/agent.js",
+          "path": "packages/workspace/scripts/lib/codemode/executor.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/codemode/executor"
+        },
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
           "type": "sibling",
           "symbol": null
         },
         {
-          "path": "packages/workspace/scripts/ai-review.js",
+          "path": "packages/workspace/scripts/lib/codemode/executor.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/codemode/executor"
+        },
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
           "type": "sibling",
           "symbol": null
         },
         {
-          "path": "packages/workspace/scripts/audit.js",
+          "path": "packages/workspace/tests/consuelo-design-theme.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/context-trace.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/consuelo-design-theme.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/context-trace.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/embedding-config.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/explore-ranker.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/git-diff.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/github.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/pr-links.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/pr-ref.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/research-ingest.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/review-run-state.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/stream-workpads.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-meta.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-selector-pr-ref.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-session.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-workpad.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/task-workpad.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/test-selection.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/tools-search-v2.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/trace-home.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/verification.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/wait.test.js",
           "type": "sibling",
           "symbol": null
         }
       ],
       "is_implementation": true,
-      "file_size": 10723,
-      "chunk_count": 16,
-      "last_modified": 1778657750,
-      "has_test": false,
-      "package": "workspace",
-      "changed_in_branch": true,
-      "evidence_state": "read",
-      "information_value": 0.7517,
-      "reason": "semantic match: function targetKey",
-      "preview": "function targetKey(pathName, kind, name, lines) { const normalizedKind = kind || 'chunk'; const normalizedName = name || 'anonymous';",
-      "graph_connections": [
-        "packages/workspace/scripts/agent.js",
-        "packages/workspace/scripts/ai-review.js",
-        "packages/workspace/scripts/audit.js"
-      ],
-      "graph_connection_count": 3,
-      "lines": {
-        "start": 112,
-        "end": 118
-      },
-      "target": {
-        "key": "packages/workspace/scripts/explore.js:function:targetKey:112-118",
-        "path": "packages/workspace/scripts/explore.js",
-        "kind": "function",
-        "name": "targetKey",
-        "symbol_path": "targetKey",
-        "node_type": "function_declaration",
-        "parent_name": null,
-        "lines": {
-          "start": 112,
-          "end": 118
-        },
-        "content_hash": "8f13a9b9a62d3813075c34fbe87f3d7cee24bfacfba025f5a76f4c7f96035536",
-        "preview": "function targetKey(pathName, kind, name, lines) { const normalizedKind = kind || 'chunk'; const normalizedName = name || 'anonymous';"
-      },
-      "score_parts": {
-        "boost": 1.4520000000000002,
-        "embeddingSimilarity": 0.7500823668336665,
-        "changeRelevance": 1,
-        "connectedToOtherTopResults": false,
-        "graphCentrality": 0.029999999999999995,
-        "hasImplementation": true,
-        "implementationBonus": 0,
-        "isTypeHeavy": false,
-        "recency": 1,
-        "nameMatch": 0,
-        "rawScore": 1.0891195966424838,
-        "weightedEdges": 0.8999999999999999
-      }
-    },
-    {
-      "path": "packages/workspace/scripts/lib/search/retriever.js",
-      "score": 1,
-      "belief_prior": 0.7094,
-      "symbol": "attachCandidateMetadata",
-      "chunk_type": "function",
-      "file_outline": "distanceToSimilarity buildRecencyLookup toPreview buildBestChunk applyBestChunk mergeSearchRows getChunkTypePriority shouldReplaceBestChunk expandGraph hydrateGraphCandidates attachCandidateMetadata tokenizeQuery pathMatchesQuery getClusterConnectedPaths scoreCandidates retrieve",
-      "typed_edges": [
-        {
-          "path": "packages/workspace/scripts/lib/search/ranker.js",
-          "type": "sibling",
-          "symbol": null
-        },
-        {
-          "path": "packages/workspace/scripts/lib/search/ranker.js",
-          "type": "sibling",
-          "symbol": null
-        }
-      ],
-      "is_implementation": true,
-      "file_size": 12270,
-      "chunk_count": 18,
-      "last_modified": 1778657750,
-      "has_test": false,
-      "package": "workspace",
-      "changed_in_branch": true,
-      "evidence_state": "read",
-      "information_value": 0.6393,
-      "reason": "semantic match: function attachCandidateMetadata",
-      "preview": "function attachCandidateMetadata(store, candidates) { const paths = Array.from(candidates.keys()); if (paths.length === 0) return;",
-      "graph_connections": [
-        "packages/workspace/scripts/lib/search/ranker.js"
-      ],
-      "graph_connection_count": 1,
-      "lines": {
-        "start": 214,
-        "end": 261
-      },
-      "target": {
-        "key": "packages/workspace/scripts/lib/search/retriever.js:function:attachCandidateMetadata:214-261",
-        "path": "packages/workspace/scripts/lib/search/retriever.js",
-        "kind": "function",
-        "name": "attachCandidateMetadata",
-        "symbol_path": "attachCandidateMetadata",
-        "node_type": "function_declaration",
-        "parent_name": null,
-        "lines": {
-          "start": 214,
-          "end": 261
-        },
-        "content_hash": "567342ab490c26484c10c38fc2a7d580125ce5e4cc0630bc6a6cd9a4c410a569",
-        "preview": "function attachCandidateMetadata(store, candidates) { const paths = Array.from(candidates.keys()); if (paths.length === 0) return;"
-      },
-      "score_parts": {
-        "boost": 1.4520000000000002,
-        "embeddingSimilarity": 0.7472585197629904,
-        "changeRelevance": 1,
-        "connectedToOtherTopResults": false,
-        "graphCentrality": 0.02,
-        "hasImplementation": true,
-        "implementationBonus": 0,
-        "isTypeHeavy": false,
-        "recency": 1,
-        "nameMatch": 0,
-        "rawScore": 1.0850193706958622,
-        "weightedEdges": 0.6
-      }
-    },
-    {
-      "path": "packages/workspace/scripts/lib/index/embedder.js",
-      "score": 0.814,
-      "belief_prior": 0.6071,
-      "symbol": null,
-      "chunk_type": "block",
-      "file_outline": "getApiKey getErrorMessage normalizeVector truncateVector getEmbeddingContextCount createEmbeddingContexts getEmbeddingContext embedText embedTextApi embedTextLocal",
-      "typed_edges": [
-        {
-          "path": "packages/workspace/scripts/lib/index/chunker.js",
-          "type": "sibling",
-          "symbol": null
-        },
-        {
-          "path": "packages/workspace/scripts/lib/index/chunker.js",
-          "type": "sibling",
-          "symbol": null
-        },
-        {
-          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
-          "type": "sibling",
-          "symbol": null
-        },
-        {
-          "path": "packages/workspace/scripts/lib/index/indexer.js",
-          "type": "sibling",
-          "symbol": null
-        },
-        {
-          "path": "packages/workspace/scripts/lib/index/graph-builder.js",
-          "type": "sibling",
-          "symbol": null
-        },
-        {
-          "path": "packages/workspace/scripts/lib/index/indexer.js",
-          "type": "sibling",
-          "symbol": null
-        },
-        {
-          "path": "packages/workspace/scripts/lib/index/store.js",
-          "type": "sibling",
-          "symbol": null
-        }
-      ],
-      "is_implementation": true,
-      "file_size": 5899,
-      "chunk_count": 13,
-      "last_modified": 1777473794,
+      "file_size": 4236,
+      "chunk_count": 6,
+      "last_modified": 1779394413,
       "has_test": false,
       "package": "workspace",
       "changed_in_branch": false,
       "evidence_state": null,
-      "information_value": 1.1001,
-      "reason": "semantic match: block chunk",
-      "preview": "const fs = require('fs'); const os = require('os'); const path = require('path');",
+      "information_value": 2.0552,
+      "reason": "hybrid match: function scriptPath",
+      "preview": "function scriptPath(): string { return join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'code-run.ts'); }",
       "graph_connections": [
-        "packages/workspace/scripts/lib/index/chunker.js",
-        "packages/workspace/scripts/lib/index/graph-builder.js",
-        "packages/workspace/scripts/lib/index/indexer.js",
-        "packages/workspace/scripts/lib/index/store.js"
+        "packages/workspace/scripts/lib/codemode/executor.ts",
+        "packages/workspace/tests/chunker.test.js",
+        "packages/workspace/tests/consuelo-design-theme.test.js",
+        "packages/workspace/tests/context-trace.test.js",
+        "packages/workspace/tests/embedding-config.test.js",
+        "packages/workspace/tests/explore-ranker.test.js",
+        "packages/workspace/tests/git-diff.test.ts",
+        "packages/workspace/tests/github.test.ts"
       ],
-      "graph_connection_count": 4,
+      "graph_connection_count": 8,
       "lines": {
-        "start": 1,
+        "start": 18,
+        "end": 20
+      },
+      "target": {
+        "key": "packages/workspace/tests/codemode.test.ts:function:scriptPath:18-20",
+        "path": "packages/workspace/tests/codemode.test.ts",
+        "kind": "function",
+        "name": "scriptPath",
+        "symbol_path": "scriptPath",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 18,
+          "end": 20
+        },
+        "content_hash": "bba4a8b7aabf0a00c0f92af0b75d50cd40bffa860e9b0e112982c0af5545af57",
+        "preview": "function scriptPath(): string { return join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'code-run.ts'); }"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.31666666666666665,
+        "graphRelevance": 0.31666666666666665,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.7387000000000001,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 9.5
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/codemode/debug.ts",
+      "score": 0.7097,
+      "belief_prior": 0.6049,
+      "symbol": "debugLog",
+      "chunk_type": "function",
+      "file_outline": "debugLog",
+      "typed_edges": [],
+      "is_implementation": true,
+      "file_size": 520,
+      "chunk_count": 3,
+      "last_modified": 1780633399,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.7902,
+      "reason": "hybrid match: function debugLog",
+      "preview": "export function debugLog(msg: string): void { if (!enabled) return; try {",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 8,
         "end": 16
       },
       "target": {
-        "key": "packages/workspace/scripts/lib/index/embedder.js:block:anonymous:1-16",
-        "path": "packages/workspace/scripts/lib/index/embedder.js",
-        "kind": "block",
-        "name": null,
-        "symbol_path": null,
-        "node_type": null,
+        "key": "packages/workspace/scripts/lib/codemode/debug.ts:function:debugLog:8-16",
+        "path": "packages/workspace/scripts/lib/codemode/debug.ts",
+        "kind": "function",
+        "name": "debugLog",
+        "symbol_path": "debugLog",
+        "node_type": "function_declaration",
         "parent_name": null,
         "lines": {
-          "start": 1,
+          "start": 8,
           "end": 16
         },
-        "content_hash": "e39564053df59a4e56bcdcf9cfd00969ea7d959d7e89b99d3493e66bdefa436f",
-        "preview": "const fs = require('fs'); const os = require('os'); const path = require('path');"
+        "content_hash": "8d3a0483d5a5d914ffd84e795b72dba281e1b38e240d83057938074a0d10a261",
+        "preview": "export function debugLog(msg: string): void { if (!enabled) return; try {"
       },
+      "retrieval_types": [
+        "lexical"
+      ],
       "score_parts": {
-        "boost": 1.1,
-        "embeddingSimilarity": 0.7399792933073222,
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
         "changeRelevance": 0.5,
         "connectedToOtherTopResults": false,
-        "graphCentrality": 0.07,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
         "hasImplementation": true,
         "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
         "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.7097000000000001,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/codemode/metrics.ts",
+      "score": 0.7097,
+      "belief_prior": 0.6049,
+      "symbol": "recordMetrics",
+      "chunk_type": "function",
+      "file_outline": "recordMetrics printStats",
+      "typed_edges": [],
+      "is_implementation": true,
+      "file_size": 2097,
+      "chunk_count": 4,
+      "last_modified": 1780633399,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.7902,
+      "reason": "hybrid match: function recordMetrics",
+      "preview": "export function recordMetrics(result: ExecutionResult, codeLength: number): void { try { mkdirSync(join(homedir(), '.kiro'), { recursive: true });",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 8,
+        "end": 24
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/codemode/metrics.ts:function:recordMetrics:8-24",
+        "path": "packages/workspace/scripts/lib/codemode/metrics.ts",
+        "kind": "function",
+        "name": "recordMetrics",
+        "symbol_path": "recordMetrics",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 8,
+          "end": 24
+        },
+        "content_hash": "b7d750f3effc2eca566dbb9d3cbbe410be6018015703fa448240e987a77a968b",
+        "preview": "export function recordMetrics(result: ExecutionResult, codeLength: number): void { try { mkdirSync(join(homedir(), '.kiro'), { recursive: true });"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.7097000000000001,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/workspace/tests/test-selection.test.js",
+      "score": 0.6671,
+      "belief_prior": 0.5836,
+      "symbol": "describe: test selection registry",
+      "chunk_type": "test",
+      "file_outline": "run json",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/consuelo-design-theme.test.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4281,
+      "chunk_count": 5,
+      "last_modified": 1779821665,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.624,
+      "reason": "hybrid match: test describe: test selection registry",
+      "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);",
+      "graph_connections": [
+        "packages/workspace/tests/chunker.test.js",
+        "packages/workspace/tests/codemode.test.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 28,
+        "end": 120
+      },
+      "target": {
+        "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+        "path": "packages/workspace/tests/test-selection.test.js",
+        "kind": "test",
+        "name": "describe: test selection registry",
+        "symbol_path": "describe: test selection registry",
+        "node_type": "call_expression",
+        "parent_name": null,
+        "lines": {
+          "start": 28,
+          "end": 120
+        },
+        "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+        "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.0875,
+        "nameMatch": 1,
+        "rawScore": 0.6671250000000001,
         "recency": 0.5,
-        "nameMatch": 0,
-        "rawScore": 0.8139772226380544,
-        "weightedEdges": 2.1
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.85,
+        "tokenCoverage": 0.25,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/codemode/types.ts",
+      "score": 0.6547,
+      "belief_prior": 0.5774,
+      "symbol": "ToolFunction",
+      "chunk_type": "type",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 992,
+      "chunk_count": 15,
+      "last_modified": 1780633399,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.8452,
+      "reason": "hybrid match: type ToolFunction",
+      "preview": "export type ToolFunction = (...args: unknown[]) => Promise<unknown>;",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 2,
+        "end": 2
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/codemode/types.ts:type:ToolFunction:2-2",
+        "path": "packages/workspace/scripts/lib/codemode/types.ts",
+        "kind": "type",
+        "name": "ToolFunction",
+        "symbol_path": "ToolFunction",
+        "node_type": "type_alias_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 2,
+          "end": 2
+        },
+        "content_hash": "d18482853b5d426514757e07197e4d7e3ac781546b8e7c2390de86f9b4b11bfc",
+        "preview": "export type ToolFunction = (...args: unknown[]) => Promise<unknown>;"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.6547000000000001,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.7,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 0
       }
     }
   ],
+  "source_routes": [],
   "index_stats": {
-    "total_files": 14567,
-    "total_chunks": 59873,
-    "last_indexed": "2026-05-13T08:14:34.212Z",
-    "last_full_index": "2026-04-29T01:40:26.658Z",
-    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
-    "files_indexed": 0,
-    "chunks_embedded": 1
+    "total_files": 15407,
+    "total_chunks": 74694,
+    "last_indexed": "2026-06-09T21:22:56.149Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 9,
+    "chunks_embedded": 387
   },
   "belief_version": 2,
   "beliefs": {
-    "packages/workspace/scripts/lib/index/chunker.js": {
-      "prior": 0.75,
-      "posterior": 0.75,
+    "packages/workspace/scripts/lib/facade/executor.ts": {
+      "prior": 0.6998,
+      "posterior": 0.99,
+      "observations": [
+        {
+          "event_id": "45566724-03f1-4a8e-ae3e-0667be365c88",
+          "multiplier": 0.85,
+          "reason": "verify failed exploit cluster",
+          "type": "verify.fail"
+        },
+        {
+          "event_id": "adc6a418-7fcc-45e3-97fd-d5ec584355ec",
+          "multiplier": 1.1,
+          "reason": "verify passed exploit cluster",
+          "type": "verify.pass"
+        },
+        {
+          "event_id": "0a198141-bf85-4780-bea6-cdb010574355",
+          "multiplier": 1.1,
+          "reason": "verify passed exploit cluster",
+          "type": "verify.pass"
+        },
+        {
+          "event_id": "748bc195-3516-4ee8-8a73-8ac0d892a75c",
+          "multiplier": 1.1,
+          "reason": "verify passed exploit cluster",
+          "type": "verify.pass"
+        },
+        {
+          "event_id": "da2612d5-8977-40e2-9e02-4b595ae8a0a0",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "36712b04-f3e3-42ed-8d86-6efeae7076b8",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "7ebda59e-8d58-41cf-b0e4-0f79c90339cc",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "df0bd1bc-7a4f-4cf0-94ac-2067545e6431",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "80fe0aff-8848-4b17-89f1-aee8beac489e",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "0ec54acc-1a42-42a5-b05e-b97b72c2c77a",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "2f7ce037-a6a6-4f5f-bc03-3e512b80b8b5",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "46770779-9bed-4abf-8120-60591255ddbd",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "3327de32-9c31-40ac-8c3a-42128d0bbaac",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "db3bcb16-123c-43cf-8d51-63c4fcb24c16",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "f9e658ff-5407-458e-8ea1-9d5da3c86eb3",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "05cf3045-1a90-4be0-92b6-23a01c8f33d7",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "5595a84c-4ea9-4d5c-aa07-1beeba87ae38",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "e76caeab-da1b-4059-acf7-72ffa100c21d",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "1976e4d1-920d-404f-881a-1bfc98df7d18",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "c0ab1321-cc52-4c4b-af6a-200be1313a59",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "d25093ed-1e8d-439f-9952-e0986b505fa5",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "92a36afd-6bc0-48b9-8d40-902998cff981",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "7eee798d-61b2-4f57-a9d3-5aa58d1211fa",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "b9a91ce1-d273-41e9-b48a-d78865abc40b",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "15887d29-022a-46f9-ab8c-c6c4d168e42f",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        }
+      ]
+    },
+    "packages/workspace/scripts/lib/facade/batch.ts": {
+      "prior": 0.6249,
+      "posterior": 0.99,
+      "observations": [
+        {
+          "event_id": "da2612d5-8977-40e2-9e02-4b595ae8a0a0",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "36712b04-f3e3-42ed-8d86-6efeae7076b8",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "7ebda59e-8d58-41cf-b0e4-0f79c90339cc",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "df0bd1bc-7a4f-4cf0-94ac-2067545e6431",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "80fe0aff-8848-4b17-89f1-aee8beac489e",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "0ec54acc-1a42-42a5-b05e-b97b72c2c77a",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "2f7ce037-a6a6-4f5f-bc03-3e512b80b8b5",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "46770779-9bed-4abf-8120-60591255ddbd",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "3327de32-9c31-40ac-8c3a-42128d0bbaac",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "db3bcb16-123c-43cf-8d51-63c4fcb24c16",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "f9e658ff-5407-458e-8ea1-9d5da3c86eb3",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "05cf3045-1a90-4be0-92b6-23a01c8f33d7",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "5595a84c-4ea9-4d5c-aa07-1beeba87ae38",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "e76caeab-da1b-4059-acf7-72ffa100c21d",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "1976e4d1-920d-404f-881a-1bfc98df7d18",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "c0ab1321-cc52-4c4b-af6a-200be1313a59",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "d25093ed-1e8d-439f-9952-e0986b505fa5",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "92a36afd-6bc0-48b9-8d40-902998cff981",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "7eee798d-61b2-4f57-a9d3-5aa58d1211fa",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "b9a91ce1-d273-41e9-b48a-d78865abc40b",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "15887d29-022a-46f9-ab8c-c6c4d168e42f",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        }
+      ]
+    },
+    "packages/workspace/tests/facade/facade.test.ts": {
+      "prior": 0.6219,
+      "posterior": 0.99,
+      "observations": [
+        {
+          "event_id": "da2612d5-8977-40e2-9e02-4b595ae8a0a0",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "36712b04-f3e3-42ed-8d86-6efeae7076b8",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "7ebda59e-8d58-41cf-b0e4-0f79c90339cc",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "df0bd1bc-7a4f-4cf0-94ac-2067545e6431",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "80fe0aff-8848-4b17-89f1-aee8beac489e",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "0ec54acc-1a42-42a5-b05e-b97b72c2c77a",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "2f7ce037-a6a6-4f5f-bc03-3e512b80b8b5",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "46770779-9bed-4abf-8120-60591255ddbd",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "3327de32-9c31-40ac-8c3a-42128d0bbaac",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "db3bcb16-123c-43cf-8d51-63c4fcb24c16",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "f9e658ff-5407-458e-8ea1-9d5da3c86eb3",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "05cf3045-1a90-4be0-92b6-23a01c8f33d7",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "5595a84c-4ea9-4d5c-aa07-1beeba87ae38",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "e76caeab-da1b-4059-acf7-72ffa100c21d",
+          "multiplier": 1.15,
+          "reason": "file read looked relevant",
+          "type": "file.read"
+        },
+        {
+          "event_id": "1976e4d1-920d-404f-881a-1bfc98df7d18",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "c0ab1321-cc52-4c4b-af6a-200be1313a59",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "d25093ed-1e8d-439f-9952-e0986b505fa5",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "92a36afd-6bc0-48b9-8d40-902998cff981",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "7eee798d-61b2-4f57-a9d3-5aa58d1211fa",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "b9a91ce1-d273-41e9-b48a-d78865abc40b",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        },
+        {
+          "event_id": "15887d29-022a-46f9-ab8c-c6c4d168e42f",
+          "multiplier": 1.05,
+          "reason": "file read looked relevant via graph neighbor",
+          "type": "file.read"
+        }
+      ]
+    },
+    "packages/workspace/tests/codemode.test.ts": {
+      "prior": 0.6194,
+      "posterior": 0.6185,
       "observations": []
     },
-    "packages/workspace/scripts/lib/index/store.js": {
-      "prior": 0.7144,
-      "posterior": 0.7144,
+    "packages/workspace/scripts/lib/codemode/debug.ts": {
+      "prior": 0.6049,
+      "posterior": 0.6049,
       "observations": []
     },
-    "packages/workspace/scripts/explore.js": {
-      "prior": 0.7109,
-      "posterior": 0.7109,
+    "packages/workspace/scripts/lib/codemode/metrics.ts": {
+      "prior": 0.6049,
+      "posterior": 0.6049,
       "observations": []
     },
-    "packages/workspace/scripts/lib/search/retriever.js": {
-      "prior": 0.7094,
-      "posterior": 0.7095,
+    "packages/workspace/tests/test-selection.test.js": {
+      "prior": 0.5836,
+      "posterior": 0.5836,
       "observations": []
     },
-    "packages/workspace/scripts/lib/index/embedder.js": {
-      "prior": 0.6071,
-      "posterior": 0.6071,
+    "packages/workspace/scripts/lib/codemode/types.ts": {
+      "prior": 0.5774,
+      "posterior": 0.5774,
       "observations": []
     }
   },
-  "belief_event_ids": [],
-  "branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+  "belief_event_ids": [
+    "12c8bdce-07a4-453c-b323-4553aa882024",
+    "45566724-03f1-4a8e-ae3e-0667be365c88",
+    "adc6a418-7fcc-45e3-97fd-d5ec584355ec",
+    "0a198141-bf85-4780-bea6-cdb010574355",
+    "ee1d82b3-c9a1-49ca-822e-6415a6d72323",
+    "748bc195-3516-4ee8-8a73-8ac0d892a75c",
+    "c8a642f7-13b8-4774-9f47-c01c7c764f28",
+    "52c0c7e8-e8f3-436f-bd50-097606123566",
+    "87e9763a-efd6-40f0-848f-13986ca33570",
+    "65b9a947-9dfd-4c60-8f2e-b01cc9fe8780",
+    "54ec59a3-b168-4b9c-9517-1bfc2714a38e",
+    "278cdc77-8e05-4dff-b6c0-5741b35badaf",
+    "9d68ea83-b863-46e2-819b-19a2bfb20162",
+    "74b7a5b0-f93b-496f-8eee-7263cb7bab42",
+    "6980de47-3f0a-4dd8-a270-9fcb36bd2e9f",
+    "1ae2adf0-94bd-415e-a28c-55f43a19db5d",
+    "751fc23f-9154-4b0b-9e24-ec1e3da0ee8c",
+    "136426a2-bd6c-47e1-8504-489a0404674c",
+    "de54dc70-90ab-45d2-8924-11fc324ca7d2",
+    "6dc495cd-167e-498b-ba8c-20fe220ce4a3",
+    "19eed8d7-9c8d-4e62-b8ba-8f6d673cfac2",
+    "92c9028b-69ff-493e-94ad-b9c5b06d7e12",
+    "28cdab6e-fe40-4ed7-a421-492223946130",
+    "da2612d5-8977-40e2-9e02-4b595ae8a0a0",
+    "4e28508f-2286-4a52-9efa-009756a8c3f6",
+    "36712b04-f3e3-42ed-8d86-6efeae7076b8",
+    "e5a15c48-603d-4291-9eb9-419a0356155b",
+    "d16e1ad5-512a-40fb-b422-a12491d31a77",
+    "8386e0f3-1e71-4519-8d96-5e94f1c51ef6",
+    "79cd6c92-a572-4cf6-ac35-4e14799a0fb2",
+    "0ee8367e-7349-478c-96ea-0258376e9cf8",
+    "a725b05b-f64a-4e3e-ab43-b1636ab7da98",
+    "2acf9bfe-e11c-4f72-8e24-56dd0b5eb0bb",
+    "33cce7d7-4b44-49c5-98b4-34e29d705335",
+    "e5913c44-c192-4dfb-99bd-c01f5f95b35d",
+    "5ba4083e-2be2-461a-98da-ab4f5e8c56f2",
+    "7ebda59e-8d58-41cf-b0e4-0f79c90339cc",
+    "1084f669-0e46-4cd0-84a2-afa99717281d",
+    "df0bd1bc-7a4f-4cf0-94ac-2067545e6431",
+    "80fe0aff-8848-4b17-89f1-aee8beac489e",
+    "18575262-b601-4dae-86f7-eb0841fd3bca",
+    "56f8d9ef-399d-4deb-9408-faa8e0dd4904",
+    "54b2fab5-c767-4f67-bbb0-b39816a127a6",
+    "0ec54acc-1a42-42a5-b05e-b97b72c2c77a",
+    "2f7ce037-a6a6-4f5f-bc03-3e512b80b8b5",
+    "6a747c38-d3a8-4f32-a445-66fb1727225c",
+    "2ec268cd-7179-420a-9d01-f2fc62b2a59a",
+    "46770779-9bed-4abf-8120-60591255ddbd",
+    "3327de32-9c31-40ac-8c3a-42128d0bbaac",
+    "b9f9fa1f-b004-4e1c-8768-fa504179abba",
+    "6201cda3-4a4c-44c5-9a63-e1ec08b29ceb",
+    "29e63235-4f07-41ce-9d00-8ef68b08ec8b",
+    "c6d4c980-19f0-42b8-a555-f18ce217ed48",
+    "f2b2c1c9-55f3-4b8b-a5fe-c145d9a2fc4f",
+    "564f63c7-3397-4750-a36d-e4fb24398d9d",
+    "b276506b-dd3e-4ed7-be8f-d394a2023e58",
+    "db3bcb16-123c-43cf-8d51-63c4fcb24c16",
+    "1a590cdd-6820-46e7-a552-ec4cc756a0ca",
+    "bf6347c8-3d85-448c-9da8-124a247de5d9",
+    "c7c0db52-fdba-4092-b161-6699ff7bb7ee",
+    "8a17ac6d-72fa-445b-a5cb-01f0da7df213",
+    "099b900c-8e78-446b-a80d-ebb6374bb69f",
+    "15dc8160-b8be-4e5c-a8d2-1105c50e37dc",
+    "79112d7c-71af-4dc9-84d8-16e4236fb136",
+    "9c9fbc9a-dd4c-4c80-99a3-79e74b8bdb07",
+    "157610a8-f7c8-4276-a947-2eb71e70ece4",
+    "7ebc3559-ef85-4f3e-8e1e-3474f4de2d1d",
+    "07667539-432c-4437-93dd-3f8bd0100bd7",
+    "f9e658ff-5407-458e-8ea1-9d5da3c86eb3",
+    "05cf3045-1a90-4be0-92b6-23a01c8f33d7",
+    "48cbab32-d853-461b-86b1-53c5525ed041",
+    "a1647eb6-f3ed-40de-9bb9-73c2e6e745e7",
+    "746f789e-861c-4f06-9531-61e37e7964a4",
+    "d2b8a43a-fce8-4e68-8eb3-a25dfc7856c2",
+    "21009e52-3b34-4d4d-a1b9-3cf79527cdb2",
+    "94744d20-4011-48b4-bec9-268e79bce5c8",
+    "64b7d489-048f-466c-9f19-5201e8ee5c9d",
+    "15839b50-c746-4b69-b7cd-bd3e6088ef66",
+    "5595a84c-4ea9-4d5c-aa07-1beeba87ae38",
+    "320a1e0f-cc30-474b-8902-9eea0303b954",
+    "9b28d105-ee7b-4605-b7b6-2b881f718708",
+    "73a9e60b-e46e-405d-bfc4-dd656d367a24",
+    "57b324c1-ed02-46e2-a61e-ef3ade7a075a",
+    "99eccb4f-5d77-4c45-a4a0-37c51f0d9733",
+    "9172dcff-3ecc-4946-b0f0-c569a3635413",
+    "0021ce43-1d20-48dc-91bc-f77d5d0d01a2",
+    "fd112c8f-a96c-4934-8b46-ca354abf72c5",
+    "b1892897-48c1-4937-a8f0-eb1a99a0ea51",
+    "d640464a-b3fb-4ac3-8e20-2d1e97f71e5d",
+    "cff5630a-1139-42a9-892f-908bcd8a567d",
+    "b20b4d76-7966-48c9-94ff-b8f81181f079",
+    "f19b4f1b-c3d0-4b6e-9922-b293936af550",
+    "22d491a4-554d-4b3b-bb70-07225caf6e8f",
+    "e5e85794-685d-47fb-83da-36d099c3871a",
+    "c44d8ddb-bfe8-4bbe-97c0-07b621c9d041",
+    "eb5792c1-754a-4bbc-8be1-ab973a9394e2",
+    "fe13b46c-1226-4c02-b17c-fd91962374f0",
+    "d61d845e-276e-4ffe-815d-b84ddcacd7ad",
+    "f910438e-0f46-4b9d-ae47-959833126fe5",
+    "e7dc5759-11d3-42d1-9441-dea9f0ce8d22",
+    "39ef3adf-e83f-4bf5-82b8-0046d5789161",
+    "1029c2a3-747f-4325-8bf1-d2e851931bcb",
+    "6ecd3cb0-65f8-49f6-b768-98e829877779",
+    "d9969ba1-eff0-44f8-8217-dbee14460674",
+    "2a120ec5-e5d3-43c6-a998-ee20fe95ecae",
+    "713bba57-6fe5-4bcd-9a44-7823a9e03f76",
+    "169253d8-b95f-4097-b469-eb267a0932e5",
+    "7f69091f-8376-4253-8e28-57e91f32a3b4",
+    "731c5941-fb3c-45c9-9b73-3891dc1ba7ee",
+    "dd538a04-a551-43b4-b191-6b1e74ab0681",
+    "24d381d5-4708-4f8e-b551-0c7153d8cbe6",
+    "3713c9ca-8f28-4638-8bda-faff1157ce9c",
+    "d07c86ec-58db-45ab-bb91-4118ba331a0b",
+    "7702b8d3-e0e6-444a-9e83-de72e559c214",
+    "cf45b1c1-bd36-4fdf-8e46-7bd48423434a",
+    "fc1fc82b-e722-4b7d-98b2-82e4789f4c68",
+    "3f367eba-770d-4c1e-be34-ae35ac3854d4",
+    "22f3646d-6162-4707-b081-8d9cb87db4c2",
+    "87b482f4-aed2-4a6b-a318-3b27cce9978d",
+    "6aba7953-1043-49ec-a8aa-367b6cca8462",
+    "de894b4b-1af4-4bfd-9fa7-6997213f3e22",
+    "c2806e8a-fc3e-4e9f-a93b-919e7bf5afc1",
+    "42c417cc-5440-421b-8a8f-872acbb1fcf0",
+    "a7193bb0-b00e-4147-a672-9c7d6ba6a238",
+    "2f8c3a2a-4841-448c-a2d5-97cfb9bfa6cf",
+    "e177340c-8a95-416a-8c19-5a04dd91e1d9",
+    "bbdb6b61-d943-4ffa-a4a7-b2640a4b113f",
+    "dfc1ab35-c243-46d3-80ff-9dd8ddca76b4",
+    "9cad8382-38ff-4eb6-8f1e-3b7d5de71b60",
+    "f44f9259-4322-4807-aac5-d74d10b029a9",
+    "774cece5-5eee-485c-b232-0d387d460626",
+    "33dce77a-f3ca-45bd-a062-f705f41613bd",
+    "dd5db68e-6092-4f89-9b5e-6b4b385e0667",
+    "4582b394-abea-46d3-8ded-1e679c692df8",
+    "af284c76-750f-46b9-a704-cdf1cb2a2ec1",
+    "4dff99cb-a6dc-4e33-a8e5-d1cbde4e8d4e",
+    "41d066fc-5a6a-42fd-a09f-bdc5bd8334fd",
+    "d6e00a1c-7498-451a-916c-573e7d20efb9",
+    "8da503ac-1314-464a-9b74-fb50faeaafb7",
+    "8bd43f09-5132-422e-8e4c-4bb0a2d4070c",
+    "3619ddd7-bfdf-45e2-a404-04f6f46ba8c8",
+    "d65e05a8-61dd-4be9-9882-bf5f20585266",
+    "de438ebf-18f3-4072-a276-fa914254209c",
+    "b02c2299-316f-4d92-b310-cc5efaefa419",
+    "8207b8de-6338-4693-b066-6666d4fdec1c",
+    "8690629c-af62-46af-a0fa-9c8db03f3a48",
+    "0d105360-303c-477e-a83e-87365656c266",
+    "195e62e2-38b7-440e-a7a6-92e36ff2a2d4",
+    "dc1a63c6-38be-4969-b06a-7384c924f954",
+    "e7f90f0a-c9a0-40ee-a861-58eba12e5bbe",
+    "aa7ad44f-d01f-4245-b382-30ef439b9b25",
+    "177cb8ab-870b-4dd4-839a-b25b30cc63a5",
+    "706e1946-b7b1-4635-823a-8f8be6775a17",
+    "5238cced-cde1-497c-9b1f-f2c14f82f4a4",
+    "e845f60a-1d9f-476b-99f6-a8c5f2927b45",
+    "5b2aabcb-9847-4577-83d8-ea72bcd86e8d",
+    "7187b075-e7d3-4720-aac5-7695a3af6862",
+    "8d8ae235-6aec-4acb-82b5-27cb141c6684",
+    "84fa8d1d-3265-4e07-97a7-26b65a538adc",
+    "2e5a1b96-7936-4a15-bf54-ac757920b238",
+    "722cecec-5e57-4ef0-9409-c05bf0e03548",
+    "86f83b4c-d6cc-4318-830e-a42d873db3da",
+    "2a4803ba-6b0d-40bf-81b8-66d2e95426ad",
+    "8d6a423f-2920-46fc-9c1e-7e3bce34650d",
+    "21fd5b43-a6b8-4f01-9f4b-3e23030bf2a1",
+    "e21797f8-fcac-4bba-9638-9197f326f806",
+    "425df07d-ae95-4b40-ac9c-fed30cdd827c",
+    "2427611e-dac1-445d-aea7-7d2a8657dd16",
+    "038b818f-32b5-4ed0-bb57-dc9c122047ea",
+    "b2b00351-a834-4f82-9ef0-4c6f335f26ce",
+    "29f6c802-0311-4bc4-9d36-bded88a69610",
+    "3a3d5cbd-7063-4865-bbae-196c738deb81",
+    "cfaeca8a-89ec-4bb1-b43e-6b816c7152d7",
+    "062e5e00-805c-4351-a508-81009571af2c",
+    "9424d2de-4e15-4881-bd71-6c1796b1d30e",
+    "aeb04058-dde5-4c9e-85d7-af05ed9de705",
+    "3588cf33-c1e8-4317-912f-fca9bd54a7a0",
+    "4ef30bbe-0eb8-4b5a-af37-cf30069af490",
+    "6f7534ff-1675-4713-b109-28d44f82d4dc",
+    "5d23877d-3259-4eb5-917d-bf5544b44b99",
+    "27734ae7-46d9-48e4-86d4-2fa9a9aa293c",
+    "b3f8712b-76bd-4493-8027-298c4452cae6",
+    "771251d8-a7a1-4615-a9b9-7b0612a3414f",
+    "2ab24fe4-e2c5-4687-80ea-2fcee30cb703",
+    "e6e96237-8d00-4b56-b46d-67b8b9819128",
+    "6eeaf121-1b3a-4e84-b2a1-c96bf3758887",
+    "ecf4ca9b-95c7-444a-89ef-d5efe0cd0836",
+    "9698601e-1f52-4205-a33d-ae560832296f",
+    "0a2bd692-dbd2-4eea-abca-9f6df3aba18f",
+    "19a32623-31db-499a-9e91-b3f0ad919ef5",
+    "1a2536f2-8093-46a5-b207-8b9299762546",
+    "d5098d4b-511d-415d-8a76-bcb805daa21c",
+    "6247da24-287a-4f66-9486-c0ec01450fb6",
+    "468a1636-f6e8-4d2b-900d-b26967179483",
+    "571c778d-37de-4ae5-b13d-9e7ab685d6f3",
+    "69b845d9-cd49-41af-8578-08aa941e30d7",
+    "07689a25-81f3-4e63-a8a3-2ac11410741c",
+    "7613ed47-7ebd-4504-a3bf-0f2e3c1a91ba",
+    "ac581337-6d87-4b44-9823-04b8b049137a",
+    "ecac7ad2-3297-4e84-8ab2-a147dbef0567",
+    "22ff382d-280f-45b8-b6c1-31eaffa4fc39",
+    "e17f4335-9a5c-45d7-908c-aff5b17f6779",
+    "120f3435-3ad6-448c-a011-afc4f13efef5",
+    "6623d783-202b-4de8-83b0-91b6d48af597",
+    "e968d553-d990-463a-9f87-7140bb80ef31",
+    "76349e43-9c8d-4bf9-8589-27a1eee767c4",
+    "707d8281-eeba-4c36-8071-1dd89a435406",
+    "85bd1cc1-3564-4261-be45-2920ac7bd8b5",
+    "78d37abb-fe12-4bb2-9b09-9ac87b3e7f6f",
+    "cd453c9c-a159-495b-9d3b-9c47d1c83645",
+    "04d204f0-4d40-44c1-95bf-3cf823a7b624",
+    "b6499734-952e-43f5-8652-f71cb20a3ecf",
+    "30175b35-ec3b-4bc3-93d5-00167e168383",
+    "f8fa1ec2-f608-48e6-b8f4-dd68f7e7e9c6",
+    "814fd1dc-5bb1-460e-a241-2bca6013163f",
+    "c30e7f73-2bf9-4021-a919-5e0f750ec0b7",
+    "8f65e2a9-56ce-4651-994f-6422c4308f53",
+    "3eeaa089-af66-43da-a683-9f0e39230b5a",
+    "89b1f965-8ea9-4d35-b004-8eb8d75bbae8",
+    "664ad322-8338-4101-bd6c-b80ce3cc4605",
+    "f2426d7c-aa41-4309-a105-dce5d10f1b13",
+    "91a3a6a4-0029-4f9b-839b-f68441773446",
+    "4f00bcd9-5c2d-4ed9-b393-b236f6c5761e",
+    "9a9161b8-b0d6-4be8-8568-696f0d09ef72",
+    "ca66a063-6647-43bf-9a85-c1dd67f053d2",
+    "5d983aec-07c6-4a11-bf8e-b8183f0f87eb",
+    "a286ea9a-44ea-46a2-a2dc-7e8bf0d1f415",
+    "1578a5f7-c573-4403-9921-1f32917c5292",
+    "f3a6a764-3626-4f2c-80c4-cd4e149ff02a",
+    "12fe8e22-2d3d-4939-80cb-dc9b7e6e66fd",
+    "56db3115-e333-4a64-bca3-741ebb7dc968",
+    "e46dc1db-4a7b-4bd5-af46-c9852fd8ac7c",
+    "b4707f56-dcce-4e06-a74a-d6a61fcc2374",
+    "b141687c-7096-4d1d-b0ba-15ba2f3efbc7",
+    "0fb14df9-388a-44df-b77c-6996f8c3e6ad",
+    "106bee35-95e1-449a-936a-5e05a36afa63",
+    "964333f7-6ee4-418c-9abe-1e0cb93c5bd2",
+    "ed391050-97d8-4418-8b92-ad4b550af1b6",
+    "684371d8-026d-4382-807c-f4f8ba34aa2d",
+    "53349013-8d15-45aa-9e96-36f9293c4aac",
+    "488101ae-0b2b-4978-8606-0605a71dd132",
+    "8b46e447-1397-44d8-97ae-00fea91cebcd",
+    "d16d8469-704f-409b-a5c5-9f3c6f57af09",
+    "9622de5e-37d9-44ee-b310-3ec07af26330",
+    "8ae0aaeb-0828-47e1-9432-441d273f868f",
+    "369daa24-5199-4c9f-9e78-41ddc1122e5a",
+    "de452c8a-febd-4ba8-a6d6-a1f64be86239",
+    "b8ed4ad7-4c44-4fc4-a9dd-7ad57b0b818d",
+    "73478e5b-acaf-48f3-8774-6fff36237c8e",
+    "6632a63d-6224-4a1b-80f2-a0959e81e7f5",
+    "797ab6ae-be87-459f-9dc5-a22e2d967cae",
+    "1cec5561-49c9-48aa-8316-a2fe3cc01dac",
+    "7c83e3fc-cc02-43df-8020-3c7aeeca6212",
+    "f4e49a37-9f7e-4236-80d6-f96dd0fe1163",
+    "90844477-82e1-43c4-9f81-720d6481b960",
+    "4dbac791-573f-4aa0-b8a9-a32a0cb53c28",
+    "d5e8d2de-dc66-4106-b615-07c2ee52a291",
+    "8f690b2d-7a5d-4f30-9046-28e48f80b85a",
+    "354e5fb5-edc3-429a-abb2-19d42f5f1c42",
+    "f682c47f-36c6-41e1-859a-e98342ef193c",
+    "8d049bcc-5a88-4c6f-8fd7-c0b4726edbbe",
+    "2955feec-b17b-4e08-a1b3-13de894e8ffc",
+    "969884ac-b003-4942-b08b-de157a72d630",
+    "61ee13a5-503e-47ed-9fa4-d7c22afabd36",
+    "3a229dc0-70ff-44fa-be3d-3dcefc313c65",
+    "9691c77f-d7bf-41d1-bdbf-4bc3601ffcd2",
+    "3e67091d-beae-483a-aaea-816c4f14f133",
+    "cce4b841-6611-4dcb-b4eb-2a6b256a75e9",
+    "4f2a7134-5a6e-4359-b235-4cb9e51504b0",
+    "82241be5-08ae-4a34-99fc-25cbace9c4bd",
+    "8a4a544b-3de7-413f-a4b4-16bf87ef245a",
+    "2a798e03-c8a1-4160-b9cb-b512cb1ed5bd",
+    "d194d7de-787f-471c-b599-cbd3d4c7749a",
+    "aad07373-9648-45ff-9ba6-9487ac924165",
+    "d56cafac-cb26-4ea1-8a94-2ebe122873af",
+    "a0a5f675-507c-4e73-8d3a-ddda2c1d385e",
+    "af14cef7-bcaa-47e1-bb2c-0862f92185af",
+    "05b0ed4c-f0db-4737-a1e2-3100391e83ef",
+    "1841f79f-5314-4f2b-9cc0-940b59debd7b",
+    "17508180-6cff-447d-8644-358f2c255920",
+    "9b69066e-6a1c-4da7-9e58-0415da1dcab6",
+    "a292dd20-834c-40d6-9f39-3fea12e92c22",
+    "76669864-e3c7-4063-b39c-fa17d51c9a1c",
+    "f0807491-7d35-4145-be05-ca10144a8e86",
+    "f201b408-f8d9-4299-a970-798368b7a369",
+    "d899deba-1592-46a0-8577-d4756b9dcdd8",
+    "508d4db0-3dd0-4cf4-8c26-ea71c8082560",
+    "94dd6397-068b-483d-b56a-b91af4596927",
+    "7188949d-cc41-4d0c-8620-d69989f32455",
+    "8464a98b-4f52-4e73-98e6-22a4be45f3e0",
+    "50892ea1-32db-4127-8900-93295d14571a",
+    "ba9da64b-149f-48a3-bbcd-50c82a66ae07",
+    "dc1719b7-5cd8-48c9-a7dd-79ecd22e58c3",
+    "e10a6aa7-c65a-4c58-b3ac-b4ed51838a69",
+    "45652505-890a-4289-be0f-d5ff03ca6d76",
+    "52b07aa3-fb04-41bd-bb22-c0ef622d7292",
+    "1499ac0a-aeb7-4a8d-96c2-0f6a57668d6c",
+    "5281e33a-de4d-4812-91d8-c4bd31d93231",
+    "9fe6e405-088f-476a-b900-68ea11e25a9a",
+    "af3c1252-a1b0-409f-8079-93b8bd71bda2",
+    "04df13f4-3f9d-43a2-ac71-8101b463f79e",
+    "4b292528-a408-48d9-aa2f-c355e7f01a77",
+    "72b9f2ba-e990-475d-a39a-b9f573b04184",
+    "9cd7146a-7970-4bd9-8297-b535ef061f4c",
+    "6fc36206-95e9-410d-9360-0b0c6af8de90",
+    "1e593b77-af8d-4aff-af6d-16fb64adcee9",
+    "578701ef-301f-4490-9a91-739abccbfbf9",
+    "032ac1a7-98fd-4c86-98a7-21276243f2d6",
+    "a51c6e10-50be-43df-b13f-6a381de08ed0",
+    "0abd303d-4be8-4f15-901f-f775b3b8fff5",
+    "37266c0f-8813-4082-a302-54be461e1c2e",
+    "71d06d6d-423e-4b47-a4a8-b993bef18068",
+    "ebedb992-cb83-4041-9d2a-22d5e14917c5",
+    "d5be6625-6059-4c67-a7d0-067d8dc567a0",
+    "1adbef7c-83ce-4d0a-b936-f67d066b6799",
+    "99450f1a-561e-4906-8993-04e4318ae77f",
+    "aae3e5e6-97fb-4a7f-b4b4-cea8999e1815",
+    "3f50b1fd-5eb9-4d68-83a8-231da0e36bdd",
+    "4db47651-8f2b-466f-8e43-27694f58682e",
+    "8e40a3a2-997e-4888-82dc-2eaf3a773fa0",
+    "d541bd07-ed1f-4d7f-a6ba-94930f206414",
+    "91163309-bbd7-40d5-b912-1995a13e1f5b",
+    "915787b8-614f-4be0-b1fc-47720ee6ef23",
+    "cdb4d514-c520-41f8-a21b-11d1cd6dae68",
+    "795cb289-eefb-45b9-a533-56ec58332a63",
+    "3aa8638e-a90e-4be7-a9d8-de0f70f80dc7",
+    "58bff3df-3b1f-4abd-93d8-ec657b312fbc",
+    "94eaa321-17e1-4043-818d-0a87458e8a44",
+    "8a904c57-5446-44f4-aedf-2f46659acf19",
+    "e76caeab-da1b-4059-acf7-72ffa100c21d",
+    "56af206d-fd16-4ab4-a726-2a55601c6602",
+    "6d82ea45-0c4a-44ce-84f4-8d49ad216856",
+    "0bdabb75-d817-4131-a81f-cc210f0ee690",
+    "ac589bb2-87ff-407d-b841-d02263d425b0",
+    "18a812ec-6eed-4c83-afd1-bd378c8896dc",
+    "528a5bbf-3c5d-4225-81c5-184c3eced2fc",
+    "1976e4d1-920d-404f-881a-1bfc98df7d18",
+    "c0ab1321-cc52-4c4b-af6a-200be1313a59",
+    "d25093ed-1e8d-439f-9952-e0986b505fa5",
+    "a45f8821-6f9d-47fe-b8c2-c6ce277f508f",
+    "3a43291c-6b90-46f6-bd85-87dcc45ed9a4",
+    "973ff3c4-807e-4a46-bb35-7fca17dec3e7",
+    "8e475498-3faa-465a-a055-33ec9877fc2e",
+    "900e48b0-b103-4d33-9fcd-7be8454c77aa",
+    "f69f6f09-f98b-49dd-8e05-0b3798431e0f",
+    "1a5e391f-5505-4094-a459-5676e38175ea",
+    "4367002f-b276-4827-bb58-dd79af20040d",
+    "a41369b8-a5d7-4814-9294-ddfe65a7cd1c",
+    "c7d7cfc1-d2ed-4829-8fc1-de088d7071fc",
+    "99707c27-efd7-46dd-bd5a-c6182f333014",
+    "8bdac749-bf72-4e1e-a44e-b0d67021f400",
+    "9afb2442-1480-49a7-b0e9-d1350ee1059b",
+    "a5ba2ec7-a47a-40b1-8d23-067e11ded4b5",
+    "91ba982d-6dbf-414a-8c5a-dfc083cc9ee5",
+    "567c774f-f31d-464d-912f-dfb92110c88a",
+    "cbc90505-5aa0-4c0a-9d5a-00f915538f80",
+    "be301f0b-f97a-4ec3-a49a-ccdfdba60ad5",
+    "ee667e3e-5167-4450-9331-37fe1925ede0",
+    "93faeb02-1766-489d-bccb-860394fd2a35",
+    "f8e1b05e-008f-453b-8785-c052c957d910",
+    "5121d1a2-7024-4c2e-99b2-ff4b69472388",
+    "04b5256b-5b4a-47cb-9146-239089802ed8",
+    "87c7d8b4-8569-47c1-920f-52d4a4f21df9",
+    "6d9ea12c-6c45-4dbc-bf6c-798ff47a80d0",
+    "b943e51d-8fad-495d-9c69-5a46b5470aa6",
+    "86544613-f9bf-4aaa-9a1a-8972410a35c6",
+    "f124d670-3e59-45e5-8faf-3906d39efd08",
+    "07b25db0-60e6-47ff-a4cd-40be86564a41",
+    "7a99a5c3-7399-4f44-861a-1ca0d6c4bbb3",
+    "7685267c-f8c0-4f0d-8851-7cf9e27484ad",
+    "867a3c7f-559d-4b78-8847-cf6518853714",
+    "baa2f232-0aed-45b3-ac07-47bdb27a2141",
+    "2e5692d9-c68a-4c31-ae60-5a9ebab9ebcd",
+    "06ee4411-5b8c-4845-add1-601a39b2d75a",
+    "64b6c0c7-2f48-4903-8b6b-168171ed57a8",
+    "231cb1f4-533c-4591-a330-1e43fc777e8e",
+    "45c82a37-8fa7-4b67-8dae-ed8f0ce453b1",
+    "7e8675cf-a747-434b-b81a-302a92c18885",
+    "a245388e-8998-4ea8-acec-cb3543fd031f",
+    "9ad0b003-5638-4091-b02a-da58203ab211",
+    "63ff315e-a1ec-45e7-8977-56b7336b9685",
+    "7ad7d880-6b92-40c9-a3ce-70c604e429e4",
+    "b6e633c3-fb1b-46d0-b130-ae5de4c16e7d",
+    "965f997e-1981-4205-96b8-78ff0fd19527",
+    "ca8b90f7-b4fa-4167-a16c-0c09d18e385b",
+    "e9c50a2d-b56a-43ac-8005-ba7538e7e4a2",
+    "b1497347-7d91-4d97-a132-cc0bd4fe5cd0",
+    "761b7a4a-5a5f-4b71-9ee1-44aa10db5465",
+    "90e02499-cf22-4549-a2b7-206eb46da90e",
+    "8c094d7e-b1a7-43f2-b5af-9e23ccb2d38e",
+    "f966528c-f305-4771-aded-6c9d67832c46",
+    "7d8821f9-59c3-4320-ab74-14345550bff5",
+    "a137047a-c69e-43ce-ad21-9ad9d7cb8030",
+    "5e6a3ec4-5ef1-4527-af43-2f267a048b98",
+    "7de35cfb-d4a1-4520-807e-1787e20df1b2",
+    "72ada1db-db1a-4da5-aa14-357537960234",
+    "7c8177d0-3f6e-49a9-babe-45992dc4a694",
+    "e56d00e1-56bb-41f6-9de7-efa6578a8ce6",
+    "539d5413-7e46-478a-9cf8-d52965ea02ae",
+    "2c6d81f8-03fa-4a58-8d9d-4077ebdb0da1",
+    "36719e32-29cf-49c5-890b-e01aae3580d0",
+    "4951af74-eb27-4be7-b618-c0c021e48f73",
+    "9140f102-dd28-4d07-ab08-f424a3955162",
+    "4ef20ef5-c8bd-4a93-b79e-fcc034e8a00f",
+    "3be89f93-27a4-4d38-b888-67641d070c21",
+    "46635436-ffaf-4df1-a918-baef8893f614",
+    "8b7d2e05-181f-410d-911c-5e04c4d07b1f",
+    "f7a422a4-6092-4903-813b-716c10b128b8",
+    "b43bf50d-9513-4c9e-a924-4f06549016b6",
+    "b9897967-702e-40f7-ac33-5a9fe5c5da62",
+    "6d32641b-b2e6-4fc5-9e8d-29fc0bf6b8ee",
+    "a5c6eefb-e4ee-4467-9383-b136022ec8f7",
+    "3210bfeb-72df-4140-8d6e-d55e7feaf2b1",
+    "d210b67c-6db7-4a20-b48e-6f7a14e6d89e",
+    "0be38fb9-38ee-4b28-87eb-c24e6fd94976",
+    "dac27fe0-bb60-41ba-8240-acaa96a9af0d",
+    "53f2b543-157c-4b66-acb0-f986de7878f7",
+    "193e3530-f9fc-4921-9ce4-e347d9f14160",
+    "346ca0ab-bd1a-4aed-86f0-6d78ea911d13",
+    "1cece2a8-24a7-4f2c-a16a-7e60aa18303a",
+    "b8003a08-7996-41ed-91fd-27785011a001",
+    "f1f36583-9b84-40c3-8469-48e80a97c44f",
+    "bcf0d112-1dbe-4328-8128-6f4d7e39f3be",
+    "d1b9d2c0-07de-4796-8407-630e699c16e2",
+    "43c45204-8c69-4ca1-b56b-00f83eef75a0",
+    "d545744a-bd13-4f04-ba41-387a272e93eb",
+    "92a36afd-6bc0-48b9-8d40-902998cff981",
+    "c66f35dd-2a6e-43e0-9497-a372ceb5f633",
+    "c7f36f30-b1a2-4f2f-a452-fbfa58ef6574",
+    "9ed3ec92-75b1-421d-a0b2-3ca5b805c2bb",
+    "dfb09fa5-e3b9-4478-b552-1dce122e1d9d",
+    "68379af2-4235-4c77-91b3-df12be18d310",
+    "eebdfd62-f118-4311-ae3f-c29b1503881a",
+    "eec61159-7ade-4102-8668-34f05b438b9b",
+    "bf65c192-2ec5-46a6-9aea-8a6cc1bdebf3",
+    "6305c21e-0a78-4d99-8147-2c8a93baa544",
+    "fb182c29-14c1-46cb-908b-bc7eb27f2617",
+    "283ca174-a844-40d2-a9b9-2623e3b01e45",
+    "9288831c-61db-4371-b54f-8d880c744bb0",
+    "7eee798d-61b2-4f57-a9d3-5aa58d1211fa",
+    "e3e08c46-78cb-4b8f-a91f-9c98ae30d009",
+    "83b502a0-b5e7-4bf8-860e-09d04bb71063",
+    "f20ccc89-e788-401b-955b-9741ddb98464",
+    "623315f0-0da0-4de1-8090-a57d3a91f720",
+    "964248f5-6b1a-4a3c-985c-3a627d696114",
+    "b9a91ce1-d273-41e9-b48a-d78865abc40b",
+    "8301a6dd-0b02-4a68-ac29-f817fe248d66",
+    "c538813c-6cc2-4883-8c69-78c76497467a",
+    "254428ef-2828-4a20-aa15-698c1fac3aa9",
+    "1bce0b8c-1713-4b38-a203-ed01226ea199",
+    "2fd06ae8-05ca-4477-a728-e356384d03e2",
+    "fb1a858a-e651-4e72-a77a-c133d14e1437",
+    "52d2a04c-9a77-41e8-818c-12bb95010c3e",
+    "d56f1882-a95f-464d-89a9-2e21dbc08192",
+    "7c1556ed-d63e-478a-8941-494b84fa7fba",
+    "af456beb-274e-4573-84ec-d40ed027d79d",
+    "dd656f82-bf17-4a84-a52b-7ba7815daecb",
+    "fbe5577f-bdd7-44a3-8d4e-0b416002d544",
+    "2bcd665e-ff73-48f6-a1d4-a8c48c559733",
+    "5957f0c9-93e8-44ca-a1c0-dd901a1359d4",
+    "00195ad0-1710-469e-a5d4-f01a4f8cdd29",
+    "b378dc6e-c500-49fd-a60f-83fd1072251f",
+    "fa953dab-3304-4e62-876c-c886420d326d",
+    "68f375a1-3429-4ad6-a346-0b0b5b3d6694",
+    "306adcda-4c95-406b-a302-3d8217e3f66a",
+    "1bd85229-85ec-41ea-83e8-16bf95d23b3b",
+    "2a3e4dea-7960-4b50-83b2-0ee3d58cabf9",
+    "f149c81f-fad2-4c2e-9d4c-4ba099af610a",
+    "ab58eb70-b1f0-441e-bf80-49259556578a",
+    "b3455576-4c15-415f-8379-2ce5278445c9",
+    "be8222d7-55ad-451f-998a-f217eee585cf",
+    "e7f052ca-2252-48ad-a2ab-e922036d96b4",
+    "821e69b0-a8f9-48df-9012-fa4c178ece2e",
+    "babe4684-3c77-46d1-97f9-cdbfd7fa5a53",
+    "415129ef-3e87-4df0-a774-031f2557e4cd",
+    "5a472a0a-5e90-4ad0-93c2-24d39bd90d19",
+    "9a0c0291-5061-45eb-9801-6673d77aa09d",
+    "5cd89640-20ad-4f2e-8e73-3b4b8ff34ee1",
+    "b75f12d7-ec9c-411f-a79c-af88b7c28754",
+    "b27eb803-e275-4165-b6ef-a2121849d0e8",
+    "e6d8ab55-433a-43f2-b17e-ea763fdbd706",
+    "beb2c77e-48d9-49d1-8174-f9d0ddf82c77",
+    "97e642f0-271c-4ba9-bed4-c6f2d5463b1d",
+    "2f4d66f5-1017-43c8-8819-2b31f9755a10",
+    "e84f0b31-f9b6-4f3d-a269-b96f1a803c62",
+    "4ce8b263-023d-45f8-9819-5362b94ed489",
+    "c897af9e-71a2-4961-bbe1-2d3809abd3a0",
+    "142a0ae2-48ba-46e8-ba82-fbe7671869f7",
+    "282465d3-4d7f-454a-87e9-68cc6863b78b",
+    "2e923ca5-8fd5-4159-bea2-f28a7ffccb83",
+    "f9e22a8b-6e3f-40f1-81df-fbcb285a4e54",
+    "f7d1f6a2-9611-4204-ba7d-6be6788e714c",
+    "a8182c7b-922e-452c-9d51-efeeb3c83003",
+    "0eac8827-b337-4e69-a096-fbe1e38a7acf",
+    "da5b7cee-2a67-46a4-9690-4dcaaf30dc0f",
+    "97da0e5b-50f6-4b80-985f-e0023e4d71be",
+    "3ccec980-0f3b-472a-95a5-c17f1d60bbed",
+    "529e4d0a-6567-4864-b70b-3235e72ac69c",
+    "5e438c98-869c-444d-bd30-19c8277fbd6a",
+    "89f7bebf-3260-4150-87a7-d3567072fed2",
+    "f6960198-0c75-4c1e-87bb-36567fd95298",
+    "73bd7f63-a796-4e3d-b758-a1e43c72eb46",
+    "e7d7ce52-a611-4996-986d-995ebbe17a9e",
+    "51d01015-ac26-45a7-b956-23565cdca7b4",
+    "109a133b-ddf4-4a00-8072-39ceaa728acd",
+    "15887d29-022a-46f9-ab8c-c6c4d168e42f",
+    "40099eb7-eb15-49c4-a7b3-eb4b7c2897f9",
+    "78c2bbde-a47f-4eb4-a948-78054414016c",
+    "695fcfa5-72ad-4d86-b1be-0489b8bce640",
+    "130a1bab-2dc3-491b-968c-635042b10f52",
+    "6c52896f-de16-4cd3-b983-04f9a1171a70",
+    "7fe57d68-d417-4b5d-8652-eb908571524b",
+    "e5b1d842-e42c-4694-9c7a-8e5deb8a2118",
+    "5d2c182f-0994-41f3-a0e4-f103e126f020",
+    "fce5ebe8-5632-4cf9-9462-e9afbeb3ef0a",
+    "e0b9ff04-8e48-416a-87b5-ed404dd4ee51",
+    "2e1b1663-f041-4753-99b9-ebc62a54dc8c",
+    "a893c0d5-4023-4c9a-a951-36879f74299b",
+    "3450049c-cef8-443e-a9fd-a5ed5d69fa0d",
+    "f2add920-9cdb-4826-82ec-ff72a1847eda",
+    "c7b19cba-9e79-40f2-9b46-12cc9cdf6060",
+    "e7a3e4d1-69b2-4673-a9fb-10fa28b55082",
+    "2b1b9acc-7a06-4183-a299-5afc8b9bbbe5",
+    "50d5e565-7742-4e2b-a392-bbdc97b58d04",
+    "576243da-a324-4cf7-bf75-2ccc86ce172d",
+    "938b8b54-b761-4aa7-bda4-ab10c8d0b46c",
+    "161608a9-71d1-45cc-ac90-5c3781486903",
+    "bdd6f8e0-57c2-4df6-91ef-4a239669ead5",
+    "95ce58be-3f96-45b6-8534-0feff2ddf7cd",
+    "1b2b3829-5e9d-46eb-b713-7e9315f09d7e",
+    "b8410d3b-1ba1-464d-b605-a05a8ec0080a",
+    "568cc2bb-76a9-4b60-9e0d-6819440b03cf",
+    "3bc047f5-a09f-4a9f-8c6d-3f96b1bb621e",
+    "e3da2b3a-88b4-4462-97f8-810073268e1b",
+    "4ad6d2ca-ac43-4cbb-8e9f-20be4314810e",
+    "a16f9346-fd04-4dd8-9cca-818919e694fb",
+    "fd2961ac-95b2-46b5-9b31-67884a57ee1d",
+    "90932db6-e7af-4272-99fa-08a28ea277ae",
+    "8596292e-3a4a-43ec-bf5f-4dea87dc0a1b",
+    "844b0c9e-fed3-4eef-b0e6-ad5f87118035",
+    "4827ef03-596b-4ec8-8271-0456cb0e2bc4",
+    "3ddd671c-23fc-4752-8e50-7cc086bd4fc0",
+    "857d6d53-21d7-4d91-824e-a3b13ebf3529",
+    "25011439-5e14-4082-adf3-1b2cc2c5c989",
+    "dcf68272-b628-4435-bdbb-5f494ca3d7a4",
+    "f20fe029-f697-4f14-b5fe-4454fdc367d4",
+    "284bef11-2bf6-4e90-8f06-46e1d7e8f991",
+    "bd4eddd9-12ca-44c2-b959-46c63bc5f280",
+    "4ec83adf-ed1b-4127-90f5-64df32df8d2a",
+    "9349b65c-7274-4ae1-a082-92c37aee2eea",
+    "6bd65163-4752-4fb3-8664-ecfc090264d6",
+    "b490be8c-b375-4615-b1ca-1d234514d7e3",
+    "5b9f5c52-eba4-4b96-9d57-ddc4854d276a",
+    "ddefd441-3a45-4f0e-ae2f-d7d06efe3f38",
+    "9b3fd50c-570e-4b43-8c1b-cb67cb31ab4a",
+    "6b809d44-bfc8-45b4-8b1d-4fff8adeffeb",
+    "8ce4abea-fb1b-49bc-ad3e-ba9c3fed33d8",
+    "c8cee1c3-e5aa-4e6a-b939-cd8625d8c8e1",
+    "1f879e35-90c0-4266-acd1-2d4fde9e5e3a",
+    "8fa58e2a-6c15-43a2-a7dd-cbc8c078bb9f",
+    "4988a07d-da44-4692-bd82-1e3a3d0c9828",
+    "6f33497d-148a-403f-9879-18313e5ec848",
+    "8a7c5a98-b50b-4803-a1a5-454b3d011f19",
+    "d4f78ecb-d067-4702-9bac-32e4a776e17b",
+    "cff882df-f9ca-4b77-9474-92a2eadce0a5",
+    "63a8d6d1-65a9-4af3-babb-23571a270860",
+    "76054c13-4b1e-4975-86c2-239f8c8eddb6",
+    "64837f59-8feb-4ec3-9a84-694f7e7c8733",
+    "3fdc52a8-a852-4257-afdb-d0525ae16130",
+    "ccb495a7-76a6-4449-ba4e-eb181b56e540",
+    "a62edfc9-0bdf-41ca-b353-92e514ca76d3",
+    "3672b003-d8cf-4de0-adda-a2f2743946bb",
+    "e1d73b08-d715-454b-93bb-20e65349ed5a",
+    "ee86d5de-7d74-428a-8aa7-b798021777c0",
+    "5afeb888-6c62-4aa6-874a-377cdfe0ad38",
+    "dba910f7-a70e-4488-8e68-ee9cbdc2f942",
+    "86b56b0d-4813-4077-9319-cca2c9e1f8d6",
+    "c9ff7a7a-8d09-4d89-934b-6f84af965095",
+    "28b15430-d97d-4224-bac5-f5c1473ebc80",
+    "2fababca-46df-4bc4-b30e-5cfe94895844",
+    "2a071167-9a91-476f-bb31-d23a656e8f7a",
+    "9a49ee5b-d17b-4630-a1b8-ad104d064391",
+    "54f51357-4f6d-4e0d-b2ec-123cf4fedd55",
+    "6f573e2d-97eb-4480-bef2-0281112a2a1f",
+    "2d93f8f4-7ef6-4b34-ab80-87af9ec35b4f",
+    "065f1d4d-254c-4791-8892-96da9616c3b3",
+    "4fbb018f-e96d-4a76-80b8-3754dc41aa20",
+    "dcc038eb-ef35-45b7-b1b2-9e7d927f11d3",
+    "83242a4f-05eb-4ca1-8f53-dcc615924d46",
+    "65d2843a-6be3-45f4-88a5-f7e309fd780a",
+    "27fe76a0-8492-4524-a4c9-e77e17220346",
+    "6a9bad4d-df93-426b-9f55-a2ace5281ce2",
+    "90cff725-3237-4229-97b4-ae1c2cd62906",
+    "15280cd0-84c2-418a-af6f-1928ace3c7f6",
+    "e268412f-bd2d-4de9-8ad0-bbe1e3141792",
+    "4cc1c81c-77df-46ee-8ebc-3ac6c1afa87d",
+    "caa1670b-65c3-47ab-a962-3e5707e5de39",
+    "82bbb1ee-946b-4f67-95b1-bf9a2b382321",
+    "2c8c1f64-5e8f-4d5b-b78d-b1b2a232466c",
+    "2126977e-bcc1-4dcc-a637-07c840030226",
+    "707c23c0-fa57-4430-87b5-1c11d930f2b8",
+    "d301087a-0d2a-4f4a-9ce1-4d4741849d57",
+    "99ca04f6-d8d7-4aef-bae5-ada6b8ad9613",
+    "a0f39f5c-a0de-46b3-a541-6986e0074fbc",
+    "6241a293-f542-4f96-a8c2-ba28afae5964",
+    "373a5bb2-f013-4712-acbb-0df74d536887",
+    "3ea2be30-4261-4d4f-a07d-12978354156d"
+  ],
+  "branch": "main",
   "mode": "exploring",
-  "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
-  "updated_at": "2026-05-13T08:15:36.834Z"
+  "worktree_id": "main",
+  "updated_at": "2026-06-09T21:24:18.940Z",
+  "beliefs_updated_at": "2026-06-16T09:13:57.860Z"
 }

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-raw-source-docs-nav-from-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 778,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/778",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/778",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/778/restore-raw-source-docs-nav-from-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/778",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/778/restore-raw-source-docs-nav-from-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-raw-source-docs-nav-from-stream",
+  "taskSession": "tsk_7e66a3c6828b",
+  "tmuxSession": "opensaas-os-restore-raw-source-docs-nav-from-stream-7e66a3c6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-raw-source-docs-nav-from-stream/.task/os/restore-raw-source-docs-nav-from-stream/session.json",
+  "createdAt": "2026-06-05T05:36:01.629Z"
+}

@@ -1,0 +1,116 @@
+---
+title: Install Locally
+description: Install Consuelo OS on your machine and create the local OS home.
+---
+
+# Install Consuelo OS locally
+
+Local OS runs on your machine. It gives connected agents a safe portal into local context, local artifacts, local logs, and any workspace capabilities you connect later.
+
+Local install is the fastest way to get a real OS loop working. It should still behave like a product: safe writes, traceable executions, clear configuration, and no destructive setup.
+
+## Install command
+
+The target install experience is one command:
+
+```bash
+consuelo os install
+```
+
+The installer should detect the operating system, check runtime requirements, create the OS home, and start the onboarding wizard.
+
+## What the installer creates
+
+Local OS should keep its files under a Consuelo-owned home folder:
+
+```text
+~/.consuelo/os/
+  config.json
+  consuelo.db
+  artifacts/
+  logs/
+  runs/
+  cache/
+  tmp/
+```
+
+Path | Purpose
+--- | ---
+`config.json` | Local OS configuration and connected agent settings.
+`consuelo.db` | SQLite database for executions, approvals, artifact metadata, memory metadata, and capability health.
+`artifacts/` | Local artifact bytes for reports, documents, exports, and generated outputs.
+`logs/` | Local logs for the OS process and skill executions.
+`runs/` | Per-execution evidence bundles when useful for debugging.
+`cache/` | Downloaded or derived data that can be regenerated.
+`tmp/` | Temporary files that should not be treated as durable artifacts.
+
+## Requirements
+
+Local OS needs:
+
+- Bun runtime
+- SQLite
+- a Consuelo OS home folder
+- at least one connected agent
+
+Consuelo OS does not need a model-provider key during basic setup. The connected agent brings the model. OS brings the portal, context, skills, scripts, artifacts, approvals, and memory.
+
+## Safe installer behavior
+
+The installer should be conservative. It should not overwrite existing files or assume `~/.consuelo` is empty.
+
+Expected behavior:
+
+- create `~/.consuelo/os` if it does not exist
+- inspect an existing `~/.consuelo` folder before writing
+- preserve unknown files
+- print the files and folders it creates
+- support dry run
+- support uninstall or cleanup guidance
+- support a doctor command for debugging
+- allow a custom OS home location
+
+## Onboarding wizard
+
+After install, the wizard should walk the user through the minimum useful setup:
+
+```text
+1. Choose local OS or connect to cloud OS.
+2. Confirm OS home location.
+3. Detect supported agents.
+4. Connect selected agents to the OS portal.
+5. Choose local artifact storage.
+6. Run a health check.
+```
+
+Optional capabilities should be skippable. A user should not need every integration configured before OS can run.
+
+## What success looks like
+
+A successful local install means:
+
+- OS home exists
+- SQLite database exists
+- portal process can start
+- at least one agent can connect
+- OS can return workspace context
+- OS can run a simple skill
+- OS can create a local artifact record
+- logs include a trace ID for the test execution
+
+## Troubleshooting
+
+Problem | Check
+--- | ---
+Installer cannot find Bun | Install Bun or let the installer add it when supported.
+Existing `.consuelo` folder looks unexpected | Use the `os` subfolder and do not overwrite unknown files.
+Agent was not detected | Use manual config or add the agent path later.
+Skill runs but no artifact appears | Check `~/.consuelo/os/consuelo.db`, `artifacts/`, and `logs/`.
+Local port is busy | Change the OS port in config and rerun the health check.
+
+## Related
+
+- [Connect agents](/get-started/connect-agents)
+- [Run your first skill](/get-started/first-skill)
+- [Local OS and Cloud OS](/get-started/local-vs-cloud)
+- [Integrations and capabilities](/os/concepts/integrations-and-capabilities)

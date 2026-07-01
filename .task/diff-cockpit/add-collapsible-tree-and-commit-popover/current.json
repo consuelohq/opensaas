@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-collapsible-tree-and-commit-popover",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 741,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/741",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/741",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/741/add-collapsible-tree-and-commit-popover",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/741",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/741/add-collapsible-tree-and-commit-popover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-collapsible-tree-and-commit-popover",
+  "taskSession": "tsk_7f2a16b7ed4f",
+  "tmuxSession": "opensaas-diff-cockpit-add-collapsible-tree-and-commit-popover-7f2a16b7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-collapsible-tree-and-commit-popover/.task/diff-cockpit/add-collapsible-tree-and-commit-popover/session.json",
+  "createdAt": "2026-06-03T09:02:45.864Z"
+}

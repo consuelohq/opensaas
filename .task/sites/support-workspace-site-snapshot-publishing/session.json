@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_68c8ff703604",
+  "tmuxSession": "opensaas-sites-support-workspace-site-snapshot-publishing-68c8ff70",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/support-workspace-site-snapshot-publishing",
+  "branch": "task/sites/support-workspace-site-snapshot-publishing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-support-workspace-site-snapshot-publishing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-support-workspace-site-snapshot-publishing",
+  "prNumber": 1030,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1030",
+  "createdAt": "2026-06-14T01:11:08.618Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-support-workspace-site-snapshot-publishing/.task/sites/support-workspace-site-snapshot-publishing/session.json"
+}

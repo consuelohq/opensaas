@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/media/add-media-svg-conversion-tool",
+  "base": "origin/stream/media",
+  "headSha": "adb7c33c01f55f5f87efdfbe47857e787c7fbef4",
+  "changeHash": "2a0f1c018e48a00cfd4ee7b66937e568a81e220d19a66cb71ed53183903d4d4f",
+  "changedFiles": [
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/media/dependency-catalog.ts",
+    "packages/os/scripts/lib/media/schema.ts",
+    "packages/os/scripts/lib/media/svg.ts",
+    "packages/os/scripts/media.ts",
+    "packages/os/tests/media/31-svg-convert.test.ts",
+    "packages/os/tests/media/helpers.ts",
+    "packages/os/tooling/media-tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-27T18:59:39.541Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/media/add-media-svg-conversion-tool/current.json",
+        ".task/media/add-media-svg-conversion-tool/session.json",
+        ".task/media/add-media-svg-conversion-tool/workpad.md",
+        ".task/tasks/media/add-media-svg-conversion-tool.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/media/dependency-catalog.ts",
+        "packages/os/scripts/lib/media/schema.ts",
+        "packages/os/scripts/lib/media/svg.ts",
+        "packages/os/scripts/media.ts",
+        "packages/os/tests/media/31-svg-convert.test.ts",
+        "packages/os/tests/media/helpers.ts",
+        "packages/os/tooling/media-tool-manifest.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

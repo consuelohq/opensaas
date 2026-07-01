@@ -1,0 +1,13 @@
+{
+  "files": [
+    "areas/consuelo-design/AGENTS.md",
+    "package.json",
+    "packages/consuelo-design/package.json",
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/scripts/validate-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/plan.md",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "updatedAt": "2026-06-06T15:29:20.296Z"
+}

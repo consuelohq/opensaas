@@ -1,0 +1,40 @@
+{
+  "result": "pass",
+  "branch": "task/os/restore-consuelo-design-orchestration-skill",
+  "base": "origin/stream/os",
+  "headSha": "4f85688ee2ef9622f0d58a39eb321951468343c1",
+  "changeHash": "f9ed450764cae9324f77dcb8f84b8f39ac72e856ce76d01c4f97bd0aa440fab9",
+  "changedFiles": [
+    "areas/consuelo-design/AGENTS.md",
+    "packages/os/docs/skills.md",
+    "packages/os/scripts/design/consuelo-design.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills.md",
+    "packages/os/skills/consuelo-design-landing-page/skill.json",
+    "packages/os/skills/consuelo-design/SKILL.md",
+    "packages/os/skills/consuelo-design/references/agents.md",
+    "packages/os/skills/consuelo-design/skill.json",
+    "packages/os/skills/consuelo-design/subskills/digital-eguide.json",
+    "packages/os/skills/consuelo-design/subskills/html-email.json",
+    "packages/os/skills/consuelo-design/subskills/hyperframes.json",
+    "packages/os/skills/consuelo-design/subskills/landing-page.json",
+    "packages/os/skills/consuelo-design/subskills/motion-frame.json",
+    "packages/os/skills/consuelo-design/subskills/plan.json",
+    "packages/os/skills/consuelo-design/subskills/research-guide.json",
+    "packages/os/skills/consuelo-design/subskills/spec.json",
+    "packages/os/tests/consuelo-design.test.ts",
+    "packages/os/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T19:50:14.614Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

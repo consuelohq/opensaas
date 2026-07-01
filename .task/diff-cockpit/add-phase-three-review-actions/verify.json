@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/add-phase-three-review-actions",
+  "base": "stream/diff-cockpit",
+  "headSha": "72d82cde7c0da29eb601fd743bbb9578152d4570",
+  "changeHash": "39993bf812215178689eeb35e497deae75169cbcc7c5f1145b7f93ffad562418",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T05:04:19.043Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/add-phase-three-review-actions/current.json",
+        ".task/diff-cockpit/add-phase-three-review-actions/evidence-log.json",
+        ".task/diff-cockpit/add-phase-three-review-actions/read-log.json",
+        ".task/diff-cockpit/add-phase-three-review-actions/session.json",
+        ".task/diff-cockpit/add-phase-three-review-actions/workpad.md",
+        ".task/tasks/diff-cockpit/add-phase-three-review-actions.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

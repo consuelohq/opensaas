@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/event-driven-cache-refresh-hooks",
+  "events": [
+    {
+      "id": "7edb5429-0155-48fa-951d-653d7cec1756",
+      "occurred_at": "2026-06-05T00:22:30.001Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/event-driven-cache-refresh-hooks",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/event-driven-cache-refresh-hooks"
+      }
+    },
+    {
+      "id": "43e20770-e58a-40ff-a822-05294a6f732d",
+      "occurred_at": "2026-06-05T00:22:42.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/diff_cockpit.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/event-driven-cache-refresh-hooks",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/event-driven-cache-refresh-hooks"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-05T00:22:42.240Z"
+}

@@ -1,0 +1,9 @@
+{
+  "query": "workspace facade",
+  "results": [
+    {
+      "path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "score": 0.9
+    }
+  ]
+}

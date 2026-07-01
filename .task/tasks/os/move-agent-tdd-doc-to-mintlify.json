@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/move-agent-tdd-doc-to-mintlify",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 860,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/860",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/860",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/860/move-agent-tdd-doc-to-mintlify",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/860",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/860/move-agent-tdd-doc-to-mintlify",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-agent-tdd-doc-to-mintlify",
+  "taskSession": "tsk_48980d93a7a8",
+  "tmuxSession": "opensaas-os-move-agent-tdd-doc-to-mintlify-48980d93",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-agent-tdd-doc-to-mintlify/.task/os/move-agent-tdd-doc-to-mintlify/session.json",
+  "createdAt": "2026-06-09T04:30:34.323Z"
+}

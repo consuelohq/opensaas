@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/ci/fix-consuelo-workflow-security-allowlist",
+  "base": "origin/task/ci/fix-consuelo-workflow-security-allowlist",
+  "headSha": "a156cc834133e19b90712acb31c6b75c822ea7e3",
+  "changeHash": "64ea1582e121b1ad785b9892e9b8b0488160d114fc77f4cf2db684aa66525b51",
+  "changedFiles": [
+    "packages/workspace/scripts/ci/check-github-workflows.cjs"
+  ],
+  "verifiedAt": "2026-06-28T00:18:37.170Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/ci/fix-consuelo-workflow-security-allowlist/current.json",
+        ".task/ci/fix-consuelo-workflow-security-allowlist/session.json",
+        ".task/ci/fix-consuelo-workflow-security-allowlist/workpad.md",
+        ".task/tasks/ci/fix-consuelo-workflow-security-allowlist.json",
+        "packages/workspace/scripts/ci/check-github-workflows.cjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

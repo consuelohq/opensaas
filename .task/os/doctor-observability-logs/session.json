@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_227d24f2f50e",
+  "tmuxSession": "opensaas-os-doctor-observability-logs-227d24f2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/doctor-observability-logs",
+  "branch": "task/os/doctor-observability-logs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-doctor-observability-logs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-doctor-observability-logs",
+  "prNumber": 579,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/579",
+  "createdAt": "2026-05-24T07:16:35.765Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-doctor-observability-logs/.task/os/doctor-observability-logs/session.json"
+}

@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+  "base": "origin/task/diff-cockpit/load-pr-data-before-viewer-imports",
+  "headSha": "34a6d5bfa0007cfda8b89558fd947d53944da745",
+  "changeHash": "1500481134117930e80a8438fdc40faa5e55027e8b7c4bc9460bdac8385f2dda",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/bun-test.d.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T06:50:06.716Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/load-pr-data-before-viewer-imports/current.json",
+        ".task/diff-cockpit/load-pr-data-before-viewer-imports/evidence-log.json",
+        ".task/diff-cockpit/load-pr-data-before-viewer-imports/read-log.json",
+        ".task/diff-cockpit/load-pr-data-before-viewer-imports/session.json",
+        ".task/diff-cockpit/load-pr-data-before-viewer-imports/verify.json",
+        ".task/diff-cockpit/load-pr-data-before-viewer-imports/workpad.md",
+        ".task/tasks/diff-cockpit/load-pr-data-before-viewer-imports.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/bun-test.d.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

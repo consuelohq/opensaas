@@ -1,0 +1,74 @@
+---
+title: Connect Agents
+description: Connect your agents to Consuelo OS.
+---
+
+# Connect agents
+
+Consuelo OS does not replace your agent. It gives your agent a safe portal into the workspace.
+
+The agent brings the model and conversation. OS brings context, skills, scripts, artifacts, approvals, memory, and observability.
+
+## How connection works
+
+```text
+agent
+  -> Consuelo OS portal
+    -> workspace context
+    -> approved skills
+    -> artifacts and logs
+```
+
+The connected agent asks OS what is available, then runs approved skills through the portal. The product boundary is OS, not a pile of direct system access.
+
+## Supported agent targets
+
+Agent family | Example detection paths | Notes
+--- | --- | ---
+Claude | `~/.claude`, desktop config paths | Connects Claude to the OS portal.
+Codex | `~/.codex` | Useful for coding-agent workflows.
+OpenCode | `~/.opencode`, `~/.config/opencode` | Useful for local development agents.
+Factory | `~/.factory` | Useful if the local tool stores agent config there.
+Other agents | manual config | Any compatible agent can be connected manually.
+
+## What the wizard should show
+
+```text
+Detected agents
+
+● Claude Desktop
+● Codex
+○ OpenCode
+○ Factory
+○ Manual config
+
+Connect selected agents to Consuelo OS?
+```
+
+The user should be able to inspect the config changes before they are written.
+
+## What gets written
+
+The wizard should write only the minimum needed configuration for the selected agent to see Consuelo OS.
+
+It should preserve existing agent config, create backups when modifying config files, print the file paths it changes, support manual copy/paste config for unsupported agents, and run a health check after setup.
+
+## Health check
+
+After connection, the wizard should verify that the OS process can start, the agent can see the portal, workspace context loads, a safe skill runs, and the result includes a trace ID.
+
+## Troubleshooting
+
+Problem | Check
+--- | ---
+Agent does not show OS | Confirm the agent config path and restart the agent.
+OS is installed but not reachable | Run the local health check and confirm the local port.
+Agent can see OS but no skills | Check capability health and skill registration.
+Agent sees old config | Confirm the wizard updated the active profile, not a stale config file.
+
+## Related
+
+- [Install locally](/get-started/install-local)
+- [OS portal](/os/concepts/portal)
+- [Skills](/os/concepts/skills)
+- [Observability](/os/concepts/observability)

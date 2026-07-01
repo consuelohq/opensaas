@@ -1,0 +1,71 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-manifest/route-raw-steering-through-os-call",
+  "base": "stream/os-manifest",
+  "headSha": "8637bf763afd6babde011bc818a62c4f00309fb6",
+  "changeHash": "9c35617d6e9c9f67ad3a25d5494e07dd964fb2582e96946778519f34e47a7d5d",
+  "changedFiles": [
+    "packages/os/README.md",
+    "packages/os/STEERING.md",
+    "packages/os/docs/runtime-surfaces.md",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/server.py",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-03T03:52:42.197Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-manifest/route-raw-steering-through-os-call/current.json",
+        ".task/os-manifest/route-raw-steering-through-os-call/evidence-log.json",
+        ".task/os-manifest/route-raw-steering-through-os-call/read-log.json",
+        ".task/os-manifest/route-raw-steering-through-os-call/session.json",
+        ".task/os-manifest/route-raw-steering-through-os-call/workpad.md",
+        ".task/tasks/os-manifest/route-raw-steering-through-os-call.json",
+        "packages/os/README.md",
+        "packages/os/STEERING.md",
+        "packages/os/docs/runtime-surfaces.md",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/package.json",
+        "packages/os/scripts/os.ts",
+        "packages/os/scripts/server.ts",
+        "packages/os/server.py",
+        "packages/os/tests/os-raw-steering.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

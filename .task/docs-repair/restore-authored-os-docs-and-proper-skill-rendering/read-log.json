@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/consuelo-docs/docs.json",
+    "packages/consuelo-docs/l/fr/os/overview.mdx",
+    "packages/consuelo-docs/os/skills/consuelo-design.mdx",
+    "packages/consuelo-docs/scripts/generate-docs-json.ts",
+    "packages/consuelo-docs/scripts/validate-os-docs.ts"
+  ],
+  "updatedAt": "2026-06-05T01:29:29.277Z"
+}

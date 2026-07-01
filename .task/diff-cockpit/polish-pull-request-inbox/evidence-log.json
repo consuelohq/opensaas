@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+  "events": [
+    {
+      "id": "c124bea7-6aa2-45a9-9ac4-5a07d86ecd47",
+      "occurred_at": "2026-06-03T08:24:47.660Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "25f59c29-7e99-4924-982f-d8f10ef94f9f",
+      "occurred_at": "2026-06-03T08:25:20.365Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "2d158b45-8305-4c8e-9f1f-127d95cb6e3a",
+      "occurred_at": "2026-06-03T08:25:33.179Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "5e90a53e-22c9-4683-a0e5-65eb2720df00",
+      "occurred_at": "2026-06-03T08:25:50.855Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "2d06a633-da3b-45a2-b69d-ca822cbc8a05",
+      "occurred_at": "2026-06-03T08:26:00.053Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "8e5dbd67-f62e-4358-9366-a426cf22a397",
+      "occurred_at": "2026-06-03T08:26:09.333Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "08cd9d89-ed35-46cd-9bba-198d3cac90ac",
+      "occurred_at": "2026-06-03T08:26:51.767Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "da2d3524-74a8-498f-855c-3cc3c242dec4",
+      "occurred_at": "2026-06-03T08:27:36.533Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "982615e9-ab0d-49a8-9b9b-e7f4e0bdb064",
+      "occurred_at": "2026-06-03T08:27:45.945Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "af6091d0-5a42-41b2-8c89-1c765a5dafdc",
+      "occurred_at": "2026-06-03T08:27:54.899Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    },
+    {
+      "id": "6a8cc120-2ad9-4dc9-9c66-bac181c3754a",
+      "occurred_at": "2026-06-03T08:28:20.012Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/polish-pull-request-inbox",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/polish-pull-request-inbox"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T08:28:20.065Z"
+}

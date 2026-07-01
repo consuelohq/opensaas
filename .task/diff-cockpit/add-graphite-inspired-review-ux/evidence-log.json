@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+  "events": [
+    {
+      "id": "503f6239-c4e0-4bd6-9fd5-509f815accd3",
+      "occurred_at": "2026-06-03T08:02:13.778Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "9961fc0a-9e88-4beb-9743-f2fd68cf180e",
+      "occurred_at": "2026-06-03T08:02:21.650Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "acfc40ec-a096-4264-85d8-cb7b14e598c5",
+      "occurred_at": "2026-06-03T08:02:39.292Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "a5cd754f-f386-44a6-bc3e-c90722aab00c",
+      "occurred_at": "2026-06-03T08:07:00.226Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "c0cd36d8-d1c0-4382-b207-5255a0768652",
+      "occurred_at": "2026-06-03T08:08:59.625Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "b40f4561-a472-4312-a529-01a07faf4bdc",
+      "occurred_at": "2026-06-03T08:09:35.652Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "8f50e3d2-e6a7-4230-b117-cf253ddbce29",
+      "occurred_at": "2026-06-03T08:12:44.116Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "60ab75a0-a520-4966-a862-f79045cc6576",
+      "occurred_at": "2026-06-03T08:25:07.864Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "77d3791c-dc50-4651-a2e3-8b4992e202bf",
+      "occurred_at": "2026-06-03T08:25:29.545Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "92619775-f29c-47cd-9b6f-6dbbab8e205e",
+      "occurred_at": "2026-06-03T08:26:26.176Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "ae96766d-04f9-4bdd-8669-d03ee54f9ffb",
+      "occurred_at": "2026-06-03T08:27:04.234Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "d71eb9cf-1ccd-41b2-855f-2c90f83df7c0",
+      "occurred_at": "2026-06-03T08:28:16.330Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "a3d91c12-b1c3-4262-85eb-63d1b782d711",
+      "occurred_at": "2026-06-03T08:28:16.912Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    },
+    {
+      "id": "3e01fc2e-8cbb-478a-8edb-6f11b094db61",
+      "occurred_at": "2026-06-03T08:40:05.232Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/diff-cockpit/add-graphite-inspired-review-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/diff-cockpit/add-graphite-inspired-review-ux"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-03T08:40:05.291Z"
+}

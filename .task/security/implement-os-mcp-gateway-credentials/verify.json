@@ -1,0 +1,80 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/implement-os-mcp-gateway-credentials",
+  "base": "origin/task/security/implement-os-mcp-gateway-credentials",
+  "headSha": "e966f500aedbe3b1f1d5c1684ce9ea97e91f9282",
+  "changeHash": "9196536d193f506cc6b2da08ae3b20cde7062084be402f2838471b42c2526554",
+  "changedFiles": [
+    "packages/os/docs/security-tightening-evidence.md",
+    "packages/os/scripts/lib/mcp-gateway.ts",
+    "packages/os/scripts/lib/security-gateway.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/dangerous-material-policy.test.ts",
+    "packages/os/tests/local-guardrails.test.ts",
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/os/tests/safe-temp-cleanup.ts",
+    "packages/os/tests/security-gateway.test.ts"
+  ],
+  "verifiedAt": "2026-06-18T22:12:41.851Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/close-security-report-gaps/current.json",
+        ".task/security/close-security-report-gaps/session.json",
+        ".task/security/close-security-report-gaps/verify.json",
+        ".task/security/close-security-report-gaps/workpad.md",
+        ".task/security/implement-os-mcp-gateway-credentials/current.json",
+        ".task/security/implement-os-mcp-gateway-credentials/session.json",
+        ".task/security/implement-os-mcp-gateway-credentials/workpad.md",
+        ".task/security/plan-security-tightening-pass/current.json",
+        ".task/security/plan-security-tightening-pass/evidence-log.json",
+        ".task/security/plan-security-tightening-pass/read-log.json",
+        ".task/security/plan-security-tightening-pass/session.json",
+        ".task/security/plan-security-tightening-pass/workpad.md",
+        ".task/tasks/security/close-security-report-gaps.json",
+        ".task/tasks/security/implement-os-mcp-gateway-credentials.json",
+        ".task/tasks/security/plan-security-tightening-pass.json",
+        "packages/os/docs/security-tightening-evidence.md",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/lib/security-gateway.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/server.ts",
+        "packages/os/tests/cloudflare-edge-router.test.ts",
+        "packages/os/tests/dangerous-material-policy.test.ts",
+        "packages/os/tests/local-guardrails.test.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/safe-temp-cleanup.ts",
+        "packages/os/tests/security-gateway.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

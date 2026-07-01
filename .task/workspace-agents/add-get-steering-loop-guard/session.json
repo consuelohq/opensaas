@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a500a3b7ea99",
+  "tmuxSession": "opensaas-workspace-agents-add-get-steering-loop-guard-a500a3b7",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-get-steering-loop-guard",
+  "branch": "task/workspace-agents/add-get-steering-loop-guard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-get-steering-loop-guard",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-get-steering-loop-guard",
+  "prNumber": 844,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/844",
+  "createdAt": "2026-06-08T00:57:58.308Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-get-steering-loop-guard/.task/workspace-agents/add-get-steering-loop-guard/session.json"
+}

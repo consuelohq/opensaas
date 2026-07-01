@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/wire-clack-tty",
+  "base": "origin/main",
+  "headSha": "8b62a683b0640810184332bbb6483fec1a7b6ce4",
+  "changeHash": "44419bae4a1acf593f01af107711afe25974717d44b59254eb5a3d99d907e34b",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install-tty.test.ts",
+    "packages/os/scripts/install.ts"
+  ],
+  "verifiedAt": "2026-06-03T06:44:36.743Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/wire-clack-tty/current.json",
+        ".task/os/wire-clack-tty/evidence-log.json",
+        ".task/os/wire-clack-tty/read-log.json",
+        ".task/os/wire-clack-tty/session.json",
+        ".task/os/wire-clack-tty/workpad.md",
+        ".task/tasks/os/wire-clack-tty.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install-tty.test.ts",
+        "packages/os/scripts/install.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

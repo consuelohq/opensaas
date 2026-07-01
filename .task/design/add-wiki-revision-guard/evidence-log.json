@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/design/add-wiki-revision-guard",
+  "events": [
+    {
+      "id": "a2febee9-ce30-40aa-9ccb-1cdb33eed9e7",
+      "occurred_at": "2026-06-06T19:14:15.273Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/consuelo-design/AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/add-wiki-revision-guard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/add-wiki-revision-guard"
+      }
+    },
+    {
+      "id": "51dc5d3f-bdfe-4679-aaca-9955a2129538",
+      "occurred_at": "2026-06-06T19:14:52.292Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/consuelo-design.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/add-wiki-revision-guard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/add-wiki-revision-guard"
+      }
+    },
+    {
+      "id": "e2df7bf9-473d-4bde-9221-dcf7d7b3dc69",
+      "occurred_at": "2026-06-06T19:15:56.690Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/consuelo-design.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/add-wiki-revision-guard",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/add-wiki-revision-guard"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-06T19:15:56.757Z"
+}

@@ -1,0 +1,945 @@
+# fix docs routes still returning 404
+
+branch: `task/docs-404/fix-docs-routes-still-returning-404`
+stream: `stream/docs-404`
+pr: https://app.graphite.com/github/pr/consuelohq/opensaas/758/fix-docs-routes-still-returning-404
+github pr: https://github.com/consuelohq/opensaas/pull/758
+started: 2026-06-05
+
+## acceptance criteria
+
+- [ ] Define explicit task acceptance criteria before coding.
+
+## plan
+
+1. Read the relevant code and update this plan before editing.
+
+## current status
+
+- Task started. Update this before publish.
+
+## files changed
+
+- `.github/workflows/ci-docs.yaml`
+- `package.json`
+- `packages/consuelo-docs/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/os/overview/architecture.mdx`
+- `packages/consuelo-docs/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/os/skills/browser.mdx`
+- `packages/consuelo-docs/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/os/skills/debugger.mdx`
+- `packages/consuelo-docs/os/skills/handoff.mdx`
+- `packages/consuelo-docs/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/os/skills/planned/daily-revenue-brief.mdx` (deleted)
+- `packages/consuelo-docs/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/os/skills/task.mdx`
+- `packages/consuelo-docs/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/package.json`
+- `packages/consuelo-docs/project.json`
+- `packages/consuelo-docs/scripts/generate-os-skill-docs.ts`
+- `packages/consuelo-docs/scripts/validate-os-docs.ts`
+- `packages/consuelo-docs/l/ar/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/ar/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/ar/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/ar/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/ar/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/ar/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/ar/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/ar/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/ar/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/ar/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/ar/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/ar/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/ar/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/ar/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/ar/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/ar/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/ar/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/ar/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/ar/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/ar/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/ar/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/ar/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/ar/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/ar/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/ar/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/ar/os/skills/task.mdx`
+- `packages/consuelo-docs/l/ar/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/ar/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/ar/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/ar/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/ar/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/ar/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/cs/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/cs/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/cs/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/cs/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/cs/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/cs/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/cs/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/cs/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/cs/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/cs/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/cs/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/cs/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/cs/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/cs/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/cs/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/cs/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/cs/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/cs/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/cs/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/cs/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/cs/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/cs/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/cs/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/cs/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/cs/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/cs/os/skills/task.mdx`
+- `packages/consuelo-docs/l/cs/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/cs/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/cs/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/cs/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/cs/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/cs/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/de/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/de/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/de/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/de/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/de/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/de/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/de/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/de/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/de/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/de/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/de/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/de/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/de/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/de/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/de/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/de/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/de/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/de/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/de/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/de/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/de/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/de/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/de/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/de/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/de/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/de/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/de/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/de/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/de/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/de/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/de/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/de/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/de/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/de/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/de/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/de/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/de/os/skills/task.mdx`
+- `packages/consuelo-docs/l/de/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/de/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/de/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/de/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/de/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/de/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/es/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/es/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/es/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/es/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/es/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/es/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/es/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/es/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/es/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/es/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/es/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/es/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/es/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/es/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/es/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/es/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/es/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/es/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/es/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/es/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/es/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/es/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/es/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/es/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/es/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/es/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/es/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/es/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/es/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/es/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/es/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/es/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/es/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/es/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/es/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/es/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/es/os/skills/task.mdx`
+- `packages/consuelo-docs/l/es/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/es/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/es/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/es/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/es/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/es/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/fr/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/fr/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/fr/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/fr/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/fr/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/fr/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/fr/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/fr/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/fr/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/fr/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/fr/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/fr/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/fr/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/fr/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/fr/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/fr/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/fr/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/fr/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/fr/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/fr/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/fr/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/fr/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/fr/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/fr/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/fr/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/task.mdx`
+- `packages/consuelo-docs/l/fr/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/fr/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/fr/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/fr/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/fr/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/fr/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/it/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/it/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/it/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/it/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/it/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/it/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/it/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/it/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/it/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/it/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/it/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/it/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/it/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/it/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/it/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/it/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/it/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/it/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/it/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/it/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/it/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/it/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/it/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/it/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/it/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/it/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/it/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/it/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/it/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/it/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/it/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/it/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/it/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/it/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/it/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/it/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/it/os/skills/task.mdx`
+- `packages/consuelo-docs/l/it/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/it/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/it/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/it/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/it/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/it/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/ja/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/ja/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/ja/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/ja/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/ja/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/ja/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/ja/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/ja/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/ja/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/ja/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/ja/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/ja/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/ja/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/ja/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/ja/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/ja/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/ja/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/ja/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/ja/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/ja/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/ja/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/ja/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/ja/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/ja/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/ja/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/ja/os/skills/task.mdx`
+- `packages/consuelo-docs/l/ja/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/ja/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/ja/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/ja/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/ja/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/ja/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/ko/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/ko/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/ko/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/ko/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/ko/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/ko/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/ko/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/ko/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/ko/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/ko/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/ko/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/ko/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/ko/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/ko/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/ko/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/ko/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/ko/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/ko/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/ko/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/ko/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/ko/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/ko/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/ko/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/ko/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/ko/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/ko/os/skills/task.mdx`
+- `packages/consuelo-docs/l/ko/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/ko/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/ko/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/ko/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/ko/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/ko/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/pt/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/pt/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/pt/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/pt/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/pt/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/pt/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/pt/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/pt/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/pt/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/pt/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/pt/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/pt/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/pt/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/pt/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/pt/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/pt/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/pt/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/pt/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/pt/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/pt/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/pt/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/pt/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/pt/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/pt/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/pt/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/pt/os/skills/task.mdx`
+- `packages/consuelo-docs/l/pt/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/pt/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/pt/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/pt/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/pt/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/pt/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/ro/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/ro/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/ro/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/ro/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/ro/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/ro/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/ro/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/ro/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/ro/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/ro/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/ro/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/ro/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/ro/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/ro/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/ro/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/ro/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/ro/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/ro/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/ro/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/ro/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/ro/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/ro/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/ro/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/ro/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/ro/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/ro/os/skills/task.mdx`
+- `packages/consuelo-docs/l/ro/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/ro/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/ro/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/ro/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/ro/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/ro/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/ru/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/ru/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/ru/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/ru/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/ru/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/ru/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/ru/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/ru/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/ru/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/ru/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/ru/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/ru/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/ru/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/ru/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/ru/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/ru/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/ru/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/ru/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/ru/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/ru/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/ru/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/ru/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/ru/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/ru/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/ru/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/ru/os/skills/task.mdx`
+- `packages/consuelo-docs/l/ru/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/ru/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/ru/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/ru/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/ru/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/ru/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/tr/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/tr/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/tr/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/tr/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/tr/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/tr/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/tr/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/tr/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/tr/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/tr/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/tr/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/tr/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/tr/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/tr/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/tr/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/tr/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/tr/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/tr/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/tr/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/tr/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/tr/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/tr/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/tr/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/tr/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/tr/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/tr/os/skills/task.mdx`
+- `packages/consuelo-docs/l/tr/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/tr/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/tr/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/tr/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/tr/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/tr/os/workspace-filesystem/s3-files-production-target.mdx`
+- `packages/consuelo-docs/l/zh/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/zh/os/agent-interface/get-dev-steering.mdx`
+- `packages/consuelo-docs/l/zh/os/agent-interface/get-steering.mdx`
+- `packages/consuelo-docs/l/zh/os/agent-interface/permissions.mdx`
+- `packages/consuelo-docs/l/zh/os/agent-interface/steering-files.mdx`
+- `packages/consuelo-docs/l/zh/os/agent-interface/tool-manifest.mdx`
+- `packages/consuelo-docs/l/zh/os/data-layer/data-model-as-os-ontology.mdx`
+- `packages/consuelo-docs/l/zh/os/data-layer/decision-engine.mdx`
+- `packages/consuelo-docs/l/zh/os/data-layer/graphql-facades.mdx`
+- `packages/consuelo-docs/l/zh/os/data-layer/structured-queries.mdx`
+- `packages/consuelo-docs/l/zh/os/data-layer/vectorized-context.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/ghl.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/google-ads.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/meta-ads.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/s3-s3-files.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/sentry-posthog.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/stripe.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/supabase-auth.mdx`
+- `packages/consuelo-docs/l/zh/os/integrations/twilio.mdx`
+- `packages/consuelo-docs/l/zh/os/overview/architecture.mdx`
+- `packages/consuelo-docs/l/zh/os/overview/core-concepts.mdx`
+- `packages/consuelo-docs/l/zh/os/overview/quickstart.mdx`
+- `packages/consuelo-docs/l/zh/os/overview/what-is-consuelo-os.mdx`
+- `packages/consuelo-docs/l/zh/os/pilot/demo-flow.mdx`
+- `packages/consuelo-docs/l/zh/os/pilot/insurance-revenue-workspace.mdx`
+- `packages/consuelo-docs/l/zh/os/pilot/setup-checklist.mdx`
+- `packages/consuelo-docs/l/zh/os/pilot/success-criteria.mdx`
+- `packages/consuelo-docs/l/zh/os/runtime/bun-runtime.mdx`
+- `packages/consuelo-docs/l/zh/os/runtime/operator-scripts.mdx`
+- `packages/consuelo-docs/l/zh/os/runtime/package-scripts-vs-mcp-tools.mdx`
+- `packages/consuelo-docs/l/zh/os/runtime/sandbox-executor.mdx`
+- `packages/consuelo-docs/l/zh/os/runtime/scheduled-runbooks.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/browser.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/consuelo-design-landing-page.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/consuelo-design.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/consuelo-workspace-snapshot.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/daily-revenue-brief.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/debugger.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/handoff.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/campaign-brief.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/follow-up-generator.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/google-ads-review.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/landing-page-builder.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/lead-prioritizer.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/meta-ads-review.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/post-call-analysis.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/sales-coaching.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/planned/weekly-manager-report.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/research-ingest.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/senior-engineer.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/skill-creator.mdx`
+- `packages/consuelo-docs/l/zh/os/skills/task.mdx`
+- `packages/consuelo-docs/l/zh/os/workspace-filesystem/artifacts.mdx`
+- `packages/consuelo-docs/l/zh/os/workspace-filesystem/local-development-filesystem.mdx`
+- `packages/consuelo-docs/l/zh/os/workspace-filesystem/overview.mdx`
+- `packages/consuelo-docs/l/zh/os/workspace-filesystem/reports.mdx`
+- `packages/consuelo-docs/l/zh/os/workspace-filesystem/runbook-outputs.mdx`
+- `packages/consuelo-docs/l/zh/os/workspace-filesystem/s3-files-production-target.mdx`
+
+
+## workspace-owned: files changed
+
+- none yet
+
+## workspace-owned: activity log
+
+- none yet
+
+## workspace-owned: validation evidence
+
+- 2026-06-05 00:41:23 `verify`: passed — OK
+
+## key decisions
+
+- none yet
+
+## notes for ko
+
+- none yet
+
+## improvements noticed
+
+- none yet
+
+## issues and recovery
+
+- none yet
+
+---
+
+## publish checklist
+
+```bash
+bun run task:push -- --message "type(docs-404): description" --changed
+bun run task:pr
+bun run task:finish
+```
+
+## workspace-owned: files read
+
+- `.github/workflows/cd-deploy-main.yaml`
+- `.github/workflows/ci-docs.yaml`
+- `.github/workflows/docs-i18n-pull.yaml`
+- `.github/workflows/docs-i18n-push.yaml`
+- `package.json`
+- `packages/consuelo-docs/README.md`
+- `packages/consuelo-docs/docs.json`
+- `packages/consuelo-docs/l/ar/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/l/fr/os/skills/browser.mdx`
+- `packages/consuelo-docs/navigation/supported-languages.ts`
+- `packages/consuelo-docs/os/agent-interface/call.mdx`
+- `packages/consuelo-docs/os/skills/browser.mdx`
+- `packages/consuelo-docs/os/skills/task.mdx`
+- `packages/consuelo-docs/package.json`
+- `packages/consuelo-docs/project.json`
+- `packages/consuelo-docs/scripts/generate-docs-json.ts`
+- `packages/consuelo-docs/scripts/generate-os-skill-docs.ts`
+- `packages/os/skills/task/skill.json`
+- `packages/twenty-shared/src/constants/DocumentationDefaultLanguage.ts`
+- `packages/twenty-shared/src/constants/DocumentationSupportedLanguages.ts`
+
+## investigation notes
+
+- Live docs still return 404 for new OS routes such as `https://docs.consuelohq.com/os/skills/browser`.
+- The merged docs content is present on `main`; local `docs.json` includes the `Skills` nav and generated OS skill pages.
+- CI Docs passed for the previous merge, but `CD deploy main` failed because the repository-dispatch step had no `TWENTY_INFRA_TOKEN` available: `Parameter token or opts.auth is required`.
+- The previous generated docs also had a build-risk: localized OS routes existed in `docs.json` as `l/{lang}/os/...`, but no localized OS fallback pages were generated.
+
+## implementation notes
+
+- Updated `generate-os-skill-docs.ts` to generate localized fallback pages for all generated OS docs routes.
+- Updated `validate-os-docs.ts` to validate OS nav routes for every docs locale, not only English.
+- Updated generated docs comments to MDX-safe `{/* ... */}` comments.
+- Rendered full skill bodies inside fenced markdown blocks so the full skill is readable while remaining valid MDX.
+- Converted angle-bracket placeholders in generated docs copies to docs-safe placeholder syntax. Source skills remain unchanged.
+- Removed stale generated planned `daily-revenue-brief` docs after `daily-revenue-brief` became a real bundled skill.
+- Corrected docs package/Nx build command from unsupported `mintlify build` to `mintlify validate`.
+- Added root docs scripts for CI: `docs:generate-os-skill-docs`, `docs:check-os-skill-docs`, and `docs:validate-os-docs`.
+- Updated CI Docs to lint OS MDX plus localized OS MDX, and run generated docs checks.
+
+## validation evidence
+
+- `bun packages/consuelo-docs/scripts/generate-os-skill-docs.ts` -> generated 11 skill docs.
+- `bun packages/consuelo-docs/scripts/generate-docs-json.ts` -> regenerated docs.json.
+- `yarn docs:check-os-skill-docs` -> checked 11 skill docs.
+- `yarn docs:validate-os-docs` -> validated 11 generated skill pages and localized OS routes.
+- CI-style MDX lint for English OS and localized OS pages passed.
+- New generated script ESLint passed.
+- `git diff --check` passed.
+
+## deployment note
+
+This task fixes the docs tree and CI coverage so Mintlify has the localized OS files it needs. The live site can still remain stale until the deploy path is repaired or manually triggered because `CD deploy main` currently fails due a missing `TWENTY_INFRA_TOKEN` secret.
+
+## workspace-owned: test selection
+
+- changed files: `.github/workflows/ci-docs.yaml`, `.task/docs-404/fix-docs-routes-still-returning-404/current.json`, `.task/docs-404/fix-docs-routes-still-returning-404/evidence-log.json`, `.task/docs-404/fix-docs-routes-still-returning-404/read-log.json`, `.task/docs-404/fix-docs-routes-still-returning-404/session.json`, `.task/docs-404/fix-docs-routes-still-returning-404/workpad.md`, `.task/tasks/docs-404/fix-docs-routes-still-returning-404.json`, `package.json`, `packages/consuelo-docs/l/ar/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/ar/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/ar/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/ar/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/ar/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/ar/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/ar/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/ar/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/ar/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/ar/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/ar/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/ar/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/ar/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/ar/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/ar/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/ar/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/ar/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/ar/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/ar/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/ar/os/overview/architecture.mdx`, `packages/consuelo-docs/l/ar/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/ar/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/ar/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/ar/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/ar/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/ar/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/ar/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/ar/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/ar/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/ar/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/ar/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/ar/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/ar/os/skills/browser.mdx`, `packages/consuelo-docs/l/ar/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/ar/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/ar/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/ar/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/ar/os/skills/debugger.mdx`, `packages/consuelo-docs/l/ar/os/skills/handoff.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/ar/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/ar/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/ar/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/ar/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/ar/os/skills/task.mdx`, `packages/consuelo-docs/l/ar/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/ar/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/ar/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/ar/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/ar/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/ar/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/cs/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/cs/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/cs/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/cs/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/cs/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/cs/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/cs/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/cs/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/cs/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/cs/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/cs/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/cs/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/cs/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/cs/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/cs/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/cs/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/cs/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/cs/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/cs/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/cs/os/overview/architecture.mdx`, `packages/consuelo-docs/l/cs/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/cs/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/cs/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/cs/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/cs/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/cs/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/cs/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/cs/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/cs/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/cs/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/cs/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/cs/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/cs/os/skills/browser.mdx`, `packages/consuelo-docs/l/cs/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/cs/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/cs/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/cs/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/cs/os/skills/debugger.mdx`, `packages/consuelo-docs/l/cs/os/skills/handoff.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/cs/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/cs/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/cs/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/cs/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/cs/os/skills/task.mdx`, `packages/consuelo-docs/l/cs/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/cs/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/cs/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/cs/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/cs/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/cs/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/de/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/de/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/de/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/de/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/de/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/de/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/de/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/de/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/de/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/de/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/de/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/de/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/de/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/de/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/de/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/de/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/de/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/de/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/de/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/de/os/overview/architecture.mdx`, `packages/consuelo-docs/l/de/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/de/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/de/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/de/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/de/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/de/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/de/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/de/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/de/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/de/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/de/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/de/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/de/os/skills/browser.mdx`, `packages/consuelo-docs/l/de/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/de/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/de/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/de/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/de/os/skills/debugger.mdx`, `packages/consuelo-docs/l/de/os/skills/handoff.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/de/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/de/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/de/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/de/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/de/os/skills/task.mdx`, `packages/consuelo-docs/l/de/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/de/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/de/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/de/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/de/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/de/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/es/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/es/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/es/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/es/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/es/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/es/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/es/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/es/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/es/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/es/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/es/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/es/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/es/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/es/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/es/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/es/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/es/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/es/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/es/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/es/os/overview/architecture.mdx`, `packages/consuelo-docs/l/es/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/es/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/es/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/es/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/es/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/es/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/es/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/es/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/es/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/es/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/es/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/es/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/es/os/skills/browser.mdx`, `packages/consuelo-docs/l/es/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/es/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/es/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/es/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/es/os/skills/debugger.mdx`, `packages/consuelo-docs/l/es/os/skills/handoff.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/es/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/es/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/es/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/es/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/es/os/skills/task.mdx`, `packages/consuelo-docs/l/es/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/es/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/es/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/es/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/es/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/es/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/fr/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/fr/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/fr/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/fr/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/fr/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/fr/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/fr/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/fr/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/fr/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/fr/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/fr/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/fr/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/fr/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/fr/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/fr/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/fr/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/fr/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/fr/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/fr/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/fr/os/overview/architecture.mdx`, `packages/consuelo-docs/l/fr/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/fr/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/fr/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/fr/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/fr/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/fr/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/fr/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/fr/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/fr/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/fr/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/fr/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/fr/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/fr/os/skills/browser.mdx`, `packages/consuelo-docs/l/fr/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/fr/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/fr/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/fr/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/fr/os/skills/debugger.mdx`, `packages/consuelo-docs/l/fr/os/skills/handoff.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/fr/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/fr/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/fr/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/fr/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/fr/os/skills/task.mdx`, `packages/consuelo-docs/l/fr/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/fr/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/fr/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/fr/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/fr/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/fr/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/it/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/it/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/it/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/it/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/it/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/it/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/it/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/it/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/it/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/it/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/it/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/it/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/it/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/it/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/it/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/it/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/it/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/it/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/it/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/it/os/overview/architecture.mdx`, `packages/consuelo-docs/l/it/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/it/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/it/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/it/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/it/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/it/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/it/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/it/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/it/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/it/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/it/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/it/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/it/os/skills/browser.mdx`, `packages/consuelo-docs/l/it/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/it/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/it/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/it/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/it/os/skills/debugger.mdx`, `packages/consuelo-docs/l/it/os/skills/handoff.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/it/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/it/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/it/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/it/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/it/os/skills/task.mdx`, `packages/consuelo-docs/l/it/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/it/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/it/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/it/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/it/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/it/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/ja/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/ja/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/ja/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/ja/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/ja/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/ja/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/ja/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/ja/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/ja/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/ja/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/ja/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/ja/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/ja/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/ja/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/ja/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/ja/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/ja/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/ja/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/ja/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/ja/os/overview/architecture.mdx`, `packages/consuelo-docs/l/ja/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/ja/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/ja/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/ja/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/ja/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/ja/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/ja/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/ja/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/ja/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/ja/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/ja/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/ja/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/ja/os/skills/browser.mdx`, `packages/consuelo-docs/l/ja/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/ja/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/ja/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/ja/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/ja/os/skills/debugger.mdx`, `packages/consuelo-docs/l/ja/os/skills/handoff.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/ja/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/ja/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/ja/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/ja/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/ja/os/skills/task.mdx`, `packages/consuelo-docs/l/ja/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/ja/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/ja/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/ja/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/ja/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/ja/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/ko/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/ko/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/ko/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/ko/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/ko/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/ko/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/ko/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/ko/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/ko/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/ko/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/ko/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/ko/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/ko/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/ko/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/ko/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/ko/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/ko/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/ko/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/ko/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/ko/os/overview/architecture.mdx`, `packages/consuelo-docs/l/ko/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/ko/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/ko/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/ko/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/ko/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/ko/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/ko/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/ko/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/ko/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/ko/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/ko/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/ko/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/ko/os/skills/browser.mdx`, `packages/consuelo-docs/l/ko/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/ko/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/ko/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/ko/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/ko/os/skills/debugger.mdx`, `packages/consuelo-docs/l/ko/os/skills/handoff.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/ko/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/ko/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/ko/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/ko/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/ko/os/skills/task.mdx`, `packages/consuelo-docs/l/ko/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/ko/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/ko/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/ko/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/ko/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/ko/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/pt/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/pt/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/pt/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/pt/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/pt/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/pt/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/pt/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/pt/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/pt/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/pt/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/pt/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/pt/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/pt/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/pt/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/pt/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/pt/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/pt/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/pt/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/pt/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/pt/os/overview/architecture.mdx`, `packages/consuelo-docs/l/pt/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/pt/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/pt/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/pt/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/pt/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/pt/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/pt/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/pt/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/pt/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/pt/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/pt/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/pt/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/pt/os/skills/browser.mdx`, `packages/consuelo-docs/l/pt/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/pt/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/pt/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/pt/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/pt/os/skills/debugger.mdx`, `packages/consuelo-docs/l/pt/os/skills/handoff.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/pt/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/pt/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/pt/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/pt/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/pt/os/skills/task.mdx`, `packages/consuelo-docs/l/pt/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/pt/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/pt/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/pt/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/pt/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/pt/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/ro/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/ro/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/ro/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/ro/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/ro/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/ro/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/ro/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/ro/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/ro/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/ro/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/ro/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/ro/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/ro/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/ro/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/ro/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/ro/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/ro/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/ro/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/ro/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/ro/os/overview/architecture.mdx`, `packages/consuelo-docs/l/ro/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/ro/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/ro/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/ro/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/ro/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/ro/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/ro/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/ro/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/ro/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/ro/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/ro/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/ro/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/ro/os/skills/browser.mdx`, `packages/consuelo-docs/l/ro/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/ro/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/ro/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/ro/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/ro/os/skills/debugger.mdx`, `packages/consuelo-docs/l/ro/os/skills/handoff.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/ro/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/ro/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/ro/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/ro/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/ro/os/skills/task.mdx`, `packages/consuelo-docs/l/ro/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/ro/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/ro/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/ro/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/ro/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/ro/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/ru/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/ru/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/ru/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/ru/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/ru/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/ru/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/ru/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/ru/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/ru/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/ru/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/ru/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/ru/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/ru/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/ru/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/ru/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/ru/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/ru/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/ru/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/ru/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/ru/os/overview/architecture.mdx`, `packages/consuelo-docs/l/ru/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/ru/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/ru/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/ru/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/ru/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/ru/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/ru/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/ru/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/ru/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/ru/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/ru/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/ru/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/ru/os/skills/browser.mdx`, `packages/consuelo-docs/l/ru/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/ru/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/ru/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/ru/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/ru/os/skills/debugger.mdx`, `packages/consuelo-docs/l/ru/os/skills/handoff.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/ru/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/ru/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/ru/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/ru/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/ru/os/skills/task.mdx`, `packages/consuelo-docs/l/ru/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/ru/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/ru/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/ru/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/ru/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/ru/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/tr/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/tr/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/tr/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/tr/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/tr/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/tr/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/tr/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/tr/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/tr/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/tr/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/tr/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/tr/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/tr/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/tr/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/tr/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/tr/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/tr/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/tr/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/tr/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/tr/os/overview/architecture.mdx`, `packages/consuelo-docs/l/tr/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/tr/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/tr/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/tr/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/tr/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/tr/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/tr/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/tr/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/tr/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/tr/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/tr/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/tr/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/tr/os/skills/browser.mdx`, `packages/consuelo-docs/l/tr/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/tr/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/tr/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/tr/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/tr/os/skills/debugger.mdx`, `packages/consuelo-docs/l/tr/os/skills/handoff.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/tr/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/tr/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/tr/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/tr/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/tr/os/skills/task.mdx`, `packages/consuelo-docs/l/tr/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/tr/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/tr/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/tr/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/tr/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/tr/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/l/zh/os/agent-interface/call.mdx`, `packages/consuelo-docs/l/zh/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/l/zh/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/l/zh/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/l/zh/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/l/zh/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/l/zh/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/l/zh/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/l/zh/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/l/zh/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/l/zh/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/l/zh/os/integrations/ghl.mdx`, `packages/consuelo-docs/l/zh/os/integrations/google-ads.mdx`, `packages/consuelo-docs/l/zh/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/l/zh/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/l/zh/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/l/zh/os/integrations/stripe.mdx`, `packages/consuelo-docs/l/zh/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/l/zh/os/integrations/twilio.mdx`, `packages/consuelo-docs/l/zh/os/overview/architecture.mdx`, `packages/consuelo-docs/l/zh/os/overview/core-concepts.mdx`, `packages/consuelo-docs/l/zh/os/overview/quickstart.mdx`, `packages/consuelo-docs/l/zh/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/l/zh/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/l/zh/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/l/zh/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/l/zh/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/l/zh/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/l/zh/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/l/zh/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/l/zh/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/l/zh/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/l/zh/os/skills/browser.mdx`, `packages/consuelo-docs/l/zh/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/l/zh/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/l/zh/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/l/zh/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/l/zh/os/skills/debugger.mdx`, `packages/consuelo-docs/l/zh/os/skills/handoff.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/l/zh/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/l/zh/os/skills/research-ingest.mdx`, `packages/consuelo-docs/l/zh/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/l/zh/os/skills/skill-creator.mdx`, `packages/consuelo-docs/l/zh/os/skills/task.mdx`, `packages/consuelo-docs/l/zh/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/l/zh/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/l/zh/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/l/zh/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/l/zh/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/l/zh/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/os/agent-interface/call.mdx`, `packages/consuelo-docs/os/agent-interface/get-dev-steering.mdx`, `packages/consuelo-docs/os/agent-interface/get-steering.mdx`, `packages/consuelo-docs/os/agent-interface/permissions.mdx`, `packages/consuelo-docs/os/agent-interface/steering-files.mdx`, `packages/consuelo-docs/os/agent-interface/tool-manifest.mdx`, `packages/consuelo-docs/os/data-layer/data-model-as-os-ontology.mdx`, `packages/consuelo-docs/os/data-layer/decision-engine.mdx`, `packages/consuelo-docs/os/data-layer/graphql-facades.mdx`, `packages/consuelo-docs/os/data-layer/structured-queries.mdx`, `packages/consuelo-docs/os/data-layer/vectorized-context.mdx`, `packages/consuelo-docs/os/integrations/ghl.mdx`, `packages/consuelo-docs/os/integrations/google-ads.mdx`, `packages/consuelo-docs/os/integrations/meta-ads.mdx`, `packages/consuelo-docs/os/integrations/s3-s3-files.mdx`, `packages/consuelo-docs/os/integrations/sentry-posthog.mdx`, `packages/consuelo-docs/os/integrations/stripe.mdx`, `packages/consuelo-docs/os/integrations/supabase-auth.mdx`, `packages/consuelo-docs/os/integrations/twilio.mdx`, `packages/consuelo-docs/os/overview/architecture.mdx`, `packages/consuelo-docs/os/overview/core-concepts.mdx`, `packages/consuelo-docs/os/overview/quickstart.mdx`, `packages/consuelo-docs/os/overview/what-is-consuelo-os.mdx`, `packages/consuelo-docs/os/pilot/demo-flow.mdx`, `packages/consuelo-docs/os/pilot/insurance-revenue-workspace.mdx`, `packages/consuelo-docs/os/pilot/setup-checklist.mdx`, `packages/consuelo-docs/os/pilot/success-criteria.mdx`, `packages/consuelo-docs/os/runtime/bun-runtime.mdx`, `packages/consuelo-docs/os/runtime/operator-scripts.mdx`, `packages/consuelo-docs/os/runtime/package-scripts-vs-mcp-tools.mdx`, `packages/consuelo-docs/os/runtime/sandbox-executor.mdx`, `packages/consuelo-docs/os/runtime/scheduled-runbooks.mdx`, `packages/consuelo-docs/os/skills/browser.mdx`, `packages/consuelo-docs/os/skills/consuelo-design-landing-page.mdx`, `packages/consuelo-docs/os/skills/consuelo-design.mdx`, `packages/consuelo-docs/os/skills/consuelo-workspace-snapshot.mdx`, `packages/consuelo-docs/os/skills/daily-revenue-brief.mdx`, `packages/consuelo-docs/os/skills/debugger.mdx`, `packages/consuelo-docs/os/skills/handoff.mdx`, `packages/consuelo-docs/os/skills/planned/campaign-brief.mdx`, `packages/consuelo-docs/os/skills/planned/daily-revenue-brief.mdx`, `packages/consuelo-docs/os/skills/planned/follow-up-generator.mdx`, `packages/consuelo-docs/os/skills/planned/google-ads-review.mdx`, `packages/consuelo-docs/os/skills/planned/landing-page-builder.mdx`, `packages/consuelo-docs/os/skills/planned/lead-prioritizer.mdx`, `packages/consuelo-docs/os/skills/planned/meta-ads-review.mdx`, `packages/consuelo-docs/os/skills/planned/post-call-analysis.mdx`, `packages/consuelo-docs/os/skills/planned/sales-coaching.mdx`, `packages/consuelo-docs/os/skills/planned/weekly-manager-report.mdx`, `packages/consuelo-docs/os/skills/research-ingest.mdx`, `packages/consuelo-docs/os/skills/senior-engineer.mdx`, `packages/consuelo-docs/os/skills/skill-creator.mdx`, `packages/consuelo-docs/os/skills/task.mdx`, `packages/consuelo-docs/os/workspace-filesystem/artifacts.mdx`, `packages/consuelo-docs/os/workspace-filesystem/local-development-filesystem.mdx`, `packages/consuelo-docs/os/workspace-filesystem/overview.mdx`, `packages/consuelo-docs/os/workspace-filesystem/reports.mdx`, `packages/consuelo-docs/os/workspace-filesystem/runbook-outputs.mdx`, `packages/consuelo-docs/os/workspace-filesystem/s3-files-production-target.mdx`, `packages/consuelo-docs/package.json`, `packages/consuelo-docs/project.json`, `packages/consuelo-docs/scripts/generate-os-skill-docs.ts`, `packages/consuelo-docs/scripts/validate-os-docs.ts`
+- matched rules: none
+- selected suites: none
+- run results: none
+- failed suites: none
+- zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional

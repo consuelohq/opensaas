@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/diff-cockpit/wire-cron-jobs-refresh/workpad.md",
+    "cron_jobs/diff_cockpit/cron.json",
+    "cron_jobs/tests/cron_jobs.test.ts",
+    "package.json",
+    "packages/workspace/SCRIPTS.md"
+  ],
+  "updatedAt": "2026-06-08T06:52:32.357Z"
+}

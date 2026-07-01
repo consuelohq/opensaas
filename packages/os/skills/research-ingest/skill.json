@@ -1,0 +1,24 @@
+{
+  "name": "research-ingest",
+  "title": "Research Ingest",
+  "description": "use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to context, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable context, and follow-up analysis from ingested sources..",
+  "trigger": "use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to context, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable context, and follow-up analysis from ingested sources..",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/research-ingest/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": [
+    "research",
+    "context",
+    "ingestion"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}

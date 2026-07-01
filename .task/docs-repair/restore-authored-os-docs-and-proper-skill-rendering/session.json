@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cfc55a0322a7",
+  "tmuxSession": "opensaas-docs-repair-restore-authored-os-docs-and-proper-skill-render-cfc55a03",
+  "area": "docs-repair",
+  "stream": "stream/docs-repair",
+  "taskBranch": "task/docs-repair/restore-authored-os-docs-and-proper-skill-rendering",
+  "branch": "task/docs-repair/restore-authored-os-docs-and-proper-skill-rendering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-repair-restore-authored-os-docs-and-proper-skill-rendering",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-repair-restore-authored-os-docs-and-proper-skill-rendering",
+  "prNumber": 762,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/762",
+  "createdAt": "2026-06-05T01:21:04.772Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-repair-restore-authored-os-docs-and-proper-skill-rendering/.task/docs-repair/restore-authored-os-docs-and-proper-skill-rendering/session.json"
+}

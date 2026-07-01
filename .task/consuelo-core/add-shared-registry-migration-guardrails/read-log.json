@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/consuelo-core/add-shared-registry-migration-guardrails/workpad.md",
+    "package.json",
+    "packages/consuelo-core/src/registry/index.ts",
+    "packages/contacts/tsconfig.json",
+    "packages/os/tests/skills-registry.test.ts",
+    "packages/workspace/scripts/generate-types.ts",
+    "packages/workspace/scripts/lib/pr-links.js",
+    "packages/workspace/tests/pr-links.test.js"
+  ],
+  "updatedAt": "2026-06-03T00:12:20.641Z"
+}

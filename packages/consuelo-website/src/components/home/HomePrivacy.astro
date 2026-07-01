@@ -1,0 +1,55 @@
+---
+import { homePrivacy } from '../../data/home-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId } = Astro.props as Props;
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-privacy">
+    <p class="launch-eyebrow">{homePrivacy.eyebrow}</p>
+    <div class="launch-privacy__row">
+      <span class="launch-privacy__marker launch-mono" aria-hidden="true">[*]</span>
+      <p class="launch-copy">
+        <strong>{homePrivacy.title}</strong>
+        <span>{homePrivacy.description}</span>
+        <a class="launch-inline-link" href={homePrivacy.linkHref}>{homePrivacy.linkLabel}</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .launch-privacy {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .launch-privacy__row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.8rem;
+    align-items: start;
+    max-width: 58rem;
+  }
+
+  .launch-privacy__marker {
+    color: var(--launch-muted);
+    font-size: 0.74rem;
+    padding-top: 0.25rem;
+  }
+
+  .launch-privacy__row p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .launch-privacy__row strong {
+    color: var(--launch-muted);
+    font-weight: 700;
+  }
+</style>

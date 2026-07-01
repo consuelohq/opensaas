@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/consuelo-website/refine-hermes-style-responsive-header-and-hero",
+  "base": "origin/task/consuelo-website/refine-hermes-style-responsive-header-and-hero",
+  "headSha": "22eff19fd51323c5015cf5ba3ef3cac68f365e64",
+  "changeHash": "14ffc1b58600a92b743425defb8dad59f30a360e83d67368581237f3d49e304c",
+  "changedFiles": [
+    "packages/consuelo-website/public/images/consuelo-integrations-hero.svg",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/components/site/SiteHeader.astro",
+    "packages/consuelo-website/tests/site-header.test.mjs"
+  ],
+  "verifiedAt": "2026-06-30T17:40:47.846Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/consuelo-website/refine-hermes-style-responsive-header-and-hero/current.json",
+        ".task/consuelo-website/refine-hermes-style-responsive-header-and-hero/session.json",
+        ".task/consuelo-website/refine-hermes-style-responsive-header-and-hero/workpad.md",
+        ".task/tasks/consuelo-website/refine-hermes-style-responsive-header-and-hero.json",
+        "packages/consuelo-website/public/images/consuelo-integrations-hero.svg",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/src/components/site/SiteHeader.astro",
+        "packages/consuelo-website/tests/site-header.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

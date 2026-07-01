@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-skills-registry-generator",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 619,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/619",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/619",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/619/add-os-skills-registry-generator",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/619",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/619/add-os-skills-registry-generator",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-skills-registry-generator",
+  "taskSession": "tsk_7391e2f613c1",
+  "tmuxSession": "opensaas-os-add-os-skills-registry-generator-7391e2f6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-skills-registry-generator/.task/os/add-os-skills-registry-generator/session.json",
+  "createdAt": "2026-05-28T20:07:59.728Z"
+}

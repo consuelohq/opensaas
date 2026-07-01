@@ -1,0 +1,15 @@
+{
+  "files": [
+    "packages/os/README.md",
+    "packages/os/scripts/doctor-analytics.ts",
+    "packages/os/scripts/doctor-errors.ts",
+    "packages/os/scripts/doctor-watch.ts",
+    "packages/os/scripts/lib/facade/logger.ts",
+    "packages/os/scripts/lib/redaction.ts",
+    "packages/os/scripts/lib/runtime-state.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/tests/consuelo-design.test.ts",
+    "packages/os/tests/doctor-logs.test.ts"
+  ],
+  "updatedAt": "2026-05-24T09:05:34.252Z"
+}

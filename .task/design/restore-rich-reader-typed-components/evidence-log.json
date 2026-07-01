@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "worktree_id": "task/design/restore-rich-reader-typed-components",
+  "events": [
+    {
+      "id": "0c19a4dc-1f0b-4da4-a72c-64d7bdd63a13",
+      "occurred_at": "2026-06-06T17:25:06.164Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/spec.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "14db3bfd-9ef6-4478-ae3a-2b3dbd9a3cc8",
+      "occurred_at": "2026-06-06T17:25:26.308Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "7ecf9982-8de6-4284-bef6-ba188b3be129",
+      "occurred_at": "2026-06-06T17:25:39.717Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "bcc13f36-8416-46bd-a6fa-27f6ff1b6c20",
+      "occurred_at": "2026-06-06T17:26:01.982Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "9e14956d-8aa7-4a14-8958-6f9349687587",
+      "occurred_at": "2026-06-06T17:26:16.523Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "3379370d-48fe-4eb9-b2f0-1b43616459f8",
+      "occurred_at": "2026-06-06T17:26:23.865Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "8c216c33-bfbc-48b0-9afb-83a4931ad56e",
+      "occurred_at": "2026-06-06T17:26:49.265Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "2ca16313-8baa-4d93-8471-b68b4b4b4ae0",
+      "occurred_at": "2026-06-06T17:28:05.086Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "4b390e75-2e60-4e6e-8da1-18d763765a12",
+      "occurred_at": "2026-06-06T17:28:55.881Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "38064659-b8fe-4feb-aff3-38ba9a2dd117",
+      "occurred_at": "2026-06-06T17:29:56.123Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "8d2b3310-4f2d-4da4-bc97-bda83a62ad0a",
+      "occurred_at": "2026-06-06T17:31:27.156Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "7b19457e-37cc-4b49-8342-40c5026768db",
+      "occurred_at": "2026-06-06T17:32:43.338Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "170268b8-9892-43d3-a5ed-9a485d7514f8",
+      "occurred_at": "2026-06-06T17:34:12.212Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/guide.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "c100c40f-2d7a-4e20-bc4c-30b428505989",
+      "occurred_at": "2026-06-06T17:34:33.542Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "73f1aac8-698d-47ed-aa8a-38162bc3697a",
+      "occurred_at": "2026-06-06T17:35:20.946Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/spec.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "e3481229-0702-467b-b964-e09a1903fd9c",
+      "occurred_at": "2026-06-06T17:35:42.334Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/spec.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "37c7725a-ca20-4969-87c9-3bf6517c4aff",
+      "occurred_at": "2026-06-06T17:36:03.963Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/plan.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    },
+    {
+      "id": "99d290dd-18df-4101-bd40-ebeea0456603",
+      "occurred_at": "2026-06-06T17:36:43.106Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-design/templates/digital-eguides/plan.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/design/restore-rich-reader-typed-components",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/design/restore-rich-reader-typed-components"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-06T17:36:43.156Z"
+}

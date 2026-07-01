@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os-skills/install-full-os-tool-manifest-into-user-home/workpad.md",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/manifest.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/tool-runner.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/tool-manifest.test.ts"
+  ],
+  "updatedAt": "2026-06-05T03:25:04.407Z"
+}

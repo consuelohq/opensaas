@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-bun-tty-crash",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 733,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/733",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/733",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/733/fix-bun-tty-crash",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/733",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/733/fix-bun-tty-crash",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-bun-tty-crash",
+  "taskSession": "tsk_87fd108e2e7b",
+  "tmuxSession": "opensaas-os-fix-bun-tty-crash-87fd108e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-bun-tty-crash/.task/os/fix-bun-tty-crash/session.json",
+  "createdAt": "2026-06-03T07:15:39.635Z"
+}

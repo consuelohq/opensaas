@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/tighten-mobile-diff-gutters",
+  "base": "origin/task/diff-cockpit/tighten-mobile-diff-gutters",
+  "headSha": "9a0097ecec443df644fe417c582bc8fc7139cc5f",
+  "changeHash": "0ba5cacf4cc3675daab1b61fecc5ca34193dde19c74529947910d4157cd86099",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T18:02:19.976Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/tighten-mobile-diff-gutters/current.json",
+        ".task/diff-cockpit/tighten-mobile-diff-gutters/session.json",
+        ".task/diff-cockpit/tighten-mobile-diff-gutters/workpad.md",
+        ".task/tasks/diff-cockpit/tighten-mobile-diff-gutters.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

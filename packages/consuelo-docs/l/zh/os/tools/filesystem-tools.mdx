@@ -1,0 +1,80 @@
+---
+title: "Filesystem tools"
+description: "Use the OS filesystem tool family to inspect, search, patch, write, and intentionally trash files inside task-scoped worktrees."
+---
+
+# Filesystem tools
+
+Filesystem tools are the safe editing surface for OS task work. They route file operations through the typed facade, resolve the active task worktree from `taskSession`, and leave traces that a reviewer can inspect later.
+
+The practical rule is simple: inspect before edit. Use `fs.list` to orient around a directory, `fs.search` to find the exact symbol or phrase, and `fs.read` to inspect the file and line range before changing anything. Mutating tools should come after that evidence, not before it.
+
+For example, when an agent needs to update a docs page, it should first search the relevant source area and then read the exact file section:
+
+```ts
+await workspace.call({
+  tool: "fs.search",
+  taskSession,
+  input: {
+    pattern: "taskSession",
+    paths: ["packages/os"],
+    context: 3,
+    maxResults: 20,
+  },
+  timeout: 120,
+})
+
+await workspace.call({
+  tool: "fs.read",
+  taskSession,
+  input: {
+    path: "packages/os/skills/task/SKILL.md",
+    from: 60,
+    to: 105,
+  },
+  timeout: 120,
+})
+```
+
+`fs.search` is the repo search primitive. It wraps ripgrep through the workspace script and accepts `pattern`, optional `paths`, optional `include`, optional `context`, and optional `maxResults`. Prefer it over ad hoc shell grep because the result is task-aware and uses the same envelope as every other OS tool.
+
+`fs.read` is the proof step. It can read a whole file or a bounded line range with `from` and `to`. Bounded reads are better for large generated references such as `packages/os/TOOLS.md`, because they keep the evidence small enough to reason from.
+
+When applying source edits, prefer `fs.apply_patch`. It applies OpenCode/Codex-style marker patches with embedded project-relative paths and explicit operation markers:
+
+```ts
+await workspace.call({
+  tool: "fs.apply_patch",
+  taskSession,
+  input: {
+    patchFile: "/tmp/change.patch",
+  },
+  timeout: 120,
+})
+```
+
+Use `patchFile` or stdin for multiline patch payloads. It avoids transport problems with long multiline strings and keeps the patch call focused on anchored operations. `fs.apply_patch` is mutating and task-scoped, so inspect the target files before applying changes.
+
+Use `fs.write` when creating a new file or replacing a whole file intentionally. For new docs pages, the call usually sets `mkdirs: true` so the containing directory can be created with the file:
+
+```ts
+await workspace.call({
+  tool: "fs.write",
+  taskSession,
+  input: {
+    path: "packages/consuelo-docs/os/tools/example.mdx",
+    contentFile: "/tmp/example.mdx",
+    mkdirs: true,
+    force: true,
+  },
+  timeout: 120,
+})
+```
+
+`force: true` should mean the caller already knows replacement is intended. It is appropriate for deterministic regenerated files or a page this task owns. It is not a substitute for reading unknown existing content.
+
+Use `fs.trash` only when deletion is explicitly intended. It moves a task worktree file to trash through the workspace script. A typical safe pattern is to read or list the path first, record why removal is in scope, and then call `fs.trash` with the exact path. Do not use deletion to clean up uncertainty; resolve the uncertainty first.
+
+Durable outputs deserve the right storage layer. Repository source files belong in the task worktree through `fs.write` or `fs.apply_patch`. User-facing exports, reports, traces, and generated evidence may need an artifact workflow when the output is meant to be preserved outside the source tree. The filesystem tools create and edit files; artifact tools preserve deliverables and provenance when the workflow calls for that durability.
+
+The filesystem family is therefore not just convenience IO. It is how an OS agent keeps file work inspectable: search, read, patch or write narrowly, then reread and diff before publish.

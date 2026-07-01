@@ -1,0 +1,16 @@
+{
+  "files": [
+    "AGENTS.md",
+    "packages/os/hooks/task/workflow.js",
+    "packages/os/scripts/artifact-render.ts",
+    "packages/os/scripts/lib/index/embedder.js",
+    "packages/os/scripts/lib/index/embedding-config.js",
+    "packages/os/scripts/lib/index/embedding-gateway.js",
+    "packages/os/scripts/lib/index/store.js",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/semantic-embedding-gateway.test.ts",
+    "packages/os/tests/semantic-index-storage.test.ts"
+  ],
+  "updatedAt": "2026-06-11T18:30:23.011Z"
+}

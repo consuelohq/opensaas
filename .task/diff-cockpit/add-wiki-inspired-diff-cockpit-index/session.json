@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_58876683a321",
+  "tmuxSession": "opensaas-diff-cockpit-add-wiki-inspired-diff-cockpit-index-58876683",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+  "branch": "task/diff-cockpit/add-wiki-inspired-diff-cockpit-index",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-wiki-inspired-diff-cockpit-index",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-wiki-inspired-diff-cockpit-index",
+  "prNumber": 728,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/728",
+  "createdAt": "2026-06-03T05:41:20.305Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-wiki-inspired-diff-cockpit-index/.task/diff-cockpit/add-wiki-inspired-diff-cockpit-index/session.json"
+}

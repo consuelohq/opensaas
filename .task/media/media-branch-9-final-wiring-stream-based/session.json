@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_928d6acbd64b",
+  "tmuxSession": "opensaas-media-media-branch-9-final-wiring-stream-based-928d6acb",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-9-final-wiring-stream-based",
+  "branch": "task/media/media-branch-9-final-wiring-stream-based",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-9-final-wiring-stream-based",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-9-final-wiring-stream-based",
+  "prNumber": 1217,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1217",
+  "createdAt": "2026-06-26T15:52:02.521Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-9-final-wiring-stream-based/.task/media/media-branch-9-final-wiring-stream-based/session.json"
+}

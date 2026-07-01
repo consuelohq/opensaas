@@ -35,7 +35,7 @@ This file owns Consuelo visual language: Geist typography, black/white precision
 For digital e-guides, also read:
 
 ```text
-packages/consuelo-design/templates/digital-eguides/research.md
+packages/consuelo-design/templates/digital-eguides/guide.md
 packages/consuelo-design/templates/digital-eguides/spec.md
 packages/consuelo-design/templates/digital-eguides/plan.md
 packages/consuelo-design/templates/digital-eguides/reader-shell.md
@@ -103,17 +103,17 @@ Common calls:
 ```ts
 await workspace.get_steering()
 
-await workspace.call({ tool: "consueloDesign.check", input: {}, timeout: 120 })
-await workspace.call({ tool: "consueloDesign.listSkills", input: {}, timeout: 120 })
-await workspace.call({ tool: "consueloDesign.listDesignSystems", input: {}, timeout: 120 })
-await workspace.call({ tool: "consueloDesign.uiStatus", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.check", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.listSkills", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.listDesignSystems", input: {}, timeout: 120 })
+await workspace.call({ tool: "office.uiStatus", input: {}, timeout: 120 })
 ```
 
 Use dry run to inspect the generated headless work order before creating files:
 
 ```ts
 await workspace.call({
-  tool: "consueloDesign.generateDigitalEguide",
+  tool: "office.generateDigitalEguide",
   input: {
     dryRun: true,
     name: "example-artifact",
@@ -128,7 +128,7 @@ Dry-run output should return `mode: "headless-work-order"` and a `workOrder` fie
 
 ## current tool contract
 
-Default `consueloDesign.generate*` behavior:
+Default `office.generate*` behavior:
 
 ```json
 {
@@ -155,39 +155,39 @@ Choose the closest workflow:
 
 | User wants                                                                    | Tool                                   | Notes                                                           |
 | ----------------------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------------------- |
-| research guide, e-guide, designed doc, flyer, pricing card, PDF-like artifact | `consueloDesign.generateDigitalEguide` | Use `template` when applicable.                                 |
-| website section or landing page                                               | `consueloDesign.generateWebsite`       | Use for site layout and source handoff.                         |
-| demo or prototype                                                             | `consueloDesign.generateDemo`          | Use for multi-screen or product story work.                     |
-| image/media direction                                                         | `consueloDesign.generateImageBrief`    | Use for briefs and direction, not final source unless extended. |
-| HTML email                                                                    | `consueloDesign.generateEmail`         | Use for email source and preview.                               |
-| motion frame                                                                  | `consueloDesign.generateMotionFrame`   | Use for motion concepts and still frames.                       |
-| HTML-to-video / HyperFrames                                                   | `consueloDesign.renderHyperframes`     | Use for render/video work.                                      |
+| research guide, e-guide, designed doc, flyer, pricing card, PDF-like artifact | `office.generateDigitalEguide` | Use `template` when applicable.                                 |
+| website section or landing page                                               | `office.generateWebsite`       | Use for site layout and source handoff.                         |
+| demo or prototype                                                             | `office.generateDemo`          | Use for multi-screen or product story work.                     |
+| image/media direction                                                         | `office.generateImageBrief`    | Use for briefs and direction, not final source unless extended. |
+| HTML email                                                                    | `office.generateEmail`         | Use for email source and preview.                               |
+| motion frame                                                                  | `office.generateMotionFrame`   | Use for motion concepts and still frames.                       |
+| HTML-to-video / HyperFrames                                                   | `office.renderHyperframes`     | Use for render/video work.                                      |
 
-If no workflow fits, call `consueloDesign.listSkills`, choose the nearest existing workflow, and ask Ko only if the choice affects the output. Keep execution headless unless Ko explicitly asks for a live UI session.
+If no workflow fits, call `office.listSkills`, choose the nearest existing workflow, and ask Ko only if the choice affects the output. Keep execution headless unless Ko explicitly asks for a live UI session.
 
 ## digital e-guide templates
 
-For `consueloDesign.generateDigitalEguide`, use:
+For `office.generateDigitalEguide`, use:
 
 | Template   | Use for                                                                             |
 | ---------- | ----------------------------------------------------------------------------------- |
-| `research` | research guides, paper explainers, Daily Deep Idea lessons, source-grounded reports |
+| `guide`    | source-grounded guides, paper explainers, Daily Deep Idea lessons, reusable walkthroughs |
 | `spec`     | product specs, engineering specs, RFCs, architecture/design docs                    |
 | `plan`     | implementation plans, operating plans, rollout plans, execution guides              |
 
 Do not create a standalone `decision` template. Decisions belong inside `spec` and `plan`.
 
-All three templates — `research`, `spec`, and `plan` — are reader-shell templates. When building any of them, read and apply:
+All three reader templates — `guide`, `spec`, and `plan` — must be rendered by the canonical TypeScript reader shell.
 
-packages/consuelo-design/templates/digital-eguides/reader-shell.md
+Use typed JSON/content input with `bun run wiki:render -- --template <spec|plan|guide> --input <content.json> --out <index.html>`.
 
-Do not build a research/spec/plan guide as plain HTML, plain Markdown, or a shell-less page.
+Do not build a guide/spec/plan as plain HTML, plain Markdown, or a shell-less page.
 
 Example:
 
 ```ts
 await workspace.call({
-  tool: "consueloDesign.generateDigitalEguide",
+  tool: "office.generateDigitalEguide",
   input: {
     name: "daily-deep-idea-2026-05-12-example",
     template: "research",
@@ -526,13 +526,13 @@ Do not:
 
 ## core decisions
 
-- The canonical Consuelo facade lives in `packages/workspace/scripts/consuelo-design.ts`.
-- The package-local script at `packages/consuelo-design/scripts/consuelo-design.ts` is only a thin Bun passthrough.
+- The canonical Consuelo design facade lives in `packages/workspace/scripts/office.ts`.
+- The package-local script at `packages/consuelo-design/scripts/consuelo-design.ts` is a thin Bun passthrough to `packages/workspace/scripts/office.ts`.
 - Human commands start from the repo root with `bun run consuelo-design ...`.
-- Tool calls go through the typed workspace facade as `workspace consueloDesign.*`.
+- Tool calls go through the typed workspace facade as `workspace office.*`.
 - Open Design upstream remains vendored at `packages/consuelo-design/upstream/open-design`.
 - `pnpm` is not a Consuelo-facing workflow tool. It is used only behind the Bun facade because upstream Open Design pins `pnpm@10.33.2`.
-- `generate <workflow>` means start/create/open a live Open Design working session. It must not degrade into a dead-end prompt/spec generator.
+- `generate <workflow>` returns a headless work order by default. Only `generate <workflow> --live` or an explicit `live: true` input starts a live Open Design working session, and only that live path may set `project.pendingPrompt`.
 - Open Design bundled design systems are reference skins only. Consuelo truth comes from our repo.
 - `consuelo-design` must remain outside Railway deployment graphs.
 
@@ -547,16 +547,16 @@ Base Consuelo design system context is exactly:
 
 Website-specific context is attached only when starting website or motion-oriented sessions:
 
-- `areas/website/animations.md`
+- `packages/consuelo-website/animations.md`
 - `areas/website/AGENTS.md`
 
 Do not include `animations.md` or website `AGENTS.md` in base `get-design-system`. They are workflow context, not global design-system truth.
 
 ## Open Design mental model
 
-Open Design is a live design workspace, not a static prompt generator.
+Open Design supports live design workspaces, but the Consuelo facade is headless by default.
 
-The loop is:
+The live UI loop is used only when Ko asks for a live session or the tool input passes `live: true`:
 
 ```text
 start Open Design
@@ -569,7 +569,7 @@ start Open Design
   -> Ko and the agent iterate together
 ```
 
-The Consuelo facade should preserve that loop. If a command says `generate website`, it should start or reuse Open Design, create/open a project, attach the right Consuelo prompt context, and take Ko to the working session.
+Default `generate <workflow>` commands return a headless work order that agents can execute directly. Live `generate <workflow> --live` commands start or reuse Open Design, create or open a project, attach the right Consuelo prompt context, set `project.pendingPrompt`, and take Ko to the working session.
 
 
 ## workflow mapping
@@ -621,4 +621,140 @@ Every `design.publish` call records the published artifact in the private Consue
 
 The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.
 
-The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.
+The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.## publish concurrency guard
+
+When publishing over an existing `/design-wiki` page, read the latest page/archive state first and pass the current page revision to publish:
+
+```bash
+bun run consuelo-design publish --target <artifact> --path <page-path> --base-version <currentVersionId>
+```
+
+Rules:
+
+- Do not publish over an existing page without `--base-version`.
+- Use `--base-revision` only as an alias for `--base-version`.
+- Use `--force-publish` only when Ko explicitly asks for an intentional overwrite or recovery publish.
+- If publish reports `stale design wiki publish rejected`, re-read the current page and rebase your typed changes before publishing.
+- Prefer section/component-level typed changes so non-overlapping agent work can be recovered or merged from page versions.
+
+### Context-Free Instruction Voice
+
+Write every durable instruction as if the reader has no access to the conversation that produced it.
+
+A good instruction should stand alone inside the artifact. It should name the rule, the standard, the failure mode, and the replacement behavior. The agent reading it should not need chat history, surrounding commentary, screenshots, or the author’s intent to know what to do.
+
+#### Core Rule
+
+Use **artifact voice**, not **patch voice**.
+
+Artifact voice states the final rule.
+
+Patch voice describes the editing operation that created the rule.
+
+| ❌ Patch voice                                                        | ✅ Artifact voice                                             |
+| -------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Replace the stale tooling section with this                          | Tooling Preference Order                                     |
+| Add this snippet under communication style                           | Context-Free Instruction Voice                               |
+| In our conversation, we decided agents should avoid vague references | Durable instructions must avoid vague references             |
+| For this example, use `code.call` instead of `task.call`             | Use `code.call` for focused command and runtime evidence     |
+| The thing above should be rewritten as a standalone rule             | Rewrite every durable rule so it stands without chat context |
+
+The first line of a durable snippet should be the title or rule name, not an instruction to the human editor.
+
+#### Required Shape
+
+When writing a durable rule, use this shape:
+
+```text
+Rule: what to do.
+Standard: what good behavior looks like.
+Failure mode: what goes wrong.
+Replacement behavior: what the agent should do instead.
+```
+
+Example:
+
+```text
+Rule: Durable instructions must be context-free.
+Standard: The instruction names the subject, action, boundary, and expected behavior directly.
+Failure mode: The instruction depends on phrases like “this,” “above,” “as discussed,” or “the current example.”
+Replacement behavior: Rewrite the instruction with explicit nouns, stable labels, and final artifact prose.
+```
+
+#### Forbidden Context Phrases
+
+Avoid phrases that point back to the conversation, editing session, or local screen state:
+
+* “in our conversation”
+* “like we talked about”
+* “for this example”
+* “the thing above”
+* “this situation”
+* “the current issue”
+* “the previous section”
+* “as mentioned earlier”
+* “here”
+* “above”
+* “below”
+* vague pronouns without explicit referents: “this,” “that,” “it,” “they,” “those”
+
+Use explicit referents instead.
+
+| ❌ Weak                                  | ✅ Strong                                                                                        |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| This should use the new tool            | Repo validation should use `code.call` for focused command evidence                             |
+| That section teaches the wrong behavior | The tooling section incorrectly teaches `task.call` as the command runner                       |
+| It should be more direct                | The rule should state the required behavior in the first sentence                               |
+| The above example is bad                | The patch-voice example is bad because it describes an edit operation instead of the final rule |
+
+#### Prefer Stable Labels
+
+Give every durable concept a stable name.
+
+Use:
+
+* rule names
+* section titles
+* tool names
+* file paths
+* command names
+* trace IDs
+* URLs
+* exact failure labels
+* explicit actor names: “agent,” “reviewer,” “reader,” “operator”
+
+Avoid:
+
+* “this”
+* “that”
+* “the thing”
+* “the stuff”
+* “the earlier point”
+* “what we just said”
+
+Stable labels let future agents inherit the instruction without reconstructing the original context.
+
+#### Replacement Behavior
+
+When an agent catches itself writing patch voice, convert it before presenting the snippet.
+
+Use this conversion:
+
+```text
+Patch voice: what the editor should change.
+Artifact voice: the final rule the artifact should contain.
+```
+
+Example:
+
+```text
+Patch voice: Replace the validation section with this.
+Artifact voice: Validation Evidence Standard
+
+Rule: Validation claims require command, output, and location evidence.
+Standard: The agent reports the exact validation command, the result, and the trace or file path that proves it.
+Failure mode: The agent says “validated” without evidence.
+Replacement behavior: Report the validation packet: command, result, evidence, remaining risk.
+```
+
+The durable artifact should receive the artifact voice only.

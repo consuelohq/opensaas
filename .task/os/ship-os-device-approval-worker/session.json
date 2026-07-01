@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9a75bab325d6",
+  "tmuxSession": "opensaas-os-ship-os-device-approval-worker-9a75bab3",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-os-device-approval-worker",
+  "branch": "task/os/ship-os-device-approval-worker",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-device-approval-worker",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-device-approval-worker",
+  "prNumber": 1001,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1001",
+  "createdAt": "2026-06-13T11:52:44.041Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-device-approval-worker/.task/os/ship-os-device-approval-worker/session.json"
+}

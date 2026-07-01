@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_59c01f970c16",
+  "tmuxSession": "opensaas-diff-cockpit-fix-cron-coderabbit-comments-59c01f97",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-cron-coderabbit-comments",
+  "branch": "task/diff-cockpit/fix-cron-coderabbit-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-cron-coderabbit-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-cron-coderabbit-comments",
+  "prNumber": 855,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/855",
+  "createdAt": "2026-06-09T01:00:26.332Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-cron-coderabbit-comments/.task/diff-cockpit/fix-cron-coderabbit-comments/session.json"
+}

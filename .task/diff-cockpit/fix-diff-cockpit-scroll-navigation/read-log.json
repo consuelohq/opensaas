@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/diff-cockpit/fix-diff-cockpit-scroll-navigation/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "updatedAt": "2026-06-14T18:29:54.931Z"
+}

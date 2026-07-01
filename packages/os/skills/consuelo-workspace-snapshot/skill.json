@@ -1,0 +1,23 @@
+{
+  "name": "consuelo-workspace-snapshot",
+  "title": "Consuelo Workspace Snapshot",
+  "description": "Reads a structured, read-only snapshot of Consuelo workspace objects, including Files and Attachments, through the configured Consuelo GraphQL/API facade.",
+  "trigger": "Invoke when the user asks an agent to inspect Consuelo workspace records, files, attachments, tasks, notes, dashboards, or GraphQL-backed workspace context.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/consuelo-workspace-snapshot/SKILL.md"
+  },
+  "script": "scripts/workspace/consuelo-workspace-snapshot.ts",
+  "permission": "read",
+  "requiresApproval": false,
+  "status": "active",
+  "artifactTypes": [
+    "dataset"
+  ],
+  "capabilities": [
+    "workspace-graphql",
+    "consuelo-app",
+    "files"
+  ]
+}

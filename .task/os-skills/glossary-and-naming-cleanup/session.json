@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_74f8b59025ef",
+  "tmuxSession": "opensaas-os-skills-glossary-and-naming-cleanup-74f8b590",
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/glossary-and-naming-cleanup",
+  "branch": "task/os-skills/glossary-and-naming-cleanup",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-glossary-and-naming-cleanup",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-glossary-and-naming-cleanup",
+  "prNumber": 796,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/796",
+  "createdAt": "2026-06-05T07:47:44.747Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-glossary-and-naming-cleanup/.task/os-skills/glossary-and-naming-cleanup/session.json"
+}

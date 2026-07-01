@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/security/fix-public-gateway-security-review-comments/workpad.md",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/security-gateway.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/tests/security-gateway.test.ts"
+  ],
+  "updatedAt": "2026-06-10T00:14:33.467Z"
+}

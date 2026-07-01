@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/use-workspace-steering-for-agent-context-docs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 789,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/789",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/789",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/789/use-workspace-steering-for-agent-context-docs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/789",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/789/use-workspace-steering-for-agent-context-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-use-workspace-steering-for-agent-context-docs",
+  "taskSession": "tsk_1fbd7639a324",
+  "tmuxSession": "opensaas-os-use-workspace-steering-for-agent-context-docs-1fbd7639",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-use-workspace-steering-for-agent-context-docs/.task/os/use-workspace-steering-for-agent-context-docs/session.json",
+  "createdAt": "2026-06-05T07:10:35.594Z"
+}

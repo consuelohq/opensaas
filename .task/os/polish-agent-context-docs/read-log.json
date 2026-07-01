@@ -1,0 +1,17 @@
+{
+  "files": [
+    "packages/consuelo-docs/docs.json",
+    "packages/consuelo-docs/navigation/navigation.template.json",
+    "packages/consuelo-docs/os/agent-context/steering.mdx",
+    "packages/consuelo-docs/os/tools/default-steering.mdx",
+    "packages/consuelo-docs/scripts/generate-docs-json.ts",
+    "packages/consuelo-docs/scripts/generate-os-source-docs.ts",
+    "packages/consuelo-docs/scripts/validate-os-docs.ts",
+    "packages/os/SCRIPTS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-docs.ts",
+    "packages/os/scripts/os.ts"
+  ],
+  "updatedAt": "2026-06-05T06:23:16.643Z"
+}

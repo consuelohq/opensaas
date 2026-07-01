@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/tests/task-meta.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-05T08:25:11.568Z"
+}

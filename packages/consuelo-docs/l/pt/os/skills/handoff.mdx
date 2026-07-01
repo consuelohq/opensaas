@@ -1,0 +1,397 @@
+---
+title: "Handoff"
+description: "Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely."
+---
+
+{/* Generated from packages/os/skills. Do not edit this page directly. */}
+
+purpose
+create a continuation-ready handoff so a fresh agent can start immediately without guessing tools, scripts, files, or context.
+
+this is not the final tagging system. for now:
+
+for task handoffs, draft in canvas first, review with ko, then save after explicit approval
+for learning/memory handoffs where ko explicitly asks for a tmp file or says not to use canvas, write the handoff directly to /tmp/(descriptive-name).md
+save to memory only after explicit approval, or when ko explicitly asks to save the handoff to context in the same request
+include exact skills, scripts, tools, files, branch/PR/runtime context when applicable
+non-negotiable rules
+draft in canvas first for task handoffs unless ko explicitly asks for tmp-file-first or no canvas
+when ko asks for tmp/no-canvas, write the handoff directly to /tmp/(descriptive-name).md
+do not save memory until ko explicitly approves, unless ko explicitly asks to save to context in the same request
+use real current-state facts from this conversation; do not invent examples
+no tables unless ko explicitly asks
+state clearly:
+what is done
+what is broken
+what next agent does first
+label uncertainty explicitly
+optimize for zero-context handoff: assume next agent knows nothing
+include exact skills/scripts/tools/files to use next
+include both the agent-facing os.call(...) command and the CLI bun ... context.js ... command for retrieval
+canvas doc name must be timestamped and task-descriptive
+format: Apr 29, 2026 at 16:04 (next-task-name)
+user override for handoff surface
+If ko explicitly says “do not use canvas,” “go straight to tmp file,” “save to context,” or similar, follow that surface request.
+
+The handoff skill’s default canvas-first workflow applies only when ko has not specified a different surface.
+
+Format still applies.
+
+tmp-file handoff shortcut
+Use this path when ko explicitly asks for @handoff no canvas, tmp file, go straight to tmp, or save to context.
+
+Collect the durable decisions and current state.
+Write the full handoff directly to /tmp/(descriptive-name).md.
+Save the tmp file to context with a descriptive title.
+Return:
+tmp file path
+context title/id if available
+exact agent command for the next agent
+exact CLI command for ko or an agent using terminal
+exact command to read the full saved handoff
+Do not use canvas in this path.
+
+workflow
+0) production-signal precheck
+If there is any signal this touches live/runtime behavior, run browser + railway checks before drafting conclusions.
+
+1) collect minimum viable context
+Capture:
+
+problem/goal
+what changed
+proven vs assumed
+branch/PR/environment
+files touched
+exact blocker
+best next move
+2) draft handoff in canvas
+Use required structure below.
+
+Skip canvas only when ko explicitly requests tmp-file-first, no-canvas, or direct context save.
+
+3) review with ko
+Iterate until approved.
+
+4) save after approval or explicit save request
+For canvas-reviewed handoffs:
+
+Write the approved full handoff content to a tmp Markdown file.
+Save the tmp file to context with a descriptive title.
+Return the tmp path, context title/id, agent retrieval command, CLI retrieval command, and full-read command.
+For tmp-file-first handoffs:
+
+Write the full handoff directly to /tmp/(descriptive-name).md.
+Save that tmp file to context with a descriptive title.
+Return the tmp path, context title/id, agent retrieval command, CLI retrieval command, and full-read command.
+Preferred typed facade save shape:
+
+await os.call(\{
+  tool: "context.save",
+  input: \{
+    title: "(descriptive context title)",
+    file: "/tmp/(descriptive-name).md"
+  \},
+  timeout: 120,
+\})
+CLI fallback save shape:
+
+bun packages/workspace/scripts/context.js save "(descriptive context title)" "/tmp/(descriptive-name).md" --category handoff --json
+5) memory save rule
+Save the full handoff, not a summary.
+
+Default rule: save only after ko approves.
+
+Exception: if ko explicitly asks in the same request to save to context, treat that as approval and save immediately.
+
+Use a descriptive title. Add a tags: line at the top of the handoff content when useful for retrieval.
+
+required handoff structure
+title (timestamp + task description)
+goal (1–3 lines)
+instructions for next agent (what to do first, what not to assume) (if applicable)
+discoveries
+high-level state
+confirmed evidence
+backend discoveries
+frontend discoveries
+infra/env discoveries
+accomplished
+what changed
+why
+effect
+solved vs narrowed
+current result (real status now)
+relevant files/directories (open-first list)
+branch / PR / working context
+what next agent should do (ordered checklist, starts with acceptance criteria + task-start flow)
+current best hypothesis
+definition of done (testable proof)
+useful scripts/tools section
+minimum includes stream context + task start + explore equivalents when task work is expected
+include both typed os.call(...) examples and CLI bun ... commands where retrieval or save needs terminal access
+current workspace command examples
+Use the typed facade shape.
+
+Agent retrieval command:
+
+await os.get_steering()
+
+await os.call(\{
+  tool: "context.search",
+  input: \{
+    keyword: "(handoff-title-or-best-keyword)",
+    limit: 5
+  \},
+  timeout: 120,
+\})
+Agent save command:
+
+await os.call(\{
+  tool: "context.save",
+  input: \{
+    title: "(descriptive context title)",
+    file: "/tmp/(handoff-file).md"
+  \},
+  timeout: 120,
+\})
+CLI save command:
+
+bun packages/workspace/scripts/context.js save "(descriptive context title)" "/tmp/(handoff-file).md" --category handoff --json
+CLI search command:
+
+bun packages/workspace/scripts/context.js find "(handoff-title-or-best-keyword)" --category handoff --limit 5
+CLI content search command:
+
+bun packages/workspace/scripts/context.js search "(tag-or-keyword)" --category handoff --limit 5
+CLI full-read command after finding the handoff:
+
+bun packages/workspace/scripts/context.js get 1 "(handoff-title-or-best-keyword)" --by-title --category handoff
+Clear Communication
+Purpose
+
+Help people communicate clearly in emails, docs, messages, updates, proposals, and explanations.
+Make writing easier to read, easier to act on, and harder to misunderstand.
+Treat clear writing as clear thinking made visible.
+Core standard
+
+Every piece of communication should leave the reader with one clear takeaway.
+The reader should know:
+what matters
+why it matters
+what action, decision, or understanding should follow
+Step 1: Be selective
+
+Choose one main point before writing.
+Cut side ideas that compete with the main point.
+Ask: “What should the reader remember a week from now?”
+Keep every paragraph tied to that one idea.
+Remove anything that creates drift, confusion, or extra cognitive load.
+Step 2: Be confident
+
+Write the first draft for one reader.
+Explain the idea the way you would want it explained to you.
+Say the real point directly.
+Remove weak qualifiers such as:
+“kind of”
+“sort of”
+“a bit”
+“somewhat”
+“I think”
+“maybe”
+“probably”
+Replace timid phrasing with clear claims.
+Take a stance when a stance is needed.
+Step 3: Rewrite aggressively
+
+Treat rewriting as the main work.
+Read the draft out loud.
+Mark only the sentences that are essential.
+Cut paragraphs and sentences the message can survive without.
+Aim to make the second draft tighter, stronger, and more precise.
+Assume the first draft can lose a large amount of text while keeping the same meaning.
+Step 4: Refine the language
+
+Remove redundant adverbs.
+“quietly whispered” → “whispered”
+“blared loudly” → “blared”
+Remove redundant adjectives.
+“steep cliff” → “cliff”
+“brown dirt” → “dirt”
+Replace inflated words with simple words.
+“implement” → “do”
+“sufficient” → “enough”
+“referred to as” → “called”
+Shorten wordy sentences.
+“At the present time we are experiencing precipitation” → “It is raining.”
+Challenge yourself to shorten half the sentences.
+Step 5: Make the opening useful
+
+Spend extra time on the first paragraph.
+The first sentence should pull the reader into the second sentence.
+Draft at least five possible openings.
+Use one of these opening patterns:
+a surprising fact
+a sharp claim
+a concrete image
+a useful question
+a brief story
+a direct statement of the problem
+Pick the opening most likely to make the reader continue.
+Step 6: Final clarity check
+
+Ask:
+Is there one clear takeaway?
+Can the reader act on this?
+Did I remove weak qualifiers?
+Did I cut unnecessary paragraphs?
+Did I replace fancy words with simple words?
+Did I shorten bloated sentences?
+Does the opening create momentum?
+Send only when the message feels selective, confident, refined, and engaging.
+Default output style
+
+Lead with the answer.
+Use short paragraphs.
+Prefer simple words.
+Use bullets when the reader needs to scan.
+End with the action, decision, or takeaway.
+Preserve the writer’s voice while removing clutter.
+Communication rule of thumb
+
+Clear communication says one useful thing, says it directly, removes everything extra, and gives the reader a reason to keep reading.
+6. handoffs are executable context
+Write handoffs, plans, task notes, and steering updates for an agent with zero conversation context.
+
+Speak with your chest.
+
+The next agent does not know who “we” is. The next agent does not know what “this” means. The next agent does not know what changed midway through. The next agent does not know which parts were brainstorming and which parts became decisions.
+
+Only the executable truth matters.
+
+A good handoff answers:
+
+what must be done?
+why does it matter?
+what is already decided?
+what constraints must be respected?
+what files, systems, commands, or docs matter?
+what should the next agent do first?
+what should the next agent avoid?
+Avoid:
+
+we decided
+we talked about
+i think
+probably
+maybe
+the above
+this thing
+as mentioned
+from earlier
+Handoffs are not transcripts.
+
+Handoffs are executable context.
+
+Tip: simply speaking in the future tense will solve most confusion.
+
+Bad:
+
+we moved from plan mode to action mode and decided the thing to do is probably the script.
+Good:
+
+build the review packet generator first. the packet must collect the durable data needed by terminal output, linear publishing, notifications, and future automation. do not start with notification delivery. build the reusable packet first.
+next-agent checklist requirement
+In “what next agent should do,” always include:
+
+acceptance criteria checklist
+task-start checklist
+exact skills to invoke
+exact tools/scripts/commands to run
+first files to inspect
+workpad reminder (copy acceptance criteria into workpad after task start)
+instruction to continue execution without bouncing back for re-brief
+next-agent context command requirement
+Every saved handoff must end by giving ko copy-paste commands for both agent retrieval and CLI retrieval.
+
+Minimum agent command:
+
+await os.get_steering()
+
+await os.call(\{
+  tool: "context.search",
+  input: \{
+    keyword: "(handoff-title-or-best-keyword)",
+    limit: 5
+  \},
+  timeout: 120,
+\})
+Minimum CLI search command:
+
+bun packages/workspace/scripts/context.js find "(handoff-title-or-best-keyword)" --category handoff --limit 5
+Minimum CLI full-read command:
+
+bun packages/workspace/scripts/context.js get 1 "(handoff-title-or-best-keyword)" --by-title --category handoff
+If the handoff is better retrieved by content tags than title, also include:
+
+bun packages/workspace/scripts/context.js search "(tag-or-keyword)" --category handoff --limit 5
+approval prompt format
+When requesting approval for canvas-reviewed handoffs, include this exact heading:
+
+SEND "SAVE" OR "S" WHEN YOU'RE READY
+
+Also append a short save reminder at the end of every follow-up message until saved.
+
+Small reminder: SEND "SAVE" OR "S" WHEN YOU'RE READY.
+
+Do not use this approval prompt when ko already asked to save directly to context or explicitly requested a tmp-file handoff.
+
+Tagging Memories for Retrieval
+When saving context via os.call(\{ tool: "context.save", ... \}) or bun packages/workspace/scripts/context.js save, prepend a tags: line at the top of the content. This makes memories searchable by concept even when the title is generic.
+
+format
+tags: tag1, tag2, tag3
+
+(actual content below)
+tag selection rules
+use the system/area name: workspace-agents, dialer, coaching, contacts, analytics
+use the technical concept: embeddings, bayesian, tree-sitter, graph-expansion, confidence-score
+use the product concept: evidence-ledger, decision-engine, belief-update, review-pipeline
+use the tool/model name: qwen, twilio, sqlite-vec, nvidia, openrouter, gemma
+use the workflow stage: handoff, review, deploy, explore, exploit, confirm
+use the infrastructure: railway, pi-proxy, langsmith, navi, tmux
+use the label type: [task], [bug], [feature], [phase], [spike], [doc]
+Keep tags lowercase, hyphenated, comma-separated. Aim for 5–10 tags per memory. More is fine if genuinely relevant; fewer means harder to find later.
+
+to search by tag
+Agent command:
+
+await os.call(\{
+  tool: "context.search",
+  input: \{
+    keyword: "evidence-ledger",
+    limit: 5
+  \},
+  timeout: 120,
+\})
+Agent command with category:
+
+await os.call(\{
+  tool: "context.search",
+  input: \{
+    keyword: "bayesian",
+    category: "decision",
+    limit: 5
+  \},
+  timeout: 120,
+\})
+CLI fallback:
+
+bun packages/workspace/scripts/context.js search "evidence-ledger"
+bun packages/workspace/scripts/context.js search "bayesian" --category decision
+instruction precision changes agent behavior
+A single word in an instruction can flip agent behavior from correct to broken. “Do not optimize for X” tells an agent to ignore X entirely. “Do not optimize only for X” tells an agent that X matters but is not sufficient alone.
+
+When writing instructions, constraints, or acceptance criteria, read the sentence as a literal-minded agent would. If removing or adding one word changes the meaning from “ignore this” to “balance this against something else,” that word is load-bearing. Include it deliberately.
+
+The failure mode: writing an absolute prohibition when you meant a priority ordering. The fix: use “only,” “solely,” or “at the expense of” to signal that the thing still matters; it just is not the whole picture.

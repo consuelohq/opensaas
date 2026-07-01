@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import contextvars
 import datetime
 import hashlib
 import json
@@ -270,6 +271,7 @@ DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
 TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
+CORE_MANIFEST_FILE = os.path.join(APP_DIR, 'manifests', 'core-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
@@ -283,6 +285,9 @@ _CACHED_MANIFEST_MTIME: float | None = None
 _SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
 _SAFETY_SUMMARY_LIMIT = 500
 _TRACE_DB_MAX_BYTES = int(os.environ.get('OPENWORKSPACE_TRACE_DB_MAX_BYTES', str(500 * 1024 * 1024)))
+_STEERING_GUARD_WINDOW_SECONDS = int(os.environ.get('OPENWORKSPACE_STEERING_GUARD_WINDOW_SECONDS', '300'))
+_STEERING_FORCE_WINDOW_SECONDS = int(os.environ.get('OPENWORKSPACE_STEERING_FORCE_WINDOW_SECONDS', '300'))
+_STEERING_REQUEST_CONTEXT: contextvars.ContextVar[dict[str, str] | None] = contextvars.ContextVar('steering_request_context', default=None)
 
 
 def _resolve_steering_file() -> str:
@@ -299,29 +304,277 @@ def _read_optional_file(path: str) -> str:
         return handle.read()
 
 
+def _repo_root() -> str:
+    return os.path.abspath(os.path.join(APP_DIR, '..', '..'))
+
+
+def _read_manifest_code_file_source(code_file: Any) -> str | None:
+    if not isinstance(code_file, str):
+        return None
+    if not code_file.startswith('scripts/code-call-examples/'):
+        return None
+    if not code_file.endswith(('.ts', '.py')):
+        return None
+    root = _repo_root()
+    candidate = os.path.abspath(os.path.join(root, code_file))
+    if candidate != root and not candidate.startswith(root + os.sep):
+        return None
+    if not os.path.exists(candidate):
+        return None
+    with open(candidate, 'r', encoding='utf-8') as handle:
+        return handle.read()
+
+
+def _expand_manifest_code_file_examples(value: Any) -> Any:
+    if isinstance(value, list):
+        return [_expand_manifest_code_file_examples(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    expanded = {key: _expand_manifest_code_file_examples(item) for key, item in value.items()}
+    source = _read_manifest_code_file_source(expanded.get('codeFile'))
+    if source:
+        expanded.setdefault('codeFileSource', source)
+    return expanded
+
+
+def _read_core_manifest_for_steering() -> str:
+    raw = _read_optional_file(CORE_MANIFEST_FILE)
+    if not raw:
+        return ''
+    try:
+        expanded = _expand_manifest_code_file_examples(json.loads(raw))
+    except json.JSONDecodeError:
+        return raw
+    return json.dumps(expanded, indent=2)
+
+
 def _read_steering() -> str:
     steering_path = _resolve_steering_file()
     with open(steering_path, 'r', encoding='utf-8') as handle:
         content = handle.read()
 
-    manifest = _read_optional_file(TOOL_MANIFEST_FILE)
-    if manifest:
-        content += '\n\n# tool manifest\n\n```json\n' + manifest + '\n```'
+    core_manifest = _read_core_manifest_for_steering()
+    if core_manifest:
+        content += '\n\n# core manifest\n\n```json\n' + core_manifest + '\n```'
 
     # Keep decision-engine doctrine in decision.md without injecting it into bootstrap steering.
 
+    return content
+def _steering_guard_now() -> float:
+    return time.time()
+
+
+def _steering_caller_key() -> str:
+    context = _STEERING_REQUEST_CONTEXT.get() or {}
+    candidates = [
+        os.environ.get('OPENWORKSPACE_STEERING_CALLER_KEY'),
+        os.environ.get('CONSUELO_AGENT_RUN_ID'),
+        os.environ.get('OPENWORKSPACE_AGENT_RUN_ID'),
+        os.environ.get('MCP_SESSION_ID'),
+        os.environ.get('CLAUDE_CODE_SESSION_ID'),
+        context.get('x-consuelo-agent-run-id'),
+        context.get('x-agent-run-id'),
+        context.get('mcp-session-id'),
+        context.get('x-request-id'),
+        context.get('authorization'),
+        context.get('user-agent'),
+        context.get('client'),
+    ]
+    raw = '|'.join(value for value in candidates if value)
+    if not raw:
+        raw = f'process:{os.getpid()}'
+    return hashlib.sha256(raw.encode('utf-8')).hexdigest()[:32]
+
+
+def _recent_steering_guard_events(conn: sqlite3.Connection, caller_key: str, tool: str, window_seconds: int, now: float) -> list[str]:
+    rows = conn.execute(
+        '''
+        SELECT decision FROM steering_guard_events
+        WHERE caller_key = ? AND tool = ? AND created_at_epoch >= ?
+        ORDER BY created_at_epoch ASC, id ASC
+        ''',
+        (caller_key, tool, now - window_seconds),
+    ).fetchall()
+    return [str(row[0]) for row in rows]
+
+
+def _record_steering_guard_event(conn: sqlite3.Connection, *, caller_key: str, tool: str, decision: str, trace_id: str, reason: str | None, now: float) -> None:
+    conn.execute(
+        '''
+        INSERT INTO steering_guard_events(id, created_at_epoch, created_at, caller_key, tool, decision, trace_id, reason)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''',
+        (
+            f'{trace_id}:{decision}',
+            now,
+            datetime.datetime.fromtimestamp(now, datetime.timezone.utc).isoformat(),
+            caller_key,
+            tool,
+            decision,
+            trace_id,
+            reason,
+        ),
+    )
+    conn.commit()
+
+
+def _get_steering_guard_decision(caller_key: str, trace_id: str) -> tuple[str, int]:
+    now = _steering_guard_now()
+    conn, _ = _open_trace_db()
+    try:
+        events = _recent_steering_guard_events(conn, caller_key, 'get_steering', _STEERING_GUARD_WINDOW_SECONDS, now)
+        if not events:
+            decision = 'full'
+        elif len(events) == 1:
+            decision = 'soft_guard'
+        elif len(events) == 2:
+            decision = 'hard_guard'
+        else:
+            decision = 'cooldown'
+        _record_steering_guard_event(conn, caller_key=caller_key, tool='get_steering', decision=decision, trace_id=trace_id, reason=None, now=now)
+        return decision, len(events) + 1
+    finally:
+        conn.close()
+
+
+def _refresh_steering_guard_decision(caller_key: str, trace_id: str, reason: str) -> tuple[str, int]:
+    now = _steering_guard_now()
+    conn, _ = _open_trace_db()
+    try:
+        events = _recent_steering_guard_events(conn, caller_key, 'refresh_steering', _STEERING_FORCE_WINDOW_SECONDS, now)
+        decision = 'forced_refresh' if not events else 'refresh_rate_limited'
+        _record_steering_guard_event(conn, caller_key=caller_key, tool='refresh_steering', decision=decision, trace_id=trace_id, reason=reason, now=now)
+        return decision, len(events) + 1
+    finally:
+        conn.close()
+
+
+def _steering_guard_message(decision: str, attempt: int) -> str:
+    if decision == 'soft_guard':
+        return f'''GET_STEERING_LOOP_GUARD
+
+You already received full steering very recently in this pre-task bootstrap context.
+Do not call get_steering again unless you are intentionally refreshing bootstrap context.
+
+Use the steering already in context. If you need exact source context, read only the specific file you need:
+- packages/workspace/STEERING.md
+- packages/workspace/manifests/core-manifest.json
+- packages/os/STEERING.md
+- packages/os/manifests/core.manifest.json
+
+Useful alternatives:
+- fs.read for exact files
+- context.search for repo/project context
+- tools.search for tool discovery
+
+If you truly need a fresh full steering snapshot, call refresh_steering with a concrete reason.
+Attempt in current window: {attempt}
+'''
+    if decision == 'hard_guard':
+        return f'''GET_STEERING_RATE_LIMITED
+
+Repeated get_steering calls look like a bootstrap loop. Full steering is withheld for this attempt.
+Continue with the steering already in context, or call refresh_steering with a concrete reason if a fresh full snapshot is required.
+Attempt in current window: {attempt}
+'''
+    return f'''GET_STEERING_COOLDOWN
+
+Full steering is temporarily blocked because this caller repeatedly called get_steering in a short window.
+Continue the task with existing steering context. Use fs.read, context.search, or tools.search for targeted context instead of retrying get_steering.
+Attempt in current window: {attempt}
+'''
+
+
+def _refresh_steering_message(decision: str, attempt: int) -> str:
+    if decision == 'reason_required':
+        return 'REFRESH_STEERING_REASON_REQUIRED\n\nrefresh_steering requires a concrete reason. Do not call it just to retry get_steering.\n'
+    return f'REFRESH_STEERING_RATE_LIMITED\n\nrefresh_steering was already used recently for this caller. Continue with existing context or targeted file reads. Attempt in current window: {attempt}\n'
+
+
+def _trace_steering_result(*, tool: str, trace_id: str, started: float, content: str, decision: str, code: str, message: str, reason: str | None = None) -> None:
+    output_tokens = _estimate_tokens(content)
+    data: dict[str, Any] = {
+        'chars': len(content),
+        'estimatedOutputTokens': output_tokens,
+        'content': content,
+        'decision': decision,
+    }
+    if reason is not None:
+        data['reason'] = reason
+    result = _envelope(
+        ok=True,
+        code=code,
+        message=message,
+        data=data,
+        durationMs=int((_steering_guard_now() - started) * 1000),
+        traceId=trace_id,
+    )
+    input_payload = {'reason': reason} if tool == 'refresh_steering' else {}
+    input_tokens = _estimate_tokens(input_payload)
+    _write_tool_trace(
+        tool=tool,
+        tool_input=input_payload,
+        resolved_input=input_payload,
+        result=result,
+        task_session=None,
+        mcp_trace_id=trace_id,
+        input_tokens_override=input_tokens,
+        output_tokens_override=output_tokens,
+        total_tokens_override=input_tokens + output_tokens,
+    )
+
+
+def _run_get_steering() -> str:
+    started = _steering_guard_now()
+    trace_id = _trace_id()
+    caller_key = _steering_caller_key()
+    decision, attempt = _get_steering_guard_decision(caller_key, trace_id)
+    if decision != 'full':
+        content = _steering_guard_message(decision, attempt)
+        code = 'STEERING_LOOP_GUARD' if decision == 'soft_guard' else 'STEERING_RATE_LIMITED' if decision == 'hard_guard' else 'STEERING_COOLDOWN'
+        _trace_steering_result(tool='get_steering', trace_id=trace_id, started=started, content=content, decision=decision, code=code, message='steering loop guard active')
+        return content
+
+    content = _read_steering()
+    _trace_steering_result(tool='get_steering', trace_id=trace_id, started=started, content=content, decision='full', code='OK', message='steering loaded')
     return content
 
 
 @mcp.tool(annotations=RO)
 async def get_steering() -> str:
-    """return current workspace steering and tool manifest."""
-    return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _read_steering)
+    """return current workspace steering with the core manifest payload."""
+    return await asyncio.to_thread(_traced_call, 'get_steering', 'tool', _run_get_steering)
+
+
+def _run_refresh_steering(reason: str) -> str:
+    started = _steering_guard_now()
+    trace_id = _trace_id()
+    normalized_reason = reason.strip() if isinstance(reason, str) else ''
+    if not normalized_reason:
+        content = _refresh_steering_message('reason_required', 1)
+        _trace_steering_result(tool='refresh_steering', trace_id=trace_id, started=started, content=content, decision='reason_required', code='REFRESH_REASON_REQUIRED', message='refresh reason required', reason='')
+        return content
+
+    caller_key = _steering_caller_key()
+    decision, attempt = _refresh_steering_guard_decision(caller_key, trace_id, normalized_reason)
+    if decision != 'forced_refresh':
+        content = _refresh_steering_message(decision, attempt)
+        _trace_steering_result(tool='refresh_steering', trace_id=trace_id, started=started, content=content, decision=decision, code='REFRESH_RATE_LIMITED', message='refresh steering rate limited', reason=normalized_reason)
+        return content
+
+    content = _read_steering()
+    _trace_steering_result(tool='refresh_steering', trace_id=trace_id, started=started, content=content, decision='forced_refresh', code='OK', message='steering refreshed', reason=normalized_reason)
+    return content
+
+
+@mcp.tool(annotations=RO)
+async def refresh_steering(reason: str) -> str:
+    """explicitly refresh full steering when get_steering guard blocks a real need."""
+    return await asyncio.to_thread(_traced_call, 'refresh_steering', 'tool', _run_refresh_steering, reason=reason)
 
 
 def _workspace_root() -> Path:
     return Path(APP_DIR).resolve()
-
 
 def _worktree_root() -> Path:
     configured = os.environ.get('WORKSPACE_WORKTREE_ROOT') or os.environ.get('OPENSAAS_WORKTREE_ROOT')
@@ -412,7 +665,20 @@ def _open_trace_db() -> tuple[sqlite3.Connection, Path]:
             total_tokens INTEGER
         )
     ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS steering_guard_events (
+            id TEXT PRIMARY KEY,
+            created_at_epoch REAL NOT NULL,
+            created_at TEXT NOT NULL,
+            caller_key TEXT NOT NULL,
+            tool TEXT NOT NULL,
+            decision TEXT NOT NULL,
+            trace_id TEXT NOT NULL,
+            reason TEXT
+        )
+    ''')
     indexes = [
+        'CREATE INDEX IF NOT EXISTS steering_guard_events_lookup_idx ON steering_guard_events(caller_key, tool, created_at_epoch)',
         'CREATE INDEX IF NOT EXISTS tool_traces_ts_idx ON tool_traces(ts)',
         'CREATE INDEX IF NOT EXISTS tool_traces_trace_id_idx ON tool_traces(trace_id)',
         'CREATE INDEX IF NOT EXISTS tool_traces_mcp_trace_id_idx ON tool_traces(mcp_trace_id)',
@@ -468,6 +734,9 @@ def _write_tool_trace(
     task_session: str | None,
     mcp_trace_id: str,
     metadata: dict[str, Any] | None = None,
+    input_tokens_override: int | None = None,
+    output_tokens_override: int | None = None,
+    total_tokens_override: int | None = None,
 ) -> None:
     try:
         task_context = result.get('taskContext') if isinstance(result.get('taskContext'), dict) else {}
@@ -476,9 +745,9 @@ def _write_tool_trace(
         worktree = task_context.get('worktree') or (metadata or {}).get('worktree') or (metadata or {}).get('worktreePath')
         session = task_context.get('taskSession') or task_session
         conn, db_path = _open_trace_db()
-        input_tokens = _estimate_tokens(tool_input)
-        output_tokens = _estimate_tokens(result)
-        total_tokens = input_tokens + output_tokens
+        input_tokens = input_tokens_override if input_tokens_override is not None else _estimate_tokens(tool_input)
+        output_tokens = output_tokens_override if output_tokens_override is not None else _estimate_tokens(result)
+        total_tokens = total_tokens_override if total_tokens_override is not None else input_tokens + output_tokens
         try:
             conn.execute('''
                 INSERT OR REPLACE INTO tool_traces(
@@ -596,7 +865,7 @@ def _check_command_guardrails(command: str) -> str | None:
 def _check_structured_path_guardrails(tool: str, tool_input: Any) -> str | None:
     if not isinstance(tool_input, dict):
         return None
-    mutating_path_tools = {'fs.write', 'fs.patch', 'fs.trash', 'mac.write'}
+    mutating_path_tools = {'fs.write', 'fs.trash', 'mac.write'}
     if tool not in mutating_path_tools:
         return None
     for key in ('path', 'target', 'destination', 'dest', 'to'):
@@ -782,8 +1051,28 @@ def _effective_task_session(task_session: str | None, tool_input: Any) -> tuple[
     return task_session or input_task_session, None
 
 
-def _input_has_branch(value: Any) -> bool:
-    return isinstance(value, dict) and isinstance(value.get('branch'), str)
+def _input_branch(value: Any) -> str | None:
+    if isinstance(value, dict) and isinstance(value.get('branch'), str) and value.get('branch'):
+        return value.get('branch')
+    return None
+
+
+def _metadata_branch(metadata: dict[str, Any] | None) -> str | None:
+    if not isinstance(metadata, dict):
+        return None
+    branch = metadata.get('branch') or metadata.get('taskBranch')
+    return branch if isinstance(branch, str) and branch else None
+
+
+
+def _input_branch_conflicts_with_task_session(value: Any, metadata: dict[str, Any] | None) -> bool:
+    branch = _input_branch(value)
+    if branch is None:
+        return False
+    expected_branch = _metadata_branch(metadata)
+    if expected_branch is None:
+        return False
+    return branch != expected_branch
 
 
 def _batch_steps(value: Any) -> list[Any] | None:
@@ -807,8 +1096,7 @@ def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
             return True
     return False
 
-
-def _batch_has_branch_conflict(value: Any) -> bool:
+def _batch_has_branch_conflict(value: Any, metadata: dict[str, Any] | None) -> bool:
     steps = _batch_steps(value)
     if steps is None:
         return False
@@ -817,9 +1105,9 @@ def _batch_has_branch_conflict(value: Any) -> bool:
             continue
         child_tool = step.get('tool')
         child_input = step.get('input') if 'input' in step else step.get('args')
-        if child_tool == 'batch' and _batch_has_branch_conflict(child_input):
+        if child_tool == 'batch' and _batch_has_branch_conflict(child_input, metadata):
             return True
-        if _input_has_branch(child_input):
+        if _input_branch_conflicts_with_task_session(child_input, metadata):
             return True
     return False
 
@@ -913,7 +1201,11 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         return finish(result)
     _safety_log(tool=tool, tool_input=normalized_input, task_session=effective_task_session, trace_id=trace_id, blocked=False)
 
-    if effective_task_session and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
+    task_session_metadata = _task_session_metadata(effective_task_session) if effective_task_session else None
+    if effective_task_session and (
+        _input_branch_conflicts_with_task_session(normalized_input, task_session_metadata)
+        or (tool == 'batch' and _batch_has_branch_conflict(normalized_input, task_session_metadata))
+    ):
         return finish(_envelope(
             ok=False,
             code='VALIDATION_ERROR',
@@ -921,7 +1213,6 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             data={'tool': tool, 'taskSession': effective_task_session},
             traceId=trace_id,
         ))
-
     if not effective_task_session and _tool_requires_task_session(tool, normalized_input):
         return finish(_envelope(
             ok=False,
@@ -1052,18 +1343,25 @@ async def call(
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        skip = {'/health', '/oauth/authorize', '/oauth/token', '/.well-known/oauth-authorization-server'}
-        if request.url.path in skip:
+        headers = {key.lower(): value for key, value in request.headers.items()}
+        if request.client and request.client.host:
+            headers['client'] = request.client.host
+        context_token = _STEERING_REQUEST_CONTEXT.set(headers)
+        try:
+            skip = {'/health', '/oauth/authorize', '/oauth/token', '/.well-known/oauth-authorization-server'}
+            if request.url.path in skip:
+                return await call_next(request)
+            # tailnet agents skip bearer auth
+            client_ip = request.client.host if request.client else ''
+            if client_ip.startswith('100.'):
+                return await call_next(request)
+            if bearer_token:
+                auth = request.headers.get('authorization', '')
+                if auth != f'Bearer {bearer_token}':
+                    return JSONResponse({'error': 'unauthorized'}, status_code=401)
             return await call_next(request)
-        # tailnet agents skip bearer auth
-        client_ip = request.client.host if request.client else ''
-        if client_ip.startswith('100.'):
-            return await call_next(request)
-        if bearer_token:
-            auth = request.headers.get('authorization', '')
-            if auth != f'Bearer {bearer_token}':
-                return JSONResponse({'error': 'unauthorized'}, status_code=401)
-        return await call_next(request)
+        finally:
+            _STEERING_REQUEST_CONTEXT.reset(context_token)
 
 
 # --- oauth (for chatgpt connector auth) ---

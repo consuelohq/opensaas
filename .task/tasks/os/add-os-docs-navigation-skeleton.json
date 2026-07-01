@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-docs-navigation-skeleton",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 420,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/420",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/420",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/420/add-os-docs-navigation-skeleton",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/420",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/420/add-os-docs-navigation-skeleton",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-docs-navigation-skeleton",
+  "taskSession": "tsk_dc3fad72a06d",
+  "tmuxSession": "opensaas-os-add-os-docs-navigation-skeleton-dc3fad72",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-docs-navigation-skeleton/.task/session.json",
+  "createdAt": "2026-05-21T04:43:37.173Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-operator",
+  "stream": "stream/workspace-operator",
+  "taskBranch": "task/workspace-operator/add-os-install-release-operator-clean",
+  "baseBranch": "stream/workspace-operator",
+  "sourceBranch": "stream/workspace-operator",
+  "startFrom": "stream",
+  "prNumber": 709,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/709",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/709",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/709/add-os-install-release-operator-clean",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/709",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/709/add-os-install-release-operator-clean",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-operator-add-os-install-release-operator-clean",
+  "taskSession": "tsk_0960e6a2cfb5",
+  "tmuxSession": "opensaas-workspace-operator-add-os-install-release-operator-clean-0960e6a2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-operator-add-os-install-release-operator-clean/.task/workspace-operator/add-os-install-release-operator-clean/session.json",
+  "createdAt": "2026-06-02T21:34:04.321Z"
+}

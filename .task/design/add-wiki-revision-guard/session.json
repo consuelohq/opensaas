@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_81f6254574ff",
+  "tmuxSession": "opensaas-design-add-wiki-revision-guard-81f62545",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-wiki-revision-guard",
+  "branch": "task/design/add-wiki-revision-guard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-wiki-revision-guard",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-wiki-revision-guard",
+  "prNumber": 823,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/823",
+  "createdAt": "2026-06-06T19:14:00.776Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-wiki-revision-guard/.task/design/add-wiki-revision-guard/session.json"
+}

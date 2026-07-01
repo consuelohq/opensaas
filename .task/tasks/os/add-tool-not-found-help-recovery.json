@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-tool-not-found-help-recovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 629,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/629",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/629",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/629/add-tool-not-found-help-recovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/629",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/629/add-tool-not-found-help-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-tool-not-found-help-recovery",
+  "taskSession": "tsk_fe7670f48977",
+  "tmuxSession": "opensaas-os-add-tool-not-found-help-recovery-fe7670f4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-tool-not-found-help-recovery/.task/os/add-tool-not-found-help-recovery/session.json",
+  "createdAt": "2026-05-28T23:05:47.123Z"
+}

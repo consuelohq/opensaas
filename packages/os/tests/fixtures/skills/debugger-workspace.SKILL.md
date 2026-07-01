@@ -1,0 +1,311 @@
+# Debugger
+
+This skill coordinates runtime debugging across browser evidence, deployment providers, error tracking, product analytics, and code inspection.
+
+Use it when the user needs to understand what is actually happening in a running system. Runtime evidence is the first-class source of truth. Code explains expected behavior; logs, traces, browser behavior, errors, and analytics show observed behavior.
+
+This skill is provider-neutral. Railway, Vercel, Cloudflare, AWS, Sentry, PostHog, browser tooling, and future providers are evidence lanes inside the same debugging workflow.
+
+## Operating stance
+
+Start from the observed symptom, not from a preferred theory.
+
+If code behavior and runtime behavior disagree, trust runtime evidence first and reconcile code assumptions afterward.
+
+Do not claim fixed until runtime evidence confirms expected behavior in the relevant time window.
+
+Do not expose secrets. Environment checks are presence-only unless Ko explicitly provides a safe redacted value.
+
+Prefer narrow, repeatable evidence windows over broad log browsing.
+
+For every investigation, capture:
+
+```text
+time window
+service or surface
+provider/tool used
+filter/query used
+observed symptom
+hypothesis impact: supports / refutes / inconclusive
+next action
+```
+
+## Debugging lanes
+
+Use the relevant lanes. Do not require every provider for every bug.
+
+```text
+browser lane: reproduce UI/API behavior, console errors, network traces, screenshots, cookies/session state
+runtime/deploy lane: Railway, Vercel, Cloudflare, AWS, Docker/build/deploy logs, service health, deployed commit
+error lane: Sentry or equivalent exception/error tracking
+analytics lane: PostHog or equivalent events, funnels, sessions, feature flags
+code lane: source, tests, config, env references, queue/worker logic
+```
+
+If a provider is not connected or not used by the current workspace, skip it and say which evidence lane is unavailable.
+
+## Required investigation order
+
+For runtime-sensitive work, use this order unless the user gives a narrower target:
+
+```text
+1. status / health / deployed commit snapshot
+2. reproduce or inspect browser behavior when user-facing
+3. errors-only scan
+4. feature-specific filter scan
+5. analytics/session/event check when behavior depends on user actions
+6. network/build/deploy view if ambiguity remains
+7. worker/background/service-specific pass
+8. code reconciliation and fix plan
+9. post-fix runtime validation
+```
+
+This order prevents guessing from source code before checking production evidence.
+
+## Browser lane
+
+Use browser evidence when the issue is user-visible, flow-based, auth/session-related, frontend-related, or API-bound.
+
+Collect:
+
+```text
+URL / route
+user action or reproduction steps
+visible result
+console errors
+network request path/status/body shape when safe
+cookies/session/auth assumptions when relevant
+screenshot or DOM evidence when useful
+```
+
+Use browser tools to validate the live app before and after a fix when the bug is reproducible in UI.
+
+Browser evidence is especially important for install flows, auth redirects, billing flows, forms, 404/500 pages, client-side errors, CORS/network failures, and webhooks visible through UI state.
+
+## Runtime and deploy lane
+
+Use the deployment provider that actually owns the affected service.
+
+Examples:
+
+```text
+Railway: app services, workers, deploy logs, HTTP traffic, build logs, env presence, deployed commit
+Vercel: frontend deployments, serverless/function logs, preview/prod deployments, build output
+Cloudflare: DNS, Workers, Pages, R2, Turnstile, WAF/rate limiting, cache behavior, edge request logs
+AWS: ECS/Lambda/CloudWatch/RDS/SQS/SNS/EventBridge/ALB logs and health
+```
+
+Core runtime views:
+
+```text
+default combined view: deploy/runtime logs + HTTP/request traffic
+errors-only view: deploy errors + HTTP 4xx/5xx + provider error summaries
+keyword filter view: feature terms, provider terms, request IDs, trace IDs, user IDs when safe
+build view: Docker/build/dependency/install regressions
+status view: service health + deployed commit + deploy time
+raw/JSON view: use when formatted output hides needed fields or downstream parsing is needed
+```
+
+For Railway-like providers, prioritize:
+
+```text
+deploy logs + HTTP traffic in one view
+errors-only scan
+focused keyword filters
+network-centric request/response view when available
+line/window controls to tighten or widen evidence
+build logs for Docker/build regressions
+service override for worker-specific incidents
+```
+
+## High-priority queue and telephony filters
+
+For dialer, telephony, queue, worker, or background-job issues, always include a targeted filter equivalent to:
+
+```text
+twilio OR queue
+```
+
+Run this frequently during:
+
+```text
+telephony flow debugging
+queue state transition analysis
+worker/background job verification
+post-merge validation for dialer or queue changes
+production incident investigation involving calls/messages/jobs
+```
+
+Also consider related filters:
+
+```text
+voice
+call
+dialer
+worker
+job
+rate-limit
+@level:error
+@level:warn
+twilio OR queue
+warn rate-limit
+```
+
+Document whether each filter supports or refutes the current hypothesis.
+
+## Error tracking lane
+
+Use Sentry or equivalent error tracking for exception-level truth.
+
+Check:
+
+```text
+new issues in the relevant time window
+issue frequency and first/last seen
+release/deploy association
+stack traces
+affected route/service/environment
+user/session count
+breadcrumbs when available
+tags: service, environment, release, route, user, queue, provider
+```
+
+Sentry is not a replacement for deploy logs. It answers: what exceptions occurred, how often, in which release, with which stack/context.
+
+Runtime logs answer: what the service did around the request or job.
+
+Use both when the issue could be either handled failure or unhandled exception.
+
+## Analytics lane
+
+Use PostHog or equivalent product analytics for behavior truth.
+
+Check:
+
+```text
+event presence / absence
+funnel step drop-off
+session replay when available
+feature flag state
+user path before failure
+cohort or environment filters
+client/server event timestamp alignment
+```
+
+PostHog is especially useful when users report behavior but logs show no error, conversion or onboarding flow regresses, feature flag or rollout state matters, frontend state changes but backend logs are quiet, or session replay can show what the browser did.
+
+Analytics cannot prove backend correctness alone. Reconcile analytics with browser/network/runtime evidence.
+
+## Code lane
+
+Use code only after initial runtime orientation unless the task is explicitly code-only.
+
+Code evidence should answer:
+
+```text
+where should the behavior happen?
+what service owns it?
+what logs or events should exist?
+what config/env names are referenced?
+what tests cover the behavior?
+what recent commits changed this path?
+```
+
+When code and runtime disagree, update the hypothesis:
+
+```text
+code says expected log/event should happen
+runtime says it does not happen
+therefore check routing, deployed commit, env presence, feature flag, service mismatch, queue path, or stale deployment
+```
+
+## Provider selection
+
+Choose the provider lane by ownership:
+
+```text
+frontend route or preview deployment -> Vercel / Cloudflare Pages / browser
+API service on Railway -> Railway + browser/network + Sentry
+edge worker or DNS/cache issue -> Cloudflare + browser/network
+background queue/worker -> Railway/AWS worker logs + queue filters + Sentry
+user event/funnel/session issue -> PostHog + browser + runtime logs
+exception spike -> Sentry + deployed commit + runtime logs
+build/deploy failure -> deployment provider build logs + package/config diff
+```
+
+If multiple providers could own the symptom, start with status/deployed commit and the browser/network route to identify which service actually handled the request.
+
+## Evidence templates
+
+Use this compact evidence record in workpads, comments, or replies:
+
+```text
+Evidence
+- window: <start/end or relative time>
+- lane: browser | runtime | sentry | posthog | code
+- provider/service: <provider/service>
+- query/filter: <filter or route>
+- observation: <what happened>
+- hypothesis impact: supports/refutes/inconclusive <hypothesis>
+- next: <next check or fix>
+```
+
+For incidents, include:
+
+```text
+Impact
+- affected surface:
+- user-visible symptom:
+- affected environment:
+- first seen:
+- current status:
+- mitigation option:
+```
+
+For post-fix validation, include:
+
+```text
+Validation
+- deployed commit:
+- health/status:
+- errors-only scan:
+- feature filter scan:
+- browser/API reproduction:
+- analytics/session/event check if relevant:
+- conclusion:
+```
+
+## Guardrails
+
+Stop and ask for missing access or context when the relevant provider is unknown, no deployment target is connected, the issue depends on credentials or user data you cannot access safely, or the runtime window is unknown and logs are too broad.
+
+Read-only checks are allowed when the tool exists and the task context permits them.
+
+Provider-changing actions require explicit user approval.
+
+## Out-of-box customization
+
+This skill is intentionally generic for installed OS users. Users should customize it to match their stack.
+
+Suggested local edits:
+
+```text
+add your deployment providers
+add service names
+add canonical filters
+add incident checklist
+add safe env presence names
+add dashboard links or query templates
+remove providers you do not use
+```
+
+For Ko/opensaas, keep these defaults prominent:
+
+```text
+Railway logs are primary runtime truth for Railway-hosted services.
+Always run twilio OR queue for dialer/queue issues.
+Include Cloudflare when DNS, edge, cache, wildcard domains, install curl, or public routing is involved.
+Use Sentry for exception spikes and release correlation.
+Use PostHog for event/session/funnel/feature-flag behavior.
+Use browser tools for reproduction and network evidence.
+```

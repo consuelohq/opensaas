@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_940d3d6aa62c",
+  "tmuxSession": "opensaas-workspace-agents-port-os-hooks-system-to-workspace-940d3d6a",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/port-os-hooks-system-to-workspace",
+  "branch": "task/workspace-agents/port-os-hooks-system-to-workspace",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-os-hooks-system-to-workspace",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-os-hooks-system-to-workspace",
+  "prNumber": 1111,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1111",
+  "createdAt": "2026-06-17T13:47:58.895Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-os-hooks-system-to-workspace/.task/workspace-agents/port-os-hooks-system-to-workspace/session.json"
+}
