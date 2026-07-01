@@ -1,0 +1,79 @@
+---
+title: API Overview
+description: Base URL, authentication, and rate limits for the Consuelo API.
+---
+
+import Note from '../../../../components/mintlify/Note.astro';
+
+
+The Consuelo API provides programmatic access to contacts, calls, and CRM data.
+
+## Base URL
+
+```
+https://api.consuelohq.com/v1
+```
+
+## Authentication
+
+All API requests require JWT authentication. The flow involves:
+
+1. **Challenge** - Obtain a signed challenge from the server
+2. **Verify** - Submit the challenge with your credentials
+3. **Token** - Receive JWT access and refresh tokens
+
+See the [Authentication Guide](/developers/api/auth) for detailed instructions.
+
+## Rate Limits
+
+| Plan       | Requests/minute | Requests/day |
+| ---------- | --------------- | ------------ |
+| Free       | 60              | 1,000        |
+| Pro        | 300             | 50,000       |
+| Enterprise | 1,000           | Unlimited    |
+
+Rate limit headers are included in all responses:
+
+- `X-RateLimit-Limit` - Maximum requests per window
+- `X-RateLimit-Remaining` - Requests remaining
+- `X-RateLimit-Reset` - Unix timestamp when the window resets
+
+## Request Format
+
+All requests must include:
+
+- `Authorization: Bearer <access_token>` header
+- `Content-Type: application/json` for POST/PUT
+
+## Response Format
+
+Successful responses:
+
+```json
+{
+  "data": { ... },
+  "meta": {
+    "requestId": "req_abc123"
+  }
+}
+```
+
+Error responses:
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or expired token"
+  }
+}
+```
+
+## API Versioning
+
+The API uses URL versioning (`/v1/`). Backward-incompatible changes are released as new versions.
+
+<Note>
+  The GraphQL API is available at `https://api.consuelohq.com/graphql` and uses
+  the same authentication.
+</Note>

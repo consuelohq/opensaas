@@ -1,0 +1,91 @@
+---
+title: Skills
+description: Approved workflows agents can run through Consuelo OS.
+---
+
+# Skills
+
+Skills are approved workflows that agents can run through Consuelo OS.
+
+A skill is more than executable code. It defines what the agent is allowed to do, what context it needs, which capabilities it depends on, what output it returns, and when a human decision is required.
+
+## When to use a skill
+
+Use a skill when an agent needs a repeatable workflow.
+
+Examples:
+
+- generate a daily revenue brief
+- review recent calls and produce coaching notes
+- draft a follow-up after a call
+- review a campaign and produce recommendations
+- create a landing page draft
+- prepare a weekly manager report
+- summarize workspace activity into an artifact
+
+## Skill anatomy
+
+Part | Purpose
+--- | ---
+Name | Stable identifier the portal can call.
+Description | Clear explanation of what the skill does.
+Inputs | Structured fields the agent or user provides.
+Context | Workspace records, files, memory, or artifacts the skill needs.
+Capabilities | Connected systems the skill requires.
+Scripts | Executable implementation behind the workflow.
+Approvals | Human decision points for high-impact actions.
+Outputs | Structured result and artifact records.
+Failure modes | Clear statuses for missing setup, invalid input, or execution problems.
+
+## Skills vs scripts
+
+A script is implementation. A skill is the product workflow.
+
+```text
+skill
+  -> instructions
+  -> input contract
+  -> capability requirements
+  -> approval rules
+  -> one or more scripts
+  -> structured result
+```
+
+Most users should think in skills. Builders and coding agents can inspect scripts.
+
+## Skill status
+
+Public docs should not list unfinished skills as if they are ready.
+
+Status | Use when
+--- | ---
+Available | The skill can run in at least one supported mode.
+Local only | The skill works locally but does not have cloud storage or app visibility yet.
+Cloud ready | The skill works for team workspaces with app-native records.
+Planned | Internal docs only unless there is a public roadmap reason.
+
+## Skill docs template
+
+Each skill page should answer:
+
+1. What does this skill do?
+2. When should I use it?
+3. What context does it read?
+4. What can it create?
+5. Which capabilities does it require?
+6. What approval can it request?
+7. What does the result look like?
+8. What are common failure states?
+
+## Result shape
+
+Every skill should return a structured result. Free-form prose can be part of the result, but it should not be the only result.
+
+A good result includes status, trace ID, summary, artifacts, source references, approval state, and safe errors.
+
+## Related
+
+- [Scripts](/os/concepts/scripts)
+- [OS portal](/os/concepts/portal)
+- [Files and artifacts](/os/concepts/files-and-artifacts)
+- [Approvals](/os/concepts/approvals)
