@@ -13,7 +13,8 @@ type BaseGroup = {
 type BaseTab = {
   key: string;
   label: string;
-  groups: BaseGroup[];
+  groups?: BaseGroup[];
+  pages?: BasePage[];
 };
 
 type BaseStructure = {
@@ -52,7 +53,11 @@ const pathToConstantName = (docPath: string): string => {
 const allPaths: string[] = [];
 
 for (const tab of baseStructure.tabs) {
-  for (const group of tab.groups) {
+  if (tab.pages) {
+    allPaths.push(...extractPaths(tab.pages));
+  }
+
+  for (const group of tab.groups ?? []) {
     allPaths.push(...extractPaths(group.pages));
   }
 }

@@ -11,7 +11,8 @@ type Group = {
 
 type Tab = {
   tab: string;
-  groups: Group[];
+  groups?: Group[];
+  pages?: Page[];
 };
 
 type LanguageEntry = {
@@ -44,12 +45,21 @@ const findGroup = (groups: Group[], predicate: (group: Group) => boolean): Group
   return null;
 };
 
+const tabGroups = (tab: Tab): Group[] => [
+  ...(tab.groups ?? []),
+  ...((tab.pages ?? []).filter(isGroup)),
+];
+
+const languageGroups = (language: LanguageEntry): Group[] =>
+  language.tabs.flatMap((tab) => tabGroups(tab));
+
+
 const osGroupsForLanguage = (language: LanguageEntry): Group[] => {
   const topLevelOsTab = language.tabs.find((tab) => tab.tab === 'OS');
-  if (topLevelOsTab) return topLevelOsTab.groups;
+  if (topLevelOsTab?.groups) return topLevelOsTab.groups;
 
   const osRootGroup = findGroup(
-    language.tabs.flatMap((tab) => tab.groups),
+    languageGroups(language),
     (group) =>
       group.group === 'OS' ||
       flattenPages(group.pages ?? []).some(
@@ -80,7 +90,7 @@ if (!english) {
 }
 
 const osGroups = osGroupsForLanguage(english);
-const allEnglishGroups = english.tabs.flatMap((tab) => tab.groups);
+const allEnglishGroups = languageGroups(english);
 
 const placeholderHits: string[] = [];
 const scanForPlaceholders = (dir: string): void => {
@@ -133,8 +143,8 @@ if (titles.join('\n') !== sortedTitles.join('\n')) {
 
 const osMissing = docsConfig.navigation.languages.flatMap((language) =>
   language.tabs
-    .flatMap((tab) => tab.groups)
-    .flatMap((group) => flattenPages(group.pages ?? []))
+    .flatMap((tab) => [...(tab.groups ?? []), ...(tab.pages ?? [])])
+    .flatMap((page) => (typeof page === 'string' ? [page] : flattenPages(page.pages ?? [])))
     .filter((slug) => slug.startsWith('os/') || slug.includes('/os/'))
     .filter((slug) => !fs.existsSync(path.join(docsRoot, `${slug}.mdx`)))
     .map((slug) => `${language.language}: ${slug}`),
