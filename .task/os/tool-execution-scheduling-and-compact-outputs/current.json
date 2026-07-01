@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/tool-execution-scheduling-and-compact-outputs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1323,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1323",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1323",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1323/tool-execution-scheduling-and-compact-outputs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1323",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1323/tool-execution-scheduling-and-compact-outputs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-tool-execution-scheduling-and-compact-outputs",
+  "taskSession": "tsk_81c8cada91a8",
+  "tmuxSession": "opensaas-os-tool-execution-scheduling-and-compact-outputs-81c8cada",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-tool-execution-scheduling-and-compact-outputs/.task/os/tool-execution-scheduling-and-compact-outputs/session.json",
+  "createdAt": "2026-07-01T16:58:50.942Z"
+}

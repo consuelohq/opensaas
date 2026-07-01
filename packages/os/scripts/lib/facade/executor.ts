@@ -10,6 +10,7 @@ import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
+import { PROCESS_TERMINATION_GRACE_MS, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
 import { executeCodeCall } from '../code-call/runtime';
 import type { CodeCallInput } from '../code-call/types';
@@ -45,6 +46,8 @@ export const manifestEntries = fullToolManifest.tools
 
 type TaskSessionMetadata = {
   taskSession: string;
+  id?: string;
+  taskId?: string;
   tmuxSession?: string;
   branch?: string;
   taskBranch?: string;
@@ -99,15 +102,20 @@ function buildUnknownToolGuidance(toolName: string): { message: string; data: un
 export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
   const child = spawn(plan.command, plan.args, {
     cwd: plan.cwd,
+    detached: shouldUseDetachedProcessGroup(),
     env: plan.env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let stdout = '';
   let stderr = '';
   let timedOut = false;
+  let killTimer: NodeJS.Timeout | null = null;
   const timeout = setTimeout(() => {
     timedOut = true;
-    child.kill('SIGTERM');
+    terminateProcessTree(child, 'SIGTERM');
+    killTimer = setTimeout(() => {
+      terminateProcessTree(child, 'SIGKILL');
+    }, PROCESS_TERMINATION_GRACE_MS);
   }, timeoutMs);
 
   child.stdout.setEncoding('utf8');
@@ -116,10 +124,12 @@ export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resol
   child.stderr.on('data', (chunk) => { stderr += chunk; });
   child.on('error', (error) => {
     clearTimeout(timeout);
+    if (killTimer) clearTimeout(killTimer);
     reject(error);
   });
   child.on('close', (code) => {
     clearTimeout(timeout);
+    if (killTimer) clearTimeout(killTimer);
     if (timedOut) {
       const error = new Error(`command timed out after ${timeoutMs}ms`) as Error & { timedOut: boolean };
       error.timedOut = true;
@@ -371,6 +381,8 @@ export async function executeTool<TData = unknown>(
 type JsonRecord = Record<string, unknown>;
 
 const FACADE_FINDING_SAMPLE_LIMIT = 8;
+const FACADE_VERIFY_SAMPLE_LIMIT = 10;
+const FACADE_VERIFY_TEXT_LIMIT = 600;
 const FACADE_MESSAGE_PREVIEW_LIMIT = 240;
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -384,6 +396,32 @@ function asArray(value: unknown): unknown[] {
 function previewText(value: unknown, limit = FACADE_MESSAGE_PREVIEW_LIMIT): string {
   const text = String(value || '').replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim();
   return text.length > limit ? `${text.slice(0, limit)}... truncated ${text.length - limit} chars` : text;
+}
+
+function compactVerifyList(value: unknown, sampleLimit = FACADE_VERIFY_SAMPLE_LIMIT): JsonRecord {
+  const items = asArray(value);
+  return {
+    total: items.length,
+    sample: items.slice(0, sampleLimit).map(compactVerifyValue),
+    truncated: items.length > sampleLimit,
+    omitted: Math.max(0, items.length - sampleLimit),
+  };
+}
+
+function compactVerifyValue(value: unknown): unknown {
+  if (typeof value === 'string') return previewText(value, FACADE_VERIFY_TEXT_LIMIT);
+  if (Array.isArray(value)) return compactVerifyList(value);
+  if (!isRecord(value)) return value;
+
+  const compacted: JsonRecord = {};
+  for (const [key, entryValue] of Object.entries(value)) {
+    if (typeof entryValue === 'string' && ['message', 'stderr', 'stdout', 'output', 'outputTail', 'tail'].includes(key)) {
+      compacted[key] = previewText(entryValue, FACADE_VERIFY_TEXT_LIMIT);
+      continue;
+    }
+    compacted[key] = compactVerifyValue(entryValue);
+  }
+  return compacted;
 }
 
 function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord {
@@ -548,13 +586,27 @@ function compactReviewData(data: unknown): unknown {
 }
 
 function compactVerifyData(data: unknown): unknown {
-  if (!isRecord(data) || !isRecord(data.review)) return data;
-  return {
-    ...data,
-    review: {
+  if (!isRecord(data)) return data;
+  const review = isRecord(data.review)
+    ? {
       ...data.review,
       data: compactReviewData(data.review.data),
-    },
+    }
+    : data.review;
+
+  return {
+    schema: 'verify.summary.v1',
+    branch: data.branch,
+    base: data.base,
+    headSha: data.headSha,
+    files: compactVerifyList(data.files),
+    review: compactVerifyValue(review),
+    db: compactVerifyValue(data.db),
+    docs: compactVerifyValue(data.docs),
+    passed: data.passed,
+    publishValid: data.publishValid,
+    mode: data.mode,
+    stampPath: data.stampPath,
   };
 }
 
@@ -655,7 +707,10 @@ async function executeInternalTool<TData>(
   }
 
   if (internal === 'code.call') {
-    return executeCodeCall(input as CodeCallInput, {
+    const codeCallInput = typeof input.timeout === 'number'
+      ? input
+      : { ...input, timeout: entry.defaultTimeout };
+    return executeCodeCall(codeCallInput as CodeCallInput, {
       cwd: context.cwd,
       env: context.env,
       now: context.options.now,
@@ -760,14 +815,14 @@ async function executeInternalTool<TData>(
 
 
 function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
-  const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
-  if (!taskSession) return null;
+  const taskHandle = typeof input.taskSession === 'string' ? input.taskSession.trim() : undefined;
+  if (!taskHandle) return null;
 
-  const metadata = findTaskSessionMetadata(cwd, taskSession, env);
+  const metadata = findTaskSessionMetadata(cwd, taskHandle, env);
   if (!metadata) return {
     ok: false,
     code: 'TASK_SESSION_NOT_FOUND',
-    message: 'taskSession was not found. Use the taskSession returned by task.start and avoid root task pin fallback.',
+    message: 'taskSession was not found. Pass the taskSession returned by task.start or the matching task branch.',
   };
 
   const branch = metadata.branch || metadata.taskBranch || '';
@@ -786,11 +841,13 @@ function getWorktreeRoot(env: NodeJS.ProcessEnv = process.env): string {
   return env.WORKSPACE_WORKTREE_ROOT || env.OPENSAAS_WORKTREE_ROOT || path.join(os.tmpdir(), 'opensaas-worktrees');
 }
 
-function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): value is TaskSessionMetadata {
+function isTaskSessionMetadata(value: unknown, expectedTaskHandle: string): value is TaskSessionMetadata {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Partial<TaskSessionMetadata>;
   const branch = candidate.branch || candidate.taskBranch;
-  return candidate.taskSession === expectedTaskSession && typeof branch === 'string' && branch.length > 0;
+  const handles = [candidate.taskSession, candidate.branch, candidate.taskBranch, candidate.taskId, candidate.id]
+    .filter((handle): handle is string => typeof handle === 'string' && handle.length > 0);
+  return handles.includes(expectedTaskHandle) && typeof branch === 'string' && branch.length > 0;
 }
 
 function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>, worktreePath: string, warn: boolean): void {

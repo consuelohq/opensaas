@@ -2,6 +2,8 @@ import { spawn } from 'node:child_process';
 
 import { Effect } from 'effect';
 
+import { PROCESS_TERMINATION_GRACE_MS, shouldUseDetachedProcessGroup, terminateProcessTree } from '../facade/process-tree';
+
 export type RunResult = {
   stdout: string;
   stderr: string;
@@ -24,6 +26,7 @@ function errorMessage(error: NodeJS.ErrnoException): string {
 export const runRuntimeEffect = (command: string, args: string[], options: RunRuntimeOptions) => Effect.promise<RunResult>(() => new Promise((resolve) => {
   const child = spawn(command, args, {
     cwd: options.cwd,
+    detached: shouldUseDetachedProcessGroup(),
     env: options.env,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
@@ -31,17 +34,22 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   let stderr = '';
   let settled = false;
   let timedOut = false;
+  let killTimer: NodeJS.Timeout | null = null;
 
   const finish = (result: RunResult): void => {
     if (settled) return;
     settled = true;
     clearTimeout(timer);
+    if (killTimer) clearTimeout(killTimer);
     resolve(result);
   };
 
   const timer = setTimeout(() => {
     timedOut = true;
-    child.kill('SIGTERM');
+    terminateProcessTree(child, 'SIGTERM');
+    killTimer = setTimeout(() => {
+      terminateProcessTree(child, 'SIGKILL');
+    }, PROCESS_TERMINATION_GRACE_MS);
   }, options.timeoutMs);
 
   child.stdout.setEncoding('utf8');

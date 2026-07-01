@@ -56,6 +56,13 @@ function createGeneratedTaskSession(workflow, input = {}) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 40) || 'intent';
+  if (workflow === 'task') {
+    const area = String(input.area || 'task')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'task';
+    return `task/${area}/${slug}`;
+  }
   return `tsk_${workflow}_${slug}`;
 }
 
