@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/installer-compact-output",
+  "base": "origin/task/workspace-agents/installer-compact-output",
+  "headSha": "96c443c9a1ea35ea8bb401719a5c427d43dd57a1",
+  "changeHash": "d61261bb84047f1f731a8e3c2544094858bd9e017a39857a2b0f8fc636176851",
+  "changedFiles": [
+    "packages/os/scripts/install-tty.test.ts",
+    "packages/os/scripts/install.ts"
+  ],
+  "verifiedAt": "2026-06-15T06:50:47.869Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/installer-compact-output.json",
+        ".task/workspace-agents/installer-compact-output/current.json",
+        ".task/workspace-agents/installer-compact-output/evidence-log.json",
+        ".task/workspace-agents/installer-compact-output/read-log.json",
+        ".task/workspace-agents/installer-compact-output/session.json",
+        ".task/workspace-agents/installer-compact-output/verify.json",
+        ".task/workspace-agents/installer-compact-output/workpad.md",
+        "packages/os/scripts/install-tty.test.ts",
+        "packages/os/scripts/install.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
