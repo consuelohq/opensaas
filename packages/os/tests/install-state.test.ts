@@ -290,15 +290,24 @@ describe('local OS install state', () => {
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
     expect(sitesIndex).toContain('<title>Consuelo OS</title>');
     expect(sitesIndex).toContain('Welcome to Consuelo OS');
-    expect(sitesIndex).toContain('Here is your URL to connect to');
+    expect(sitesIndex).toContain('Here is the URL to connect');
+    expect(sitesIndex).toContain('to your workspace.');
     expect(sitesIndex).toContain('https://chatgpt.com/apps#settings/Connectors');
     expect(sitesIndex).toContain('<code id="mcp-url">https://local.consuelohq.com/mcp</code>');
+    expect(sitesIndex).toContain('support@consuelohq.com');
+    expect(sitesIndex).toContain('Systems Engineer');
+    expect(sitesIndex).toContain('Go to market');
+    expect(sitesIndex).toContain('Artifacts');
+    expect(sitesIndex).toContain('Observability');
+    expect(sitesIndex).toContain('Code review');
+    expect(sitesIndex).toContain('Documentation');
+    expect(sitesIndex).toContain('Decision loops');
     expect(sitesIndex).toContain('Connect to your cloud agents');
     expect(sitesIndex).toContain('Connected to 0 local agents');
-    expect(sitesIndex).toContain('No local agents connected yet.');
+    expect(sitesIndex).toContain('No local agents connected to workspace yet.');
     expect(sitesIndex).not.toContain('Consuelo OS Sites');
     expect(sitesIndex).not.toContain('GitHub Workflows');
-    expect(sitesIndex).not.toContain('https://sites.consuelohq.com');
+    expect(sitesIndex).not.toContain('[GTM]');
 
     const officeSitePage = readFileSync(officeSiteIndexPath, 'utf8');
     expect(officeSitePage).toContain('Office');
