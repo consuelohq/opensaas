@@ -1,5 +1,208 @@
 [
   {
+    "title": "v0.7.0",
+    "date": "Jun 30, 2026",
+    "summary": "June shipped the Consuelo OS launch path, Cloudflare-backed security gateways, richer Sites and Diff Cockpit surfaces, media tooling, and a more polished website while continuing to harden workspace-agent execution.",
+    "weeks": [
+      {
+        "label": "Week of Jun 1 through Jun 6",
+        "summary": "June opened with the first large Diff Cockpit push, OS installer/product packaging work, and stronger design wiki/versioned reader surfaces.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Added the install release operator, corrected the hosted installer domain, and improved local testing readiness for the OS installer path.",
+              "Productized the Office surface, materialized Office artifact pages, and packaged the installed OS as the product root.",
+              "Generated raw source docs and bundled skill docs so OS artifacts could be inspected from the published documentation surface.",
+              "Completed more of the onboarding flow and compacted background service install output."
+            ]
+          },
+          {
+            "title": "Diff Cockpit",
+            "items": [
+              "Introduced the live PR review cockpit with a review action drawer, wiki-inspired PR index, and homepage inbox.",
+              "Added Graphite-inspired review UX, mergeability indicators, collapsible trees, commit popovers, and long-scroll diff rendering.",
+              "Stabilized inbox enrichment, restored the full inbox list, tightened mobile diff gutters, and added event-driven cache refresh hooks.",
+              "Added a main packages code browser, merge shortcuts, and wrapped diff views for easier review navigation."
+            ]
+          },
+          {
+            "title": "Design Wiki",
+            "items": [
+              "Added versioned design wiki pages, recovered OS spec archive version routes, and added a wiki revision guard.",
+              "Restored rich reader component options and hardened the typed reader shell renderer."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Built the trace home TUI inspector and kept trace home resilient when trace loads fail.",
+              "Restored PR link helpers and made stream sync tolerate checked-out stream branches."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Jun 7 through Jun 13",
+        "summary": "The second week connected OS installation to Cloudflare security, device approval, Trace Sites, and a more complete review cockpit while tightening launcher behavior across mobile and local routes.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Shipped the device approval worker, opened device login during install, hardened approval auth, and removed fake approval fallbacks.",
+              "Added manifest-driven task workflow hooks, workflow intent bundles, role emission in tool manifests, and task hook guidance.",
+              "Moved semantic embeddings behind the gateway, namespaced semantic indexes by repo, and stored indexes under the Consuelo home directory.",
+              "Added a unified release command, operator prompt surface, terminal Sites launcher, hosted installer prompt polish, and artifact rollback table."
+            ]
+          },
+          {
+            "title": "Security",
+            "items": [
+              "Added Cloudflare edge router registry contracts, workspace gateway contract suites, and Cloudflare install TDD coverage.",
+              "Required edge signatures for proxied routes, supported route registry persistence, and hardened workspace gateway seed inputs.",
+              "Moved workspace gateway ownership into OS and routed the workspace edge through the internal host."
+            ]
+          },
+          {
+            "title": "Sites",
+            "items": [
+              "Added Trace Sites gateway contracts, implemented the gateway read layer, and wired live read endpoints.",
+              "Split gateway core from trace adapters, added the Sites gateway contract service, and enabled workspace hostname edge routing.",
+              "Supported workspace site snapshot publishing, local project-route serving, launcher project routing, launcher hotkeys, and cache-refresh planning."
+            ]
+          },
+          {
+            "title": "Diff Cockpit",
+            "items": [
+              "Added AI review comments, a compact review dashboard, PR author avatars, and cache invalidation after thread mutations.",
+              "Polished review page controls, restored inbox typography, repaired review popovers, and improved mobile inbox/table layouts.",
+              "Refreshed mergeability live updates and removed duplicate search helpers from the review surface."
+            ]
+          },
+          {
+            "title": "Design and Reader",
+            "items": [
+              "Matched the Sites launcher copy and theme, refined mobile launcher spacing, and added reader navigation shell affordances."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Jun 14 through Jun 20",
+        "summary": "Mid-month work hardened OS device approval, MCP gateway provisioning, bounded filesystem tools, code-call routing, and workspace-agent tool surfaces.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Wired Google device approval and surfaced callback approval failures with longer approval waits and worker fetch fixes.",
+              "Implemented MCP gateway credentials, managed MCP ingress policy, and managed ingress provisioning for install flows.",
+              "Kept Cloudflare provisioning platform-owned, made public installer runtime dependencies deterministic, and lazy-loaded the Sites SQLite database.",
+              "Added a platform safety block page and aligned filesystem edit/apply-patch tools with bounded read behavior."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Added Effect-backed bounded filesystem reads, structured ripgrep search parity, and apply-patch filesystem tooling.",
+              "Added core manifest steering payloads, ported OS hooks runtime, and refined intent/core manifest surfaces.",
+              "Split and documented code.call routing, preserved stdout results, improved trace-watch telemetry, and rendered batched code calls with clearer examples.",
+              "Collapsed and trimmed core tool surfaces so agents see fewer, more accurate workspace tools."
+            ]
+          },
+          {
+            "title": "Diff Cockpit",
+            "items": [
+              "Stabilized review scroll navigation, adjusted comments panel defaults, repaired review popovers, and polished review page controls."
+            ]
+          },
+          {
+            "title": "Steering and Skills",
+            "items": [
+              "Updated steering to favor code.call, added durable instruction guidance, and created the senior-engineer skill material.",
+              "Refined tool usage preferences, API design guidance, and performance review guidance for future agents."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Jun 21 through Jun 27",
+        "summary": "The fourth week made the OS launcher and installer more dependable, connected local MCP access, and introduced the media tool substrate for image, audio, and sports-science workflows.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Polished installer finish and launcher UX, registered the launcher hostname, hid the OS home prompt, and matched the Sites launcher UI.",
+              "Updated Cloudflared Darwin checksums, made portless local runtime optional, and added workspace route registration.",
+              "Simplified local MCP bearer access, added OAuth discovery for workspace MCP, and connected OpenCode MCP during installer refreshes.",
+              "Hardened installer route registration, refreshed installer source/cache behavior, and added compact installer banner treatment."
+            ]
+          },
+          {
+            "title": "Media Tools",
+            "items": [
+              "Added media manifest and dependency foundations, Effect schema CLI envelopes, and core media tool implementations.",
+              "Captured media ingest sources, added audio transcription contracts, and introduced OpenCV vision-light fixture surfaces.",
+              "Added pose vision and sports-science surfaces, implemented the OS media overlay, and wired Media Tools navigation."
+            ]
+          },
+          {
+            "title": "Docs and CI",
+            "items": [
+              "Added the Media Tools docs section and documented Consuelo CI alignment.",
+              "Added Consuelo workflow gates, fixed the workspace contracts gate, and retried transient Danger metadata fetch failures."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Restored the task intent core surfaces used by agents during task execution."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Jun 28 through Jun 30",
+        "summary": "June closed with production polish: the website hero/header was rebuilt, docs navigation was simplified, OS onboarding improved, and Cloudflare deployment/auth paths were tightened.",
+        "sections": [
+          {
+            "title": "Website",
+            "items": [
+              "Rebuilt the Consuelo website header and tightened dark hero surfaces, bordered hero controls, and mobile hero rhythm.",
+              "Swapped the hero diagram logo, refined the Hermes-style responsive hero, and cleaned hero punctuation and spacing.",
+              "Added the May changelog entry and supported local Cloudflare deploy auth fallback for website releases."
+            ]
+          },
+          {
+            "title": "Docs",
+            "items": [
+              "Simplified navigation layout, supported nested OS navigation/routes, and validated sidebar structure.",
+              "Removed the AI user-guide section and refreshed the root README."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Improved installer and launcher onboarding, aligned the launcher with the Astro theme, and cleaned installer copy and launcher links.",
+              "Updated launcher routing and release snapshots, then added docs public gateway route coverage."
+            ]
+          },
+          {
+            "title": "Security",
+            "items": [
+              "Polished OS device OAuth UX and supported dynamic MCP OAuth discovery."
+            ]
+          },
+          {
+            "title": "Release",
+            "items": [
+              "Replaced the inherited website deployment path so releases use the current Consuelo website deployment flow."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "title": "v0.6.0",
     "date": "May 31, 2026",
     "summary": "May expanded Consuelo's internal operating system: workspace agents gained safer facades, richer trace visibility, search, and browser tooling while Consuelo OS, the design wiki, and dialer reliability moved forward together.",
