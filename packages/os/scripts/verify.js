@@ -12,6 +12,11 @@ const {
   getVerifyStampPath,
   writeVerifyStamp,
 } = require('./lib/verification');
+const {
+  beginVerifyRun,
+  finishVerifyRun,
+  makeVerifyRunIdentity,
+} = require('./lib/verify-run-state');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -374,6 +379,36 @@ function printHumanResult(result) {
   }
 }
 
+function buildJsonResult(result) {
+  return {
+    branch: result.branch,
+    base: result.base,
+    headSha: result.headSha,
+    files: result.files,
+    review: {
+      skipped: result.review.skipped,
+      passed: result.review.passed,
+      status: result.review.status,
+      data: result.review.data,
+      stderr: result.review.stderr,
+    },
+    db: result.db,
+    docs: result.docs,
+    passed: result.passed,
+    publishValid: result.publishValid,
+    mode: result.mode,
+    stampPath: result.stampPath,
+  };
+}
+
+function replayVerifyRun(replay) {
+  process.stdout.write(replay.result.stdout || '');
+  process.stderr.write(replay.result.stderr || '');
+  if (replay.result.exitCode !== 0) {
+    process.exit(replay.result.exitCode);
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -390,13 +425,29 @@ async function main() {
   const base = detectBase(repoRoot, args, branch, taskMeta);
   const files = readChangedFiles(repoRoot, base);
   const headSha = getRefSha(repoRoot, 'HEAD');
+  const verificationState = computeVerificationState(repoRoot, branch);
+  const verifyRun = args.json
+    ? beginVerifyRun(repoRoot, makeVerifyRunIdentity({
+      repoRoot,
+      branch,
+      base,
+      headSha,
+      changeHash: verificationState.changeHash,
+      args,
+    }))
+    : null;
+
+  if (verifyRun && verifyRun.mode === 'replay') {
+    replayVerifyRun(verifyRun);
+    return;
+  }
+
   const review = runReview(repoRoot, base, args);
   const db = createDbResult(files, args);
   const docs = createDocsResult(repoRoot, files);
   const passed = review.passed && db.passed && docs.passed;
   const mode = args.review && args.db ? 'full' : 'partial';
   const publishValid = passed && mode === 'full' && !review.skipped && !db.skipped && db.warnOnly !== true;
-  const verificationState = computeVerificationState(repoRoot, branch);
   let stampPath = null;
 
   if (args.stamp && taskMeta) {
@@ -451,25 +502,9 @@ async function main() {
   };
 
   if (args.json) {
-    writeStdout(JSON.stringify({
-      branch: result.branch,
-      base: result.base,
-      headSha: result.headSha,
-      files: result.files,
-      review: {
-        skipped: result.review.skipped,
-        passed: result.review.passed,
-        status: result.review.status,
-        data: result.review.data,
-        stderr: result.review.stderr,
-      },
-      db: result.db,
-      docs: result.docs,
-      passed: result.passed,
-      publishValid: result.publishValid,
-      mode: result.mode,
-      stampPath: result.stampPath,
-    }, null, 2));
+    const stdout = `${JSON.stringify(buildJsonResult(result), null, 2)}\n`;
+    process.stdout.write(stdout);
+    finishVerifyRun(verifyRun, { stdout, stderr: '', exitCode: passed ? 0 : 1 });
   } else {
     if (review.stderr && !review.passed) {
       writeStderr(review.stderr.trim());

@@ -4,7 +4,7 @@ import { codeCallServiceError } from './errors';
 import { normalizeLanguage, resolveRuntimeProviderEffect, type RuntimeProvider } from './runtimes';
 import type { CodeCallInput, CodeCallLanguage, CodeCallMode } from './types';
 
-export const DEFAULT_TIMEOUT_MS = 30_000;
+export const DEFAULT_TIMEOUT_MS = 180_000;
 export const DEFAULT_MAX_RESULT_CHARS = 20_000;
 const MIN_TIMEOUT_MS = 1;
 const MAX_TIMEOUT_MS = 300_000;

@@ -304,6 +304,27 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('keeps the tail when truncating oversized output', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'print("start-" + "x" * 200 + "-failure-at-end")',
+        maxResultChars: 80,
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.truncated).toBe(true);
+      expect(result.data.stdout.length).toBeLessThanOrEqual(80);
+      expect(result.data.stdout).toContain('start-');
+      expect(result.data.stdout).toContain('omitted');
+      expect(result.data.stdout).toContain('-failure-at-end');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('reports timeouts clearly', async () => {
     const root = tempRoot();
     try {
@@ -318,6 +339,27 @@ describe('code.call runtime', () => {
       expect(result.code).toBe('TIMEOUT');
       expect(result.data.detectedMistakeClass).toBe('timeout');
       expect(result.data.message).toContain('timed out');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('terminates process groups when grandchildren survive the timeout', async () => {
+    const root = tempRoot();
+    try {
+      const startedAt = Date.now();
+      const result = await runCodeCall({
+        language: 'bash',
+        mode: 'verify',
+        code: '(sleep 2) & wait',
+        timeout: 50,
+      }, root);
+      const elapsedMs = Date.now() - startedAt;
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('TIMEOUT');
+      expect(result.data.detectedMistakeClass).toBe('timeout');
+      expect(elapsedMs).toBeLessThan(1000);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

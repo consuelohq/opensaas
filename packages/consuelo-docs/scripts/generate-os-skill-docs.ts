@@ -16,6 +16,7 @@ type BaseGroup = {
   key: string;
   label: string;
   icon?: string;
+  expanded?: boolean;
   pages: BasePage[];
 };
 
@@ -23,7 +24,8 @@ type BaseStructure = {
   tabs: Array<{
     key: string;
     label: string;
-    groups: BaseGroup[];
+    groups?: BaseGroup[];
+    pages?: BasePage[];
   }>;
 };
 
@@ -162,6 +164,7 @@ const skillPages = (skills: SkillJson[]): Array<string | BaseGroup> => [
   {
     key: 'osPlannedSkills',
     label: 'Planned Skills',
+    expanded: false,
     pages: plannedSkills.map(([slug]) => `os/skills/planned/${slug}`),
   },
 ];
@@ -179,10 +182,14 @@ const findGroupByKey = (groups: BaseGroup[], key: string): BaseGroup | null => {
 
 const osGroups = (structure: BaseStructure): BaseGroup[] => {
   const topLevelOsTab = structure.tabs.find((tab) => tab.key === 'os');
-  if (topLevelOsTab) return topLevelOsTab.groups;
+  if (topLevelOsTab?.groups) return topLevelOsTab.groups;
 
   const userGuide = structure.tabs.find((tab) => tab.key === 'userGuide');
-  const osGroup = userGuide ? findGroupByKey(userGuide.groups, 'osDocumentation') : null;
+  const userGuideGroups = [
+    ...(userGuide?.groups ?? []),
+    ...((userGuide?.pages ?? []).filter((page): page is BaseGroup => typeof page !== 'string')),
+  ];
+  const osGroup = findGroupByKey(userGuideGroups, 'osDocumentation') ?? findGroupByKey(userGuideGroups, 'usingConsueloOs');
   if (osGroup) return osGroup.pages.filter((page): page is BaseGroup => typeof page !== 'string');
 
   throw new Error('navigation/base-structure.json is missing OS navigation groups.');
@@ -191,7 +198,10 @@ const osGroups = (structure: BaseStructure): BaseGroup[] => {
 const syncNavigation = (skills: SkillJson[]): void => {
   const structure = readJson<BaseStructure>(baseStructurePath);
   const skillsGroup = findGroupByKey(
-    structure.tabs.flatMap((tab) => tab.groups),
+    structure.tabs.flatMap((tab) => [
+      ...(tab.groups ?? []),
+      ...((tab.pages ?? []).filter((page): page is BaseGroup => typeof page !== 'string')),
+    ]),
     'osSkills',
   );
   if (!skillsGroup) {
@@ -232,8 +242,8 @@ const syncLocalizedOsPages = (): void => {
   const structure = readJson<BaseStructure>(baseStructurePath);
 
   for (const slug of structure.tabs
-    .flatMap((tab) => tab.groups)
-    .flatMap((group) => collectPageSlugs(group.pages))
+    .flatMap((tab) => [...(tab.groups ?? []), ...(tab.pages ?? [])])
+    .flatMap((page) => (typeof page === 'string' ? [page] : collectPageSlugs(page.pages)))
     .filter((slug) => slug.startsWith('os/'))) {
     writeLocalizedFallback(slug);
   }
