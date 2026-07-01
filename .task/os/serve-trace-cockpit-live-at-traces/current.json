@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/serve-trace-cockpit-live-at-traces",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1142,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1142",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1142",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1142/serve-trace-cockpit-live-at-traces",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1142",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1142/serve-trace-cockpit-live-at-traces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-serve-trace-cockpit-live-at-traces",
+  "taskSession": "tsk_4a1c774a9388",
+  "tmuxSession": "opensaas-os-serve-trace-cockpit-live-at-traces-4a1c774a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-serve-trace-cockpit-live-at-traces/.task/os/serve-trace-cockpit-live-at-traces/session.json",
+  "createdAt": "2026-06-18T15:56:16.363Z"
+}
