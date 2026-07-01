@@ -1,0 +1,114 @@
+---
+title: Voice API
+description: Complete reference for all voice and telephony endpoints.
+---
+
+import Note from '../../../../components/mintlify/Note.astro';
+
+
+The Voice API provides endpoints for managing calls, transfers, and Twilio integration.
+
+## Endpoints Overview
+
+| Method | Endpoint                               | Description               |
+| ------ | -------------------------------------- | ------------------------- |
+| GET    | `/v1/voice/token`                      | Get Twilio access token   |
+| POST   | `/v1/voice/twiml`                      | Generate TwiML for calls  |
+| POST   | `/v1/calls`                            | Initiate an outbound call |
+| GET    | `/v1/calls/:callSid`                   | Get call details          |
+| POST   | `/v1/calls/:callSid/transfer`          | Initiate transfer         |
+| POST   | `/v1/calls/:callSid/transfer/complete` | Complete warm transfer    |
+| POST   | `/v1/calls/:callSid/transfer/cancel`   | Cancel warm transfer      |
+| POST   | `/v1/calls/:callSid/hold`              | Toggle hold               |
+| POST   | `/v1/calls/:callSid/mute`              | Toggle mute               |
+| GET    | `/v1/calls`                            | List calls                |
+| POST   | `/v1/recordings`                       | Start recording           |
+| GET    | `/v1/recordings/:recordingSid`         | Get recording             |
+| POST   | `/v1/caller-ids`                       | Provision caller ID       |
+| GET    | `/v1/caller-ids`                       | List caller IDs           |
+
+## Get Twilio Token
+
+Generate a JWT for the Twilio Voice SDK:
+
+```bash
+GET /v1/voice/token
+Authorization: Bearer <access_token>
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "identity": "agent_user_123",
+    "ttl": 3600
+  }
+}
+```
+
+## Initiate Outbound Call
+
+```bash
+POST /v1/calls
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "to": "+14155551234",
+  "from": "+14155559876",
+  "workspaceId": "ws_abc123"
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "callSid": "CAabc123...",
+    "status": "initiated",
+    "direction": "outbound",
+    "to": "+14155551234",
+    "from": "+14155559876"
+  }
+}
+```
+
+## Transfer Call
+
+```bash
+POST /v1/calls/:callSid/transfer
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "target": "+14155551234",
+  "type": "warm"
+}
+```
+
+## Hold/Unhold
+
+```bash
+POST /v1/calls/:callSid/hold
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "action": "hold"  // or "unhold"
+}
+```
+
+## List Calls
+
+```bash
+GET /v1/calls?workspaceId=ws_abc123&limit=20
+Authorization: Bearer <access_token>
+```
+
+<Note>
+  All `/v1/calls/*` endpoints require the caller to be the agent participant in
+  the conference.
+</Note>
