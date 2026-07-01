@@ -45,3 +45,23 @@ Docs/navigation-only shape change. Validation will use generated docs config che
 
 ## Build note
 This is a docs navigation shape change. I did not count a full Mintlify local build as passed. GitHub/Mintlify preview will be the visual source of truth for whether the blank container renders exactly as expected.
+
+
+## Final publishing note
+State: The sidebar dropdown layout change is pushed to `task/docs/sidebar-dropdown-layout` at `d0a02368cdfc4fc93dc890c7c56d13110204f044`.
+
+Delta:
+- Changed only the navigation source and generated Mintlify config.
+- User Guide and Tools each now use a single blank sidebar container so the visible IA items render as list/dropdown entries instead of top-level section headers.
+- User Stories remains one page.
+- Sites remains the GTM umbrella.
+- Office remains separate from Sites.
+
+Evidence:
+- Navigation invariant check passed.
+- OS docs validation passed.
+- OS skill docs check passed.
+- Documentation path constants syntax passed.
+
+Risk / follow-up:
+- Mintlify preview is the final visual check for whether an empty top-level group hides cleanly. If Mintlify shows a blank spacer/header, the fallback is to use the least intrusive label or a Mintlify-supported grouping pattern.
