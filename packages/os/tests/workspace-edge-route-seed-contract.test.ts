@@ -89,6 +89,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(record.routes.map((route) => route.pathPrefix)).toEqual([
       '/',
       '/office',
+      '/observability',
       '/traces',
       '/tracing',
       '/diffs',
@@ -99,6 +100,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
       expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
       expect.objectContaining({ pathPrefix: '/office', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'office', manifestKey: 'sites/workspace_internal/office/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/observability', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/traces', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/tracing', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/diffs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'diffs', manifestKey: 'sites/workspace_internal/diffs/seeded-workspace-site-shell/index.html' }) }),
@@ -112,7 +114,7 @@ contractDescribe('workspace edge route seed contract', () => {
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-live-endpoints',
           gatewayRouteFamily: '/gateway/traces/*',
-          publicSiteRouteFamily: '/traces/*',
+          publicSiteRouteFamily: '/observability/*',
         }),
       }),
       expect.objectContaining({
@@ -122,7 +124,7 @@ contractDescribe('workspace edge route seed contract', () => {
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-read-layer',
           gatewayRouteFamily: '/gateway/traces/*',
-          publicSiteRouteFamily: '/traces/*',
+          publicSiteRouteFamily: '/observability/*',
         }),
       }),
     ]));
@@ -179,6 +181,7 @@ contractDescribe('workspace edge route seed contract', () => {
     }
     expect(osSql).toMatch(/http:\/\/127\.0\.0\.1:8787/);
     expect(osSql).toMatch(/\/mcp/);
+    expect(osSql).toMatch(/\/observability/);
     expect(osSql).toMatch(/\/traces/);
     expect(osSql).toMatch(/consuelo-gateway-service/);
     expect(osSql).toMatch(/trace-sites-read-layer/);
