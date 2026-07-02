@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6644f8c5d360",
+  "tmuxSession": "opensaas-website-changelog-updates-6644f8c5",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/changelog-updates",
+  "branch": "task/website/changelog-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-changelog-updates",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-changelog-updates",
+  "prNumber": 1347,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1347",
+  "createdAt": "2026-07-02T22:08:32.485Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-changelog-updates/.task/website/changelog-updates/session.json"
+}
