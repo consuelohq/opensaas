@@ -1,40 +1,26 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
-hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
-  actions:
-    - text: Example Guide
-      link: /guides/example/
-      icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
+title: Consuelo Docs
+description: Product, OS, tool, and developer documentation for Consuelo.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import Card from '../../components/mintlify/Card.astro';
+import CardGroup from '../../components/mintlify/CardGroup.astro';
 
-## Next steps
+# Consuelo Docs
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
-</CardGrid>
+Consuelo docs are moving to this Bun-owned Astro/Starlight app. The English MDX pages in this package are the source of truth for the next documentation site.
+
+<CardGroup cols={2}>
+  <Card title="User stories" href="/user-guide/user-stories-use-cases/">
+    Start with the jobs Consuelo is meant to support.
+  </Card>
+  <Card title="Consuelo OS" href="/os/overview/">
+    Learn how the OS, skills, scripts, tools, approvals, and artifacts fit together.
+  </Card>
+  <Card title="Tools" href="/tools/overview/">
+    Explore Sites, Office, Media, and workspace tool surfaces.
+  </Card>
+  <Card title="Developer guide" href="/developers/introduction/">
+    Build against Consuelo APIs and agent primitives.
+  </Card>
+</CardGroup>

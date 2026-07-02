@@ -1,0 +1,196 @@
+---
+import { sourceLanguage, supportedTranslationLanguages } from '../../lib/translation/languages';
+---
+
+<div class="runtime-language-select" data-docs-runtime-translation-root>
+  <label>
+    <span class="label">Translate</span>
+    <select data-docs-runtime-translation-select aria-label="Translate this page">
+      <option value={sourceLanguage}>English</option>
+      {supportedTranslationLanguages.map((language) => (
+        <option value={language.code}>{language.nativeLabel}</option>
+      ))}
+    </select>
+  </label>
+</div>
+
+<script>
+  const translationState = {
+    storageKey: 'consuelo-docs-target-language',
+    endpoint: '/api/docs/translate',
+  };
+
+  const selects = Array.from(document.querySelectorAll('[data-docs-runtime-translation-select]'));
+  const main = document.querySelector('main');
+
+  const escapeHtml = (value) => value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+  const setSelects = (language) => {
+    for (const select of selects) select.value = language;
+  };
+
+  const removePanel = () => {
+    document.querySelector('[data-docs-runtime-translation-panel]')?.remove();
+  };
+
+  const renderPanel = (payload) => {
+    if (!main) return;
+    removePanel();
+    const section = document.createElement('section');
+    section.dataset.docsRuntimeTranslationPanel = '';
+    section.setAttribute('aria-live', 'polite');
+    const paragraphs = payload.segments
+      .map((segment) => '<p>' + escapeHtml(segment) + '</p>')
+      .join('');
+    section.innerHTML = [
+      '<div class="translation-panel-heading">',
+      '<div>',
+      '<p class="translation-eyebrow">Machine translation</p>',
+      '<h2>' + escapeHtml(payload.title) + '</h2>',
+      '</div>',
+      '<button type="button" data-docs-runtime-translation-close>Show English</button>',
+      '</div>',
+      '<div class="translation-panel-body">' + paragraphs + '</div>',
+    ].join('');
+    main.prepend(section);
+    section.querySelector('[data-docs-runtime-translation-close]')?.addEventListener('click', () => {
+      localStorage.removeItem(translationState.storageKey);
+      setSelects('en');
+      removePanel();
+    });
+  };
+
+  const renderError = (message) => {
+    if (!main) return;
+    removePanel();
+    const section = document.createElement('section');
+    section.dataset.docsRuntimeTranslationPanel = '';
+    section.setAttribute('aria-live', 'polite');
+    section.innerHTML = [
+      '<div class="translation-panel-heading">',
+      '<div>',
+      '<p class="translation-eyebrow">Machine translation</p>',
+      '<h2>Translation unavailable</h2>',
+      '</div>',
+      '<button type="button" data-docs-runtime-translation-close>Dismiss</button>',
+      '</div>',
+      '<div class="translation-panel-body"><p>' + escapeHtml(message) + '</p></div>',
+    ].join('');
+    main.prepend(section);
+    section.querySelector('[data-docs-runtime-translation-close]')?.addEventListener('click', () => section.remove());
+  };
+
+  const translatePage = async (language) => {
+    if (language === 'en') {
+      localStorage.removeItem(translationState.storageKey);
+      removePanel();
+      return;
+    }
+
+    localStorage.setItem(translationState.storageKey, language);
+    const params = new URLSearchParams({ path: window.location.pathname, lang: language });
+    try {
+      const response = await fetch(translationState.endpoint + '?' + params.toString(), {
+        headers: { accept: 'application/json' },
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) {
+        renderError(payload?.error?.message ?? 'Translation could not be loaded.');
+        return;
+      }
+      renderPanel(payload);
+    } catch {
+      renderError('Translation could not be loaded.');
+    }
+  };
+
+  for (const select of selects) {
+    select.addEventListener('change', (event) => {
+      const language = event.currentTarget instanceof HTMLSelectElement ? event.currentTarget.value : 'en';
+      setSelects(language);
+      void translatePage(language);
+    });
+  }
+
+  const storedLanguage = localStorage.getItem(translationState.storageKey);
+  if (storedLanguage && storedLanguage !== 'en') {
+    setSelects(storedLanguage);
+    void translatePage(storedLanguage);
+  }
+</script>
+
+<style>
+  .runtime-language-select label {
+    align-items: center;
+    display: flex;
+    gap: 0.35rem;
+  }
+
+  .runtime-language-select .label {
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+  }
+
+  .runtime-language-select select {
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 999px;
+    color: var(--sl-color-white);
+    font: inherit;
+    font-size: var(--sl-text-sm);
+    padding: 0.25rem 0.6rem;
+  }
+
+  :global([data-docs-runtime-translation-panel]) {
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+  }
+
+  :global(.translation-panel-heading) {
+    align-items: flex-start;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  :global(.translation-panel-heading h2) {
+    font-size: var(--sl-text-h4);
+    margin: 0.2rem 0 0;
+  }
+
+  :global(.translation-eyebrow) {
+    color: var(--sl-color-accent-high);
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  :global(.translation-panel-heading button) {
+    background: transparent;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 999px;
+    color: var(--sl-color-gray-2);
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--sl-text-sm);
+    padding: 0.25rem 0.65rem;
+  }
+
+  :global(.translation-panel-body) {
+    margin-top: 1rem;
+  }
+
+  :global(.translation-panel-body p) {
+    margin: 0.75rem 0;
+  }
+</style>

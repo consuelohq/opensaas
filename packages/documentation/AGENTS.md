@@ -1,3 +1,7 @@
+## Required context
+
+Read `README.md` first. It is the source of truth for docs ownership, routes, runtime translation, and removed-content policy.
+
 ## Development
 
 When starting the dev server, use background mode:

@@ -82,7 +82,7 @@ Caddy is the local reverse proxy surface for the OS gateway. Cloudflare account 
 
 Tools are callable capabilities. Scripts are executable implementation. Manifests describe what tools exist, their categories, their input and output shapes, and the runtime binding behind each tool.
 
-The public tools docs start at [`packages/consuelo-docs/tools/overview.mdx`](packages/consuelo-docs/tools/overview.mdx). The OS tools overview lives at [`packages/consuelo-docs/os/tools/overview.mdx`](packages/consuelo-docs/os/tools/overview.mdx). The generated tool catalog is [`packages/os/TOOLS.md`](packages/os/TOOLS.md).
+The public tools docs start at [`packages/documentation/src/content/docs/tools/overview.mdx`](packages/documentation/src/content/docs/tools/overview.mdx). The OS tools overview lives at [`packages/documentation/src/content/docs/os/tools/overview.mdx`](packages/documentation/src/content/docs/os/tools/overview.mdx). The generated tool catalog is [`packages/os/TOOLS.md`](packages/os/TOOLS.md).
 
 ## tool categories and bundles
 
@@ -110,13 +110,13 @@ Local tracing uses SQLite. Hosted surfaces can send selected events to cloud obs
 
 ## repo map
 
-| Path | Purpose |
-| --- | --- |
-| [`packages/os`](packages/os) | Consuelo OS runtime, installer, local server, MCP gateway, security gateway, tools, manifests, artifacts, media, sites, and Cloudflare edge work |
-| [`packages/consuelo-docs`](packages/consuelo-docs) | Mintlify documentation site |
-| [`packages/consuelo-website`](packages/consuelo-website) | Public website and logo assets |
-| [`packages/consuelo-design`](packages/consuelo-design) | Office and design workflow surface |
-| [`packages/cli`](packages/cli) | Consuelo CLI package |
+| Path                                                     | Purpose                                                                                                                                          |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`packages/os`](packages/os)                             | Consuelo OS runtime, installer, local server, MCP gateway, security gateway, tools, manifests, artifacts, media, sites, and Cloudflare edge work |
+| [`packages/documentation`](packages/documentation)       | Astro/Starlight documentation site                                                                                                               |
+| [`packages/consuelo-website`](packages/consuelo-website) | Public website and logo assets                                                                                                                   |
+| [`packages/consuelo-design`](packages/consuelo-design)   | Office and design workflow surface                                                                                                               |
+| [`packages/cli`](packages/cli)                           | Consuelo CLI package                                                                                                                             |
 
 ## development
 
