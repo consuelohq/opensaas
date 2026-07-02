@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { resolveConsueloHomeLayout } from './lib/consuelo-home';
 import {
   loadGatewaySecurityConfig,
   resolveToolScope,
@@ -96,8 +97,15 @@ function internalError(error: unknown): Response {
 }
 
 function candidateHomeAuthPaths(): string[] {
-  const homes = [process.env.CONSUELO_OS_HOME, process.env.CONSUELO_HOME].filter((home): home is string => Boolean(home));
-  return [...new Set(homes)].map((home) => path.join(home, 'security', 'generated', 'auth.json'));
+  const explicitHomes = [process.env.CONSUELO_HOME, process.env.CONSUELO_OS_HOME]
+    .filter((home): home is string => Boolean(home));
+  const layouts = [resolveConsueloHomeLayout(), ...explicitHomes.map((home) => resolveConsueloHomeLayout(home))];
+  const candidates = layouts.flatMap((layout) => [
+    path.join(layout.nodeSecurityGeneratedDir, 'auth.json'),
+    path.join(layout.home, 'security', 'generated', 'auth.json'),
+    path.join(layout.legacyOsHome, 'security', 'generated', 'auth.json'),
+  ]);
+  return [...new Set(candidates)];
 }
 
 function resolveAuthConfigPath(): string | null {
