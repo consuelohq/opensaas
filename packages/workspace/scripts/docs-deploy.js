@@ -8,9 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DOCS_DIR = path.resolve(__dirname, '..', '..', 'documentation');
-const ROOT_WRANGLER_CONFIG = path.join(DOCS_DIR, 'wrangler.jsonc');
 const BUILT_WRANGLER_CONFIG = path.join(DOCS_DIR, 'dist', 'server', 'wrangler.json');
-const DEPLOY_WRANGLER_CONFIG = path.join(DOCS_DIR, 'dist', 'server', 'deploy.wrangler.json');
 
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
@@ -60,39 +58,10 @@ function printHelp() {
   lines.forEach((l) => writeStdout(l));
 }
 
-function stripJsonComments(text) {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*\/\/.*$/gm, '');
-}
-
-function readJsonFile(filePath) {
-  const raw = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(stripJsonComments(raw));
-}
-
-function writeDeployConfig() {
+function assertBuiltWranglerConfig() {
   if (!fs.existsSync(BUILT_WRANGLER_CONFIG)) {
     throw new Error('missing dist/server/wrangler.json; run build before deploy');
   }
-
-  const rootConfig = readJsonFile(ROOT_WRANGLER_CONFIG);
-  const builtConfig = readJsonFile(BUILT_WRANGLER_CONFIG);
-  const deployConfig = {
-    ...builtConfig,
-    name: rootConfig.name ?? builtConfig.name,
-    compatibility_date: rootConfig.compatibility_date ?? builtConfig.compatibility_date,
-    compatibility_flags: rootConfig.compatibility_flags ?? builtConfig.compatibility_flags,
-    observability: rootConfig.observability ?? builtConfig.observability,
-    vars: {
-      ...(builtConfig.vars ?? {}),
-      ...(rootConfig.vars ?? {}),
-    },
-    routes: rootConfig.routes ?? builtConfig.routes,
-  };
-
-  fs.writeFileSync(DEPLOY_WRANGLER_CONFIG, `${JSON.stringify(deployConfig, null, 2)}\n`);
-  return DEPLOY_WRANGLER_CONFIG;
 }
 
 function parseArgs(argv) {
@@ -128,10 +97,9 @@ function main() {
   }
 
   try {
-    writeDeployConfig();
-    writeStderr(`wrote ${path.relative(DOCS_DIR, DEPLOY_WRANGLER_CONFIG)}`);
+    assertBuiltWranglerConfig();
   } catch (err) {
-    writeStdout('deploy config generation failed:');
+    writeStdout('deploy config check failed:');
     writeStdout(err.message);
     process.exit(1);
   }
@@ -147,7 +115,7 @@ function main() {
   try {
     const serverDir = path.join(DOCS_DIR, 'dist', 'server');
     const output = run(
-      'bunx wrangler deploy --config deploy.wrangler.json',
+      'bunx wrangler deploy --config wrangler.json',
       { cwd: serverDir, timeout: 180000 },
     );
 

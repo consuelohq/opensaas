@@ -61,11 +61,11 @@ bun run docs:deploy -- --build-only
 bun run docs:deploy
 ```
 
-3. Set the production translation secret (never commit this value). Deploy merges `wrangler.jsonc` into the Astro-generated Worker config under `dist/server/`:
+3. Set the production translation secret (never commit this value). Astro build writes the deploy config to `dist/server/wrangler.json`:
 
 ```bash
 bun run docs:deploy -- --build-only
-bunx wrangler secret put GOOGLE_TRANSLATE_API_KEY --config packages/documentation/dist/server/deploy.wrangler.json
+bunx wrangler secret put GOOGLE_TRANSLATE_API_KEY --config packages/documentation/dist/server/wrangler.json
 ```
 
 4. Deploy again after secrets are configured:
