@@ -29,6 +29,9 @@ describe('launcher onboarding', () => {
     expect(html).toContain('Systems Engineer');
     expect(html).toContain('href="/careers/systems-engineer"');
     expect(html).toContain('Connect to your cloud agents');
+    expect(html).toContain('Settings');
+    expect(html).toContain('Configuration');
+    expect(html).toContain('href="/settings"');
     expect(html).toContain('Sites');
     expect(html).toContain('Go to market');
     expect(html).toContain('Artifacts');

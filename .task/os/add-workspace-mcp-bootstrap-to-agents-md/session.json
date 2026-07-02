@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1ce91ca0b023",
+  "tmuxSession": "opensaas-os-add-workspace-mcp-bootstrap-to-agents-md-1ce91ca0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-mcp-bootstrap-to-agents-md",
+  "branch": "task/os/add-workspace-mcp-bootstrap-to-agents-md",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-mcp-bootstrap-to-agents-md",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-mcp-bootstrap-to-agents-md",
+  "prNumber": 1342,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1342",
+  "createdAt": "2026-07-02T20:09:16.722Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-mcp-bootstrap-to-agents-md/.task/os/add-workspace-mcp-bootstrap-to-agents-md/session.json"
+}

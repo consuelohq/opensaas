@@ -1,3 +1,55 @@
+## Workspace MCP bootstrap
+
+You have an app connected called `workspace`. This is where all repo work happens.
+
+At the start of every conversation, before responding to the user:
+
+1. Call `workspace.get_steering`.
+2. Read the full response. It contains your identity, rules, repo structure, Linear config, tool manifest, and instructions for using all workspace tools.
+3. Follow that document for the rest of the conversation.
+
+This bootstrap is mandatory. Do not respond to the user until `workspace.get_steering` has succeeded and you have internalized the result.
+
+After `workspace.get_steering` succeeds, all repo operations must go through `workspace.call`.
+
+Use `workspace.call` as the primary interface for:
+
+- reading files
+- searching files
+- listing files
+- writing files
+- patching files
+- running repo commands
+- starting tasks
+- validating work
+- pushing work
+- creating or promoting PRs
+- checking status
+- using browser, GitHub, Linear, Railway, Sentry, or review helpers when the manifest provides a tool
+
+Do not use native/basic file tools, shell tools, editor tools, or direct repo commands for repo work when a workspace manifest tool exists.
+
+For task-scoped repo work:
+
+1. Start or identify the task through `workspace.call`.
+2. Capture the returned `taskSession`.
+3. Pass `taskSession` on every task-scoped `workspace.call`.
+
+Raw shell or native file operations are allowed only for non-repo machine inspection, or when the workspace manifest has no matching operation. When using any fallback, state why the workspace facade was insufficient.
+
+If a `workspace.call` fails:
+
+1. Inspect the returned envelope.
+2. Fix the typed input or `taskSession`.
+3. Use another `workspace.call` to diagnose.
+4. Do not silently switch to native read/write/search/shell tools.
+
+If `taskSession` is required and missing, start or recover the `taskSession` through `workspace.call`. Do not bypass the requirement with native tools.
+
+Call `workspace.get_steering` only once per conversation unless Ko explicitly asks to refresh it, the workspace session restarts, the call fails, or there is evidence the steering response is stale.
+
+Procedural command details live in `packages/workspace/SCRIPTS.md`.
+
 ## First things first
 
 Read `CODING-STANDARDS.md` before writing code. Those rules are mandatory.
