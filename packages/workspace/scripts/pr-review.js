@@ -1,22 +1,80 @@
 #!/usr/bin/env bun
 
-// pr-review.js — fetch all review comments from a PR, write structured file
-// pulls from: qodo-code-review[bot], coderabbitai[bot], codex, ko (kokayicobb), and any human reviewers
+// pr-review.js — fetch review comments from a PR, write structured file
+// pulls from CodeRabbit, Qodo, Codex/OpenAI bots, ko, and human reviewers
 // output: .task/reviews/<pr-number>.md — structured, graph-aware, actionable
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync, execSync } = require('child_process');
 const { findTaskMeta: findTaskMetaRecord, getTaskReviewsDir } = require('./lib/task-meta');
 
 const REPO = 'consuelohq/opensaas';
-const BOTS = ['qodo-code-review[bot]', 'coderabbitai[bot]', 'codex'];
+const KNOWN_REVIEW_BOT_PATTERNS = [
+  { pattern: /coderabbit/i, label: 'coderabbit' },
+  { pattern: /qodo/i, label: 'qodo' },
+  { pattern: /codex|openai|chatgpt/i, label: 'codex' },
+];
+const ACTIONABLE_BODY_RE = /(actionable comments|suggestion|```diff|```suggestion|should|must|fix|regression|security|correctness|maintainability|cr-comment|finding|issue)/i;
+const BOT_NOISE_RE = /(rate limit|secondary rate limit|too many requests|http 429|temporarily unavailable|request failed|unable to review|no changed files|skipped review|try again later)/i;
 
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
+function compactGhError(error, args) {
+  const raw = [error?.stderr, error?.stdout, error?.message]
+    .filter(Boolean)
+    .map((value) => String(value))
+    .join('\n');
+  const seen = new Set();
+  const kept = [];
+  for (const line of raw.split('\n').map((value) => value.trim()).filter(Boolean)) {
+    const redacted = line.replace(/gh[ops]_[A-Za-z0-9_]+/g, '<redacted-token>');
+    const key = redacted.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (BOT_NOISE_RE.test(redacted) || /http [0-9]{3}|graphql|api rate/i.test(redacted)) {
+      kept.push(redacted.slice(0, 240));
+    } else if (kept.length < 4 && redacted.length < 300 && !/^\{/.test(redacted)) {
+      kept.push(redacted);
+    }
+    if (kept.length >= 8) break;
+  }
+  const summary = kept.length > 0 ? kept.join(' | ') : 'unknown gh failure';
+  return `gh ${args.slice(0, 3).join(' ')} failed: ${summary}`;
+}
+
 function gh(args) {
-  return execSync(`gh ${args}`, { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }).trim();
+  try {
+    return execFileSync('gh', args, {
+      encoding: 'utf8',
+      maxBuffer: 20 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch (error) {
+    throw new Error(compactGhError(error, args));
+  }
+}
+
+function ghJson(args) {
+  const raw = gh(args);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`failed to parse gh JSON for ${args.slice(0, 3).join(' ')}: ${error.message}`);
+  }
+}
+
+function flattenPaginatedJson(payload) {
+  if (payload == null) return [];
+  if (!Array.isArray(payload)) return [payload];
+  if (payload.every((page) => Array.isArray(page))) return payload.flat();
+  return payload;
+}
+
+function ghPaginatedJson(endpoint) {
+  return flattenPaginatedJson(ghJson(['api', endpoint, '--paginate', '--slurp']));
 }
 
 function findTaskMeta() {
@@ -37,22 +95,8 @@ function printHelp() {
     '  --stdout    print to stdout instead of writing file',
     '  --json      json output',
     '  --help      show this help',
-    '',
-    'output: .task/reviews/<pr-number>.md',
-    '',
-    'after fixing review comments, run the full task loop:',
-    '',
-    '  bun run stream:context -- --area <area>',
-    '  bun run stream:sync -- --area <area>',
-    '  bun run task:start -- --area <area> --title "description"',
-    '  bun run review -- --mine',
-    '  bun run task:push -- --message "fix(scope): desc" --changed',
-    '  bun run task:pr',
-    '  bun run task:prs',
-    '  bun run task:merge -- --pr <N> --wait',
-    '  bun run task:finish',
   ];
-  lines.forEach((l) => writeStdout(l));
+  lines.forEach((line) => writeStdout(line));
 }
 
 function parseArgs(argv) {
@@ -79,89 +123,131 @@ function detectPrNumber() {
 }
 
 function fetchPrMeta(prNumber) {
-  const raw = gh(`pr view ${prNumber} --repo ${REPO} --json number,title,headRefName,baseRefName,state,files,author`);
-  return JSON.parse(raw);
+  return ghJson(['pr', 'view', String(prNumber), '--repo', REPO, '--json', 'number,title,headRefName,baseRefName,state,files,author']);
 }
 
 function fetchInlineComments(prNumber) {
-  const raw = gh(`api repos/${REPO}/pulls/${prNumber}/comments --paginate`);
-  return JSON.parse(raw);
+  return ghPaginatedJson(`repos/${REPO}/pulls/${prNumber}/comments`);
 }
 
 function fetchIssueComments(prNumber) {
-  const raw = gh(`api repos/${REPO}/issues/${prNumber}/comments --paginate`);
-  return JSON.parse(raw);
+  return ghPaginatedJson(`repos/${REPO}/issues/${prNumber}/comments`);
 }
 
 function fetchReviews(prNumber) {
-  const raw = gh(`api repos/${REPO}/pulls/${prNumber}/reviews --paginate`);
-  return JSON.parse(raw);
+  return ghPaginatedJson(`repos/${REPO}/pulls/${prNumber}/reviews`);
 }
 
-function classifyAuthor(login) {
-  if (BOTS.includes(login)) return login.replace('[bot]', '').replace('-', ' ');
+function fetchReviewCommentsForReviews(prNumber, reviews) {
+  const comments = [];
+  for (const review of reviews) {
+    if (!review?.id) continue;
+    try {
+      comments.push(...ghPaginatedJson(`repos/${REPO}/pulls/${prNumber}/reviews/${review.id}/comments`));
+    } catch (error) {
+      writeStderr(`  warning: skipped comments for review ${review.id}: ${error.message}`);
+    }
+  }
+  return comments;
+}
+
+function commentSortKey(comment) {
+  return comment.updated_at || comment.created_at || '';
+}
+
+function mergeCommentsById(comments) {
+  const byKey = new Map();
+  for (const comment of comments) {
+    const key = comment.id ?? `${comment.path || 'unknown'}:${comment.line || comment.original_line || '?'}:${comment.user?.login || 'unknown'}:${comment.body || ''}`;
+    const previous = byKey.get(key);
+    if (!previous || commentSortKey(comment) >= commentSortKey(previous)) {
+      byKey.set(key, comment);
+    }
+  }
+  return [...byKey.values()].sort((a, b) => {
+    const fileCompare = String(a.path || '').localeCompare(String(b.path || ''));
+    if (fileCompare !== 0) return fileCompare;
+    return Number(a.line || a.original_line || 0) - Number(b.line || b.original_line || 0);
+  });
+}
+
+function isKnownReviewBot(login = '') {
+  return login.endsWith('[bot]') || KNOWN_REVIEW_BOT_PATTERNS.some(({ pattern }) => pattern.test(login));
+}
+
+function classifyAuthor(login = '') {
+  const known = KNOWN_REVIEW_BOT_PATTERNS.find(({ pattern }) => pattern.test(login));
+  if (known) return known.label;
   if (login === 'kokayicobb') return 'ko';
-  return login;
+  return login.replace('[bot]', '');
+}
+
+function isActionableBody(body = '') {
+  return ACTIONABLE_BODY_RE.test(body);
+}
+
+function isNoisyBotSummary(commentOrReview) {
+  const login = commentOrReview?.user?.login || '';
+  const body = commentOrReview?.body || '';
+  return isKnownReviewBot(login) && BOT_NOISE_RE.test(body) && !isActionableBody(body);
 }
 
 function buildFileGraph(inlineComments, changedFiles) {
-  // group comments by file path — shows which files have the most review attention
   const graph = {};
   for (const c of inlineComments) {
     const file = c.path || 'unknown';
     if (!graph[file]) graph[file] = { comments: 0, authors: new Set(), lines: [] };
     graph[file].comments++;
-    graph[file].authors.add(classifyAuthor(c.user.login));
+    graph[file].authors.add(classifyAuthor(c.user?.login || 'unknown'));
     graph[file].lines.push(c.line || c.original_line || '?');
   }
-  // add changed files with no comments
   for (const f of changedFiles) {
     if (!graph[f.path]) graph[f.path] = { comments: 0, authors: new Set(), lines: [] };
   }
   return graph;
 }
 
+function formatQuotedBody(lines, body) {
+  for (const line of String(body || '').trim().split('\n')) {
+    lines.push(`> ${line}`);
+  }
+}
+
 function formatReviewFile(prMeta, inlineComments, issueComments, reviews, fileGraph) {
   const lines = [];
-  const pr = prMeta;
+  const usefulIssueComments = issueComments.filter((comment) => !isNoisyBotSummary(comment));
+  const usefulReviews = reviews.filter((review) => !isNoisyBotSummary(review));
 
-  lines.push(`# pr #${pr.number}: ${pr.title}`);
+  lines.push(`# pr #${prMeta.number}: ${prMeta.title}`);
   lines.push('');
-  lines.push(`branch: \`${pr.headRefName}\` → \`${pr.baseRefName}\``);
-  lines.push(`state: ${pr.state}`);
-  lines.push(`files changed: ${pr.files.length}`);
+  lines.push(`branch: \`${prMeta.headRefName}\` → \`${prMeta.baseRefName}\``);
+  lines.push(`state: ${prMeta.state}`);
+  lines.push(`files changed: ${prMeta.files.length}`);
   lines.push('');
 
-  // file graph — which files need attention
   lines.push('## file attention map');
   lines.push('');
   const sorted = Object.entries(fileGraph).sort((a, b) => b[1].comments - a[1].comments);
   for (const [file, data] of sorted) {
     const authors = [...data.authors].join(', ');
-    if (data.comments > 0) {
-      lines.push(`- \`${file}\` — ${data.comments} comment(s) from ${authors}`);
-    }
+    if (data.comments > 0) lines.push(`- \`${file}\` — ${data.comments} comment(s) from ${authors}`);
   }
-  const clean = sorted.filter(([, d]) => d.comments === 0);
-  if (clean.length > 0) {
-    lines.push(`- ${clean.length} file(s) with no review comments`);
-  }
+  const clean = sorted.filter(([, data]) => data.comments === 0);
+  if (clean.length > 0) lines.push(`- ${clean.length} file(s) with no review comments`);
   lines.push('');
 
-  // review verdicts (approve/request changes/comment)
-  const verdicts = reviews.filter((r) => r.state !== 'COMMENTED' || r.body);
+  const verdicts = usefulReviews.filter((r) => r.state !== 'COMMENTED' || r.body);
   if (verdicts.length > 0) {
     lines.push('## review verdicts');
     lines.push('');
     for (const r of verdicts) {
-      const who = classifyAuthor(r.user.login);
-      const state = r.state.toLowerCase().replace('_', ' ');
+      const who = classifyAuthor(r.user?.login || 'unknown');
+      const state = String(r.state || '').toLowerCase().replace('_', ' ');
       lines.push(`- **${who}**: ${state}${r.body ? ' — ' + r.body.split('\n')[0].slice(0, 120) : ''}`);
     }
     lines.push('');
   }
 
-  // inline comments grouped by file
   if (inlineComments.length > 0) {
     lines.push('## inline comments');
     lines.push('');
@@ -175,71 +261,69 @@ function formatReviewFile(prMeta, inlineComments, issueComments, reviews, fileGr
       lines.push(`### \`${file}\``);
       lines.push('');
       for (const c of comments) {
-        const who = classifyAuthor(c.user.login);
+        const who = classifyAuthor(c.user?.login || 'unknown');
         const line = c.line || c.original_line || '?';
-        const body = c.body.trim();
-        lines.push(`**${who}** (line ${line}):`);
+        lines.push(`**${who}** (line ${line}, updated ${c.updated_at || c.created_at || 'unknown'}):`);
         lines.push('');
-        // indent the body
-        for (const bl of body.split('\n')) {
-          lines.push(`> ${bl}`);
-        }
+        formatQuotedBody(lines, c.body);
         lines.push('');
       }
     }
   }
 
-  // summary comments (issue-level, usually from bots)
-  const botSummaries = issueComments.filter((c) => BOTS.includes(c.user.login));
+  const botSummaries = usefulIssueComments.filter((c) => isKnownReviewBot(c.user?.login || ''));
   if (botSummaries.length > 0) {
     lines.push('## bot summaries');
     lines.push('');
     for (const c of botSummaries) {
-      const who = classifyAuthor(c.user.login);
-      // truncate long bot summaries to first 80 lines
-      const body = c.body.split('\n').slice(0, 80).join('\n');
-      lines.push(`### ${who}`);
+      const who = classifyAuthor(c.user?.login || 'unknown');
+      const body = String(c.body || '').split('\n').slice(0, 80).join('\n');
+      lines.push(`### ${who} (updated ${c.updated_at || c.created_at || 'unknown'})`);
       lines.push('');
       lines.push(body);
       lines.push('');
     }
   }
 
-  // human comments
-  const humanComments = issueComments.filter((c) => !BOTS.includes(c.user.login) && c.user.login !== 'github-actions[bot]');
+  const humanComments = usefulIssueComments.filter((c) => !isKnownReviewBot(c.user?.login || '') && c.user?.login !== 'github-actions[bot]');
   if (humanComments.length > 0) {
     lines.push('## human comments');
     lines.push('');
     for (const c of humanComments) {
-      const who = classifyAuthor(c.user.login);
+      const who = classifyAuthor(c.user?.login || 'unknown');
       lines.push(`**${who}**:`);
       lines.push('');
-      for (const bl of c.body.trim().split('\n')) {
-        lines.push(`> ${bl}`);
-      }
+      formatQuotedBody(lines, c.body);
       lines.push('');
     }
   }
 
-  // action items — extract actionable lines from inline comments
   lines.push('## action items');
   lines.push('');
   let actionCount = 0;
   for (const c of inlineComments) {
-    const who = classifyAuthor(c.user.login);
+    const who = classifyAuthor(c.user?.login || 'unknown');
     const file = c.path || 'unknown';
     const line = c.line || c.original_line || '?';
-    // first non-empty line of the comment as the action
-    const firstLine = c.body.trim().split('\n').find((l) => l.trim()) || '';
+    const firstLine = String(c.body || '').trim().split('\n').find((l) => l.trim()) || '';
     actionCount++;
     lines.push(`${actionCount}. \`${file}:${line}\` — ${firstLine.slice(0, 150)} (${who})`);
   }
-  if (actionCount === 0) {
-    lines.push('no inline review comments to address.');
+  for (const r of usefulReviews.filter((review) => review.body && isActionableBody(review.body))) {
+    actionCount++;
+    const who = classifyAuthor(r.user?.login || 'unknown');
+    const firstLine = String(r.body || '').trim().split('\n').find((line) => line.trim()) || '';
+    lines.push(`${actionCount}. review summary — ${firstLine.slice(0, 150)} (${who})`);
   }
+  if (actionCount === 0) lines.push('no inline review comments to address.');
   lines.push('');
 
-  // task loop reminder
+  const suppressedNoiseCount = issueComments.length + reviews.length - usefulIssueComments.length - usefulReviews.length;
+  if (suppressedNoiseCount > 0) {
+    lines.push(`suppressed ${suppressedNoiseCount} non-actionable bot/rate-limit review message(s).`);
+    lines.push('');
+  }
+
   lines.push('---');
   lines.push('');
   lines.push('## fixing these — full task loop');
@@ -263,7 +347,7 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) { printHelp(); return; }
 
-  let prNumber = args.prNumber || detectPrNumber();
+  const prNumber = args.prNumber || detectPrNumber();
   if (!prNumber) {
     writeStderr('error: no PR number provided and none found in .task/current.json');
     writeStderr('usage: bun run pr-review -- <pr-number>');
@@ -273,22 +357,33 @@ function main() {
   writeStderr(`→ fetching reviews for PR #${prNumber}...`);
 
   const prMeta = fetchPrMeta(prNumber);
-  const inlineComments = fetchInlineComments(prNumber);
-  const issueComments = fetchIssueComments(prNumber);
   const reviews = fetchReviews(prNumber);
+  const inlineComments = mergeCommentsById([
+    ...fetchInlineComments(prNumber),
+    ...fetchReviewCommentsForReviews(prNumber, reviews),
+  ]);
+  const issueComments = fetchIssueComments(prNumber);
 
+  const suppressedNoiseCount = issueComments.filter(isNoisyBotSummary).length + reviews.filter(isNoisyBotSummary).length;
   writeStderr(`  ${inlineComments.length} inline comments, ${issueComments.length} issue comments, ${reviews.length} reviews`);
+  if (suppressedNoiseCount > 0) writeStderr(`  suppressed ${suppressedNoiseCount} non-actionable bot/rate-limit message(s)`);
 
   const fileGraph = buildFileGraph(inlineComments, prMeta.files || []);
 
   if (args.json) {
     const data = {
       pr: { number: prMeta.number, title: prMeta.title, branch: prMeta.headRefName, base: prMeta.baseRefName },
-      fileGraph: Object.fromEntries(Object.entries(fileGraph).map(([k, v]) => [k, { ...v, authors: [...v.authors] }])),
+      counts: { inlineComments: inlineComments.length, issueComments: issueComments.length, reviews: reviews.length, suppressedNoise: suppressedNoiseCount },
+      fileGraph: Object.fromEntries(Object.entries(fileGraph).map(([key, value]) => [key, { ...value, authors: [...value.authors] }])),
       inlineComments: inlineComments.map((c) => ({
-        file: c.path, line: c.line || c.original_line, author: classifyAuthor(c.user.login), body: c.body,
+        id: c.id, file: c.path, line: c.line || c.original_line, author: classifyAuthor(c.user?.login || 'unknown'), updatedAt: c.updated_at, body: c.body,
       })),
-      reviews: reviews.map((r) => ({ author: classifyAuthor(r.user.login), state: r.state, body: r.body })),
+      issueComments: issueComments.filter((c) => !isNoisyBotSummary(c)).map((c) => ({
+        id: c.id, author: classifyAuthor(c.user?.login || 'unknown'), updatedAt: c.updated_at, body: c.body,
+      })),
+      reviews: reviews.filter((r) => !isNoisyBotSummary(r)).map((r) => ({
+        id: r.id, author: classifyAuthor(r.user?.login || 'unknown'), state: r.state, updatedAt: r.submitted_at, body: r.body,
+      })),
     };
     writeStdout(JSON.stringify(data, null, 2));
     return;
@@ -301,7 +396,6 @@ function main() {
     return;
   }
 
-  // write to .task/reviews/<pr-number>.md
   const task = findTaskMeta();
   const outDir = task ? getTaskReviewsDir(task.root, task.data) : path.join(process.cwd(), '.task', 'reviews');
   fs.mkdirSync(outDir, { recursive: true });
@@ -313,4 +407,16 @@ function main() {
   writeStdout(relPath);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  classifyAuthor,
+  compactGhError,
+  flattenPaginatedJson,
+  formatReviewFile,
+  isKnownReviewBot,
+  isNoisyBotSummary,
+  mergeCommentsById,
+};

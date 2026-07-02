@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/scripts/install.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/workspace/scripts/pr-review.js",
+    "packages/workspace/tests/review-run-state.test.js"
+  ],
+  "updatedAt": "2026-07-02T19:46:27.498Z"
+}

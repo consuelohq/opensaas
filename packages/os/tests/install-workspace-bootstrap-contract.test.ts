@@ -22,6 +22,21 @@ type InstallStateContract = {
   provisionLocalOs: (options?: Record<string, unknown>) => ProvisionResult;
 };
 
+type InstallerProgressStep =
+  | 'dependencies'
+  | 'workspace'
+  | 'security'
+  | 'skills'
+  | 'agents'
+  | 'service'
+  | 'health';
+
+type InstallerUiContract = {
+  INSTALLER_PROGRESS_STEPS: InstallerProgressStep[];
+  createInstallerProgressSteps: (activeStep: InstallerProgressStep | null) => Array<{ label: string; state: string }>;
+  renderInstallerProgress: (activeStep: InstallerProgressStep | null) => void;
+};
+
 const runContract =
   process.env.CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS === '1';
 const contractDescribe = runContract ? describe : describe.skip;
@@ -37,6 +52,25 @@ async function loadInstallStateContract(): Promise<InstallStateContract> {
   }
 
   return module as InstallStateContract;
+}
+
+async function loadInstallerUiContract(): Promise<InstallerUiContract> {
+  const modulePath = pathToFileURL(
+    join(process.cwd(), 'scripts', 'install.ts'),
+  ).href;
+  const module = (await import(modulePath)) as Partial<InstallerUiContract>;
+
+  if (!Array.isArray(module.INSTALLER_PROGRESS_STEPS)) {
+    throw new Error('install contract module is missing export: INSTALLER_PROGRESS_STEPS');
+  }
+  if (typeof module.createInstallerProgressSteps !== 'function') {
+    throw new Error('install contract module is missing export: createInstallerProgressSteps');
+  }
+  if (typeof module.renderInstallerProgress !== 'function') {
+    throw new Error('install contract module is missing export: renderInstallerProgress');
+  }
+
+  return module as InstallerUiContract;
 }
 
 function readJson<T>(filePath: string): T {
@@ -216,7 +250,12 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
   });
 
 
-  it('should show workspace progress and slug workspace names before device authorization', () => {
+  it('should show workspace progress and slug workspace names before device authorization', async () => {
+    const {
+      INSTALLER_PROGRESS_STEPS,
+      createInstallerProgressSteps,
+      renderInstallerProgress,
+    } = await loadInstallerUiContract();
     const installSource = fs.readFileSync(
       join(process.cwd(), 'scripts', 'install.ts'),
       'utf8',
@@ -226,16 +265,43 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'utf8',
     );
 
-    expect(installSource).toContain('const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [');
-    expect(installSource).toContain("'dependencies',");
-    expect(installSource).toContain("'workspace',");
-    expect(installSource).toContain("'security',");
-    expect(installSource).toContain("'skills',");
-    expect(installSource).toContain("return INSTALLER_PROGRESS_STEPS.map((label) => ({ label, state: 'complete' }));");
-    expect(installSource).toContain("renderInstallerProgress('workspace');");
-    expect(installSource).toContain("renderInstallerProgress('security');");
-    expect(installSource).toContain("renderInstallerProgress('skills');");
-    expect(installSource).not.toContain("'artifacts'");
+    expect(INSTALLER_PROGRESS_STEPS).toEqual([
+      'dependencies',
+      'workspace',
+      'security',
+      'skills',
+      'agents',
+      'service',
+      'health',
+    ]);
+    expect(INSTALLER_PROGRESS_STEPS).not.toContain('artifacts');
+    expect(createInstallerProgressSteps('security')).toEqual([
+      { label: 'dependencies', state: 'complete' },
+      { label: 'workspace', state: 'complete' },
+      { label: 'security', state: 'active' },
+      { label: 'skills', state: 'pending' },
+      { label: 'agents', state: 'pending' },
+      { label: 'service', state: 'pending' },
+      { label: 'health', state: 'pending' },
+    ]);
+    expect(createInstallerProgressSteps(null)).toEqual(
+      INSTALLER_PROGRESS_STEPS.map((label) => ({ label, state: 'complete' })),
+    );
+
+    const originalWrite = process.stdout.write;
+    let rendered = '';
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+      rendered += chunk.toString();
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      renderInstallerProgress('workspace');
+    } finally {
+      process.stdout.write = originalWrite;
+    }
+    expect(rendered).toContain('CONSUELO OS');
+    expect(rendered).toContain('workspace');
+
     expect(installSource).toContain("message: 'enter workspace name'");
     expect(installSource).not.toContain('spaces become hyphens');
     expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
@@ -244,9 +310,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       installSource.indexOf('const workspaceHost = workspaceHostFromSlug(workspaceSlug);'),
     );
     expect(cliUiSource).toContain("state?: 'pending' | 'active' | 'complete' | 'failed'");
-    expect(cliUiSource).toContain("if (step.state === 'active') return chalk.blue('◆');");
-    expect(cliUiSource).toContain("return chalk.green('●');");
-    expect(cliUiSource).toContain("One workspace. Any agent.");
+    expect(cliUiSource).toContain('One workspace. Any agent.');
   });
 
 

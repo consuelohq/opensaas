@@ -69,7 +69,9 @@ describe('Consuelo home config boundaries', () => {
       slug: 'test-workspace',
       host: 'test-workspace.consuelohq.com',
     });
-    expect(Object.keys(workspaceConfig)).not.toEqual(expect.arrayContaining(['security', 'tunnels', 'caddy', 'db']));
+    expect(Object.keys(workspaceConfig)).toEqual(
+      expect.not.arrayContaining(['security', 'tunnels', 'caddy', 'db']),
+    );
   });
 
   it('loads sync-safe workspace YAML and resolves project repositories from it', () => {

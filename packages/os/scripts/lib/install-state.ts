@@ -1509,9 +1509,20 @@ export function provisionLocalOs(
   const nodeId = workspaceBootstrap?.connectorId ?? 'local';
   const nodeName = os.hostname() || 'local';
 
-  if (!dryRun) {
-    fs.mkdirSync(layout.workspaceSharedDir(workspaceIdentity.workspaceId), { recursive: true });
-    fs.mkdirSync(layout.nodeWorkspaceStateDir(workspaceIdentity.workspaceId), { recursive: true });
+  for (const dir of [
+    layout.workspaceSharedDir(workspaceIdentity.workspaceId),
+    layout.nodeWorkspaceStateDir(workspaceIdentity.workspaceId),
+  ]) {
+    const exists = fs.existsSync(dir);
+    actions.push({
+      type: 'create_dir',
+      path: dir,
+      status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: exists ? 'directory exists' : 'directory created',
+    });
+    if (!dryRun) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
   }
 
   writeYamlConfigIfMissing({
