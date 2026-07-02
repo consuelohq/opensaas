@@ -11,6 +11,7 @@ import {
   readCoreToolManifest,
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
+import { buildProcessTelemetryPacket, renderProcessTelemetryPacket, sampleAndStoreProcessTelemetry } from './lib/process-telemetry';
 import {
   assessDangerousMaterial,
   dangerousMaterialError,
@@ -1157,6 +1158,29 @@ async function main(): Promise<void> {
     return;
   }
 
+
+  if (command === 'health') {
+    const [subcommand = 'process', ...healthArgs] = args;
+    if (subcommand !== 'process') {
+      writeStderr(`unknown health subcommand: ${subcommand}`);
+      process.exitCode = 1;
+      return;
+    }
+    const json = hasFlag(healthArgs, '--json');
+    const once = healthArgs[0] === 'once';
+    const since = readFlagValue(healthArgs, '--since') ?? '1h';
+    const limitRaw = readFlagValue(healthArgs, '--limit');
+    const limit = limitRaw ? Number(limitRaw) : undefined;
+    if (once) {
+      const result = sampleAndStoreProcessTelemetry({ includeAll: hasFlag(healthArgs, '--include-all') });
+      writeStdout(`${safeJson({ ok: true, stored: result.stored, sampled: result.samples.length })}\n`);
+      return;
+    }
+    const packet = buildProcessTelemetryPacket({ since, limit });
+    writeStdout(json ? `${safeJson(packet)}\n` : renderProcessTelemetryPacket(packet));
+    return;
+  }
+
   if (command === 'call') {
     try {
       const result = await executeCall(parseCallInput(rawInput));
@@ -1181,6 +1205,8 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|office|uncategorized] [--base-version <id>] [--force-publish] [--json]',
       '  bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>] [--json]',
       '  bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>] [--ttl-minutes 45] [--json]',
+      '  bun ./scripts/os.ts health process [--since 1h] [--limit 30] [--json]',
+      '  bun ./scripts/process-health.ts monitor [--interval-seconds 10] [--retention-days 7] [--json]',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),

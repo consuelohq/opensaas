@@ -20,6 +20,7 @@
     "artifacts": "bun ./scripts/artifacts.ts",
     "doctor:errors": "bun ./scripts/doctor-errors.ts",
     "doctor:analytics": "bun ./scripts/doctor-analytics.ts",
+    "doctor:process": "bun ./scripts/process-health.ts",
     "task:start": "bun ./scripts/task-start.js",
     "task:pr": "bun ./scripts/task-pr.js",
     "task:prs": "bun ./scripts/task-prs.js",
