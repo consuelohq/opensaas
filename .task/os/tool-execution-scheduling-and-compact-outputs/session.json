@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_81c8cada91a8",
+  "tmuxSession": "opensaas-os-tool-execution-scheduling-and-compact-outputs-81c8cada",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/tool-execution-scheduling-and-compact-outputs",
+  "branch": "task/os/tool-execution-scheduling-and-compact-outputs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-tool-execution-scheduling-and-compact-outputs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-tool-execution-scheduling-and-compact-outputs",
+  "prNumber": 1323,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1323",
+  "createdAt": "2026-07-01T16:58:50.940Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-tool-execution-scheduling-and-compact-outputs/.task/os/tool-execution-scheduling-and-compact-outputs/session.json"
+}
