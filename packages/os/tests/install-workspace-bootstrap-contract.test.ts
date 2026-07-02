@@ -63,7 +63,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     });
 
     const config = readJson<Record<string, unknown>>(result.configPath);
-    const generatedAuthPath = join(home, 'security', 'generated', 'auth.json');
+    const generatedAuthPath = join(home, 'node', 'security', 'generated', 'auth.json');
     const auth = readJson<Record<string, unknown>>(generatedAuthPath);
 
     expect(config.workspace).toMatchObject({
@@ -114,8 +114,8 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     });
 
     const config = fs.readFileSync(result.configPath, 'utf8');
-    const auth = fs.readFileSync(join(home, 'security', 'generated', 'auth.json'), 'utf8');
-    const caddyfile = fs.readFileSync(join(home, 'security', 'generated', 'Caddyfile'), 'utf8');
+    const auth = fs.readFileSync(join(home, 'node', 'security', 'generated', 'auth.json'), 'utf8');
+    const caddyfile = fs.readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');
 
     for (const content of [config, auth, caddyfile]) {
       expect(content).not.toContain('installer_bootstrap_token_fixture');
@@ -142,6 +142,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
     const plistPath = join(
       home,
+      'node',
       'security',
       'generated',
       'com.consuelo.os.cloudflared.connector-123.plist',
@@ -165,7 +166,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       ]),
     );
     expect(
-      fs.existsSync(join(home, 'security', 'generated', 'com.consuelo.os.cloudflared.plist')),
+      fs.existsSync(join(home, 'node', 'security', 'generated', 'com.consuelo.os.cloudflared.plist')),
     ).toBe(false);
   });
 
@@ -185,7 +186,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
 
     const generatedFiles = fs
-      .readdirSync(join(home, 'security', 'generated'))
+      .readdirSync(join(home, 'node', 'security', 'generated'))
       .filter((fileName) => fileName.startsWith('com.consuelo.os.cloudflared'));
 
     expect(generatedFiles).toEqual([
@@ -225,10 +226,15 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'utf8',
     );
 
-    expect(installSource).toContain("{ label: 'dependencies', state: 'complete' }");
-    expect(installSource).toContain("{ label: 'workspace', state: 'complete' }");
-    expect(installSource).toContain("{ label: 'security', state: 'complete' }");
-    expect(installSource).toContain("{ label: 'skills', state: 'active' }");
+    expect(installSource).toContain('const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [');
+    expect(installSource).toContain("'dependencies',");
+    expect(installSource).toContain("'workspace',");
+    expect(installSource).toContain("'security',");
+    expect(installSource).toContain("'skills',");
+    expect(installSource).toContain("return INSTALLER_PROGRESS_STEPS.map((label) => ({ label, state: 'complete' }));");
+    expect(installSource).toContain("renderInstallerProgress('workspace');");
+    expect(installSource).toContain("renderInstallerProgress('security');");
+    expect(installSource).toContain("renderInstallerProgress('skills');");
     expect(installSource).not.toContain("'artifacts'");
     expect(installSource).toContain("message: 'enter workspace name'");
     expect(installSource).not.toContain('spaces become hyphens');
