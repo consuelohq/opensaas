@@ -58,10 +58,10 @@ describe('local OS install state', () => {
     `));
 
     for (const expectedPath of [
-      join('security', 'generated'),
-      join('security', 'overrides'),
-      join('security', 'generated', 'auth.json'),
-      join('security', 'generated', 'Caddyfile'),
+      join('node', 'security', 'generated'),
+      join('node', 'security', 'overrides'),
+      join('node', 'security', 'generated', 'auth.json'),
+      join('node', 'caddy', 'Caddyfile'),
     ]) {
       expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(expectedPath) && action.status === 'preserved')).toBe(true);
     }
@@ -91,12 +91,27 @@ describe('local OS install state', () => {
       'steering',
       'bin',
       'tmp',
+      'runtime',
+      'node',
+      join('node', 'keys'),
+      join('node', 'security'),
+      join('node', 'tunnels'),
+      join('node', 'caddy'),
+      join('node', 'db'),
+      'workspaces',
     ]) {
       expect(existsSync(join(tempHome, dir))).toBe(true);
     }
-    for (const file of ['package.json', 'bun.lock', 'config.json', 'consuelo.db']) {
+    for (const file of ['package.json', 'bun.lock', 'config.json', 'consuelo.yaml', join('node', 'node.yaml')]) {
       expect(existsSync(join(tempHome, file))).toBe(true);
     }
+    expect(existsSync(join(tempHome, 'consuelo.db'))).toBe(false);
+    expect(existsSync(join(tempHome, 'node', 'db', 'consuelo.db'))).toBe(true);
+    expect(existsSync(join(tempHome, 'security', 'generated', 'auth.json'))).toBe(false);
+    expect(existsSync(join(tempHome, 'security', 'generated', 'Caddyfile'))).toBe(false);
+    expect(existsSync(join(tempHome, 'node', 'security', 'generated', 'auth.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'caddy', 'Caddyfile'))).toBe(true);
+    expect(existsSync(join(tempHome, 'workspaces', 'local-consuelo-os', 'shared', 'workspace.yaml'))).toBe(true);
     expect(existsSync(join(tempHome, 'source'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'tools'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'skills'))).toBe(false);
@@ -112,8 +127,10 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
-    expect(existsSync(join(tempHome, 'runtime'))).toBe(false);
-    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    const workspaceYaml = readFileSync(join(tempHome, 'workspaces', 'local-consuelo-os', 'shared', 'workspace.yaml'), 'utf8');
+    expect(workspaceYaml).toContain('workspace:');
+    expect(workspaceYaml).toContain('projects:');
+    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
     expect(chatgptMcp).toMatchObject({
       auth: 'bearer',
       url: 'https://local.consuelohq.com/mcp',

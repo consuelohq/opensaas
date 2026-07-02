@@ -1,8 +1,8 @@
 import { Database } from 'bun:sqlite';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 
+import { resolveConsueloHomeLayout } from './consuelo-home';
 import { redactJson, redactText } from './redaction';
 import type { CallOutput } from './types';
 
@@ -50,31 +50,25 @@ export type SteeringGuardLookupInput = {
   nowMs: number;
 };
 
-function expandHome(value: string): string {
-  if (value === '~') return os.homedir();
-  if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
-  return value;
-}
-
 export function getConsueloHome(): string {
-  return path.resolve(expandHome(process.env.CONSUELO_HOME ?? '~/.consuelo/os'));
+  return resolveConsueloHomeLayout().home;
 }
 
 export function getRuntimePaths(): RuntimePaths {
-  const home = getConsueloHome();
+  const layout = resolveConsueloHomeLayout();
   return {
-    home,
-    dbPath: path.join(home, 'consuelo.db'),
-    artifactsDir: path.join(home, 'artifacts'),
-    logsDir: path.join(home, 'logs'),
-    runsDir: path.join(home, 'runs'),
-    tmpDir: path.join(home, 'tmp'),
+    home: layout.home,
+    dbPath: layout.nodeDbPath,
+    artifactsDir: path.join(layout.nodeDir, 'artifacts'),
+    logsDir: layout.nodeLogsDir,
+    runsDir: layout.nodeRunsDir,
+    tmpDir: layout.nodeTmpDir,
   };
 }
 
 export function ensureRuntimePaths(): RuntimePaths {
   const paths = getRuntimePaths();
-  for (const dir of [paths.home, paths.artifactsDir, paths.logsDir, paths.runsDir, paths.tmpDir]) {
+  for (const dir of [paths.home, path.dirname(paths.dbPath), paths.artifactsDir, paths.logsDir, paths.runsDir, paths.tmpDir]) {
     fs.mkdirSync(dir, { recursive: true });
   }
   return paths;

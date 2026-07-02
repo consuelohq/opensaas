@@ -30,7 +30,7 @@ function runOsSnippet<TOutput>(home: string, code: string): TOutput {
 function readExecutions(home: string): Array<Record<string, unknown>> {
   const result = spawnSync('sqlite3', [
     '-json',
-    path.join(home, 'consuelo.db'),
+    path.join(home, 'node', 'db', 'consuelo.db'),
     'SELECT name, status, input_json, output_json, duration_ms FROM skill_executions ORDER BY started_at',
   ], { encoding: 'utf8' });
   expect(result.status).toBe(0);
@@ -64,7 +64,7 @@ describe('OS steering execution recording', () => {
       const first = getSteering();
       fs.writeFileSync(path.join(process.env.CONSUELO_HOME, 'steering', 'system_prompt.md'), '# Local system prompt\\n\\nupdated system body\\n');
       const second = getSteering();
-      console.log(JSON.stringify({ first, second }));
+      process.stdout.write(JSON.stringify({ first, second }));
     `);
 
     expect(first).toContain('# system_prompt.md');
@@ -82,7 +82,7 @@ describe('OS steering execution recording', () => {
     const { steering } = runOsSnippet<{ steering: string }>(home, `
       const { executeGetSteering } = await import('./scripts/os.ts');
       const steering = executeGetSteering(() => 'os steering payload '.repeat(40));
-      console.log(JSON.stringify({ steering }));
+      process.stdout.write(JSON.stringify({ steering }));
     `);
 
     expect(steering).toContain('os steering payload');
@@ -118,7 +118,7 @@ describe('OS steering execution recording', () => {
       const second = executeGetSteering(buildSteering, options);
       const third = executeGetSteering(buildSteering, options);
       const fourth = executeGetSteering(buildSteering, options);
-      console.log(JSON.stringify({ first, second, third, fourth, builds }));
+      process.stdout.write(JSON.stringify({ first, second, third, fourth, builds }));
     `);
 
     expect(result.first).toBe('os steering payload');
@@ -159,7 +159,7 @@ describe('OS steering execution recording', () => {
       const second = executeRefreshSteering('retrying', buildSteering, options);
       now += 301_000;
       const third = executeRefreshSteering('later context refresh', buildSteering, options);
-      console.log(JSON.stringify({ noReason, first, second, third, builds }));
+      process.stdout.write(JSON.stringify({ noReason, first, second, third, builds }));
     `);
 
     expect(result.noReason).toContain('REFRESH_STEERING_REASON_REQUIRED');
