@@ -74,5 +74,9 @@ describe('OS raw steering routing', () => {
     expect(output.permission).toBe('guidance');
     expect(output.result?.steering).toContain('# Consuelo OS raw/operator steering');
     expect(output.result?.steering).toContain('# canonical full tool manifest');
+    expect(output.result?.steering).toContain('"codeFile"');
+    expect(output.result?.steering).toContain('"codeFileSource"');
+    expect(output.result?.steering).toContain('from pathlib import Path');
+    expect(output.result?.steering).toContain('signatureAlgorithm');
   });
 });

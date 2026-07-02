@@ -55,6 +55,51 @@ def _read_file(path: Path) -> str:
     return path.read_text(encoding='utf-8')
 
 
+def _repo_root() -> Path:
+    return APP_DIR.parent.parent.resolve()
+
+
+def _read_manifest_code_file_source(code_file: Any) -> str | None:
+    if not isinstance(code_file, str):
+        return None
+    if not code_file.startswith('scripts/code-call-examples/'):
+        return None
+    if not code_file.endswith(('.ts', '.py')):
+        return None
+
+    root = _repo_root()
+    candidate = (root / code_file).resolve()
+    if candidate != root and root not in candidate.parents:
+        return None
+    if not candidate.exists() or not candidate.is_file():
+        return None
+    return candidate.read_text(encoding='utf-8')
+
+
+def _expand_manifest_code_file_examples(value: Any) -> Any:
+    if isinstance(value, list):
+        return [_expand_manifest_code_file_examples(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+
+    expanded = {key: _expand_manifest_code_file_examples(item) for key, item in value.items()}
+    source = _read_manifest_code_file_source(expanded.get('codeFile'))
+    if source and 'codeFileSource' not in expanded:
+        expanded['codeFileSource'] = source
+    return expanded
+
+
+def _read_manifest_for_steering(path: Path) -> str:
+    raw = _read_file(path)
+    if not raw:
+        return ''
+    try:
+        expanded = _expand_manifest_code_file_examples(json.loads(raw))
+    except json.JSONDecodeError:
+        return raw
+    return json.dumps(expanded, indent=2)
+
+
 def _safe_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, default=str)
 
@@ -119,7 +164,7 @@ def _build_steering() -> str:
         if content:
             sections.extend(['', f'# {file_name}', '', content])
 
-    manifest = _read_file(MANIFEST_FILE)
+    manifest = _read_manifest_for_steering(MANIFEST_FILE)
     if manifest:
         sections.extend([
             '',

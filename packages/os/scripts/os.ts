@@ -53,6 +53,52 @@ function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 
+function repoRoot(): string {
+  return path.resolve(getPackageRoot(), '..', '..');
+}
+
+function readManifestCodeFileSource(codeFile: unknown): string | undefined {
+  if (typeof codeFile !== 'string') return undefined;
+  if (!codeFile.startsWith('scripts/code-call-examples/')) return undefined;
+  if (!codeFile.endsWith('.ts') && !codeFile.endsWith('.py')) return undefined;
+
+  const root = repoRoot();
+  const candidate = path.resolve(root, codeFile);
+  if (candidate !== root && !candidate.startsWith(`${root}${path.sep}`)) return undefined;
+  if (!fs.existsSync(candidate) || !fs.statSync(candidate).isFile()) return undefined;
+  return fs.readFileSync(candidate, 'utf8');
+}
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function expandManifestCodeFileExamples(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map((item) => expandManifestCodeFileExamples(item));
+  if (!isJsonObject(value)) return value;
+
+  const expanded: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value)) {
+    expanded[key] = expandManifestCodeFileExamples(item);
+  }
+
+  const source = readManifestCodeFileSource(expanded.codeFile);
+  if (source && expanded.codeFileSource === undefined) expanded.codeFileSource = source;
+  return expanded;
+}
+
+function renderManifestForSteering(value: unknown): string {
+  return safeJson(expandManifestCodeFileExamples(value));
+}
+
+function renderManifestTextForSteering(rawManifest: string): string {
+  try {
+    return renderManifestForSteering(JSON.parse(rawManifest));
+  } catch {
+    return rawManifest;
+  }
+}
+
 const PRIMARY_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
 const LEGACY_STEERING_FILE = 'steering.md';
 
@@ -533,7 +579,7 @@ export function getSteering(): string {
     '# raw core tool manifest',
     '',
     '```json',
-    safeJson(readCoreToolManifest()),
+    renderManifestForSteering(readCoreToolManifest()),
     '```',
   );
   return sections.join('\n');
@@ -865,7 +911,7 @@ export function getRawSteering(): string {
       '# canonical full tool manifest',
       '',
       '```json',
-      manifest,
+      renderManifestTextForSteering(manifest),
       '```',
     );
   return sections.join('\n');

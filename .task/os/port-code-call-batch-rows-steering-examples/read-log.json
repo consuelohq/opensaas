@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/port-code-call-batch-rows-steering-examples/workpad.md",
+    "packages/os/scripts/os.ts",
+    "packages/os/server.py",
+    "packages/os/tests/code-call.test.ts",
+    "packages/os/tests/os_server_steering_test.py"
+  ],
+  "updatedAt": "2026-06-18T06:49:12.724Z"
+}

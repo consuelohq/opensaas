@@ -77,6 +77,20 @@ describe('OS steering execution recording', () => {
     expect(second).not.toContain('local system body');
   });
 
+  it('expands codeFile examples in the bundled core manifest steering', () => {
+    const home = makeHome();
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      const steering = getSteering();
+      process.stdout.write(JSON.stringify({ steering }));
+    `);
+
+    expect(steering).toContain('"codeFile"');
+    expect(steering).toContain('"codeFileSource"');
+    expect(steering).toContain('from pathlib import Path');
+    expect(steering).toContain('signatureAlgorithm');
+  });
+
   it('records get-steering with metadata and full steering body', () => {
     const home = makeHome();
     const { steering } = runOsSnippet<{ steering: string }>(home, `

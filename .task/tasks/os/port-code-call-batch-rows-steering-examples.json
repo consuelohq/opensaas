@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/port-code-call-batch-rows-steering-examples",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1137,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1137",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1137",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1137/port-code-call-batch-rows-steering-examples",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1137",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1137/port-code-call-batch-rows-steering-examples",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-port-code-call-batch-rows-steering-examples",
+  "taskSession": "tsk_b3c2b19f70cb",
+  "tmuxSession": "opensaas-os-port-code-call-batch-rows-steering-examples-b3c2b19f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-port-code-call-batch-rows-steering-examples/.task/os/port-code-call-batch-rows-steering-examples/session.json",
+  "createdAt": "2026-06-18T06:42:32.420Z"
+}

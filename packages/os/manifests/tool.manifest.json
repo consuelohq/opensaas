@@ -1610,7 +1610,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "codemode",
-      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. This is the preferred repo-scoped execution tool when no narrower typed validation or inspection tool exists. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -1618,7 +1618,7 @@
           "code",
           "call"
         ],
-        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. This is the preferred repo-scoped execution tool when no narrower typed validation or inspection tool exists. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
         "category": "codemode",
         "underlying": "os code.call",
         "capabilities": {
