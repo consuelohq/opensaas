@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
+import { applyManifestOverlay, readManifestOverlay, resolveOverlayHome } from './lib/manifest-overlay';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 
 const require = createRequire(import.meta.url);
@@ -564,7 +565,10 @@ function readCanonicalManifest(): CanonicalToolManifest {
     throw new Error(`${manifestPath}: expected generated tool manifest with tools array`);
   }
 
-  return parsed as CanonicalToolManifest;
+  const manifest = parsed as CanonicalToolManifest;
+  const home = resolveOverlayHome();
+  if (!fs.existsSync(path.join(home, 'config.json'))) return manifest;
+  return applyManifestOverlay(manifest, readManifestOverlay(home));
 }
 
 function stringField(value: unknown): string | undefined {

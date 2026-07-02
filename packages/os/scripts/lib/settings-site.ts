@@ -1,4 +1,9 @@
-import { buildSettingsSnapshot, type SettingsSnapshot } from './settings-snapshot';
+import {
+  buildSettingsSnapshot,
+  type SettingsManifestItem,
+  type SettingsRunBook,
+  type SettingsSnapshot,
+} from './settings-snapshot';
 
 export type SettingsSectionId =
   | 'configuration'
@@ -42,7 +47,7 @@ function renderConfigurationSection(snapshot: SettingsSnapshot): string {
     <section class="panel-section" id="configuration" aria-labelledby="configuration-title">
       <header class="panel-header">
         <h2 id="configuration-title">Configuration</h2>
-        <p>Workspace-scoped OS settings snapshot. Toggles and signed writes ship in a later PR.</p>
+        <p>Workspace-scoped OS settings with manifest overlay at <code>${escapeHtml(snapshot.overlay.path)}</code>.</p>
       </header>
       <dl class="detail-grid">
         <div><dt>Mode</dt><dd>${escapeHtml(workspace.mode ?? 'unknown')}</dd></div>
@@ -52,10 +57,27 @@ function renderConfigurationSection(snapshot: SettingsSnapshot): string {
         <div><dt>Transport</dt><dd>${escapeHtml(workspace.connectorTransport ?? 'not configured')}</dd></div>
         <div><dt>MCP URL</dt><dd><code>${escapeHtml(workspace.mcpUrl ?? 'not configured')}</code></dd></div>
         <div><dt>Generated</dt><dd><code>${escapeHtml(snapshot.generatedAt)}</code></dd></div>
+        <div><dt>Overlay updated</dt><dd><code>${escapeHtml(snapshot.overlay.updatedAt ?? 'never')}</code></dd></div>
         <div><dt>Preview source</dt><dd id="preview-source">embedded snapshot</dd></div>
+        <div><dt>Toggle writes</dt><dd id="toggle-status" class="muted">Signed POST to /gateway/settings/overlay when hosted.</dd></div>
       </dl>
     </section>
   `;
+}
+
+function renderToggleRow(kind: 'tool' | 'skill' | 'workflow', name: string, enabled: boolean, category = ''): string {
+  return `
+    <tr>
+      <td><label><input type="checkbox" class="settings-toggle" data-kind="${escapeHtml(kind)}" data-name="${escapeHtml(name)}" ${enabled ? 'checked' : ''} /> ${escapeHtml(name)}</label></td>
+      <td>${escapeHtml(kind)}</td>
+      <td>${enabled ? '<span class="status-pill status-connected">enabled</span>' : '<span class="status-pill status-muted">disabled</span>'}</td>
+      <td>${category ? `<code>${escapeHtml(category)}</code>` : '<span class="muted">—</span>'}</td>
+    </tr>`;
+}
+
+function renderManifestItemRows(items: SettingsManifestItem[]): string {
+  if (items.length === 0) return '<tr><td colspan="4" class="empty">No manifest entries found.</td></tr>';
+  return items.map((item) => renderToggleRow(item.kind, item.name, item.enabled, item.category)).join('');
 }
 
 function renderConnectionsSection(snapshot: SettingsSnapshot): string {
@@ -113,14 +135,20 @@ function renderToolsSection(snapshot: SettingsSnapshot): string {
     <section class="panel-section" id="tools" aria-labelledby="tools-title">
       <header class="panel-header">
         <h2 id="tools-title">Tools</h2>
-        <p>Manifest inventory for facade tools exposed through Consuelo OS.</p>
+        <p>Enable or disable facade tools via <code>manifest.overlay.json</code>. Disabled tools disappear from MCP, steering, and search.</p>
       </header>
       <dl class="detail-grid">
-        <div><dt>Total tools</dt><dd>${manifest.totalTools}</dd></div>
+        <div><dt>Enabled tools</dt><dd>${snapshot.tools.filter((tool) => tool.enabled).length}</dd></div>
+        <div><dt>Disabled tools</dt><dd>${snapshot.overlay.disabledTools.length}</dd></div>
         <div><dt>Core tools</dt><dd>${manifest.coreTools}</dd></div>
-        <div><dt>Manifest skill entries</dt><dd>${manifest.skillEntries}</dd></div>
+        <div><dt>CLI fallback</dt><dd><code>bun ./scripts/os.ts settings disable-tool &lt;name&gt;</code></dd></div>
       </dl>
-      <p class="muted">Per-tool enable/disable controls will read from <code>manifest.overlay.json</code> in a later PR.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Category</th></tr></thead>
+          <tbody>${renderManifestItemRows(snapshot.tools)}</tbody>
+        </table>
+      </div>
     </section>
   `;
 }
@@ -135,37 +163,47 @@ function renderSkillsSection(snapshot: SettingsSnapshot): string {
     <section class="panel-section" id="skills" aria-labelledby="skills-title">
       <header class="panel-header">
         <h2 id="skills-title">Skills</h2>
-        <p>Bundled OS skills and install-time selections.</p>
+        <p>OS skills exposed through MCP. Disable a skill to remove it from tools/list and steering.</p>
       </header>
       <dl class="detail-grid">
-        <div><dt>Bundled skills</dt><dd>${snapshot.manifest.bundledSkills}</dd></div>
+        <div><dt>Enabled skills</dt><dd>${snapshot.skills.filter((skill) => skill.enabled).length}</dd></div>
+        <div><dt>Disabled skills</dt><dd>${snapshot.overlay.disabledSkills.length}</dd></div>
         <div><dt>Selected at install</dt><dd>${selectedMarkup}</dd></div>
+        <div><dt>CLI fallback</dt><dd><code>bun ./scripts/os.ts settings disable-skill &lt;name&gt;</code></dd></div>
       </dl>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Category</th></tr></thead>
+          <tbody>${renderManifestItemRows(snapshot.skills)}</tbody>
+        </table>
+      </div>
     </section>
   `;
 }
 
-function renderRunBooksSection(snapshot: SettingsSnapshot): string {
-  const rows = snapshot.runBooks.length > 0
-    ? snapshot.runBooks.map((runBook) => `
-      <tr>
-        <td>${escapeHtml(runBook.id)}</td>
-        <td><code>${escapeHtml(runBook.aliases.join(', ') || '—')}</code></td>
-        <td>${runBook.roleCount}</td>
-        <td>${runBook.toolCount}</td>
-      </tr>`).join('')
-    : '<tr><td colspan="4" class="empty">No workflow bundles found.</td></tr>';
+function renderRunBookRows(runBooks: SettingsRunBook[]): string {
+  if (runBooks.length === 0) return '<tr><td colspan="5" class="empty">No workflow bundles found.</td></tr>';
+  return runBooks.map((runBook) => `
+    <tr>
+      <td><label><input type="checkbox" class="settings-toggle" data-kind="workflow" data-name="${escapeHtml(runBook.id)}" ${runBook.enabled ? 'checked' : ''} /> ${escapeHtml(runBook.id)}</label></td>
+      <td><code>${escapeHtml(runBook.aliases.join(', ') || '—')}</code></td>
+      <td>${runBook.enabled ? '<span class="status-pill status-connected">enabled</span>' : '<span class="status-pill status-muted">disabled</span>'}</td>
+      <td>${runBook.roleCount}</td>
+      <td>${runBook.toolCount}</td>
+    </tr>`).join('');
+}
 
+function renderRunBooksSection(snapshot: SettingsSnapshot): string {
   return `
     <section class="panel-section" id="run-books" aria-labelledby="run-books-title">
       <header class="panel-header">
         <h2 id="run-books-title">Run Books</h2>
-        <p>Workflow bundles from <code>workflow-bundles.json</code>. Runtime hooks still live under <code>hooks/</code>.</p>
+        <p>Workflow bundles from <code>workflow-bundles.json</code>. Overlay disables are recorded now; hook routing respects them in a follow-up.</p>
       </header>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Workflow</th><th>Aliases</th><th>Roles</th><th>Tools</th></tr></thead>
-          <tbody>${rows}</tbody>
+          <thead><tr><th>Workflow</th><th>Aliases</th><th>Status</th><th>Roles</th><th>Tools</th></tr></thead>
+          <tbody>${renderRunBookRows(snapshot.runBooks)}</tbody>
         </table>
       </div>
     </section>
@@ -291,6 +329,8 @@ function settingsStyles(): string {
       font-family: var(--site-font-mono);
       font-size: 12px;
     }
+    .settings-toggle { margin-right: 8px; }
+    label { cursor: pointer; }
     @media (max-width: 900px) {
       .shell { grid-template-columns: 1fr; }
       .sidebar { border-right: 0; border-bottom: 1px solid var(--site-color-line); }
@@ -317,12 +357,40 @@ function embeddedSnapshotScript(snapshot: SettingsSnapshot): string {
         if (!response.ok) throw new Error('gateway settings snapshot returned ' + response.status);
         const payload = await response.json();
         if (!payload || typeof payload !== 'object') throw new Error('invalid gateway settings snapshot');
-        window.__CONSUELO_SETTINGS__ = payload;
+        window.__CONSUELO_SETTINGS__ = payload.snapshot ?? payload;
         if (previewSource) previewSource.textContent = 'hosted gateway snapshot';
       } catch {
         if (previewSource) previewSource.textContent = 'embedded snapshot';
       }
     }
+    async function postOverlayToggle(kind, name, enabled) {
+      const status = document.getElementById('toggle-status');
+      try {
+        const response = await fetch('/gateway/settings/overlay', {
+          method: 'POST',
+          headers: { accept: 'application/json', 'content-type': 'application/json' },
+          body: JSON.stringify({ kind, name, enabled }),
+        });
+        if (!response.ok) throw new Error('gateway settings overlay returned ' + response.status);
+        const payload = await response.json();
+        if (!payload || typeof payload !== 'object' || payload.ok === false) throw new Error('overlay patch failed');
+        window.__CONSUELO_SETTINGS__ = payload.snapshot ?? payload;
+        if (status) status.textContent = 'Overlay updated for ' + kind + ' ' + name + '. Reload to refresh tables.';
+        window.location.reload();
+      } catch {
+        if (status) status.textContent = 'Toggle requires hosted gateway auth or CLI: bun ./scripts/os.ts settings ' + (enabled ? 'enable' : 'disable') + '-' + kind + ' ' + name;
+      }
+    }
+    document.querySelectorAll('.settings-toggle').forEach((input) => {
+      input.addEventListener('change', (event) => {
+        const target = event.currentTarget;
+        if (!(target instanceof HTMLInputElement)) return;
+        const kind = target.dataset.kind;
+        const name = target.dataset.name;
+        if (!kind || !name) return;
+        void postOverlayToggle(kind, name, target.checked);
+      });
+    });
     hydrateSettingsFromGateway();
   `;
 }
@@ -341,7 +409,7 @@ export function renderSettingsSite(snapshot: SettingsSnapshot): string {
     <aside class="sidebar" aria-label="Settings navigation">
       <div class="identity">Consuelo OS</div>
       ${renderNav()}
-      <p class="muted">Read-only shell. Signed toggles ship in PR 2.</p>
+      <p class="muted">Manifest overlay toggles write through signed /gateway/settings/overlay when hosted.</p>
     </aside>
     <main class="content">
       <header class="hero">

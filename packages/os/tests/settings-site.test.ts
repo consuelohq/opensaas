@@ -29,6 +29,10 @@ describe('settings site', () => {
     expect(html).toContain('"version":1');
     expect(html).toContain('"cloudConnectors"');
     expect(html).toContain('"runBooks"');
+    expect(html).toContain('"overlay"');
+    expect(html).toContain('settings-toggle');
+    expect(html).toContain('/gateway/settings/overlay');
+    expect(html).toContain('manifest.overlay.json');
   });
 
   it('marks ChatGPT connected when chatgpt-mcp.json exists', () => {
