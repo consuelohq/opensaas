@@ -216,12 +216,12 @@ async function waitForDeploy(service, commitPrefix, timeoutMs) {
 
     if (current.status === 'SUCCESS') {
       const elapsed = Math.round((Date.now() - start) / 1000);
-      writeStdout(`\ndeploy succeeded in ${elapsed}s`);
+      printJson({ ok: true, kind: 'deploy', status: 'completed', conclusion: 'success', commit: current.commit, waitedSeconds: elapsed, summary: `deploy succeeded in ${elapsed}s` });
       return;
     }
     if (current.status === 'FAILED' || current.status === 'CRASHED') {
       const elapsed = Math.round((Date.now() - start) / 1000);
-      writeStderr(`\ndeploy ${current.status.toLowerCase()} after ${elapsed}s`);
+      printJson({ ok: false, kind: 'deploy', status: 'failed', conclusion: current.status.toLowerCase(), commit: current.commit, waitedSeconds: elapsed, summary: `deploy ${current.status.toLowerCase()} after ${elapsed}s` });
       process.exit(1);
     }
     if (current.status === 'REMOVED') {
@@ -230,22 +230,99 @@ async function waitForDeploy(service, commitPrefix, timeoutMs) {
     }
 
     const elapsed = Math.round((Date.now() - start) / 1000);
-    process.stdout.write(`\r  ${current.status.toLowerCase()}... ${elapsed}s elapsed`);
+    // Quiet wait: progress stays out of chat-visible stdout.
   }
 
-  writeStderr('\ntimeout: deploy did not complete within 30m');
+  printJson({ ok: false, kind: 'deploy', status: 'timed_out', summary: 'timeout: deploy did not complete within 30m' });
   process.exit(1);
 }
 
-async function timedSleep(seconds) {
-  writeStdout(`sleeping ${seconds}s...`);
-  const end = Date.now() + seconds * 1000;
-  while (Date.now() < end) {
-    process.stdout.write(`\r  ${Math.round((end - Date.now()) / 1000)}s remaining   `);
-    await sleep(1000);
+
+function getPrChecks(prNumber) {
+  try {
+    const pr = Number(prNumber);
+    if (!Number.isInteger(pr) || pr <= 0) throw new Error(`invalid PR number: ${prNumber}`);
+    const raw = execSync(`gh pr checks ${pr} --json name,state,conclusion,bucket,link 2>&1`, { encoding: 'utf8', timeout: 20000 });
+    return JSON.parse(raw).map((check) => ({
+      name: check.name || '',
+      state: check.state || '',
+      conclusion: check.conclusion || '',
+      bucket: check.bucket || '',
+      link: check.link || '',
+    }));
+  } catch (error) {
+    return { error: error?.message || String(error) };
   }
-  process.stdout.write('\r');
-  writeStdout(`done (${seconds}s)`);
+}
+
+function summarizeChecks(checks) {
+  if (!Array.isArray(checks)) return { passed: 0, failed: 0, pending: 0, total: 0 };
+  let passed = 0;
+  let failed = 0;
+  let pending = 0;
+  for (const check of checks) {
+    const conclusion = String(check.conclusion || '').toUpperCase();
+    const state = String(check.state || '').toUpperCase();
+    const bucket = String(check.bucket || '').toUpperCase();
+    if (['SUCCESS', 'SKIPPED', 'NEUTRAL'].includes(conclusion) || bucket === 'PASSING') passed += 1;
+    else if (['FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED'].includes(conclusion) || bucket === 'FAILING') failed += 1;
+    else if (state === 'COMPLETED' && conclusion) failed += 1;
+    else pending += 1;
+  }
+  return { passed, failed, pending, total: checks.length };
+}
+
+async function waitForPrChecks(prNumber, timeoutMs) {
+  try {
+  const pr = Number(prNumber);
+  if (!Number.isInteger(pr) || pr <= 0) throw new Error(`invalid PR number: ${prNumber}`);
+  const startedAt = Date.now();
+  const timeout = timeoutMs || 30 * 60 * 1000;
+  const pollMs = Number(process.env.WORKSPACE_WAIT_POLL_MS || 30000);
+  while (Date.now() - startedAt < timeout) {
+    const checks = getPrChecks(pr);
+    if (!Array.isArray(checks)) {
+      printJson({ ok: false, kind: 'pr_checks', status: 'failed', pr, error: checks.error, summary: `failed to read PR checks for #${pr}` });
+      process.exit(1);
+    }
+    const counts = summarizeChecks(checks);
+    if (counts.failed > 0) {
+      printJson({ ok: false, kind: 'pr_checks', status: 'failed', pr, conclusion: 'failure', checks: counts, failedChecks: checks.filter((check) => String(check.conclusion || check.bucket).match(/FAIL|CANCEL|TIME|ACTION/i)).map((check) => check.name), startedAt: formatIso(startedAt), completedAt: formatIso(Date.now()), summary: `PR #${pr} checks failed` });
+      process.exit(1);
+    }
+    if (counts.total > 0 && counts.pending === 0) {
+      printJson({ ok: true, kind: 'pr_checks', status: 'completed', pr, conclusion: 'success', checks: counts, startedAt: formatIso(startedAt), completedAt: formatIso(Date.now()), summary: `all PR #${pr} checks completed successfully` });
+      return;
+    }
+    await sleep(pollMs);
+  }
+  const checks = getPrChecks(pr);
+  const counts = Array.isArray(checks) ? summarizeChecks(checks) : { passed: 0, failed: 0, pending: 0, total: 0 };
+  printJson({ ok: false, kind: 'pr_checks', status: 'timed_out', pr, checks: counts, startedAt: formatIso(startedAt), completedAt: formatIso(Date.now()), summary: `timed out waiting for PR #${pr} checks` });
+  process.exit(1);
+  } catch (error) {
+    printJson({ ok: false, kind: 'pr_checks', status: 'failed', error: error?.message || String(error), summary: 'PR check wait failed' });
+    process.exit(1);
+  }
+}
+
+async function timedSleep(seconds) {
+  try {
+  const startedAt = Date.now();
+  await sleep(seconds * 1000);
+  printJson({
+    ok: true,
+    kind: 'duration',
+    status: 'completed',
+    startedAt: formatIso(startedAt),
+    completedAt: formatIso(Date.now()),
+    waitedMs: Math.max(0, Date.now() - startedAt),
+    summary: `wait completed after ${seconds}s`,
+  });
+  } catch (error) {
+    printJson({ ok: false, kind: 'duration', status: 'failed', error: error?.message || String(error), summary: 'wait failed' });
+    process.exit(1);
+  }
 }
 
 function printHelp() {
@@ -259,6 +336,7 @@ function printHelp() {
   writeStdout('  bun run wait -- --list             list detached waits');
   writeStdout('  bun run wait -- --deploy           wait for deploy matching local HEAD');
   writeStdout('  bun run wait -- --deploy abc123    wait for deploy matching commit');
+  writeStdout('  bun run wait -- --pr 1313          wait for GitHub PR checks');
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --detach           create a non-blocking wait job and return immediately');
@@ -267,7 +345,7 @@ function printHelp() {
   writeStdout('  --list             list detached wait jobs');
   writeStdout('  --reason <text>    record why the wait exists');
   writeStdout('  --service <name>   railway service (default: opensaas)');
-  writeStdout('  --timeout <time>   deploy wait timeout (default: 30m)');
+  writeStdout('  --timeout <time>   condition wait timeout (default: 30m)');
 }
 
 async function main() {
@@ -281,6 +359,7 @@ async function main() {
   let reason = '';
   let statusId = null;
   let listMode = false;
+  let prNumber = null;
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
@@ -291,6 +370,7 @@ async function main() {
       case '--reason': reason = argv[++i] || ''; break;
       case '--status': statusId = argv[++i]; break;
       case '--list': listMode = true; break;
+      case '--pr': prNumber = argv[++i]; break;
       case '--service': service = argv[++i]; break;
       case '--timeout': timeoutMs = parseTime(argv[++i]) * 1000; break;
       case '--help':
@@ -309,6 +389,11 @@ async function main() {
 
   if (listMode) {
     printJson({ ok: true, waits: listDetachedWaits() });
+    return;
+  }
+
+  if (prNumber) {
+    await waitForPrChecks(prNumber, timeoutMs);
     return;
   }
 

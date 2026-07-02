@@ -1097,17 +1097,17 @@ export const MacPortInput = z.object({
   port: z.number().int().positive().optional(),
 });
 
-export const WorkerCallInput = z.object({
+export const SubagentInput = z.object({
   ...requestFields,
-  provider: z.enum(['cdx', 'pi', 'opc', 'mini']),
-  profile: optionalString,
-  mode: z.enum(['check', 'step', 'work']).optional(),
-  policy: z.enum(['read', 'safe', 'edit', 'ship']).optional(),
+  provider: z.enum(['codex', 'pi', 'opencode', 'grok']),
+  model: optionalString,
+  bundle: z.enum(['core', 'media']).optional(),
+  policy: z.enum(['read', 'edit']).optional(),
   instructionPath: z.string().min(1),
   cwd: optionalString,
   timeoutMs: z.number().int().positive().max(1_800_000).optional(),
+  outputFormat: z.enum(['text', 'json']).optional(),
   workspaceOnly: z.union([z.boolean(), z.enum(['preferred', 'strict'])]).optional(),
-  approval: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const schemaRegistry = {
@@ -1210,7 +1210,7 @@ export const schemaRegistry = {
   MacListInput,
   MacProcessInput,
   MacPortInput,
-  WorkerCallInput,
+  SubagentInput,
 } satisfies Record<string, z.ZodType<unknown>>;
 
 export type SchemaName = keyof typeof schemaRegistry;
@@ -1319,7 +1319,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MacListInput: '{ path?: string; depth?: number; requestId?: string; taskSession?: string }',
   MacProcessInput: '{ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MacPortInput: '{ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string }',
-  WorkerCallInput: '{ provider: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }',
+  SubagentInput: '{ provider: "codex" | "pi" | "opencode" | "grok"; model?: string; bundle?: "core" | "media"; policy?: "read" | "edit"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; outputFormat?: "text" | "json"; workspaceOnly?: boolean | "preferred" | "strict"; requestId?: string }',
 };
 
 export const outputTypeSignatures: Record<string, string> = {
@@ -1330,7 +1330,7 @@ export const outputTypeSignatures: Record<string, string> = {
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',
   TaskEnsureSyncedOutput: '{ synced: boolean; branch: string; area: string; behind?: number; action?: string }',
-  WorkerCallOutput: '{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
+  SubagentOutput: '{ provider: "codex" | "pi" | "opencode" | "grok"; model?: string; bundle: "core" | "media"; outputFormat: "text" | "json"; mode: "work"; policy: "read" | "edit"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
   ToolsSearchOutput: '{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: \"high\" | \"medium\" | \"low\"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }',
 };
 

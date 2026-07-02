@@ -64,7 +64,7 @@
     "github": "bun ./scripts/github.js",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
-    "worker": "bun ./scripts/worker.ts",
+    "subagent": "bun ./scripts/subagent.ts",
     "generate:docs": "bun ./scripts/generate-docs.ts",
     "generate:types": "bun ./scripts/generate-types.ts",
     "install:system-daemons": "bash ./scripts/install-system-daemons.sh",

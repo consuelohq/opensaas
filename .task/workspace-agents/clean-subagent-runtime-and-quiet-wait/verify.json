@@ -1,0 +1,183 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/clean-subagent-runtime-and-quiet-wait",
+  "base": "origin/task/workspace-agents/clean-subagent-runtime-and-quiet-wait",
+  "headSha": "5df53f61b6a3b62c9b195f34dc03efb50dbe3796",
+  "changeHash": "6b691ecc0e8a27c54baedfaa0180db6d53fbdeb0aa7ecc754a2a64a0030370e2",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/scripts/lib/worker/runtime.ts",
+    "packages/os/scripts/subagent.ts",
+    "packages/os/scripts/wait.js",
+    "packages/os/scripts/worker.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/script-parity-classifications.json",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/subagent/runtime.ts",
+    "packages/workspace/scripts/lib/worker/runtime.ts",
+    "packages/workspace/scripts/subagent.ts",
+    "packages/workspace/scripts/wait.js",
+    "packages/workspace/scripts/worker.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-07-02T05:17:29.150Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/clean-subagent-runtime-and-quiet-wait.json",
+        ".task/workspace-agents/clean-subagent-runtime-and-quiet-wait/current.json",
+        ".task/workspace-agents/clean-subagent-runtime-and-quiet-wait/session.json",
+        ".task/workspace-agents/clean-subagent-runtime-and-quiet-wait/workpad.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/subagent/runtime.ts",
+        "packages/os/scripts/lib/worker/runtime.ts",
+        "packages/os/scripts/subagent.ts",
+        "packages/os/scripts/wait.js",
+        "packages/os/scripts/worker.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/os/tooling/script-parity-classifications.json",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/subagent/runtime.ts",
+        "packages/workspace/scripts/lib/worker/runtime.ts",
+        "packages/workspace/scripts/subagent.ts",
+        "packages/workspace/scripts/wait.js",
+        "packages/workspace/scripts/worker.ts",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/executor.ts",
+            "packages/workspace/scripts/lib/facade/schemas.ts",
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 210,
+          "outputTail": "r task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.06ms]\n{\"level\":\"error\",\"tool\":\"task.exec\",\"command\":\"workspace task.exec\",\"implementationCommand\":\"workspace task.exec\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.494Z\"}\n(pass) typed facade executor > validates input for task.exec [0.12ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.494Z\"}\n(pass) typed facade executor > validates input for task.init [0.32ms]\n(pass) typed facade executor > validates input for task.merge [0.15ms]\n(pass) typed facade executor > validates input for task.pr [0.17ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.495Z\"}\n(pass) typed facade executor > validates input for task.push [0.38ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.495Z\"}\n(pass) typed facade executor > validates input for task.start [0.28ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.495Z\"}\n(pass) typed facade executor > validates input for tmp [0.24ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.496Z\"}\n(pass) typed facade executor > validates input for tools.search [0.28ms]\n(pass) typed facade executor > validates input for verify [0.09ms]\n(pass) typed facade executor > validates input for wait [0.14ms]\n(pass) typed facade executor > validates input for website.deploy [0.07ms]\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"workspace subagent\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.496Z\"}\n(pass) typed facade executor > validates input for subagent [0.34ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-02T05:17:28.497Z\"}\n(pass) typed facade executor > validates input for media.svg [0.35ms]\n\n 126 pass\n 434 filtered out\n 0 fail\n 59 expect() calls\nRan 126 tests across 1 file. [203.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 463,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clean-subagent-runtime-and-quiet-wait\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 84\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:17:28\n\u001b[2m   Duration \u001b[22m 213ms\u001b[2m (transform 59ms, setup 0ms, import 64ms, tests 84ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
