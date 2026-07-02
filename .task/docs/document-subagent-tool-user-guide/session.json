@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_db876bd14cb7",
+  "tmuxSession": "opensaas-docs-document-subagent-tool-user-guide-db876bd1",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/document-subagent-tool-user-guide",
+  "branch": "task/docs/document-subagent-tool-user-guide",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-document-subagent-tool-user-guide",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-document-subagent-tool-user-guide",
+  "prNumber": 1346,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1346",
+  "createdAt": "2026-07-02T20:43:56.862Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-document-subagent-tool-user-guide/.task/docs/document-subagent-tool-user-guide/session.json"
+}
