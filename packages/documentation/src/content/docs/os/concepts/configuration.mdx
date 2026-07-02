@@ -1,0 +1,144 @@
+---
+title: Configuration
+description: Planned Consuelo OS settings surface for connections, tools, skills, and run books.
+---
+
+import Note from '../../../../components/mintlify/Note.astro';
+
+# Configuration
+
+Consuelo OS needs a workspace-scoped settings area where you can see and control what your agents can use.
+
+The [workspace launcher](/os/getting-started/workspace-launcher/) covers first-run onboarding: MCP URL, quick links, and local agent count. Configuration is the fuller control plane behind that page.
+
+<Note>This page describes the planned Settings experience. The UI is not shipped yet. Use it for product alignment before implementation branches begin.</Note>
+
+## Product goal
+
+Configuration should answer one question clearly:
+
+**What is connected to my workspace, and what can my agents do here?**
+
+That makes OS legible without rereading docs for every tool, skill, or hook.
+
+## Entry point
+
+In the launcher sidebar:
+
+- Sidebar label: **Settings**
+- Section title: **Configuration**
+- Primary action/button: **Settings**
+
+Behind the scenes, Settings can be implemented as a workspace site route. In the product surface it should read as settings, not as another Sites link.
+
+## Planned sections
+
+### Connections
+
+Show every agent and device attached to the workspace MCP surface.
+
+| Connection type | Examples | Status to show |
+| --- | --- | --- |
+| Cloud agents | ChatGPT, future Grok/Gemini connectors | Connected, pending auth, blocked by ingress policy |
+| Local agents | Codex, Cursor, Claude Code, OpenCode, Factory | Connected, detected but not configured, not installed |
+| Device sessions | Approved install devices, connector sessions | Active, expired, revoked |
+
+This replaces the launcher's coarse `Connected to N local agents` summary with a full connection inventory.
+
+### Tools
+
+Surface the effective tool catalog from the OS manifest.
+
+Requirements:
+
+- list tools grouped by category
+- show whether each tool is enabled for the workspace
+- allow disable/enable per tool
+- disabled tools must be removed from the effective manifest exposed to agents
+- re-enabling must restore the tool to the manifest
+
+The [full manifest](/os/tools/overview/) remains the source of truth. Settings writes an overlay that filters what agents receive.
+
+### Skills
+
+Same model as tools, scoped to approved workflows.
+
+Requirements:
+
+- show installed and available skills
+- indicate required capabilities per skill
+- allow disable/enable per skill
+- disabled skills should disappear from steering and callable surfaces
+- re-enable restores skill visibility and `call` access
+
+### Run Books
+
+OS hooks are being renamed to **Run Books** in product language. Settings should use **Run Books** now even where internal code still says `hooks`.
+
+Requirements:
+
+- list workflow run books tied to intent and task lifecycle events
+- show which run book bundles are active
+- allow enable/disable per run book
+- explain what event or workflow each run book participates in
+
+Internal hook manifests and workflow bundles remain implementation details. The settings page should describe outcomes, not file paths.
+
+### Capabilities and integrations
+
+Group connected systems that skills depend on: workspace API, artifact storage, Slack, Twilio, ads platforms, observability providers, and similar surfaces.
+
+Show capability health using product language such as `connected`, `not_configured`, and `missing_capability`.
+
+## UX direction
+
+Use a simple settings shell similar to modern agent apps:
+
+- left navigation with a small number of sections
+- search across settings items
+- sparse layout with strong whitespace
+- workspace-only scope: no global app settings mixed into OS configuration
+
+The Codex-style settings screenshot is a layout reference, not a feature checklist. Consuelo OS settings should only cover workspace runtime configuration.
+
+## Data model sketch
+
+```text
+launcher sidebar
+  -> Settings
+    -> Configuration site/app
+      -> read manifest + config overlay
+      -> read connections from config.json + security records + device sessions
+      -> write overlay toggles for tools/skills/run books
+      -> regenerate effective manifest for agents
+```
+
+Suggested persistence layers:
+
+| Layer | Purpose |
+| --- | --- |
+| `~/.consuelo/os/config.json` | workspace host, connected local agents, user selections |
+| manifest overlays | enabled/disabled tools, skills, run books |
+| security generated files | cloud connector tokens and MCP connection material |
+| device authority records | approved devices and connector registrations |
+
+## Non-goals for the first implementation branch
+
+- public IP allowlisting UI for local agents
+- Cloudflare dashboard mutations without operator review
+- renaming every internal `hooks` identifier in code
+- replacing the launcher; Settings complements it
+
+## Why this matters
+
+Configuration is the product map of OS.
+
+When users can see connections, tools, skills, and run books in one place, they can steer agents without repeatedly returning to docs. The settings page becomes both control panel and capability discovery surface.
+
+## Related
+
+- [Workspace launcher](/os/getting-started/workspace-launcher/)
+- [Connect agents](/os/getting-started/connect-agents/)
+- [Tools overview](/os/tools/overview/)
+- [Skills](/os/concepts/skills/)
+- [Integrations and capabilities](/os/concepts/integrations-and-capabilities/)

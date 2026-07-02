@@ -65,9 +65,24 @@ const sidebar = [
       { label: 'How It Works', slug: 'os/how-it-works' },
       { label: 'Glossary', slug: 'os/glossary' },
       {
+        label: 'Getting Started',
+        items: [
+          { label: 'Install', slug: 'os/getting-started/install' },
+          {
+            label: 'Workspace Launcher',
+            slug: 'os/getting-started/workspace-launcher',
+          },
+          {
+            label: 'Connect Agents',
+            slug: 'os/getting-started/connect-agents',
+          },
+        ],
+      },
+      {
         label: 'Concepts',
         items: [
           { label: 'Portal', slug: 'os/concepts/portal' },
+          { label: 'Configuration', slug: 'os/concepts/configuration' },
           { label: 'Skills', slug: 'os/concepts/skills' },
           { label: 'Scripts', slug: 'os/concepts/scripts' },
           {
@@ -89,6 +104,10 @@ const sidebar = [
           },
           { label: 'Observability', slug: 'os/concepts/observability' },
           { label: 'Local and Cloud', slug: 'os/concepts/local-and-cloud' },
+          {
+            label: 'MCP Ingress Security',
+            slug: 'os/concepts/mcp-ingress-security',
+          },
         ],
       },
     ],
