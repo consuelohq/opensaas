@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const {
   DEFAULT_MAIN_BRANCH,
@@ -249,6 +250,33 @@ function inferTaskStartArgsFromPullRequest(args, pullRequest) {
   throw new Error(`cannot infer task area/stream from PR #${pullRequest.number}; pass --area and --title explicitly`);
 }
 
+function parseStreamSyncOutput(output) {
+  try {
+    return JSON.parse(String(output || '').trim());
+  } catch {
+    return null;
+  }
+}
+
+function runStreamSyncBeforeBranching(repoRoot, area) {
+  const result = spawnSync('bun', ['run', 'stream:sync', '--', '--area', area, '--json'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  const syncResult = parseStreamSyncOutput(result.stdout);
+  if (result.status !== 0 || !syncResult || syncResult.pushed !== true) {
+    throw new Error(
+      `stream sync failed before starting task branch for ${area}:\n` +
+      [result.stdout, result.stderr].filter(Boolean).join('\n').trim(),
+    );
+  }
+
+  return result.stdout || '';
+}
+
 function resolveSourceBranch(startFrom, stream) {
   if (startFrom === 'stream') {
     return stream;
@@ -374,6 +402,11 @@ async function main() {
     });
 
     if (streamDetails.created) {
+      fetchOrigin(repoRoot);
+    }
+
+    if (args.startFrom === 'stream' && !streamDetails.created) {
+      runStreamSyncBeforeBranching(repoRoot, area);
       fetchOrigin(repoRoot);
     }
 
