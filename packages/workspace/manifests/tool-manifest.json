@@ -6,7 +6,7 @@
       "label": "workspace-tooling",
       "kind": "facade-tool",
       "path": "packages/workspace/tooling/tool-manifest.json",
-      "entryCount": 124
+      "entryCount": 126
     }
   ],
   "tools": [
@@ -1539,14 +1539,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "composed",
-      "description": "run node --check syntax checks over a set of files in the resolved task worktree",
+      "description": "run syntax checks over a set of files through task:exec",
       "core": false,
       "definition": {
         "name": "checkFiles",
         "methodPath": [
           "checkFiles"
         ],
-        "description": "run node --check syntax checks over a set of files in the resolved task worktree",
+        "description": "run syntax checks over a set of files through task:exec",
         "category": "composed",
         "underlying": "workspace checkFiles",
         "capabilities": {
@@ -6235,6 +6235,106 @@
       }
     },
     {
+      "name": "subagent",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "subagent",
+      "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+      "core": false,
+      "definition": {
+        "name": "subagent",
+        "methodPath": [
+          "subagent"
+        ],
+        "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+        "category": "subagent",
+        "underlying": "workspace subagent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "SubagentInput",
+        "outputSchema": "SubagentOutput",
+        "command": {
+          "script": "internal",
+          "internal": "subagent",
+          "arguments": []
+        },
+        "exampleInput": {
+          "provider": "grok",
+          "bundle": "media",
+          "policy": "read",
+          "instructionPath": "/tmp/ko-social.md",
+          "outputFormat": "json"
+        },
+        "sessionRequired": false,
+        "keywords": [
+          "subagent",
+          "delegate",
+          "model",
+          "agent",
+          "grok",
+          "codex",
+          "opencode",
+          "pi"
+        ]
+      }
+    },
+    {
+      "name": "task.call",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "task lifecycle",
+      "description": "run a command inside a task worktree",
+      "core": false,
+      "definition": {
+        "name": "task.call",
+        "methodPath": [
+          "task",
+          "call"
+        ],
+        "description": "run a command inside a task worktree",
+        "category": "task lifecycle",
+        "underlying": "workspace task.call",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "TaskExecInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "task:exec",
+          "branchMode": "required",
+          "branchArgumentStyle": "prefix",
+          "arguments": [
+            {
+              "source": "command",
+              "kind": "commandArray",
+              "required": true
+            }
+          ]
+        },
+        "exampleInput": {
+          "branch": "task/workspace-agents/example",
+          "command": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "dryRun": true
+        },
+        "sessionRequired": true
+      }
+    },
+    {
       "name": "task.cleanup",
       "kind": "facade-tool",
       "source": "workspace-tooling",
@@ -6375,6 +6475,56 @@
           "branch": "task/workspace-agents/example"
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "task.exec",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "task lifecycle",
+      "description": "legacy alias for task.call; run a command inside a task worktree",
+      "core": false,
+      "definition": {
+        "name": "task.exec",
+        "methodPath": [
+          "task",
+          "exec"
+        ],
+        "description": "legacy alias for task.call; run a command inside a task worktree",
+        "category": "task lifecycle",
+        "underlying": "workspace task.exec",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "TaskExecInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "task:exec",
+          "branchMode": "required",
+          "branchArgumentStyle": "prefix",
+          "arguments": [
+            {
+              "source": "command",
+              "kind": "commandArray",
+              "required": true
+            }
+          ]
+        },
+        "exampleInput": {
+          "branch": "task/workspace-agents/example",
+          "command": [
+            "git",
+            "status",
+            "--short"
+          ],
+          "dryRun": true
+        },
+        "sessionRequired": true
       }
     },
     {
@@ -7203,47 +7353,6 @@
         "exampleInput": {
           "buildOnly": true,
           "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "worker.call",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "worker",
-      "description": "delegate a bounded instruction file to a configured local worker provider",
-      "core": false,
-      "definition": {
-        "name": "worker.call",
-        "methodPath": [
-          "worker",
-          "call"
-        ],
-        "description": "delegate a bounded instruction file to a configured local worker provider",
-        "category": "worker",
-        "underlying": "workspace worker.call",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "WorkerCallInput",
-        "outputSchema": "WorkerCallOutput",
-        "command": {
-          "script": "internal",
-          "internal": "worker.call",
-          "arguments": []
-        },
-        "exampleInput": {
-          "provider": "cdx",
-          "mode": "work",
-          "policy": "edit",
-          "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
-          "workspaceOnly": "preferred"
         },
         "sessionRequired": false
       }

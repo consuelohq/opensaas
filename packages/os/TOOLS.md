@@ -43,10 +43,10 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | review | 4 |
 | sentry | 7 |
 | stream | 3 |
+| subagent | 1 |
 | task lifecycle | 11 |
 | tooling | 1 |
 | utilities | 34 |
-| worker | 1 |
 | workflow | 1 |
 
 ## tools by category
@@ -5986,6 +5986,71 @@ await workspace.call({
 }
 ```
 
+## subagent
+
+### workspace.subagent
+
+run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.
+
+| Field | Value |
+| --- | --- |
+| Category | subagent |
+| Signature | `workspace.subagent({ provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; requestId?: string }) => Promise<ToolResult<{ provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "completed" &#124; "failed" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
+| Runtime | `workspace subagent` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "subagent",
+  "input": {
+    "provider": "grok",
+    "bundle": "media",
+    "policy": "read",
+    "instructionPath": "/tmp/ko-social.md",
+    "outputFormat": "json"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## task lifecycle
 
 ### workspace.task.cleanup
@@ -8720,71 +8785,6 @@ await workspace.call({
   "input": {
     "buildOnly": true,
     "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-## worker
-
-### workspace.worker.call
-
-delegate a bounded instruction file to a configured local worker provider
-
-| Field | Value |
-| --- | --- |
-| Category | worker |
-| Signature | `workspace.worker.call({ provider: "cdx" &#124; "pi" &#124; "opc" &#124; "mini"; profile?: string; mode?: "check" &#124; "step" &#124; "work"; policy?: "read" &#124; "safe" &#124; "edit" &#124; "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; approval?: Record<string, unknown>; requestId?: string }) => Promise<ToolResult<{ provider: "cdx" &#124; "pi" &#124; "opc"; requestedProvider?: "cdx" &#124; "pi" &#124; "opc" &#124; "mini"; profile?: string; mode: "check" &#124; "step" &#124; "work"; policy: "read" &#124; "safe" &#124; "edit" &#124; "ship"; status: "completed" &#124; "failed" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out" &#124; "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
-| Runtime | `workspace worker.call` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "worker.call",
-  "input": {
-    "provider": "cdx",
-    "mode": "work",
-    "policy": "edit",
-    "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
-    "workspaceOnly": "preferred"
   }
 });
 ```

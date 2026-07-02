@@ -147,8 +147,8 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/generate-tool-manifest.ts": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/generate-types.ts": {
       "status": "changed-needs-review",
@@ -178,6 +178,10 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/intent.js": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
     "scripts/lib/app-files-client.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -198,51 +202,7 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
-    "scripts/lib/code-call/errors.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/code-call/file-source-guard.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/code-call/location.ts": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
-    },
-    "scripts/lib/code-call/output.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/code-call/policy.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/code-call/process.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
     "scripts/lib/code-call/runtime.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/code-call/runtimes.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/code-call/schema.ts": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
-    },
-    "scripts/lib/code-call/service.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/code-call/snapshot.ts": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
-    },
-    "scripts/lib/code-call/source.ts": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
@@ -351,8 +311,8 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/fs/search.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "os-only-intentional",
+      "reason": "OS-only helper implements structured ripgrep-backed fs.search behavior for the package runtime and generated public tool surface."
     },
     "scripts/lib/fs/write.ts": {
       "status": "os-only-intentional",
@@ -414,10 +374,6 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
-    "scripts/lib/mcp-gateway.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
     "scripts/lib/nx-projects.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
@@ -433,10 +389,6 @@
     "scripts/lib/paths.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/platform-cloudflare-provisioning.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/pr-links.js": {
       "status": "same",
@@ -612,14 +564,6 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/mcp-stdio.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
-    "scripts/media-svg.py": {
-      "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
-    },
     "scripts/office.ts": {
       "status": "changed-needs-review",
       "reason": "High-risk changed script: design orchestration owns publishing and package-boundary behavior, so later PRs must review drift before syncing bodies.",
@@ -653,10 +597,6 @@
     "scripts/pr-review.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
-    },
-    "scripts/provision-managed-os-mcp-ingress-policy.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/railway-logs.js": {
       "status": "same",
@@ -742,6 +682,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/task-exec.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
+    },
     "scripts/task-finish.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -751,16 +695,12 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/task-hook.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/task-init.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
-    },
-    "scripts/task-intent.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/task-merge.js": {
       "status": "changed-needs-review",
@@ -898,7 +838,7 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/worker.ts": {
+    "scripts/subagent.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
@@ -1006,6 +946,10 @@
     },
     {
       "tool": "task.merge",
+      "reason": "Known manifest drift kept visible for a follow-up PR; this audit should classify the mismatch without rewriting tool behavior."
+    },
+    {
+      "tool": "task.exec",
       "reason": "Known manifest drift kept visible for a follow-up PR; this audit should classify the mismatch without rewriting tool behavior."
     },
     {
