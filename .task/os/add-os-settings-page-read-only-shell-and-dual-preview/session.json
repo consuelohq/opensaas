@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_446d9833e221",
+  "tmuxSession": "opensaas-os-add-os-settings-page-read-only-shell-and-dual-pr-446d9833",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-settings-page-read-only-shell-and-dual-preview",
+  "branch": "task/os/add-os-settings-page-read-only-shell-and-dual-preview",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-page-read-only-shell-and-dual-preview",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-page-read-only-shell-and-dual-preview",
+  "prNumber": 1344,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1344",
+  "createdAt": "2026-07-02T20:25:32.378Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-page-read-only-shell-and-dual-preview/.task/os/add-os-settings-page-read-only-shell-and-dual-preview/session.json"
+}
