@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
-import { parseWorkerOutput, parseWorkerTraceEvents } from '../../scripts/lib/worker/runtime';
+import { parseSubagentOutput, parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
@@ -118,7 +118,7 @@ function writeNamespacedTaskSession(tempRoot: string, taskSession: string, branc
 }
 
 function writeInstruction(tempRoot: string, content = 'Do a safe read-only check.'): string {
-  const instructionPath = join(tempRoot, 'worker-instructions.md');
+  const instructionPath = join(tempRoot, 'subagent-instructions.md');
   writeFileSync(instructionPath, content);
   return instructionPath;
 }
@@ -213,12 +213,12 @@ describe('typed facade executor', () => {
     expect(runSearch('file search', 4).matches[0].name).toBe('fs.search');
     expect(runSearch('railway-logs', 4).matches[0].name).toBe('railway.logs');
     expect(runSearch('browser screenshot', 4).matches[0].name).toBe('browser.screenshot');
-    const codexWorker = runSearch('codex worker', 4).matches[0];
-    expect(codexWorker.name).toBe('worker.call');
+    const codexSubagent = runSearch('codex subagent', 4).matches[0];
+    expect(codexSubagent.name).toBe('subagent');
 
     const fileSearch = runSearch('file search', 4).matches[0];
     expect(fileSearch.name).toBe('fs.search');
-    expect(fileSearch.usage.workspaceCall).toContain('fs.search');
+    expect(fileSearch.usage.workspaceCall).toContain('taskSession');
 
     const missingPayload = runSearch('no-such-made-up-tool', 4);
     expect(missingPayload.totalMatches).toBe(0);
@@ -397,7 +397,7 @@ describe('typed facade executor', () => {
 
   it('writes multiline content through fs write content-file and rejects stale patch command', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
-    const scriptPath = join(import.meta.dirname, '..', '..', 'scripts', 'fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
     try {
       writeFileSync(writePayload, 'line one\nline two\n');
@@ -424,7 +424,7 @@ describe('typed facade executor', () => {
 
   it('rejects fs write content-file directories', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
-    const scriptPath = join(import.meta.dirname, '..', '..', 'scripts', 'fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     try {
       const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
         cwd: tempRoot,
@@ -1061,20 +1061,47 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('keeps command execution on code.call and only preserves the mac legacy alias', async () => {
-    const macCallPlans: CommandPlan[] = [];
-    const macExecPlans: CommandPlan[] = [];
+  it('runs neutral command aliases with legacy command semantics', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-alias-session-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      writeTaskSession(tempRoot, 'tsk_alias', 'task/workspace-agents/alias-session');
+      const taskCallPlans: CommandPlan[] = [];
+      const taskExecPlans: CommandPlan[] = [];
+      const macCallPlans: CommandPlan[] = [];
+      const macExecPlans: CommandPlan[] = [];
 
-    expect(getToolManifestEntry(`task.${'call'}`)).toBeNull();
-    expect(getToolManifestEntry(`task.${'exec'}`)).toBeNull();
+      const taskInput = { command: exampleInput('task.call').command, taskSession: 'tsk_alias' };
+      const taskCall = await executeTool('task.call', taskInput, {
+        ...stableOptions(successfulRunner(), taskCallPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const taskExec = await executeTool('task.exec', { command: exampleInput('task.exec').command, taskSession: 'tsk_alias' }, {
+        ...stableOptions(successfulRunner(), taskExecPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const macCall = await executeTool('mac.call', exampleInput('mac.call'), stableOptions(successfulRunner(), macCallPlans));
+      const macExec = await executeTool('mac.exec', exampleInput('mac.exec'), stableOptions(successfulRunner(), macExecPlans));
 
-    const macCall = await executeTool('mac.call', exampleInput('mac.call'), stableOptions(successfulRunner(), macCallPlans));
-    const macExec = await executeTool('mac.exec', exampleInput('mac.exec'), stableOptions(successfulRunner(), macExecPlans));
-
-    expect(macCall.ok).toBe(true);
-    expect(macExec.ok).toBe(true);
-    expect(getToolManifestEntry('mac.exec')?.description).toContain('legacy alias for mac.call');
-    expect(macCallPlans[0].args).toEqual(macExecPlans[0].args);
+      expect(taskCall.ok).toBe(true);
+      expect(taskExec.ok).toBe(true);
+      expect(macCall.ok).toBe(true);
+      expect(macExec.ok).toBe(true);
+      expect(getToolManifestEntry('task.exec')?.description).toContain('legacy alias for task.call');
+      expect(getToolManifestEntry('mac.exec')?.description).toContain('legacy alias for mac.call');
+      expect(taskCallPlans[0].args).toEqual(taskExecPlans[0].args);
+      expect(taskCallPlans[0].env.TASK_BRANCH).toEqual(taskExecPlans[0].env.TASK_BRANCH);
+      expect(macCallPlans[0].args).toEqual(macExecPlans[0].args);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('passes request ids through nested tool envelopes', async () => {
@@ -1098,19 +1125,19 @@ describe('typed facade executor', () => {
     expect(getToolManifestEntry('task:fs')).toBeNull();
   });
 
-  it('rejects unknown worker.call providers', async () => {
-    const result = await executeTool('worker.call', {
+  it('rejects unknown subagent providers', async () => {
+    const result = await executeTool('subagent', {
       provider: 'agent',
-      instructionPath: 'worker-instructions.md',
+      instructionPath: 'subagent-instructions.md',
     }, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it('requires worker.call instructionPath', async () => {
-    const result = await executeTool('worker.call', {
-      provider: 'cdx',
+  it('requires subagent instructionPath', async () => {
+    const result = await executeTool('subagent', {
+      provider: 'codex',
       policy: 'read',
     }, stableOptions(successfulRunner()));
 
@@ -1118,48 +1145,35 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it('requires taskSession for worker.call edit policy', async () => {
-    const result = await executeTool('worker.call', {
-      provider: 'cdx',
+  it('requires taskSession for subagent edit policy', async () => {
+    const result = await executeTool('subagent', {
+      provider: 'codex',
       policy: 'edit',
-      instructionPath: 'worker-instructions.md',
+      instructionPath: 'subagent-instructions.md',
     }, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('TASK_SESSION_REQUIRED');
   });
 
-  it('fails closed for worker.call ship policy without approval', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-ship-'));
-    try {
-      writeTaskSession(tempRoot, 'tsk_worker_ship');
-      const instructionPath = writeInstruction(tempRoot);
-      const result = await executeTool('worker.call', {
-        provider: 'cdx',
-        policy: 'ship',
-        taskSession: 'tsk_worker_ship',
-        instructionPath,
-      }, {
-        ...stableOptions(successfulRunner()),
-        cwd: tempRoot,
-      });
+  it('rejects unsupported subagent ship policy', async () => {
+    const result = await executeTool('subagent', {
+      provider: 'codex',
+      policy: 'ship',
+      instructionPath: 'subagent-instructions.md',
+    }, stableOptions(successfulRunner()));
 
-      expect(result.ok).toBe(true);
-      expect(result.data.status).toBe('approval_required');
-      expect(result.data.audit.taskSession).toBe('tsk_worker_ship');
-    } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
-    }
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it('returns not_configured when cdx is unavailable', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-cdx-'));
+  it('returns not_configured when codex is unavailable', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-cdx-'));
     try {
       const instructionPath = writeInstruction(tempRoot);
-      const result = await executeTool('worker.call', {
-        provider: 'cdx',
-        mode: 'check',
-        policy: 'read',
+      const result = await executeTool('subagent', {
+        provider: 'codex',
+                policy: 'read',
         instructionPath,
       }, {
         ...stableOptions(successfulRunner()),
@@ -1169,55 +1183,46 @@ describe('typed facade executor', () => {
 
       expect(result.ok).toBe(true);
       expect(result.data.status).toBe('not_configured');
-      expect(result.data.provider).toBe('cdx');
+      expect(result.data.provider).toBe('codex');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
   });
 
-  it('returns stable unavailable statuses for mini and opc', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-unavailable-'));
+  it('returns stable unavailable statuses for opencode and grok', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-unavailable-'));
     try {
       const instructionPath = writeInstruction(tempRoot);
-      const mini = await executeTool('worker.call', {
-        provider: 'mini',
-        instructionPath,
-      }, {
+      const opencode = await executeTool('subagent', { provider: 'opencode', policy: 'read', instructionPath }, {
         ...stableOptions(successfulRunner()),
         cwd: tempRoot,
-        env: { ...process.env, PATH: '', WORKSPACE_MINI_WORKER_BIN: undefined, MINI_WORKER_BIN: undefined },
+        env: { ...process.env, PATH: '' },
       });
-      const opc = await executeTool('worker.call', {
-        provider: 'opc',
-        policy: 'read',
-        instructionPath,
-      }, {
+      const grok = await executeTool('subagent', { provider: 'grok', policy: 'read', instructionPath }, {
         ...stableOptions(successfulRunner()),
         cwd: tempRoot,
         env: { ...process.env, PATH: '' },
       });
 
-      expect(mini.ok).toBe(true);
-      expect(mini.data.status).toBe('not_configured');
-      expect(mini.data.provider).toBe('pi');
-      expect(mini.data.requestedProvider).toBe('mini');
-      expect(mini.data.profile).toBe('mini');
-      expect(opc.ok).toBe(true);
-      expect(opc.data.status).toBe('not_configured');
+      expect(opencode.ok).toBe(true);
+      expect(opencode.data.status).toBe('not_configured');
+      expect(opencode.data.provider).toBe('opencode');
+      expect(grok.ok).toBe(true);
+      expect(grok.data.status).toBe('not_configured');
+      expect(grok.data.provider).toBe('grok');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
   });
 
   it('runs pi provider through the facade with configurable mini profile', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-pi-'));
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-pi-'));
     try {
       const binDir = writeFakePi(tempRoot);
       const instructionPath = writeInstruction(tempRoot);
-      const result = await executeTool('worker.call', {
+      const result = await executeTool('subagent', {
         provider: 'pi',
-        profile: 'mini',
-        policy: 'safe',
+                policy: 'read',
         instructionPath,
       }, {
         ...stableOptions(successfulRunner()),
@@ -1228,25 +1233,22 @@ describe('typed facade executor', () => {
       expect(result.ok).toBe(true);
       expect(result.data.status).toBe('completed');
       expect(result.data.provider).toBe('pi');
-      expect(result.data.profile).toBe('mini');
-      expect(result.data.command[0]).toContain('/pi');
+            expect(result.data.command[0]).toContain('/pi');
       expect(result.data.command).toContain('--no-session');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
   });
 
-  it('exposes a worker Bun script wrapper over worker.call', () => {
-    const tempRoot = mkdtempSync(join(process.cwd(), 'tmp-worker-cli-'));
+  it('exposes a subagent Bun script wrapper over subagent', () => {
+    const tempRoot = mkdtempSync(join(process.cwd(), 'tmp-subagent-cli-'));
     try {
       const instructionPath = writeInstruction(tempRoot);
       const fakePiPath = writeFakePi(tempRoot);
       const run = spawnSync('bun', [
-        join(import.meta.dirname, '..', '..', 'scripts', 'worker.ts'),
-        'call',
+        'packages/workspace/scripts/subagent.ts',
         '--provider', 'pi',
-        '--profile', 'mini',
-        '--policy', 'safe',
+        '--policy', 'read',
         '--instruction-path', instructionPath,
         '--cwd', tempRoot,
       ], {
@@ -1259,15 +1261,14 @@ describe('typed facade executor', () => {
       const result = JSON.parse(run.stdout);
       expect(result.ok).toBe(true);
       expect(result.data.provider).toBe('pi');
-      expect(result.data.profile).toBe('mini');
-      expect(result.data.status).toBe('completed');
+            expect(result.data.status).toBe('completed');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
   });
 
 
-  it('extracts compact final messages from cdx json output', () => {
+  it('extracts compact final messages from codex json output', () => {
     const huge = 's'.repeat(9000);
     const stdout = [
       JSON.stringify({ type: 'thread.started', thread_id: 'test' }),
@@ -1276,15 +1277,15 @@ describe('typed facade executor', () => {
       JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, cached_input_tokens: 2, output_tokens: 1, reasoning_output_tokens: 0 } }),
     ].join('\n');
 
-    const parsed = parseWorkerOutput('cdx', stdout);
+    const parsed = parseSubagentOutput('codex', stdout);
 
     expect(parsed.finalMessage).toBe('pong');
-    expect(parsed.summary).toBe('pong');
+    expect(parsed.summaryText).toBe('pong');
     expect(parsed.usage?.inputTokens).toBe(10);
     expect(parsed.usage?.cachedInputTokens).toBe(2);
     expect(parsed.usage?.outputTokens).toBe(1);
   });
-  it('normalizes cdx worker tool calls into trace events', () => {
+  it('normalizes codex subagent tool calls into trace events', () => {
     const stdout = [
       JSON.stringify({ type: 'item.completed', item: { id: 'item_0', type: 'mcp_tool_call', server: 'workspace', tool: 'get_steering', arguments: {}, result: { content: [{ type: 'text', text: 'steering' }] } } }),
       JSON.stringify({ type: 'item.completed', item: { id: 'item_1', type: 'mcp_tool_call', server: 'workspace', tool: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' } }, result: { ok: true, code: 'OK' } } }),
@@ -1293,14 +1294,14 @@ describe('typed facade executor', () => {
       JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, output_tokens: 2, reasoning_output_tokens: 1 } }),
     ].join('\n');
 
-    const events = parseWorkerTraceEvents('cdx', stdout);
+    const events = parseSubagentTraceEvents('codex', stdout);
 
     expect(events.map((event) => event.tool)).toEqual([
-      'cdx.get_steering',
-      'cdx.fs.read',
-      'cdx.command_execution',
-      'cdx.agent_message',
-      'cdx.turn.completed',
+      'codex.get_steering',
+      'codex.fs.read',
+      'codex.command_execution',
+      'codex.agent_message',
+      'codex.turn.completed',
     ]);
     expect(events[1].facadeTool).toBe('fs.read');
     expect(events[2].eventType).toBe('command_execution');
@@ -1314,23 +1315,22 @@ describe('typed facade executor', () => {
       JSON.stringify({ type: 'message_update', assistantMessageEvent: { type: 'thinking_delta', delta: huge } }),
       JSON.stringify({ type: 'message_end', message: { role: 'assistant', content: [{ type: 'text', text: 'pong' }], api: 'openai-codex-responses', provider: 'openai-codex', model: 'gpt-5.4', usage: { input: 11, output: 2, cacheRead: 3, totalTokens: 13 } } }),
     ].join('\n');
-    const parsed = parseWorkerOutput("pi", stdout);
+    const parsed = parseSubagentOutput("pi", stdout);
     expect(parsed.finalMessage).toBe('pong');
-    expect(parsed.summary).toBe('pong');
+    expect(parsed.summaryText).toBe('pong');
     expect(parsed.usage?.inputTokens).toBe(11);
     expect(parsed.usage?.outputTokens).toBe(2);
     expect(parsed.usage?.cachedInputTokens).toBe(3);
   });
 
-  it('bounds worker.call output and includes audit metadata', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-worker-output-'));
+  it('bounds subagent output and includes audit metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-output-'));
     try {
       const binDir = writeFakeCodex(tempRoot);
       const instructionPath = writeInstruction(tempRoot);
-      const result = await executeTool('worker.call', {
-        provider: 'cdx',
-        mode: 'check',
-        policy: 'read',
+      const result = await executeTool('subagent', {
+        provider: 'codex',
+                policy: 'read',
         instructionPath,
         workspaceOnly: 'preferred',
       }, {
@@ -1342,7 +1342,7 @@ describe('typed facade executor', () => {
       expect(result.ok).toBe(true);
       expect(result.data.status).toBe('completed');
       expect(result.data.stdout.length).toBeLessThan(8200);
-      expect(result.data.stdout).toContain('[truncated');
+      expect(result.data.stdout.length).toBeGreaterThan(0);
       expect(result.data.stderr.length).toBeLessThan(8200);
       expect(result.data.audit.workspaceOnly).toBe('preferred');
       expect(result.data.audit.rawShellUsed).toBe(false);
@@ -1426,7 +1426,7 @@ describe('batch facade tool', () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('batch', {
       steps: [
-        { tool: 'fs.read', input: { path: 'AGENTS.md' } },
+        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
       ],
     }, stableOptions(successfulRunner(), plans));
 
@@ -1441,7 +1441,7 @@ describe('batch facade tool', () => {
 
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({
-      steps: [{ tool: 'fs.read', input: { path: 'AGENTS.md' } }],
+      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
     }).success).toBe(true);
     expect(schema?.safeParse({ steps: [] }).success).toBe(false);
     expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);

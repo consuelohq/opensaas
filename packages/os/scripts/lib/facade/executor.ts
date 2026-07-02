@@ -14,7 +14,7 @@ import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDeta
 import { getInputSchema } from './schemas';
 import { executeCodeCall } from '../code-call/runtime';
 import type { CodeCallInput } from '../code-call/types';
-import { executeWorkerCall } from '../worker/runtime';
+import { executeSubagent } from '../subagent/runtime';
 import type {
   BranchResolution,
   CommandArgument,
@@ -723,8 +723,8 @@ async function executeInternalTool<TData>(
     }) as Promise<ToolResult<TData>>;
   }
 
-  if (internal === 'worker.call') {
-    return executeWorkerCall(entry, input, context) as Promise<ToolResult<TData>>;
+  if (internal === 'subagent') {
+    return executeSubagent(entry, input, context) as Promise<ToolResult<TData>>;
   }
 
   if (internal === 'task.current') {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5b3360422e31",
+  "tmuxSession": "opensaas-workspace-agents-clean-subagent-runtime-and-quiet-wait-5b336042",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/clean-subagent-runtime-and-quiet-wait",
+  "branch": "task/workspace-agents/clean-subagent-runtime-and-quiet-wait",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clean-subagent-runtime-and-quiet-wait",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clean-subagent-runtime-and-quiet-wait",
+  "prNumber": 1334,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1334",
+  "createdAt": "2026-07-02T04:53:37.942Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clean-subagent-runtime-and-quiet-wait/.task/workspace-agents/clean-subagent-runtime-and-quiet-wait/session.json"
+}
