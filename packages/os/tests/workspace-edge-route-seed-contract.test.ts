@@ -94,6 +94,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/tracing',
       '/diffs',
       '/docs',
+      '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
     ]);
@@ -105,6 +106,7 @@ contractDescribe('workspace edge route seed contract', () => {
       expect.objectContaining({ pathPrefix: '/tracing', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/diffs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'diffs', manifestKey: 'sites/workspace_internal/diffs/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/docs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'docs', manifestKey: 'sites/workspace_internal/docs/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/settings', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'settings', manifestKey: 'sites/workspace_internal/settings/seeded-workspace-site-shell/index.html' }) }),
     ]));
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({

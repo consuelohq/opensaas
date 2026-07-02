@@ -39,6 +39,7 @@ const SITE_SNAPSHOT_ROUTES = [
   { pathPrefix: '/tracing', siteId: 'traces' },
   { pathPrefix: '/diffs', siteId: 'diffs' },
   { pathPrefix: '/docs', siteId: 'docs' },
+  { pathPrefix: '/settings', siteId: 'settings' },
 ] as const;
 type SiteSnapshotRoute = typeof SITE_SNAPSHOT_ROUTES[number];
 
