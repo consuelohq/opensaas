@@ -58,8 +58,7 @@ const writePermissionAllowlist = new Set([
   '.github/workflows/ci-release-create.yaml',
   '.github/workflows/ci-release-merge.yaml',
   '.github/workflows/claude.yml',
-  '.github/workflows/docs-i18n-pull.yaml',
-  '.github/workflows/docs-i18n-push.yaml',
+
   '.github/workflows/i18n-pull.yaml',
   '.github/workflows/i18n-push.yaml',
   '.github/workflows/i18n-qa-report.yaml',
