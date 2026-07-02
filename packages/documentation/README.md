@@ -1,12 +1,11 @@
 # Consuelo Documentation
 
-This package is the new Bun-owned Astro/Starlight documentation app for Consuelo. It is replacing the legacy Mintlify package in phases.
+This package is the Bun-owned Astro/Starlight documentation app for Consuelo. It is the source package for `docs.consuelohq.com`.
 
 ## Source of truth
 
 - Public docs content lives in `src/content/docs/**/*.mdx`.
 - Sidebar structure lives in `astro.config.mjs` until we introduce a separate typed navigation module.
-- Mintlify remains in `packages/consuelo-docs` only until the Phase 4 cutover.
 - English MDX is the editorial source of truth. Do not add committed machine-translated locale trees.
 
 ## Package ownership
@@ -39,7 +38,7 @@ bun run --cwd packages/documentation validate
 3. Run `bun run validate`.
 4. Run `bun run build`.
 
-Keep routes stable where possible. The old public docs routes are the compatibility contract until Phase 4 adds redirects.
+Keep routes stable where possible. Legacy public docs routes are preserved through `src/lib/legacy-redirects.mjs`.
 
 ## MDX component adapters
 
@@ -57,9 +56,9 @@ Current adapters:
 
 Prefer Starlight-native Markdown and components for new docs. Only add adapters when porting existing public docs requires them.
 
-## Do not edit generated Mintlify files
+## Legacy-route compatibility
 
-Do not edit `packages/consuelo-docs/docs.json` or use it as the source of truth for this app. While Mintlify is live, its source of truth is still `packages/consuelo-docs/navigation/base-structure.json`, but this package should not depend on generated Mintlify files.
+Legacy Mintlify routes that still matter should redirect into curated Starlight pages through `src/lib/legacy-redirects.mjs`. Do not bring back generated Mintlify files, `docs.json`, or old locale fallback trees.
 
 ## Removed content policy
 
@@ -80,4 +79,4 @@ Provider credentials must stay server-side. The client selector must never refer
 
 - Phase 2: this package becomes a working Starlight docs app with curated English content.
 - Phase 3: translation UX and cached runtime translation endpoint.
-- Phase 4: deploy cutover, redirects, and deletion of `packages/consuelo-docs`.
+- Phase 4: deploy cutover and legacy package deletion are complete when this package is the only active docs app.

@@ -2,12 +2,16 @@
 import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import starlight from '@astrojs/starlight';
+import { legacyRedirects } from './src/lib/legacy-redirects.mjs';
 
 const sidebar = [
   {
     label: 'User Guide',
     items: [
-      { label: 'User Stories & Use Cases', slug: 'user-guide/user-stories-use-cases' },
+      {
+        label: 'User Stories & Use Cases',
+        slug: 'user-guide/user-stories-use-cases',
+      },
       {
         label: 'Getting Started',
         items: [
@@ -15,18 +19,39 @@ const sidebar = [
           {
             label: 'Capabilities',
             items: [
-              { label: 'What is Consuelo?', slug: 'user-guide/getting-started/capabilities/what-is-consuelo' },
-              { label: 'Implementation Services', slug: 'user-guide/getting-started/capabilities/implementation-services' },
-              { label: 'Glossary', slug: 'user-guide/getting-started/capabilities/glossary' },
-              { label: 'Keyboard Shortcuts', slug: 'user-guide/getting-started/capabilities/keyboard-shortcuts' },
+              {
+                label: 'What is Consuelo?',
+                slug: 'user-guide/getting-started/capabilities/what-is-consuelo',
+              },
+              {
+                label: 'Implementation Services',
+                slug: 'user-guide/getting-started/capabilities/implementation-services',
+              },
+              {
+                label: 'Glossary',
+                slug: 'user-guide/getting-started/capabilities/glossary',
+              },
+              {
+                label: 'Keyboard Shortcuts',
+                slug: 'user-guide/getting-started/capabilities/keyboard-shortcuts',
+              },
             ],
           },
           {
             label: 'How-Tos',
             items: [
-              { label: 'Create a Workspace', slug: 'user-guide/getting-started/how-tos/create-workspace' },
-              { label: 'Navigate Around Consuelo', slug: 'user-guide/getting-started/how-tos/navigate-around-consuelo' },
-              { label: 'Configure Your Workspace', slug: 'user-guide/getting-started/how-tos/configure-your-workspace' },
+              {
+                label: 'Create a Workspace',
+                slug: 'user-guide/getting-started/how-tos/create-workspace',
+              },
+              {
+                label: 'Navigate Around Consuelo',
+                slug: 'user-guide/getting-started/how-tos/navigate-around-consuelo',
+              },
+              {
+                label: 'Configure Your Workspace',
+                slug: 'user-guide/getting-started/how-tos/configure-your-workspace',
+              },
             ],
           },
         ],
@@ -45,11 +70,23 @@ const sidebar = [
           { label: 'Portal', slug: 'os/concepts/portal' },
           { label: 'Skills', slug: 'os/concepts/skills' },
           { label: 'Scripts', slug: 'os/concepts/scripts' },
-          { label: 'Files and Artifacts', slug: 'os/concepts/files-and-artifacts' },
+          {
+            label: 'Files and Artifacts',
+            slug: 'os/concepts/files-and-artifacts',
+          },
           { label: 'Approvals', slug: 'os/concepts/approvals' },
-          { label: 'Data Model and GraphQL', slug: 'os/concepts/data-model-and-graphql' },
-          { label: 'Context and Memory', slug: 'os/concepts/context-and-memory' },
-          { label: 'Integrations and Capabilities', slug: 'os/concepts/integrations-and-capabilities' },
+          {
+            label: 'Data Model and GraphQL',
+            slug: 'os/concepts/data-model-and-graphql',
+          },
+          {
+            label: 'Context and Memory',
+            slug: 'os/concepts/context-and-memory',
+          },
+          {
+            label: 'Integrations and Capabilities',
+            slug: 'os/concepts/integrations-and-capabilities',
+          },
           { label: 'Observability', slug: 'os/concepts/observability' },
           { label: 'Local and Cloud', slug: 'os/concepts/local-and-cloud' },
         ],
@@ -80,9 +117,15 @@ const sidebar = [
         label: 'Agent Development',
         items: [
           { label: 'Agent Overview', slug: 'developers/agent/overview' },
-          { label: 'Tool System & Code Mode', slug: 'developers/agent/tool-system' },
+          {
+            label: 'Tool System & Code Mode',
+            slug: 'developers/agent/tool-system',
+          },
           { label: 'CRM Tools', slug: 'developers/agent/crm-tools' },
-          { label: 'Integrations & Tracing', slug: 'developers/agent/integrations' },
+          {
+            label: 'Integrations & Tracing',
+            slug: 'developers/agent/integrations',
+          },
         ],
       },
       {
@@ -101,15 +144,26 @@ const sidebar = [
 
 export default defineConfig({
   site: 'https://docs.consuelohq.com',
-  adapter: cloudflare({ imageService: 'compile', prerenderEnvironment: 'node' }),
+  redirects: legacyRedirects,
+  adapter: cloudflare({
+    imageService: 'compile',
+    prerenderEnvironment: 'node',
+  }),
   integrations: [
     starlight({
       title: 'Consuelo Docs',
       components: {
-        LanguageSelect: './src/components/translation/RuntimeLanguageSelect.astro',
+        LanguageSelect:
+          './src/components/translation/RuntimeLanguageSelect.astro',
       },
       sidebar,
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/consuelohq/opensaas' }],
+      social: [
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/consuelohq/opensaas',
+        },
+      ],
     }),
   ],
 });
