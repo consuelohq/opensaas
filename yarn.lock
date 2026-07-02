@@ -8606,9 +8606,9 @@ __metadata:
   linkType: hard
 
 "@lingui/detect-locale@npm:^5.2.0":
-  version: 5.9.3
-  resolution: "@lingui/detect-locale@npm:5.9.3"
-  checksum: 10c0/9e3d07c6147686437764ead3d0c048ca8484315ee7b2017a53d1db6e3c1e156269eb2e72c2e9d29fd000c2e60434d745df964461356fd4d6bfabb3cb40364267
+  version: 5.9.5
+  resolution: "@lingui/detect-locale@npm:5.9.5"
+  checksum: 10c0/7f5698f745b0583814a1d1ada43d1de30a5f0b395a3e02af14b05c288bd724cc49552f894e56c4ced8d62db055cc24b613ceb0142e480fbce11c3e3302746ff1
   languageName: node
   linkType: hard
 
