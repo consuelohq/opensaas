@@ -94,7 +94,7 @@ const AGENT_NAME_LIST: AgentName[] = [
   'pi',
 ];
 const AGENT_NAMES = new Set<AgentName>(AGENT_NAME_LIST);
-const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
+export const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
   'dependencies',
   'workspace',
   'security',
@@ -127,7 +127,7 @@ export function formatLocalAgentsPromptMessage(count: number): string {
   return `${count} agents found — press Space to not connect to this workspace, Enter to continue`;
 }
 
-function renderInstallerProgress(activeStep: InstallerProgressStep | null): void {
+export function renderInstallerProgress(activeStep: InstallerProgressStep | null): void {
   printOsBanner(createInstallerProgressSteps(activeStep));
 }
 

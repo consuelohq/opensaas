@@ -41,6 +41,17 @@ describe('local OS install state', () => {
 
     expect(result.home).toBe(tempHome);
     expect(result.actions.some((action: { status: string }) => action.status === 'planned')).toBe(true);
+    for (const expectedPath of [
+      join('workspaces', 'local-consuelo-os', 'shared'),
+      join('node', 'workspaces', 'local-consuelo-os', 'state'),
+    ]) {
+      expect(result.actions.some(
+        (action: { type: string; path: string; status: string }) =>
+          action.type === 'create_dir' &&
+          action.path.endsWith(expectedPath) &&
+          action.status === 'planned',
+      )).toBe(true);
+    }
     expect(existsSync(join(tempHome, 'config.json'))).toBe(false);
   });
 

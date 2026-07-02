@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2ead3c742119",
+  "tmuxSession": "opensaas-security-fix-security-stream-review-comments-2ead3c74",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-security-stream-review-comments",
+  "branch": "task/security/fix-security-stream-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-security-stream-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-security-stream-review-comments",
+  "prNumber": 1339,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1339",
+  "createdAt": "2026-07-02T19:23:48.271Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-security-stream-review-comments/.task/security/fix-security-stream-review-comments/session.json"
+}
