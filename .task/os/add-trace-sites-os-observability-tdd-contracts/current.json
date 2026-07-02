@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-trace-sites-os-observability-tdd-contracts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1093,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1093",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1093",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1093/add-trace-sites-os-observability-tdd-contracts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1093",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1093/add-trace-sites-os-observability-tdd-contracts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-trace-sites-os-observability-tdd-contracts",
+  "taskSession": "tsk_d75d5e3824a9",
+  "tmuxSession": "opensaas-os-add-trace-sites-os-observability-tdd-contracts-d75d5e38",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-trace-sites-os-observability-tdd-contracts/.task/os/add-trace-sites-os-observability-tdd-contracts/session.json",
+  "createdAt": "2026-06-16T21:04:18.197Z"
+}
