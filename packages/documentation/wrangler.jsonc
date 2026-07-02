@@ -1,0 +1,29 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "consuelo-docs",
+	"compatibility_date": "2026-07-02",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "878b2a853daf4a56a68e890d73abd316"
+		}
+	],
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"DOCS_TRANSLATION_PROVIDER": "google"
+	},
+	"routes": [
+		{
+			"pattern": "docs.consuelohq.com",
+			"custom_domain": true
+		}
+	]
+}

@@ -1,0 +1,125 @@
+---
+title: Connect Agents
+description: Connect cloud agents like ChatGPT and local agents like Codex, Cursor, and Claude to your Consuelo OS workspace.
+---
+
+# Connect agents
+
+Consuelo OS supports two agent connection models:
+
+- **Cloud agents** reach your hosted MCP endpoint from provider infrastructure
+- **Local agents** run on your machine and connect through local OS configuration
+
+Both models should operate against the same workspace boundary, skills, and manifest.
+
+## Cloud agents
+
+### ChatGPT
+
+ChatGPT connects through a custom MCP connector.
+
+1. Open your [workspace launcher](/os/getting-started/workspace-launcher/)
+2. Copy the MCP URL, for example `https://<workspace>.consuelohq.com/mcp`
+3. Open [ChatGPT Connectors](https://chatgpt.com/apps#settings/Connectors)
+4. Add a connector with your workspace MCP URL
+5. Complete any bearer-token or OAuth steps shown by your workspace security setup
+
+Install also writes a generated ChatGPT MCP connection record under:
+
+```text
+~/.consuelo/os/security/generated/chatgpt-mcp.json
+```
+
+That file contains the hosted MCP URL, local MCP URL, scopes, and bearer token material for connector setup.
+
+### Other cloud providers
+
+Hosted MCP ingress is protected by a fail-closed Cloudflare policy on `/mcp` and `/traces`.
+
+Trusted provider IP ranges must be present in the workspace allowlist before a provider can reach your hosted MCP endpoint. See [MCP ingress security](/os/concepts/mcp-ingress-security/) for the current provider catalog and operator controls.
+
+If a cloud agent cannot connect even though the MCP URL is correct, check whether that provider's egress ranges are synced into your workspace allowlist.
+
+## Local agents
+
+The installer detects local agents already present on your machine and offers to connect them during the **agents** step.
+
+Supported local agent ids:
+
+| Agent id | Typical product |
+| --- | --- |
+| `codex` | Codex |
+| `cursor` | Cursor |
+| `claude` | Claude Code |
+| `opencode` | OpenCode |
+| `factory` | Factory |
+| `gemini` | Gemini |
+| `pi` | Pi |
+
+During install:
+
+1. The installer detects installed agents
+2. You select which agents should connect to the workspace
+3. OS writes each agent's config file and records the connection in `~/.consuelo/os/config.json`
+
+Pre-select agents non-interactively:
+
+```bash
+curl -fsSL https://install.consuelohq.com/os | bash -s -- --yes --connect-agent codex --connect-agent cursor
+```
+
+### What "connected" means for local agents
+
+A local agent is connected when:
+
+- the installer detected it on disk
+- you selected it during the agents step
+- OS wrote the agent config with Consuelo OS MCP settings
+- `config.json` contains `{ name, connected: true }` for that agent
+
+The workspace launcher reads that config and lists connected agents by name.
+
+An agent can be installed on your machine but still show as disconnected if you skipped it during install or the config write failed.
+
+### Local MCP URL
+
+Local agents can also use the local MCP endpoint while the OS service is running:
+
+```text
+http://127.0.0.1:8960/mcp
+```
+
+Hosted and local MCP URLs should point at the same workspace tools and manifest. Prefer the hosted URL for cloud connectors and the local URL for on-machine agents when you are developing locally.
+
+## Connection checklist
+
+Use this order when something is not connected:
+
+| Check | Cloud agent | Local agent |
+| --- | --- | --- |
+| MCP URL copied from launcher | Required | Optional if using local URL |
+| Provider allowlist includes provider egress ranges | Required for hosted `/mcp` | Not applicable |
+| Agent selected during install | Not applicable | Required |
+| `config.json` shows `connected: true` | Not applicable | Required |
+| Local OS service healthy on `127.0.0.1:8960/health` | Optional | Required for local MCP |
+| Workspace health returns OK on hosted `/health` | Recommended | Recommended |
+
+## MCP scopes
+
+Generated ChatGPT MCP connections use these scopes:
+
+```text
+route:/mcp:read
+tool:*:read
+```
+
+Those scopes define what the connector can read from the hosted MCP surface. Tool execution still flows through the OS portal and manifest rules.
+
+## Related
+
+- [Install Consuelo OS](/os/getting-started/install/)
+- [Workspace launcher](/os/getting-started/workspace-launcher/)
+- [MCP ingress security](/os/concepts/mcp-ingress-security/)
+- [Configuration](/os/concepts/configuration/)
+- [OS portal](/os/concepts/portal/)
+- [Tools overview](/os/tools/overview/)

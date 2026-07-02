@@ -240,6 +240,8 @@
     "railway:redeploy": "bun packages/workspace/scripts/railway-redeploy.js",
     "browser": "bun packages/workspace/scripts/browser.js",
     "website:deploy": "bun packages/workspace/scripts/website-deploy.js",
+    "docs:deploy": "bun packages/workspace/scripts/docs-deploy.js",
+    "web:deploy": "bun packages/workspace/scripts/web-deploy.js",
     "context": "bun packages/workspace/scripts/context.js",
     "tmp": "bun packages/workspace/scripts/tmp.js",
     "review": "bun packages/workspace/scripts/review.js",

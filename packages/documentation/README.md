@@ -29,7 +29,52 @@ From repo root:
 bun run --cwd packages/documentation dev
 bun run --cwd packages/documentation build
 bun run --cwd packages/documentation validate
+bun run docs:deploy
+bun run web:deploy -- docs
 ```
+
+## Deployment
+
+`docs.consuelohq.com` is served by the `consuelo-docs` Cloudflare Worker defined in `wrangler.jsonc`. The Worker owns the custom domain through git-backed Wrangler config. Do not manually create a DNS CNAME or A record for `docs.consuelohq.com`; Cloudflare Workers Custom Domains provision DNS when the Worker is deployed.
+
+Deploy from repo root:
+
+```bash
+bun run docs:deploy
+bun run web:deploy -- docs
+bun run web:deploy -- docs --build-only
+bun run web:deploy -- docs --skip-build
+```
+
+Build without deploying:
+
+```bash
+bun run docs:deploy -- --build-only
+```
+
+### Cloudflare setup
+
+1. Authenticate Wrangler for the Consuelo Cloudflare account.
+2. Deploy once so the Worker and custom domain attach:
+
+```bash
+bun run docs:deploy
+```
+
+3. Set the production translation secret (never commit this value). Astro build writes the deploy config to `dist/server/wrangler.json`:
+
+```bash
+bun run docs:deploy -- --build-only
+bunx wrangler secret put GOOGLE_TRANSLATE_API_KEY --config packages/documentation/dist/server/wrangler.json
+```
+
+4. Deploy again after secrets are configured:
+
+```bash
+bun run docs:deploy -- --skip-build
+```
+
+`DOCS_TRANSLATION_PROVIDER` defaults to `google` through Worker vars in `wrangler.jsonc`. Use `passthrough` only for local validation.
 
 ## Adding or moving pages
 
