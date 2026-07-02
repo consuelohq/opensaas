@@ -123,6 +123,7 @@ const sidebar = [
         label: 'Workspace Tools',
         items: [
           { label: 'Overview', slug: 'os/tools/overview' },
+          { label: 'Subagents', slug: 'os/tools/subagents' },
           { label: 'Browser Tools', slug: 'os/tools/browser-tools' },
         ],
       },
