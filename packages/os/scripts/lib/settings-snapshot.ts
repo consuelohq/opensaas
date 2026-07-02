@@ -3,7 +3,16 @@ import path from 'node:path';
 
 import { getCapabilityHealth } from './capabilities';
 import { detectAgents, loadOsConfig } from './install-state';
-import { readCoreToolManifest, readFullToolManifest, getPackageRoot } from './manifest';
+import {
+  isManifestItemEnabled,
+  manifestOverlayPath,
+  readManifestOverlay,
+} from './manifest-overlay';
+import {
+  readEffectiveCoreManifest,
+  readEffectiveFullManifest,
+  getPackageRoot,
+} from './manifest';
 import { listBundledSkills } from './skills';
 
 export type SettingsConnectionStatus =
@@ -35,6 +44,23 @@ export type SettingsRunBook = {
   aliases: string[];
   roleCount: number;
   toolCount: number;
+  enabled: boolean;
+};
+
+export type SettingsManifestItem = {
+  name: string;
+  kind: 'tool' | 'skill';
+  category: string;
+  enabled: boolean;
+  core: boolean;
+};
+
+export type SettingsOverlaySummary = {
+  path: string;
+  disabledTools: string[];
+  disabledSkills: string[];
+  disabledWorkflows: string[];
+  updatedAt: string | null;
 };
 
 export type SettingsManifestSummary = {
@@ -62,6 +88,9 @@ export type SettingsSnapshot = {
   cloudConnectors: SettingsCloudConnector[];
   localAgents: SettingsLocalAgent[];
   manifest: SettingsManifestSummary;
+  overlay: SettingsOverlaySummary;
+  tools: SettingsManifestItem[];
+  skills: SettingsManifestItem[];
   runBooks: SettingsRunBook[];
   capabilities: ReturnType<typeof getCapabilityHealth>;
 };
@@ -139,7 +168,7 @@ function buildCloudConnectors(home: string, mcpUrl: string | null): SettingsClou
   return connectors;
 }
 
-function readRunBooks(): SettingsRunBook[] {
+function readRunBooks(overlay: ReturnType<typeof readManifestOverlay>): SettingsRunBook[] {
   const bundlesPath = path.join(getPackageRoot(), 'manifests', 'workflow-bundles.json');
   const bundles = readJsonFile<WorkflowBundlesFile>(bundlesPath);
   return (bundles?.workflows ?? [])
@@ -153,15 +182,58 @@ function readRunBooks(): SettingsRunBook[] {
         : [],
       roleCount: Array.isArray(workflow.roles) ? workflow.roles.length : 0,
       toolCount: Array.isArray(workflow.tools) ? workflow.tools.length : 0,
+      enabled: isManifestItemEnabled(overlay, 'workflow', workflow.id),
     }));
+}
+
+function buildManifestItems(home: string, overlay: ReturnType<typeof readManifestOverlay>): {
+  tools: SettingsManifestItem[];
+  skills: SettingsManifestItem[];
+} {
+  const fullManifest = readEffectiveFullManifest(home);
+  const coreNames = new Set(readEffectiveCoreManifest(home).tools.map((entry) => entry.name));
+
+  const tools: SettingsManifestItem[] = [];
+  const skills: SettingsManifestItem[] = [];
+
+  for (const entry of fullManifest.tools) {
+    const entryRecord = entry as typeof entry & { category?: string; core?: boolean };
+    const definition = entry.definition as { category?: string };
+    const category = entryRecord.category ?? definition.category ?? '';
+    if (entry.kind === 'os-skill') {
+      skills.push({
+        name: entry.name,
+        kind: 'skill',
+        category,
+        enabled: isManifestItemEnabled(overlay, 'skill', entry.name),
+        core: entryRecord.core === true || coreNames.has(entry.name),
+      });
+      continue;
+    }
+
+    tools.push({
+      name: entry.name,
+      kind: 'tool',
+      category,
+      enabled: isManifestItemEnabled(overlay, 'tool', entry.name),
+      core: entryRecord.core === true || coreNames.has(entry.name),
+    });
+  }
+
+  return {
+    tools: tools.sort((left, right) => left.name.localeCompare(right.name)),
+    skills: skills.sort((left, right) => left.name.localeCompare(right.name)),
+  };
 }
 
 export function buildSettingsSnapshot(home: string): SettingsSnapshot {
   const config = loadOsConfig(home);
   const mcpUrl = resolveMcpUrl(home, config);
-  const fullManifest = readFullToolManifest();
-  const coreManifest = readCoreToolManifest();
+  const overlay = readManifestOverlay(home);
+  const fullManifest = readEffectiveFullManifest(home);
+  const coreManifest = readEffectiveCoreManifest(home);
   const bundledSkills = listBundledSkills();
+  const manifestItems = buildManifestItems(home, overlay);
 
   return {
     version: 1,
@@ -185,13 +257,22 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
       connected: agent.connected,
     })),
     manifest: {
-      totalTools: fullManifest.tools.length,
+      totalTools: fullManifest.tools.filter((entry) => entry.kind === 'facade-tool').length,
       coreTools: coreManifest.tools.length,
       skillEntries: fullManifest.tools.filter((entry) => entry.kind === 'os-skill').length,
       bundledSkills: bundledSkills.length,
       selectedSkills: config?.selectedSkills ?? [],
     },
-    runBooks: readRunBooks(),
+    overlay: {
+      path: manifestOverlayPath(home),
+      disabledTools: overlay.disabledTools,
+      disabledSkills: overlay.disabledSkills,
+      disabledWorkflows: overlay.disabledWorkflows,
+      updatedAt: overlay.updatedAt,
+    },
+    tools: manifestItems.tools,
+    skills: manifestItems.skills,
+    runBooks: readRunBooks(overlay),
     capabilities: getCapabilityHealth(home),
   };
 }

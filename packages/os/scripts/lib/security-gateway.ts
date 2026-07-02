@@ -11,7 +11,8 @@ import {
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { readFullToolManifest } from './manifest';
+import { readEffectiveFullManifest as readEffectiveFullToolManifest, readFullToolManifest } from './manifest';
+import { resolveOverlayHome } from './manifest-overlay';
 
 type JsonObject = Record<string, unknown>;
 type SignatureAlgorithm = 'ed25519';
@@ -527,8 +528,15 @@ const DANGEROUS_TOOL_NAMES = new Set([
 
 const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
 
+function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
+  const home = resolveOverlayHome();
+  return fs.existsSync(path.join(home, 'config.json'))
+    ? readEffectiveFullToolManifest(home)
+    : readFullToolManifest();
+}
+
 export function resolveToolScope(toolName: string): ToolScopeResolution {
-  const entry = readFullToolManifest().tools.find((candidate) => candidate.name === toolName);
+  const entry = activeToolManifestForScope().tools.find((candidate) => candidate.name === toolName);
   if (!entry) {
     return {
       ok: false,

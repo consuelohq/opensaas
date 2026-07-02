@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { applyManifestOverlay, readManifestOverlay } from './manifest-overlay';
 import type { OsManifestEntry } from './types';
 
 type JsonObject = Record<string, unknown>;
@@ -61,8 +62,16 @@ export function readCoreToolManifest(): CanonicalToolManifest {
   return readToolManifest(coreManifestPath);
 }
 
-export function readManifest(): OsManifestEntry[] {
-  return readFullToolManifest().tools
+export function readEffectiveFullManifest(home?: string): CanonicalToolManifest {
+  return applyManifestOverlay(readFullToolManifest(), readManifestOverlay(home));
+}
+
+export function readEffectiveCoreManifest(home?: string): CanonicalToolManifest {
+  return applyManifestOverlay(readCoreToolManifest(), readManifestOverlay(home));
+}
+
+export function readManifest(home?: string): OsManifestEntry[] {
+  return readEffectiveFullManifest(home).tools
     .filter((entry) => entry.kind === 'os-skill')
     .map((entry) => {
       if (!isOsManifestEntry(entry.definition)) {
@@ -73,8 +82,8 @@ export function readManifest(): OsManifestEntry[] {
     });
 }
 
-export function findManifestEntry(name: string): OsManifestEntry | null {
-  return readManifest().find((entry) => entry.name === name) ?? null;
+export function findManifestEntry(name: string, home?: string): OsManifestEntry | null {
+  return readManifest(home).find((entry) => entry.name === name) ?? null;
 }
 
 export function getPackageRoot(): string {
