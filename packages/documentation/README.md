@@ -1,49 +1,83 @@
-# Starlight Starter Kit: Basics
+# Consuelo Documentation
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+This package is the new Bun-owned Astro/Starlight documentation app for Consuelo. It is replacing the legacy Mintlify package in phases.
 
+## Source of truth
+
+- Public docs content lives in `src/content/docs/**/*.mdx`.
+- Sidebar structure lives in `astro.config.mjs` until we introduce a separate typed navigation module.
+- Mintlify remains in `packages/consuelo-docs` only until the Phase 4 cutover.
+- English MDX is the editorial source of truth. Do not add committed machine-translated locale trees.
+
+## Package ownership
+
+This package is Bun-owned. Use Bun commands from this directory or with `--cwd packages/documentation`.
+
+`packages/documentation` intentionally remains outside the root Yarn workspaces during this migration. Do not add it to the root Yarn workspace list unless the package-manager migration is explicitly in scope.
+
+## Commands
+
+```bash
+bun install
+bun run dev
+bun run build
+bun run validate
 ```
-bun create astro@latest -- --template starlight
+
+From repo root:
+
+```bash
+bun run --cwd packages/documentation dev
+bun run --cwd packages/documentation build
+bun run --cwd packages/documentation validate
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Adding or moving pages
 
-## 🚀 Project Structure
+1. Add or edit the MDX page under `src/content/docs`.
+2. Add the page to the Starlight sidebar in `astro.config.mjs`.
+3. Run `bun run validate`.
+4. Run `bun run build`.
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+Keep routes stable where possible. The old public docs routes are the compatibility contract until Phase 4 adds redirects.
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
+## MDX component adapters
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+Legacy Mintlify-like MDX components are adapted in `src/components/mintlify`.
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+Current adapters:
 
-Static assets, like favicons, can be placed in the `public/` directory.
+- `Note`
+- `Warning`
+- `CardGroup`
+- `Card`
+- `CardTitle`
+- `VimeoEmbed`
+- `AgentContext`
 
-## 🧞 Commands
+Prefer Starlight-native Markdown and components for new docs. Only add adapters when porting existing public docs requires them.
 
-All commands are run from the root of the project, from a terminal:
+## Do not edit generated Mintlify files
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+Do not edit `packages/consuelo-docs/docs.json` or use it as the source of truth for this app. While Mintlify is live, its source of truth is still `packages/consuelo-docs/navigation/base-structure.json`, but this package should not depend on generated Mintlify files.
 
-## 👀 Want to learn more?
+## Removed content policy
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+Do not bring these back into public docs:
+
+- generated raw OS source docs;
+- committed locale fallback trees;
+- legacy Twenty UI reference pages unless they are intentionally rewritten for Consuelo;
+- Starlight starter examples.
+
+## Runtime translation
+
+Runtime translation is Phase 3-owned. The English MDX files remain the only editorial source of truth. Do not add committed translated locale folders under `src/content/docs`. The header language selector calls `/api/docs/translate`, and the server route loads the English source, hashes the content, translates with the configured provider, and caches by route + content hash + target language.
+
+Provider credentials must stay server-side. The client selector must never reference `GOOGLE_TRANSLATE_API_KEY` or any provider token. Use `DOCS_TRANSLATION_PROVIDER=passthrough` only for local/test validation; production translation is configured with `GOOGLE_TRANSLATE_API_KEY`.
+
+## Phase boundaries
+
+- Phase 2: this package becomes a working Starlight docs app with curated English content.
+- Phase 3: translation UX and cached runtime translation endpoint.
+- Phase 4: deploy cutover, redirects, and deletion of `packages/consuelo-docs`.

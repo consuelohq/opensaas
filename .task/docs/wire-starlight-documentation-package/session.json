@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9396db76b951",
+  "tmuxSession": "opensaas-docs-wire-starlight-documentation-package-9396db76",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/wire-starlight-documentation-package",
+  "branch": "task/docs/wire-starlight-documentation-package",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-wire-starlight-documentation-package",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-wire-starlight-documentation-package",
+  "prNumber": 1328,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1328",
+  "createdAt": "2026-07-01T20:05:19.133Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-wire-starlight-documentation-package/.task/docs/wire-starlight-documentation-package/session.json"
+}
