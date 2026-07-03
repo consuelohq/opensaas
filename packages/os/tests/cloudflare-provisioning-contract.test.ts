@@ -65,6 +65,7 @@ type WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
   temporaryDenyIpCidrs?: string[];
   trustedProviderIpSourceIds?: TrustedOsMcpProviderIpSourceId[];
   trustedProviderExtraIpCidrs?: string[];
+  managedMcpHostnames?: string[];
   allowInstallBootstrapRuleId?: string;
   allowInstallBootstrapRuleRef?: string;
   allowInstallBootstrapRuleDescription?: string;
@@ -451,7 +452,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     );
   });
 
-  it('should build managed OS MCP ingress rules for the OS hostname class', async () => {
+  it('should build managed OS MCP ingress rules for central OS and workspace hostname classes', async () => {
     const { buildManagedOsMcpIngressPolicyRules } =
       await loadWorkspaceCloudflareProvisioningContract();
 
@@ -493,6 +494,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         'not ends_with(http.host, ".os-origin.consuelohq.com")',
       );
       expect(expression).toContain('starts_with(http.request.uri.path, "/mcp")');
+      expect(expression).toContain('or http.host in {\n    "os.consuelohq.com"\n  }');
       expect(expression).toContain('"workspace.consuelohq.com"');
       expect(expression).toContain('"workspace-edge.consuelohq.com"');
       expect(expression).not.toContain('kokayi.consuelohq.com');
@@ -528,6 +530,8 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
           'openai_chatgpt_connectors, anthropic_claude',
         CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS:
           '203.0.113.0/24, 2001:db8:203::/48',
+        CLOUDFLARE_MCP_MANAGED_HOSTNAMES:
+          'os.consuelohq.com, workspace.consuelohq.com',
       },
     });
 
@@ -546,6 +550,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         'anthropic_claude',
       ],
       trustedProviderExtraIpCidrs: ['203.0.113.0/24', '2001:db8:203::/48'],
+      managedMcpHostnames: ['os.consuelohq.com', 'workspace.consuelohq.com'],
     });
     expect(() =>
       createManagedOsMcpIngressPolicyConfigFromEnv({

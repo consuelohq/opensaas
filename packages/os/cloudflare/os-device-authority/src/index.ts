@@ -1,7 +1,10 @@
 import { CONSUELO_DEVICE_VERIFICATION_URL } from '../../../scripts/lib/workspace-device-authorization';
+import { createWorkspaceCloudflareD1RouteRegistry, type WorkspaceRouteD1Database, type WorkspaceRouteD1Resolution } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { createWorkspaceEdgeRouteSeedSql } from '../../../scripts/lib/workspace-edge-route-seed';
 
 type GrantStatus = 'pending' | 'approved' | 'denied';
+type WorkspaceNodeRole = 'home' | 'member';
+type WorkspaceNodeStatus = 'created' | 'reconnected';
 type StrongerAuthMethod = 'google' | 'passkey' | 'magic_link' | 'hardware_key' | 'admin_invite';
 
 type Grant = {
@@ -20,12 +23,29 @@ type Grant = {
   accountAuthMethod?: StrongerAuthMethod;
   connectorToken?: string;
   connectorExpiresAt?: number;
+  nodeId?: string;
+  nodeName?: string;
+  nodeRole?: WorkspaceNodeRole;
+  nodeStatus?: WorkspaceNodeStatus;
 };
 
 type AccountWorkspace = {
   accountId: string;
   workspaceSlug: string;
   workspaceHost: string;
+  homeNodeId?: string;
+  updatedAt: number;
+};
+
+type WorkspaceNode = {
+  accountId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  nodeId: string;
+  nodeName: string;
+  role: WorkspaceNodeRole;
+  devicePublicKeyThumbprint: string;
+  createdAt: number;
   updatedAt: number;
 };
 
@@ -75,7 +95,7 @@ type McpOAuthAccessToken = {
   issuedAt: number;
 };
 
-type WorkspaceRouteRegistryBinding = { exec(sql: string): Promise<unknown> };
+type WorkspaceRouteRegistryBinding = WorkspaceRouteD1Database;
 type DefaultSiteSnapshot = {
   key: string;
   versionId: string;
@@ -102,6 +122,8 @@ type Store = {
   byMcpOAuthAccessToken(tokenHash: string): Promise<McpOAuthAccessToken | undefined>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
+  putWorkspaceNode(node: WorkspaceNode): Promise<void>;
+  byWorkspaceNode(accountId: string, nodeId: string): Promise<WorkspaceNode | undefined>;
 };
 type StorageLike = { get<T>(key: string): Promise<T | undefined>; put<T>(key: string, value: T): Promise<void>; delete(key: string): Promise<boolean> };
 type StateLike = { storage: StorageLike };
@@ -114,6 +136,7 @@ type Env = {
   GOOGLE_OAUTH_CLIENT_ID?: string;
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
   WORKSPACE_ROUTE_REGISTRY?: WorkspaceRouteRegistryBinding;
+  WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID?: string;
 };
@@ -168,10 +191,20 @@ async function hmac(secret: string, value: string): Promise<string> { try { cons
 async function devicePublicKeyThumbprint(value: string): Promise<string> { try { return `dpk_${(await hash(value)).slice(0, 32)}`; } catch { throw new Error('device public key thumbprint failed'); } }
 function slug(value: string): string { const out = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); if (!out) throw new Error('workspace_name is required'); return out; }
 function host(value: string): string { const out = value.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, ''); if (!out) throw new Error('workspace_host is required'); return out; }
+function optionalNodeId(value: string): string | undefined { const out = value.trim().replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-|-$/g, ''); return out || undefined; }
+function connectorIdFromNodeId(value: string): string { const segment = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'local'; return `connector_${segment}`; }
 function workspaceIdFromSlug(value: string): string { return `workspace_${slug(value).replace(/-/g, '_')}`; }
 function baseDomainFromHost(value: string): string { const normalized = host(value); return normalized.endsWith('.consuelohq.com') ? 'consuelohq.com' : normalized.split('.').slice(-2).join('.'); }
 function workspaceHostFromMcpResource(resource: string): string { const url = new URL(resource); if (url.protocol !== 'https:' || url.pathname !== '/mcp') throw new Error('invalid_resource'); return host(url.hostname); }
-function normalizeScopes(value: string): string[] { const requested = value.split(/\s+/).map(scope => scope.trim()).filter(Boolean); const allowed = requested.filter(scope => MCP_OAUTH_SCOPES.includes(scope)); return allowed.length > 0 ? [...new Set(allowed)] : ['mcp:read', 'mcp:call', 'tool:*:read']; }
+function normalizeScopes(value: string): string[] {
+  const requested = value.split(/\s+/).map(scope => scope.trim()).filter(Boolean);
+  const allowed = requested.filter(scope => MCP_OAUTH_SCOPES.includes(scope));
+  const scopes = allowed.length > 0 ? allowed : ['mcp:read', 'mcp:call', 'tool:*:read'];
+  if ((scopes.includes('mcp:read') || scopes.includes('mcp:call')) && !scopes.includes('route:/mcp:read')) {
+    scopes.push('route:/mcp:read');
+  }
+  return [...new Set(scopes)];
+}
 function hasGrantedScope(scopes: string[], requiredScope: string): boolean { if (!requiredScope || scopes.includes(requiredScope)) return true; const parts = requiredScope.split(':'); return parts.length === 3 && parts[0] === 'tool' && (scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*')); }
 function validChatGptRedirectUri(value: string): boolean { try { return value.startsWith(CHATGPT_REDIRECT_PREFIX) && new URL(value).origin === 'https://chatgpt.com'; } catch { return false; } }
 function validChatGptClientId(value: string): boolean {
@@ -237,6 +270,8 @@ class DurableStore implements Store {
   async byMcpOAuthAccessToken(tokenHash: string) { try { return await this.storage.get<McpOAuthAccessToken>(`mot:${tokenHash}`); } catch { throw new Error('mcp oauth token read failed'); } }
   async putAccountWorkspace(workspace: AccountWorkspace) { try { await this.storage.put(`aw:${workspace.accountId}`, workspace); } catch { throw new Error('account workspace write failed'); } }
   async byAccountWorkspace(accountId: string) { try { return await this.storage.get<AccountWorkspace>(`aw:${accountId}`); } catch { throw new Error('account workspace read failed'); } }
+  async putWorkspaceNode(node: WorkspaceNode) { try { await this.storage.put(`wn:${node.accountId}:${node.nodeId}`, node); } catch { throw new Error('workspace node write failed'); } }
+  async byWorkspaceNode(accountId: string, nodeId: string) { try { return await this.storage.get<WorkspaceNode>(`wn:${accountId}:${nodeId}`); } catch { throw new Error('workspace node read failed'); } }
 }
 
 
@@ -247,6 +282,7 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpCodes = new Map<string, McpOAuthCode>();
   const mcpTokens = new Map<string, McpOAuthAccessToken>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
+  const workspaceNodes = new Map<string, WorkspaceNode>();
   return {
     put(g) { grants.set(g.hash, { ...g }); return Promise.resolve(); },
     byHash(h) { const g = grants.get(h); return Promise.resolve(g ? { ...g } : undefined); },
@@ -265,6 +301,8 @@ export function createMemoryDeviceGrantStore(): Store {
     byMcpOAuthAccessToken(tokenHash) { const t = mcpTokens.get(tokenHash); return Promise.resolve(t ? { ...t, scopes: [...t.scopes] } : undefined); },
     putAccountWorkspace(workspace) { accountWorkspaces.set(workspace.accountId, { ...workspace }); return Promise.resolve(); },
     byAccountWorkspace(accountId) { const workspace = accountWorkspaces.get(accountId); return Promise.resolve(workspace ? { ...workspace } : undefined); },
+    putWorkspaceNode(node) { workspaceNodes.set(`${node.accountId}:${node.nodeId}`, { ...node }); return Promise.resolve(); },
+    byWorkspaceNode(accountId, nodeId) { const node = workspaceNodes.get(`${accountId}:${nodeId}`); return Promise.resolve(node ? { ...node } : undefined); },
   };
 }
 
@@ -406,6 +444,253 @@ function invalidOauthRequest(error: string, description: string, status = 400): 
   return json({ error, error_description: description }, { status });
 }
 
+function mcpResourceUrl(origin: string): string {
+  return new URL('/mcp', origin).toString();
+}
+
+function oauthProtectedResourceMetadata(origin: string): Record<string, unknown> {
+  return {
+    resource: mcpResourceUrl(origin),
+    authorization_servers: [origin],
+    scopes_supported: MCP_OAUTH_SCOPES,
+    bearer_methods_supported: ['header'],
+  };
+}
+
+function isCentralMcpResource(resource: string, origin: string): boolean {
+  try {
+    const resourceUrl = new URL(resource);
+    const originUrl = new URL(origin);
+    return resourceUrl.protocol === 'https:' &&
+      resourceUrl.pathname === '/mcp' &&
+      host(resourceUrl.hostname) === host(originUrl.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isProtectedResourceMetadataPath(pathname: string): boolean {
+  return pathname === '/.well-known/oauth-protected-resource' ||
+    pathname === '/.well-known/oauth-protected-resource/mcp';
+}
+
+function isMcpRequestPath(pathname: string): boolean {
+  return pathname === '/mcp' || pathname.startsWith('/mcp/');
+}
+
+type McpOAuthWorkspaceResolution =
+  | { ok: true; workspaceHost: string }
+  | { ok: false; error: string; description: string; status: number };
+
+async function resolveMcpOAuthWorkspaceHost(input: {
+  store: Store;
+  accountId: string;
+  resource: string;
+  requestedWorkspaceHost: string;
+  origin: string;
+}): Promise<McpOAuthWorkspaceResolution> {
+  try {
+    const accountWorkspace = await input.store.byAccountWorkspace(input.accountId);
+    if (!accountWorkspace) {
+      return {
+        ok: false,
+        error: 'access_denied',
+        description: 'No Consuelo OS workspace is connected for this Google account.',
+        status: 403,
+      };
+    }
+
+    if (isCentralMcpResource(input.resource, input.origin)) {
+      return { ok: true, workspaceHost: accountWorkspace.workspaceHost };
+    }
+
+    if (host(accountWorkspace.workspaceHost) !== host(input.requestedWorkspaceHost)) {
+      return {
+        ok: false,
+        error: 'access_denied',
+        description: 'This Google account is not connected to the requested Consuelo OS workspace.',
+        status: 403,
+      };
+    }
+
+    return { ok: true, workspaceHost: input.requestedWorkspaceHost };
+  } catch {
+    return {
+      ok: false,
+      error: 'server_error',
+      description: 'Workspace membership lookup failed.',
+      status: 500,
+    };
+  }
+}
+
+function bearerToken(request: Request): string | undefined {
+  const authorization = request.headers.get('authorization')?.trim() ?? '';
+  const match = /^Bearer\s+(.+)$/i.exec(authorization);
+  return match?.[1]?.trim() || undefined;
+}
+
+function centralMcpUnauthorized(origin: string): Response {
+  return json(
+    { error: 'unauthorized', message: 'OAuth bearer token is required.' },
+    {
+      status: 401,
+      headers: {
+        'www-authenticate': 'Bearer resource_metadata="' + new URL('/.well-known/oauth-protected-resource', origin).toString() + '"',
+      },
+    },
+  );
+}
+
+function centralMcpSafeError(input: { status: number; code: string; message?: string }): Response {
+  return json({ error: { code: input.code, message: input.message ?? input.code } }, { status: input.status });
+}
+
+function centralMcpUpstreamUrl(input: { tunnelOriginUrl: string; inboundUrl: URL }): string {
+  const upstreamUrl = new URL(input.tunnelOriginUrl);
+  const basePath = upstreamUrl.pathname.replace(/\/$/, '');
+  upstreamUrl.pathname = basePath + input.inboundUrl.pathname;
+  upstreamUrl.search = input.inboundUrl.search;
+  return upstreamUrl.toString();
+}
+
+function hex(bytes: Uint8Array): string {
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function edgeSignature(input: {
+  secret: string;
+  method: string;
+  pathWithSearch: string;
+  workspaceId: string;
+  surface: string;
+}): Promise<string> {
+  try {
+    const canonical = [
+      input.method.toUpperCase(),
+      input.pathWithSearch,
+      input.workspaceId,
+      input.surface,
+    ].join('\n');
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(input.secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(canonical));
+    return 'sha256=' + hex(new Uint8Array(signature));
+  } catch {
+    throw new Error('edge request signing failed');
+  }
+}
+
+async function centralMcpProxyRequest(input: {
+  request: Request;
+  resolution: Extract<WorkspaceRouteD1Resolution, { allowed: true }>;
+  upstreamUrl: string;
+  internalSigningSecret: string;
+}): Promise<Request> {
+  try {
+    const inboundUrl = new URL(input.request.url);
+    const headers = new Headers(input.request.headers);
+    headers.delete('x-consuelo-workspace-id');
+    headers.delete('x-consuelo-hostname');
+    headers.delete('x-consuelo-route');
+    headers.delete('x-consuelo-surface');
+    headers.delete('x-consuelo-edge-signature');
+    headers.delete('x-consuelo-connector-id');
+
+    headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
+    headers.set('x-consuelo-hostname', input.resolution.hostname);
+    headers.set('x-consuelo-route', input.resolution.route);
+    headers.set('x-consuelo-surface', input.resolution.surface);
+
+    if (input.resolution.target.kind === 'os-connector') {
+      headers.set('x-consuelo-connector-id', input.resolution.target.connectorId);
+    }
+
+    headers.set('x-consuelo-edge-signature', await edgeSignature({
+      secret: input.internalSigningSecret,
+      method: input.request.method,
+      pathWithSearch: inboundUrl.pathname + inboundUrl.search,
+      workspaceId: input.resolution.workspaceId,
+      surface: input.resolution.surface,
+    }));
+
+    const init: RequestInit & { duplex?: 'half' } = {
+      headers,
+      method: input.request.method,
+    };
+
+    if (input.request.method !== 'GET' && input.request.method !== 'HEAD') {
+      init.body = input.request.body;
+      init.duplex = 'half';
+    }
+
+    return new Request(input.upstreamUrl, init);
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : 'central MCP proxy request failed');
+  }
+}
+
+async function proxyCentralMcpRequest(input: {
+  request: Request;
+  store: Store;
+  origin: string;
+  nowMs: number;
+  routeRegistry?: WorkspaceRouteRegistryBinding;
+  internalSigningSecret?: string;
+  fetchImpl: typeof fetch;
+}): Promise<Response> {
+  try {
+    const token = bearerToken(input.request);
+    if (!token) return centralMcpUnauthorized(input.origin);
+
+    const stored = await input.store.byMcpOAuthAccessToken(await hash(token));
+    if (!stored || input.nowMs >= stored.expiresAt || stored.resource !== mcpResourceUrl(input.origin)) {
+      return centralMcpUnauthorized(input.origin);
+    }
+    if (!hasGrantedScope(stored.scopes, 'route:/mcp:read')) {
+      return centralMcpSafeError({ status: 403, code: 'MISSING_SCOPE', message: 'OAuth token does not grant MCP route access.' });
+    }
+    if (!input.routeRegistry) {
+      return centralMcpSafeError({ status: 503, code: 'WORKSPACE_ROUTE_REGISTRY_UNAVAILABLE' });
+    }
+
+    const inboundUrl = new URL(input.request.url);
+    const resolution = await createWorkspaceCloudflareD1RouteRegistry(input.routeRegistry).resolve({
+      host: stored.workspaceHost,
+      path: inboundUrl.pathname,
+      method: input.request.method,
+    });
+    if (!resolution.allowed) {
+      return centralMcpSafeError({
+        status: resolution.status,
+        code: resolution.errorCode,
+        message: resolution.diagnostic?.message,
+      });
+    }
+    if (resolution.target.kind !== 'os-connector') {
+      return centralMcpSafeError({ status: 404, code: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND' });
+    }
+
+    const internalSigningSecret = input.internalSigningSecret?.trim();
+    if (!internalSigningSecret) {
+      return centralMcpSafeError({ status: 503, code: 'WORKSPACE_EDGE_AUTH_REQUIRED' });
+    }
+
+    const proxyRequest = await centralMcpProxyRequest({
+      request: input.request,
+      resolution,
+      upstreamUrl: centralMcpUpstreamUrl({
+        tunnelOriginUrl: resolution.target.tunnelOriginUrl,
+        inboundUrl,
+      }),
+      internalSigningSecret,
+    });
+
+    return await input.fetchImpl(proxyRequest);
+  } catch {
+    return centralMcpSafeError({ status: 500, code: 'CENTRAL_MCP_PROXY_FAILED' });
+  }
+}
+
 async function startMcpOAuthAuthorization(input: {
   request: Request;
   store: Store;
@@ -480,6 +765,18 @@ async function finishMcpOAuthGoogleCallback(input: {
   } catch (error: unknown) {
     return invalidOauthRequest('access_denied', googleApprovalErrorMessage(error), 502);
   }
+  const accountId = 'google:' + identity.sub;
+  const workspaceResolution = await resolveMcpOAuthWorkspaceHost({
+    store: input.store,
+    accountId,
+    resource: oauthState.resource,
+    requestedWorkspaceHost: oauthState.workspaceHost,
+    origin: input.origin,
+  });
+  if (!workspaceResolution.ok) {
+    await input.store.delMcpOAuthState(stateValue);
+    return invalidOauthRequest(workspaceResolution.error, workspaceResolution.description, workspaceResolution.status);
+  }
   const code = rand('coa_code', 24);
   await input.store.putMcpOAuthCode({
     codeHash: await hash(code),
@@ -488,8 +785,8 @@ async function finishMcpOAuthGoogleCallback(input: {
     scope: oauthState.scope,
     scopes: oauthState.scopes,
     resource: oauthState.resource,
-    workspaceHost: oauthState.workspaceHost,
-    accountId: `google:${identity.sub}`,
+    workspaceHost: workspaceResolution.workspaceHost,
+    accountId,
     email: identity.email,
     codeChallenge: oauthState.codeChallenge,
     expiresAt: input.nowMs + MCP_OAUTH_CODE_TTL_MS,
@@ -590,17 +887,54 @@ function assignGrantWorkspace(input: { grant: Grant; workspaceSlug: string; work
 }
 
 async function rememberAccountWorkspace(input: { store: Store; grant: Grant; accountId: string; nowMs: number }): Promise<void> {
-  const workspace = grantWorkspace(input.grant);
-  await input.store.putAccountWorkspace({
-    accountId: input.accountId,
-    workspaceSlug: workspace.workspaceSlug,
-    workspaceHost: workspace.workspaceHost,
-    updatedAt: input.nowMs,
-  });
+  try {
+    const workspace = grantWorkspace(input.grant);
+    const existing = await input.store.byAccountWorkspace(input.accountId);
+    await input.store.putAccountWorkspace({
+      accountId: input.accountId,
+      workspaceSlug: workspace.workspaceSlug,
+      workspaceHost: workspace.workspaceHost,
+      homeNodeId: existing?.homeNodeId ?? input.grant.nodeId,
+      updatedAt: input.nowMs,
+    });
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : 'account workspace persistence failed');
+  }
 }
+
+async function registerGrantNode(input: { store: Store; grant: Grant; accountId: string; nowMs: number }): Promise<void> {
+  try {
+    const workspace = grantWorkspace(input.grant);
+    const existingWorkspace = await input.store.byAccountWorkspace(input.accountId);
+    const requestedNodeId = input.grant.nodeId ? optionalNodeId(input.grant.nodeId) : undefined;
+    const nodeId = requestedNodeId ?? (existingWorkspace ? rand('node', 12) : workspace.workspaceSlug);
+    const existingNode = await input.store.byWorkspaceNode(input.accountId, nodeId);
+    const role = existingNode?.role ?? (existingWorkspace?.homeNodeId ? 'member' : 'home');
+    const nodeName = input.grant.nodeName?.trim() || existingNode?.nodeName || 'local';
+    input.grant.nodeId = nodeId;
+    input.grant.nodeName = nodeName;
+    input.grant.nodeRole = role;
+    input.grant.nodeStatus = existingNode ? 'reconnected' : 'created';
+    await input.store.putWorkspaceNode({
+      accountId: input.accountId,
+      workspaceSlug: workspace.workspaceSlug,
+      workspaceHost: workspace.workspaceHost,
+      nodeId,
+      nodeName,
+      role,
+      devicePublicKeyThumbprint: input.grant.devicePublicKeyThumbprint,
+      createdAt: existingNode?.createdAt ?? input.nowMs,
+      updatedAt: input.nowMs,
+    });
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : 'workspace node registration failed');
+  }
+}
+
 async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
   try {
     grantWorkspace(input.grant);
+    await registerGrantNode({ store: input.store, grant: input.grant, accountId: input.accountId, nowMs: input.nowMs });
     input.grant.status = 'approved';
     input.grant.accountId = input.accountId;
     input.grant.accountAuthMethod = input.authMethod;
@@ -630,7 +964,7 @@ function defaultSiteSnapshot(input?: DefaultSiteSnapshot): Required<DefaultSiteS
 }
 
 async function registerApprovedWorkspaceRoute(input: { routeRegistry?: WorkspaceRouteRegistryBinding; grant: Grant; defaultSiteSnapshot?: DefaultSiteSnapshot }): Promise<void> {
-  if (!input.routeRegistry) return;
+  if (!input.routeRegistry?.exec) return;
   try {
     const workspace = grantWorkspace(input.grant);
     const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
@@ -649,13 +983,18 @@ async function registerApprovedWorkspaceRoute(input: { routeRegistry?: Workspace
 
 function approvedJson(g: Grant): Record<string, unknown> {
   const workspace = grantWorkspace(g);
+  const nodeId = g.nodeId ?? workspace.workspaceSlug;
   return {
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
     workspace_id: `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
     workspace_slug: workspace.workspaceSlug,
     workspace_host: workspace.workspaceHost,
-    connector_id: `connector_${workspace.workspaceSlug.replace(/-/g, '_')}`,
+    node_id: nodeId,
+    node_name: g.nodeName ?? 'local',
+    node_role: g.nodeRole ?? 'home',
+    node_status: g.nodeStatus ?? 'created',
+    connector_id: connectorIdFromNodeId(nodeId),
     [CONNECTOR_TOKEN_KEY]: g.connectorToken ?? rand('cbt', 32),
     connector_bootstrap_expires_at: new Date(g.connectorExpiresAt ?? Date.now()).toISOString(),
     device_public_key_thumbprint: g.devicePublicKeyThumbprint,
@@ -672,6 +1011,7 @@ export function createOsDeviceAuthorityHandler(input: {
   googleOAuthClientSecret?: string;
   fetchImpl?: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
+  workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
 }) {
   const origin = input.origin ?? ORIGIN;
@@ -683,6 +1023,18 @@ export function createOsDeviceAuthorityHandler(input: {
       if (url.pathname === '/') return Response.redirect(new URL('/login/device', origin), 302);
       if (url.pathname === '/health') return json({ ok: true, service: 'consuelo-os-device-authority' });
       if (url.pathname === '/.well-known/oauth-authorization-server') return json(authorizationServerMetadata(origin));
+      if (isProtectedResourceMetadataPath(url.pathname)) return json(oauthProtectedResourceMetadata(origin));
+      if (isMcpRequestPath(url.pathname)) {
+        return await proxyCentralMcpRequest({
+          request,
+          store: input.store,
+          origin,
+          nowMs: now(),
+          routeRegistry: input.workspaceRouteRegistry,
+          internalSigningSecret: input.workspaceEdgeInternalSigningSecret,
+          fetchImpl,
+        });
+      }
       if (url.pathname === '/oauth/authorize') {
         if (request.method !== 'GET') return methodNotAllowed('GET');
         const google = googleConfig({ clientId: input.googleOAuthClientId, clientSecret: input.googleOAuthClientSecret });
@@ -801,12 +1153,16 @@ export function createOsDeviceAuthorityHandler(input: {
         const workspaceHost = workspaceSlug
           ? host(p.get('workspace_host')?.trim() || `${workspaceSlug}.consuelohq.com`)
           : undefined;
+        const requestedNodeId = optionalNodeId(p.get('node_id') ?? '');
+        const requestedNodeName = (p.get('node_name') ?? '').trim();
         const deviceCode = rand('dev', 24);
         const code = userCode();
         const g: Grant = {
           hash: await hash(deviceCode),
           userCode: code,
           ...(workspaceSlug && workspaceHost ? { workspaceSlug, workspaceHost } : {}),
+          ...(requestedNodeId ? { nodeId: requestedNodeId } : {}),
+          ...(requestedNodeName ? { nodeName: requestedNodeName } : {}),
           status: 'pending',
           expiresAt: now() + TTL_MS,
           interval: INTERVAL,
@@ -914,6 +1270,7 @@ export class OsDeviceGrantDurableObject {
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
       workspaceRouteRegistry: env.WORKSPACE_ROUTE_REGISTRY,
+      workspaceEdgeInternalSigningSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
       defaultSiteSnapshot: {
         key: env.OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY ?? DEFAULT_SITE_SNAPSHOT_KEY,
         versionId: env.OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID ?? DEFAULT_SITE_SNAPSHOT_VERSION_ID,

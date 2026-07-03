@@ -8,6 +8,7 @@ import {
   createDefaultGlobalYamlConfig,
   createDefaultNodeYamlConfig,
   createDefaultWorkspaceYamlConfig,
+  loadNodeYamlConfig,
   resolveConsueloHome,
   resolveConsueloHomeLayout,
   writeYamlConfig,
@@ -61,6 +62,10 @@ export type WorkspaceBootstrap = {
   workspaceHost: string;
   connectorId: string;
   connectorTransport: 'cloudflare-tunnel' | 'websocket-relay';
+  nodeId?: string;
+  nodeName?: string;
+  nodeRole?: 'home' | 'member';
+  nodeStatus?: 'created' | 'reconnected';
   connectorBootstrapToken?: string;
   cloudflareTunnelToken?: string;
 };
@@ -279,6 +284,27 @@ type ToolInstallMetadata = {
 
 export function resolveOsHome(home?: string): string {
   return resolveConsueloHome(home);
+}
+
+export type LocalNodeIdentity = {
+  nodeId: string;
+  nodeName: string;
+  nodeRole?: 'home' | 'member';
+};
+
+export function readLocalNodeIdentity(home?: string): LocalNodeIdentity | undefined {
+  const layout = resolveConsueloHomeLayout(resolveOsHome(home));
+  if (!fs.existsSync(layout.nodeConfigPath)) return undefined;
+  try {
+    const config = loadNodeYamlConfig(layout.nodeConfigPath);
+    return {
+      nodeId: config.node.id,
+      nodeName: config.node.name,
+      ...(config.node.role ? { nodeRole: config.node.role } : {}),
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 function nowIso(): string {
@@ -681,7 +707,7 @@ function materializeChatGptMcpConnection(input: {
     version: 1,
     kind: 'consuelo-chatgpt-mcp-connection',
     auth: 'bearer',
-    url: `https://${input.config.workspaceHost}/mcp`,
+    url: 'https://os.consuelohq.com/mcp',
     localUrl: `http://127.0.0.1:${input.port}/mcp`,
     tokenId: token.tokenId,
     bearerToken: token.bearerToken,
@@ -1506,8 +1532,9 @@ export function provisionLocalOs(
         workspaceSlug: 'local',
         workspaceHost: 'local.consuelohq.com',
       };
-  const nodeId = workspaceBootstrap?.connectorId ?? 'local';
-  const nodeName = os.hostname() || 'local';
+  const nodeId = workspaceBootstrap?.nodeId ?? workspaceBootstrap?.connectorId ?? 'local';
+  const nodeName = workspaceBootstrap?.nodeName ?? (os.hostname() || 'local');
+  const nodeRole = workspaceBootstrap?.nodeRole ?? 'home';
 
   for (const dir of [
     layout.workspaceSharedDir(workspaceIdentity.workspaceId),
@@ -1541,6 +1568,7 @@ export function provisionLocalOs(
     value: createDefaultNodeYamlConfig({
       nodeId,
       nodeName,
+      nodeRole,
       workspaceId: workspaceIdentity.workspaceId,
     }),
     dryRun,
