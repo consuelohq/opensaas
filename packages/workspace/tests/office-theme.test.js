@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
 
 const source = readFileSync(new URL('../scripts/office.ts', import.meta.url), 'utf8');
+const launcherSource = readFileSync(new URL('../../os/scripts/lib/launcher-onboarding.ts', import.meta.url), 'utf8');
+const rootLauncherSources = `${source}\n${launcherSource}`;
 
 test('keeps the generated sites archive theme and search surfaces styled', () => {
   for (const marker of [
@@ -110,24 +112,21 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
     "const DESIGN_WRITING_DECISION_LOOPS_PATH = '/writing/on-decision-loops';",
-    'href="/careers/systems-engineer">Systems Engineer</a>',
-    '${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_WRITING_DECISION_LOOPS_PATH}',
+    "import { type LauncherLocalAgent, renderLauncherOnboarding } from '../../os/scripts/lib/launcher-onboarding';",
+    "import { resolveConsueloHomeLayout } from '../../os/scripts/lib/consuelo-home';",
+    'function sitesLauncherMcpUrl',
+    'function sitesLauncherLocalAgents',
+    "path.join(layout.nodeSecurityGeneratedDir, 'chatgpt-mcp.json')",
+    "path.join(layout.home, 'security', 'generated', 'chatgpt-mcp.json')",
+    "path.join(layout.legacyOsHome, 'security', 'generated', 'chatgpt-mcp.json')",
+    "path.join(layout.home, 'config.json')",
+    'https://os.consuelohq.com/mcp',
+    'LAUNCHER_AGENT_LABELS',
     'function officePathForArchiveEntry',
     'function renderSitesLauncherHtml',
     'function renderSitesLauncher',
     'renderSitesLauncherHtml({ includeHotkeysScript: true })',
     'return renderSitesLauncherHtml({ includeHotkeysScript: false });',
-    'CONSUELO OS █',
-    'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-    'SITES:',
-    '>Go to market</a>',
-    '>Artifacts</a>',
-    '>Observability</a>',
-    '>Code review</a>',
-    'GUIDES AND TIPS:',
-    '>Documentation</a>',
-    'WRITING:',
-    'Decision loops',
     'const officeArchivePath = ',
     'const archivePaths = Array.from(new Set([officeArchivePath, archivePath, legacyArchivePath]));',
     'function stripArtifactAlias',
@@ -137,6 +136,23 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     expect(source).toContain(marker);
   }
 
+  for (const marker of [
+    'href="/careers/systems-engineer">Systems Engineer</a>',
+    'Here is the URL to connect <a href="${CHATGPT_CONNECTORS_URL}"',
+    'to your workspace.',
+    'Sites',
+    'Go to market',
+    'Artifacts',
+    'Observability',
+    'Code review',
+    'Guides and Tips',
+    'Documentation',
+    'Writing',
+    'Decision loops',
+    'No local agents connected to workspace yet.',
+  ]) {
+    expect(rootLauncherSources).toContain(marker);
+  }
   for (const oldMarker of [
     '[GTM]',
     '[Office]',
@@ -147,7 +163,7 @@ test('keeps public Sites root launcher and Office archive routes distinct', () =
     'https://app.consuelohq.com/welcome',
     'href="https://consuelohq.com/contact/"',
   ]) {
-    expect(source).not.toContain(oldMarker);
+    expect(rootLauncherSources).not.toContain(oldMarker);
   }
 });
 
@@ -162,30 +178,29 @@ test('keeps root launcher copy and Office archive chrome separated', () => {
   for (const marker of [
     "const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';",
     "const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';",
-    'CONSUELO OS █',
-    'SITES:',
-    'GUIDES AND TIPS:',
-    'WRITING:',
-    '>Go to market</a>',
-    '>Artifacts</a>',
-    '>Observability</a>',
-    '>Code review</a>',
-    '>Documentation</a>',
-    'Decision loops',
-    'href="/careers/systems-engineer">Systems Engineer</a>',
     '<a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_OFFICE_PATH)}">Office</a>',
   ]) {
     expect(source).toContain(marker);
   }
+  for (const marker of [
+    'Consuelo OS',
+    'Sites',
+    'Guides and Tips',
+    'Writing',
+    'Go to market',
+    'Artifacts',
+    'Observability',
+    'Code review',
+    'Documentation',
+    'Decision loops',
+    'href="/careers/systems-engineer">Systems Engineer</a>',
+  ]) {
+    expect(rootLauncherSources).toContain(marker);
+  }
   expect(source).not.toContain('Legacy wiki</a></div>');
 });
-
 test('keeps launcher routes local and theme-aware', () => {
   for (const marker of [
-    'color-scheme: dark',
-    'background: #070708',
-    'color: #f2eee6',
-    'color: #9aa6ff',
     'function publicRouteAlias',
     'for (const alias of ["/observability", "/tracing"])',
     'if (clean === alias) return "/trace-burn-intelligence";',
@@ -197,62 +212,55 @@ test('keeps launcher routes local and theme-aware', () => {
     "['/diffs', `${target}/diffs`]",
     'const routePathname = publicRouteAlias(url.pathname);',
     'const canonicalPathname = stripArtifactAlias(routePathname);',
+    'renderLauncherOnboarding({',
   ]) {
     expect(source).toContain(marker);
   }
+  for (const marker of [
+    'color-scheme: light dark',
+    '--site-color-paper: #faf7f2',
+    '@media (prefers-color-scheme: dark)',
+    '--site-color-paper: #0f0f0d',
+    'text-underline-offset: 4px',
+    'overflow-x: auto; white-space: nowrap;',
+  ]) {
+    expect(rootLauncherSources).toContain(marker);
+  }
   expect(source).not.toContain('/writing/on-rendering-diffs');
-  expect(source).toContain('font-weight: 400');
-  expect(source).toContain('letter-spacing: 0.02em');
-  expect(source).toContain('white-space: nowrap');
-  expect(source).toContain('class="blog-item"');
-  expect(source).toContain('font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+  expect(rootLauncherSources).toContain('/writing/on-decision-loops');
   expect(source).toContain('renderSitesLauncherHtml({ includeHotkeysScript: true })');
   expect(source).toContain('return renderSitesLauncherHtml({ includeHotkeysScript: false });');
-  expect(source).toContain('${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_WRITING_DECISION_LOOPS_PATH}');
-  expect(source).not.toContain('min-height: 100vh; background: Canvas; color: CanvasText; font-size: 13px; line-height: 1.25; font-weight: 700');
   expect(source).not.toContain('Software Is Becoming Decision Infrastructure</a></li>');
 });
 
-test('keeps launcher compact but tappable on phone and tablet viewports', () => {
+test('keeps shared launcher compact but tappable on phone and tablet viewports', () => {
   for (const marker of [
-    '@media (max-width: 1024px)',
-    'font-size: clamp(10.3px, 2.62vw, 12.7px)',
-    'main { padding: clamp(28px, 5.4vw, 42px) clamp(10px, 2.5vw, 24px); }',
-    '.block { margin: 22px 0; }',
-    '.rule { margin: 22px 0; }',
-    'li { margin: 2.35px 0; }',
-    '@media (max-width: 430px)',
-    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
-    'main { padding: 40px 10px; }',
-    'li, .blog-item { white-space: nowrap; }',
+    '@media (max-width: 860px)',
+    'main { grid-template-columns: 1fr; }',
+    '.content { gap: 54px; }',
+    '.url-row, .meta-grid { grid-template-columns: 1fr; }',
+    'button { min-height: 44px; }',
+    'grid-template-columns: minmax(0, 1fr) auto',
   ]) {
-    expect(source).toContain(marker);
+    expect(rootLauncherSources).toContain(marker);
   }
-  expect(source).not.toContain('.blog-item { white-space: normal;');
+  expect(rootLauncherSources).not.toContain('.blog-item { white-space: normal;');
 });
 
-
-
-test('tunes mobile launcher closer to the Pierre reference', () => {
+test('keeps shared launcher structured for onboarding and navigation', () => {
   for (const marker of [
-    'main { padding: 40px 10px; }',
-    'font-size: clamp(9.9px, 2.42vw, 11.5px)',
-    '.block { margin: 22px 0; }',
-    '.rule { margin: 22px 0; }',
-    'li { margin: 2.35px 0; }',
+    'class="content" aria-label="Consuelo OS onboarding"',
+    'class="panel" aria-label="Cloud agents"',
+    'class="url-row"',
+    'class="meta-grid"',
+    'class="status" aria-label="Local agents"',
   ]) {
-    expect(source).toContain(marker);
+    expect(rootLauncherSources).toContain(marker);
   }
 });
-
 
 test('adds numeric launcher hotkeys for Sites navigation', () => {
   for (const marker of [
-    'data-hotkey="1"',
-    'data-hotkey="2"',
-    'data-hotkey="3"',
-    'data-hotkey="4"',
-    'data-hotkey="5"',
     'const siteHotkeys = {',
     '"1": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}/gtm"',
     '"2": "${DESIGN_ARCHIVE_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_OFFICE_PATH}"',
@@ -264,8 +272,15 @@ test('adds numeric launcher hotkeys for Sites navigation', () => {
   ]) {
     expect(source).toContain(marker);
   }
+  for (const marker of [
+    'https://sites.consuelohq.com/gtm',
+    'https://sites.consuelohq.com/office',
+    'https://sites.consuelohq.com/observability',
+    'https://sites.consuelohq.com/diffs',
+  ]) {
+    expect(rootLauncherSources).toContain(marker);
+  }
 });
-
 test('caches the root launcher at the browser and edge while keeping archive paths conservative', () => {
   for (const marker of [
     'const launcherCacheControl = "public, max-age=60, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=604800";',
