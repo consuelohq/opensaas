@@ -1,0 +1,13 @@
+---
+const { title } = Astro.props;
+---
+
+<aside class="mintlify-callout mintlify-callout-warning">
+  {title && <strong>{title}</strong>}
+  <slot />
+</aside>
+
+<style>
+  .mintlify-callout { border: 1px solid var(--sl-color-orange); border-radius: 0.75rem; margin: 1rem 0; padding: 1rem; background: var(--sl-color-orange-low); }
+  strong { display: block; margin-bottom: 0.35rem; }
+</style>

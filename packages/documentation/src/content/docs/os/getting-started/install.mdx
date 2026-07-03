@@ -1,0 +1,142 @@
+---
+title: Install Consuelo OS
+description: Install Consuelo OS on your machine, authenticate your workspace, and complete the guided setup flow.
+---
+
+# Install Consuelo OS
+
+Consuelo OS installs from a single hosted bootstrap script. The installer creates a local OS home, walks you through workspace device authentication, lets you choose skills and local agents, and starts the local runtime service.
+
+## Before you start
+
+You need:
+
+- macOS with a working internet connection
+- A terminal
+- Permission to install user-level background services when you want the local OS daemon
+
+You do not need Docker for local OS.
+
+## Install command
+
+Run the hosted installer:
+
+```bash
+curl -fsSL https://install.consuelohq.com/os | bash
+```
+
+For non-interactive setup, pass flags explicitly:
+
+```bash
+curl -fsSL https://install.consuelohq.com/os | bash -s -- --yes --install-daemons --mode local
+```
+
+Useful flags:
+
+| Flag | Purpose |
+| --- | --- |
+| `--yes` | Accept defaults where prompts would normally appear |
+| `--install-daemons` | Install the local background service |
+| `--mode local` | Run local OS on your machine |
+| `--connect-agent <id>` | Pre-select a local agent (`codex`, `cursor`, `claude`, `opencode`, `factory`, `gemini`, `pi`) |
+| `--json` | Emit machine-readable installer output |
+| `--quiet` | Reduce installer chatter |
+
+## Installer flow
+
+The installer progresses through these steps:
+
+```text
+dependencies -> workspace -> security -> skills -> agents -> service -> health
+```
+
+Each step maps to a visible decision or provisioning action:
+
+| Step | What happens |
+| --- | --- |
+| Dependencies | Installs or verifies the Bun runtime and local OS binaries |
+| Workspace | Collects your workspace name and derives your workspace hostname |
+| Security | Starts workspace device login and provisions connector security material |
+| Skills | Lets you choose which OS skills to enable |
+| Agents | Detects installed local agents and lets you connect them to the workspace |
+| Service | Optionally installs the local background service |
+| Health | Verifies the local OS health endpoint |
+
+## Workspace device login
+
+During the security step, the installer opens workspace device authentication in your browser.
+
+The flow uses OAuth device authorization against the Consuelo OS device authority. You approve the install from a browser page such as `https://os.consuelohq.com/login/device`.
+
+When approval succeeds, the installer receives workspace bootstrap material for your connector and can provision hosted routes for your workspace hostname.
+
+If device login is temporarily unavailable, the installer falls back cleanly and continues local provisioning where possible.
+
+## What gets created locally
+
+Local OS state defaults to:
+
+```text
+~/.consuelo/os/
+```
+
+Override it with:
+
+```bash
+export CONSUELO_HOME="/path/to/consuelo-os"
+```
+
+The installer creates:
+
+```text
+~/.consuelo/os/
+  config.json
+  consuelo.db
+  artifacts/
+  logs/
+  runs/
+  tmp/
+  security/
+```
+
+`config.json` records your workspace host, selected skills, and connected local agents. SQLite stores execution metadata. Artifact bytes stay in the local artifact folder until cloud storage is configured.
+
+## Local health check
+
+After install, the local service should answer on the default local port:
+
+```bash
+curl -fsS http://127.0.0.1:8960/health
+```
+
+Hosted workspace health is separate. For a provisioned workspace hostname, use:
+
+```bash
+curl -fsS https://<workspace>.consuelohq.com/health
+```
+
+## Hosted entrypoints after install
+
+Production OS hosting uses these public surfaces:
+
+| URL | Purpose |
+| --- | --- |
+| `https://install.consuelohq.com/os` | Hosted installer bootstrap |
+| `https://os.consuelohq.com/` | Device-auth entrypoint for workspace sign-in |
+| `https://<workspace>.consuelohq.com/` | Workspace launcher after device auth |
+| `https://<workspace>.consuelohq.com/mcp` | Hosted MCP endpoint for cloud agents |
+
+The root `https://os.consuelohq.com/` URL redirects to device sign-in. Your workspace launcher appears on your workspace hostname after authentication and provisioning complete.
+
+## Next steps
+
+- Open the [workspace launcher](/os/getting-started/workspace-launcher/) to copy your MCP URL and review connected agents
+- [Connect cloud and local agents](/os/getting-started/connect-agents/) to your workspace
+- Read [Local and cloud](/os/concepts/local-and-cloud/) for runtime mode differences
+
+## Related
+
+- [Workspace launcher](/os/getting-started/workspace-launcher/)
+- [Connect agents](/os/getting-started/connect-agents/)
+- [OS portal](/os/concepts/portal/)
+- [Local and cloud](/os/concepts/local-and-cloud/)
