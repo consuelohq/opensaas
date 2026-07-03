@@ -1,7 +1,7 @@
 export const CONSUELO_GATEWAY_PUBLIC_BOUNDARY = 'consuelo-gateway' as const;
 
 export type ConsueloGatewayPublicBoundary = typeof CONSUELO_GATEWAY_PUBLIC_BOUNDARY;
-export type ConsueloSiteSlug = 'trace' | 'trace-burn-intelligence' | (string & {});
+export type ConsueloSiteSlug = 'trace' | 'traces' | 'trace-burn-intelligence' | (string & {});
 export type ConsueloGatewaySourceMode = 'local-networked' | 'cloud-compute' | 'local-off-network';
 export type ConsueloGatewayServiceCapability =
   | 'trace-read'

@@ -82,7 +82,7 @@ export function traceGatewayScopeFromHeaders(request: Request): TraceGatewaySess
     userId: headers.get('x-consuelo-user-id') || headers.get('x-consuelo-caller-id') || 'signed-gateway-caller',
     workspaceId: headers.get('x-consuelo-workspace-id') || 'workspace-unknown',
     workspaceHost: headers.get('x-consuelo-workspace-host') || url.host,
-    allowedSites: allowedSites.length ? allowedSites : ['trace', 'trace-burn-intelligence'],
+    allowedSites: allowedSites.length ? allowedSites : ['trace', 'traces', 'trace-burn-intelligence'],
     traceRead: headers.get('x-consuelo-trace-read') !== 'false',
     traceWrite: headers.get('x-consuelo-trace-write') === 'true',
     runnerControl: headers.get('x-consuelo-runner-control') === 'true',
@@ -270,7 +270,9 @@ function isTraceSourceMode(value: unknown): value is TraceSourceMode {
 }
 
 function parseSite(value: string | null): TraceSiteSlug {
-  return value === 'trace' ? 'trace' : 'trace-burn-intelligence';
+  if (value === 'trace') return 'trace';
+  if (value === 'trace-burn-intelligence') return 'trace-burn-intelligence';
+  return 'traces';
 }
 
 function parseLimit(value: string | null): number | undefined {

@@ -148,6 +148,37 @@ Target architecture:
 5. `packages/os` owns install/runtime materialization, local trace DB access, gateway endpoints, route seed, edge snapshot publishing, and aliases.
 6. `sites.consuelohq.com/observability`, `/traces`, and `/tracing` all serve the same `traces` snapshot; the page itself continues to say `Traces`.
 
+
+## naming and information architecture alignment
+
+Ko clarified the long-term information architecture:
+
+- `Observability` is the overall Sites/OS surface and should be spelled correctly everywhere.
+- `Traces` is the first launched page/module inside Observability.
+- Live tracing is the specific worked-over cockpit experience within the Traces module.
+- `trace-burn-intelligence` is legacy/internal prototype naming and should not become the durable OS product name.
+- `/observability` should remain the primary overall route.
+- `/observability/traces` is the clean long-term route for the Traces page/module.
+- For short-term launch, `/observability` may land directly on the Traces module while the broader Observability dashboard is still thin.
+- `/traces`, `/tracing`, and `/trace-burn-intelligence` can remain compatibility aliases where useful, but they should not drive naming or source layout.
+
+Implementation implication: the next branches should rename concepts toward `observability` for the surface/dashboard and `traces` for the page/module. Avoid baking `trace-burn-intelligence` into new file names, tests, public labels, route-family names, or package paths except as explicit compatibility aliases or migration references.
+
+Recommended route shape:
+
+1. Primary: `/observability`
+2. Canonical module path: `/observability/traces`
+3. Compatibility aliases: `/traces`, `/tracing`, and possibly `/trace-burn-intelligence` during migration.
+
+Recommended source shape:
+
+- Prefer names like `ObservabilityShell`, `TracesPage`, `tracesStore`, `tracesExplorer`, and `observability/traces`.
+- Do not introduce durable source names like `TraceBurnIntelligence` unless only importing from the old prototype branch.
+- Keep visible page title as `Traces` for the current launchable module.
+- Leave space in the Observability shell for future dashboard modules beyond traces.
+
+This changes the implementation plan slightly: port the internal Trace Burn Intelligence product experience, but rename it as it enters OS so the durable product model is Observability -> Traces rather than Trace Burn Intelligence.
+
 ## React drift / incorrect paths to avoid
 
 - `packages/consuelo-website` already has `@astrojs/react`, `react`, `react-dom`, and React-adjacent dependencies. That is existing website drift, not evidence that Observability should be React.
@@ -159,15 +190,15 @@ Target architecture:
 
 ## proposed next implementation slice
 
-Slice name: `task/os/port-workspace-trace-burn-astro-to-observability`
+Slice name: `task/os/port-workspace-traces-to-observability`
 
-Implementation goal: port the internal workspace Trace Burn Intelligence Astro shell into OS Observability while preserving the cockpit UX, Astro source ownership, motion/interaction polish, and route/SSE contracts.
+Implementation goal: port the internal workspace Trace Burn Intelligence Astro shell into OS Observability, rename the durable product model to Observability -> Traces, and preserve the cockpit UX, Astro source ownership, motion/interaction polish, and route/SSE contracts.
 
 Suggested steps:
 
 1. Start from `stream/os`, not bare `main`, so the SSE live stream wiring is present.
-2. Import/adapt the existing Trace Burn Intelligence Astro source from `origin/task/design/rewrite-trace-burn-intelligence-in-astro-with-tdd` instead of rebuilding from the current generated OS string.
-3. Keep page chrome text as `Traces` even though route is `/observability`, but preserve the cockpit UX and detail rail from the workspace product.
+2. Import/adapt the existing Trace Burn Intelligence Astro source from `origin/task/design/rewrite-trace-burn-intelligence-in-astro-with-tdd` instead of rebuilding from the current generated OS string, but rename durable OS concepts away from `trace-burn-intelligence`.
+3. Keep page chrome text as `Traces`; make `/observability` the current launch entry and reserve `/observability/traces` as the clean module path.
 4. Preserve `traceStore` semantics: stable row identity, generatedAt-only refresh suppression, selected trace persistence, filtering, pagination, and time-only labels.
 5. Replace the pseudo-live feed file with OS gateway consumption: `/gateway/traces/recent`, `/gateway/traces/summary`, and `/gateway/traces/events` with polling fallback.
 6. Preserve workspace/design motion polish, including GSAP where it is part of the intended internal trace-site interaction layer, while avoiding React.
@@ -175,7 +206,7 @@ Suggested steps:
 8. Update `materializeSites()` to write the shell asset instead of hard-coded inline HTML when the asset is available, preserving fallback behavior only if needed for install resilience.
 9. Add `/tracing` to `install-edge-site-publisher.ts` snapshot verification unless implementation proves route seed alone already covers the deployed alias.
 10. Update stale tests that still expect `/traces/*` as the primary Trace Sites public family.
-11. Keep `/observability` primary and `/traces`/`/tracing` compatible.
+11. Keep `/observability` primary, add/keep `/observability/traces` as the canonical traces module path, and keep `/traces`/`/tracing`/legacy prototype aliases compatible where practical.
 
 ## files the implementation branch should likely touch
 
@@ -218,7 +249,7 @@ Tests:
 
 - Assert materialized `sites/traces/index.html` comes from the ported Trace Burn Intelligence Astro source and still contains `Traces`, `/gateway/traces/recent`, `/gateway/traces/summary`, and `/gateway/traces/events`.
 - Assert the browser client path never calls localhost/tailnet/raw trace DB routes.
-- Assert `/observability`, `/traces`, and `/tracing` resolve to the same `traces` site snapshot route.
+- Assert `/observability`, `/observability/traces`, `/traces`, and `/tracing` resolve to the same current `traces` snapshot while Observability is thin.
 - Assert snapshot publishing verifies `/observability`, `/traces`, and `/tracing` for the `traces` shell, or explicitly document why `/tracing` is route-only.
 - Update stale Trace adapter expectations from `/traces/*` to `/observability/*` as primary public route family.
 - Keep live endpoint tests aligned with `origin/stream/os`: `/gateway/traces/events` should emit live stream events, not `trace-sites-snapshot`.
@@ -228,7 +259,7 @@ Tests:
 
 - Need decision: final source path should be `src/pages/os/observability.astro`, `src/pages/sites/observability.astro`, or a component plus build-copy target. Product direction points to Astro but not exact source location.
 - Need decision: should the OS package commit a built static shell asset, generate it during release, or copy it from website build output during OS release packaging? Recommended: release-time generated asset checked or copied into an OS package asset path so installs do not run Astro.
-- Need decision: whether the old `/trace-burn-intelligence` archive path remains as a compatibility alias, but its Astro source should be treated as the implementation baseline to port into OS Observability.
+- Need decision: whether the old `/trace-burn-intelligence` archive path remains as a temporary compatibility alias; it should never be the durable OS route or source name.
 - Need decision: whether `/tracing` must be verified by `install-edge-site-publisher.ts`; route seed already contains it, but publisher does not.
 
 ## validation evidence
@@ -301,3 +332,45 @@ bun run task:push -- --message "docs(os): align observability trace frontend arc
 - run results: none
 - failed suites: none
 - zero-suite reason: changed files are docs or task metadata
+
+## implementation update - observability traces port
+
+Ko approved implementing the plan in this PR instead of keeping the branch research-only. The branch now carries product code.
+
+Implemented taxonomy:
+
+- `Observability` is the overall surface.
+- `Traces` is the current launchable module/page.
+- `Live traces` is the polished cockpit experience inside the Traces module.
+- `trace-burn-intelligence` is retained only as explicit compatibility for the old prototype path and internal archive artifact.
+
+Implemented changes:
+
+- Added `packages/os/scripts/lib/observability-traces-site.ts` with a static Observability -> Traces shell that preserves the internal trace cockpit affordances: KPI cards, launchable modal, search, filters, detail rail, raw payload panes, pagination, stable trace identity, selected trace persistence, mobile fullscreen behavior, and guarded GSAP motion.
+- Added `packages/consuelo-website/src/pages/os/observability/traces.astro` as the durable Astro source anchor for the Observability -> Traces product model.
+- Updated OS materialization so `sites/traces/index.html` is built from the Observability Traces shell instead of the old generated `buildTracesSite()` string.
+- Added `/observability/traces` as the canonical Traces module route while keeping `/observability` as the primary thin launch surface.
+- Kept `/traces`, `/tracing`, and `/trace-burn-intelligence` as compatibility aliases to the same `traces` snapshot.
+- Updated edge route seeding and snapshot publishing verification to include the new canonical path plus compatibility aliases.
+- Updated gateway contract naming so durable Trace Site reads default to `traces` while `trace` and `trace-burn-intelligence` remain accepted compatibility slugs.
+- Updated the local workspace archive server to alias `/observability`, `/observability/traces`, `/traces`, and `/tracing` into the old archive artifact path for compatibility.
+- Preserved `origin/stream/os` SSE live stream work; `/gateway/traces/events` remains the live stream endpoint and does not regress to `trace-sites-snapshot`.
+
+Validation:
+
+- `bun --cwd packages/os test tests/observability-traces-site.test.ts tests/trace-sites-browser-client.test.ts tests/trace-sites-gateway-live-stream.test.ts tests/trace-sites-gateway-live-endpoints.test.ts tests/trace-sites-gateway-contract.test.ts tests/consuelo-sites-gateway.test.ts tests/sites-cli.test.ts tests/install-state.test.ts tests/install-edge-site-publisher.test.ts tests/workspace-edge-route-seed-contract.test.ts` passed: `trc_5fc1c19bb17b`.
+- `bun test packages/workspace/tests/office-theme.test.js` passed: `trc_f3f7f5dae84c`.
+- `bun --cwd packages/consuelo-website build` passed with existing warnings/hints only: `trc_61ed62340c79`.
+- `bun --cwd packages/os test tests/workspace-edge-sites-gateway-integration.test.ts tests/workspace-edge-beta-smoke-contract.test.ts` completed with those integration suites skipped by their existing gates: `trc_b0baa448c19b`.
+- `bun --cwd packages/os typecheck` passed: `trc_877650c3da06`.
+
+Known validation caveat:
+
+- `tests/trace-sites-gateway-live-endpoints.test.ts` has one Bun SQLite-only local adapter test. It is now guarded so the Vitest path can validate live endpoint contracts without failing in runtimes that cannot import the Bun SQLite module.
+
+## validation update after review fixes
+
+- Fixed review findings in `observability-traces-site.ts` by removing bare browser `catch` blocks and async/await in the inline shell script.
+- Re-ran focused OS suite after the fix: `trc_ba0890fcc438` passed with 8 files passed, 2 files skipped by existing gates, 73 tests passed, 10 skipped.
+- Re-ran the direct affected shell/live-endpoint subset: `trc_ecc04c2efc2c` passed with 9 tests passed and 1 Bun SQLite-only adapter test skipped outside Bun runtime.
+- Review summary after fixes: `trc_9f6cf765b3ec` reported 0 branch-owned issues and 2 pre-existing typecheck issues outside this work. The code-call wrapper timed out after the review printed its summary, but the summary reported no branch-owned must-fix items.

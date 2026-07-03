@@ -26,7 +26,7 @@ import {
 describe('Trace Sites gateway architecture contract', () => {
   it('locks the PR1 contract version, source modes, and hosted Trace Sites', () => {
     expect(TRACE_SITES_GATEWAY_CONTRACT_VERSION).toBe('2026-06-13.pr1');
-    expect(TRACE_SITES).toEqual(['trace', 'trace-burn-intelligence']);
+    expect(TRACE_SITES).toEqual(['trace', 'traces', 'trace-burn-intelligence']);
     expect(listTraceSitesArchitectureModes().map((mode) => mode.sourceMode).sort()).toEqual([
       'cloud-compute',
       'local-networked',
@@ -104,7 +104,7 @@ describe('Trace Sites gateway architecture contract', () => {
       userId: 'usr_123',
       workspaceId: 'wrk_123',
       workspaceHost: 'testing.consuelohq.com',
-      allowedSites: ['trace', 'trace-burn-intelligence'],
+      allowedSites: ['trace', 'traces', 'trace-burn-intelligence'],
       traceRead: true,
       traceWrite: false,
       runnerControl: false,
@@ -113,6 +113,7 @@ describe('Trace Sites gateway architecture contract', () => {
     };
 
     expect(canScopeReadTraceSites(scope, 'testing.consuelohq.com', 'trace')).toBe(true);
+    expect(canScopeReadTraceSites(scope, 'testing.consuelohq.com', 'traces')).toBe(true);
     expect(canScopeReadTraceSites(scope, 'testing.consuelohq.com', 'trace-burn-intelligence')).toBe(true);
     expect(canScopeReadTraceSites({ ...scope, traceRead: false }, 'testing.consuelohq.com', 'trace')).toBe(false);
     expect(canScopeReadTraceSites({ ...scope, allowedSites: ['office'] }, 'testing.consuelohq.com', 'trace')).toBe(false);

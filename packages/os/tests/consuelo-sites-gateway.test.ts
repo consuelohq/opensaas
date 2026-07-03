@@ -18,7 +18,7 @@ const baseScope: ConsueloGatewaySessionScope = {
   userId: 'usr_gateway',
   workspaceId: 'wrk_gateway',
   workspaceHost: 'testing.consuelohq.com',
-  allowedSites: ['trace', 'trace-burn-intelligence'],
+  allowedSites: ['trace', 'traces', 'trace-burn-intelligence'],
   capabilities: ['trace-read', 'trace-live'],
   sourceModesAllowed: ['local-networked', 'cloud-compute', 'local-off-network'],
   bridgeConfigured: false,
@@ -27,10 +27,10 @@ const baseScope: ConsueloGatewaySessionScope = {
 function request(overrides: Partial<ConsueloGatewayRequest> = {}): ConsueloGatewayRequest {
   return {
     host: 'testing.consuelohq.com',
-    site: 'trace-burn-intelligence',
+    site: 'traces',
     capability: 'trace-read',
     sourceMode: 'local-networked',
-    publicPath: '/traces',
+    publicPath: '/observability/traces',
     session: baseScope,
     ...overrides,
   };
@@ -77,7 +77,7 @@ describe('Consuelo Sites Gateway contract service', () => {
         workspaceId: 'wrk_gateway',
         workspaceHost: 'testing.consuelohq.com',
       },
-      site: 'trace-burn-intelligence',
+      site: 'traces',
       capability: 'trace-read',
       sourceMode: 'local-networked',
     });
@@ -123,12 +123,12 @@ describe('Consuelo Sites Gateway contract service', () => {
       ok: true,
       publicBoundary: 'consuelo-gateway',
       route: {
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
         gatewayServiceName: 'trace-sites-read-layer',
         gatewayAdapterName: 'trace-sites-read-layer',
         capability: 'trace-read',
-        site: 'trace-burn-intelligence',
+        site: 'traces',
       },
     });
   });
@@ -179,7 +179,7 @@ describe('Consuelo Sites Gateway contract service', () => {
         gatewayServiceName: 'trace-sites-read-layer',
         gatewayAdapterName: 'trace-sites-read-layer',
         capability: 'trace-read',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
       })],
     });
@@ -232,11 +232,11 @@ describe('Consuelo Sites Gateway contract service', () => {
     expect(discovery.ok).toBe(true);
     expect(discovery.services).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        site: 'trace-burn-intelligence',
+        site: 'traces',
         capability: 'trace-live',
         gatewayServiceName: 'trace-sites-live-endpoints',
         gatewayAdapterName: 'trace-sites-live-endpoints',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
       }),
     ]));
