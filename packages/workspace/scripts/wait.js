@@ -11,7 +11,7 @@
 //   bun run wait -- --deploy                  # wait for deploy matching local HEAD
 //   bun run wait -- --deploy <commit>         # wait for deploy matching specific commit
 
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
@@ -35,6 +35,22 @@ function formatIso(ms) {
 }
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+function parsePositiveMs(value, fallbackMs) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallbackMs;
+}
+
+function readFlagValue(argv, index, flag) {
+  const value = argv[index + 1];
+  if (!value || value.startsWith('-')) throw new Error(`missing ${flag} value`);
+  return value;
+}
+
+function waitFailure(kind, error, summary) {
+  printJson({ ok: false, kind, status: 'failed', error: error?.message || String(error), summary });
+  process.exit(1);
+}
 
 function writeStdout(value = '') { process.stdout.write(`${value}\n`); }
 function writeStderr(value = '') { process.stderr.write(`${value}\n`); }
@@ -158,10 +174,10 @@ function findDeploy(deploys, commitPrefix) {
 }
 
 function printDeploys(deploys) {
-  writeStdout('recent deploys:');
+  writeStderr('recent deploys:');
   deploys.slice(0, 6).forEach((d, i) => {
     const age = Math.round((Date.now() - new Date(d.created).getTime()) / 60000);
-    writeStdout(`  ${i + 1}. ${d.commit.slice(0, 8)} ${d.status.padEnd(10)} ${age}m ago  ${d.message.slice(0, 60)}`);
+    writeStderr(`  ${i + 1}. ${d.commit.slice(0, 8)} ${d.status.padEnd(10)} ${age}m ago  ${d.message.slice(0, 60)}`);
   });
 }
 
@@ -181,22 +197,24 @@ async function waitForDeploy(service, commitPrefix, timeoutMs) {
     const head = getLocalHead();
     if (head) target = findDeploy(deploys, head);
     if (!target) {
-      writeStdout(`local HEAD ${(head || '?').slice(0, 8)} not found in deploys, using most recent:`);
+      writeStderr(`local HEAD ${(head || '?').slice(0, 8)} not found in deploys, using most recent:`);
       target = deploys[0];
     }
   }
 
-  writeStdout(`tracking: ${target.commit.slice(0, 8)} - ${target.message}`);
-  writeStdout(`status: ${target.status}`);
-
-  if (target.status === 'SUCCESS') { writeStdout('already succeeded'); return; }
-  if (target.status === 'FAILED' || target.status === 'CRASHED') {
-    writeStderr(`already ${target.status.toLowerCase()}`);
-    process.exit(1);
-  }
+  writeStderr(`tracking: ${target.commit.slice(0, 8)} - ${target.message}`);
+  writeStderr(`status: ${target.status}`);
 
   const start = Date.now();
   const TIMEOUT = timeoutMs || 30 * 60 * 1000;
+  if (target.status === 'SUCCESS') {
+    printJson({ ok: true, kind: 'deploy', status: 'completed', conclusion: 'success', commit: target.commit, waitedSeconds: 0, summary: 'deploy already succeeded' });
+    return;
+  }
+  if (target.status === 'FAILED' || target.status === 'CRASHED') {
+    printJson({ ok: false, kind: 'deploy', status: 'failed', conclusion: target.status.toLowerCase(), commit: target.commit, waitedSeconds: 0, summary: `deploy already ${target.status.toLowerCase()}` });
+    process.exit(1);
+  }
 
   while (Date.now() - start < TIMEOUT) {
     await sleep(15000);
@@ -206,12 +224,13 @@ async function waitForDeploy(service, commitPrefix, timeoutMs) {
     if (!current) {
       const replacement = fresh.find((d) => d.status === 'SUCCESS' || d.status === 'BUILDING' || d.status === 'DEPLOYING');
       if (replacement) {
-        writeStdout(`\ndeploy superseded, now tracking: ${replacement.commit.slice(0, 8)} - ${replacement.message}`);
+        writeStderr(`deploy superseded, now tracking: ${replacement.commit.slice(0, 8)} - ${replacement.message}`);
         target = replacement;
         continue;
       }
-      writeStdout('\ndeploy removed');
-      return;
+      const elapsed = Math.round((Date.now() - start) / 1000);
+      printJson({ ok: false, kind: 'deploy', status: 'removed', conclusion: 'removed', commit: target.commit, waitedSeconds: elapsed, summary: 'deploy removed before completion' });
+      process.exit(1);
     }
 
     if (current.status === 'SUCCESS') {
@@ -225,15 +244,17 @@ async function waitForDeploy(service, commitPrefix, timeoutMs) {
       process.exit(1);
     }
     if (current.status === 'REMOVED') {
-      writeStdout('\ndeploy was superseded');
-      return;
+      const elapsed = Math.round((Date.now() - start) / 1000);
+      printJson({ ok: false, kind: 'deploy', status: 'removed', conclusion: 'removed', commit: current.commit, waitedSeconds: elapsed, summary: 'deploy was superseded before completion' });
+      process.exit(1);
     }
 
     const elapsed = Math.round((Date.now() - start) / 1000);
     // Quiet wait: progress stays out of chat-visible stdout.
   }
 
-  printJson({ ok: false, kind: 'deploy', status: 'timed_out', summary: 'timeout: deploy did not complete within 30m' });
+  const timeoutSeconds = Math.round(TIMEOUT / 1000);
+  printJson({ ok: false, kind: 'deploy', status: 'timed_out', waitedSeconds: timeoutSeconds, timeoutSeconds, summary: `timeout: deploy did not complete within ${timeoutSeconds}s` });
   process.exit(1);
 }
 
@@ -242,7 +263,14 @@ function getPrChecks(prNumber) {
   try {
     const pr = Number(prNumber);
     if (!Number.isInteger(pr) || pr <= 0) throw new Error(`invalid PR number: ${prNumber}`);
-    const raw = execSync(`gh pr checks ${pr} --json name,state,conclusion,bucket,link 2>&1`, { encoding: 'utf8', timeout: 20000 });
+    const result = spawnSync('gh', ['pr', 'checks', String(pr), '--json', 'name,state,conclusion,bucket,link'], { encoding: 'utf8', timeout: 20000 });
+    if (result.error) throw result.error;
+    if (result.status !== 0 && result.status !== 8) {
+      const detail = (result.stderr || result.stdout || `gh pr checks exited ${result.status}`).trim();
+      throw new Error(detail);
+    }
+    const raw = (result.stdout || result.stderr || '').trim();
+    if (!raw) throw new Error('gh pr checks returned no JSON output');
     return JSON.parse(raw).map((check) => ({
       name: check.name || '',
       state: check.state || '',
@@ -278,7 +306,7 @@ async function waitForPrChecks(prNumber, timeoutMs) {
   if (!Number.isInteger(pr) || pr <= 0) throw new Error(`invalid PR number: ${prNumber}`);
   const startedAt = Date.now();
   const timeout = timeoutMs || 30 * 60 * 1000;
-  const pollMs = Number(process.env.WORKSPACE_WAIT_POLL_MS || 30000);
+  const pollMs = parsePositiveMs(process.env.CONSUELO_WAIT_POLL_MS || process.env.WORKSPACE_WAIT_POLL_MS || process.env.OS_WAIT_POLL_MS, 30000);
   while (Date.now() - startedAt < timeout) {
     const checks = getPrChecks(pr);
     if (!Array.isArray(checks)) {
@@ -294,7 +322,8 @@ async function waitForPrChecks(prNumber, timeoutMs) {
       printJson({ ok: true, kind: 'pr_checks', status: 'completed', pr, conclusion: 'success', checks: counts, startedAt: formatIso(startedAt), completedAt: formatIso(Date.now()), summary: `all PR #${pr} checks completed successfully` });
       return;
     }
-    await sleep(pollMs);
+    const remainingMs = timeout - (Date.now() - startedAt);
+    await sleep(Math.min(pollMs, Math.max(0, remainingMs)));
   }
   const checks = getPrChecks(pr);
   const counts = Array.isArray(checks) ? summarizeChecks(checks) : { passed: 0, failed: 0, pending: 0, total: 0 };
@@ -366,13 +395,13 @@ async function main() {
       case '--deploy': deployMode = true; break;
       case '--detach':
       case '--detached': detached = true; break;
-      case '--duration': durationText = argv[++i]; break;
-      case '--reason': reason = argv[++i] || ''; break;
-      case '--status': statusId = argv[++i]; break;
+      case '--duration': durationText = readFlagValue(argv, i, '--duration'); i += 1; break;
+      case '--reason': reason = readFlagValue(argv, i, '--reason'); i += 1; break;
+      case '--status': statusId = readFlagValue(argv, i, '--status'); i += 1; break;
       case '--list': listMode = true; break;
-      case '--pr': prNumber = argv[++i]; break;
-      case '--service': service = argv[++i]; break;
-      case '--timeout': timeoutMs = parseTime(argv[++i]) * 1000; break;
+      case '--pr': prNumber = readFlagValue(argv, i, '--pr'); i += 1; break;
+      case '--service': service = readFlagValue(argv, i, '--service'); i += 1; break;
+      case '--timeout': timeoutMs = parseTime(readFlagValue(argv, i, '--timeout')) * 1000; i += 1; break;
       case '--help':
         printHelp();
         return;
@@ -414,6 +443,5 @@ async function main() {
 }
 
 main().catch((error) => {
-  writeStderr(error?.message || String(error));
-  process.exit(1);
+  waitFailure('wait', error, 'wait failed');
 });

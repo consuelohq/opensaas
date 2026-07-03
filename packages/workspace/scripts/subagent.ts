@@ -22,7 +22,7 @@ function printHelp(): void {
     '  --workspace-only <value>     preferred, strict, true, or false',
     '',
     'examples:',
-    '  bun run subagent -- --provider grok --bundle media --output-format json --instruction-path /tmp/ko-social.md',
+    '  bun run subagent -- --provider grok --bundle media --output-format json --instruction-path .task/example/ko-social.md',
     '  bun run subagent -- --provider codex --policy edit --task-session tsk_123 --instruction-path .task/foo/work.md',
     '',
   ].join('\n'));

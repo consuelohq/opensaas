@@ -1341,9 +1341,11 @@ describe('typed facade executor', () => {
 
       expect(result.ok).toBe(true);
       expect(result.data.status).toBe('completed');
-      expect(result.data.stdout.length).toBeLessThan(8200);
-      expect(result.data.stdout.length).toBeGreaterThan(0);
+      expect(result.data.stdout).toContain('truncated');
+      expect(result.data.stdout.length).toBeLessThan(1400);
+      expect(result.data.stdoutChars).toBeLessThanOrEqual(8200);
       expect(result.data.stderr.length).toBeLessThan(8200);
+      expect(result.data.stderr).toContain('truncated');
       expect(result.data.audit.workspaceOnly).toBe('preferred');
       expect(result.data.audit.rawShellUsed).toBe(false);
     } finally {
