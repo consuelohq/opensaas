@@ -1,0 +1,168 @@
+---
+title: GraphQL API
+description: GraphQL queries and mutations for CRM data.
+---
+
+import Note from '../../../../components/mintlify/Note.astro';
+
+
+Consuelo exposes a GraphQL API alongside REST. Use GraphQL for flexible data fetching.
+
+## Endpoint
+
+```
+POST https://api.consuelohq.com/graphql
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+## Introspection
+
+Query available types and fields:
+
+```graphql
+query {
+  __schema {
+    types {
+      name
+      kind
+      fields {
+        name
+        type {
+          name
+          kind
+        }
+      }
+    }
+  }
+}
+```
+
+## People Queries
+
+### List People
+
+```graphql
+query {
+  people(first: 20, after: null, where: { workspaceId: { eq: "ws_abc123" } }) {
+    edges {
+      node {
+        id
+        firstName
+        lastName
+        phone
+        email
+        company {
+          name
+        }
+        createdAt
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+### Get Person by ID
+
+```graphql
+query {
+  person(id: "person_123") {
+    id
+    firstName
+    lastName
+    phone
+    email
+    company {
+      id
+      name
+    }
+    activities {
+      edges {
+        node {
+          id
+          type
+          createdAt
+        }
+      }
+    }
+  }
+}
+```
+
+## Companies Queries
+
+```graphql
+query {
+  companies(first: 20, where: { workspaceId: { eq: "ws_abc123" } }) {
+    edges {
+      node {
+        id
+        name
+        domain
+        employees
+        annualRevenue
+      }
+    }
+  }
+}
+```
+
+## Mutations
+
+### Create Person
+
+```graphql
+mutation {
+  createPerson(
+    input: {
+      workspaceId: "ws_abc123"
+      firstName: "John"
+      lastName: "Smith"
+      phone: "+14155551234"
+      email: "john@example.com"
+    }
+  ) {
+    person {
+      id
+      firstName
+      lastName
+    }
+  }
+}
+```
+
+### Update Person
+
+```graphql
+mutation {
+  updatePerson(
+    id: "person_123"
+    input: { firstName: "Jane", notes: "Follow up next week" }
+  ) {
+    person {
+      id
+      firstName
+      notes
+    }
+  }
+}
+```
+
+### Delete Person
+
+```graphql
+mutation {
+  deletePerson(id: "person_123") {
+    success
+  }
+}
+```
+
+<Note>
+  GraphQL mutations require the same JWT authentication as REST endpoints. Use
+  your access token in the Authorization header.
+</Note>

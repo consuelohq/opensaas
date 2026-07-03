@@ -257,6 +257,8 @@ prompt_select() {
   local second_choice="$4"
   local rerun_hint="$5"
   local selected=0
+  local prompt_lines=4
+  local rendered=0
   local key=""
   local rest=""
 
@@ -277,18 +279,21 @@ This shell is non-interactive. Re-run with:
   fi
 
   while true; do
-    printf '%s\n' "$message" > /dev/tty
-    if [ "$selected" -eq 0 ]; then
-      printf '◆ %s\n' "$first_choice" > /dev/tty
-      printf '○ %s\n' "$second_choice" > /dev/tty
-    else
-      printf '○ %s\n' "$first_choice" > /dev/tty
-      printf '◆ %s\n' "$second_choice" > /dev/tty
+    if [ "$rendered" -eq 1 ]; then
+      printf '\033[%sA' "$prompt_lines" > /dev/tty
     fi
-    printf '%s' "Use arrow keys and Enter." > /dev/tty
+    printf '\033[2K%s\n' "$message" > /dev/tty
+    if [ "$selected" -eq 0 ]; then
+      printf '\033[2K◆ %s\n' "$first_choice" > /dev/tty
+      printf '\033[2K○ %s\n' "$second_choice" > /dev/tty
+    else
+      printf '\033[2K○ %s\n' "$first_choice" > /dev/tty
+      printf '\033[2K◆ %s\n' "$second_choice" > /dev/tty
+    fi
+    printf '\033[2K%s\n' "Use arrow keys and Enter." > /dev/tty
+    rendered=1
 
     IFS= read -rsn1 key < /dev/tty || key=""
-    printf '\n' > /dev/tty
     case "$key" in
       "")
         if [ "$selected" -eq 0 ]; then

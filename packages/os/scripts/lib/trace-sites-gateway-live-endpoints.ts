@@ -4,9 +4,14 @@ import {
   type TraceSitesGatewayReadLayerRequest,
   type TraceSitesGatewayReadLayerResult,
 } from './trace-sites-gateway-read-layer';
+import {
+  createTraceSitesGatewayLiveStreamEndpoint,
+  type TraceSitesGatewayLiveStreamRow,
+} from './trace-sites-gateway-live-stream';
 import type {
   TraceGatewaySessionScope,
   TraceSiteSlug,
+  TraceSitesDashboardEvent,
   TraceSourceMode,
 } from './trace-sites-gateway-contract';
 
@@ -45,7 +50,7 @@ export function createTraceSitesGatewayLiveEndpoints(options: TraceSitesGatewayL
       let scope: TraceGatewaySessionScope;
       try {
         scope = await options.resolveScope(request);
-      } catch (error) {
+      } catch (error: unknown) {
         return jsonResponse({
           ok: false,
           publicBoundary: 'consuelo-gateway',
@@ -56,9 +61,12 @@ export function createTraceSitesGatewayLiveEndpoints(options: TraceSitesGatewayL
         }, 403);
       }
 
+      if (url.pathname === '/gateway/traces/events') {
+        return sseLiveResponse(request, url, scope, readLayer);
+      }
+
       const layerResult = await readLayer.readTraceSitesDashboard(readRequestFromUrl(url, scope));
       if (!layerResult.ok) return failureResponse(url.pathname, layerResult);
-      if (url.pathname === '/gateway/traces/events') return sseSnapshotResponse(url.pathname, layerResult);
       return successJsonResponse(url.pathname, layerResult);
     },
   };
@@ -123,28 +131,98 @@ function failureResponse(route: string, result: Extract<TraceSitesGatewayReadLay
   }, statusForFailure(result));
 }
 
-function sseSnapshotResponse(route: string, result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>): Response {
-  const payload = JSON.stringify({
-    ok: true,
-    publicBoundary: result.publicBoundary,
-    route,
-    data: responseData(result),
-  });
+async function sseLiveResponse(
+  request: Request,
+  url: URL,
+  scope: TraceGatewaySessionScope,
+  readLayer: ReturnType<typeof createTraceSitesGatewayReadLayer>,
+): Promise<Response> {
+  try {
+    const initialReadRequest = readRequestFromUrl(url, scope);
+    const initialResult = await readLayer.readTraceSitesDashboard(initialReadRequest);
+    if (!initialResult.ok) return failureResponse(url.pathname, initialResult);
 
-  return new Response([
-    'event: trace-sites-snapshot',
-    `id: ${result.cursor}`,
-    `data: ${payload}`,
-    '',
-    '',
-  ].join('\n'), {
-    status: 200,
-    headers: {
-      'content-type': 'text/event-stream; charset=utf-8',
-      'cache-control': 'no-cache, no-transform',
-      connection: 'keep-alive',
-    },
-  });
+    const initialSnapshot = streamSnapshotFromReadResult(initialResult);
+    const streamEndpoint = createTraceSitesGatewayLiveStreamEndpoint({
+      backend: {
+        readInitialSnapshot(input) {
+          if (input.cursor === initialReadRequest.cursor) return Promise.resolve(initialSnapshot);
+          return readStreamSnapshotAtCursor(url, scope, readLayer, input.cursor);
+        },
+        readAfterCursor(cursor) {
+          return readStreamSnapshotAtCursor(url, scope, readLayer, cursor);
+        },
+      },
+    });
+
+    return streamEndpoint.handle({
+      method: request.method,
+      url: request.url,
+      host: url.host,
+      workspaceId: scope.workspaceId,
+      sourceMode: initialReadRequest.sourceMode,
+      bridgeConfigured: url.searchParams.get('bridgeConfigured') !== 'false',
+      headers: Object.fromEntries(request.headers.entries()),
+      session: { workspaceId: scope.workspaceId },
+    });
+  } catch (error: unknown) {
+    return jsonResponse({
+      ok: false,
+      publicBoundary: 'consuelo-gateway',
+      route: url.pathname,
+      error: {
+        code: 'TRACE_SITES_STREAM_UNAVAILABLE',
+        message: error instanceof Error ? error.message.slice(0, 240) : 'Trace Sites live stream unavailable.',
+      },
+    }, 503);
+  }
+}
+
+async function readStreamSnapshotAtCursor(
+  url: URL,
+  scope: TraceGatewaySessionScope,
+  readLayer: ReturnType<typeof createTraceSitesGatewayReadLayer>,
+  cursor: string,
+) {
+  try {
+    const nextUrl = new URL(url.toString());
+    nextUrl.searchParams.set('cursor', cursor);
+    const result = await readLayer.readTraceSitesDashboard(readRequestFromUrl(nextUrl, scope));
+    if (!result.ok) throw new Error(result.errors[0]?.code ?? 'TRACE_SITES_STREAM_READ_FAILED');
+    return streamSnapshotFromReadResult(result);
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : 'TRACE_SITES_STREAM_READ_FAILED');
+  }
+}
+
+function streamSnapshotFromReadResult(result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>) {
+  return {
+    cursor: result.cursor,
+    rows: result.recentEvents.map((event, index) => streamRowFromDashboardEvent(event, result.cursor, index)),
+  };
+}
+
+function streamRowFromDashboardEvent(
+  event: TraceSitesDashboardEvent,
+  cursor: string,
+  index: number,
+): TraceSitesGatewayLiveStreamRow {
+  const record = event as TraceSitesDashboardEvent & Record<string, unknown>;
+  const traceId = typeof record.traceId === 'string' ? record.traceId : undefined;
+  const idempotencyKey = typeof record.idempotencyKey === 'string' ? record.idempotencyKey : undefined;
+  const rowCursor = typeof record.cursor === 'string' ? record.cursor : cursor;
+  const status = typeof record.status === 'string' ? record.status : record.success === false ? 'error' : 'ok';
+
+  return {
+    ...record,
+    id: traceId ?? idempotencyKey ?? `${cursor}:${index}`,
+    traceId,
+    cursor: rowCursor,
+    idempotencyKey,
+    toolName: typeof record.tool === 'string' ? record.tool : undefined,
+    status,
+    startedAt: typeof record.startedAt === 'string' ? record.startedAt : undefined,
+  };
 }
 
 function responseData(result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>) {

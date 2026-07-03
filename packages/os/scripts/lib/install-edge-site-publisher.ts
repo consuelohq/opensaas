@@ -58,6 +58,7 @@ const writeLog = (file: string, entries: unknown[]) => { fs.mkdirSync(path.dirna
 const snapshotSites = [
   { siteId: 'launcher', pathPrefix: '/', relativePath: ['index.html'] },
   { siteId: 'office', pathPrefix: '/office', relativePath: ['office', 'index.html'] },
+  { siteId: 'traces', pathPrefix: '/observability', relativePath: ['traces', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/traces', relativePath: ['traces', 'index.html'] },
   { siteId: 'diffs', pathPrefix: '/diffs', relativePath: ['diffs', 'index.html'] },
   { siteId: 'docs', pathPrefix: '/docs', relativePath: ['docs', 'index.html'] },
@@ -157,7 +158,10 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
   const routeSqlPath = path.join(input.home, 'tmp', `install-edge-route-${plan.versionId}.sql`);
   fs.mkdirSync(path.dirname(routeSqlPath), { recursive: true });
   fs.writeFileSync(routeSqlPath, `${plan.routeSql}\n`, { mode: 0o600 });
+  const uploadedSnapshotKeys = new Set<string>();
   for (const snapshot of plan.snapshots) {
+    if (uploadedSnapshotKeys.has(snapshot.snapshotKey)) continue;
+    uploadedSnapshotKeys.add(snapshot.snapshotKey);
     await run(runner, plan, 'r2_upload', log, entries, ['wrangler', 'r2', 'object', 'put', `${bucket}/${snapshot.snapshotKey}`, '--remote', '--file', snapshot.snapshotPath, '--content-type', snapshot.contentType]);
   }
   await run(runner, plan, 'd1_upsert', log, entries, ['wrangler', 'd1', 'execute', d1, '--remote', '--config', wranglerConfig, '--file', routeSqlPath]);

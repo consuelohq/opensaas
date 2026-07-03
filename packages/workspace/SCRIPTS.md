@@ -192,7 +192,7 @@ bun run task:init -- --area <area> --branch <branch> --pr <N>
 
 do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/<area>/<slug>/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
 
-**never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `task:exec` from repo root.
+**never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `code.call` from repo root.
 
 **when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/<area>/<slug>/current.json`, `.task/<area>/<slug>/workpad.md`, or legacy root `.task/current.json` / `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
 
@@ -221,7 +221,7 @@ recovery patterns for common failures. don't panic — diagnose first.
 | worktree exists but task is done | `bun run task:finish` or `bun run task:cleanup -- --merged` |
 | pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
 | stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
-| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
+| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `code.call` with `--branch` or `--pr` |
 | task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --branch <task-branch> read .task/<area>/<slug>/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
 | task:push rejects — no publish-valid verify stamp | run `bun run verify` first. only use `--approved --reason "Ko approved: ..."` with explicit Ko approval. |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
@@ -241,7 +241,7 @@ check for:
 - verbose variable names that don't match the codebase conventions
 
 ```bash
-bun run task:exec -- --branch <task-branch> git diff   # review your changes
+bun run git:diff -- --branch <task-branch> --stat --files --hunks --json   # review your changes
 ```
 
 if you see slop, fix it before pushing. a clean diff is a fast review.
@@ -421,28 +421,33 @@ bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.t
 
 ### Task worktree command notes — run commands inside the task worktree
 
-runs any command with cwd set to the selected task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree. like `task:fs`, it ignores stale metadata whose `taskBranch` does not match the worktree branch. when more than one task exists in an area, select with `--branch` or `--pr`; `--area` is intentionally not enough.
+Use typed workspace tools from the chat facade. For routine Git inspection, prefer `git.diff` and `status`. For focused package, build, or test commands that really must execute in the selected task worktree, use task-scoped `code.call` through `workspace.call`. Always select with `taskSession`; when a CLI selector is required elsewhere, use `--branch` or `--pr` rather than an area-only selector.
 
-```bash
-bun run task:exec -- --area dialer git diff
-bun run task:exec -- --branch task/dialer/fix-thing git status --short
-bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
-bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
-bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
-bun run task:exec -- --branch task/dialer/fix-thing bun run review
-bun run task:exec -- --branch task/dialer/fix-thing git diff --check
+```ts
+await workspace.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "verify",
+    code: `
+const proc = Bun.spawnSync({
+  cmd: ["bun", "test", "packages/dialer/src/queue.test.ts"],
+  stdout: "pipe",
+  stderr: "pipe",
+})
+console.log(new TextDecoder().decode(proc.stdout))
+console.error(new TextDecoder().decode(proc.stderr))
+process.exit(proc.exitCode ?? 1)
+`.trim(),
+  },
+  timeout: 600,
+})
 ```
 
-**task:exec failure modes**
-```bash
-bad: bun run task:exec -- --area workspace-agents git status
- → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
- (always use --branch or --pr when the same area has multiple active tasks)
+**code.call failure modes**
 
-bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
- → works but you left the repo root. now bun run <anything> will fail.
- (use: bun run task:exec -- --branch task/dialer/fix-thing git diff)
-```
+`code.call` is for focused runtime evidence. Do not use it for GitHub PR state, branch discovery, broad repo file reads, source transport, or chained recovery commands when a typed tool can express the same intent. If multiple active tasks exist, use the task session or exact branch/PR selector supplied by the task workflow.
 
 ---
 
@@ -1257,7 +1262,7 @@ bun run generate-types
 
 ### check-files — batch syntax check
 
-runs `node --check` for each provided file through `task:exec`, returning structured per-file results.
+runs `node --check` for each provided file through `code.call`, returning structured per-file results.
 
 ```bash
 bun run check-files -- --branch task/workspace-agents/example --files packages/workspace/scripts/fs.js --json
@@ -1454,7 +1459,7 @@ cat /tmp/input.txt | bun run agent -- "clean this transcript"
 - use `bun run agent --` from `/Users/kokayi/Dev/opensaas`; do not call the pi proxy directly from random scripts unless the script owns that integration
 - treat sub-agent output as a draft until verified against files, tests, or logs
 - never send secrets, api keys, auth tokens, customer pii, full phone numbers, or private credentials
-- do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `task:exec`) and verify after writes
+- do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `code.call`) and verify after writes
 
 **good vs bad**
 
@@ -1472,7 +1477,7 @@ bad: bun run agent -- "here is the production api key: ... now debug this"
 -> never send secrets to a model
 
 bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
--> sub-agent output is text only. use task:fs/task:exec for repo mutations and verify the diff
+-> sub-agent output is text only. use task:fs and code.call for repo mutations and verify the diff
 ```
 
 **failure modes**
@@ -1549,7 +1554,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 **when raw CLI tools are not acceptable:**
 - reading, searching, or listing repo files (use `fs`)
 - reading or writing worktree files (use `task:fs`)
-- running commands in a worktree (use `task:exec`)
+- running commands in a worktree (use `code.call`)
 - github operations (use `gh` script or `pr-review`)
 
 ```text
@@ -1638,7 +1643,7 @@ The publish path is durable. `design.publish` materializes local file or directo
 
 ### git:diff — structured git diff for agents
 
-Structured, bounded diff inspection for agents. Prefer this over raw `git diff` through `task.call`; legacy `task.exec` remains supported for existing prompts and tools.
+Structured, bounded diff inspection for agents. Prefer this over raw `git diff` through `code.call`; command execution stays on the typed `code.call` surface when no more specific tool exists.
 
 ```bash
 bun run git:diff -- --branch task/workspace-agents/example --base origin/main --stat --files --hunks --json
@@ -1676,7 +1681,7 @@ bun run trace:home -- --trace-id trc_example --limit 100
 
 Live mode uses OpenTUI alternate-screen rendering, so it updates in place rather than printing repeated dashboards into scrollback. `--once` keeps deterministic text output for tests and CI. The default JSON/inspect views sanitize wrapper internals; use `--raw-json` only when raw selected-row payloads are explicitly needed.
 
-Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies both `task.call` and `task.exec` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
+Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies both `code.call` and `code.call` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
 
 
 ## consuelo-core registry audits

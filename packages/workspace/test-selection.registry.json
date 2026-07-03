@@ -688,9 +688,7 @@
     },
     {
       "id": "trace-watch",
-      "source": [
-        "scripts/operator/trace-watch.ts"
-      ],
+      "source": ["scripts/operator/trace-watch.ts"],
       "tests": [
         {
           "name": "trace watch build",
@@ -733,17 +731,11 @@
     },
     {
       "id": "dialer-package",
-      "source": [
-        "packages/dialer/**"
-      ],
+      "source": ["packages/dialer/**"],
       "tests": [
         {
           "name": "dialer specs",
-          "command": [
-            "bun",
-            "test",
-            "packages/dialer/src"
-          ]
+          "command": ["bun", "test", "packages/dialer/src"]
         }
       ],
       "critical": true,
@@ -752,17 +744,11 @@
     },
     {
       "id": "api-package",
-      "source": [
-        "packages/api/**"
-      ],
+      "source": ["packages/api/**"],
       "tests": [
         {
           "name": "api specs",
-          "command": [
-            "bun",
-            "test",
-            "packages/api/src"
-          ]
+          "command": ["bun", "test", "packages/api/src"]
         }
       ],
       "critical": true,
@@ -779,12 +765,7 @@
       "tests": [
         {
           "name": "twenty-server affected test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ]
+          "command": ["npx", "nx", "test", "twenty-server"]
         }
       ],
       "critical": true,
@@ -793,18 +774,11 @@
     },
     {
       "id": "twenty-front-project",
-      "source": [
-        "packages/twenty-front/**"
-      ],
+      "source": ["packages/twenty-front/**"],
       "tests": [
         {
           "name": "twenty-front test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front"
-          ]
+          "command": ["npx", "nx", "test", "twenty-front"]
         }
       ],
       "critical": false,
@@ -834,9 +808,7 @@
     },
     {
       "id": "auto:@open-design/e2e:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/e2e/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/e2e/**"],
       "tests": [
         {
           "name": "@open-design/e2e package test",
@@ -918,9 +890,7 @@
     },
     {
       "id": "auto:@open-design/tools-dev:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/tools/dev/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/tools/dev/**"],
       "tests": [
         {
           "name": "@open-design/tools-dev package test",
@@ -939,9 +909,7 @@
     },
     {
       "id": "auto:@open-design/tools-pack:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/tools/pack/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/tools/pack/**"],
       "tests": [
         {
           "name": "@open-design/tools-pack package test",
@@ -960,9 +928,7 @@
     },
     {
       "id": "auto:@open-design/web:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/apps/web/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/apps/web/**"],
       "tests": [
         {
           "name": "@open-design/web package test",
@@ -981,18 +947,11 @@
     },
     {
       "id": "auto:create-twenty-app:test",
-      "source": [
-        "packages/create-twenty-app/**"
-      ],
+      "source": ["packages/create-twenty-app/**"],
       "tests": [
         {
           "name": "create-twenty-app test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "create-twenty-app"
-          ]
+          "command": ["npx", "nx", "test", "create-twenty-app"]
         }
       ],
       "critical": false,
@@ -1001,18 +960,11 @@
     },
     {
       "id": "auto:fireflies:test",
-      "source": [
-        "packages/twenty-apps/community/fireflies/**"
-      ],
+      "source": ["packages/twenty-apps/community/fireflies/**"],
       "tests": [
         {
           "name": "fireflies test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "fireflies"
-          ]
+          "command": ["npx", "nx", "test", "fireflies"]
         }
       ],
       "critical": false,
@@ -1021,9 +973,7 @@
     },
     {
       "id": "auto:open-design:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/**"],
       "tests": [
         {
           "name": "open-design package test",
@@ -1042,18 +992,11 @@
     },
     {
       "id": "auto:twenty-e2e-testing:test",
-      "source": [
-        "packages/twenty-e2e-testing/**"
-      ],
+      "source": ["packages/twenty-e2e-testing/**"],
       "tests": [
         {
           "name": "twenty-e2e-testing test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-e2e-testing"
-          ]
+          "command": ["npx", "nx", "test", "twenty-e2e-testing"]
         }
       ],
       "critical": false,
@@ -1062,18 +1005,11 @@
     },
     {
       "id": "auto:twenty-eslint-rules:test",
-      "source": [
-        "packages/twenty-eslint-rules/**"
-      ],
+      "source": ["packages/twenty-eslint-rules/**"],
       "tests": [
         {
           "name": "twenty-eslint-rules test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-eslint-rules"
-          ]
+          "command": ["npx", "nx", "test", "twenty-eslint-rules"]
         }
       ],
       "critical": false,
@@ -1082,18 +1018,11 @@
     },
     {
       "id": "auto:twenty-front:test",
-      "source": [
-        "packages/twenty-front/**"
-      ],
+      "source": ["packages/twenty-front/**"],
       "tests": [
         {
           "name": "twenty-front test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front"
-          ]
+          "command": ["npx", "nx", "test", "twenty-front"]
         }
       ],
       "critical": false,
@@ -1102,18 +1031,11 @@
     },
     {
       "id": "auto:twenty-sdk:test",
-      "source": [
-        "packages/twenty-sdk/**"
-      ],
+      "source": ["packages/twenty-sdk/**"],
       "tests": [
         {
           "name": "twenty-sdk test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-sdk"
-          ]
+          "command": ["npx", "nx", "test", "twenty-sdk"]
         }
       ],
       "critical": false,
@@ -1122,18 +1044,11 @@
     },
     {
       "id": "auto:twenty-server:test",
-      "source": [
-        "packages/twenty-server/**"
-      ],
+      "source": ["packages/twenty-server/**"],
       "tests": [
         {
           "name": "twenty-server test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ]
+          "command": ["npx", "nx", "test", "twenty-server"]
         }
       ],
       "critical": false,
@@ -1142,18 +1057,11 @@
     },
     {
       "id": "auto:twenty-shared:test",
-      "source": [
-        "packages/twenty-shared/**"
-      ],
+      "source": ["packages/twenty-shared/**"],
       "tests": [
         {
           "name": "twenty-shared test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-shared"
-          ]
+          "command": ["npx", "nx", "test", "twenty-shared"]
         }
       ],
       "critical": false,
@@ -1162,18 +1070,11 @@
     },
     {
       "id": "auto:twenty-ui:test",
-      "source": [
-        "packages/twenty-ui/**"
-      ],
+      "source": ["packages/twenty-ui/**"],
       "tests": [
         {
           "name": "twenty-ui test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-ui"
-          ]
+          "command": ["npx", "nx", "test", "twenty-ui"]
         }
       ],
       "critical": false,
@@ -1182,18 +1083,11 @@
     },
     {
       "id": "auto:twenty-zapier:test",
-      "source": [
-        "packages/twenty-zapier/**"
-      ],
+      "source": ["packages/twenty-zapier/**"],
       "tests": [
         {
           "name": "twenty-zapier test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-zapier"
-          ]
+          "command": ["npx", "nx", "test", "twenty-zapier"]
         }
       ],
       "critical": false,
@@ -12037,20 +11931,10 @@
       "lint": false
     },
     {
-      "name": "consuelo-docs",
-      "root": "packages/consuelo-docs",
-      "file": "packages/consuelo-docs/project.json",
-      "testTargets": [],
-      "typecheck": false,
-      "lint": true
-    },
-    {
       "name": "create-twenty-app",
       "root": "packages/create-twenty-app",
       "file": "packages/create-twenty-app/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
     },
@@ -12060,6 +11944,14 @@
       "file": "packages/dialer/project.json",
       "testTargets": [],
       "typecheck": true,
+      "lint": false
+    },
+    {
+      "name": "documentation",
+      "root": "packages/documentation",
+      "file": "packages/documentation/project.json",
+      "testTargets": ["test-translation"],
+      "typecheck": false,
       "lint": false
     },
     {
@@ -12082,9 +11974,7 @@
       "name": "fireflies",
       "root": "packages/twenty-apps/community/fireflies",
       "file": "packages/twenty-apps/community/fireflies/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
     },
@@ -12100,12 +11990,7 @@
       "name": "twenty-e2e-testing",
       "root": "packages/twenty-e2e-testing",
       "file": "packages/twenty-e2e-testing/project.json",
-      "testTargets": [
-        "test",
-        "test:ui",
-        "test:debug",
-        "test:report"
-      ],
+      "testTargets": ["test", "test:ui", "test:debug", "test:report"],
       "typecheck": false,
       "lint": false
     },
@@ -12121,9 +12006,7 @@
       "name": "twenty-eslint-rules",
       "root": "packages/twenty-eslint-rules",
       "file": "packages/twenty-eslint-rules/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
     },
@@ -12131,11 +12014,7 @@
       "name": "twenty-front",
       "root": "packages/twenty-front",
       "file": "packages/twenty-front/project.json",
-      "testTargets": [
-        "test",
-        "storybook:test",
-        "storybook:test:no-coverage"
-      ],
+      "testTargets": ["test", "storybook:test", "storybook:test:no-coverage"],
       "typecheck": true,
       "lint": true
     },
@@ -12158,12 +12037,7 @@
       "name": "twenty-server",
       "root": "packages/twenty-server",
       "file": "packages/twenty-server/project.json",
-      "testTargets": [
-        "test:integration",
-        "test",
-        "test:debug",
-        "jest"
-      ],
+      "testTargets": ["test:integration", "test", "test:debug", "jest"],
       "typecheck": true,
       "lint": true
     },
@@ -12171,9 +12045,7 @@
       "name": "twenty-shared",
       "root": "packages/twenty-shared",
       "file": "packages/twenty-shared/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
     },
@@ -12181,11 +12053,7 @@
       "name": "twenty-ui",
       "root": "packages/twenty-ui",
       "file": "packages/twenty-ui/project.json",
-      "testTargets": [
-        "test",
-        "storybook:test",
-        "storybook:test:no-coverage"
-      ],
+      "testTargets": ["test", "storybook:test", "storybook:test:no-coverage"],
       "typecheck": true,
       "lint": true
     },
@@ -12193,9 +12061,7 @@
       "name": "twenty-zapier",
       "root": "packages/twenty-zapier",
       "file": "packages/twenty-zapier/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": false
     },

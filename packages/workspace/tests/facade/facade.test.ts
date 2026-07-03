@@ -218,7 +218,7 @@ describe('typed facade executor', () => {
 
     const fileSearch = runSearch('file search', 4).matches[0];
     expect(fileSearch.name).toBe('fs.search');
-    expect(fileSearch.usage.workspaceCall).toContain('taskSession');
+    expect(fileSearch.usage.workspaceCall).toContain('fs.search');
 
     const missingPayload = runSearch('no-such-made-up-tool', 4);
     expect(missingPayload.totalMatches).toBe(0);
@@ -397,7 +397,7 @@ describe('typed facade executor', () => {
 
   it('writes multiline content through fs write content-file and rejects stale patch command', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
-    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
+    const scriptPath = join(import.meta.dirname, '..', '..', 'scripts', 'fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
     try {
       writeFileSync(writePayload, 'line one\nline two\n');
@@ -424,7 +424,7 @@ describe('typed facade executor', () => {
 
   it('rejects fs write content-file directories', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
-    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
+    const scriptPath = join(import.meta.dirname, '..', '..', 'scripts', 'fs.js');
     try {
       const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
         cwd: tempRoot,
@@ -1061,47 +1061,20 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('runs neutral command aliases with legacy command semantics', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-alias-session-'));
-    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
-    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
-    try {
-      writeTaskSession(tempRoot, 'tsk_alias', 'task/workspace-agents/alias-session');
-      const taskCallPlans: CommandPlan[] = [];
-      const taskExecPlans: CommandPlan[] = [];
-      const macCallPlans: CommandPlan[] = [];
-      const macExecPlans: CommandPlan[] = [];
+  it('keeps command execution on code.call and only preserves the mac legacy alias', async () => {
+    const macCallPlans: CommandPlan[] = [];
+    const macExecPlans: CommandPlan[] = [];
 
-      const taskInput = { command: exampleInput('task.call').command, taskSession: 'tsk_alias' };
-      const taskCall = await executeTool('task.call', taskInput, {
-        ...stableOptions(successfulRunner(), taskCallPlans),
-        cwd: tempRoot,
-        currentTask: null,
-        candidates: [],
-      });
-      const taskExec = await executeTool('task.exec', { command: exampleInput('task.exec').command, taskSession: 'tsk_alias' }, {
-        ...stableOptions(successfulRunner(), taskExecPlans),
-        cwd: tempRoot,
-        currentTask: null,
-        candidates: [],
-      });
-      const macCall = await executeTool('mac.call', exampleInput('mac.call'), stableOptions(successfulRunner(), macCallPlans));
-      const macExec = await executeTool('mac.exec', exampleInput('mac.exec'), stableOptions(successfulRunner(), macExecPlans));
+    expect(getToolManifestEntry(`task.${'call'}`)).toBeNull();
+    expect(getToolManifestEntry(`task.${'exec'}`)).toBeNull();
 
-      expect(taskCall.ok).toBe(true);
-      expect(taskExec.ok).toBe(true);
-      expect(macCall.ok).toBe(true);
-      expect(macExec.ok).toBe(true);
-      expect(getToolManifestEntry('task.exec')?.description).toContain('legacy alias for task.call');
-      expect(getToolManifestEntry('mac.exec')?.description).toContain('legacy alias for mac.call');
-      expect(taskCallPlans[0].args).toEqual(taskExecPlans[0].args);
-      expect(taskCallPlans[0].env.TASK_BRANCH).toEqual(taskExecPlans[0].env.TASK_BRANCH);
-      expect(macCallPlans[0].args).toEqual(macExecPlans[0].args);
-    } finally {
-      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
-      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
-      rmSync(tempRoot, { recursive: true, force: true });
-    }
+    const macCall = await executeTool('mac.call', exampleInput('mac.call'), stableOptions(successfulRunner(), macCallPlans));
+    const macExec = await executeTool('mac.exec', exampleInput('mac.exec'), stableOptions(successfulRunner(), macExecPlans));
+
+    expect(macCall.ok).toBe(true);
+    expect(macExec.ok).toBe(true);
+    expect(getToolManifestEntry('mac.exec')?.description).toContain('legacy alias for mac.call');
+    expect(macCallPlans[0].args).toEqual(macExecPlans[0].args);
   });
 
   it('passes request ids through nested tool envelopes', async () => {
@@ -1269,7 +1242,7 @@ describe('typed facade executor', () => {
       const instructionPath = writeInstruction(tempRoot);
       const fakePiPath = writeFakePi(tempRoot);
       const run = spawnSync('bun', [
-        'packages/workspace/scripts/worker.ts',
+        join(import.meta.dirname, '..', '..', 'scripts', 'worker.ts'),
         'call',
         '--provider', 'pi',
         '--profile', 'mini',
@@ -1453,7 +1426,7 @@ describe('batch facade tool', () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('batch', {
       steps: [
-        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+        { tool: 'fs.read', input: { path: 'AGENTS.md' } },
       ],
     }, stableOptions(successfulRunner(), plans));
 
@@ -1468,7 +1441,7 @@ describe('batch facade tool', () => {
 
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({
-      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+      steps: [{ tool: 'fs.read', input: { path: 'AGENTS.md' } }],
     }).success).toBe(true);
     expect(schema?.safeParse({ steps: [] }).success).toBe(false);
     expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);

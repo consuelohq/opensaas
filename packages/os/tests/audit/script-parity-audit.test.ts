@@ -98,7 +98,6 @@ const knownManifestDrift = [
   'task.finish',
   'task.init',
   'task.merge',
-  'task.exec',
   'tools.search',
 ];
 

@@ -62,8 +62,12 @@ function failingRunner(): ToolRunner {
 
 function timeoutRunner(): ToolRunner {
   return async () => {
-    throw { timedOut: true, message: 'timed out' };
+    throw Object.assign(new Error('timed out'), { timedOut: true });
   };
+}
+
+function longText(prefix: string, length = 5000): string {
+  return `${prefix}${'x'.repeat(length)}`;
 }
 
 function passthroughRunner(): ToolRunner {
@@ -212,6 +216,29 @@ describe('typed facade executor', () => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(timeoutRunner()));
     expect(result.code).toBe('TIMEOUT');
     expect(result.ok).toBe(false);
+  });
+
+  it('should retry retry-safe facade tools when the first attempt times out', async () => {
+    let attempts = 0;
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('status', exampleInput('status'), stableOptions(async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        throw Object.assign(new Error('first attempt timed out'), {
+          timedOut: true,
+        });
+      }
+      return {
+        stdout: JSON.stringify({ value: 'retried' }),
+        stderr: '',
+        exitCode: 0,
+      };
+    }, plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(attempts).toBe(2);
+    expect(plans).toHaveLength(2);
   });
 
 
@@ -664,6 +691,77 @@ describe('typed facade executor', () => {
     }
   });
 
+
+  it('should accept task metadata aliases when taskSession is absent', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-task-id-alias-'));
+    const branch = 'task/workspace-agents/session-task-id-alias';
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        id: 'tsk_task_id_alias',
+        taskId: 'task-id-alias',
+        taskBranch: branch,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'task-id-alias',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(tempRoot);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should accept a task branch as a taskSession alias when metadata exists', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-alias-'));
+    const branch = 'task/workspace-agents/session-branch-alias';
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_branch_alias',
+        tmuxSession: 'opensaas-test',
+        branch,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: branch,
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(tempRoot);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('resolves review.run branch from taskSession before validation', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-review-session-'));
     const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
@@ -695,6 +793,70 @@ describe('typed facade executor', () => {
     } finally {
       if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
       else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should compact full verify packets when raw tails are large', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-compact-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_verify_compact_full', TEST_BRANCH);
+      const files = Array.from({ length: 25 }, (_, index) => `packages/os/src/file-${index}.ts`);
+      const result = await executeTool('verify', {
+        taskSession: 'tsk_verify_compact_full',
+        noStamp: true,
+      }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            branch: TEST_BRANCH,
+            base: 'origin/main',
+            headSha: 'abc123',
+            files,
+            review: {
+              skipped: false,
+              passed: false,
+              status: 1,
+              stderr: `\u001b[31m${longText('review-error')}`,
+              data: {
+                schema: 'review.summary.v1',
+                mustFix: [],
+                preExistingDigest: { sample: [] },
+                testSummary: {
+                  failures: [{ name: 'suite', outputTail: `\u001b[31m${longText('tail')}` }],
+                },
+              },
+            },
+            db: {
+              skipped: false,
+              passed: false,
+              risks: files.map((file) => ({ category: 'migration', file })),
+              groupedRisks: {},
+              findings: files.map((file) => ({ severity: 'error', rule: 'DB', message: longText('db'), files: [file] })),
+            },
+            docs: {
+              skipped: false,
+              passed: false,
+              files,
+              commands: [{ command: ['bun', 'docs'], passed: false, status: 1, stdout: longText('docs-out'), stderr: longText('docs-err') }],
+            },
+            passed: false,
+            publishValid: false,
+            mode: 'full',
+            stampPath: null,
+          }),
+          stderr: '',
+          exitCode: 1,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(false);
+      const data = result.data as Record<string, unknown>;
+      expect(data.schema).toBe('verify.summary.v1');
+      expect(data.files).toEqual(expect.objectContaining({ total: 25, truncated: true, omitted: 15 }));
+      expect(JSON.stringify(data)).not.toContain('\u001b[31m');
+      expect(JSON.stringify(data)).not.toContain('x'.repeat(1000));
+    } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
   });

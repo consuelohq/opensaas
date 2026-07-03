@@ -49,11 +49,9 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('choose_os_mode');
     expect(bootstrap).toContain('Choose Consuelo OS mode:');
     expect(bootstrap).toContain('prompt_select');
-    expect(bootstrap).toContain('render_os_mode_select');
-    expect(bootstrap).toContain('> local');
-    expect(bootstrap).toContain('> cloud');
+    expect(bootstrap).toContain('◆ %s');
+    expect(bootstrap).toContain('○ %s');
     expect(bootstrap).toContain('read -rsn1');
-    expect(bootstrap).toContain('read -r -s -n 1 key');
     expect(bootstrap).toContain('CONTACT_URL="https://consuelohq.com/contact/"');
     expect(bootstrap).toContain('open_contact_url');
     expect(bootstrap).not.toContain('Enter 1 or 2:');
@@ -64,6 +62,18 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap.indexOf('choose_os_mode')).toBeLessThan(
       bootstrap.indexOf('ensure_bun'),
     );
+  });
+
+  it('redraws selector choices in place instead of duplicating on arrow keys', () => {
+    const bootstrap = readBootstrap();
+    const promptSelect = extractShellFunction(bootstrap, 'prompt_select');
+
+    expect(promptSelect).toContain('prompt_lines=4');
+    expect(promptSelect).toContain('rendered=0');
+    expect(promptSelect).toContain('if [ "$rendered" -eq 1 ]; then');
+    expect(promptSelect).toContain("printf '\\033[%sA' \"$prompt_lines\" > /dev/tty");
+    expect(promptSelect).toContain("printf '\\033[2K%s\\n' \"$message\" > /dev/tty");
+    expect(promptSelect).not.toContain("printf '\\n' > /dev/tty");
   });
 
   it('exits the cloud path before source download or dependency install', () => {

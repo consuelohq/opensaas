@@ -6,6 +6,27 @@ import feedData from '../data/json-files/changelogData.json';
 
 const description = "See what's new in Consuelo — latest updates, features, and improvements.";
 
+type ChangelogSection = {
+  title: string;
+  items: string[];
+};
+
+type ChangelogWeek = {
+  label: string;
+  summary?: string;
+  sections: ChangelogSection[];
+};
+
+type ChangelogEntry = {
+  title: string;
+  date: string;
+  summary?: string;
+  weeks?: ChangelogWeek[];
+  text?: string;
+};
+
+const changelogItems = feedData as ChangelogEntry[];
+
 const parseVersion = (title: string) => {
   const match = title.match(/^(v[\d.]+)/);
   return match ? match[1] : title;
@@ -22,6 +43,8 @@ const formatDate = (date: string) => {
     year: 'numeric'
   });
 };
+
+const hasStructuredWeeks = (item: ChangelogEntry) => Array.isArray(item.weeks) && item.weeks.length > 0;
 ---
 
 <MarketingLayout title="Changelog" description={description} image="/changelog-og.png">
@@ -37,14 +60,42 @@ const formatDate = (date: string) => {
         </div>
 
         <div class="cl-entries">
-          {feedData.map((item) => (
+          {changelogItems.map((item) => (
             <article class="cl-entry">
               <div class="cl-entry__meta">
                 <span class="cl-entry__version">{parseVersion(item.title)}</span>
                 <span class="cl-entry__date">{formatDate(item.date)}</span>
               </div>
               <div class="cl-entry__body">
-                <div class="cl-entry__content" set:html={item.text} />
+                {item.summary && <p class="cl-entry__summary">{item.summary}</p>}
+
+                {hasStructuredWeeks(item) ? (
+                  <div class="cl-weeks">
+                    {item.weeks?.map((week) => (
+                      <section class="cl-week">
+                        <div class="cl-week__header">
+                          <p class="cl-week__label">{week.label}</p>
+                          {week.summary && <p class="cl-week__summary">{week.summary}</p>}
+                        </div>
+
+                        <div class="cl-week__sections">
+                          {week.sections.map((section) => (
+                            <section class="cl-section">
+                              <h4 class="cl-section__title">{section.title}</h4>
+                              <ul class="cl-section__list">
+                                {section.items.map((entry) => (
+                                  <li class="cl-section__item">{entry}</li>
+                                ))}
+                              </ul>
+                            </section>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                ) : (
+                  <div class="cl-entry__content" set:html={item.text ?? ''} />
+                )}
               </div>
             </article>
           ))}
@@ -85,7 +136,7 @@ const formatDate = (date: string) => {
 
   .cl-entry {
     display: grid;
-    grid-template-columns: 160px 1fr;
+    grid-template-columns: 160px minmax(0, 1fr);
     gap: 3rem;
     padding: 2.5rem 0;
     border-bottom: 1px solid var(--launch-line);
@@ -114,18 +165,41 @@ const formatDate = (date: string) => {
     color: var(--launch-muted);
   }
 
-  .cl-entry__body {
+  .cl-entry__body,
+  .cl-entry__content,
+  .cl-weeks,
+  .cl-week,
+  .cl-week__header,
+  .cl-week__sections,
+  .cl-section {
     min-width: 0;
+    max-width: 100%;
   }
 
-  .cl-entry__content {
+  .cl-entry__summary {
+    margin: 0 0 1.5rem;
+    max-width: 48rem;
+    color: var(--launch-muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .cl-entry__content,
+  .cl-section__list {
     font-family: var(--launch-mono-font);
     font-size: 0.85rem;
     line-height: 1.7;
     color: var(--launch-muted);
   }
 
-  .cl-entry__content :global(h4) {
+  .cl-entry__content {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .cl-entry__content :global(h4),
+  .cl-section__title {
     margin: 1.25rem 0 0.5rem;
     font-size: 0.9rem;
     font-weight: 700;
@@ -133,7 +207,8 @@ const formatDate = (date: string) => {
     letter-spacing: -0.01em;
   }
 
-  .cl-entry__content :global(h4:first-child) {
+  .cl-entry__content :global(h4:first-child),
+  .cl-section:first-child .cl-section__title {
     margin-top: 0;
   }
 
@@ -141,32 +216,101 @@ const formatDate = (date: string) => {
     margin: 0 0 1rem;
   }
 
-  .cl-entry__content :global(ul) {
+  .cl-entry__content :global(ul),
+  .cl-section__list {
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .cl-entry__content :global(li) {
+  .cl-entry__content :global(li),
+  .cl-section__item {
     padding-left: 0.5rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
-  .cl-entry__content :global(li)::before {
+  .cl-entry__content :global(li)::before,
+  .cl-section__item::before {
     content: '- ';
     color: var(--launch-muted);
+  }
+
+  .cl-weeks {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .cl-week {
+    display: grid;
+    gap: 1rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--launch-line);
+  }
+
+  .cl-week:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .cl-week__header {
+    position: sticky;
+    top: 5rem;
+    z-index: 1;
+    padding: 0.75rem 0;
+    background: var(--launch-bg);
+    border-bottom: 1px solid var(--launch-line);
+  }
+
+  .cl-week__label {
+    margin: 0;
+    font-family: var(--launch-mono-font);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--launch-fg);
+  }
+
+  .cl-week__summary {
+    margin: 0.35rem 0 0;
+    max-width: 48rem;
+    color: var(--launch-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .cl-week__sections {
+    display: grid;
+    gap: 1.25rem;
   }
 
   @media (max-width: 640px) {
     .cl-entry {
       grid-template-columns: 1fr;
-      gap: 0.75rem;
+      gap: 1rem;
+      padding: 2rem 0;
     }
 
     .cl-entry__meta {
       position: static;
       flex-direction: row;
+      flex-wrap: wrap;
       align-items: baseline;
       gap: 0.75rem;
+    }
+
+    .cl-entry__content,
+    .cl-section__list {
+      font-size: 0.8125rem;
+    }
+
+    .cl-week__header {
+      position: static;
+      padding: 0;
+      background: transparent;
+      border-bottom: 0;
     }
   }
 </style>

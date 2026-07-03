@@ -115,6 +115,17 @@ describe('Consuelo website structure', () => {
     }
   });
 
+  test('should support weekly changelog entries while preserving legacy entries', () => {
+    const changelog = readSource('src/pages/changelog.astro');
+
+    expect(changelog).toContain('type ChangelogWeek');
+    expect(changelog).toContain('item.weeks');
+    expect(changelog).toContain("set:html={item.text ?? ''}");
+    expect(changelog).toContain('cl-week__header');
+    expect(changelog).toContain('overflow-wrap: anywhere');
+    expect(changelog).toContain('grid-template-columns: 160px minmax(0, 1fr)');
+  });
+
   test('should render only the first-pass warm editorial hero baseline on the homepage', () => {
     const homepage = readSource('src/pages/index.astro');
     expect(homepage).toContain("../layouts/MarketingLayout.astro");
@@ -146,12 +157,12 @@ describe('Consuelo website structure', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
 
     expect(hero).toContain('/images/consuelo-integrations-hero.svg?v=20260628-portrait');
-    expect(hero).toContain('Give every agent');
-    expect(hero).toContain('workspace');
-    expect(hero).toContain('<em>superpowers</em>');
+    expect(hero).toContain('GIVE EVERY AGENT');
+    expect(hero).toContain('WORKSPACE');
+    expect(hero).toContain('<em>SUPERPOWERS</em>');
     expect(hero).not.toContain('<em>superpowers</em>.');
-    expect(hero).toContain('superpowers');
-    expect(hero).toContain('BATTERIES INCLUDED');
+    expect(hero).toContain('SUPERPOWERS');
+    expect(hero).toContain('OPEN SOURCE');
     expect(hero).toContain('MIT LICENSE');
     expect(hero).toContain('USE CONSUELO OS CLOUD');
     expect(hero).toContain('Go to OS portal');
@@ -174,7 +185,7 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('var(--site-font-mono)');
     expect(hero).toContain('var(--site-space-');
     expect(hero).toContain('var(--site-radius-');
-    expect(hero).toContain('box-shadow: var(--site-shadow-control);')
+    expect(hero).toContain('box-shadow: var(--home-hero-control-shadow);')
 
     expect(hero).not.toContain('--launch-');
     expect(hero).not.toContain('#FAF7F2');
@@ -187,15 +198,16 @@ describe('Consuelo website structure', () => {
     const svg = readSource('public/images/consuelo-integrations-hero.svg');
     const { homeTabs } = await import(pathToFileURL(join(sourceRoot, 'data/home-content.ts')).href);
 
-    expect(hero).toContain('aria-label="Give every agent workspace superpowers"');
-    expect(hero).toContain('<span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true">Give every agent</span>');
-    expect(hero).toContain('<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true">Give every</span>');
-    expect(hero).toContain('<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true">agent</span>');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">workspace</span>');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true"><em>superpowers</em></span>');
+    expect(hero).toContain('aria-label="GIVE EVERY AGENT WORKSPACE SUPERPOWERS"');
+    expect(hero).toContain('>GIVE EVERY AGENT</span');
+    expect(hero).toContain('>GIVE EVERY</span');
+    expect(hero).toContain('>AGENT</span');
+    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">WORKSPACE</span>');
+    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true"><em>SUPERPOWERS</em></span>');
     expect(hero).not.toContain('<span class="home-hero__title-line"><em>superpowers</em>.</span>');
-    expect(hero).not.toContain('aria-label="Give every agent Give every agent workspace superpowers"');
-    expect(hero).toContain("import { prepare, layout } from '@chenglou/pretext';");
+    expect(hero).not.toContain('<span class="home-hero__title-line"><em>SUPERPOWERS</em>.</span>');
+    expect(hero).not.toContain('aria-label="GIVE EVERY AGENT GIVE EVERY AGENT WORKSPACE SUPERPOWERS"');
+    expect(hero).toContain("import { prepare, layout } from '@chenglou/pretext'");
     expect(hero).toContain('data-pretext-title');
     expect(hero).toContain('data-pretext-lines');
     expect(hero).toContain('INSTALL VIA TERMINAL');
@@ -217,6 +229,8 @@ describe('Consuelo website structure', () => {
     expect(svg).not.toContain('--label: #0B1F3A;');
     expect(svg).toContain(".label { font: 500 15px 'monoFont', 'monoFont Fallback', 'Courier New', monospace;");
     expect(svg).not.toContain('Inter, ui-sans-serif');
+    expect(svg).toContain(".label { font: 500 15px 'monoFont', 'monoFont Fallback', 'Courier New', monospace;");
+    expect(svg).not.toContain('Inter, ui-sans-serif');
   });
 
   test('should keep the next hero pass responsive and visually quieter', () => {
@@ -224,7 +238,7 @@ describe('Consuelo website structure', () => {
 
     expect(hero).toContain('grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);');
     expect(hero).toContain('color: var(--site-color-muted);');
-    expect(hero).toContain('font-size: clamp(3.35rem, 5.75vw, 6.05rem);');
+    expect(hero).toContain('font-size: clamp(3.2rem, 5.35vw, 5.65rem);');
     expect(hero).toContain('border-radius: calc(var(--site-radius-sm) * 0.25);');
     expect(hero).toContain('@media (max-width: 1180px)');
     expect(hero).toContain('@media (max-width: 860px)');
@@ -240,9 +254,9 @@ describe('Consuelo website structure', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
     const tokens = readSource('src/styles/tokens.css');
 
-    expect(hero).toContain('font-size: clamp(2.95rem, 10vw, 4.7rem);');
-    expect(hero).toContain('font-size: clamp(3.35rem, 14.2vw, 4.7rem);');
-    expect(hero).toContain('padding-block: clamp(4.75rem, 18vw, 6.5rem) var(--site-space-7);');
+    expect(hero).toContain('font-size: clamp(2.8rem, 9.2vw, 4.45rem);');
+    expect(hero).toContain('font-size: clamp(2.84rem, 12.25vw, 3.95rem);');
+    expect(hero).toContain('padding-block: clamp(5.75rem, 20vw, 7.4rem) var(--site-space-7);');
     expect(hero).toContain('font-size: clamp(0.64rem, 2.6vw, 0.72rem);');
     expect(hero).toContain('padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);');
 
@@ -262,19 +276,19 @@ describe('Consuelo website structure', () => {
     const tokens = readSource('src/styles/tokens.css');
 
     expect(hero).toContain('width: fit-content;');
-    expect(hero).toContain('border: 1px solid var(--site-color-line);');
-    expect(hero).toContain('box-shadow: var(--site-shadow-control);');
+    expect(hero).toContain('border: 1px solid var(--home-hero-control-line);');
+    expect(hero).toContain('font-size: clamp(0.78rem, 0.95vw, 0.88rem);');
     expect(hero).toContain('font-family: var(--site-font-mono);');
-    expect(hero).toContain('font-size: var(--site-text-xs);');
+    expect(hero).toContain('font-size: clamp(0.78rem, 0.95vw, 0.88rem);');
     expect(hero).toContain('font-weight: 400;');
-    expect(hero).toContain('font: 400 var(--site-text-xs) / 1 var(--site-font-mono);');
-    expect(hero).toContain('border-bottom: 1px solid var(--site-color-line);');
+    expect(hero).toContain('font: 400 clamp(0.78rem, 0.95vw, 0.88rem) / 1 var(--site-font-mono);');
+    expect(hero).toContain('border-bottom: 1px solid var(--home-hero-control-line);');
     expect(hero).toContain('border-bottom-color: transparent;');
     expect(hero).toContain('width: min(100%, 30rem);');
-    expect(hero).toContain('--home-hero-value-size: clamp(0.48rem, 2.1vw, 0.64rem);');
-    expect(hero).toContain('gap: clamp(1.45rem, 5.8vw, 2.15rem);');
+    expect(hero).toContain('--home-hero-value-size: clamp(0.72rem, 3.2vw, 0.9rem);');
+    expect(hero).toContain('gap: clamp(0.45rem, 2vw, var(--site-space-3));');
     expect(hero).toContain('padding: 0.78rem 1.22rem;');
-    expect(hero).toContain('gap: clamp(1.55rem, 8.6vw, 2.05rem);');
+    expect(hero).toContain('gap: clamp(0.55rem, 2.4vw, 0.72rem);');
     expect(hero).toContain('padding: 0.82rem clamp(1rem, 4.2vw, 1.18rem) 0;');
     expect(hero).toContain('padding: 0 0 0.82rem;');
     expect(hero).toContain('padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);');
@@ -296,8 +310,8 @@ describe('Consuelo website structure', () => {
     expect(header).toContain('data-desktop-header-slot');
     expect(header).toContain('data-mobile-header-slot');
     expect(header).toContain('Consuelo OS');
-    expect(header).toContain('Portal');
-    expect(header).toContain('Install');
+    expect(header).toContain('PORTAL');
+    expect(header).toContain('INSTALL');
     expect(header).toContain('aria-label="Discord"');
     expect(header).toContain('aria-label="GitHub"');
     expect(header).toContain('launch-header__socials');
@@ -342,7 +356,6 @@ describe('Consuelo website structure', () => {
     expect(navigation.siteMobileMenuLinks.map((link) => link.label)).toContain('Login');
     expect(navigation.homePageSections.every((section) => typeof section.id === 'string')).toBe(true);
   });
-
 
   test('should preserve review-comment contracts when validating marketing data and route behavior', async () => {
     expectFile('src/data/contact-content.ts');
@@ -421,7 +434,6 @@ describe('Consuelo website structure', () => {
     expect(backButton).toContain('./site/LanguageSelector.astro');
     expect(backButton).toContain('href="/blog"');
   });
-
 
   test('should expose package-level design context when agents work on the website', () => {
     const requiredFiles = [

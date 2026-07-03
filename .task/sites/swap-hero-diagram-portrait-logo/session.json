@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_79375ca9dc74",
+  "tmuxSession": "opensaas-sites-swap-hero-diagram-portrait-logo-79375ca9",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/swap-hero-diagram-portrait-logo",
+  "branch": "task/sites/swap-hero-diagram-portrait-logo",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-swap-hero-diagram-portrait-logo",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-swap-hero-diagram-portrait-logo",
+  "prNumber": 1270,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1270",
+  "createdAt": "2026-06-28T15:33:17.288Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-swap-hero-diagram-portrait-logo/.task/sites/swap-hero-diagram-portrait-logo/session.json"
+}

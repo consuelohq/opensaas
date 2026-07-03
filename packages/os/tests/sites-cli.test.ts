@@ -120,6 +120,10 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.officeIndexPath)).toBe(true);
     expect(existsSync(refreshResult.officeDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
+    const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
+    expect(tracesHtml).toContain('<h1>Traces</h1>');
+    expect(tracesHtml).toContain('/gateway/traces/recent');
+    expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
@@ -171,13 +175,23 @@ describe('Sites CLI', () => {
       '<title>Consuelo OS</title>',
       '<div class="identity">Consuelo OS</div>',
       'Welcome to Consuelo OS',
-      'Here is your URL to connect to',
+      'Here is the URL to connect',
+      'to your workspace.',
       'https://chatgpt.com/apps#settings/Connectors',
       '<code id="mcp-url">https://os.consuelohq.com/mcp</code>',
       'aria-label="Copy MCP URL"',
+      'support@consuelohq.com',
+      'Systems Engineer',
+      'Go to market',
+      'Artifacts',
+      'Observability',
+      'Code review',
+      'Guides and Tips',
+      'Documentation',
+      'Decision loops',
       'Connect to your cloud agents',
       'Connected to 0 local agents',
-      'No local agents connected yet.',
+      'No local agents connected to workspace yet.',
       'navigator.clipboard.writeText(value)',
     ]) {
       expect(html).toContain(marker);
@@ -186,7 +200,10 @@ describe('Sites CLI', () => {
     expect(html.match(/target="_blank"/g)?.length).toBe(1);
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).not.toContain('Consuelo OS Sites');
-    expect(html).not.toContain('https://sites.consuelohq.com');
+    expect(html).not.toContain('[GTM]');
+    expect(html).not.toContain('[Office]');
+    expect(html).not.toContain('[Tracing]');
+    expect(html).not.toContain('[Diffs]');
     expect(html).not.toContain('const siteHotkeys = {');
     expect(html).not.toContain('Versioned local Sites pages with current pointers');
     expect(html).not.toContain('<div class="grid">');
