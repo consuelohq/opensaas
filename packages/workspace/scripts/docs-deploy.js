@@ -79,7 +79,13 @@ function parseArgs(argv) {
 }
 
 function main() {
-  const args = parseArgs(process.argv.slice(2));
+  let args;
+  try {
+    args = parseArgs(process.argv.slice(2));
+  } catch (err) {
+    writeStdout(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  }
   if (args.help) { printHelp(); return; }
 
   const startTime = Date.now();
