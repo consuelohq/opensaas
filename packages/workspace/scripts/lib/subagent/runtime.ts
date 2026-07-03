@@ -34,7 +34,7 @@ export type SubagentData = {
   stderr: string;
   exitCode: number;
   finalMessage?: string;
-  summaryText?: string;
+  summary?: SubagentRunSummary;
   rawLogPath?: string;
   stdoutLogPath?: string;
   stderrLogPath?: string;
@@ -144,32 +144,33 @@ function normalizeSubagentProvider(input: ToolInput): { provider: SubagentProvid
 
 function subagentConfig(provider: SubagentProvider, input: ToolInput = {}, env: NodeJS.ProcessEnv = process.env): SubagentProviderConfig {
   const requestedModel = typeof input.model === 'string' ? input.model : undefined;
+  const defaults = subagentDefaults[provider];
   if (provider === 'codex') return {
     bin: env.WORKSPACE_SUBAGENT_CODEX_BIN || 'codex',
-    defaultMode: 'work',
-    defaultPolicy: 'read',
-    workspaceOnly: 'preferred',
+    defaultMode: defaults.mode,
+    defaultPolicy: defaults.policy,
+    workspaceOnly: defaults.workspaceOnly,
     model: requestedModel || env.WORKSPACE_SUBAGENT_CODEX_MODEL,
   };
   if (provider === 'opencode') return {
     bin: env.WORKSPACE_SUBAGENT_OPENCODE_BIN || 'opencode',
-    defaultMode: 'work',
-    defaultPolicy: 'read',
-    workspaceOnly: 'preferred',
+    defaultMode: defaults.mode,
+    defaultPolicy: defaults.policy,
+    workspaceOnly: defaults.workspaceOnly,
     model: requestedModel || env.WORKSPACE_SUBAGENT_OPENCODE_MODEL,
   };
   if (provider === 'grok') return {
     bin: env.WORKSPACE_SUBAGENT_GROK_BIN || 'grok',
-    defaultMode: 'work',
-    defaultPolicy: 'read',
-    workspaceOnly: 'preferred',
+    defaultMode: defaults.mode,
+    defaultPolicy: defaults.policy,
+    workspaceOnly: defaults.workspaceOnly,
     model: requestedModel || env.WORKSPACE_SUBAGENT_GROK_MODEL,
   };
   return {
     bin: env.WORKSPACE_SUBAGENT_PI_BIN || 'pi',
-    defaultMode: 'work',
-    defaultPolicy: 'read',
-    workspaceOnly: 'strict',
+    defaultMode: defaults.mode,
+    defaultPolicy: defaults.policy,
+    workspaceOnly: defaults.workspaceOnly,
     model: requestedModel || env.WORKSPACE_SUBAGENT_PI_MODEL,
     provider: env.WORKSPACE_SUBAGENT_PI_PROVIDER,
     extensionPaths: (env.WORKSPACE_SUBAGENT_PI_EXTENSIONS || '').split(',').map((item) => item.trim()).filter(Boolean),
@@ -413,7 +414,7 @@ async function executeCodexSubagent(
   }
 
   const help = readCommandHelp(codex, ['exec', '--help'], context.env);
-  if (help && (!help.includes('codex exec') || !/stdin|-\s+is used|read from stdin/i.test(help))) {
+  if (!help || !help.includes('codex exec') || !/stdin|-\s+is used|read from stdin/i.test(help)) {
     return subagentToolResult(entry, context, {
       ...input,
       status: 'not_supported',
@@ -725,11 +726,10 @@ async function executeGrokSubagent(
       traceId: context.traceId,
       stdout: run.stdout,
       stderr: run.stderr,
-      audit: input.audit,
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
-    audit: input.audit,
+    audit: { ...input.audit, rawShellUsed: true },
     ok: run.exitCode === 0 && !run.timedOut,
     code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
     message: run.timedOut ? 'grok provider timed out' : run.exitCode === 0 ? 'grok provider completed' : 'grok provider failed',
@@ -1529,22 +1529,35 @@ async function runSubagentProcess(input: {
     let stdout = '';
     let stderr = '';
     let timedOut = false;
+    let settled = false;
+    let killTimer: NodeJS.Timeout | undefined;
+    const finish = (result: RunnerResult & { timedOut: boolean }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      if (killTimer) clearTimeout(killTimer);
+      resolve(result);
+    };
     const timeout = setTimeout(() => {
       timedOut = true;
       child.kill('SIGTERM');
+      killTimer = setTimeout(() => {
+        child.kill('SIGKILL');
+        finish({ stdout, stderr, exitCode: 1, timedOut: true });
+      }, 5000);
+      killTimer.unref?.();
     }, input.timeoutMs);
+    timeout.unref?.();
 
     child.stdout.setEncoding('utf8');
     child.stderr.setEncoding('utf8');
-    child.stdout.on('data', (chunk) => { stdout += chunk; });
-    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.stdout.on('data', (chunk) => { stdout = boundSubagentOutput(stdout + chunk); });
+    child.stderr.on('data', (chunk) => { stderr = boundSubagentOutput(stderr + chunk); });
     child.on('error', (error) => {
-      clearTimeout(timeout);
-      resolve({ stdout, stderr: error.message, exitCode: 1, timedOut: false });
+      finish({ stdout, stderr: error.message, exitCode: 1, timedOut: false });
     });
     child.on('close', (code) => {
-      clearTimeout(timeout);
-      resolve({ stdout, stderr, exitCode: timedOut ? 1 : code ?? 0, timedOut });
+      finish({ stdout, stderr, exitCode: timedOut ? 1 : code ?? 0, timedOut });
     });
     child.stdin.end(input.stdin || '');
   });
