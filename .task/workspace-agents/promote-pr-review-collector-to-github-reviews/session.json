@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_de068f33ba91",
+  "tmuxSession": "opensaas-workspace-agents-promote-pr-review-collector-to-github-reviews-de068f33",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/promote-pr-review-collector-to-github-reviews",
+  "branch": "task/workspace-agents/promote-pr-review-collector-to-github-reviews",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-promote-pr-review-collector-to-github-reviews",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-promote-pr-review-collector-to-github-reviews",
+  "prNumber": 1350,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1350",
+  "createdAt": "2026-07-03T09:32:44.038Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-promote-pr-review-collector-to-github-reviews/.task/workspace-agents/promote-pr-review-collector-to-github-reviews/session.json"
+}

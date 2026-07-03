@@ -3104,14 +3104,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "github",
-      "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+      "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
       "core": true,
       "definition": {
         "name": "github",
         "methodPath": [
           "github"
         ],
-        "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+        "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
         "category": "github",
         "underlying": "workspace github",
         "capabilities": {
@@ -3227,9 +3227,8 @@
           ]
         },
         "exampleInput": {
-          "operation": "pr.view",
-          "pr": 436,
-          "preset": "review"
+          "operation": "pr.reviews",
+          "pr": 436
         },
         "sessionRequired": false
       }
@@ -5233,14 +5232,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "review",
-      "description": "fetch review comments for a PR",
+      "description": "legacy wrapper for GitHub PR review feedback; prefer workspace.github({ operation: \"pr.reviews\", pr }) for normalized actionable review comments",
       "core": false,
       "definition": {
         "name": "prReview",
         "methodPath": [
           "prReview"
         ],
-        "description": "fetch review comments for a PR",
+        "description": "legacy wrapper for GitHub PR review feedback; prefer workspace.github({ operation: \"pr.reviews\", pr }) for normalized actionable review comments",
         "category": "review",
         "underlying": "workspace prReview",
         "capabilities": {
@@ -5269,8 +5268,7 @@
           ]
         },
         "exampleInput": {
-          "pr": 225,
-          "stdout": true
+          "pr": 225
         },
         "sessionRequired": false
       }
