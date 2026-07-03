@@ -34,6 +34,8 @@ import {
 import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
+  selectWorkspaceForDeviceLogin,
+  type WorkspaceDeviceKeyPair,
 } from './lib/workspace-device-login-client';
 type ArtifactMode = 'local';
 type SkillName = string;
@@ -352,9 +354,23 @@ function summarizeActions(result: ReturnType<typeof provisionLocalOs>): string {
 }
 
 
+type PendingWorkspaceSelection = {
+  deviceCode: string;
+  intervalSeconds: number;
+  deviceKeyPair: WorkspaceDeviceKeyPair;
+};
+
 type DeviceLoginAttemptResult = {
-  status: 'approved' | 'fallback' | 'skipped';
+  status: 'approved' | 'fallback' | 'skipped' | 'workspace_required';
   verificationUrl?: string;
+  workspaceBootstrap?: WorkspaceBootstrap;
+  workspaceSelection?: PendingWorkspaceSelection;
+};
+
+type ResolvedWorkspaceIdentity = {
+  workspaceName: string;
+  workspaceSlug: string;
+  workspaceHost: string;
   workspaceBootstrap?: WorkspaceBootstrap;
 };
 
@@ -492,9 +508,6 @@ async function printDeviceLoginPrompt(input: {
 }
 
 async function attemptWorkspaceDeviceLogin(input: {
-  workspaceName: string;
-  workspaceSlug: string;
-  workspaceHost: string;
   dryRun: boolean;
 }): Promise<DeviceLoginAttemptResult> {
   if (input.dryRun) return { status: 'skipped' };
@@ -503,9 +516,6 @@ async function attemptWorkspaceDeviceLogin(input: {
     const liveDeviceCode = await requestWorkspaceDeviceCode({
       clientId: DEVICE_LOGIN_CLIENT_ID,
       scope: DEVICE_LOGIN_SCOPE,
-      workspaceName: input.workspaceName,
-      workspaceSlug: input.workspaceSlug,
-      workspaceHost: input.workspaceHost,
     });
     if (liveDeviceCode.status !== 'started') {
       info('Device login unavailable; continuing with local workspace bootstrap.');
@@ -540,6 +550,19 @@ async function attemptWorkspaceDeviceLogin(input: {
         };
       }
 
+      if (pollResult.status === 'workspace_required') {
+        info('Consuelo OS authorization approved. Workspace name required to finish setup.');
+        return {
+          status: 'workspace_required',
+          verificationUrl: session.verificationUriComplete,
+          workspaceSelection: {
+            deviceCode: liveDeviceCode.session.deviceCode,
+            intervalSeconds: pollResult.intervalSeconds,
+            deviceKeyPair: liveDeviceCode.deviceKeyPair,
+          },
+        };
+      }
+
       if (pollResult.status === 'pending' || pollResult.status === 'slow_down') {
         intervalSeconds = pollResult.intervalSeconds;
         continue;
@@ -557,6 +580,71 @@ async function attemptWorkspaceDeviceLogin(input: {
   }
 }
 
+async function resolveWorkspaceIdentity(input: {
+  options: InstallOptions;
+  clackIo: ReturnType<typeof getClackIo>;
+  deviceLogin: DeviceLoginAttemptResult;
+}): Promise<ResolvedWorkspaceIdentity> {
+  const approvedBootstrap = input.deviceLogin.workspaceBootstrap;
+  if (approvedBootstrap) {
+    return {
+      workspaceName: approvedBootstrap.workspaceSlug,
+      workspaceSlug: approvedBootstrap.workspaceSlug,
+      workspaceHost: approvedBootstrap.workspaceHost,
+      workspaceBootstrap: approvedBootstrap,
+    };
+  }
+
+  const workspaceNameInput = await text({
+    ...input.clackIo,
+    message: 'enter workspace name',
+    initialValue: input.options.workspaceName ?? input.options.workspaceSlug ?? '',
+    validate: (value) => {
+      try {
+        normalizeWorkspaceName(value);
+        return undefined;
+      } catch (error: unknown) {
+        return error instanceof Error ? error.message : String(error);
+      }
+    },
+  });
+  if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
+
+  const rawWorkspaceName = String(workspaceNameInput);
+  const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
+  const workspaceSlug = workspaceName;
+  const workspaceHost = workspaceHostFromSlug(workspaceSlug);
+
+  if (input.deviceLogin.status !== 'workspace_required') {
+    return { workspaceName, workspaceSlug, workspaceHost };
+  }
+
+  const selection = input.deviceLogin.workspaceSelection;
+  if (!selection) {
+    throw new Error('device login requested workspace selection without a device session');
+  }
+
+  const selected = await selectWorkspaceForDeviceLogin({
+    clientId: DEVICE_LOGIN_CLIENT_ID,
+    deviceCode: selection.deviceCode,
+    intervalSeconds: selection.intervalSeconds,
+    deviceKeyPair: selection.deviceKeyPair,
+    workspaceName,
+    workspaceSlug,
+    workspaceHost,
+  });
+
+  if (selected.status === 'approved') {
+    return {
+      workspaceName,
+      workspaceSlug: selected.workspaceSlug,
+      workspaceHost: selected.workspaceHost,
+      workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(selected),
+    };
+  }
+
+  throw new Error(`workspace selection failed: ${selected.status}`);
+}
 async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
   try {
     if (options.yes || options.json) return options;
@@ -586,32 +674,16 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       process.exit(0);
     }
 
-    const workspaceNameInput = await text({
-      ...clackIo,
-      message: 'enter workspace name',
-      initialValue: options.workspaceName ?? options.workspaceSlug ?? '',
-      validate: (value) => {
-        try {
-          normalizeWorkspaceName(value);
-          return undefined;
-        } catch (error: unknown) {
-          return error instanceof Error ? error.message : String(error);
-        }
-      },
-    });
-    if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
-    const rawWorkspaceName = String(workspaceNameInput);
-    const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
-    const workspaceSlug = workspaceName;
-    const workspaceHost = workspaceHostFromSlug(workspaceSlug);
     renderInstallerProgress('security');
     const deviceLogin = await attemptWorkspaceDeviceLogin({
-      workspaceName,
-      workspaceSlug,
-      workspaceHost,
       dryRun: options.dryRun,
     });
-
+    const workspaceIdentity = await resolveWorkspaceIdentity({
+      options,
+      clackIo,
+      deviceLogin,
+    });
+    const { workspaceName, workspaceSlug, workspaceHost } = workspaceIdentity;
 
     const home = resolveOsHome(options.home);
 
@@ -675,7 +747,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       workspaceName,
       workspaceHost,
       workspaceSlug,
-      workspaceBootstrap: deviceLogin.workspaceBootstrap,
+      workspaceBootstrap: workspaceIdentity.workspaceBootstrap,
       deviceLoginStatus: deviceLogin.status,
       deviceLoginUrl: deviceLogin.verificationUrl,
       selectedSkills: selectedSkills as SkillName[],
