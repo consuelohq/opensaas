@@ -1,5 +1,41 @@
 [
   {
+    "title": "v0.8.0",
+    "date": "Jul 2, 2026",
+    "summary": "July opened with the documentation platform moving onto Astro/Starlight, live OS observability becoming more responsive, safer MCP provider routing, and more reliable agent execution outputs.",
+    "weeks": [
+      {
+        "label": "Week of Jul 1 through Jul 2",
+        "summary": "The first July updates focused on documentation infrastructure, trace visibility, security allowlisting, and agent runtime reliability.",
+        "sections": [
+          {
+            "title": "Docs",
+            "items": [
+              "Cut the public documentation system over to Astro/Starlight and migrated core product, OS, tools, and developer documentation into the new package.",
+              "Added runtime cached translation support for documentation, including language selection, source extraction, provider wiring, and validation coverage.",
+              "Simplified and stabilized documentation navigation by fixing sidebar drilldown behavior, valid tab-page routes, and dropdown section structure.",
+              "Removed generated public documentation artifacts from the workspace-agent surface so the documentation package owns the public docs output."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Wired trace gateway events into the live stream endpoint so OS trace activity can update in real time.",
+              "Improved tool execution scheduling and compact output shaping to make agent runs easier to monitor and recover.",
+              "Routed Sites observability through the tracked trace shell to keep site operations connected to the same trace source."
+            ]
+          },
+          {
+            "title": "Security",
+            "items": [
+              "Updated trusted MCP provider network ranges for Cloudflare-backed provisioning and added contract coverage for the allowlist behavior."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "title": "v0.7.0",
     "date": "Jun 30, 2026",
     "summary": "June shipped the Consuelo OS launch path, Cloudflare-backed security gateways, richer Sites and Diff Cockpit surfaces, media tooling, and a more polished website while continuing to harden workspace-agent execution.",
