@@ -7,8 +7,8 @@ type StrongerAuthMethod = 'google' | 'passkey' | 'magic_link' | 'hardware_key' |
 type Grant = {
   hash: string;
   userCode: string;
-  workspaceSlug: string;
-  workspaceHost: string;
+  workspaceSlug?: string;
+  workspaceHost?: string;
   status: GrantStatus;
   expiresAt: number;
   interval: number;
@@ -20,6 +20,13 @@ type Grant = {
   accountAuthMethod?: StrongerAuthMethod;
   connectorToken?: string;
   connectorExpiresAt?: number;
+};
+
+type AccountWorkspace = {
+  accountId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  updatedAt: number;
 };
 
 type OAuthState = {
@@ -93,6 +100,8 @@ type Store = {
   delMcpOAuthCode(codeHash: string): Promise<void>;
   putMcpOAuthAccessToken(t: McpOAuthAccessToken): Promise<void>;
   byMcpOAuthAccessToken(tokenHash: string): Promise<McpOAuthAccessToken | undefined>;
+  putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
+  byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
 };
 type StorageLike = { get<T>(key: string): Promise<T | undefined>; put<T>(key: string, value: T): Promise<void>; delete(key: string): Promise<boolean> };
 type StateLike = { storage: StorageLike };
@@ -226,6 +235,8 @@ class DurableStore implements Store {
   async delMcpOAuthCode(codeHash: string) { try { await this.storage.delete(`moc:${codeHash}`); } catch { throw new Error('mcp oauth code delete failed'); } }
   async putMcpOAuthAccessToken(t: McpOAuthAccessToken) { try { await this.storage.put(`mot:${t.tokenHash}`, t); } catch { throw new Error('mcp oauth token write failed'); } }
   async byMcpOAuthAccessToken(tokenHash: string) { try { return await this.storage.get<McpOAuthAccessToken>(`mot:${tokenHash}`); } catch { throw new Error('mcp oauth token read failed'); } }
+  async putAccountWorkspace(workspace: AccountWorkspace) { try { await this.storage.put(`aw:${workspace.accountId}`, workspace); } catch { throw new Error('account workspace write failed'); } }
+  async byAccountWorkspace(accountId: string) { try { return await this.storage.get<AccountWorkspace>(`aw:${accountId}`); } catch { throw new Error('account workspace read failed'); } }
 }
 
 
@@ -235,6 +246,7 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpStates = new Map<string, McpOAuthState>();
   const mcpCodes = new Map<string, McpOAuthCode>();
   const mcpTokens = new Map<string, McpOAuthAccessToken>();
+  const accountWorkspaces = new Map<string, AccountWorkspace>();
   return {
     put(g) { grants.set(g.hash, { ...g }); return Promise.resolve(); },
     byHash(h) { const g = grants.get(h); return Promise.resolve(g ? { ...g } : undefined); },
@@ -251,6 +263,8 @@ export function createMemoryDeviceGrantStore(): Store {
     delMcpOAuthCode(codeHash) { mcpCodes.delete(codeHash); return Promise.resolve(); },
     putMcpOAuthAccessToken(t) { mcpTokens.set(t.tokenHash, { ...t, scopes: [...t.scopes] }); return Promise.resolve(); },
     byMcpOAuthAccessToken(tokenHash) { const t = mcpTokens.get(tokenHash); return Promise.resolve(t ? { ...t, scopes: [...t.scopes] } : undefined); },
+    putAccountWorkspace(workspace) { accountWorkspaces.set(workspace.accountId, { ...workspace }); return Promise.resolve(); },
+    byAccountWorkspace(accountId) { const workspace = accountWorkspaces.get(accountId); return Promise.resolve(workspace ? { ...workspace } : undefined); },
   };
 }
 
@@ -537,36 +551,68 @@ async function introspectMcpOAuthToken(input: {
   store: Store;
   nowMs: number;
 }): Promise<Response> {
-  const p = await params(input.request);
-  const token = p.get('token') ?? '';
-  const resource = p.get('resource') ?? '';
-  const requiredScope = p.get('scope') ?? '';
-  const stored = token ? await input.store.byMcpOAuthAccessToken(await hash(token)) : undefined;
-  if (!stored || input.nowMs >= stored.expiresAt || (resource && resource !== stored.resource) || !hasGrantedScope(stored.scopes, requiredScope)) {
+  try {
+    const p = await params(input.request);
+    const token = p.get('token') ?? '';
+    const resource = p.get('resource') ?? '';
+    const requiredScope = p.get('scope') ?? '';
+    const stored = token ? await input.store.byMcpOAuthAccessToken(await hash(token)) : undefined;
+    if (!stored || input.nowMs >= stored.expiresAt || (resource && resource !== stored.resource) || !hasGrantedScope(stored.scopes, requiredScope)) {
+      return json({ active: false });
+    }
+    return json({
+      active: true,
+      client_id: stored.clientId,
+      sub: stored.accountId,
+      username: stored.email,
+      workspace_host: stored.workspaceHost,
+      resource: stored.resource,
+      scope: stored.scope,
+      scopes: stored.scopes,
+      exp: Math.floor(stored.expiresAt / 1000),
+      iat: Math.floor(stored.issuedAt / 1000),
+    });
+  } catch {
     return json({ active: false });
   }
-  return json({
-    active: true,
-    client_id: stored.clientId,
-    sub: stored.accountId,
-    username: stored.email,
-    workspace_host: stored.workspaceHost,
-    resource: stored.resource,
-    scope: stored.scope,
-    scopes: stored.scopes,
-    exp: Math.floor(stored.expiresAt / 1000),
-    iat: Math.floor(stored.issuedAt / 1000),
-  });
 }
 
+function grantWorkspace(grant: Grant): { workspaceSlug: string; workspaceHost: string } {
+  if (!grant.workspaceSlug || !grant.workspaceHost) {
+    throw new Error('workspace is required before bootstrap can be issued');
+  }
+  return { workspaceSlug: grant.workspaceSlug, workspaceHost: grant.workspaceHost };
+}
+
+function assignGrantWorkspace(input: { grant: Grant; workspaceSlug: string; workspaceHost: string }): void {
+  input.grant.workspaceSlug = slug(input.workspaceSlug);
+  input.grant.workspaceHost = host(input.workspaceHost);
+}
+
+async function rememberAccountWorkspace(input: { store: Store; grant: Grant; accountId: string; nowMs: number }): Promise<void> {
+  const workspace = grantWorkspace(input.grant);
+  await input.store.putAccountWorkspace({
+    accountId: input.accountId,
+    workspaceSlug: workspace.workspaceSlug,
+    workspaceHost: workspace.workspaceHost,
+    updatedAt: input.nowMs,
+  });
+}
 async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
   try {
+    grantWorkspace(input.grant);
     input.grant.status = 'approved';
     input.grant.accountId = input.accountId;
     input.grant.accountAuthMethod = input.authMethod;
     input.grant.connectorToken = rand('cbt', 32);
     input.grant.connectorExpiresAt = input.nowMs + BOOTSTRAP_TTL_MS;
     await input.store.put(input.grant);
+    await rememberAccountWorkspace({
+      store: input.store,
+      grant: input.grant,
+      accountId: input.accountId,
+      nowMs: input.nowMs,
+    });
     return input.grant;
   } catch (error: unknown) {
     throw new Error(`grant approval failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -586,12 +632,13 @@ function defaultSiteSnapshot(input?: DefaultSiteSnapshot): Required<DefaultSiteS
 async function registerApprovedWorkspaceRoute(input: { routeRegistry?: WorkspaceRouteRegistryBinding; grant: Grant; defaultSiteSnapshot?: DefaultSiteSnapshot }): Promise<void> {
   if (!input.routeRegistry) return;
   try {
+    const workspace = grantWorkspace(input.grant);
     const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
     await input.routeRegistry.exec(createWorkspaceEdgeRouteSeedSql({
-      workspaceId: workspaceIdFromSlug(input.grant.workspaceSlug),
-      workspaceSlug: input.grant.workspaceSlug,
-      hostname: input.grant.workspaceHost,
-      baseDomain: baseDomainFromHost(input.grant.workspaceHost),
+      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceSlug: workspace.workspaceSlug,
+      hostname: workspace.workspaceHost,
+      baseDomain: baseDomainFromHost(workspace.workspaceHost),
       siteSnapshotKey: snapshot.key,
       siteVersionId: snapshot.versionId,
     }));
@@ -601,13 +648,14 @@ async function registerApprovedWorkspaceRoute(input: { routeRegistry?: Workspace
 }
 
 function approvedJson(g: Grant): Record<string, unknown> {
+  const workspace = grantWorkspace(g);
   return {
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
-    workspace_id: `workspace_${g.workspaceSlug.replace(/-/g, '_')}`,
-    workspace_slug: g.workspaceSlug,
-    workspace_host: g.workspaceHost,
-    connector_id: `connector_${g.workspaceSlug.replace(/-/g, '_')}`,
+    workspace_id: `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
+    workspace_slug: workspace.workspaceSlug,
+    workspace_host: workspace.workspaceHost,
+    connector_id: `connector_${workspace.workspaceSlug.replace(/-/g, '_')}`,
     [CONNECTOR_TOKEN_KEY]: g.connectorToken ?? rand('cbt', 32),
     connector_bootstrap_expires_at: new Date(g.connectorExpiresAt ?? Date.now()).toISOString(),
     device_public_key_thumbprint: g.devicePublicKeyThumbprint,
@@ -718,29 +766,47 @@ export function createOsDeviceAuthorityHandler(input: {
         } catch (error: unknown) {
           return text(page({ code: oauthState.userCode, origin, error: googleApprovalErrorMessage(error) }), { status: 502 });
         }
-        try {
-          await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant, defaultSiteSnapshot: input.defaultSiteSnapshot });
-        } catch (error: unknown) {
-          return text(page({ code: oauthState.userCode, origin, error: `Workspace route setup failed (${error instanceof Error ? error.message : String(error)}). Restart the installer after platform setup is fixed.` }), { status: 502 });
+        const accountId = `google:${identity.sub}`;
+        const existingWorkspace = await input.store.byAccountWorkspace(accountId);
+        if (existingWorkspace) {
+          assignGrantWorkspace({
+            grant,
+            workspaceSlug: existingWorkspace.workspaceSlug,
+            workspaceHost: existingWorkspace.workspaceHost,
+          });
         }
+        if (grant.workspaceSlug && grant.workspaceHost) {
+          try {
+            await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant, defaultSiteSnapshot: input.defaultSiteSnapshot });
+          } catch (error: unknown) {
+            return text(page({ code: oauthState.userCode, origin, error: `Workspace route setup failed (${error instanceof Error ? error.message : String(error)}). Restart the installer after platform setup is fixed.` }), { status: 502 });
+          }
+          await input.store.delOAuthState(stateValue);
+          await approveGrant({ store: input.store, grant, accountId, authMethod: 'google', nowMs: now() });
+          return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
+        }
+        grant.accountId = accountId;
+        grant.accountAuthMethod = 'google';
+        await input.store.put(grant);
         await input.store.delOAuthState(stateValue);
-        await approveGrant({ store: input.store, grant, accountId: `google:${identity.sub}`, authMethod: 'google', nowMs: now() });
-        return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
+        return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal to name this workspace.` }));
       }
       if (url.pathname === '/login/device/code') {
         if (request.method !== 'POST') return methodNotAllowed('POST');
         const p = await params(request);
         const publicKey = (p.get('device_public_key_jwk') ?? '').trim();
         if (!publicKey) return json({ error: 'device_public_key_required' }, { status: 400 });
-        const workspaceSlug = slug(p.get('workspace_slug') ?? p.get('workspace_name') ?? 'workspace');
-        const workspaceHost = p.get('workspace_host')?.trim() || `${workspaceSlug}.consuelohq.com`;
+        const requestedWorkspaceSlug = p.get('workspace_slug') ?? p.get('workspace_name') ?? '';
+        const workspaceSlug = requestedWorkspaceSlug.trim() ? slug(requestedWorkspaceSlug) : undefined;
+        const workspaceHost = workspaceSlug
+          ? host(p.get('workspace_host')?.trim() || `${workspaceSlug}.consuelohq.com`)
+          : undefined;
         const deviceCode = rand('dev', 24);
         const code = userCode();
         const g: Grant = {
           hash: await hash(deviceCode),
           userCode: code,
-          workspaceSlug,
-          workspaceHost,
+          ...(workspaceSlug && workspaceHost ? { workspaceSlug, workspaceHost } : {}),
           status: 'pending',
           expiresAt: now() + TTL_MS,
           interval: INTERVAL,
@@ -751,6 +817,31 @@ export function createOsDeviceAuthorityHandler(input: {
         await input.store.put(g);
         return json({ device_code: deviceCode, user_code: code, verification_uri: CONSUELO_DEVICE_VERIFICATION_URL, verification_uri_complete: verifyUrl(origin, code), expires_in: Math.floor(TTL_MS / 1000), interval: INTERVAL });
       }
+      if (url.pathname === '/login/device/workspace') {
+        if (request.method !== 'POST') return methodNotAllowed('POST');
+        const p = await params(request);
+        const deviceCode = p.get('device_code') ?? '';
+        const g = await input.store.byHash(await hash(deviceCode));
+        if (!g) return json({ error: 'access_denied' }, { status: 400 });
+        if (now() >= g.expiresAt) { await input.store.del(g.hash); return json({ error: 'expired_token' }, { status: 400 }); }
+        if (!g.accountId || !g.accountAuthMethod) return json({ error: 'account_session_required' }, { status: 401 });
+        const clientId = p.get('client_id') ?? '';
+        const proofPayload = p.get(DEVICE_PROOF_PAYLOAD_KEY) ?? '';
+        const proof = p.get(DEVICE_PROOF_KEY) ?? '';
+        if (!await verifyDevicePublicKeyProof(g, { clientId, deviceCode, proofPayload, proof })) return json({ error: 'invalid_device_public_key_proof' }, { status: 400 });
+        const workspaceSlug = slug(p.get('workspace_slug') ?? p.get('workspace_name') ?? '');
+        const workspaceHost = host(p.get('workspace_host')?.trim() || `${workspaceSlug}.consuelohq.com`);
+        assignGrantWorkspace({ grant: g, workspaceSlug, workspaceHost });
+        try {
+          await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant: g, defaultSiteSnapshot: input.defaultSiteSnapshot });
+        } catch (error: unknown) {
+          return json({ error: 'workspace_route_setup_failed', message: error instanceof Error ? error.message : String(error) }, { status: 502 });
+        }
+        await approveGrant({ store: input.store, grant: g, accountId: g.accountId, authMethod: g.accountAuthMethod, nowMs: now() });
+        await input.store.del(g.hash);
+        return json(approvedJson(g));
+      }
+
       if (url.pathname === '/login/device/approve') {
         if (request.method !== 'POST') return methodNotAllowed('POST');
         const p = await params(request);
@@ -761,6 +852,20 @@ export function createOsDeviceAuthorityHandler(input: {
         const auth = await approvalAuth(request, input.approvalAssertionSecret, now());
         if (auth.status === 'missing') return json({ error: 'account_session_required' }, { status: 401 });
         if (auth.status === 'weak') return json({ error: 'stronger_auth_required', allowed_auth_methods: [...ALLOWED_AUTH_METHODS] }, { status: 403 });
+        const existingWorkspace = await input.store.byAccountWorkspace(auth.accountId);
+        if (existingWorkspace) {
+          assignGrantWorkspace({
+            grant: g,
+            workspaceSlug: existingWorkspace.workspaceSlug,
+            workspaceHost: existingWorkspace.workspaceHost,
+          });
+        }
+        if (!g.workspaceSlug || !g.workspaceHost) {
+          g.accountId = auth.accountId;
+          g.accountAuthMethod = auth.method;
+          await input.store.put(g);
+          return json({ status: 'workspace_required', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
+        }
         try {
           await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant: g, defaultSiteSnapshot: input.defaultSiteSnapshot });
         } catch (error: unknown) {
@@ -783,7 +888,12 @@ export function createOsDeviceAuthorityHandler(input: {
         if (!await verifyDevicePublicKeyProof(g, { clientId, deviceCode, proofPayload, proof })) return json({ error: 'invalid_device_public_key_proof' }, { status: 400 });
         if (g.lastPoll && now() - g.lastPoll < g.interval * 1000) { g.interval += INTERVAL; g.lastPoll = now(); await input.store.put(g); return json({ error: 'slow_down', interval: g.interval }, { status: 400 }); }
         g.lastPoll = now(); await input.store.put(g);
-        if (g.status !== 'approved') return json({ error: 'authorization_pending', interval: g.interval }, { status: 400 });
+        if (g.status !== 'approved') {
+          if (g.accountId && (!g.workspaceSlug || !g.workspaceHost)) {
+            return json({ error: 'workspace_required', interval: g.interval, message: 'Name this workspace in your terminal to finish device setup.' }, { status: 400 });
+          }
+          return json({ error: 'authorization_pending', interval: g.interval }, { status: 400 });
+        }
         await input.store.del(g.hash);
         return json(approvedJson(g));
       }

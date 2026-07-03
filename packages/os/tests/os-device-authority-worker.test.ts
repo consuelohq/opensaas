@@ -342,6 +342,307 @@ describe('os device authority worker', () => {
     });
   });
 
+  it('should require workspace selection after Google approval when no pre-auth workspace was supplied', async () => {
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        scope: 'workspace:read os:connector:register',
+        device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+        device_key_algorithm: 'Ed25519',
+      }),
+    }));
+    expect(codeResponse.status).toBe(200);
+    const codeJson = await codeResponse.json() as Record<string, string | number>;
+
+    const start = await handler(new Request(`${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`));
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(200);
+    await expect(callback.text()).resolves.toContain('Return to your terminal to name this workspace');
+
+    const poll = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(poll.status).toBe(400);
+    await expect(poll.json()).resolves.toMatchObject({ error: 'workspace_required', interval: 5 });
+  });
+
+  it('should require workspace selection after app-backed approval when no pre-auth workspace was supplied', async () => {
+    const routeRegistry = createCapturedRouteRegistry();
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      approvalAssertionSecret,
+      workspaceRouteRegistry: routeRegistry.binding,
+    });
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        scope: 'workspace:read os:connector:register',
+        device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+        device_key_algorithm: 'Ed25519',
+      }),
+    }));
+    expect(codeResponse.status).toBe(200);
+    const codeJson = await codeResponse.json() as Record<string, string | number>;
+
+    const approve = await handler(new Request(`${origin}/login/device/approve`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-consuelo-account-assertion': await authAssertion({
+          accountId: 'account_google_123',
+          authMethod: 'google',
+          expiresAt: '2026-06-13T00:20:00.000Z',
+        }),
+      },
+      body: new URLSearchParams({ user_code: String(codeJson.user_code).replace('-', '') }).toString(),
+    }));
+    expect(approve.status).toBe(200);
+    await expect(approve.json()).resolves.toMatchObject({
+      status: 'workspace_required',
+      account_id: 'account_google_123',
+      account_auth_method: 'google',
+      device_public_key_bound: true,
+    });
+    expect(routeRegistry.statements).toHaveLength(0);
+
+    const poll = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(poll.status).toBe(400);
+    await expect(poll.json()).resolves.toMatchObject({ error: 'workspace_required', interval: 5 });
+
+    const selected = await handler(new Request(`${origin}/login/device/workspace`, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        workspace_name: 'MacBook Air Test',
+        workspace_slug: 'macbook-air-test',
+        workspace_host: 'macbook-air-test.consuelohq.com',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(selected.status).toBe(200);
+    await expect(selected.json()).resolves.toMatchObject({
+      workspace_slug: 'macbook-air-test',
+      workspace_host: 'macbook-air-test.consuelohq.com',
+      connector_id: 'connector_macbook_air_test',
+    });
+    expect(routeRegistry.statements).toHaveLength(1);
+    expect(routeRegistry.statements[0]).toContain('macbook-air-test.consuelohq.com');
+    expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
+
+    const secondKeyPair = generateWorkspaceDeviceKeyPair();
+    const secondCodeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        scope: 'workspace:read os:connector:register',
+        device_public_key_jwk: secondKeyPair.publicKeyJwk,
+        device_key_algorithm: 'Ed25519',
+      }),
+    }));
+    expect(secondCodeResponse.status).toBe(200);
+    const secondCodeJson = await secondCodeResponse.json() as Record<string, string | number>;
+    const secondApprove = await handler(new Request(`${origin}/login/device/approve`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-consuelo-account-assertion': await authAssertion({
+          accountId: 'account_google_123',
+          authMethod: 'google',
+          expiresAt: '2026-06-13T00:20:00.000Z',
+        }),
+      },
+      body: new URLSearchParams({ user_code: String(secondCodeJson.user_code).replace('-', '') }).toString(),
+    }));
+    expect(secondApprove.status).toBe(200);
+    await expect(secondApprove.json()).resolves.toMatchObject({
+      status: 'approved',
+      account_id: 'account_google_123',
+      account_auth_method: 'google',
+      device_public_key_bound: true,
+    });
+    expect(routeRegistry.statements).toHaveLength(2);
+    expect(routeRegistry.statements[1]).toContain('macbook-air-test.consuelohq.com');
+    expect(routeRegistry.statements[1]).not.toContain('workspace.consuelohq.com');
+  });
+
+  it('should register the approved workspace host route after auth-first workspace selection', async () => {
+    const routeRegistry = createCapturedRouteRegistry();
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+      workspaceRouteRegistry: routeRegistry.binding,
+      defaultSiteSnapshot: {
+        key: 'sites/platform/launcher/sha256-test/index.html',
+        versionId: 'sha256-test',
+      },
+    });
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        scope: 'workspace:read os:connector:register',
+        device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+        device_key_algorithm: 'Ed25519',
+      }),
+    }));
+    expect(codeResponse.status).toBe(200);
+    const codeJson = await codeResponse.json() as Record<string, string | number>;
+    const start = await handler(new Request(`${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`));
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+    const callback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`));
+    expect(callback.status).toBe(200);
+
+    const selected = await handler(new Request(`${origin}/login/device/workspace`, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        workspace_name: 'MacBook Air Test',
+        workspace_slug: 'macbook-air-test',
+        workspace_host: 'macbook-air-test.consuelohq.com',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(selected.status).toBe(200);
+    await expect(selected.json()).resolves.toMatchObject({
+      workspace_slug: 'macbook-air-test',
+      workspace_host: 'macbook-air-test.consuelohq.com',
+      connector_id: 'connector_macbook_air_test',
+    });
+    expect(routeRegistry.statements).toHaveLength(1);
+    expect(routeRegistry.statements[0]).toContain('macbook-air-test.consuelohq.com');
+    expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
+  });
+
+  it('should reuse an existing Google account workspace during later auth-first installs', async () => {
+    const routeRegistry = createCapturedRouteRegistry();
+    const store = createMemoryDeviceGrantStore();
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+      workspaceRouteRegistry: routeRegistry.binding,
+    });
+
+    const firstKeyPair = generateWorkspaceDeviceKeyPair();
+    const firstCodeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        scope: 'workspace:read os:connector:register',
+        device_public_key_jwk: firstKeyPair.publicKeyJwk,
+        device_key_algorithm: 'Ed25519',
+      }),
+    }));
+    const firstCodeJson = await firstCodeResponse.json() as Record<string, string | number>;
+    const firstStart = await handler(new Request(`${origin}/login/google/start?user_code=${String(firstCodeJson.user_code).replace('-', '')}`));
+    const firstState = new URL(firstStart.headers.get('location') ?? '').searchParams.get('state');
+    await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(firstState ?? '')}`));
+    await handler(new Request(`${origin}/login/device/workspace`, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(firstCodeJson.device_code),
+        workspace_name: 'MacBook Air Test',
+        workspace_slug: 'macbook-air-test',
+        workspace_host: 'macbook-air-test.consuelohq.com',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(firstCodeJson.device_code),
+          deviceKeyPair: firstKeyPair,
+        }),
+      }),
+    }));
+
+    const secondKeyPair = generateWorkspaceDeviceKeyPair();
+    const secondCodeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        scope: 'workspace:read os:connector:register',
+        device_public_key_jwk: secondKeyPair.publicKeyJwk,
+        device_key_algorithm: 'Ed25519',
+      }),
+    }));
+    const secondCodeJson = await secondCodeResponse.json() as Record<string, string | number>;
+    const secondStart = await handler(new Request(`${origin}/login/google/start?user_code=${String(secondCodeJson.user_code).replace('-', '')}`));
+    const secondState = new URL(secondStart.headers.get('location') ?? '').searchParams.get('state');
+    const secondCallback = await handler(new Request(`${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(secondState ?? '')}`));
+    expect(secondCallback.status).toBe(200);
+
+    const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(secondCodeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(secondCodeJson.device_code),
+          deviceKeyPair: secondKeyPair,
+        }),
+      }),
+    }));
+    expect(approved.status).toBe(200);
+    await expect(approved.json()).resolves.toMatchObject({
+      workspace_slug: 'macbook-air-test',
+      workspace_host: 'macbook-air-test.consuelohq.com',
+    });
+  });
   it('should register the approved workspace host route dynamically during Google approval', async () => {
     const routeRegistry = createCapturedRouteRegistry();
     const handler = createOsDeviceAuthorityHandler({

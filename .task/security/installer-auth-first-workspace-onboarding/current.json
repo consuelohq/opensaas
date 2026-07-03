@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/installer-auth-first-workspace-onboarding",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1359,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1359",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1359",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1359/installer-auth-first-workspace-onboarding",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1359",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1359/installer-auth-first-workspace-onboarding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-auth-first-workspace-onboarding",
+  "taskSession": "tsk_f63119145ba1",
+  "tmuxSession": "opensaas-security-installer-auth-first-workspace-onboarding-f6311914",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-auth-first-workspace-onboarding/.task/security/installer-auth-first-workspace-onboarding/session.json",
+  "createdAt": "2026-07-03T11:37:37.909Z"
+}
