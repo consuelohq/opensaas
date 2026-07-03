@@ -16,7 +16,7 @@ describe('Consuelo OS hosted onboarding flow', () => {
   test('skills are a real prompt with explicit multiselect instructions', () => {
     expect(install).toContain('selectedSkills');
     expect(install).toContain("message: 'select skills to enable — Use Space to select skills, press Enter to continue'");
-    expect(install).toContain("{ label: 'security', state: 'complete' }");
+    expect(install).toContain('createInstallerProgressSteps');
     expect(install).toContain("'service'");
     expect(install).toContain("'health'");
   });
@@ -28,13 +28,27 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).not.toContain('local artifacts (save generated files under OS home)');
   });
 
-  test('workspace identity asks for a name and derives slug plus host internally', () => {
+  test('workspace identity starts with authorization before naming a new workspace', () => {
     expect(install).toContain('workspaceName');
     expect(install).toContain('--workspace-name');
     expect(install).toContain("message: 'enter workspace name'");
     expect(install).toContain('workspaceHostFromSlug');
     expect(install).toContain('consuelohq.com');
     expect(install).toContain('workspace name is required');
+    expect(install).toContain('requestWorkspaceDeviceCode({');
+    expect(install).toContain('resolveWorkspaceIdentity');
+    const promptOptionsSource = install.slice(install.indexOf('async function promptOptions'));
+    expect(promptOptionsSource.indexOf('attemptWorkspaceDeviceLogin({')).toBeLessThan(
+      promptOptionsSource.indexOf('resolveWorkspaceIdentity({'),
+    );
+    const resolveWorkspaceIdentitySource = install.slice(
+      install.indexOf('async function resolveWorkspaceIdentity'),
+      install.indexOf('async function promptOptions'),
+    );
+    expect(resolveWorkspaceIdentitySource.indexOf('const approvedBootstrap = input.deviceLogin.workspaceBootstrap')).toBeLessThan(
+      resolveWorkspaceIdentitySource.indexOf("message: 'enter workspace name'"),
+    );
+    expect(resolveWorkspaceIdentitySource).toContain("input.deviceLogin.status !== 'workspace_required'");
     expect(install).not.toContain("message: 'Consuelo workspace URL'");
     expect(install).not.toContain("message: 'workspace short name'");
     expect(install).not.toContain('workspace URL is required');
@@ -62,7 +76,7 @@ describe('Consuelo OS hosted onboarding flow', () => {
   });
 
   test('agent multiselect explains default-selected detected agents', () => {
-    expect(install).toContain('agentPromptSubject');
+    expect(install).toContain('formatLocalAgentsPromptMessage');
     expect(install).toContain('found — press Space to not connect to this workspace, Enter to continue');
   });
 
