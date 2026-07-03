@@ -84,3 +84,6 @@
 - Fixed wait PR/deploy edge cases: non-throwing `gh pr checks`, pending exit code 8 support, required flag values, finite positive poll interval handling, timeout-bounded sleeps, and JSON-only deploy terminal outputs.
 - Refreshed generated workspace signatures/docs and script parity classifications after the worker -> subagent rename and current script inventory drift.
 - Follow-up: full `packages/workspace/tests/facade/facade.test.ts` had unrelated pre-existing red tests before this task; this task validated the specific fixed bounded-output behavior instead of claiming full-suite green.
+
+## Summary
+Fixed PR #1335 review issues across subagent runtime contracts, wait CLI reliability, generated public signatures, and script parity inventory. Validation covered changed-file syntax, script parity audit, focused bounded-output regression test, and wait CLI smoke cases for missing PR arguments and pending GitHub checks.
