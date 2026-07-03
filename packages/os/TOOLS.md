@@ -1409,7 +1409,7 @@ await workspace.call({
 
 ### workspace.github
 
-typed GitHub facade with semantic operations and presets; prefer over raw gh
+typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers
 
 | Field | Value |
 | --- | --- |
@@ -1425,9 +1425,8 @@ typed GitHub facade with semantic operations and presets; prefer over raw gh
 await workspace.call({
   "tool": "github",
   "input": {
-    "operation": "pr.view",
-    "pr": 436,
-    "preset": "review"
+    "operation": "pr.reviews",
+    "pr": 436
   }
 });
 ```
@@ -5210,7 +5209,7 @@ await workspace.call({
 
 ### workspace.prReview
 
-fetch review comments for a PR
+legacy wrapper for GitHub PR review feedback; prefer OS github with operation pr.reviews for normalized actionable review comments
 
 | Field | Value |
 | --- | --- |
@@ -5226,8 +5225,7 @@ fetch review comments for a PR
 await workspace.call({
   "tool": "prReview",
   "input": {
-    "pr": 225,
-    "stdout": true
+    "pr": 225
   }
 });
 ```
