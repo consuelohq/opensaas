@@ -230,6 +230,18 @@ const INTENT_PACKS: IntentPack[] = [
     safeDefault: 'task.prs is the safe read-only default for inspecting task PR links.',
   },
   {
+    id: 'github-pr-feedback',
+    label: 'fetch pull request feedback comments',
+    terms: ['github', 'pr', 'pull', 'request', 'review', 'reviews', 'comment', 'comments', 'feedback', 'inline', 'actionable', 'bot'],
+    requireAny: ['comments', 'comment', 'feedback', 'inline', 'bot'],
+    boost: { github: 120, prReview: 8, 'task.pr': -80, 'task.prs': -20, 'task.merge': -30 },
+    alternatives: [
+      { intent: 'legacy wrapper', tools: ['prReview'] },
+      { intent: 'inspect task PR links', tools: ['task.prs'] },
+    ],
+    safeDefault: 'Use github operation pr.reviews for pull request feedback comments.',
+  },
+  {
     id: 'task-pr-create',
     label: 'create or refresh a stream review PR',
     terms: ['create', 'refresh', 'review', 'stream', 'pr', 'pull', 'request'],

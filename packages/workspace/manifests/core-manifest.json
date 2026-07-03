@@ -454,14 +454,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "github",
-      "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+      "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
       "core": true,
       "definition": {
         "name": "github",
         "methodPath": [
           "github"
         ],
-        "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+        "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
         "category": "github",
         "underlying": "workspace github",
         "capabilities": {
@@ -577,9 +577,8 @@
           ]
         },
         "exampleInput": {
-          "operation": "pr.view",
-          "pr": 436,
-          "preset": "review"
+          "operation": "pr.reviews",
+          "pr": 436
         },
         "sessionRequired": false
       }
