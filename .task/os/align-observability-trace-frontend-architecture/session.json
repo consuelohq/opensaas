@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_54b8884dfe95",
+  "tmuxSession": "opensaas-os-align-observability-trace-frontend-architecture-54b8884d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-observability-trace-frontend-architecture",
+  "branch": "task/os/align-observability-trace-frontend-architecture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-observability-trace-frontend-architecture",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-observability-trace-frontend-architecture",
+  "prNumber": 1331,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1331",
+  "createdAt": "2026-07-01T21:04:05.521Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-observability-trace-frontend-architecture/.task/os/align-observability-trace-frontend-architecture/session.json"
+}

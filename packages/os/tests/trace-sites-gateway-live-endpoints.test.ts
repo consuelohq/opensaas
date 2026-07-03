@@ -55,7 +55,7 @@ function request(path: string): Request {
       'x-consuelo-workspace-id': 'wrk_live',
       'x-consuelo-workspace-host': 'testing.consuelohq.com',
       'x-consuelo-trace-read': 'true',
-      'x-consuelo-allowed-sites': 'trace,trace-burn-intelligence',
+      'x-consuelo-allowed-sites': 'trace,traces,trace-burn-intelligence',
       'x-consuelo-source-modes': 'local-networked,cloud-compute,local-off-network',
       'x-consuelo-retention-policy-id': 'ret_workspace_default',
     },
@@ -196,7 +196,7 @@ describe('Trace Sites gateway live endpoints', () => {
 });
 
 describe('Trace Sites local trace backend adapter', () => {
-  it('reads real local tool trace rows into Trace Sites dashboard events', async () => {
+  it.runIf(typeof Bun !== 'undefined')('reads real local tool trace rows into Trace Sites dashboard events', async () => {
     const dbPath = join(tempDir, 'traces.db');
     const { Database } = await import('bun:sqlite');
     const db = new Database(dbPath);
@@ -232,7 +232,7 @@ describe('Trace Sites local trace backend adapter', () => {
     const recent = await backend.readRecentEvents({
       workspaceId: 'wrk_live',
       workspaceHost: 'testing.consuelohq.com',
-      site: 'trace-burn-intelligence',
+      site: 'traces',
       sourceMode: 'local-networked',
       cursor: '000000000000',
       limit: 10,

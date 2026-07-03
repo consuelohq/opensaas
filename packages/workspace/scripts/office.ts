@@ -57,7 +57,9 @@ const DESIGN_ARCHIVE_LEGACY_PATH = '/design-wiki';
 const DESIGN_ARCHIVE_PATH = '/sites';
 const DESIGN_ARCHIVE_OFFICE_PATH = '/office';
 const DESIGN_ARCHIVE_OBSERVABILITY_PATH = '/observability';
+const DESIGN_ARCHIVE_TRACES_PATH = '/traces';
 const DESIGN_ARCHIVE_TRACING_LEGACY_PATH = '/tracing';
+const DESIGN_ARCHIVE_OBSERVABILITY_TRACES_PATH = '/observability/traces';
 const DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH = '/trace-burn-intelligence';
 const DESIGN_DOCS_URL = 'https://docs.consuelohq.com/';
 const DESIGN_DECISION_INFRASTRUCTURE_URL = 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/';
@@ -1089,6 +1091,8 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget];
     const legacyCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_LEGACY_PATH, archiveTarget];
     const observabilityCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OBSERVABILITY_PATH, tracingTarget];
+    const observabilityTracesCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_OBSERVABILITY_TRACES_PATH, tracingTarget];
+    const tracesCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_TRACES_PATH, tracingTarget];
     const tracingCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_TRACING_LEGACY_PATH, tracingTarget];
     const diffsCommand = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', '/diffs', diffsTarget];
     const url = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_OFFICE_PATH}`;
@@ -1096,7 +1100,7 @@ async function refreshDesignArchive(args: ParsedArgs): Promise<void> {
     const legacyUrl = `${DESIGN_ARCHIVE_LEGACY_PUBLIC_ORIGIN}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     const legacyDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_LEGACY_PATH}`;
     if (args.dryRun) {
-      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand, observabilityCommand, tracingCommand, diffsCommand] });
+      if (args.json) printJson({ ok: true, mode: 'tailscale-serve', path: DESIGN_ARCHIVE_OFFICE_PATH, aliasPath: DESIGN_ARCHIVE_PATH, legacyPath: DESIGN_ARCHIVE_LEGACY_PATH, url, directUrl, legacyUrl, legacyDirectUrl, target: archiveTarget, commands: [launcherCommand, officeCommand, command, legacyCommand, observabilityCommand, observabilityTracesCommand, tracesCommand, tracingCommand, diffsCommand] });
       else writeStdout(`design archive refresh dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
       return;
     }
@@ -1169,6 +1173,8 @@ async function setArchiveServePaths(tailscaleBin: string, target: string): Promi
       [DESIGN_ARCHIVE_PATH, target],
       [DESIGN_ARCHIVE_LEGACY_PATH, target],
       [DESIGN_ARCHIVE_OBSERVABILITY_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`],
+      [DESIGN_ARCHIVE_OBSERVABILITY_TRACES_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`],
+      [DESIGN_ARCHIVE_TRACES_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`],
       [DESIGN_ARCHIVE_TRACING_LEGACY_PATH, `${target}${DESIGN_ARCHIVE_TRACE_ARTIFACT_PATH}`],
       ['/diffs', `${target}/diffs`],
     ] as const;
@@ -1305,7 +1311,7 @@ function writeArchiveServer(ip: string): void {
     'function pagefindSuffix(pathname){ for (const base of archivePaths){ if (pathname.startsWith(base + "/pagefind/")) return pathname.slice((base + "/pagefind/").length); } if (pathname.startsWith("/pagefind/")) return pathname.slice("/pagefind/".length); return null; }',
     'function stripArtifactAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; for (const base of archivePaths){ if (clean === base) return "/"; if (clean.startsWith(base + "/")) return clean.slice(base.length) || "/"; } return clean; }',
     'function officePathFor(pathname){ const raw = String(pathname || "/"); const clean = raw.startsWith("/") ? raw : "/" + raw.replace(/^\\/+/, ""); return officeArchivePath + (clean === "/" ? "" : clean); }',
-    'function publicRouteAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; for (const alias of ["/observability", "/tracing"]){ if (clean === alias) return "/trace-burn-intelligence"; if (clean.startsWith(alias + "/")) return "/trace-burn-intelligence" + clean.slice(alias.length); } return pathname; }',
+    'function publicRouteAlias(pathname){ const clean = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname; if (clean === "/observability/traces") return "/trace-burn-intelligence"; if (clean.startsWith("/observability/traces/")) return "/trace-burn-intelligence" + clean.slice("/observability/traces".length); for (const alias of ["/observability", "/traces", "/tracing"]){ if (clean === alias) return "/trace-burn-intelligence"; if (clean.startsWith(alias + "/")) return "/trace-burn-intelligence" + clean.slice(alias.length); } return pathname; }',
     'async function proxyDiffsRoute(request){ const url = new URL(request.url); const clean = url.pathname.endsWith("/") && url.pathname !== "/" ? url.pathname.slice(0, -1) : url.pathname; if (clean !== "/diffs" && !url.pathname.startsWith("/diffs/")) return null; const target = new URL("https://diffs.consuelohq.com"); target.pathname = clean === "/diffs" ? "/" : url.pathname.slice("/diffs".length); target.search = url.search; return fetch(target, { method: request.method, headers: request.headers }); }',
     "function latestTraceDb(){ try { const root = `${process.env.HOME || \"/Users/kokayi\"}/Library/Application Support/OpenWorkspace/traces`; const entries = Array.from(new Bun.Glob(\"*/traces.db\").scanSync({ cwd: root, absolute: true })); return entries.map((path) => { try { return { path, mtime: Bun.file(path).lastModified || 0 }; } catch { return null; } }).filter(Boolean).sort((left, right) => right.mtime - left.mtime)[0]?.path || \"\"; } catch { return \"\"; } }",
     "function sqlQuote(value){ return \"'\" + String(value || \"\").replaceAll(\"'\", \"''\") + \"'\"; }",

@@ -1,6 +1,6 @@
 export const TRACE_SITES_GATEWAY_CONTRACT_VERSION = '2026-06-13.pr1';
 
-export const TRACE_SITES = ['trace', 'trace-burn-intelligence'] as const;
+export const TRACE_SITES = ['trace', 'traces', 'trace-burn-intelligence'] as const;
 
 export type TraceSiteSlug = (typeof TRACE_SITES)[number];
 export type TraceSourceMode = 'local-networked' | 'cloud-compute' | 'local-off-network';
@@ -357,7 +357,7 @@ export function isDirectTraceBackendTarget(target: TraceGatewayPublicBoundary | 
 export function canScopeReadTraceSites(
   scope: TraceGatewaySessionScope,
   workspaceHost: string,
-  site: TraceSiteSlug = 'trace-burn-intelligence',
+  site: TraceSiteSlug = 'traces',
 ): boolean {
   return scope.traceRead && scope.workspaceHost === workspaceHost && scope.allowedSites.includes(site);
 }

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-observability-trace-frontend-architecture",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1331,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1331",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1331",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1331/align-observability-trace-frontend-architecture",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1331",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1331/align-observability-trace-frontend-architecture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-observability-trace-frontend-architecture",
+  "taskSession": "tsk_54b8884dfe95",
+  "tmuxSession": "opensaas-os-align-observability-trace-frontend-architecture-54b8884d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-observability-trace-frontend-architecture/.task/os/align-observability-trace-frontend-architecture/session.json",
+  "createdAt": "2026-07-01T21:04:05.523Z"
+}
