@@ -63,7 +63,7 @@ describe('executeCall artifact persistence', () => {
 
     const stored = JSON.parse(runBunEval(`
       const { Database } = await import('bun:sqlite');
-      const db = new Database('${join(tempHome, 'consuelo.db')}');
+      const db = new Database('${join(tempHome, 'node', 'db', 'consuelo.db')}');
       const execution = db.query('SELECT trace_id, status FROM skill_executions WHERE trace_id = ?').get('trc_daily_brief_test');
       const artifact = db.query('SELECT skill_execution_trace_id, storage_key FROM artifacts WHERE id = ?').get('${artifact.id}');
       db.close();
@@ -73,7 +73,7 @@ describe('executeCall artifact persistence', () => {
     expect(stored.execution).toEqual({ trace_id: 'trc_daily_brief_test', status: 'succeeded' });
     expect(stored.artifact).toEqual({
       skill_execution_trace_id: 'trc_daily_brief_test',
-      storage_key: 'artifacts/trc_daily_brief_test/daily-revenue-brief.json',
+      storage_key: `artifacts/${artifact.id}/versions/000001/daily-revenue-brief.json`,
     });
   });
 });

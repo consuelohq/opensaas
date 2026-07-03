@@ -73,7 +73,7 @@
           "deterministic": false,
           "safeToRetry": false
         },
-        "defaultTimeout": 300000,
+        "defaultTimeout": 180000,
         "inputSchema": "CodeCallInput",
         "outputSchema": "CodeCallOutput",
         "command": {

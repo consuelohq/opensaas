@@ -63,7 +63,7 @@ Run focused repo-scoped Python, Bun, or Bash programs where runtime output is th
 | Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" &#124; "edit" &#124; "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os code.call` |
 | Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+| Default timeout | 180000ms |
 
 #### Example call
 

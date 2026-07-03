@@ -30,12 +30,12 @@ This repo is built on top of Twenty. Some package names still contain `twenty-*`
 
 ### Major runtime services
 
-| Service | Purpose |
-| --- | --- |
-| `opensaas` | Main Twenty/Consuelo server, NestJS API, frontend |
-| `twenty-worker` | BullMQ background job processor |
-| `postgres` | Railway-managed PostgreSQL |
-| `redis` | Railway-managed Redis for cache, sessions, BullMQ |
+| Service         | Purpose                                           |
+| --------------- | ------------------------------------------------- |
+| `opensaas`      | Main Twenty/Consuelo server, NestJS API, frontend |
+| `twenty-worker` | BullMQ background job processor                   |
+| `postgres`      | Railway-managed PostgreSQL                        |
+| `redis`         | Railway-managed Redis for cache, sessions, BullMQ |
 
 ## Core codebase rules
 
@@ -395,12 +395,12 @@ Do not hand-roll parallel config loading.
 
 ### Services
 
-| Service | Purpose | Dockerfile |
-| --- | --- | --- |
-| `opensaas` | Twenty/Consuelo server | `packages/twenty-docker/twenty/Dockerfile` |
-| `twenty-worker` | BullMQ worker | Same Dockerfile, custom start command |
-| `postgres` | PostgreSQL | Railway managed |
-| `redis` | Redis | Railway managed |
+| Service         | Purpose                | Dockerfile                                 |
+| --------------- | ---------------------- | ------------------------------------------ |
+| `opensaas`      | Twenty/Consuelo server | `packages/twenty-docker/twenty/Dockerfile` |
+| `twenty-worker` | BullMQ worker          | Same Dockerfile, custom start command      |
+| `postgres`      | PostgreSQL             | Railway managed                            |
+| `redis`         | Redis                  | Railway managed                            |
 
 ### Dockerfile path env vars
 
@@ -452,6 +452,7 @@ railway ssh -- env | grep VAR_NAME
 Env vars may be injected correctly even when `echo` output appears missing.
 
 ### Yoga driver patch (DO NOT MODIFY)
+
 packages/twenty-server/patches/@graphql-yoga+nestjs+2.1.0.patch — patches the yoga NestJS driver to support conditional schema merging (workspace + core schemas). this is the code path that calls mergeSchemas(). do not touch this file.
 
 ## Internal Consuelo instance
@@ -655,3 +656,7 @@ When debugging production or Railway behavior:
 - Prefer presence checks, suffix checks, counts, and redacted values.
 - Sanitize before formatting.
 - Security first, formatting second.
+
+## Documentation package
+
+Public docs live in `packages/documentation`, the Bun-owned Astro/Starlight app for `docs.consuelohq.com`. Before docs work, read `packages/documentation/README.md`. Do not edit or recreate legacy Mintlify docs, generated `docs.json`, or committed machine-translated locale trees.

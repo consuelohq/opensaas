@@ -1,5 +1,8 @@
 #!/usr/bin/env bun
 
+// pr-review.js — legacy CLI wrapper for normalized PR review collection
+// Internals live in ./lib/pr-review-collector so CLI and workspace.github({ operation: "pr.reviews" }) stay consistent.
+
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
