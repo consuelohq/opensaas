@@ -76,3 +76,11 @@
 
 - 2026-07-03 09:53:49 `checkFiles`: failed — COMMAND_FAILED
 - 2026-07-03 10:00:44 `checkFiles`: passed — OK
+
+## Final implementation note
+- Changed subagent output contracts so generated signatures match runtime behavior: `summary` is optional, while successful compacted provider runs still include it.
+- Bounded live subagent stdout/stderr accumulation, added timeout SIGKILL escalation, and tightened the bounded-output regression test.
+- Fixed Grok audit reporting by marking direct CLI execution as raw-shell usage and removed the unsupported audit argument from compaction.
+- Fixed wait PR/deploy edge cases: non-throwing `gh pr checks`, pending exit code 8 support, required flag values, finite positive poll interval handling, timeout-bounded sleeps, and JSON-only deploy terminal outputs.
+- Refreshed generated workspace signatures/docs and script parity classifications after the worker -> subagent rename and current script inventory drift.
+- Follow-up: full `packages/workspace/tests/facade/facade.test.ts` had unrelated pre-existing red tests before this task; this task validated the specific fixed bounded-output behavior instead of claiming full-suite green.
