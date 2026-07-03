@@ -26,6 +26,7 @@ import {
 import {
   detectAgents,
   provisionLocalOs,
+  readLocalNodeIdentity,
   resolveOsHome,
   type AgentName,
   type OsMode,
@@ -37,6 +38,11 @@ import {
   selectWorkspaceForDeviceLogin,
   type WorkspaceDeviceKeyPair,
 } from './lib/workspace-device-login-client';
+import {
+  createInstallDiagnostics,
+  type InstallDiagnostics,
+  type InstallDiagnosticStatus,
+} from './lib/install-diagnostics';
 type ArtifactMode = 'local';
 type SkillName = string;
 type InstallerProgressStep =
@@ -61,7 +67,7 @@ type InstallOptions = {
   workspaceHost?: string;
   workspaceSlug?: string;
   workspaceBootstrap?: WorkspaceBootstrap;
-  deviceLoginStatus?: 'approved' | 'fallback' | 'skipped';
+  deviceLoginStatus?: 'approved' | 'fallback' | 'skipped' | 'workspace_required';
   deviceLoginUrl?: string;
   artifactMode: ArtifactMode;
   selectedSkills: SkillName[];
@@ -105,6 +111,23 @@ export const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
   'service',
   'health',
 ];
+
+function recordInstallerStep(
+  diagnostics: InstallDiagnostics,
+  step: InstallerProgressStep | 'dependencies',
+  status: InstallDiagnosticStatus,
+  data?: Record<string, unknown>,
+): void {
+  diagnostics.recordStep(step, status, data);
+}
+
+function recordPromptDecision(
+  diagnostics: InstallDiagnostics,
+  name: string,
+  value: unknown,
+): void {
+  diagnostics.recordPromptDecision(name, value);
+}
 
 export function createInstallerProgressSteps(
   activeStep: InstallerProgressStep | null,
@@ -378,6 +401,10 @@ function workspaceBootstrapFromApprovedDeviceGrant(input: {
   workspaceId: string;
   workspaceSlug: string;
   workspaceHost: string;
+  nodeId?: string;
+  nodeName?: string;
+  nodeRole?: 'home' | 'member';
+  nodeStatus?: 'created' | 'reconnected';
   connectorId: string;
   connectorBootstrapToken: string;
   cloudflareTunnelToken?: string;
@@ -390,6 +417,10 @@ function workspaceBootstrapFromApprovedDeviceGrant(input: {
     workspaceId: input.workspaceId,
     workspaceSlug: input.workspaceSlug,
     workspaceHost: input.workspaceHost,
+    ...(input.nodeId ? { nodeId: input.nodeId } : {}),
+    ...(input.nodeName ? { nodeName: input.nodeName } : {}),
+    ...(input.nodeRole ? { nodeRole: input.nodeRole } : {}),
+    ...(input.nodeStatus ? { nodeStatus: input.nodeStatus } : {}),
     connectorId: input.connectorId,
     connectorTransport,
     connectorBootstrapToken: input.connectorBootstrapToken,
@@ -509,13 +540,17 @@ async function printDeviceLoginPrompt(input: {
 
 async function attemptWorkspaceDeviceLogin(input: {
   dryRun: boolean;
+  home: string;
 }): Promise<DeviceLoginAttemptResult> {
   if (input.dryRun) return { status: 'skipped' };
 
   try {
+    const localNodeIdentity = readLocalNodeIdentity(input.home);
     const liveDeviceCode = await requestWorkspaceDeviceCode({
       clientId: DEVICE_LOGIN_CLIENT_ID,
       scope: DEVICE_LOGIN_SCOPE,
+      nodeId: localNodeIdentity?.nodeId,
+      nodeName: localNodeIdentity?.nodeName,
     });
     if (liveDeviceCode.status !== 'started') {
       info('Device login unavailable; continuing with local workspace bootstrap.');
@@ -584,6 +619,7 @@ async function resolveWorkspaceIdentity(input: {
   options: InstallOptions;
   clackIo: ReturnType<typeof getClackIo>;
   deviceLogin: DeviceLoginAttemptResult;
+  diagnostics: InstallDiagnostics;
 }): Promise<ResolvedWorkspaceIdentity> {
   const approvedBootstrap = input.deviceLogin.workspaceBootstrap;
   if (approvedBootstrap) {
@@ -611,6 +647,7 @@ async function resolveWorkspaceIdentity(input: {
   if (isCancel(workspaceNameInput)) { cancel('setup cancelled.'); process.exit(0); }
 
   const rawWorkspaceName = String(workspaceNameInput);
+  recordPromptDecision(input.diagnostics, 'workspace.name', rawWorkspaceName);
   const workspaceName = normalizeWorkspaceName(rawWorkspaceName);
   const workspaceSlug = workspaceName;
   const workspaceHost = workspaceHostFromSlug(workspaceSlug);
@@ -645,11 +682,15 @@ async function resolveWorkspaceIdentity(input: {
 
   throw new Error(`workspace selection failed: ${selected.status}`);
 }
-async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
+async function promptOptions(
+  options: InstallOptions,
+  diagnostics: InstallDiagnostics,
+): Promise<InstallOptions> {
   try {
     if (options.yes || options.json) return options;
     assertClackTtyReady(options);
 
+    recordInstallerStep(diagnostics, 'workspace', 'start');
     renderInstallerProgress('workspace');
     info('finish workspace identity, security, skills, agents, service, and health.');
     const clackIo = getClackIo();
@@ -667,6 +708,7 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       });
       if (isCancel(selectedMode)) { cancel('setup cancelled.'); process.exit(0); }
       mode = selectedMode;
+      recordPromptDecision(diagnostics, 'os.mode', mode);
     }
 
     if (mode === 'cloud') {
@@ -674,19 +716,29 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       process.exit(0);
     }
 
+    recordInstallerStep(diagnostics, 'workspace', 'complete', { mode });
+    recordInstallerStep(diagnostics, 'security', 'start');
+    const home = resolveOsHome(options.home);
+
     renderInstallerProgress('security');
     const deviceLogin = await attemptWorkspaceDeviceLogin({
       dryRun: options.dryRun,
+      home,
     });
     const workspaceIdentity = await resolveWorkspaceIdentity({
       options,
       clackIo,
       deviceLogin,
+      diagnostics,
     });
     const { workspaceName, workspaceSlug, workspaceHost } = workspaceIdentity;
+    recordInstallerStep(diagnostics, 'security', 'complete', {
+      deviceLoginStatus: deviceLogin.status,
+      workspaceHost,
+      workspaceSlug,
+    });
 
-    const home = resolveOsHome(options.home);
-
+    recordInstallerStep(diagnostics, 'skills', 'start');
     renderInstallerProgress('skills');
     const skillPrompt = getGroupedOnboardingSkillOptions();
     const selectedSkills = await groupMultiselect({
@@ -700,9 +752,14 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       required: false,
     });
     if (isCancel(selectedSkills)) { cancel('setup cancelled.'); process.exit(0); }
+    recordPromptDecision(diagnostics, 'skills.selected', selectedSkills);
+    recordInstallerStep(diagnostics, 'skills', 'complete', {
+      selectedCount: Array.isArray(selectedSkills) ? selectedSkills.length : 0,
+    });
 
     const artifactMode = options.artifactMode;
 
+    recordInstallerStep(diagnostics, 'agents', 'start');
     renderInstallerProgress('agents');
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
     let connectAgents: AgentName[] = options.connectAgents;
@@ -718,8 +775,14 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       });
       if (isCancel(selectedAgents)) { cancel('setup cancelled.'); process.exit(0); }
       connectAgents = selectedAgents as AgentName[];
+      recordPromptDecision(diagnostics, 'agents.connected', connectAgents);
     }
+    recordInstallerStep(diagnostics, 'agents', 'complete', {
+      detectedCount: detectedAgents.length,
+      connectedCount: connectAgents.length,
+    });
 
+    recordInstallerStep(diagnostics, 'service', 'start');
     renderInstallerProgress('service');
     let installDaemons = false;
     if (options.installDaemons) {
@@ -738,7 +801,10 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
       });
       if (isCancel(selectedInstallDaemons)) { cancel('setup cancelled.'); process.exit(0); }
       installDaemons = selectedInstallDaemons === 'yes';
+      recordPromptDecision(diagnostics, 'service.install_daemons', selectedInstallDaemons);
     }
+    recordInstallerStep(diagnostics, 'service', 'complete', { installDaemons });
+    recordInstallerStep(diagnostics, 'health', 'start');
     renderInstallerProgress('health');
     return {
       ...options,
@@ -761,14 +827,20 @@ async function promptOptions(options: InstallOptions): Promise<InstallOptions> {
 }
 
 async function main(): Promise<void> {
+  let diagnostics: InstallDiagnostics | null = null;
   try {
     const parsedOptions = parseArgs(process.argv.slice(2));
+    diagnostics = createInstallDiagnostics({
+      home: resolveOsHome(parsedOptions.home),
+      argv: process.argv.slice(2),
+    });
+    recordInstallerStep(diagnostics, 'dependencies', 'complete');
     if (parsedOptions.checkTty) {
       printTtyDiagnostics();
       return;
     }
 
-    const options = await promptOptions(parsedOptions);
+    const options = await promptOptions(parsedOptions, diagnostics);
     const spin =
       options.quiet || options.json
         ? null
@@ -792,6 +864,7 @@ async function main(): Promise<void> {
       workspaceBootstrap,
       approvedWorkspaceBootstrap: options.workspaceBootstrap,
     });
+    const installDaemons = options.installDaemons;
     const payload = {
       ...result,
       platformProvisioning,
@@ -804,9 +877,9 @@ async function main(): Promise<void> {
         deviceLoginStatus: options.deviceLoginStatus,
         deviceLoginUrl: options.deviceLoginUrl,
         connectAgents: options.connectAgents,
-        installDaemons: options.installDaemons,
+        installDaemons: installDaemons,
       },
-      installDaemons: options.installDaemons,
+      installDaemons: installDaemons,
     };
     const resultFile = process.env.CONSUELO_ONBOARDING_RESULT_FILE;
     const suppressFinalSummary = Boolean(resultFile);
@@ -815,6 +888,15 @@ async function main(): Promise<void> {
         mode: 0o600,
       });
     }
+
+    recordInstallerStep(diagnostics, 'health', 'complete', { home: result.home });
+    diagnostics.finish({
+      status: 'ok',
+      home: result.home,
+      installDaemons: installDaemons,
+      workspaceHost: options.workspaceHost,
+      workspaceSlug: options.workspaceSlug,
+    });
 
     spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');
 
@@ -838,9 +920,9 @@ async function main(): Promise<void> {
       }
     }
   } catch (error: unknown) {
-    throw new Error(
-      `install failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    const message = error instanceof Error ? error.message : String(error);
+    diagnostics?.finish({ status: 'error', error: message });
+    throw new Error(`install failed: ${message}`);
   }
 }
 

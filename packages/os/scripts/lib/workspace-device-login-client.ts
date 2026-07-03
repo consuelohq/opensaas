@@ -41,6 +41,8 @@ export type RequestWorkspaceDeviceCodeInput = {
   workspaceName?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
+  nodeId?: string;
+  nodeName?: string;
   deviceKeyPair?: WorkspaceDeviceKeyPair;
   fetchImpl?: DeviceLoginFetch;
   now?: string;
@@ -184,6 +186,8 @@ export async function requestWorkspaceDeviceCode(
   if (input.workspaceName) body.set('workspace_name', input.workspaceName);
   if (input.workspaceSlug) body.set('workspace_slug', input.workspaceSlug);
   if (input.workspaceHost) body.set('workspace_host', input.workspaceHost);
+  if (input.nodeId) body.set('node_id', input.nodeId);
+  if (input.nodeName) body.set('node_name', input.nodeName);
 
   try {
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_DEVICE_CODE_URL, {
@@ -233,6 +237,10 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
   const workspaceSlug = stringField(json, 'workspace_slug', 'workspaceSlug');
   const workspaceHost = stringField(json, 'workspace_host', 'workspaceHost');
   const connectorId = stringField(json, 'connector_id', 'connectorId');
+  const nodeId = stringField(json, 'node_id', 'nodeId');
+  const nodeName = stringField(json, 'node_name', 'nodeName');
+  const nodeRole = stringField(json, 'node_role', 'nodeRole');
+  const nodeStatus = stringField(json, 'node_status', 'nodeStatus');
   const connectorBootstrapToken = stringField(json, 'connector_bootstrap_token', 'connectorBootstrapToken');
   const connectorBootstrapExpiresAt = stringField(json, 'connector_bootstrap_expires_at', 'connectorBootstrapExpiresAt');
   const cloudflareTunnelToken = stringField(json, 'cloudflare_tunnel_token', 'cloudflareTunnelToken');
@@ -247,6 +255,10 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
     workspaceSlug,
     workspaceHost,
     connectorId,
+    ...(nodeId ? { nodeId } : {}),
+    ...(nodeName ? { nodeName } : {}),
+    ...(nodeRole === 'home' || nodeRole === 'member' ? { nodeRole } : {}),
+    ...(nodeStatus === 'created' || nodeStatus === 'reconnected' ? { nodeStatus } : {}),
     connectorBootstrapToken,
     connectorBootstrapExpiresAt,
     ...(cloudflareTunnelToken ? { cloudflareTunnelToken } : {}),

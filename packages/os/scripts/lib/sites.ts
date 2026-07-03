@@ -681,11 +681,7 @@ function launcherMcpUrl(home: string): string {
     return mcpConfig.url;
   }
 
-  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
-  const workspaceHost = config?.workspace?.host;
-  return typeof workspaceHost === 'string' && workspaceHost.length > 0
-    ? `https://${workspaceHost}/mcp`
-    : 'https://os.consuelohq.com/mcp';
+  return 'https://os.consuelohq.com/mcp';
 }
 
 function launcherLocalAgents(home: string): LauncherLocalAgent[] {
