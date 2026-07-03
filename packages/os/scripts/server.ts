@@ -26,6 +26,11 @@ import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from './lib/mcp-gateway';
+import {
+  applySettingsGatewayOverlayPatch,
+  readSettingsGatewaySnapshot,
+  resolveSettingsGatewayHome,
+} from './lib/settings-gateway';
 
 const DEFAULT_PORT = 8960;
 const PORT = Number(process.env.CONSUELO_OS_PORT ?? process.env.PORT ?? DEFAULT_PORT);
@@ -390,6 +395,44 @@ async function handleRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === '/health') return healthResponse();
+
+    if (url.pathname === '/gateway/settings/snapshot' && request.method === 'GET') {
+      const home = resolveSettingsGatewayHome();
+      if (!home) {
+        return jsonResponse({ ok: false, error: { code: 'OS_HOME_REQUIRED', message: 'Consuelo OS home is required for settings snapshot.' } }, 500);
+      }
+
+      const denied = await authorizeSignedRequest({
+        request,
+        path: url.pathname,
+        body: '',
+        requiredScope: 'route:/gateway/settings:read',
+      });
+      if (denied) return denied;
+
+      const result = readSettingsGatewaySnapshot(home);
+      return jsonResponse({ ok: true, snapshot: result.snapshot });
+    }
+
+    if (url.pathname === '/gateway/settings/overlay' && request.method === 'POST') {
+      const home = resolveSettingsGatewayHome();
+      if (!home) {
+        return jsonResponse({ ok: false, error: { code: 'OS_HOME_REQUIRED', message: 'Consuelo OS home is required for settings overlay writes.' } }, 500);
+      }
+
+      const body = await request.clone().text();
+      const denied = await authorizeSignedRequest({
+        request,
+        path: url.pathname,
+        body,
+        requiredScope: 'route:/gateway/settings:write',
+      });
+      if (denied) return denied;
+
+      const result = applySettingsGatewayOverlayPatch(home, body);
+      if (!result.ok) return jsonResponse({ ok: false, error: result.error }, result.status);
+      return jsonResponse({ ok: true, snapshot: result.snapshot });
+    }
 
     if (isTraceGatewayReadRoute(url.pathname) && request.method === 'GET') {
       const denied = await authorizeSignedRequest({

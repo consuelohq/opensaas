@@ -7,6 +7,8 @@ import {
   renderLauncherOnboarding,
   type LauncherLocalAgent,
 } from './launcher-onboarding';
+import { buildSettingsSite } from './settings-site';
+import { buildSettingsSnapshot } from './settings-snapshot';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -105,6 +107,10 @@ export type SitesPaths = {
   diffsIndexPath: string;
   docsDir: string;
   docsIndexPath: string;
+  settingsDir: string;
+  settingsDataDir: string;
+  settingsIndexPath: string;
+  settingsSnapshotPath: string;
 };
 
 export type MaterializeSitesOptions = {
@@ -123,6 +129,8 @@ export type MaterializeSitesResult = {
   officeDataPath: string;
   officeAssetsDir: string;
   docsIndexPath: string;
+  settingsIndexPath: string;
+  settingsSnapshotPath: string;
   data: OfficeSiteData;
   actions: SitesAction[];
 };
@@ -833,6 +841,8 @@ export function getSitesPaths(home: string): SitesPaths {
   const tracesDir = path.join(sitesDir, 'traces');
   const diffsDir = path.join(sitesDir, 'diffs');
   const docsDir = path.join(sitesDir, 'docs');
+  const settingsDir = path.join(sitesDir, 'settings');
+  const settingsDataDir = path.join(sitesDir, '.data', 'settings');
   return {
     sitesDir,
     indexPath: path.join(sitesDir, 'index.html'),
@@ -851,6 +861,10 @@ export function getSitesPaths(home: string): SitesPaths {
     diffsIndexPath: path.join(diffsDir, 'index.html'),
     docsDir,
     docsIndexPath: path.join(docsDir, 'index.html'),
+    settingsDir,
+    settingsDataDir,
+    settingsIndexPath: path.join(settingsDir, 'index.html'),
+    settingsSnapshotPath: path.join(settingsDataDir, 'snapshot.json'),
   };
 }
 
@@ -861,7 +875,7 @@ export function readOfficeSiteData(dbPath: string): OfficeSiteData {
 export function materializeSites(options: MaterializeSitesOptions): MaterializeSitesResult {
   const paths = getSitesPaths(options.home);
   const actions: SitesAction[] = [];
-  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.officeDir, paths.officeDataDir, paths.officeAssetsDir, paths.tracesDir, paths.diffsDir, paths.docsDir]) {
+  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.officeDir, paths.officeDataDir, paths.officeAssetsDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.settingsDir, paths.settingsDataDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
   }
   const data = readOfficeSiteData(options.dbPath);
@@ -871,6 +885,8 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.officeDataPath, options.dryRun, 'Office site artifact data generated');
   addFileAction(actions, paths.officeIndexPath, options.dryRun, 'Office site generated');
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
+  addFileAction(actions, paths.settingsIndexPath, options.dryRun, 'Settings site generated');
+  addFileAction(actions, paths.settingsSnapshotPath, options.dryRun, 'Settings snapshot generated');
   if (!options.dryRun) {
     fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
@@ -878,8 +894,11 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });
     fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
+    const settingsSnapshot = buildSettingsSnapshot(options.home);
+    fs.writeFileSync(paths.settingsIndexPath, buildSettingsSite(options.home), { mode: 0o600 });
+    fs.writeFileSync(paths.settingsSnapshotPath, `${JSON.stringify(settingsSnapshot, null, 2)}\n`, { mode: 0o600 });
   }
-  return { sitesDir: paths.sitesDir, indexPath: paths.indexPath, pagesDir: paths.pagesDir, pagesRegistryPath: paths.pagesRegistryPath, officeIndexPath: paths.officeIndexPath, officeDataPath: paths.officeDataPath, officeAssetsDir: paths.officeAssetsDir, docsIndexPath: paths.docsIndexPath, data, actions };
+  return { sitesDir: paths.sitesDir, indexPath: paths.indexPath, pagesDir: paths.pagesDir, pagesRegistryPath: paths.pagesRegistryPath, officeIndexPath: paths.officeIndexPath, officeDataPath: paths.officeDataPath, officeAssetsDir: paths.officeAssetsDir, docsIndexPath: paths.docsIndexPath, settingsIndexPath: paths.settingsIndexPath, settingsSnapshotPath: paths.settingsSnapshotPath, data, actions };
 }
 
 export function publishSitePage(options: PublishSitePageOptions): PublishSitePageResult {

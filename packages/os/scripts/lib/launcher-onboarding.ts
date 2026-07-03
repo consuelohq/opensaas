@@ -155,6 +155,10 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <p class="muted">ChatGPT is ready now.</p>
         </section>
         <section class="section">
+          <h2 class="section-title">Settings</h2>
+          ${navLinks([{ label: 'Configuration', href: '/settings' }])}
+        </section>
+        <section class="section">
           <h2 class="section-title">Sites</h2>
           ${navLinks(launcherLinks.sites)}
         </section>

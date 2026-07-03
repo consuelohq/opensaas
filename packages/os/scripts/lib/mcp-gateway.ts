@@ -1,4 +1,8 @@
-import { readFullToolManifest } from './manifest';
+import fs from 'node:fs';
+import path from 'node:path';
+
+import { readEffectiveFullManifest as readEffectiveFullToolManifest, readFullToolManifest } from './manifest';
+import { resolveOverlayHome } from './manifest-overlay';
 import { resolveToolScope } from './security-gateway';
 import type { CallInput, CallOutput } from './types';
 
@@ -12,6 +16,13 @@ type ParsedJsonRpcRequest = {
 };
 
 type ToolManifestEntry = ReturnType<typeof readFullToolManifest>['tools'][number];
+
+function activeToolManifest(): ReturnType<typeof readFullToolManifest> {
+  const home = resolveOverlayHome();
+  return fs.existsSync(path.join(home, 'config.json'))
+    ? readEffectiveFullManifest(home)
+    : readFullToolManifest();
+}
 
 export type McpGatewayScopeResolution =
   | {
@@ -98,11 +109,11 @@ function outputTextFromCall(output: CallOutput): string {
 }
 
 function findCallableMcpTool(toolName: string): ToolManifestEntry | null {
-  return readFullToolManifest().tools.find((entry) => entry.name === toolName && entry.kind === 'os-skill') ?? null;
+  return activeToolManifest().tools.find((entry) => entry.name === toolName && entry.kind === 'os-skill') ?? null;
 }
 
 function listMcpTools(): JsonObject[] {
-  return readFullToolManifest().tools.filter((entry) => entry.kind === 'os-skill').map((entry) => {
+  return activeToolManifest().tools.filter((entry) => entry.kind === 'os-skill').map((entry) => {
     const definition = entry.definition;
     const title = typeof definition.title === 'string' ? definition.title : entry.name;
     const description = typeof definition.description === 'string' ? definition.description : '';

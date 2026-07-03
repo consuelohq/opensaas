@@ -1,0 +1,147 @@
+---
+title: Tool System & Code Mode
+description: How the agent's tool registry and sandboxed code execution work.
+---
+
+import Note from '../../../../components/mintlify/Note.astro';
+
+
+The agent has two ways to use tools: individual tool calls (one at a time) and code mode (write JS to orchestrate multiple tools in a single LLM turn).
+
+## Tool Registry
+
+Tools are defined with a Zod schema for parameters and an async execute function:
+
+```typescript
+import { createToolRegistry } from '@consuelo/agent';
+import { z } from 'zod';
+
+const registry = createToolRegistry();
+
+registry.register({
+  name: 'lookup_policy',
+  description: 'Look up an insurance policy by number',
+  parameters: z.object({
+    policyNumber: z.string().describe('The policy number to look up'),
+  }),
+  execute: async ({ policyNumber }) => {
+    // your implementation
+    return { status: 'active', holder: 'Jane Smith' };
+  },
+});
+```
+
+The registry is passed to `AgentService` which converts it to the AI SDK `ToolSet` format at runtime.
+
+## Code Mode
+
+When code mode is available, the LLM can write JavaScript that calls multiple tools in a single execution. Instead of making 5 separate tool calls (5 LLM round-trips), it writes one script that calls all 5 tools (1 round-trip).
+
+### How It Works
+
+1. All registered tools are wrapped with `createCodeTool()` from `@cloudflare/codemode`
+2. The LLM receives both the code mode tool and individual tools as fallback
+3. When the LLM chooses code mode, it writes JS code
+4. The `AgentExecutor` runs that code in an `isolated-vm` sandbox
+5. Tool calls inside the sandbox block the isolate thread while the host resolves them
+
+```
+LLM writes JS code
+       │
+       ▼
+┌─────────────────┐
+│  AgentExecutor  │
+│  (isolated-vm)  │
+│                 │
+│  search_contacts('Jane')  ──→  host resolves async
+│  get_deal(dealId)         ──→  host resolves async
+│  return summary           ──→  result back to LLM
+└─────────────────┘
+```
+
+### Executor Configuration
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `memoryLimit` | 128 MB | Maximum heap size for the isolate |
+| `timeout` | 30 seconds | Maximum execution time |
+
+The executor never throws — errors are returned in the `ExecuteResult` object so the LLM can recover gracefully.
+
+<Note>
+  Code mode requires `@cloudflare/codemode` and `isolated-vm` as dependencies.
+  If either is unavailable, the agent falls back to individual tool calls
+  automatically.
+</Note>
+
+## Security
+
+The `security/` module provides four layers of protection:
+
+### XSS Prevention
+
+```typescript
+import { stripHtml } from '@consuelo/agent';
+
+const safe = stripHtml('<script>alert("xss")</script>Hello');
+// → 'alert("xss")Hello'
+```
+
+### URL Validation
+
+Only S3 presigned URLs from your bucket are allowed in agent output:
+
+```typescript
+import { isAllowedFileUrl } from '@consuelo/agent';
+
+isAllowedFileUrl('https://my-bucket.s3.amazonaws.com/file.pdf', 'my-bucket');
+// → true
+```
+
+### Output Truncation
+
+Agent output is capped at 1 MB to prevent memory issues:
+
+```typescript
+import { truncateOutput } from '@consuelo/agent';
+
+const safe = truncateOutput(veryLargeString);
+// truncated with '[output truncated]' suffix if over 1MB
+```
+
+### Concurrency Guard
+
+Limits each user to 3 concurrent sandbox runs:
+
+```typescript
+import { ConcurrencyGuard } from '@consuelo/agent';
+
+const guard = new ConcurrencyGuard(3);
+
+if (!guard.acquire(userId)) {
+  throw new Error('Too many concurrent runs');
+}
+try {
+  await runSandbox();
+} finally {
+  guard.release(userId);
+}
+```
+
+## Artifacts
+
+When the sandbox produces files (charts, CSVs, images), they're converted to typed artifacts:
+
+```typescript
+import { sandboxToArtifacts } from '@consuelo/agent';
+
+const artifacts = sandboxToArtifacts(sandboxResult.artifacts, {
+  conversationId,
+  executionId,
+  workspaceId,
+  userId,
+});
+// → CreateArtifactInput[] ready for storage
+```
+
+Artifact types: `chart`, `table`, `report`, `csv`, `image`, `code`, `file`. Files under 256 KB are inlined as base64; larger files need upload by the consuming application.

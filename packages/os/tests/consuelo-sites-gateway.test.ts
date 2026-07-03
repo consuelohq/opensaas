@@ -10,6 +10,7 @@ import {
   routeConsueloGatewayRequest,
 } from '../scripts/lib/consuelo-sites-gateway';
 import { createConsueloSiteServiceRegistry, registerConsueloSiteService } from '../scripts/lib/consuelo-sites-gateway-registry';
+import { createSettingsConsueloSiteServiceRegistry } from '../scripts/lib/consuelo-sites-settings-adapter';
 import { createTraceConsueloSiteServiceRegistry } from '../scripts/lib/consuelo-sites-trace-adapter';
 import type { ConsueloGatewayRequest, ConsueloGatewaySessionScope } from '../scripts/lib/consuelo-sites-gateway-types';
 
@@ -37,6 +38,32 @@ function request(overrides: Partial<ConsueloGatewayRequest> = {}): ConsueloGatew
 
 function traceGateway() {
   return createConsueloSitesGateway({ registry: createTraceConsueloSiteServiceRegistry() });
+}
+
+function settingsGateway() {
+  return createConsueloSitesGateway({ registry: createSettingsConsueloSiteServiceRegistry() });
+}
+
+const settingsScope: ConsueloGatewaySessionScope = {
+  userId: 'usr_settings_gateway',
+  workspaceId: 'wrk_settings_gateway',
+  workspaceHost: 'testing.consuelohq.com',
+  allowedSites: ['settings'],
+  capabilities: ['settings-read', 'settings-write'],
+  sourceModesAllowed: ['local-networked', 'cloud-compute', 'local-off-network'],
+  bridgeConfigured: false,
+};
+
+function settingsRequest(overrides: Partial<ConsueloGatewayRequest> = {}): ConsueloGatewayRequest {
+  return {
+    host: 'testing.consuelohq.com',
+    site: 'settings',
+    capability: 'settings-read',
+    sourceMode: 'local-networked',
+    publicPath: '/settings',
+    session: settingsScope,
+    ...overrides,
+  };
 }
 
 describe('Consuelo Sites Gateway contract service', () => {
@@ -214,6 +241,38 @@ describe('Consuelo Sites Gateway contract service', () => {
       }),
     ]));
     expect(discovery.services.every((service) => service.publicBoundary === 'consuelo-gateway')).toBe(true);
+  });
+
+  it('should route Settings Site read capability through the registered Settings adapter service', () => {
+    const result = routeConsueloGatewayRequest(settingsGateway(), settingsRequest({ capability: 'settings-read' }));
+
+    expect(result).toMatchObject({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: {
+        publicSiteRouteFamily: '/settings/*',
+        gatewayRouteFamily: '/gateway/settings/*',
+        gatewayServiceName: 'settings-sites-read-endpoints',
+        gatewayAdapterName: 'settings-sites-read-endpoints',
+        capability: 'settings-read',
+        site: 'settings',
+      },
+    });
+  });
+
+  it('should route Settings Site write capability through the registered Settings adapter service', () => {
+    const result = routeConsueloGatewayRequest(settingsGateway(), settingsRequest({ capability: 'settings-write' }));
+
+    expect(result).toMatchObject({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: {
+        gatewayServiceName: 'settings-sites-write-endpoints',
+        gatewayAdapterName: 'settings-sites-write-endpoints',
+        capability: 'settings-write',
+        site: 'settings',
+      },
+    });
   });
 
   it('should allow Trace to be absent without changing generic gateway core behavior', () => {
