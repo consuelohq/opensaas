@@ -36,6 +36,9 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).toContain('consuelohq.com');
     expect(install).toContain('workspace name is required');
     expect(install).toContain('requestWorkspaceDeviceCode({');
+    expect(install).toContain('readLocalNodeIdentity');
+    expect(install).toContain('nodeId: localNodeIdentity?.nodeId');
+    expect(install).toContain('nodeName: localNodeIdentity?.nodeName');
     expect(install).toContain('resolveWorkspaceIdentity');
     const promptOptionsSource = install.slice(install.indexOf('async function promptOptions'));
     expect(promptOptionsSource.indexOf('attemptWorkspaceDeviceLogin({')).toBeLessThan(
@@ -98,6 +101,29 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).not.toContain('for (const action of result.actions)');
   });
 
+
+  test('interactive daemon choice is serialized back to hosted bootstrap', () => {
+    const payloadSource = install.slice(install.indexOf('const payload ='));
+    expect(payloadSource).toContain('installDaemons: installDaemons');
+    expect(payloadSource).not.toContain('installDaemons: options.installDaemons');
+  });
+
+  test('hosted bootstrap defaults new installs to flattened Consuelo home', () => {
+    expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('RUNTIME_HOME="${CONSUELO_RUNTIME_HOME:-$OS_HOME/runtime/current}"');
+    expect(bootstrap).toContain('log "Home: $OS_HOME"');
+    expect(bootstrap).not.toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
+  });
+
+  test('development diagnostics are explicitly gated and easy to remove before launch', () => {
+    expect(bootstrap).toContain('CONSUELO_OS_DEV_DIAGNOSTICS');
+    expect(bootstrap).toContain('CONSUELO_OS_DEV_REPORT_DIR');
+    expect(bootstrap).toContain('bootstrap.log');
+    expect(install).toContain('createInstallDiagnostics');
+    expect(install).toContain('recordInstallerStep');
+    expect(install).toContain('recordPromptDecision');
+  });
+
   test('daemon installer normal output is compact', () => {
     expect(daemonInstall).toContain('print_debug_state');
     expect(daemonInstall).toContain('background service setup complete');
@@ -111,12 +137,11 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(bootstrap).not.toContain('$daemon_home/Library/Logs/Consuelo');
   });
 
-  test('hosted bootstrap resolves final runtime commands from OS package root', () => {
-    expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
+  test('hosted bootstrap resolves final runtime commands from flattened Consuelo home', () => {
+    expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"');
     expect(bootstrap).toContain('local os_home="$OS_HOME"');
-    expect(bootstrap).toContain('local os_dir="$OS_HOME"');
     expect(bootstrap).toContain('log "Consuelo OS setup complete"');
-    expect(bootstrap).toContain('log "Home: $os_home"');
+    expect(bootstrap).toContain('log "Home: $OS_HOME"');
     expect(bootstrap).not.toContain('$HOME/.consuelo/source/opensaas');
     expect(bootstrap).not.toContain('REPO_DIR/packages/os run doctor');
     expect(bootstrap).not.toContain('log "Source: $REPO_DIR"');

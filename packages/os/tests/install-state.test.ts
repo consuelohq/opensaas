@@ -144,7 +144,7 @@ describe('local OS install state', () => {
     const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
     expect(chatgptMcp).toMatchObject({
       auth: 'bearer',
-      url: 'https://local.consuelohq.com/mcp',
+      url: 'https://os.consuelohq.com/mcp',
       localUrl: 'http://127.0.0.1:8960/mcp',
     });
     expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
@@ -240,6 +240,37 @@ describe('local OS install state', () => {
   });
 
 
+
+  it('writes approved node identity into flattened node config', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({
+        mode: 'local',
+        workspaceBootstrap: {
+          workspaceId: 'workspace_123',
+          workspaceSlug: 'kokayi',
+          workspaceHost: 'kokayi.consuelohq.com',
+          connectorId: 'connector_node_air',
+          connectorTransport: 'websocket-relay',
+          nodeId: 'node-air',
+          nodeName: 'MacBook Air',
+          nodeRole: 'member',
+          nodeStatus: 'created',
+        },
+      });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const nodeYaml = readFileSync(join(tempHome, 'node', 'node.yaml'), 'utf8');
+    const globalYaml = readFileSync(join(tempHome, 'consuelo.yaml'), 'utf8');
+    expect(nodeYaml).toContain('id: node-air');
+    expect(nodeYaml).toContain('name: MacBook Air');
+    expect(nodeYaml).toContain('role: member');
+    expect(globalYaml).toContain('activeNode: node-air');
+    expect(nodeYaml).not.toContain('connector_node_air');
+    expect(globalYaml).not.toContain('connector_node_air');
+  });
+
   it('writes an OpenCode MCP config that exposes Consuelo OS tools', () => {
     mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
     writeFileSync(
@@ -321,7 +352,7 @@ describe('local OS install state', () => {
     expect(sitesIndex).toContain('Here is the URL to connect');
     expect(sitesIndex).toContain('to your workspace.');
     expect(sitesIndex).toContain('https://chatgpt.com/apps#settings/Connectors');
-    expect(sitesIndex).toContain('<code id="mcp-url">https://local.consuelohq.com/mcp</code>');
+    expect(sitesIndex).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
     expect(sitesIndex).toContain('support@consuelohq.com');
     expect(sitesIndex).toContain('Systems Engineer');
     expect(sitesIndex).toContain('Go to market');
