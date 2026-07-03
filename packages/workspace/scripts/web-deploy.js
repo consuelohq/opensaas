@@ -52,6 +52,9 @@ function parseArgs(argv) {
 
     args.passthrough.push(value);
     if (value === '--branch') {
+      if (i + 1 >= argv.length) {
+        throw new Error('--branch requires a value');
+      }
       args.passthrough.push(argv[++i]);
     }
   }
@@ -65,6 +68,7 @@ function runScript(scriptName, extraArgs = []) {
   const result = spawnSync('bun', [scriptPath, ...extraArgs], {
     encoding: 'utf8',
     stdio: ['inherit', 'pipe', 'pipe'],
+    timeout: 300000,
   });
 
   if (result.stdout) writeStdout(result.stdout.trimEnd());
@@ -76,7 +80,13 @@ function runScript(scriptName, extraArgs = []) {
 }
 
 function main() {
-  const args = parseArgs(process.argv.slice(2));
+  let args;
+  try {
+    args = parseArgs(process.argv.slice(2));
+  } catch (err) {
+    writeStderr(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  }
   if (args.help || !args.target) {
     printHelp();
     process.exit(args.help ? 0 : 1);
