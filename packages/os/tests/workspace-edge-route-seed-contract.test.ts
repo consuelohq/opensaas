@@ -97,6 +97,8 @@ contractDescribe('workspace edge route seed contract', () => {
       '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
+      '/gateway/settings/overlay',
+      '/gateway/settings',
     ]);
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
       expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
@@ -127,6 +129,26 @@ contractDescribe('workspace edge route seed contract', () => {
           serviceName: 'trace-sites-read-layer',
           gatewayRouteFamily: '/gateway/traces/*',
           publicSiteRouteFamily: '/observability/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/settings/overlay',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'settings-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/settings/*',
+          publicSiteRouteFamily: '/settings/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/settings',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'settings-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/settings/*',
+          publicSiteRouteFamily: '/settings/*',
         }),
       }),
     ]));
@@ -188,6 +210,8 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(osSql).toMatch(/consuelo-gateway-service/);
     expect(osSql).toMatch(/trace-sites-read-layer/);
     expect(osSql).toMatch(/trace-sites-live-endpoints/);
+    expect(osSql).toMatch(/settings-sites-read-endpoints/);
+    expect(osSql).toMatch(/settings-sites-write-endpoints/);
     expect(osSql).not.toMatch(/  connector_internal  /);
     expect(osSql).not.toMatch(/token|credential|secret/i);
     expect(osSql).not.toMatch(/"pathPrefix":"\/traces"[^}]+"kind":"os-connector"/);
