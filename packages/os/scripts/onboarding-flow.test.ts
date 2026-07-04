@@ -109,9 +109,10 @@ describe('Consuelo OS hosted onboarding flow', () => {
   });
 
   test('hosted bootstrap defaults new installs to flattened Consuelo home', () => {
-    expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"');
-    expect(bootstrap).toContain('RUNTIME_HOME="${CONSUELO_RUNTIME_HOME:-$OS_HOME/runtime/current}"');
-    expect(bootstrap).toContain('log "Home: $OS_HOME"');
+    expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
+    expect(bootstrap).toContain(`printf '%s\\n' "$OS_HOME/runtime/current"`);
+    expect(bootstrap).toContain('log "Home: $os_home"');
     expect(bootstrap).not.toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
   });
 
@@ -122,6 +123,33 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).toContain('createInstallDiagnostics');
     expect(install).toContain('recordInstallerStep');
     expect(install).toContain('recordPromptDecision');
+  });
+
+
+  test('hosted bootstrap fails when child installer does not emit valid onboarding json', () => {
+    expect(bootstrap).toContain('validate_onboarding_json');
+    expect(bootstrap).toContain('interactive onboarding did not complete');
+    expect(bootstrap).toContain('onboarding result file was empty');
+    expect(bootstrap).toContain('onboarding result did not include installDaemons');
+    expect(bootstrap).toContain('install_status=$?');
+    expect(bootstrap).toContain('Consuelo OS installer exited before onboarding completed');
+    expect(bootstrap.indexOf('validate_onboarding_json "$ONBOARDING_JSON"')).toBeLessThan(
+      bootstrap.indexOf(`if printf '%s' "$ONBOARDING_JSON"`),
+    );
+  });
+
+  test('workspace selection POST has explicit diagnostics breadcrumbs', () => {
+    expect(install).toContain("'workspace_selection'");
+    expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'start'");
+    expect(install).toContain("input.diagnostics.recordHttp('device.workspace_selection'");
+    expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'complete'");
+    expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'failed'");
+    const selectionSource = install.slice(
+      install.indexOf("let selected: Awaited<ReturnType<typeof selectWorkspaceForDeviceLogin>>"),
+      install.indexOf(`if (selected.status === 'approved')`),
+    );
+    expect(selectionSource).toContain('try');
+    expect(selectionSource).toContain('catch (error: unknown)');
   });
 
   test('daemon installer normal output is compact', () => {
@@ -138,10 +166,11 @@ describe('Consuelo OS hosted onboarding flow', () => {
   });
 
   test('hosted bootstrap resolves final runtime commands from flattened Consuelo home', () => {
-    expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
     expect(bootstrap).toContain('local os_home="$OS_HOME"');
     expect(bootstrap).toContain('log "Consuelo OS setup complete"');
-    expect(bootstrap).toContain('log "Home: $OS_HOME"');
+    expect(bootstrap).toContain('log "Home: $os_home"');
     expect(bootstrap).not.toContain('$HOME/.consuelo/source/opensaas');
     expect(bootstrap).not.toContain('REPO_DIR/packages/os run doctor');
     expect(bootstrap).not.toContain('log "Source: $REPO_DIR"');
