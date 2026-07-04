@@ -1078,6 +1078,42 @@ run_install_with_tty() {
   run_install_with_script_pty "$os_dir" "$os_home"
 }
 
+validate_onboarding_json() {
+  local onboarding_payload="$1"
+  local validation_error
+  local validation_status=0
+
+  if [ -z "$onboarding_payload" ]; then
+    fail "Consuelo OS interactive onboarding did not complete: onboarding result file was empty."
+  fi
+
+  validation_error="$(ONBOARDING_JSON_PAYLOAD="$onboarding_payload" "$BUN_BIN" --print '
+(() => {
+  const raw = process.env.ONBOARDING_JSON_PAYLOAD || "";
+  const fail = (message) => { process.stderr.write(message); process.exit(1); };
+  let payload;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    fail("onboarding result was not valid JSON");
+  }
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    fail("onboarding result was not a JSON object");
+  }
+  if (typeof payload.installDaemons !== "boolean") {
+    fail("onboarding result did not include installDaemons");
+  }
+  if (!payload.onboarding || typeof payload.onboarding !== "object" || Array.isArray(payload.onboarding)) {
+    fail("onboarding result did not include onboarding details");
+  }
+  return "ok";
+})()
+' 2>&1 >/dev/null)" || validation_status=$?
+  if [ "$validation_status" -ne 0 ]; then
+    fail "Consuelo OS interactive onboarding did not complete: ${validation_error:-onboarding result was invalid}."
+  fi
+}
+
 run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
   local os_home="$OS_HOME"
@@ -1113,9 +1149,18 @@ run_onboarding() { # run_onboarding_json
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
     fi
     ONBOARDING_RESULT_FILE="$(mktemp "${TMPDIR:-/tmp}/consueloo-onboardin.XXXXXX")"
-    run_install_with_tty "$os_dir" "$os_home"
-    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE")"
+    local install_status=0
+    if run_install_with_tty "$os_dir" "$os_home"; then
+      install_status=0
+    else
+      install_status=$?
+    fi
+    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE" 2>/dev/null || true)"
     rm -f "$ONBOARDING_RESULT_FILE"
+    if [ "$install_status" -ne 0 ]; then
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status)."
+    fi
+    validate_onboarding_json "$ONBOARDING_JSON"
     if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
       INSTALL_DAEMONS=1
     else
