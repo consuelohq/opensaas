@@ -603,7 +603,9 @@ async function attemptWorkspaceDeviceLogin(input: {
 
       if (pollResult.status === 'workspace_required') {
         input.diagnostics.recordHttp('device.poll', 400, pollResult.status);
-        recordInstallerStep(input.diagnostics, 'device_login', 'complete', { status: pollResult.status });
+        const details: Record<string, unknown> = { status: pollResult.status };
+        if ('message' in pollResult) details.message = pollResult.message;
+        recordInstallerStep(input.diagnostics, 'device_login', 'complete', details);
         info('Consuelo OS authorization approved. Workspace name required to finish setup.');
         return {
           status: 'workspace_required',
@@ -623,7 +625,10 @@ async function attemptWorkspaceDeviceLogin(input: {
       }
 
       input.diagnostics.recordHttp('device.poll', 400, pollResult.status);
-      recordInstallerStep(input.diagnostics, 'device_login', 'complete', { status: 'fallback', pollStatus: pollResult.status });
+      const details: Record<string, unknown> = { status: 'fallback', pollStatus: pollResult.status };
+      if ('message' in pollResult) details.message = pollResult.message;
+      if ('errorCode' in pollResult) details.errorCode = pollResult.errorCode;
+      recordInstallerStep(input.diagnostics, 'device_login', 'complete', details);
       info('Device login unavailable; continuing with local workspace bootstrap.');
       return { status: 'fallback', verificationUrl: session.verificationUriComplete };
     }
@@ -692,6 +697,10 @@ async function resolveWorkspaceIdentity(input: {
 
   let selected: Awaited<ReturnType<typeof selectWorkspaceForDeviceLogin>>;
   try {
+    recordInstallerStep(input.diagnostics, 'workspace_selection', 'request', {
+      workspaceHost,
+      workspaceSlug,
+    });
     selected = await selectWorkspaceForDeviceLogin({
       clientId: DEVICE_LOGIN_CLIENT_ID,
       deviceCode: selection.deviceCode,
