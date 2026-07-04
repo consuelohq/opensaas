@@ -564,6 +564,8 @@ async function edgeSignature(input: {
   pathWithSearch: string;
   workspaceId: string;
   surface: string;
+  timestamp: string;
+  nonce: string;
 }): Promise<string> {
   try {
     const canonical = [
@@ -571,6 +573,8 @@ async function edgeSignature(input: {
       input.pathWithSearch,
       input.workspaceId,
       input.surface,
+      input.timestamp,
+      input.nonce,
     ].join('\n');
     const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(input.secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
     const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(canonical));
@@ -594,6 +598,8 @@ async function centralMcpProxyRequest(input: {
     headers.delete('x-consuelo-route');
     headers.delete('x-consuelo-surface');
     headers.delete('x-consuelo-edge-signature');
+    headers.delete('x-consuelo-edge-timestamp');
+    headers.delete('x-consuelo-edge-nonce');
     headers.delete('x-consuelo-connector-id');
 
     headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
@@ -605,12 +611,19 @@ async function centralMcpProxyRequest(input: {
       headers.set('x-consuelo-connector-id', input.resolution.target.connectorId);
     }
 
+    const edgeTimestamp = String(Date.now());
+    const edgeNonce = crypto.randomUUID();
+    headers.set('x-consuelo-edge-timestamp', edgeTimestamp);
+    headers.set('x-consuelo-edge-nonce', edgeNonce);
+
     headers.set('x-consuelo-edge-signature', await edgeSignature({
       secret: input.internalSigningSecret,
       method: input.request.method,
       pathWithSearch: inboundUrl.pathname + inboundUrl.search,
       workspaceId: input.resolution.workspaceId,
       surface: input.resolution.surface,
+      timestamp: edgeTimestamp,
+      nonce: edgeNonce,
     }));
 
     const init: RequestInit & { duplex?: 'half' } = {

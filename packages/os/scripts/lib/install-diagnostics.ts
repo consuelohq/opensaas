@@ -40,12 +40,13 @@ const SECRET_KEY_PARTS = [
   'user_code',
 ] as const;
 
-const SECRET_QUERY_PARAM_PATTERN = /([?&](?:access_token|client_secret|code|device_code|refresh_token|state|token|user_code)=)[^&#\s]*/gi;
-const USER_PATH_PATTERN = /\/Users\/[^/\s]+(?=\/|$)/g;
-const TOKEN_PATTERNS = [
-  /cloudflared?[_-]tunnel[_-]token[_-]?[A-Za-z0-9._-]*/gi,
-  /\b(?:Bearer\s+)?(?:cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+\b/gi,
-  /Bearer\s+[A-Za-z0-9._-]+/gi,
+const SECRET_QUERY_PARAM_PATTERN = /([?&](?:access_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|state|token|user_code)=)[^&#\s]*/gi;
+const USER_PATH_PATTERN = /\/(?:Users|home)\/[^/\s]+(?=\/|$)/g;
+const TOKEN_REPLACEMENTS = [
+  { pattern: /\b(cloudflared?[_-]tunnel[_-]token\s*=\s*)[^&#\s]+/gi, replacement: '$1[redacted]' },
+  { pattern: /cloudflared?[_-]tunnel[_-]token(?!\s*=)[_-]?[A-Za-z0-9._-]*/gi, replacement: '[redacted]' },
+  { pattern: /\b(?:Bearer\s+)?(?:cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+\b/gi, replacement: '[redacted]' },
+  { pattern: /Bearer\s+[A-Za-z0-9._-]+/gi, replacement: '[redacted]' },
 ] as const;
 
 export function isDevDiagnosticsEnabled(env: DiagnosticEnv = process.env): boolean {
@@ -61,11 +62,15 @@ function shouldRedactKey(key: string): boolean {
   return SECRET_KEY_PARTS.some((part) => normalizedKey.includes(part));
 }
 
+function redactUserPath(value: string): string {
+  return value.startsWith('/home/') ? '/home/[user]' : '/Users/[user]';
+}
+
 function redactString(value: string): string {
-  let redacted = value.replace(USER_PATH_PATTERN, '/Users/[user]');
+  let redacted = value.replace(USER_PATH_PATTERN, redactUserPath);
   redacted = redacted.replace(SECRET_QUERY_PARAM_PATTERN, '$1[redacted]');
-  for (const pattern of TOKEN_PATTERNS) {
-    redacted = redacted.replace(pattern, '[redacted]');
+  for (const { pattern, replacement } of TOKEN_REPLACEMENTS) {
+    redacted = redacted.replace(pattern, replacement);
   }
   return redacted;
 }

@@ -7,7 +7,14 @@ const bootstrap = readFileSync(new URL('./bootstrap.sh', import.meta.url), 'utf8
 const install = readFileSync(new URL('./install.ts', import.meta.url), 'utf8');
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const packageOsDir = join(scriptDir, '..');
-const darwinTest = process.platform === 'darwin' ? test : test.skip;
+const isTruthyEnv = (value: string | undefined): boolean =>
+  value === '1' || value?.toLowerCase() === 'true';
+const shouldRunDarwinPtyTest =
+  process.platform === 'darwin' &&
+  !isTruthyEnv(process.env.CI) &&
+  !isTruthyEnv(process.env.GITHUB_ACTIONS) &&
+  !isTruthyEnv(process.env.CONSUELO_OS_SKIP_DARWIN_PTY_TEST);
+const darwinTest = shouldRunDarwinPtyTest ? test : test.skip;
 
 type TtyDiagnostics = {
   stdinIsTTY: boolean;

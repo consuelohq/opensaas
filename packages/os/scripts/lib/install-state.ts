@@ -13,6 +13,7 @@ import {
   resolveConsueloHomeLayout,
   writeYamlConfig,
 } from './consuelo-home';
+import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { createGatewaySecurityConfig, issueAgentAppToken } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
@@ -687,6 +688,16 @@ function materializeChatGptMcpConnection(input: {
     typeof existing?.tokenId === 'string' &&
     typeof existing?.url === 'string'
   ) {
+    if (existing.url !== CHATGPT_MCP_URL) {
+      writeJsonFile(targetPath, {
+        ...existing,
+        url: CHATGPT_MCP_URL,
+        localUrl: typeof existing.localUrl === 'string' ? existing.localUrl : `http://127.0.0.1:${input.port}/mcp`,
+        scopes: Array.isArray(existing.scopes) ? existing.scopes : scopes,
+        updatedAt: nowIso(),
+      }, false);
+      return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection URL updated' }];
+    }
     return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
   }
   const token = issueAgentAppToken({
@@ -707,7 +718,7 @@ function materializeChatGptMcpConnection(input: {
     version: 1,
     kind: 'consuelo-chatgpt-mcp-connection',
     auth: 'bearer',
-    url: 'https://os.consuelohq.com/mcp',
+    url: CHATGPT_MCP_URL,
     localUrl: `http://127.0.0.1:${input.port}/mcp`,
     tokenId: token.tokenId,
     bearerToken: token.bearerToken,

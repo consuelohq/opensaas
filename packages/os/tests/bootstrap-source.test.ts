@@ -123,6 +123,19 @@ describe('bootstrap source refresh controls', () => {
   });
 
 
+  it('resolves existing legacy nested installs before creating a fresh flattened home', () => {
+    const bootstrap = readBootstrap();
+
+    expect(bootstrap).toContain('resolve_os_home()');
+    expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"');
+    expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
+    expect(bootstrap).toContain('resolve_runtime_home()');
+    expect(bootstrap).toContain('RUNTIME_HOME="$(resolve_runtime_home)"');
+    expect(bootstrap).toContain('[ -f "$LEGACY_OS_HOME/package.json" ]');
+    expect(bootstrap).toContain('[ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]');
+  });
+
   it('forwards daemon decisions into interactive onboarding', () => {
     const bootstrap = readBootstrap();
     const runner = extractShellFunction(bootstrap, 'run_install_with_script_pty');
