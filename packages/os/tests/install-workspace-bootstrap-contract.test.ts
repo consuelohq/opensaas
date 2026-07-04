@@ -303,6 +303,10 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(rendered).toContain('workspace');
 
     expect(installSource).toContain("message: 'enter workspace name'");
+    expect(installSource).toContain('resolveWorkspaceIdentity');
+    expect(installSource.indexOf('attemptWorkspaceDeviceLogin({')).toBeLessThan(
+      installSource.indexOf("message: 'enter workspace name'"),
+    );
     expect(installSource).not.toContain('spaces become hyphens');
     expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
     expect(installSource).not.toContain('workspace slug:');

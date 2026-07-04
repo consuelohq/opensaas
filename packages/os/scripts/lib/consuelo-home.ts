@@ -58,7 +58,7 @@ const nodeYamlConfigSchema = z.object({
   node: z.object({
     id: z.string().min(1),
     name: z.string().min(1),
-    role: z.string().min(1).optional(),
+    role: z.enum(['home', 'member']).optional(),
   }).strict(),
   capabilities: z.array(z.string().min(1)).default([]),
   workspaces: z.array(z.object({
@@ -228,6 +228,7 @@ export function createDefaultGlobalYamlConfig(input: {
 export function createDefaultNodeYamlConfig(input: {
   nodeId: string;
   nodeName: string;
+  nodeRole?: 'home' | 'member';
   workspaceId: string;
 }): ConsueloNodeYamlConfig {
   return {
@@ -235,7 +236,7 @@ export function createDefaultNodeYamlConfig(input: {
     node: {
       id: input.nodeId,
       name: input.nodeName,
-      role: 'default',
+      role: input.nodeRole ?? 'home',
     },
     capabilities: ['local-runtime', process.platform],
     workspaces: [{ id: input.workspaceId, state: `workspaces/${input.workspaceId}/state` }],

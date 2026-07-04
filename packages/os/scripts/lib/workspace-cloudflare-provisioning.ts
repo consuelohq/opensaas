@@ -61,6 +61,7 @@ export type WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
   trustedProviderIpSourceIds?: TrustedOsMcpProviderIpSourceId[];
   trustedProviderExtraIpCidrs?: string[];
   reservedHostnames?: string[];
+  managedMcpHostnames?: string[];
   allowInstallBootstrapRuleId?: string;
   allowInstallBootstrapRuleRef?: string;
   allowInstallBootstrapRuleDescription?: string;
@@ -225,6 +226,7 @@ const MANAGED_OS_MCP_POLICY_ENV_KEYS = [
   'CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS',
   'CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES',
   'CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS',
+  'CLOUDFLARE_MCP_MANAGED_HOSTNAMES',
 ] as const;
 const DEFAULT_RESERVED_HOSTNAME_LABELS = [
   'app',
@@ -240,6 +242,7 @@ const DEFAULT_RESERVED_HOSTNAME_LABELS = [
   'workspace-edge',
   'workspace',
 ] as const;
+const DEFAULT_MANAGED_OS_MCP_HOSTNAME_LABELS = ['os'] as const;
 
 type TrustedProviderIpRange = {
   cidr: string;
@@ -578,6 +581,21 @@ const hasManagedOsMcpIngressPolicyEnv = (
 const createDefaultReservedHostnames = (baseDomain: string): string[] =>
   DEFAULT_RESERVED_HOSTNAME_LABELS.map((label) => `${label}.${baseDomain}`);
 
+const createDefaultManagedOsMcpHostnames = (baseDomain: string): string[] =>
+  DEFAULT_MANAGED_OS_MCP_HOSTNAME_LABELS.map((label) => `${label}.${baseDomain}`);
+
+const assertHostnameBelongsToBaseDomain = (input: {
+  hostname: string;
+  baseDomain: string;
+}): void => {
+  if (
+    input.hostname !== input.baseDomain &&
+    !input.hostname.endsWith(`.${input.baseDomain}`)
+  ) {
+    throw new Error(`managed OS MCP hostname ${input.hostname} must belong to base domain ${input.baseDomain}`);
+  }
+};
+
 const normalizeReservedHostnames = (input: {
   baseDomain: string;
   reservedHostnames?: string[];
@@ -586,8 +604,29 @@ const normalizeReservedHostnames = (input: {
   return [...new Set(values.map(normalizeBaseDomain))].sort();
 };
 
+const normalizeManagedOsMcpHostnames = (input: {
+  baseDomain: string;
+  managedMcpHostnames?: string[];
+}): string[] => {
+  const values =
+    input.managedMcpHostnames && input.managedMcpHostnames.length > 0
+      ? input.managedMcpHostnames
+      : createDefaultManagedOsMcpHostnames(input.baseDomain);
+  const hostnames = [...new Set(values.map(normalizeBaseDomain))].sort();
+  for (const hostname of hostnames) {
+    assertHostnameBelongsToBaseDomain({ hostname, baseDomain: input.baseDomain });
+  }
+  return hostnames;
+};
+
 const formatHostnameSet = (hostnames: string[]): string =>
   hostnames.map((hostname) => `  "${hostname}"`).join('\n');
+
+const indentExpression = (expression: string, indent: string): string =>
+  expression
+    .split('\n')
+    .map((line) => `${indent}${line}`)
+    .join('\n');
 
 const formatIpSet = (cidrs: string[], indent: string): string =>
   cidrs.map((cidr) => `${indent}${cidr}`).join('\n');
@@ -595,13 +634,27 @@ const formatIpSet = (cidrs: string[], indent: string): string =>
 const createManagedOsMcpBaseExpression = (input: {
   baseDomain: string;
   reservedHostnames: string[];
-}): string =>
-  [
+  managedMcpHostnames: string[];
+}): string => {
+  const workspaceHostnameExpression = [
     `ends_with(http.host, ".${input.baseDomain}")`,
     `not ends_with(http.host, ".os-origin.${input.baseDomain}")`,
     `not (http.host in {\n${formatHostnameSet(input.reservedHostnames)}\n})`,
-    'starts_with(http.request.uri.path, "/mcp")',
   ].join('\nand ');
+  const centralHostnameExpression = `http.host in {\n${formatHostnameSet(
+    input.managedMcpHostnames,
+  )}\n}`;
+
+  return [
+    '(',
+    '  (',
+    indentExpression(workspaceHostnameExpression, '    '),
+    '  )',
+    `  or ${centralHostnameExpression.replace(/\n/g, '\n  ')}`,
+    ')',
+    'and starts_with(http.request.uri.path, "/mcp")',
+  ].join('\n');
+};
 
 const createRuleSummary = (
   rule: CloudflareRulesetRule,
@@ -773,9 +826,14 @@ export const buildManagedOsMcpIngressPolicyRules = (
     baseDomain,
     reservedHostnames: input.reservedHostnames,
   });
+  const managedMcpHostnames = normalizeManagedOsMcpHostnames({
+    baseDomain,
+    managedMcpHostnames: input.managedMcpHostnames,
+  });
   const baseExpression = createManagedOsMcpBaseExpression({
     baseDomain,
     reservedHostnames,
+    managedMcpHostnames,
   });
   const allowedIpsExpression = `ip.src in $${mcpAllowedIpsListName}`;
   const allowTemporaryDenyExpression = temporaryDenyIpCidrs.length
@@ -830,6 +888,9 @@ export const createManagedOsMcpIngressPolicyConfigFromEnv = (input: {
   const trustedProviderExtraIpCidrs = normalizeIpCidrs(
     splitCommaSeparatedValues(input.env.CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS),
   );
+  const managedMcpHostnames = splitCommaSeparatedValues(
+    input.env.CLOUDFLARE_MCP_MANAGED_HOSTNAMES,
+  );
   const config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
     zoneId,
     baseDomain: normalizeBaseDomain(input.baseDomain),
@@ -865,6 +926,7 @@ export const createManagedOsMcpIngressPolicyConfigFromEnv = (input: {
     ...(temporaryDenyIpCidrs?.length ? { temporaryDenyIpCidrs } : {}),
     ...(trustedProviderIpSourceIds.length ? { trustedProviderIpSourceIds } : {}),
     ...(trustedProviderExtraIpCidrs.length ? { trustedProviderExtraIpCidrs } : {}),
+    ...(managedMcpHostnames.length ? { managedMcpHostnames } : {}),
   };
 
   buildManagedOsMcpIngressPolicyRules(config);
