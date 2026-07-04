@@ -64,6 +64,8 @@ DEBUG="${CONSUELO_OS_DEBUG:-0}"
 DEV_DIAGNOSTICS="${CONSUELO_OS_DEV_DIAGNOSTICS:-0}"
 DEV_REPORT_ROOT="${CONSUELO_OS_DEV_REPORTS_DIR:-$HOME/.consuelo-dev-reports}"
 DEV_REPORT_DIR="${CONSUELO_OS_DEV_REPORT_DIR:-}"
+CHILD_INSTALL_RAW_TRANSCRIPT=""
+CHILD_INSTALL_TRANSCRIPT=""
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
@@ -136,6 +138,8 @@ init_dev_diagnostics() {
   fi
   mkdir -p "$DEV_REPORT_DIR"
   chmod 700 "$DEV_REPORT_DIR" 2>/dev/null || true
+  CHILD_INSTALL_RAW_TRANSCRIPT="$DEV_REPORT_DIR/child-installer.raw.log"
+  CHILD_INSTALL_TRANSCRIPT="$DEV_REPORT_DIR/child-installer.log"
   export CONSUELO_OS_DEV_REPORT_DIR="$DEV_REPORT_DIR"
   printf '%s
 ' "bootstrap diagnostics started" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
@@ -146,6 +150,21 @@ dev_log() {
   [ -n "$DEV_REPORT_DIR" ] || return 0
   printf '%s %s
 ' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
+}
+
+finalize_child_install_transcript() {
+  dev_diagnostics_enabled || return 0
+  [ -n "$CHILD_INSTALL_RAW_TRANSCRIPT" ] || return 0
+  [ -f "$CHILD_INSTALL_RAW_TRANSCRIPT" ] || return 0
+  redact_dev_log_line < "$CHILD_INSTALL_RAW_TRANSCRIPT" > "$CHILD_INSTALL_TRANSCRIPT" || true
+  rm -f "$CHILD_INSTALL_RAW_TRANSCRIPT"
+  dev_log "child installer transcript: $CHILD_INSTALL_TRANSCRIPT"
+}
+
+child_install_transcript_hint() {
+  if dev_diagnostics_enabled && [ -n "$CHILD_INSTALL_TRANSCRIPT" ] && [ -f "$CHILD_INSTALL_TRANSCRIPT" ]; then
+    printf ' Child installer transcript: %s' "$CHILD_INSTALL_TRANSCRIPT"
+  fi
 }
 
 log() {
@@ -1061,6 +1080,8 @@ run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
   local install_args=(./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}")
+  local script_output="/dev/null"
+  local status=0
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
     install_args+=(--install-daemons)
   fi
@@ -1068,7 +1089,12 @@ run_install_with_script_pty() {
     install_args+=(--skip-daemons)
   fi
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" "${install_args[@]}" < /dev/tty
+  if dev_diagnostics_enabled && [ -n "$CHILD_INSTALL_RAW_TRANSCRIPT" ]; then
+    script_output="$CHILD_INSTALL_RAW_TRANSCRIPT"
+  fi
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q "$script_output" "$BUN_BIN" --cwd "$os_dir" "${install_args[@]}" < /dev/tty || status=$?
+  finalize_child_install_transcript
+  return "$status"
 }
 
 run_install_with_tty() {
@@ -1084,7 +1110,7 @@ validate_onboarding_json() {
   local validation_status=0
 
   if [ -z "$onboarding_payload" ]; then
-    fail "Consuelo OS interactive onboarding did not complete: onboarding result file was empty."
+    fail "Consuelo OS interactive onboarding did not complete: onboarding result file was empty.$(child_install_transcript_hint)"
   fi
 
   validation_error="$(ONBOARDING_JSON_PAYLOAD="$onboarding_payload" "$BUN_BIN" --print '
@@ -1110,7 +1136,7 @@ validate_onboarding_json() {
 })()
 ' 2>&1 >/dev/null)" || validation_status=$?
   if [ "$validation_status" -ne 0 ]; then
-    fail "Consuelo OS interactive onboarding did not complete: ${validation_error:-onboarding result was invalid}."
+    fail "Consuelo OS interactive onboarding did not complete: ${validation_error:-onboarding result was invalid}.$(child_install_transcript_hint)"
   fi
 }
 
@@ -1280,4 +1306,3 @@ main() {
 }
 
 main "$@"
-

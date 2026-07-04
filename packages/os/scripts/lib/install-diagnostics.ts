@@ -105,7 +105,11 @@ function createNoopDiagnostics(): InstallDiagnostics {
 }
 
 function appendJsonLine(filePath: string, event: InstallDiagnosticEvent): void {
-  fs.appendFileSync(filePath, `${JSON.stringify(event)}\n`, { mode: 0o600 });
+  try {
+    fs.appendFileSync(filePath, `${JSON.stringify(event)}\n`, { mode: 0o600 });
+  } catch {
+    // Dev diagnostics should never be the reason installation fails.
+  }
 }
 
 export function createInstallDiagnostics(input: {
@@ -173,9 +177,13 @@ export function createInstallDiagnostics(input: {
         home: redactDiagnosticValue(input.home),
         events,
       };
-      fs.writeFileSync(path.join(reportDir, 'install-report.json'), `${JSON.stringify(report, null, 2)}\n`, {
-        mode: 0o600,
-      });
+      try {
+        fs.writeFileSync(path.join(reportDir, 'install-report.json'), `${JSON.stringify(report, null, 2)}\n`, {
+          mode: 0o600,
+        });
+      } catch {
+        // Dev diagnostics should never be the reason installation fails.
+      }
     },
   };
 }
