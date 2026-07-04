@@ -188,7 +188,7 @@ describe('workspace device-login HTTP client', () => {
     })).resolves.toMatchObject({ status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' });
   });
 
-  it('preserves workspace selection server error messages', async () => {
+  it('should preserve workspace selection server error messages when route setup fails', async () => {
     const deviceKeyPair = generateWorkspaceDeviceKeyPair();
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     const fetchImpl: DeviceLoginFetch = async (url, init) => {
@@ -222,6 +222,27 @@ describe('workspace device-login HTTP client', () => {
     expect(requestBody.get('workspace_slug')).toBe('testing');
     expect(requestBody.get('workspace_host')).toBe('testing.consuelohq.com');
     expect(requestBody.get('device_public_key_proof')).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+
+  it('should preserve poll server error messages when token exchange fails', async () => {
+    const fetchImpl: DeviceLoginFetch = async () =>
+      jsonResponse(
+        {
+          error: 'temporarily_unavailable',
+          message: 'device grant store unavailable',
+        },
+        { ok: false, status: 503 },
+      );
+
+    await expect(pollWorkspaceDeviceAccessToken({
+      clientId: 'consuelo-os-installer',
+      deviceCode: 'dev_unavailable',
+      intervalSeconds: 5,
+      fetchImpl,
+    })).resolves.toMatchObject({
+      status: 'unavailable',
+      message: 'temporarily_unavailable: device grant store unavailable',
+    });
   });
 
   it('returns unavailable instead of throwing when website endpoints are offline', async () => {
