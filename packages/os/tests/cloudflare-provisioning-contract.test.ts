@@ -513,6 +513,18 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     );
   });
 
+  it('should identify invalid managed OS MCP hostnames in provisioning errors', async () => {
+    const { buildManagedOsMcpIngressPolicyRules } =
+      await loadWorkspaceCloudflareProvisioningContract();
+
+    expect(() => buildManagedOsMcpIngressPolicyRules({
+      zoneId: 'zone_123',
+      baseDomain: 'consuelohq.com',
+      mcpAllowedIpsListName: 'mcp_allowed_ips',
+      managedMcpHostnames: ['os.example.com'],
+    })).toThrow(/os\.example\.com.*consuelohq\.com/);
+  });
+
   it('should read managed OS MCP ingress policy config from Cloudflare env', async () => {
     const { createManagedOsMcpIngressPolicyConfigFromEnv } =
       await loadWorkspaceCloudflareProvisioningContract();

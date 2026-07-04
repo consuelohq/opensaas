@@ -4,8 +4,32 @@ set -euo pipefail
 PROGRAM="Consuelo OS bootstrap"
 HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
 HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
-OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
-RUNTIME_HOME="${CONSUELO_RUNTIME_HOME:-$OS_HOME/runtime/current}"
+DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"
+LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"
+resolve_os_home() {
+  if [ -n "${CONSUELO_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_HOME"
+    return 0
+  fi
+  if [ -d "$LEGACY_OS_HOME" ] && [ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]; then
+    printf '%s\n' "$LEGACY_OS_HOME"
+    return 0
+  fi
+  printf '%s\n' "$DEFAULT_OS_HOME"
+}
+OS_HOME="$(resolve_os_home)"
+resolve_runtime_home() {
+  if [ -n "${CONSUELO_RUNTIME_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_RUNTIME_HOME"
+    return 0
+  fi
+  if [ "$OS_HOME" = "$LEGACY_OS_HOME" ] && [ -f "$LEGACY_OS_HOME/package.json" ]; then
+    printf '%s\n' "$LEGACY_OS_HOME"
+    return 0
+  fi
+  printf '%s\n' "$OS_HOME/runtime/current"
+}
+RUNTIME_HOME="$(resolve_runtime_home)"
 RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
 DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
 SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
@@ -1132,7 +1156,7 @@ run_daemon_dry_run() {
 }
 
 install_daemons_quiet() {
-  local os_dir="$OS_HOME"
+  local os_dir="$REPO_DIR/packages/os"
   (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
 }
 
@@ -1170,7 +1194,7 @@ maybe_install_daemons() {
   fi
 
   if [ "$DEBUG" = "1" ]; then
-    local os_dir="$OS_HOME"
+    local os_dir="$REPO_DIR/packages/os"
     CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
     run_with_loading_dots "setting up background service" install_daemons_quiet
@@ -1186,7 +1210,7 @@ print_success_summary() {
 
   log ""
   log "Consuelo OS setup complete"
-  log "Home: $OS_HOME"
+  log "Home: $os_home"
 }
 
 main() {

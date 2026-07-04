@@ -23,6 +23,15 @@ describe('development install diagnostics', () => {
       'https://os.consuelohq.com/login/device?user_code=[redacted]',
     );
     expect(redactDiagnosticValue('/Users/kokayi/.consuelo')).toContain('/Users/[user]/');
+    expect(redactDiagnosticValue('/home/kokayi/.consuelo')).toContain('/home/[user]/');
+    expect(redactDiagnosticValue('cloudflared_tunnel_token=secret-token-123')).toBe('cloudflared_tunnel_token=[redacted]');
+    expect(redactDiagnosticValue('cloudflare_tunnel_token=secret-token-123')).toBe('cloudflare_tunnel_token=[redacted]');
+    expect(redactDiagnosticValue('https://os.consuelohq.com/setup?cloudflare_tunnel_token=secret-token-123&ok=1')).toBe(
+      'https://os.consuelohq.com/setup?cloudflare_tunnel_token=[redacted]&ok=1',
+    );
+    expect(redactDiagnosticValue('https://os.consuelohq.com/setup?cloudflared_tunnel_token=secret-token-123')).toBe(
+      'https://os.consuelohq.com/setup?cloudflared_tunnel_token=[redacted]',
+    );
   });
 
   it('writes local JSON and JSONL reports without enabling normal telemetry', () => {

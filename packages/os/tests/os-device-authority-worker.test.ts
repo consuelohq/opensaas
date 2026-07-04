@@ -352,6 +352,8 @@ describe('os device authority worker', () => {
       }),
     }));
     const tokenJson = await tokenResponse.json() as Record<string, unknown>;
+    expect(tokenResponse.status).toBe(200);
+    expect(tokenJson.access_token).toMatch(/^coa_/);
 
     const proxy = await handler(new Request(origin + '/mcp', {
       method: 'POST',
@@ -377,6 +379,8 @@ describe('os device authority worker', () => {
     expect(proxied.headers['x-consuelo-route']).toBe('/mcp');
     expect(proxied.headers['x-consuelo-surface']).toBe('os');
     expect(proxied.headers['x-consuelo-connector-id']).toBe('connector_home_mac_mini');
+    expect(proxied.headers['x-consuelo-edge-timestamp']).toMatch(/^\d+$/);
+    expect(proxied.headers['x-consuelo-edge-nonce']).toMatch(/^[-A-Za-z0-9_:.]+$/);
     expect(proxied.headers['x-consuelo-edge-signature']).toMatch(/^sha256=[0-9a-f]{64}$/);
     expect(proxied.body).toContain('tools/list');
   });

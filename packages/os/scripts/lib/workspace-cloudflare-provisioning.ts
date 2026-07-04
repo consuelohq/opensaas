@@ -592,7 +592,7 @@ const assertHostnameBelongsToBaseDomain = (input: {
     input.hostname !== input.baseDomain &&
     !input.hostname.endsWith(`.${input.baseDomain}`)
   ) {
-    throw new Error('managed OS MCP hostname must belong to the base domain');
+    throw new Error(`managed OS MCP hostname ${input.hostname} must belong to base domain ${input.baseDomain}`);
   }
 };
 
