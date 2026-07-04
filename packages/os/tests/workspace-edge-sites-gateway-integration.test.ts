@@ -153,12 +153,16 @@ function signInternalEdgeRequest(input: {
   pathWithSearch: string;
   workspaceId: string;
   surface: string;
+  timestamp: string;
+  nonce: string;
 }): string {
   const canonical = [
     input.method.toUpperCase(),
     input.pathWithSearch,
     input.workspaceId,
     input.surface,
+    input.timestamp,
+    input.nonce,
   ].join('\n');
 
   return `sha256=${createHmac('sha256', input.secret).update(canonical).digest('hex')}`;
@@ -373,26 +377,38 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
 
     const readPath = '/gateway/traces/recent?cursor=00000000';
     const livePath = '/gateway/traces/events?cursor=00000000';
+    const readTimestamp = String(Date.now());
+    const readNonce = 'test-read-nonce';
     const readResponse = await router.fetch(new Request(`https://internal.consuelohq.com${readPath}`, {
       headers: {
+        'x-consuelo-edge-timestamp': readTimestamp,
+        'x-consuelo-edge-nonce': readNonce,
         'x-consuelo-edge-signature': signInternalEdgeRequest({
           secret: 'edge-test-secret',
           method: 'GET',
           pathWithSearch: readPath,
           workspaceId: 'workspace_internal',
           surface: 'sites',
+          timestamp: readTimestamp,
+          nonce: readNonce,
         }),
       },
     }));
     const readBody = (await readResponse.json()) as Record<string, unknown>;
+    const liveTimestamp = String(Date.now());
+    const liveNonce = 'test-live-nonce';
     const liveResponse = await router.fetch(new Request(`https://internal.consuelohq.com${livePath}`, {
       headers: {
+        'x-consuelo-edge-timestamp': liveTimestamp,
+        'x-consuelo-edge-nonce': liveNonce,
         'x-consuelo-edge-signature': signInternalEdgeRequest({
           secret: 'edge-test-secret',
           method: 'GET',
           pathWithSearch: livePath,
           workspaceId: 'workspace_internal',
           surface: 'sites',
+          timestamp: liveTimestamp,
+          nonce: liveNonce,
         }),
       },
     }));

@@ -296,9 +296,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     );
     expect(upstreamRequests[0].headers.get('x-consuelo-route')).toBe('/dialer');
     expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBeNull();
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
-      'sha256=e9652e5ea05501c2fe16ca735512b3b24cf4c6850cfe9d43cc59b198b5388333',
-    );
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-timestamp') ?? '').toMatch(/^\d+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-nonce') ?? '').toMatch(/^[-A-Za-z0-9_:.]+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature') ?? '').toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 
 
@@ -469,9 +469,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBe(
       'connector_123',
     );
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
-      'sha256=be9edfab49ef02523d70ec8d5cfc1597ab3a8fa7ff770d8202aa2902dc4a4bcd',
-    );
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-timestamp') ?? '').toMatch(/^\d+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-nonce') ?? '').toMatch(/^[-A-Za-z0-9_:.]+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature') ?? '').toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 
 

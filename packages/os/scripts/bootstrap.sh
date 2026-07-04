@@ -4,7 +4,32 @@ set -euo pipefail
 PROGRAM="Consuelo OS bootstrap"
 HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
 HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
-OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"
+DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"
+LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"
+resolve_os_home() {
+  if [ -n "${CONSUELO_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_HOME"
+    return 0
+  fi
+  if [ -d "$LEGACY_OS_HOME" ] && [ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]; then
+    printf '%s\n' "$LEGACY_OS_HOME"
+    return 0
+  fi
+  printf '%s\n' "$DEFAULT_OS_HOME"
+}
+OS_HOME="$(resolve_os_home)"
+resolve_runtime_home() {
+  if [ -n "${CONSUELO_RUNTIME_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_RUNTIME_HOME"
+    return 0
+  fi
+  if [ "$OS_HOME" = "$LEGACY_OS_HOME" ] && [ -f "$LEGACY_OS_HOME/package.json" ]; then
+    printf '%s\n' "$LEGACY_OS_HOME"
+    return 0
+  fi
+  printf '%s\n' "$OS_HOME/runtime/current"
+}
+RUNTIME_HOME="$(resolve_runtime_home)"
 RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
 DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
 SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
@@ -36,6 +61,9 @@ SKIP_DAEMONS=0
 JSON=0
 REFRESH_SOURCE=1
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
+DEV_DIAGNOSTICS="${CONSUELO_OS_DEV_DIAGNOSTICS:-0}"
+DEV_REPORT_ROOT="${CONSUELO_OS_DEV_REPORTS_DIR:-$HOME/.consuelo-dev-reports}"
+DEV_REPORT_DIR="${CONSUELO_OS_DEV_REPORT_DIR:-}"
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
@@ -86,17 +114,48 @@ Options:
 Environment overrides:
   CONSUELO_OS_SOURCE_DIR       temporary checkout/download directory for hosted installs
   CONSUELO_OS_REPO_ARCHIVE_URL source archive URL; defaults to the main branch archive
-  CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/os/bin
+  CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/bin
+  CONSUELO_OS_DEV_DIAGNOSTICS  set to 1 to write temporary development install diagnostics
   PORTLESS_BIN                 absolute portless binary path to reuse
   CLOUDFLARED_BIN              absolute cloudflared binary path to reuse
 USAGE
 }
 
+dev_diagnostics_enabled() {
+  [ "$DEV_DIAGNOSTICS" = "1" ]
+}
+
+redact_dev_log_line() {
+  sed -E 's#(/Users/)[^/[:space:]]+#\1[user]#g; s#(user_code=)[^&[:space:]]+#\1[redacted]#g; s#(device_code=)[^&[:space:]]+#\1[redacted]#g; s#(token=)[^&[:space:]]+#\1[redacted]#g; s#cloudflared?_tunnel_token[-_A-Za-z0-9.]*#[redacted]#g'
+}
+
+init_dev_diagnostics() {
+  dev_diagnostics_enabled || return 0
+  if [ -z "$DEV_REPORT_DIR" ]; then
+    DEV_REPORT_DIR="$DEV_REPORT_ROOT/bootstrap-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+  fi
+  mkdir -p "$DEV_REPORT_DIR"
+  chmod 700 "$DEV_REPORT_DIR" 2>/dev/null || true
+  export CONSUELO_OS_DEV_REPORT_DIR="$DEV_REPORT_DIR"
+  printf '%s
+' "bootstrap diagnostics started" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
+}
+
+dev_log() {
+  dev_diagnostics_enabled || return 0
+  [ -n "$DEV_REPORT_DIR" ] || return 0
+  printf '%s %s
+' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
+}
+
 log() {
+  dev_log "$*"
   if [ "$JSON" -eq 1 ]; then
-    printf '%s\n' "$*" >&2
+    printf '%s
+' "$*" >&2
   else
-    printf '%s\n' "$*"
+    printf '%s
+' "$*"
   fi
 }
 
@@ -1097,7 +1156,7 @@ run_daemon_dry_run() {
 }
 
 install_daemons_quiet() {
-  local os_dir="$OS_HOME"
+  local os_dir="$REPO_DIR/packages/os"
   (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
 }
 
@@ -1135,7 +1194,7 @@ maybe_install_daemons() {
   fi
 
   if [ "$DEBUG" = "1" ]; then
-    local os_dir="$OS_HOME"
+    local os_dir="$REPO_DIR/packages/os"
     CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
     run_with_loading_dots "setting up background service" install_daemons_quiet
@@ -1156,6 +1215,7 @@ print_success_summary() {
 
 main() {
   parse_args "$@"
+  init_dev_diagnostics
   choose_os_mode
   handle_cloud_mode
   check_mac_prerequisites

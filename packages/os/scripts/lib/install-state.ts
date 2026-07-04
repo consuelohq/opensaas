@@ -8,10 +8,12 @@ import {
   createDefaultGlobalYamlConfig,
   createDefaultNodeYamlConfig,
   createDefaultWorkspaceYamlConfig,
+  loadNodeYamlConfig,
   resolveConsueloHome,
   resolveConsueloHomeLayout,
   writeYamlConfig,
 } from './consuelo-home';
+import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { createGatewaySecurityConfig, issueAgentAppToken } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
@@ -61,6 +63,10 @@ export type WorkspaceBootstrap = {
   workspaceHost: string;
   connectorId: string;
   connectorTransport: 'cloudflare-tunnel' | 'websocket-relay';
+  nodeId?: string;
+  nodeName?: string;
+  nodeRole?: 'home' | 'member';
+  nodeStatus?: 'created' | 'reconnected';
   connectorBootstrapToken?: string;
   cloudflareTunnelToken?: string;
 };
@@ -279,6 +285,27 @@ type ToolInstallMetadata = {
 
 export function resolveOsHome(home?: string): string {
   return resolveConsueloHome(home);
+}
+
+export type LocalNodeIdentity = {
+  nodeId: string;
+  nodeName: string;
+  nodeRole?: 'home' | 'member';
+};
+
+export function readLocalNodeIdentity(home?: string): LocalNodeIdentity | undefined {
+  const layout = resolveConsueloHomeLayout(resolveOsHome(home));
+  if (!fs.existsSync(layout.nodeConfigPath)) return undefined;
+  try {
+    const config = loadNodeYamlConfig(layout.nodeConfigPath);
+    return {
+      nodeId: config.node.id,
+      nodeName: config.node.name,
+      ...(config.node.role ? { nodeRole: config.node.role } : {}),
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 function nowIso(): string {
@@ -661,6 +688,16 @@ function materializeChatGptMcpConnection(input: {
     typeof existing?.tokenId === 'string' &&
     typeof existing?.url === 'string'
   ) {
+    if (existing.url !== CHATGPT_MCP_URL) {
+      writeJsonFile(targetPath, {
+        ...existing,
+        url: CHATGPT_MCP_URL,
+        localUrl: typeof existing.localUrl === 'string' ? existing.localUrl : `http://127.0.0.1:${input.port}/mcp`,
+        scopes: Array.isArray(existing.scopes) ? existing.scopes : scopes,
+        updatedAt: nowIso(),
+      }, false);
+      return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection URL updated' }];
+    }
     return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
   }
   const token = issueAgentAppToken({
@@ -681,7 +718,7 @@ function materializeChatGptMcpConnection(input: {
     version: 1,
     kind: 'consuelo-chatgpt-mcp-connection',
     auth: 'bearer',
-    url: `https://${input.config.workspaceHost}/mcp`,
+    url: CHATGPT_MCP_URL,
     localUrl: `http://127.0.0.1:${input.port}/mcp`,
     tokenId: token.tokenId,
     bearerToken: token.bearerToken,
@@ -1506,8 +1543,9 @@ export function provisionLocalOs(
         workspaceSlug: 'local',
         workspaceHost: 'local.consuelohq.com',
       };
-  const nodeId = workspaceBootstrap?.connectorId ?? 'local';
-  const nodeName = os.hostname() || 'local';
+  const nodeId = workspaceBootstrap?.nodeId ?? workspaceBootstrap?.connectorId ?? 'local';
+  const nodeName = workspaceBootstrap?.nodeName ?? (os.hostname() || 'local');
+  const nodeRole = workspaceBootstrap?.nodeRole ?? 'home';
 
   for (const dir of [
     layout.workspaceSharedDir(workspaceIdentity.workspaceId),
@@ -1541,6 +1579,7 @@ export function provisionLocalOs(
     value: createDefaultNodeYamlConfig({
       nodeId,
       nodeName,
+      nodeRole,
       workspaceId: workspaceIdentity.workspaceId,
     }),
     dryRun,

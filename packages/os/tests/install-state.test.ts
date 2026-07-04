@@ -55,6 +55,35 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'config.json'))).toBe(false);
   });
 
+  it('rewrites existing ChatGPT MCP config to the central endpoint without rotating tokens', () => {
+    mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
+    writeFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), JSON.stringify({
+      version: 1,
+      kind: 'consuelo-chatgpt-mcp-connection',
+      auth: 'bearer',
+      url: 'https://legacy-workspace.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:8960/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+      scopes: ['route:/mcp:read', 'tool:*:read'],
+      createdAt: '2026-06-13T00:00:00.000Z',
+    }, null, 2));
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    expect(chatgptMcp).toMatchObject({
+      url: 'https://os.consuelohq.com/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+    });
+    expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(join('security', 'generated', 'chatgpt-mcp.json')) && action.status === 'updated')).toBe(true);
+  });
+
   it('reports existing generated security assets as existing on reprovision', () => {
     JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
@@ -144,7 +173,7 @@ describe('local OS install state', () => {
     const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
     expect(chatgptMcp).toMatchObject({
       auth: 'bearer',
-      url: 'https://local.consuelohq.com/mcp',
+      url: 'https://os.consuelohq.com/mcp',
       localUrl: 'http://127.0.0.1:8960/mcp',
     });
     expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
@@ -240,6 +269,37 @@ describe('local OS install state', () => {
   });
 
 
+
+  it('writes approved node identity into flattened node config', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({
+        mode: 'local',
+        workspaceBootstrap: {
+          workspaceId: 'workspace_123',
+          workspaceSlug: 'kokayi',
+          workspaceHost: 'kokayi.consuelohq.com',
+          connectorId: 'connector_node_air',
+          connectorTransport: 'websocket-relay',
+          nodeId: 'node-air',
+          nodeName: 'MacBook Air',
+          nodeRole: 'member',
+          nodeStatus: 'created',
+        },
+      });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const nodeYaml = readFileSync(join(tempHome, 'node', 'node.yaml'), 'utf8');
+    const globalYaml = readFileSync(join(tempHome, 'consuelo.yaml'), 'utf8');
+    expect(nodeYaml).toContain('id: node-air');
+    expect(nodeYaml).toContain('name: MacBook Air');
+    expect(nodeYaml).toContain('role: member');
+    expect(globalYaml).toContain('activeNode: node-air');
+    expect(nodeYaml).not.toContain('connector_node_air');
+    expect(globalYaml).not.toContain('connector_node_air');
+  });
+
   it('writes an OpenCode MCP config that exposes Consuelo OS tools', () => {
     mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
     writeFileSync(
@@ -321,7 +381,7 @@ describe('local OS install state', () => {
     expect(sitesIndex).toContain('Here is the URL to connect');
     expect(sitesIndex).toContain('to your workspace.');
     expect(sitesIndex).toContain('https://chatgpt.com/apps#settings/Connectors');
-    expect(sitesIndex).toContain('<code id="mcp-url">https://local.consuelohq.com/mcp</code>');
+    expect(sitesIndex).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
     expect(sitesIndex).toContain('support@consuelohq.com');
     expect(sitesIndex).toContain('Systems Engineer');
     expect(sitesIndex).toContain('Go to market');

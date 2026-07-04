@@ -24,6 +24,10 @@ export type WorkspaceDeviceAuthorizationPollResult =
       workspaceId: string;
       workspaceSlug: string;
       workspaceHost: string;
+      nodeId?: string;
+      nodeName?: string;
+      nodeRole?: 'home' | 'member';
+      nodeStatus?: 'created' | 'reconnected';
       connectorId: string;
       connectorBootstrapToken: string;
       connectorBootstrapExpiresAt: string;
