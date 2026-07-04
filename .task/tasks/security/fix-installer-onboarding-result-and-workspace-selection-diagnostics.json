@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-installer-onboarding-result-and-workspace-selection-diagnostics",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1364,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1364",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1364",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1364/fix-installer-onboarding-result-and-workspace-selection-diagnostics",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1364",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1364/fix-installer-onboarding-result-and-workspace-selection-diagnostics",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-installer-onboarding-result-and-workspace-selection-diagnostics",
+  "taskSession": "tsk_c6919ae33d03",
+  "tmuxSession": "opensaas-security-fix-installer-onboarding-result-and-workspace-se-c6919ae3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-installer-onboarding-result-and-workspace-selection-diagnostics/.task/security/fix-installer-onboarding-result-and-workspace-selection-diagnostics/session.json",
+  "createdAt": "2026-07-04T16:08:54.010Z"
+}

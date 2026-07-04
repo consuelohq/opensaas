@@ -111,6 +111,11 @@ function unavailable(message: string): { status: 'unavailable'; message: string 
   return { status: 'unavailable', message };
 }
 
+function errorWithMessage(json: Record<string, unknown>, error: string): string {
+  const message = stringField(json, 'message');
+  return message ? `${error}: ${message}` : error;
+}
+
 function expiresAtFromNow(now: string | undefined, expiresInSeconds: number): string {
   const baseMs = now ? Date.parse(now) : Date.now();
   const safeBaseMs = Number.isFinite(baseMs) ? baseMs : Date.now();
@@ -201,7 +206,7 @@ export async function requestWorkspaceDeviceCode(
 
     const error = stringField(json, 'error');
     if (error) {
-      return unavailable(error);
+      return unavailable(errorWithMessage(json, error));
     }
 
     const deviceCode = stringField(json, 'device_code', 'deviceCode');
@@ -364,7 +369,7 @@ export async function selectWorkspaceForDeviceLogin(
     }
     if (error === 'access_denied') return { status: 'denied', errorCode: 'DEVICE_CODE_DENIED' };
     if (error === 'expired_token') return { status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' };
-    if (error) return unavailable(error);
+    if (error) return unavailable(errorWithMessage(json, error));
 
     return approvedDeviceGrantFromJson(json) ?? unavailable('approved workspace selection response was missing workspace bootstrap fields');
   } catch (error: unknown) {
