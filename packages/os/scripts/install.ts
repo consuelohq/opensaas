@@ -114,6 +114,7 @@ export const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
 
 type InstallerDiagnosticStep =
   | InstallerProgressStep
+  | 'child_process'
   | 'dependencies'
   | 'device_login'
   | 'workspace_selection';
@@ -133,6 +134,36 @@ function recordPromptDecision(
   value: unknown,
 ): void {
   diagnostics.recordPromptDecision(name, value);
+}
+
+function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+let installerDiagnosticsLifecycleHooksRegistered = false;
+
+function registerInstallerDiagnosticsLifecycleHooks(diagnostics: InstallDiagnostics): void {
+  if (!diagnostics.enabled || installerDiagnosticsLifecycleHooksRegistered) return;
+  installerDiagnosticsLifecycleHooksRegistered = true;
+
+  process.once('beforeExit', (exitCode) => {
+    recordInstallerStep(diagnostics, 'child_process', 'beforeExit', { exitCode });
+  });
+  process.once('exit', (exitCode) => {
+    recordInstallerStep(diagnostics, 'child_process', 'exit', { exitCode });
+  });
+  process.once('uncaughtExceptionMonitor', (error) => {
+    recordInstallerStep(diagnostics, 'child_process', 'uncaughtException', {
+      error: formatUnknownError(error),
+    });
+  });
+
+  for (const signal of ['SIGHUP', 'SIGINT', 'SIGTERM'] as const) {
+    process.once(signal, () => {
+      recordInstallerStep(diagnostics, 'child_process', 'signal', { signal });
+      process.kill(process.pid, signal);
+    });
+  }
 }
 
 export function createInstallerProgressSteps(
@@ -576,12 +607,17 @@ async function attemptWorkspaceDeviceLogin(input: {
       userCode: session.userCode,
       verificationUrl: session.verificationUriComplete,
     });
-    await openDeviceVerificationUrl(session.verificationUriComplete);
+    recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed', {
+      verificationUrl: session.verificationUriComplete,
+    });
+    const browserOpened = await openDeviceVerificationUrl(session.verificationUriComplete);
+    recordInstallerStep(input.diagnostics, 'device_login', 'browser_open', { opened: browserOpened });
 
     const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
     let intervalSeconds = session.intervalSeconds;
 
     while (Date.now() < deadlineMs) {
+      recordInstallerStep(input.diagnostics, 'device_login', 'poll_wait', { intervalSeconds });
       await sleep(Math.min(intervalSeconds, 5) * 1000);
       const pollResult = await pollWorkspaceDeviceAccessToken({
         clientId: DEVICE_LOGIN_CLIENT_ID,
@@ -589,6 +625,14 @@ async function attemptWorkspaceDeviceLogin(input: {
         intervalSeconds,
         deviceKeyPair: liveDeviceCode.deviceKeyPair,
       });
+
+      const pollDetails: Record<string, unknown> = {
+        status: pollResult.status,
+        intervalSeconds: 'intervalSeconds' in pollResult ? pollResult.intervalSeconds : intervalSeconds,
+      };
+      if ('message' in pollResult) pollDetails.message = pollResult.message;
+      if ('errorCode' in pollResult) pollDetails.errorCode = pollResult.errorCode;
+      recordInstallerStep(input.diagnostics, 'device_login', 'poll_result', pollDetails);
 
       if (pollResult.status === 'approved') {
         input.diagnostics.recordHttp('device.poll', 200, pollResult.status);
@@ -637,7 +681,7 @@ async function attemptWorkspaceDeviceLogin(input: {
     info('Device login was not approved before timeout; continuing with local workspace bootstrap.');
     return { status: 'fallback', verificationUrl: session.verificationUriComplete };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = formatUnknownError(error);
     recordInstallerStep(input.diagnostics, 'device_login', 'failed', { error: message });
     info('Device login unavailable; continuing with local workspace bootstrap.');
     return { status: 'fallback' };
@@ -711,7 +755,7 @@ async function resolveWorkspaceIdentity(input: {
       workspaceHost,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = formatUnknownError(error);
     input.diagnostics.recordHttp('device.workspace_selection', 0, 'exception');
     recordInstallerStep(input.diagnostics, 'workspace_selection', 'failed', { error: message });
     throw error;
@@ -898,6 +942,7 @@ async function main(): Promise<void> {
       home: resolveOsHome(parsedOptions.home),
       argv: process.argv.slice(2),
     });
+    registerInstallerDiagnosticsLifecycleHooks(diagnostics);
     recordInstallerStep(diagnostics, 'dependencies', 'complete');
     if (parsedOptions.checkTty) {
       printTtyDiagnostics();
@@ -984,7 +1029,7 @@ async function main(): Promise<void> {
       }
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = formatUnknownError(error);
     diagnostics?.finish({ status: 'error', error: message });
     throw new Error(`install failed: ${message}`);
   }
