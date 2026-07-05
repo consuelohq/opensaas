@@ -142,6 +142,16 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(validateOnboardingJsonIndex).toBeLessThan(installDaemonsCheckIndex);
   });
 
+
+  test('should record child process lifecycle breadcrumbs when device login exits early', () => {
+    expect(install).toContain('registerInstallerDiagnosticsLifecycleHooks');
+    expect(install).toContain("recordInstallerStep(diagnostics, 'child_process', 'beforeExit'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'child_process', 'exit'");
+    expect(install).toContain("recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed'");
+    expect(install).toContain("recordInstallerStep(input.diagnostics, 'device_login', 'browser_open'");
+    expect(install).toContain("recordInstallerStep(input.diagnostics, 'device_login', 'poll_result'");
+  });
+
   test('should record explicit diagnostics breadcrumbs when workspace selection posts', () => {
     expect(install).toContain("'workspace_selection'");
     expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'start'");

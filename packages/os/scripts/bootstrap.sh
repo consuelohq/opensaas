@@ -128,7 +128,22 @@ dev_diagnostics_enabled() {
 }
 
 redact_dev_log_line() {
-  sed -E 's#(/Users/)[^/[:space:]]+#\1[user]#g; s#(user_code=)[^&[:space:]]+#\1[redacted]#g; s#(device_code=)[^&[:space:]]+#\1[redacted]#g; s#(token=)[^&[:space:]]+#\1[redacted]#g; s#cloudflared?_tunnel_token[-_A-Za-z0-9.]*#[redacted]#g'
+  if command -v perl >/dev/null 2>&1; then
+    perl -CS -pe '
+      s/\e\][^\a]*(?:\a|\e\\)//g;
+      s/\e\[[0-9;?]*[ -\/]*[@-~]//g;
+      s#/(Users|home)/[^/\s]+#/$1/[user]#g;
+      s{([?&](?:access_token|authorization|bootstrap_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|secret|state|token|user_code)=)[^&\#\s]+}{$1[redacted]}gi;
+      s#\bAuthorization\s*:\s*Bearer\s+[^\s]+#Authorization: [redacted]#gi;
+      s#\bBearer\s+[^\s]+#[redacted]#gi;
+      s#\b((?:[A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|KEY|AUTH|COOKIE|CODE|STATE)[A-Z0-9_]*|client_secret|device_code|user_code)\s*[:=]\s*)[^&\s]+#$1[redacted]#gi;
+      s#\b(?:cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+\b#[redacted]#gi;
+      s#\b[A-Z0-9]{4}-[A-Z0-9]{4}\b#[redacted]#g;
+    '
+    return 0
+  fi
+
+  sed -E 's#(/(Users|home)/)[^/[:space:]]+#\1[user]#g; s#(user_code=)[^&[:space:]]+#\1[redacted]#gi; s#(device_code=)[^&[:space:]]+#\1[redacted]#gi; s#(client_secret=)[^&[:space:]]+#\1[redacted]#gi; s#(token=)[^&[:space:]]+#\1[redacted]#gi; s#(Authorization:[[:space:]]*Bearer[[:space:]]*)[^[:space:]]+#\1[redacted]#gi; s#Bearer[[:space:]][^[:space:]]+#[redacted]#gi; s#cloudflared?_tunnel_token[-_=A-Za-z0-9.]*#cloudflare_tunnel_token=[redacted]#gi; s#(^|[^A-Za-z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})([^A-Za-z0-9]|$)#\1[redacted]\3#g'
 }
 
 init_dev_diagnostics() {

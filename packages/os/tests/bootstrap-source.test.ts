@@ -1,8 +1,24 @@
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const readBootstrap = () => readFileSync(join(process.cwd(), 'scripts', 'bootstrap.sh'), 'utf8');
+
+
+function runBootstrapFunction(source: string, name: string, input: string): string {
+  const fn = extractShellFunction(source, name);
+  const result = spawnSync('bash', ['-c', `set -euo pipefail
+${fn}
+${name}`], {
+    input,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) {
+    throw new Error(result.stderr || `${name} failed with status ${result.status}`);
+  }
+  return result.stdout;
+}
 
 function extractShellFunction(source: string, name: string): string {
   const lines = source.split('\n');
@@ -134,6 +150,37 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('RUNTIME_HOME="$(resolve_runtime_home)"');
     expect(bootstrap).toContain('[ -f "$LEGACY_OS_HOME/package.json" ]');
     expect(bootstrap).toContain('[ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]');
+  });
+
+
+  it('should redact child installer PTY transcripts before saving diagnostics', () => {
+    const bootstrap = readBootstrap();
+    const transcript = [
+      '\u001B[32m◇\u001B[39m Consuelo OS',
+      '    C7UD-BR7N',
+      '\u001B]8;;https://os.consuelohq.com/login/device?user_code=C7UDBR7N\u0007click here\u001B]8;;\u0007',
+      'Full URL: https://os.consuelohq.com/login/device?user_code=C7UDBR7N&device_code=device-secret&token=osat_secret',
+      'path=/Users/kokayikobb/.consuelo and /home/kokayi/.consuelo',
+      'Authorization: Bearer abc.def.ghi',
+      'cloudflare_tunnel_token=secret-token-123',
+      'client_secret=client-secret-456',
+    ].join('\n');
+
+    const redacted = runBootstrapFunction(bootstrap, 'redact_dev_log_line', transcript);
+
+    expect(redacted).not.toContain('\u001B');
+    expect(redacted).not.toContain('C7UD-BR7N');
+    expect(redacted).not.toContain('C7UDBR7N');
+    expect(redacted).not.toContain('device-secret');
+    expect(redacted).not.toContain('osat_secret');
+    expect(redacted).not.toContain('kokayikobb');
+    expect(redacted).not.toContain('kokayi');
+    expect(redacted).not.toContain('abc.def.ghi');
+    expect(redacted).not.toContain('secret-token-123');
+    expect(redacted).not.toContain('client-secret-456');
+    expect(redacted).toContain('[redacted]');
+    expect(redacted).toContain('/Users/[user]/.consuelo');
+    expect(redacted).toContain('/home/[user]/.consuelo');
   });
 
   it('forwards daemon decisions into interactive onboarding', () => {
