@@ -143,7 +143,21 @@ redact_dev_log_line() {
     return 0
   fi
 
-  sed -E 's#(/(Users|home)/)[^/[:space:]]+#\1[user]#g; s#(user_code=)[^&[:space:]]+#\1[redacted]#gi; s#(device_code=)[^&[:space:]]+#\1[redacted]#gi; s#(client_secret=)[^&[:space:]]+#\1[redacted]#gi; s#(token=)[^&[:space:]]+#\1[redacted]#gi; s#(Authorization:[[:space:]]*Bearer[[:space:]]*)[^[:space:]]+#\1[redacted]#gi; s#Bearer[[:space:]][^[:space:]]+#[redacted]#gi; s#cloudflared?_tunnel_token[-_=A-Za-z0-9.]*#cloudflare_tunnel_token=[redacted]#gi; s#(^|[^A-Za-z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})([^A-Za-z0-9]|$)#\1[redacted]\3#g'
+  local esc bel
+  esc="$(printf '\033')"
+  bel="$(printf '\007')"
+
+  sed -E \
+    -e "s#${esc}\\][^${bel}]*${bel}##g" \
+    -e "s#${esc}\\][^${esc}]*${esc}\\\\##g" \
+    -e "s#${esc}\[[0-9;?]*[ -/]*[@-~]##g" \
+    -e 's#(/(Users|home)/)[^/[:space:]]+#\1[user]#g' \
+    -e 's#([?&](access_token|authorization|bootstrap_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|secret|state|token|user_code)=)[^&#[:space:]]+#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])(Authorization[[:space:]]*:[[:space:]]*Bearer[[:space:]]*)[^[:space:]]+#\1Authorization: [redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])Bearer[[:space:]]+[^[:space:]]+#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])([A-Za-z0-9_]*(TOKEN|SECRET|PASSWORD|KEY|AUTH|COOKIE|CODE|STATE)[A-Za-z0-9_]*|client_secret|device_code|user_code)[[:space:]]*[:=][[:space:]]*[^&[:space:]]+#\1\2=[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])((cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+)#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})([^A-Za-z0-9]|$)#\1[redacted]\3#g'
 }
 
 init_dev_diagnostics() {
