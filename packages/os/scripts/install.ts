@@ -114,7 +114,7 @@ export const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
 
 type InstallerDiagnosticStep =
   | InstallerProgressStep
-  | 'child_process'
+  | 'process_lifecycle'
   | 'dependencies'
   | 'device_login'
   | 'workspace_selection';
@@ -140,32 +140,48 @@ function formatUnknownError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+type InstallerDiagnosticsLifecycleTarget = {
+  once: (event: string, handler: (...args: unknown[]) => void) => unknown;
+};
+
+type InstallerDiagnosticsLifecycleOptions = {
+  kill?: (pid: number, signal: NodeJS.Signals) => unknown;
+  pid?: number;
+};
+
 let installerDiagnosticsLifecycleHooksRegistered = false;
 
-function registerInstallerDiagnosticsLifecycleHooks(diagnostics: InstallDiagnostics): void {
-  if (!diagnostics.enabled || installerDiagnosticsLifecycleHooksRegistered) return;
-  installerDiagnosticsLifecycleHooksRegistered = true;
+export function registerInstallerDiagnosticsLifecycleHooks(
+  diagnostics: InstallDiagnostics,
+  lifecycleTarget: InstallerDiagnosticsLifecycleTarget = process,
+  options: InstallerDiagnosticsLifecycleOptions = {},
+): void {
+  const isProcessTarget = lifecycleTarget === process;
+  if (!diagnostics.enabled || (isProcessTarget && installerDiagnosticsLifecycleHooksRegistered)) return;
+  if (isProcessTarget) installerDiagnosticsLifecycleHooksRegistered = true;
 
-  process.once('beforeExit', (exitCode) => {
-    recordInstallerStep(diagnostics, 'child_process', 'beforeExit', { exitCode });
+  const kill = options.kill ?? ((pid: number, signal: NodeJS.Signals) => process.kill(pid, signal));
+  const processId = options.pid ?? process.pid;
+
+  lifecycleTarget.once('beforeExit', (exitCode) => {
+    recordInstallerStep(diagnostics, 'process_lifecycle', 'beforeExit', { exitCode });
   });
-  process.once('exit', (exitCode) => {
-    recordInstallerStep(diagnostics, 'child_process', 'exit', { exitCode });
+  lifecycleTarget.once('exit', (exitCode) => {
+    recordInstallerStep(diagnostics, 'process_lifecycle', 'exit', { exitCode });
   });
-  process.once('uncaughtExceptionMonitor', (error) => {
-    recordInstallerStep(diagnostics, 'child_process', 'uncaughtException', {
+  lifecycleTarget.once('uncaughtExceptionMonitor', (error) => {
+    recordInstallerStep(diagnostics, 'process_lifecycle', 'uncaughtException', {
       error: formatUnknownError(error),
     });
   });
 
   for (const signal of ['SIGHUP', 'SIGINT', 'SIGTERM'] as const) {
-    process.once(signal, () => {
-      recordInstallerStep(diagnostics, 'child_process', 'signal', { signal });
-      process.kill(process.pid, signal);
+    lifecycleTarget.once(signal, () => {
+      recordInstallerStep(diagnostics, 'process_lifecycle', 'signal', { signal });
+      kill(processId, signal);
     });
   }
 }
-
 export function createInstallerProgressSteps(
   activeStep: InstallerProgressStep | null,
 ): OsBannerStep[] {
@@ -499,6 +515,15 @@ function createInstallPlatformProvisioningPayload(input: {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+async function withRuntimeHold<T>(operation: () => Promise<T>): Promise<T> {
+  const hold = setInterval(() => undefined, 1000);
+  try {
+    return await operation();
+  } finally {
+    clearInterval(hold);
+  }
+}
+
 async function openDeviceVerificationUrl(url: string): Promise<boolean> {
   if (process.platform !== 'darwin') return false;
 
@@ -568,18 +593,41 @@ async function printDeviceLoginPrompt(input: {
       'Consuelo OS',
     );
   } catch (error: unknown) {
-    const reason = error instanceof Error ? error.message : String(error);
+    const reason = formatUnknownError(error);
 
     info(`authorize Consuelo OS in your browser: ${sanitizedVerificationUrl}`);
     info(`device login prompt fell back to plain URL: ${reason}`);
   }
 }
 
-async function attemptWorkspaceDeviceLogin(input: {
-  dryRun: boolean;
-  home: string;
-  diagnostics: InstallDiagnostics;
-}): Promise<DeviceLoginAttemptResult> {
+type DeviceLoginDependencies = {
+  readLocalNodeIdentity: typeof readLocalNodeIdentity;
+  requestWorkspaceDeviceCode: typeof requestWorkspaceDeviceCode;
+  pollWorkspaceDeviceAccessToken: typeof pollWorkspaceDeviceAccessToken;
+  printDeviceLoginPrompt: typeof printDeviceLoginPrompt;
+  openDeviceVerificationUrl: typeof openDeviceVerificationUrl;
+  sleep: (ms: number) => Promise<void>;
+  withRuntimeHold: typeof withRuntimeHold;
+};
+
+const DEFAULT_DEVICE_LOGIN_DEPENDENCIES: DeviceLoginDependencies = {
+  readLocalNodeIdentity,
+  requestWorkspaceDeviceCode,
+  pollWorkspaceDeviceAccessToken,
+  printDeviceLoginPrompt,
+  openDeviceVerificationUrl,
+  sleep,
+  withRuntimeHold,
+};
+
+export async function attemptWorkspaceDeviceLogin(
+  input: {
+    dryRun: boolean;
+    home: string;
+    diagnostics: InstallDiagnostics;
+  },
+  dependencies: DeviceLoginDependencies = DEFAULT_DEVICE_LOGIN_DEPENDENCIES,
+): Promise<DeviceLoginAttemptResult> {
   recordInstallerStep(input.diagnostics, 'device_login', 'start');
   if (input.dryRun) {
     recordInstallerStep(input.diagnostics, 'device_login', 'skipped', { status: 'skipped' });
@@ -587,8 +635,8 @@ async function attemptWorkspaceDeviceLogin(input: {
   }
 
   try {
-    const localNodeIdentity = readLocalNodeIdentity(input.home);
-    const liveDeviceCode = await requestWorkspaceDeviceCode({
+    const localNodeIdentity = dependencies.readLocalNodeIdentity(input.home);
+    const liveDeviceCode = await dependencies.requestWorkspaceDeviceCode({
       clientId: DEVICE_LOGIN_CLIENT_ID,
       scope: DEVICE_LOGIN_SCOPE,
       nodeId: localNodeIdentity?.nodeId,
@@ -603,14 +651,12 @@ async function attemptWorkspaceDeviceLogin(input: {
     input.diagnostics.recordHttp('device.code', 200, liveDeviceCode.status);
 
     const session = liveDeviceCode.session;
-    await printDeviceLoginPrompt({
+    await dependencies.printDeviceLoginPrompt({
       userCode: session.userCode,
       verificationUrl: session.verificationUriComplete,
     });
-    recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed', {
-      verificationUrl: session.verificationUriComplete,
-    });
-    const browserOpened = await openDeviceVerificationUrl(session.verificationUriComplete);
+    recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed', { displayed: true });
+    const browserOpened = await dependencies.openDeviceVerificationUrl(session.verificationUriComplete);
     recordInstallerStep(input.diagnostics, 'device_login', 'browser_open', { opened: browserOpened });
 
     const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
@@ -618,12 +664,22 @@ async function attemptWorkspaceDeviceLogin(input: {
 
     while (Date.now() < deadlineMs) {
       recordInstallerStep(input.diagnostics, 'device_login', 'poll_wait', { intervalSeconds });
-      await sleep(Math.min(intervalSeconds, 5) * 1000);
-      const pollResult = await pollWorkspaceDeviceAccessToken({
-        clientId: DEVICE_LOGIN_CLIENT_ID,
-        deviceCode: liveDeviceCode.session.deviceCode,
-        intervalSeconds,
-        deviceKeyPair: liveDeviceCode.deviceKeyPair,
+      const pollResult = await dependencies.withRuntimeHold(async () => {
+        try {
+          await dependencies.sleep(Math.min(intervalSeconds, 5) * 1000);
+          recordInstallerStep(input.diagnostics, 'device_login', 'poll_request', { intervalSeconds });
+          return await dependencies.pollWorkspaceDeviceAccessToken({
+            clientId: DEVICE_LOGIN_CLIENT_ID,
+            deviceCode: liveDeviceCode.session.deviceCode,
+            intervalSeconds,
+            deviceKeyPair: liveDeviceCode.deviceKeyPair,
+          });
+        } catch (error: unknown) {
+          recordInstallerStep(input.diagnostics, 'device_login', 'poll_failed', {
+            error: formatUnknownError(error),
+          });
+          throw error;
+        }
       });
 
       const pollDetails: Record<string, unknown> = {
@@ -713,7 +769,7 @@ async function resolveWorkspaceIdentity(input: {
         normalizeWorkspaceName(value);
         return undefined;
       } catch (error: unknown) {
-        return error instanceof Error ? error.message : String(error);
+        return formatUnknownError(error);
       }
     },
   });

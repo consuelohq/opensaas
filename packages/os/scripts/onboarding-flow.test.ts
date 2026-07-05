@@ -1,5 +1,11 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+
+import {
+  attemptWorkspaceDeviceLogin,
+  registerInstallerDiagnosticsLifecycleHooks,
+} from './install';
+import type { InstallDiagnostics } from './lib/install-diagnostics';
 
 const install = readFileSync(new URL('./install.ts', import.meta.url), 'utf8');
 const bootstrap = readFileSync(new URL('./bootstrap.sh', import.meta.url), 'utf8');
@@ -11,6 +17,28 @@ const daemonGenerator = readFileSync(
   new URL('./generate-system-daemons.sh', import.meta.url),
   'utf8',
 );
+
+type RecordedInstallerStep = {
+  step: string;
+  status: string;
+  data?: Record<string, unknown>;
+};
+
+function createMockDiagnostics() {
+  const steps: RecordedInstallerStep[] = [];
+  const diagnostics: InstallDiagnostics = {
+    enabled: true,
+    reportDir: '',
+    recordStep: vi.fn((step: string, status: string, data?: unknown) => {
+      steps.push({ step, status, data: data as Record<string, unknown> | undefined });
+    }),
+    recordPromptDecision: vi.fn(),
+    recordHttp: vi.fn(),
+    finish: vi.fn(),
+  };
+
+  return { diagnostics, steps };
+}
 
 describe('Consuelo OS hosted onboarding flow', () => {
   test('skills are a real prompt with explicit multiselect instructions', () => {
@@ -143,13 +171,94 @@ describe('Consuelo OS hosted onboarding flow', () => {
   });
 
 
-  test('should record child process lifecycle breadcrumbs when device login exits early', () => {
-    expect(install).toContain('registerInstallerDiagnosticsLifecycleHooks');
-    expect(install).toContain("recordInstallerStep(diagnostics, 'child_process', 'beforeExit'");
-    expect(install).toContain("recordInstallerStep(diagnostics, 'child_process', 'exit'");
-    expect(install).toContain("recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed'");
-    expect(install).toContain("recordInstallerStep(input.diagnostics, 'device_login', 'browser_open'");
-    expect(install).toContain("recordInstallerStep(input.diagnostics, 'device_login', 'poll_result'");
+  test('should record process lifecycle diagnostics when installer lifecycle events fire', () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const handlers = new Map<string, (...args: unknown[]) => void>();
+    const lifecycleTarget = {
+      once: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
+        handlers.set(event, handler);
+        return lifecycleTarget;
+      }),
+    };
+    const kill = vi.fn();
+
+    registerInstallerDiagnosticsLifecycleHooks(diagnostics, lifecycleTarget, { kill, pid: 12345 });
+    handlers.get('beforeExit')?.(0);
+    handlers.get('exit')?.(0);
+    handlers.get('SIGTERM')?.();
+
+    expect(steps).toEqual([
+      { step: 'process_lifecycle', status: 'beforeExit', data: { exitCode: 0 } },
+      { step: 'process_lifecycle', status: 'exit', data: { exitCode: 0 } },
+      { step: 'process_lifecycle', status: 'signal', data: { signal: 'SIGTERM' } },
+    ]);
+    expect(kill).toHaveBeenCalledWith(12345, 'SIGTERM');
+  });
+
+  test('should record device login polling breadcrumbs in runtime order', async () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const order: string[] = [];
+    const dependencies = {
+      readLocalNodeIdentity: vi.fn(() => undefined),
+      requestWorkspaceDeviceCode: vi.fn(async () => {
+        order.push('request-code');
+        return {
+          status: 'started' as const,
+          deviceKeyPair: {
+            algorithm: 'Ed25519' as const,
+            publicKeyJwk: '{}',
+            signingKeyJwk: '{}',
+          },
+          session: {
+            deviceCode: 'device-secret',
+            userCode: '7YMS4KV8',
+            verificationUri: 'https://os.consuelohq.com/login/device',
+            verificationUriComplete: 'https://os.consuelohq.com/login/device?user_code=7YMS4KV8',
+            expiresAt: new Date(Date.now() + 60_000).toISOString(),
+            intervalSeconds: 5,
+          },
+        };
+      }),
+      printDeviceLoginPrompt: vi.fn(async () => {
+        order.push('prompt');
+      }),
+      openDeviceVerificationUrl: vi.fn(async () => {
+        order.push('open');
+        return true;
+      }),
+      sleep: vi.fn(async () => {
+        order.push('sleep');
+      }),
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => {
+        order.push('runtime-hold');
+        return operation();
+      }),
+      pollWorkspaceDeviceAccessToken: vi.fn(async () => {
+        order.push('poll');
+        return { status: 'workspace_required' as const, intervalSeconds: 5, message: 'workspace name required' };
+      }),
+    };
+
+    const result = await attemptWorkspaceDeviceLogin(
+      { dryRun: false, home: '/tmp/consuelo-home', diagnostics },
+      dependencies,
+    );
+
+    expect(result.status).toBe('workspace_required');
+    expect(order).toEqual(['request-code', 'prompt', 'open', 'runtime-hold', 'sleep', 'poll']);
+    const deviceLoginSteps = steps.filter((step) => step.step === 'device_login');
+    expect(deviceLoginSteps.map((step) => step.status)).toEqual([
+      'start',
+      'prompt_displayed',
+      'browser_open',
+      'poll_wait',
+      'poll_request',
+      'poll_result',
+      'complete',
+    ]);
+    expect(deviceLoginSteps.find((step) => step.status === 'prompt_displayed')?.data).toEqual({ displayed: true });
+    expect(deviceLoginSteps.find((step) => step.status === 'poll_request')?.data).toEqual({ intervalSeconds: 5 });
+    expect(JSON.stringify(deviceLoginSteps.find((step) => step.status === 'prompt_displayed')?.data)).not.toContain('https://');
   });
 
   test('should record explicit diagnostics breadcrumbs when workspace selection posts', () => {

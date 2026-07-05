@@ -32,6 +32,23 @@ describe('development install diagnostics', () => {
     expect(redactDiagnosticValue('https://os.consuelohq.com/setup?cloudflared_tunnel_token=secret-token-123')).toBe(
       'https://os.consuelohq.com/setup?cloudflared_tunnel_token=[redacted]',
     );
+    expect(
+      redactDiagnosticValue({
+        exitCode: 0,
+        errorCode: 'authorization_pending',
+        statusCode: 400,
+        deviceCode: 'device-secret',
+        userCode: 'C7UDBR7N',
+        state: 'state-secret',
+      }),
+    ).toEqual({
+      exitCode: 0,
+      errorCode: 'authorization_pending',
+      statusCode: 400,
+      deviceCode: '[redacted]',
+      userCode: '[redacted]',
+      state: '[redacted]',
+    });
   });
 
   it('writes local JSON and JSONL reports without enabling normal telemetry', () => {
