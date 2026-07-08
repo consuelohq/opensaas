@@ -16,48 +16,56 @@ const { sectionId = 'features' } = Astro.props as Props;
   data-testid="home-feature-preview"
 >
   <div class="feature-preview__panel">
-    <div class="feature-preview__masthead">
-      <div class="feature-preview__pin-corner" aria-hidden="true">
-        <div class="feature-preview__badge">
-          <span class="feature-preview__badge-mark">C</span>
+    <div class="feature-preview__inner">
+      <div class="feature-preview__pin-column" aria-hidden="true">
+        <div class="feature-preview__pin-corner">
+          <div class="feature-preview__badge">
+            <span class="feature-preview__badge-mark">C</span>
+          </div>
         </div>
       </div>
 
-      <header class="feature-preview__header">
-        <p class="feature-preview__tabs" aria-hidden="true">
-          <span class="feature-preview__tab feature-preview__tab--active">FEATURE</span>
-          <span class="feature-preview__tab">PREVIEW</span>
-        </p>
-        <h2 id="feature-preview-heading" class="sr-only">Consuelo OS feature preview</h2>
-      </header>
-    </div>
+      <div class="feature-preview__content">
+        <header class="feature-preview__header">
+          <p class="feature-preview__tabs" aria-hidden="true">
+            <span class="feature-preview__tab feature-preview__tab--active">FEATURE</span>
+            <span class="feature-preview__tab">PREVIEW</span>
+          </p>
+          <h2 id="feature-preview-heading" class="sr-only">Consuelo OS feature preview</h2>
+        </header>
 
-    <div class="feature-preview__grid">
-      {
-        homeFeaturePreviewItems.map((item) => (
-          <article class="feature-preview__item">
-            <p class="feature-preview__index">
-              #{item.number} {item.label}
-            </p>
-            <h3 class="feature-preview__title">
-              {item.title.split('\n').map((line, lineIndex) => (
-                <>
-                  {lineIndex > 0 ? <br /> : null}
-                  {line}
-                </>
-              ))}
-            </h3>
-            <div class="feature-preview__artwork">
-              <FeatureArtwork motif={item.motif} alt={item.imageAlt} />
-            </div>
-            <p class="feature-preview__description">{item.body}</p>
-          </article>
-        ))
-      }
-    </div>
+        <div class="feature-preview__grid">
+          {
+            homeFeaturePreviewItems.map((item) => (
+              <article class="feature-preview__item">
+                <p class="feature-preview__index">
+                  #{item.number} {item.label}
+                </p>
+                <h3 class="feature-preview__title">
+                  {item.title.split('\n').map((line, lineIndex) => (
+                    <>
+                      {lineIndex > 0 ? <br /> : null}
+                      {line}
+                    </>
+                  ))}
+                </h3>
+                <div class="feature-preview__artwork">
+                  <FeatureArtwork
+                    motif={item.motif}
+                    alt={item.imageAlt}
+                    assetSrc={item.assetSrc}
+                  />
+                </div>
+                <p class="feature-preview__description">{item.body}</p>
+              </article>
+            ))
+          }
+        </div>
 
-    <div class="feature-preview__wordmark-wrap" aria-hidden="true">
-      <p class="feature-preview__wordmark">CONSUELO</p>
+        <div class="feature-preview__wordmark-wrap" aria-hidden="true">
+          <p class="feature-preview__wordmark">CONSUELO</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -69,39 +77,34 @@ const { sectionId = 'features' } = Astro.props as Props;
     color: var(--site-color-ink);
   }
 
+  /* White sheet */
   .feature-preview__panel {
-    position: relative;
-    display: flex;
-    flex-direction: column;
     background: var(--site-color-surface);
-    padding:
-      var(--site-panel-pad)
-      var(--site-panel-pad)
-      0;
     overflow: visible;
   }
 
-  .feature-preview__masthead {
+  .feature-preview__inner {
+    --feature-pin-col: clamp(5.25rem, 8.25vw, 6.85rem);
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: var(--feature-pin-col) minmax(0, 1fr);
     align-items: start;
-    column-gap: 1rem;
-    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
   }
 
-  /* Top-left only: subtle blue sliver + badge pins on scroll */
+  /* Container 1: dedicated pin rail */
+  .feature-preview__pin-column {
+    position: relative;
+    z-index: 10;
+    align-self: stretch;
+    background: var(--site-color-surface);
+  }
+
   .feature-preview__pin-corner {
     position: sticky;
     top: 0;
-    z-index: 10;
-    align-self: start;
-    width: fit-content;
-    margin-top: calc(-1 * var(--site-panel-pad));
-    margin-left: calc(-1 * var(--site-panel-pad));
     padding:
       var(--site-sticky-sliver)
-      0.85rem
-      0.65rem
+      0.75rem
+      1.35rem
       var(--site-panel-pad);
     background: linear-gradient(
       to bottom,
@@ -119,7 +122,6 @@ const { sectionId = 'features' } = Astro.props as Props;
     height: clamp(2.85rem, 4.2vw, 3.35rem);
     border: 1.5px solid var(--site-color-ink);
     background: var(--site-color-surface);
-    flex-shrink: 0;
   }
 
   .feature-preview__badge-mark {
@@ -130,11 +132,23 @@ const { sectionId = 'features' } = Astro.props as Props;
     color: var(--site-color-ink);
   }
 
+  /* Container 2: scrollable feature content */
+  .feature-preview__content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding:
+      var(--site-panel-pad)
+      var(--site-panel-pad)
+      0
+      0;
+  }
+
   .feature-preview__header {
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
-    margin: 0;
+    margin: 0 0 clamp(1.25rem, 2.5vw, 2rem);
     padding-top: 0.1rem;
   }
 
@@ -195,11 +209,11 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .feature-preview__description {
     margin: 0;
-    max-width: 24ch;
+    max-width: 34ch;
     font-family: var(--site-font-mono);
     font-size: clamp(0.7rem, 0.82vw, 0.78rem);
     font-weight: 600;
-    line-height: 1.72;
+    line-height: 1.62;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--site-color-ink);
@@ -242,6 +256,18 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   @media (max-width: 960px) {
+    .feature-preview__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-preview__pin-column {
+      display: none;
+    }
+
+    .feature-preview__content {
+      padding-left: var(--site-panel-pad);
+    }
+
     .feature-preview__grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }

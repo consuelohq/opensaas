@@ -101,6 +101,7 @@ export type HomeFeaturePreviewItem = {
   body: string;
   motif: FeatureArtworkMotif;
   imageAlt: string;
+  assetSrc?: string;
 };
 
 export type HomeFooterSignup = {
@@ -297,6 +298,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     body: 'ChatGPT, Codex, Claude, Cursor, and whatever is next all enter the same house.',
     motif: 'connect',
     imageAlt: 'Sacred table with signals converging on one center',
+    assetSrc: '/images/features/connect.svg',
   },
   {
     number: 2,
@@ -305,6 +307,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     body: 'You should not be the memory layer. Consuelo remembers and reports so your agent never forgets.',
     motif: 'remember',
     imageAlt: 'Inner memory chamber with glowing alcoves',
+    assetSrc: '/images/features/remember.svg',
   },
   {
     number: 3,
@@ -313,6 +316,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     body: 'Invite collaborators when the work needs more hands. The room is already there.',
     motif: 'multiplayer',
     imageAlt: 'Shared sacred room with multiple entrances',
+    assetSrc: '/images/features/multiplayer.svg',
   },
   {
     number: 4,
