@@ -1,0 +1,160 @@
+---
+import FeatureArtwork from './FeatureArtwork.astro';
+import { homeFeaturePreviewItems } from '../../data/home-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'features' } = Astro.props as Props;
+---
+
+<section class="feature-preview site-section" id={sectionId} data-section="features" aria-labelledby="feature-preview-heading">
+  <div class="feature-preview__inner site-container site-container--wide">
+    <header class="feature-preview__header">
+      <div class="feature-preview__tabs" aria-hidden="true">
+        <span class="feature-preview__tab">FEATURE</span>
+        <span class="feature-preview__tab feature-preview__tab--active">PREVIEW</span>
+      </div>
+      <h2 id="feature-preview-heading" class="visually-hidden">Consuelo OS features</h2>
+    </header>
+
+    <div class="feature-preview__grid">
+      {
+        homeFeaturePreviewItems.map((feature) => (
+          <article class="feature-preview__item">
+            <p class="feature-preview__label">
+              #{feature.number} {feature.label}
+            </p>
+            <h3 class="feature-preview__title">{feature.title}</h3>
+            <FeatureArtwork motif={feature.motif} alt={feature.imageAlt} />
+            <p class="feature-preview__body">{feature.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .feature-preview {
+    /* Fixed art-section theme — artwork stays embedded, not inverted for dark mode */
+    --feature-art-bg: #f0e9df;
+    --feature-art-stone: #e4dbd0;
+    --feature-art-ink: #1a1410;
+    --feature-art-brown: #3d2e24;
+    --feature-art-amber: #c47a2e;
+
+    background: #faf6ef;
+    color: var(--feature-art-ink);
+    padding-block: clamp(4rem, 8vw, 6.5rem);
+    border-block: 1px solid rgba(26, 20, 16, 0.08);
+  }
+
+  .feature-preview__inner {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .feature-preview__header {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .feature-preview__tabs {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .feature-preview__tab {
+    border: 1px solid rgba(26, 20, 16, 0.22);
+    border-radius: 2px;
+    color: rgba(26, 20, 16, 0.55);
+    font: 600 0.62rem / 1 var(--site-font-mono);
+    letter-spacing: 0.14em;
+    padding: 0.42rem 0.72rem;
+    text-transform: uppercase;
+  }
+
+  .feature-preview__tab--active {
+    border-color: var(--feature-art-ink);
+    color: var(--feature-art-ink);
+  }
+
+  .feature-preview__grid {
+    display: grid;
+    gap: clamp(3.5rem, 6vw, 5.5rem);
+  }
+
+  .feature-preview__item {
+    display: grid;
+    gap: clamp(0.85rem, 1.6vw, 1.25rem);
+    align-content: start;
+  }
+
+  .feature-preview__label {
+    margin: 0;
+    color: rgba(61, 46, 36, 0.72);
+    font: 600 0.68rem / 1.2 var(--site-font-mono);
+    letter-spacing: 0.16em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .feature-preview__title {
+    margin: 0;
+    color: var(--feature-art-ink);
+    font-family: var(--site-font-display);
+    font-size: clamp(2.4rem, 4.8vw, 3.75rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+    text-align: center;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .feature-preview__body {
+    margin: 0;
+    color: rgba(26, 20, 16, 0.82);
+    font: 500 0.72rem / 1.55 var(--site-font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .visually-hidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  @media (min-width: 900px) {
+    .feature-preview__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: clamp(2rem, 4vw, 3.5rem);
+      row-gap: clamp(4rem, 6vw, 6rem);
+    }
+
+    .feature-preview__label,
+    .feature-preview__title {
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .feature-preview__title {
+      font-size: clamp(2.1rem, 10vw, 2.85rem);
+    }
+
+    .feature-preview__body {
+      font-size: clamp(0.66rem, 2.8vw, 0.72rem);
+      line-height: 1.62;
+    }
+  }
+</style>

@@ -86,6 +86,23 @@ export type HomeMercuryHighlight = {
   text: string;
 };
 
+export type FeatureArtworkMotif =
+  | 'connect'
+  | 'remember'
+  | 'multiplayer'
+  | 'observe'
+  | 'secure'
+  | 'switch';
+
+export type HomeFeaturePreviewItem = {
+  number: number;
+  label: string;
+  title: string;
+  body: string;
+  motif: FeatureArtworkMotif;
+  imageAlt: string;
+};
+
 export type HomeFooterSignup = {
   eyebrow: string;
   title: string;
@@ -271,6 +288,57 @@ export const homeMercuryPromo: HomeMercuryPromoContent = {
 };
 
 export const homeMercuryHighlights: HomeMercuryHighlight[] = [];
+
+export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
+  {
+    number: 1,
+    label: 'CONNECT',
+    title: 'SAME ADDRESS',
+    body: 'ChatGPT, Codex, Claude, Cursor, and whatever is next all enter the same house.',
+    motif: 'connect',
+    imageAlt: 'Sacred table with signals converging on one center',
+  },
+  {
+    number: 2,
+    label: 'REMEMBER',
+    title: 'PERSISTENT MEMORY',
+    body: 'You should not be the memory layer. Consuelo remembers and reports so your agent never forgets.',
+    motif: 'remember',
+    imageAlt: 'Inner memory chamber with glowing alcoves',
+  },
+  {
+    number: 3,
+    label: 'MULTIPLAYER',
+    title: 'SAME ROOM',
+    body: 'Invite collaborators when the work needs more hands. The room is already there.',
+    motif: 'multiplayer',
+    imageAlt: 'Shared sacred room with multiple entrances',
+  },
+  {
+    number: 4,
+    label: 'OBSERVE',
+    title: 'READ RECEIPTS',
+    body: 'If an agent touched the work, there should be proof. See the traces without digging through a dead chat.',
+    motif: 'observe',
+    imageAlt: 'Reflecting court showing visible traces of work',
+  },
+  {
+    number: 5,
+    label: 'SECURE',
+    title: 'STAYS LOCKED',
+    body: 'Effective agents without handing over keys to the whole house. Only the doors you choose.',
+    motif: 'secure',
+    imageAlt: 'Guarded threshold with one chosen opening',
+  },
+  {
+    number: 6,
+    label: 'SWITCH',
+    title: 'NO LOCK-IN',
+    body: 'The best agent will keep changing. Your work should not have to move every time it does.',
+    motif: 'switch',
+    imageAlt: 'Many portals returning to the same palace',
+  },
+];
 
 export const homeFooterSignup: HomeFooterSignup = {
   eyebrow: 'Be the first to know when we release new products',
