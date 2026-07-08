@@ -430,20 +430,20 @@ function summarizeActions(result: ReturnType<typeof provisionLocalOs>): string {
 }
 
 
-type PendingWorkspaceSelection = {
+export type PendingWorkspaceSelection = {
   deviceCode: string;
   intervalSeconds: number;
   deviceKeyPair: WorkspaceDeviceKeyPair;
 };
 
-type DeviceLoginAttemptResult = {
+export type DeviceLoginAttemptResult = {
   status: 'approved' | 'fallback' | 'skipped' | 'workspace_required';
   verificationUrl?: string;
   workspaceBootstrap?: WorkspaceBootstrap;
   workspaceSelection?: PendingWorkspaceSelection;
 };
 
-type ResolvedWorkspaceIdentity = {
+export type ResolvedWorkspaceIdentity = {
   workspaceName: string;
   workspaceSlug: string;
   workspaceHost: string;
@@ -620,6 +620,96 @@ const DEFAULT_DEVICE_LOGIN_DEPENDENCIES: DeviceLoginDependencies = {
   withRuntimeHold,
 };
 
+type WorkspaceDeviceSelectionDependencies = {
+  selectWorkspaceForDeviceLogin: typeof selectWorkspaceForDeviceLogin;
+  withRuntimeHold: typeof withRuntimeHold;
+};
+
+const DEFAULT_WORKSPACE_DEVICE_SELECTION_DEPENDENCIES: WorkspaceDeviceSelectionDependencies = {
+  selectWorkspaceForDeviceLogin,
+  withRuntimeHold,
+};
+
+export async function completeWorkspaceDeviceSelection(
+  input: {
+    diagnostics: InstallDiagnostics;
+    selection: PendingWorkspaceSelection;
+    workspaceName: string;
+    workspaceSlug: string;
+    workspaceHost: string;
+  },
+  dependencies: WorkspaceDeviceSelectionDependencies = DEFAULT_WORKSPACE_DEVICE_SELECTION_DEPENDENCIES,
+): Promise<ResolvedWorkspaceIdentity> {
+  const { diagnostics, selection, workspaceName, workspaceSlug, workspaceHost } = input;
+
+  recordInstallerStep(diagnostics, 'workspace_selection', 'start', {
+    workspaceHost,
+    workspaceSlug,
+  });
+
+  let selected: Awaited<ReturnType<typeof selectWorkspaceForDeviceLogin>>;
+  let failureRecorded = false;
+  try {
+    recordInstallerStep(diagnostics, 'workspace_selection', 'request', {
+      workspaceHost,
+      workspaceSlug,
+    });
+    selected = await dependencies.withRuntimeHold(async () => {
+      try {
+        return await dependencies.selectWorkspaceForDeviceLogin({
+          clientId: DEVICE_LOGIN_CLIENT_ID,
+          deviceCode: selection.deviceCode,
+          intervalSeconds: selection.intervalSeconds,
+          deviceKeyPair: selection.deviceKeyPair,
+          workspaceName,
+          workspaceSlug,
+          workspaceHost,
+        });
+      } catch (error: unknown) {
+        failureRecorded = true;
+        const message = formatUnknownError(error);
+        diagnostics.recordHttp('device.workspace_selection', 0, 'exception');
+        recordInstallerStep(diagnostics, 'workspace_selection', 'failed', { error: message });
+        throw error;
+      }
+    });
+  } catch (error: unknown) {
+    if (failureRecorded) throw error;
+    const message = formatUnknownError(error);
+    diagnostics.recordHttp('device.workspace_selection', 0, 'exception');
+    recordInstallerStep(diagnostics, 'workspace_selection', 'failed', { error: message });
+    throw error;
+  }
+
+  const selectedStatusCode = selected.status === 'approved' ? 200 : 400;
+  diagnostics.recordHttp('device.workspace_selection', selectedStatusCode, selected.status);
+
+  if (selected.status === 'approved') {
+    recordInstallerStep(diagnostics, 'workspace_selection', 'complete', {
+      workspaceHost: selected.workspaceHost,
+      workspaceSlug: selected.workspaceSlug,
+      nodeStatus: selected.nodeStatus,
+      nodeRole: selected.nodeRole,
+    });
+    return {
+      workspaceName,
+      workspaceSlug: selected.workspaceSlug,
+      workspaceHost: selected.workspaceHost,
+      workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(selected),
+    };
+  }
+
+  const failureDetails: Record<string, unknown> = { status: selected.status };
+  if ('message' in selected) failureDetails.message = selected.message;
+  if ('errorCode' in selected) failureDetails.errorCode = selected.errorCode;
+  recordInstallerStep(diagnostics, 'workspace_selection', 'failed', failureDetails);
+  throw new Error(
+    'message' in selected && selected.message
+      ? `workspace selection failed: ${selected.status}: ${selected.message}`
+      : `workspace selection failed: ${selected.status}`,
+  );
+}
+
 export async function attemptWorkspaceDeviceLogin(
   input: {
     dryRun: boolean;
@@ -790,60 +880,13 @@ async function resolveWorkspaceIdentity(input: {
     throw new Error('device login requested workspace selection without a device session');
   }
 
-  recordInstallerStep(input.diagnostics, 'workspace_selection', 'start', {
-    workspaceHost,
+  return completeWorkspaceDeviceSelection({
+    diagnostics: input.diagnostics,
+    selection,
+    workspaceName,
     workspaceSlug,
+    workspaceHost,
   });
-
-  let selected: Awaited<ReturnType<typeof selectWorkspaceForDeviceLogin>>;
-  try {
-    recordInstallerStep(input.diagnostics, 'workspace_selection', 'request', {
-      workspaceHost,
-      workspaceSlug,
-    });
-    selected = await selectWorkspaceForDeviceLogin({
-      clientId: DEVICE_LOGIN_CLIENT_ID,
-      deviceCode: selection.deviceCode,
-      intervalSeconds: selection.intervalSeconds,
-      deviceKeyPair: selection.deviceKeyPair,
-      workspaceName,
-      workspaceSlug,
-      workspaceHost,
-    });
-  } catch (error: unknown) {
-    const message = formatUnknownError(error);
-    input.diagnostics.recordHttp('device.workspace_selection', 0, 'exception');
-    recordInstallerStep(input.diagnostics, 'workspace_selection', 'failed', { error: message });
-    throw error;
-  }
-
-  const selectedStatusCode = selected.status === 'approved' ? 200 : 400;
-  input.diagnostics.recordHttp('device.workspace_selection', selectedStatusCode, selected.status);
-
-  if (selected.status === 'approved') {
-    recordInstallerStep(input.diagnostics, 'workspace_selection', 'complete', {
-      workspaceHost: selected.workspaceHost,
-      workspaceSlug: selected.workspaceSlug,
-      nodeStatus: selected.nodeStatus,
-      nodeRole: selected.nodeRole,
-    });
-    return {
-      workspaceName,
-      workspaceSlug: selected.workspaceSlug,
-      workspaceHost: selected.workspaceHost,
-      workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(selected),
-    };
-  }
-
-  const failureDetails: Record<string, unknown> = { status: selected.status };
-  if ('message' in selected) failureDetails.message = selected.message;
-  if ('errorCode' in selected) failureDetails.errorCode = selected.errorCode;
-  recordInstallerStep(input.diagnostics, 'workspace_selection', 'failed', failureDetails);
-  throw new Error(
-    'message' in selected && selected.message
-      ? `workspace selection failed: ${selected.status}: ${selected.message}`
-      : `workspace selection failed: ${selected.status}`,
-  );
 }
 async function promptOptions(
   options: InstallOptions,

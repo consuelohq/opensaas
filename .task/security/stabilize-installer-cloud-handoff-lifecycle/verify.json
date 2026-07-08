@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/stabilize-installer-cloud-handoff-lifecycle",
+  "base": "origin/main",
+  "headSha": "60d97fe3630b1ec5ddcf586b9074de9cb77f1682",
+  "changeHash": "5920ce032049aa00acdd63ad4614ee280f3b315fb2bc7268d92a7ea22cba8095",
+  "changedFiles": [
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/onboarding-flow.test.ts"
+  ],
+  "verifiedAt": "2026-07-08T16:32:35.130Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/stabilize-installer-cloud-handoff-lifecycle/current.json",
+        ".task/security/stabilize-installer-cloud-handoff-lifecycle/session.json",
+        ".task/security/stabilize-installer-cloud-handoff-lifecycle/verify.json",
+        ".task/security/stabilize-installer-cloud-handoff-lifecycle/workpad.md",
+        ".task/tasks/security/stabilize-installer-cloud-handoff-lifecycle.json",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/onboarding-flow.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   attemptWorkspaceDeviceLogin,
+  completeWorkspaceDeviceSelection,
   registerInstallerDiagnosticsLifecycleHooks,
 } from './install';
 import type { InstallDiagnostics } from './lib/install-diagnostics';
@@ -263,17 +264,128 @@ describe('Consuelo OS hosted onboarding flow', () => {
 
   test('should record explicit diagnostics breadcrumbs when workspace selection posts', () => {
     expect(install).toContain("'workspace_selection'");
-    expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'start'");
-    expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'request'");
-    expect(install).toContain("input.diagnostics.recordHttp('device.workspace_selection'");
-    expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'complete'");
-    expect(install).toContain("recordInstallerStep(input.diagnostics, 'workspace_selection', 'failed'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'start'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'request'");
+    expect(install).toContain("diagnostics.recordHttp('device.workspace_selection'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'complete'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'failed'");
     const selectionSource = install.slice(
       install.indexOf("let selected: Awaited<ReturnType<typeof selectWorkspaceForDeviceLogin>>"),
       install.indexOf(`if (selected.status === 'approved')`),
     );
     expect(selectionSource).toContain('try');
     expect(selectionSource).toContain('catch (error: unknown)');
+  });
+
+  test('should hold runtime while workspace selection posts when device login needs workspace creation', async () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const order: string[] = [];
+    const dependencies = {
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => {
+        order.push('runtime-hold:start');
+        const result = await operation();
+        order.push('runtime-hold:end');
+        return result;
+      }),
+      selectWorkspaceForDeviceLogin: vi.fn(async () => {
+        order.push('select-workspace');
+        return {
+          status: 'approved' as const,
+          workspaceId: 'workspace-alpha',
+          workspaceSlug: 'alpha',
+          workspaceHost: 'alpha.consuelohq.com',
+          connectorId: 'connector-alpha',
+          connectorBootstrapToken: 'connector-token-alpha',
+          nodeId: 'node-alpha',
+          nodeName: 'Alpha Mac',
+          nodeRole: 'home' as const,
+          nodeStatus: 'created' as const,
+        };
+      }),
+    };
+
+    const result = await completeWorkspaceDeviceSelection(
+      {
+        diagnostics,
+        selection: {
+          deviceCode: 'device-code-alpha',
+          intervalSeconds: 5,
+          deviceKeyPair: {
+            algorithm: 'Ed25519',
+            publicKeyJwk: 'public-key-alpha',
+            signingKeyJwk: 'signing-key-alpha',
+          },
+        },
+        workspaceName: 'alpha',
+        workspaceSlug: 'alpha',
+        workspaceHost: 'alpha.consuelohq.com',
+      },
+      dependencies,
+    );
+
+    expect(order).toEqual(['runtime-hold:start', 'select-workspace', 'runtime-hold:end']);
+    expect(dependencies.selectWorkspaceForDeviceLogin).toHaveBeenCalledWith({
+      clientId: 'consuelo-os-installer',
+      deviceCode: 'device-code-alpha',
+      intervalSeconds: 5,
+      deviceKeyPair: {
+        algorithm: 'Ed25519',
+        publicKeyJwk: 'public-key-alpha',
+        signingKeyJwk: 'signing-key-alpha',
+      },
+      workspaceName: 'alpha',
+      workspaceSlug: 'alpha',
+      workspaceHost: 'alpha.consuelohq.com',
+    });
+    expect(result.workspaceBootstrap?.workspaceId).toBe('workspace-alpha');
+    expect(diagnostics.recordHttp).toHaveBeenCalledWith('device.workspace_selection', 200, 'approved');
+    expect(steps.filter((step) => step.step === 'workspace_selection').map((step) => step.status)).toEqual([
+      'start',
+      'request',
+      'complete',
+    ]);
+    expect(JSON.stringify(steps)).not.toContain('connector-token-alpha');
+  });
+
+  test('should preserve workspace selection failure details when cloud handoff is rejected', async () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const dependencies = {
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => operation()),
+      selectWorkspaceForDeviceLogin: vi.fn(async () => ({
+        status: 'unavailable' as const,
+        message: 'workspace_host_conflict: workspace host is already registered',
+      })),
+    };
+
+    await expect(completeWorkspaceDeviceSelection(
+      {
+        diagnostics,
+        selection: {
+          deviceCode: 'device-code-beta',
+          intervalSeconds: 5,
+          deviceKeyPair: {
+            algorithm: 'Ed25519',
+            publicKeyJwk: 'public-key-beta',
+            signingKeyJwk: 'signing-key-beta',
+          },
+        },
+        workspaceName: 'beta',
+        workspaceSlug: 'beta',
+        workspaceHost: 'beta.consuelohq.com',
+      },
+      dependencies,
+    )).rejects.toThrow('workspace selection failed: unavailable: workspace_host_conflict: workspace host is already registered');
+
+    expect(diagnostics.recordHttp).toHaveBeenCalledWith('device.workspace_selection', 400, 'unavailable');
+    expect(steps.filter((step) => step.step === 'workspace_selection').map((step) => step.status)).toEqual([
+      'start',
+      'request',
+      'failed',
+    ]);
+    expect(steps.find((step) => step.status === 'failed')?.data).toEqual({
+      status: 'unavailable',
+      message: 'workspace_host_conflict: workspace host is already registered',
+    });
   });
 
   test('should keep daemon installer output compact when setup succeeds normally', () => {
