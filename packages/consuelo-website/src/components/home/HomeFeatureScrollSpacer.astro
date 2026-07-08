@@ -15,8 +15,9 @@ const { sectionId = 'feature-scroll-spacer' } = Astro.props as Props;
 <style>
   .feature-scroll-spacer {
     min-height: 120vh;
-    background: var(--site-color-paper);
-    color: var(--site-color-muted);
+    /* Match the feature preview outer frame so scroll testing stays on-brand in dark mode */
+    background: #f2ebe1;
+    color: #6b5f54;
     padding-block: clamp(4rem, 10vw, 8rem);
   }
 
