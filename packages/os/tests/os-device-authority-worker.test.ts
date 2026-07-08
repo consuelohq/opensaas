@@ -130,6 +130,26 @@ type CapturedRouteRegistry = {
   };
 };
 
+type CapturedWorkspaceConnectorProvisioner = {
+  calls: Array<{
+    workspaceId: string;
+    workspaceSlug: string;
+    workspaceHost: string;
+    connectorId: string;
+  }>;
+  provisioner(input: {
+    workspaceId: string;
+    workspaceSlug: string;
+    workspaceHost: string;
+    connectorId: string;
+  }): Promise<{
+    connectorId: string;
+    cloudflareTunnelToken: string;
+    tunnelOriginUrl: string;
+    localServiceUrl: string;
+  }>;
+};
+
 function createCapturedRouteRegistry(): CapturedRouteRegistry {
   const statements: string[] = [];
   return {
@@ -139,6 +159,23 @@ function createCapturedRouteRegistry(): CapturedRouteRegistry {
         statements.push(sql);
         return { success: true };
       },
+    },
+  };
+}
+
+function createCapturedWorkspaceConnectorProvisioner(): CapturedWorkspaceConnectorProvisioner {
+  const calls: CapturedWorkspaceConnectorProvisioner['calls'] = [];
+  return {
+    calls,
+    async provisioner(input) {
+      calls.push(input);
+      const connectorLabel = input.connectorId.replace(/_/g, '-');
+      return {
+        connectorId: input.connectorId,
+        cloudflareTunnelToken: `cloudflare_tunnel_token_fixture_${connectorLabel}`,
+        tunnelOriginUrl: `https://${connectorLabel}.os-origin.consuelohq.com`,
+        localServiceUrl: 'http://127.0.0.1:8960',
+      };
     },
   };
 }
@@ -723,12 +760,14 @@ describe('os device authority worker', () => {
 
   it('should require workspace selection after app-backed approval when no pre-auth workspace was supplied', async () => {
     const routeRegistry = createCapturedRouteRegistry();
+    const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       approvalAssertionSecret,
       workspaceRouteRegistry: routeRegistry.binding,
+      workspaceConnectorProvisioner: connectorProvisioner.provisioner,
     });
     const deviceKeyPair = generateWorkspaceDeviceKeyPair();
     const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
@@ -796,13 +835,29 @@ describe('os device authority worker', () => {
       }),
     }));
     expect(selected.status).toBe(200);
-    await expect(selected.json()).resolves.toMatchObject({
+    const selectedJson = await selected.json() as Record<string, unknown>;
+    expect(selectedJson).toMatchObject({
       workspace_slug: 'macbook-air-test',
       workspace_host: 'macbook-air-test.consuelohq.com',
       connector_id: 'connector_macbook_air_test',
+      cloudflare_tunnel_token: 'cloudflare_tunnel_token_fixture_connector-macbook-air-test',
     });
+    expect(connectorProvisioner.calls).toEqual([
+      {
+        workspaceId: 'workspace_macbook_air_test',
+        workspaceSlug: 'macbook-air-test',
+        workspaceHost: 'macbook-air-test.consuelohq.com',
+        connectorId: 'connector_macbook_air_test',
+      },
+    ]);
     expect(routeRegistry.statements).toHaveLength(1);
     expect(routeRegistry.statements[0]).toContain('macbook-air-test.consuelohq.com');
+    expect(routeRegistry.statements[0]).toContain('workspace_connectors');
+    expect(routeRegistry.statements[0]).toContain('connector_macbook_air_test');
+    expect(routeRegistry.statements[0]).toContain('/mcp');
+    expect(routeRegistry.statements[0]).toContain('os-connector');
+    expect(routeRegistry.statements[0]).toContain('https://connector-macbook-air-test.os-origin.consuelohq.com');
+    expect(routeRegistry.statements[0]).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
 
     const secondKeyPair = generateWorkspaceDeviceKeyPair();
@@ -843,6 +898,7 @@ describe('os device authority worker', () => {
 
   it('should register the approved workspace host route after auth-first workspace selection', async () => {
     const routeRegistry = createCapturedRouteRegistry();
+    const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
       origin,
@@ -851,6 +907,7 @@ describe('os device authority worker', () => {
       googleOAuthClientSecret: 'test-google-client-secret',
       fetchImpl: googleFetch,
       workspaceRouteRegistry: routeRegistry.binding,
+      workspaceConnectorProvisioner: connectorProvisioner.provisioner,
       defaultSiteSnapshot: {
         key: 'sites/platform/launcher/sha256-test/index.html',
         versionId: 'sha256-test',
@@ -889,18 +946,72 @@ describe('os device authority worker', () => {
       }),
     }));
     expect(selected.status).toBe(200);
-    await expect(selected.json()).resolves.toMatchObject({
+    const selectedJson = await selected.json() as Record<string, unknown>;
+    expect(selectedJson).toMatchObject({
       workspace_slug: 'macbook-air-test',
       workspace_host: 'macbook-air-test.consuelohq.com',
       connector_id: 'connector_macbook_air_test',
+      cloudflare_tunnel_token: 'cloudflare_tunnel_token_fixture_connector-macbook-air-test',
     });
     expect(routeRegistry.statements).toHaveLength(1);
     expect(routeRegistry.statements[0]).toContain('macbook-air-test.consuelohq.com');
+    expect(routeRegistry.statements[0]).toContain('workspace_connectors');
+    expect(routeRegistry.statements[0]).toContain('connector_macbook_air_test');
+    expect(routeRegistry.statements[0]).toContain('/mcp');
+    expect(routeRegistry.statements[0]).toContain('os-connector');
+    expect(routeRegistry.statements[0]).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
+  });
+
+  it('should fail closed when route registry is configured without connector provisioning', async () => {
+    const routeRegistry = createCapturedRouteRegistry();
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      approvalAssertionSecret,
+      workspaceRouteRegistry: routeRegistry.binding,
+    });
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        scope: 'workspace:read os:connector:register',
+        workspace_name: 'MacBook Air Test',
+        workspace_slug: 'macbook-air-test',
+        workspace_host: 'macbook-air-test.consuelohq.com',
+        device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+        device_key_algorithm: 'Ed25519',
+      }),
+    }));
+    expect(codeResponse.status).toBe(200);
+    const codeJson = await codeResponse.json() as Record<string, string | number>;
+
+    const approve = await handler(new Request(`${origin}/login/device/approve`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-consuelo-account-assertion': await authAssertion({
+          accountId: 'account_google_123',
+          authMethod: 'google',
+          expiresAt: '2026-06-13T00:20:00.000Z',
+        }),
+      },
+      body: new URLSearchParams({ user_code: String(codeJson.user_code).replace('-', '') }).toString(),
+    }));
+
+    expect(approve.status).toBe(502);
+    await expect(approve.json()).resolves.toMatchObject({
+      error: 'workspace_route_setup_failed',
+      message: expect.stringContaining('workspace connector provisioning is not configured'),
+    });
+    expect(routeRegistry.statements).toEqual([]);
   });
 
   it('should reuse an existing Google account workspace during later auth-first installs', async () => {
     const routeRegistry = createCapturedRouteRegistry();
+    const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const store = createMemoryDeviceGrantStore();
     const handler = createOsDeviceAuthorityHandler({
       store,
@@ -910,6 +1021,7 @@ describe('os device authority worker', () => {
       googleOAuthClientSecret: 'test-google-client-secret',
       fetchImpl: googleFetch,
       workspaceRouteRegistry: routeRegistry.binding,
+      workspaceConnectorProvisioner: connectorProvisioner.provisioner,
     });
 
     const firstKeyPair = generateWorkspaceDeviceKeyPair();
@@ -975,10 +1087,12 @@ describe('os device authority worker', () => {
     await expect(approved.json()).resolves.toMatchObject({
       workspace_slug: 'macbook-air-test',
       workspace_host: 'macbook-air-test.consuelohq.com',
+      cloudflare_tunnel_token: expect.stringMatching(/^cloudflare_tunnel_token_fixture_/),
     });
   });
   it('should register the approved workspace host route dynamically during Google approval', async () => {
     const routeRegistry = createCapturedRouteRegistry();
+    const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
       origin,
@@ -987,6 +1101,7 @@ describe('os device authority worker', () => {
       googleOAuthClientSecret: 'test-google-client-secret',
       fetchImpl: googleFetch,
       workspaceRouteRegistry: routeRegistry.binding,
+      workspaceConnectorProvisioner: connectorProvisioner.provisioner,
       defaultSiteSnapshot: {
         key: 'sites/platform/launcher/sha256-test/index.html',
         versionId: 'sha256-test',
@@ -1019,6 +1134,11 @@ describe('os device authority worker', () => {
     expect(routeSql).toContain('macbook-air-test.consuelohq.com');
     expect(routeSql).toContain('workspace_macbook_air_test');
     expect(routeSql).toContain('site-snapshot');
+    expect(routeSql).toContain('workspace_connectors');
+    expect(routeSql).toContain('connector_macbook_air_test');
+    expect(routeSql).toContain('/mcp');
+    expect(routeSql).toContain('os-connector');
+    expect(routeSql).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeSql).toContain('sites/platform/launcher/sha256-test/index.html');
     expect(routeSql).not.toContain('testing.consuelohq.com');
     expect(routeSql).not.toContain('mac-air-test.consuelohq.com');
@@ -1040,6 +1160,7 @@ describe('os device authority worker', () => {
     await expect(approved.json()).resolves.toMatchObject({
       workspace_slug: 'macbook-air-test',
       workspace_host: 'macbook-air-test.consuelohq.com',
+      cloudflare_tunnel_token: 'cloudflare_tunnel_token_fixture_connector-macbook-air-test',
     });
   });
 

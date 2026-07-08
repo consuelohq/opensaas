@@ -1,6 +1,10 @@
 import { CONSUELO_DEVICE_VERIFICATION_URL } from '../../../scripts/lib/workspace-device-authorization';
 import { createWorkspaceCloudflareD1RouteRegistry, type WorkspaceRouteD1Database, type WorkspaceRouteD1Resolution } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { createWorkspaceEdgeRouteSeedSql } from '../../../scripts/lib/workspace-edge-route-seed';
+import {
+  applyWorkspaceCloudflareProvisioning,
+  createCloudflareWorkspaceProvisioningClient,
+} from '../../../scripts/lib/workspace-cloudflare-provisioning';
 
 type GrantStatus = 'pending' | 'approved' | 'denied';
 type WorkspaceNodeRole = 'home' | 'member';
@@ -23,6 +27,7 @@ type Grant = {
   accountAuthMethod?: StrongerAuthMethod;
   connectorToken?: string;
   connectorExpiresAt?: number;
+  cloudflareTunnelToken?: string;
   nodeId?: string;
   nodeName?: string;
   nodeRole?: WorkspaceNodeRole;
@@ -104,6 +109,24 @@ type DefaultSiteSnapshot = {
   cachePolicy?: 'static-shell' | 'versioned-asset' | 'mutable-artifact' | 'private-preview';
 };
 
+type WorkspaceConnectorProvisioningInput = {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  connectorId: string;
+};
+
+type WorkspaceConnectorProvisioningResult = {
+  connectorId: string;
+  cloudflareTunnelToken: string;
+  tunnelOriginUrl: string;
+  localServiceUrl: string;
+};
+
+type WorkspaceConnectorProvisioner = (
+  input: WorkspaceConnectorProvisioningInput,
+) => Promise<WorkspaceConnectorProvisioningResult>;
+
 type Store = {
   put(g: Grant): Promise<void>;
   byHash(hash: string): Promise<Grant | undefined>;
@@ -139,6 +162,13 @@ type Env = {
   WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
+  CLOUDFLARE_ZONE_ID?: string;
+  CLOUDFLARE_API_TOKEN?: string;
+  OS_DEVICE_AUTH_BASE_DOMAIN?: string;
+  OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME?: string;
+  OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL?: string;
+  OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL?: string;
 };
 
 type GoogleIdentityErrorKind = 'token_exchange' | 'identity_verification' | 'audience_mismatch' | 'email_not_verified';
@@ -157,6 +187,7 @@ const INTERVAL = 5;
 const GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code';
 const TOKEN_KEY = 'access' + '_token';
 const CONNECTOR_TOKEN_KEY = 'connector_bootstrap' + '_token';
+const CLOUDFLARE_TUNNEL_TOKEN_KEY = 'cloudflare_tunnel' + '_token';
 const AUTH_ASSERTION_HEADER = 'x-consuelo-account-assertion';
 const DEVICE_PROOF_PAYLOAD_KEY = 'device_public_key_proof_payload';
 const DEVICE_PROOF_KEY = 'device_public_key_proof';
@@ -171,6 +202,7 @@ const DEFAULT_SITE_SNAPSHOT_KEY = 'sites/workspace_testing/launcher/sha256-15c3f
 const DEFAULT_SITE_SNAPSHOT_VERSION_ID = 'sha256-15c3f6f5c611b43c';
 const DEFAULT_SITE_ID = 'launcher';
 const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
+const DEFAULT_CONNECTOR_LOCAL_SERVICE_URL = 'http://127.0.0.1:8960';
 const CHATGPT_OAUTH_CLIENT_ID = 'chatgpt-consuelo-os';
 const CHATGPT_REDIRECT_PREFIX = 'https://chatgpt.com/connector/oauth/';
 const MCP_OAUTH_TTL_MS = 60 * 60 * 1000;
@@ -944,15 +976,23 @@ async function registerGrantNode(input: { store: Store; grant: Grant; accountId:
   }
 }
 
-async function approveGrant(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
+async function prepareGrantApproval(input: { store: Store; grant: Grant; accountId: string; authMethod: StrongerAuthMethod; nowMs: number }): Promise<Grant> {
   try {
     grantWorkspace(input.grant);
     await registerGrantNode({ store: input.store, grant: input.grant, accountId: input.accountId, nowMs: input.nowMs });
-    input.grant.status = 'approved';
     input.grant.accountId = input.accountId;
     input.grant.accountAuthMethod = input.authMethod;
     input.grant.connectorToken = rand('cbt', 32);
     input.grant.connectorExpiresAt = input.nowMs + BOOTSTRAP_TTL_MS;
+    return input.grant;
+  } catch (error: unknown) {
+    throw new Error(`grant approval preparation failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function commitGrantApproval(input: { store: Store; grant: Grant; accountId: string; nowMs: number }): Promise<Grant> {
+  try {
+    input.grant.status = 'approved';
     await input.store.put(input.grant);
     await rememberAccountWorkspace({
       store: input.store,
@@ -962,7 +1002,7 @@ async function approveGrant(input: { store: Store; grant: Grant; accountId: stri
     });
     return input.grant;
   } catch (error: unknown) {
-    throw new Error(`grant approval failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`grant approval commit failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -976,18 +1016,85 @@ function defaultSiteSnapshot(input?: DefaultSiteSnapshot): Required<DefaultSiteS
   };
 }
 
-async function registerApprovedWorkspaceRoute(input: { routeRegistry?: WorkspaceRouteRegistryBinding; grant: Grant; defaultSiteSnapshot?: DefaultSiteSnapshot }): Promise<void> {
+function createWorkspaceConnectorProvisionerFromEnv(env: Env, fetchImpl: typeof fetch): WorkspaceConnectorProvisioner | undefined {
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  const zoneId = env.CLOUDFLARE_ZONE_ID?.trim();
+  const apiToken = env.CLOUDFLARE_API_TOKEN?.trim();
+  if (!accountId || !zoneId || !apiToken) return undefined;
+
+  const cloudflare = createCloudflareWorkspaceProvisioningClient({
+    accountId,
+    apiToken,
+    apiBaseUrl: env.OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL,
+    fetchImpl,
+  });
+
+  return async (input) => {
+    try {
+      const baseDomain = env.OS_DEVICE_AUTH_BASE_DOMAIN?.trim() || baseDomainFromHost(input.workspaceHost);
+      const localServiceUrl = env.OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL?.trim() || DEFAULT_CONNECTOR_LOCAL_SERVICE_URL;
+      const result = await applyWorkspaceCloudflareProvisioning({
+        cloudflare,
+        input: {
+          workspaceId: input.workspaceId,
+          workspaceSlug: input.workspaceSlug,
+          baseDomain,
+          cloudflareZoneId: zoneId,
+          connectorId: input.connectorId,
+          edgeHostname: env.OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME?.trim() || `workspace-edge.${baseDomain}`,
+          localServiceUrl,
+        },
+      });
+
+      if (host(result.workspaceHostname) !== host(input.workspaceHost)) {
+        throw new Error('provisioned workspace hostname did not match device workspace host');
+      }
+
+      return {
+        connectorId: result.connectorBootstrap.connectorId,
+        cloudflareTunnelToken: result.connectorBootstrap.tunnelCredential,
+        tunnelOriginUrl: `https://${result.osTunnelHostname}`,
+        localServiceUrl,
+      };
+    } catch (error: unknown) {
+      throw new Error(`workspace connector provisioning failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+}
+
+async function registerApprovedWorkspaceRoute(input: {
+  routeRegistry?: WorkspaceRouteRegistryBinding;
+  workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
+  grant: Grant;
+  defaultSiteSnapshot?: DefaultSiteSnapshot;
+}): Promise<void> {
   if (!input.routeRegistry?.exec) return;
   try {
+    if (!input.workspaceConnectorProvisioner) {
+      throw new Error('workspace connector provisioning is not configured');
+    }
     const workspace = grantWorkspace(input.grant);
+    const workspaceId = workspaceIdFromSlug(workspace.workspaceSlug);
+    const nodeId = input.grant.nodeId ?? workspace.workspaceSlug;
+    const connectorId = connectorIdFromNodeId(nodeId);
+    const connector = await input.workspaceConnectorProvisioner({
+      workspaceId,
+      workspaceSlug: workspace.workspaceSlug,
+      workspaceHost: workspace.workspaceHost,
+      connectorId,
+    });
     const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
+    input.grant.cloudflareTunnelToken = connector.cloudflareTunnelToken;
     await input.routeRegistry.exec(createWorkspaceEdgeRouteSeedSql({
-      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceId,
       workspaceSlug: workspace.workspaceSlug,
       hostname: workspace.workspaceHost,
       baseDomain: baseDomainFromHost(workspace.workspaceHost),
       siteSnapshotKey: snapshot.key,
       siteVersionId: snapshot.versionId,
+      connectorId: connector.connectorId,
+      tunnelOriginUrl: connector.tunnelOriginUrl,
+      localServiceUrl: connector.localServiceUrl,
     }));
   } catch (error: unknown) {
     throw new Error(`workspace route setup failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -1009,6 +1116,7 @@ function approvedJson(g: Grant): Record<string, unknown> {
     node_status: g.nodeStatus ?? 'created',
     connector_id: connectorIdFromNodeId(nodeId),
     [CONNECTOR_TOKEN_KEY]: g.connectorToken ?? rand('cbt', 32),
+    ...(g.cloudflareTunnelToken ? { [CLOUDFLARE_TUNNEL_TOKEN_KEY]: g.cloudflareTunnelToken } : {}),
     connector_bootstrap_expires_at: new Date(g.connectorExpiresAt ?? Date.now()).toISOString(),
     device_public_key_thumbprint: g.devicePublicKeyThumbprint,
     device_public_key_bound: true,
@@ -1024,6 +1132,7 @@ export function createOsDeviceAuthorityHandler(input: {
   googleOAuthClientSecret?: string;
   fetchImpl?: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
+  workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
 }) {
@@ -1142,12 +1251,18 @@ export function createOsDeviceAuthorityHandler(input: {
         }
         if (grant.workspaceSlug && grant.workspaceHost) {
           try {
-            await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant, defaultSiteSnapshot: input.defaultSiteSnapshot });
+            await prepareGrantApproval({ store: input.store, grant, accountId, authMethod: 'google', nowMs: now() });
+            await registerApprovedWorkspaceRoute({
+              routeRegistry: input.workspaceRouteRegistry,
+              workspaceConnectorProvisioner: input.workspaceConnectorProvisioner,
+              grant,
+              defaultSiteSnapshot: input.defaultSiteSnapshot,
+            });
           } catch (error: unknown) {
             return text(page({ code: oauthState.userCode, origin, error: `Workspace route setup failed (${error instanceof Error ? error.message : String(error)}). Restart the installer after platform setup is fixed.` }), { status: 502 });
           }
           await input.store.delOAuthState(stateValue);
-          await approveGrant({ store: input.store, grant, accountId, authMethod: 'google', nowMs: now() });
+          await commitGrantApproval({ store: input.store, grant, accountId, nowMs: now() });
           return text(page({ code: oauthState.userCode, origin, message: `Approved for ${identity.email}. Return to your terminal.` }));
         }
         grant.accountId = accountId;
@@ -1202,11 +1317,17 @@ export function createOsDeviceAuthorityHandler(input: {
         const workspaceHost = host(p.get('workspace_host')?.trim() || `${workspaceSlug}.consuelohq.com`);
         assignGrantWorkspace({ grant: g, workspaceSlug, workspaceHost });
         try {
-          await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant: g, defaultSiteSnapshot: input.defaultSiteSnapshot });
+          await prepareGrantApproval({ store: input.store, grant: g, accountId: g.accountId, authMethod: g.accountAuthMethod, nowMs: now() });
+          await registerApprovedWorkspaceRoute({
+            routeRegistry: input.workspaceRouteRegistry,
+            workspaceConnectorProvisioner: input.workspaceConnectorProvisioner,
+            grant: g,
+            defaultSiteSnapshot: input.defaultSiteSnapshot,
+          });
         } catch (error: unknown) {
           return json({ error: 'workspace_route_setup_failed', message: error instanceof Error ? error.message : String(error) }, { status: 502 });
         }
-        await approveGrant({ store: input.store, grant: g, accountId: g.accountId, authMethod: g.accountAuthMethod, nowMs: now() });
+        await commitGrantApproval({ store: input.store, grant: g, accountId: g.accountId, nowMs: now() });
         await input.store.del(g.hash);
         return json(approvedJson(g));
       }
@@ -1236,11 +1357,17 @@ export function createOsDeviceAuthorityHandler(input: {
           return json({ status: 'workspace_required', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
         }
         try {
-          await registerApprovedWorkspaceRoute({ routeRegistry: input.workspaceRouteRegistry, grant: g, defaultSiteSnapshot: input.defaultSiteSnapshot });
+          await prepareGrantApproval({ store: input.store, grant: g, accountId: auth.accountId, authMethod: auth.method, nowMs: now() });
+          await registerApprovedWorkspaceRoute({
+            routeRegistry: input.workspaceRouteRegistry,
+            workspaceConnectorProvisioner: input.workspaceConnectorProvisioner,
+            grant: g,
+            defaultSiteSnapshot: input.defaultSiteSnapshot,
+          });
         } catch (error: unknown) {
           return json({ error: 'workspace_route_setup_failed', message: error instanceof Error ? error.message : String(error) }, { status: 502 });
         }
-        await approveGrant({ store: input.store, grant: g, accountId: auth.accountId, authMethod: auth.method, nowMs: now() });
+        await commitGrantApproval({ store: input.store, grant: g, accountId: auth.accountId, nowMs: now() });
         return json({ status: 'approved', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
       }
       if (url.pathname === '/login/oauth/access_token') {
@@ -1283,6 +1410,7 @@ export class OsDeviceGrantDurableObject {
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
       workspaceRouteRegistry: env.WORKSPACE_ROUTE_REGISTRY,
+      workspaceConnectorProvisioner: createWorkspaceConnectorProvisionerFromEnv(env, (url, init) => globalThis.fetch(url, init)),
       workspaceEdgeInternalSigningSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
       defaultSiteSnapshot: {
         key: env.OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY ?? DEFAULT_SITE_SNAPSHOT_KEY,
