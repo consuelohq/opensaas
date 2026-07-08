@@ -16,14 +16,17 @@ const { sectionId = 'features' } = Astro.props as Props;
   data-testid="home-feature-preview"
 >
   <div class="feature-preview__panel">
-    <div class="feature-preview__inner">
-      <div class="feature-preview__pin-column" aria-hidden="true">
-        <div class="feature-preview__pin-corner">
-          <div class="feature-preview__badge">
-            <span class="feature-preview__badge-mark">C</span>
-          </div>
+    <div class="feature-preview__sticky-cap" aria-hidden="true">
+      <div class="feature-preview__sticky-fill"></div>
+      <div class="feature-preview__sticky-badge">
+        <div class="feature-preview__badge">
+          <span class="feature-preview__badge-mark">C</span>
         </div>
       </div>
+    </div>
+
+    <div class="feature-preview__inner">
+      <div class="feature-preview__pin-gutter" aria-hidden="true"></div>
 
       <div class="feature-preview__content">
         <header class="feature-preview__header">
@@ -61,11 +64,11 @@ const { sectionId = 'features' } = Astro.props as Props;
             ))
           }
         </div>
-
-        <div class="feature-preview__wordmark-wrap" aria-hidden="true">
-          <p class="feature-preview__wordmark">CONSUELO</p>
-        </div>
       </div>
+    </div>
+
+    <div class="feature-preview__wordmark-wrap" aria-hidden="true">
+      <p class="feature-preview__wordmark">CONSUELO</p>
     </div>
   </div>
 </section>
@@ -77,42 +80,56 @@ const { sectionId = 'features' } = Astro.props as Props;
     color: var(--site-color-ink);
   }
 
-  /* White sheet */
   .feature-preview__panel {
+    --feature-pin-col: clamp(3.65rem, 5.25vw, 4.65rem);
+    --feature-pin-body-h: clamp(3.35rem, 4.8vw, 3.85rem);
+    position: relative;
+    display: flex;
+    flex-direction: column;
     background: var(--site-color-surface);
     overflow: visible;
   }
 
-  .feature-preview__inner {
-    --feature-pin-col: clamp(5.25rem, 8.25vw, 6.85rem);
-    display: grid;
-    grid-template-columns: var(--feature-pin-col) minmax(0, 1fr);
-    align-items: start;
+  /* Sticky cap: blue sliver left only, white fill spans full panel width */
+  .feature-preview__sticky-cap {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
   }
 
-  /* Container 1: dedicated pin rail */
-  .feature-preview__pin-column {
-    position: relative;
-    z-index: 10;
-    align-self: stretch;
+  .feature-preview__sticky-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--site-sticky-sliver) + var(--feature-pin-body-h));
     background: var(--site-color-surface);
   }
 
-  .feature-preview__pin-corner {
-    position: sticky;
+  .feature-preview__sticky-fill::before {
+    content: '';
+    position: absolute;
     top: 0;
-    padding:
-      var(--site-sticky-sliver)
-      0.75rem
-      1.35rem
-      var(--site-panel-pad);
-    background: linear-gradient(
-      to bottom,
-      var(--site-color-paper) 0,
-      var(--site-color-paper) var(--site-sticky-sliver),
-      var(--site-color-surface) var(--site-sticky-sliver),
-      var(--site-color-surface) 100%
-    );
+    left: 0;
+    width: var(--feature-pin-col);
+    height: var(--site-sticky-sliver);
+    background: var(--site-color-paper);
+  }
+
+  .feature-preview__sticky-badge {
+    position: absolute;
+    top: var(--site-sticky-sliver);
+    left: 0;
+    width: var(--feature-pin-col);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(var(--feature-pin-body-h) - var(--site-sticky-sliver));
+    padding-bottom: 0.35rem;
+    pointer-events: auto;
   }
 
   .feature-preview__badge {
@@ -132,7 +149,17 @@ const { sectionId = 'features' } = Astro.props as Props;
     color: var(--site-color-ink);
   }
 
-  /* Container 2: scrollable feature content */
+  .feature-preview__inner {
+    display: grid;
+    grid-template-columns: var(--feature-pin-col) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  /* Alignment gutter only — stops at header height, not full panel */
+  .feature-preview__pin-gutter {
+    height: calc(var(--feature-pin-body-h) + var(--site-panel-pad) * 0.15);
+  }
+
   .feature-preview__content {
     display: flex;
     flex-direction: column;
@@ -220,10 +247,11 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   .feature-preview__wordmark-wrap {
-    margin-inline: calc(-1 * var(--site-panel-pad));
     margin-top: auto;
-    padding-top: clamp(0.1rem, 0.5vw, 0.35rem);
-    padding-bottom: 0;
+    padding:
+      clamp(0.1rem, 0.5vw, 0.35rem)
+      var(--site-panel-pad)
+      0;
     overflow: visible;
   }
 
@@ -238,7 +266,8 @@ const { sectionId = 'features' } = Astro.props as Props;
     text-transform: uppercase;
     color: var(--site-color-ink);
     white-space: nowrap;
-    width: 100%;
+    width: calc(100% + 2 * var(--site-panel-pad));
+    margin-inline: calc(-1 * var(--site-panel-pad));
     overflow: visible;
     display: block;
   }
@@ -260,7 +289,8 @@ const { sectionId = 'features' } = Astro.props as Props;
       grid-template-columns: 1fr;
     }
 
-    .feature-preview__pin-column {
+    .feature-preview__pin-gutter,
+    .feature-preview__sticky-cap {
       display: none;
     }
 
