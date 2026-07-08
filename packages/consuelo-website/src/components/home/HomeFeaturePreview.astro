@@ -16,19 +16,21 @@ const { sectionId = 'features' } = Astro.props as Props;
   data-testid="home-feature-preview"
 >
   <div class="feature-preview__panel">
-    <div class="feature-preview__badge-rail" aria-hidden="true">
-      <div class="feature-preview__badge">
-        <span class="feature-preview__badge-mark">C</span>
+    <div class="feature-preview__pin">
+      <div class="feature-preview__pin-sliver" aria-hidden="true"></div>
+      <div class="feature-preview__pin-body">
+        <div class="feature-preview__badge" aria-hidden="true">
+          <span class="feature-preview__badge-mark">C</span>
+        </div>
+        <header class="feature-preview__header">
+          <p class="feature-preview__tabs" aria-hidden="true">
+            <span class="feature-preview__tab feature-preview__tab--active">FEATURE</span>
+            <span class="feature-preview__tab">PREVIEW</span>
+          </p>
+          <h2 id="feature-preview-heading" class="sr-only">Consuelo OS feature preview</h2>
+        </header>
       </div>
     </div>
-
-    <header class="feature-preview__header">
-      <p class="feature-preview__tabs" aria-hidden="true">
-        <span class="feature-preview__tab feature-preview__tab--active">FEATURE</span>
-        <span class="feature-preview__tab">PREVIEW</span>
-      </p>
-      <h2 id="feature-preview-heading" class="sr-only">Consuelo OS feature preview</h2>
-    </header>
 
     <div class="feature-preview__grid">
       {
@@ -45,7 +47,9 @@ const { sectionId = 'features' } = Astro.props as Props;
                 </>
               ))}
             </h3>
-            <FeatureArtwork motif={item.motif} alt={item.imageAlt} />
+            <div class="feature-preview__artwork">
+              <FeatureArtwork motif={item.motif} alt={item.imageAlt} />
+            </div>
             <p class="feature-preview__description">{item.body}</p>
           </article>
         ))
@@ -70,32 +74,37 @@ const { sectionId = 'features' } = Astro.props as Props;
     display: flex;
     flex-direction: column;
     background: var(--site-color-surface);
-    padding:
-      var(--site-panel-pad)
-      var(--site-panel-pad)
-      0;
+    padding-inline: var(--site-panel-pad);
+    padding-bottom: 0;
     overflow: visible;
   }
 
-  .feature-preview__badge-rail {
+  /* Full-width pinned bar: thin blue sliver + white badge row */
+  .feature-preview__pin {
     position: sticky;
     top: 0;
-    z-index: 5;
-    align-self: flex-start;
-    width: fit-content;
-    margin-top: calc(-1 * var(--site-panel-pad));
-    margin-left: calc(-1 * var(--site-panel-pad));
-    padding-top: calc(var(--site-frame-inset) + var(--site-panel-pad));
-    padding-left: var(--site-panel-pad);
-    padding-right: 1.25rem;
-    padding-bottom: 1.5rem;
-    background: linear-gradient(
-      to bottom,
-      var(--site-color-paper) 0,
-      var(--site-color-paper) calc(var(--site-frame-inset) + 0.5rem),
-      var(--site-color-surface) calc(var(--site-frame-inset) + 0.5rem),
-      var(--site-color-surface) 100%
-    );
+    z-index: 10;
+    margin-top: 0;
+    margin-inline: calc(-1 * (var(--site-panel-pad) + var(--site-frame-inset)));
+    width: calc(100% + 2 * var(--site-panel-pad) + 2 * var(--site-frame-inset));
+    background: var(--site-color-surface);
+  }
+
+  .feature-preview__pin-sliver {
+    height: var(--site-sticky-sliver);
+    background: var(--site-color-paper);
+  }
+
+  .feature-preview__pin-body {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: 1rem;
+    padding:
+      0.55rem
+      calc(var(--site-panel-pad) + var(--site-frame-inset))
+      0.85rem;
+    background: var(--site-color-surface);
   }
 
   .feature-preview__badge {
@@ -119,8 +128,9 @@ const { sectionId = 'features' } = Astro.props as Props;
   .feature-preview__header {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
-    margin-top: calc(-1 * clamp(2.5rem, 4vw, 3.25rem));
+    align-items: flex-start;
+    margin: 0;
+    padding-top: 0.15rem;
   }
 
   .feature-preview__tabs {
@@ -145,7 +155,8 @@ const { sectionId = 'features' } = Astro.props as Props;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     column-gap: clamp(0.75rem, 1.6vw, 1.35rem);
     row-gap: clamp(2rem, 4vw, 3.25rem);
-    padding-bottom: clamp(2rem, 4vw, 3rem);
+    padding-top: 0.15rem;
+    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
   }
 
   .feature-preview__item {
@@ -174,6 +185,12 @@ const { sectionId = 'features' } = Astro.props as Props;
     min-height: 2.2em;
   }
 
+  .feature-preview__artwork {
+    width: 100%;
+    max-width: clamp(8rem, 13.5vw, 11rem);
+    margin-inline: auto;
+  }
+
   .feature-preview__description {
     margin: 0;
     font-family: var(--site-font-mono);
@@ -188,23 +205,25 @@ const { sectionId = 'features' } = Astro.props as Props;
   .feature-preview__wordmark-wrap {
     margin-inline: calc(-1 * var(--site-panel-pad));
     margin-top: auto;
-    padding-top: clamp(0.5rem, 1.5vw, 1rem);
+    padding-top: clamp(0.15rem, 0.6vw, 0.4rem);
     padding-bottom: 0;
     overflow: visible;
   }
 
   .feature-preview__wordmark {
     margin: 0;
+    padding: 0;
     font-family: var(--site-font-display);
-    font-size: clamp(3.5rem, 14.8vw, 11.5rem);
+    font-size: clamp(5rem, 18.5vw, 15.5rem);
     font-weight: 400;
-    line-height: 0.82;
-    letter-spacing: -0.05em;
+    line-height: 0.72;
+    letter-spacing: -0.065em;
     text-transform: uppercase;
     color: var(--site-color-ink);
     white-space: nowrap;
     width: 100%;
     overflow: visible;
+    display: block;
   }
 
   .sr-only {
@@ -223,10 +242,6 @@ const { sectionId = 'features' } = Astro.props as Props;
     .feature-preview__grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .feature-preview__header {
-      margin-top: 0;
-    }
   }
 
   @media (max-width: 640px) {
@@ -235,7 +250,7 @@ const { sectionId = 'features' } = Astro.props as Props;
     }
 
     .feature-preview__wordmark {
-      font-size: clamp(3rem, 20vw, 5.5rem);
+      font-size: clamp(3.25rem, 22vw, 6rem);
       white-space: normal;
     }
   }

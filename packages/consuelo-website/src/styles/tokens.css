@@ -29,6 +29,7 @@
   /* Feature frame + artwork */
   --site-frame-inset: clamp(1.25rem, 3.5vw, 2.75rem);
   --site-panel-pad: clamp(1.25rem, 2.8vw, 2.25rem);
+  --site-sticky-sliver: clamp(0.35rem, 0.75vw, 0.5rem);
   --site-color-art-bg: rgba(83, 121, 174, 0.1);
   --site-color-art-ink: #5379AE;
   --site-color-art-accent: #5379AE;
