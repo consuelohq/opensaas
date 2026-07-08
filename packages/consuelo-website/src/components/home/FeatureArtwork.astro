@@ -104,6 +104,7 @@ const { motif, alt, assetSrc } = Astro.props as Props;
     margin: 0;
     aspect-ratio: 1;
     width: 100%;
+    max-height: clamp(7.5rem, 13vw, 10rem);
     overflow: hidden;
     background: var(--feature-art-bg);
   }

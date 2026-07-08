@@ -1,6 +1,6 @@
 ---
-import FeatureArtwork from './FeatureArtwork.astro';
 import { homeFeaturePreviewItems } from '../../data/home-content';
+import FeatureArtwork from './FeatureArtwork.astro';
 
 type Props = {
   sectionId?: string;
@@ -10,109 +10,83 @@ const { sectionId = 'features' } = Astro.props as Props;
 ---
 
 <section
-  class="feature-preview"
   id={sectionId}
-  data-section="features"
-  data-feature-preview
+  class="feature-preview"
   aria-labelledby="feature-preview-heading"
+  data-testid="home-feature-preview"
 >
   <div class="feature-preview__shell">
     <div class="feature-preview__panel">
-      <a class="feature-preview__badge" data-feature-badge href="/" aria-label="Consuelo home">
-        <img src="/logo.svg" alt="" width="48" height="48" decoding="async" />
-      </a>
+      <div class="feature-preview__layout">
+        <aside class="feature-preview__rail" aria-hidden="true">
+          <div class="feature-preview__badge-rail">
+            <div class="feature-preview__badge" aria-hidden="true">
+              <span class="feature-preview__badge-mark">C</span>
+            </div>
+          </div>
+        </aside>
 
-      <header class="feature-preview__header">
-        <div class="feature-preview__tabs" aria-hidden="true">
-          <span class="feature-preview__tab">FEATURE</span>
-          <span class="feature-preview__tab feature-preview__tab--active">PREVIEW</span>
+        <div class="feature-preview__body">
+          <header class="feature-preview__header">
+            <p class="feature-preview__tabs" aria-hidden="true">
+              <span class="feature-preview__tab feature-preview__tab--active">FEATURE</span>
+              <span class="feature-preview__tab">PREVIEW</span>
+            </p>
+            <h2 id="feature-preview-heading" class="sr-only">Consuelo OS feature preview</h2>
+          </header>
+
+          <div class="feature-preview__grid">
+            {
+              homeFeaturePreviewItems.map((item) => (
+                <article class="feature-preview__item">
+                  <p class="feature-preview__index">
+                    #{item.number} {item.label}
+                  </p>
+                  <h3 class="feature-preview__title">
+                    {item.title.split('\n').map((line, lineIndex) => (
+                      <>
+                        {lineIndex > 0 ? <br /> : null}
+                        {line}
+                      </>
+                    ))}
+                  </h3>
+                  <div class="feature-preview__artwork">
+                    <FeatureArtwork motif={item.motif} alt={item.imageAlt} />
+                  </div>
+                  <p class="feature-preview__description">{item.body}</p>
+                </article>
+              ))
+            }
+          </div>
         </div>
-        <h2 id="feature-preview-heading" class="visually-hidden">Consuelo OS features</h2>
-      </header>
-
-      <div class="feature-preview__grid">
-        {
-          homeFeaturePreviewItems.map((feature) => (
-            <article class="feature-preview__item">
-              <p class="feature-preview__label">
-                #{feature.number} {feature.label}
-              </p>
-              <h3
-                class="feature-preview__title"
-                data-pretext-title={feature.title}
-                data-pretext-lines="2"
-                aria-label={feature.title.replace('\n', ' ')}
-              >
-                {
-                  feature.title.split('\n').map((line) => (
-                    <span class="feature-preview__title-line" aria-hidden="true">
-                      {line}
-                    </span>
-                  ))
-                }
-              </h3>
-              <FeatureArtwork motif={feature.motif} alt={feature.imageAlt} />
-              <p class="feature-preview__body">{feature.body}</p>
-            </article>
-          ))
-        }
       </div>
 
-      <div class="feature-preview__wordmark-wrap" data-feature-wordmark>
-        <p class="feature-preview__wordmark" aria-hidden="true">CONSUELO</p>
+      <div class="feature-preview__wordmark-wrap" aria-hidden="true">
+        <p class="feature-preview__wordmark">CONSUELO</p>
       </div>
     </div>
   </div>
 </section>
 
-<script>
-  import { prepare, layout } from '@chenglou/pretext';
-  import type { PreparedText } from '@chenglou/pretext';
-
-  const titles = Array.from(document.querySelectorAll<HTMLElement>('[data-pretext-title]'));
-
-  titles.forEach((title) => {
-    let prepared: PreparedText | undefined;
-    let preparedFont = '';
-
-    const measureTitle = () => {
-      const style = window.getComputedStyle(title);
-      const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-      const text = title.dataset.pretextTitle ?? title.textContent ?? '';
-
-      if (!prepared || preparedFont !== font) {
-        prepared = prepare(text, font, { whiteSpace: 'pre-wrap' });
-        preparedFont = font;
-      }
-
-      const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize);
-      const result = layout(prepared, title.clientWidth, lineHeight);
-
-      title.dataset.pretextLines = String(result.lineCount);
-      title.style.setProperty('--feature-title-height', `${result.height}px`);
-    };
-
-    const scheduleMeasure = () => window.requestAnimationFrame(measureTitle);
-
-    window.addEventListener('resize', scheduleMeasure, { passive: true });
-    document.fonts?.ready.then(scheduleMeasure).catch(() => measureTitle());
-    scheduleMeasure();
-  });
-</script>
-
 <style>
   .feature-preview {
-    --feature-frame: clamp(0.85rem, 1.8vw, 1.35rem);
-    --feature-art-bg: #f0e9df;
-    --feature-art-stone: #e4dbd0;
-    --feature-art-ink: #1a1410;
-    --feature-art-brown: #3d2e24;
-    --feature-art-amber: #c47a2e;
-    --feature-panel-bg: #faf6ef;
+    --feature-paper: #f2ebe1;
+    --feature-panel: #faf6ef;
+    --feature-ink: #1a1512;
+    --feature-muted: #6b5f54;
+    --feature-frame: clamp(1.25rem, 3.5vw, 2.75rem);
+    --feature-panel-pad: clamp(1.25rem, 2.8vw, 2.25rem);
+    --feature-rail: clamp(4.75rem, 7.5vw, 6.25rem);
+    --feature-art-bg: #ebe4d8;
+    --feature-art-ink: #3d342c;
+    --feature-art-brown: #8b7355;
+    --feature-art-amber: #c9a227;
+    --feature-art-stone: #d4cdc3;
 
-    background: var(--site-color-paper);
-    color: var(--feature-art-ink);
-    padding: var(--feature-frame) clamp(1.35rem, 4.8vw, 3.75rem) clamp(1.5rem, 3vw, 2.5rem);
+    position: relative;
+    padding: var(--feature-frame);
+    background-color: var(--feature-paper);
+    color: var(--feature-ink);
   }
 
   .feature-preview__shell {
@@ -121,167 +95,195 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   .feature-preview__panel {
+    background: var(--feature-panel);
+    padding:
+      var(--feature-panel-pad)
+      var(--feature-panel-pad)
+      0;
+  }
+
+  .feature-preview__layout {
+    display: grid;
+    grid-template-columns: var(--feature-rail) minmax(0, 1fr);
+    column-gap: clamp(0.5rem, 1.5vw, 1.25rem);
+  }
+
+  /* Sticky rail: paper-colored top cap pins with the badge on scroll */
+  .feature-preview__rail {
     position: relative;
-    container-type: inline-size;
-    background: var(--feature-panel-bg);
-    padding: clamp(1.1rem, 2.2vw, 1.65rem) clamp(1.15rem, 2.6vw, 2rem)
-      clamp(1.75rem, 3.5vw, 2.75rem);
+    z-index: 5;
+  }
+
+  .feature-preview__badge-rail {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: calc(var(--feature-frame) + 0.75rem);
+    margin-top: calc(-1 * var(--feature-panel-pad));
+    margin-left: calc(-1 * var(--feature-panel-pad));
+    padding-left: calc(var(--feature-panel-pad) + 0.35rem);
+    padding-right: 0.85rem;
+    padding-bottom: 1.75rem;
+    background: linear-gradient(
+      to bottom,
+      var(--feature-paper) 0,
+      var(--feature-paper) calc(var(--feature-frame) + 0.75rem),
+      var(--feature-panel) calc(var(--feature-frame) + 0.75rem),
+      var(--feature-panel) 100%
+    );
   }
 
   .feature-preview__badge {
-    position: sticky;
-    top: calc(var(--feature-frame) + 0.5rem);
-    z-index: 3;
-    display: block;
-    width: fit-content;
-    margin: 0 0 clamp(0.85rem, 1.6vw, 1.15rem);
-    padding: 0.3rem;
-    border: 1px solid rgba(26, 20, 16, 0.12);
-    background: var(--feature-panel-bg);
-    line-height: 0;
+    display: grid;
+    place-items: center;
+    width: clamp(2.85rem, 4.2vw, 3.35rem);
+    height: clamp(2.85rem, 4.2vw, 3.35rem);
+    border: 1.5px solid var(--feature-ink);
+    background: var(--feature-panel);
+    flex-shrink: 0;
   }
 
-  .feature-preview__badge img {
-    display: block;
-    width: clamp(2.15rem, 3.8vw, 2.65rem);
-    height: clamp(2.15rem, 3.8vw, 2.65rem);
+  .feature-preview__badge-mark {
+    font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+    font-size: clamp(1.35rem, 2vw, 1.65rem);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--feature-ink);
+  }
+
+  .feature-preview__body {
+    min-width: 0;
+    padding-top: 0.15rem;
   }
 
   .feature-preview__header {
-    display: flex;
-    justify-content: flex-end;
-    margin: 0 0 clamp(1.15rem, 2.2vw, 1.65rem);
+    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
   }
 
   .feature-preview__tabs {
     display: flex;
-    gap: 0.4rem;
-  }
-
-  .feature-preview__tab {
-    border: 1px solid rgba(26, 20, 16, 0.2);
-    border-radius: 2px;
-    color: rgba(26, 20, 16, 0.5);
-    font: 500 0.52rem / 1 var(--site-font-mono);
-    letter-spacing: 0.1em;
-    padding: 0.34rem 0.58rem;
+    gap: 1.5rem;
+    margin: 0;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    color: var(--feature-muted);
   }
 
   .feature-preview__tab--active {
-    border-color: var(--feature-art-ink);
-    color: var(--feature-art-ink);
+    color: var(--feature-ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 
   .feature-preview__grid {
     display: grid;
-    gap: clamp(2.25rem, 4vw, 3.25rem);
-    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: clamp(0.65rem, 1.4vw, 1.1rem);
+    row-gap: clamp(2rem, 4vw, 3.25rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
   }
 
   .feature-preview__item {
-    display: grid;
-    gap: clamp(0.45rem, 0.9vw, 0.62rem);
-    align-content: start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
     min-width: 0;
   }
 
-  .feature-preview__label {
+  .feature-preview__index {
     margin: 0;
-    color: rgba(61, 46, 36, 0.58);
-    font: 500 0.5rem / 1.15 var(--site-font-mono);
-    letter-spacing: 0.13em;
-    text-align: center;
-    text-transform: uppercase;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    color: var(--feature-muted);
   }
 
   .feature-preview__title {
     margin: 0;
-    min-height: var(--feature-title-height, auto);
-    color: var(--feature-art-ink);
-    font-family: var(--site-font-display);
-    font-size: clamp(1.65rem, 2.8vw, 2.35rem);
-    font-weight: 300;
-    letter-spacing: 0.01em;
-    line-height: 0.88;
-    text-align: center;
-    text-transform: uppercase;
-    text-wrap: balance;
+    font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+    font-size: clamp(1.35rem, 2.1vw, 1.85rem);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    color: var(--feature-ink);
+    min-height: 2.2em;
   }
 
-  .feature-preview__title-line {
-    display: block;
-    white-space: nowrap;
+  .feature-preview__artwork {
+    width: 100%;
+    max-width: clamp(7.5rem, 13vw, 10rem);
+    margin-inline: auto;
   }
 
-  .feature-preview__body {
+  .feature-preview__description {
     margin: 0;
-    color: rgba(26, 20, 16, 0.9);
-    font: 650 0.66rem / 1.45 var(--site-font-mono);
-    letter-spacing: 0.045em;
+    font-family: var(--font-sans, system-ui, sans-serif);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.45;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: var(--feature-ink);
   }
 
   .feature-preview__wordmark-wrap {
-    margin-top: clamp(3.5rem, 7vw, 6.5rem);
-    overflow: hidden;
+    margin-inline: calc(-1 * var(--feature-panel-pad));
+    margin-top: clamp(0.5rem, 1.5vw, 1rem);
+    padding-bottom: clamp(0.15rem, 0.5vw, 0.35rem);
   }
 
   .feature-preview__wordmark {
     margin: 0;
-    width: 100%;
-    color: var(--feature-art-ink);
-    font-family: var(--site-font-display);
-    font-size: clamp(4.8rem, 19cqi, 12.5rem);
-    font-weight: 300;
-    letter-spacing: -0.045em;
-    line-height: 0.78;
+    font-family: var(--font-display, Georgia, 'Times New Roman', serif);
+    font-size: clamp(4.5rem, 16.5vw, 13.5rem);
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: -0.03em;
     text-transform: uppercase;
-    translate: 0 10%;
-    user-select: none;
+    color: var(--feature-ink);
     white-space: nowrap;
+    width: 100%;
+    overflow: visible;
   }
 
-  .visually-hidden {
-    border: 0;
-    clip: rect(0 0 0 0);
+  .sr-only {
+    position: absolute;
+    width: 1px;
     height: 1px;
+    padding: 0;
     margin: -1px;
     overflow: hidden;
-    padding: 0;
-    position: absolute;
+    clip: rect(0, 0, 0, 0);
     white-space: nowrap;
-    width: 1px;
+    border: 0;
   }
 
-  @media (min-width: 900px) {
+  @media (max-width: 960px) {
+    .feature-preview__layout {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-preview__rail {
+      display: none;
+    }
+
     .feature-preview__grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      column-gap: clamp(0.55rem, 1vw, 0.85rem);
-      row-gap: clamp(2rem, 3.2vw, 2.75rem);
-    }
-
-    .feature-preview__label,
-    .feature-preview__title {
-      text-align: left;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  @media (max-width: 560px) {
-    .feature-preview {
-      padding-inline: clamp(1rem, 4.5vw, 1.35rem);
+  @media (max-width: 640px) {
+    .feature-preview__grid {
+      grid-template-columns: 1fr;
     }
 
-    .feature-preview__title {
-      font-size: clamp(1.55rem, 8.5vw, 2.05rem);
-    }
-
-    .feature-preview__title-line {
+    .feature-preview__wordmark {
+      font-size: clamp(3.25rem, 22vw, 5.5rem);
       white-space: normal;
-    }
-
-    .feature-preview__body {
-      font-size: clamp(0.6rem, 2.6vw, 0.66rem);
     }
   }
 </style>
