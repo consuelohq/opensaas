@@ -16,52 +16,50 @@ const { sectionId = 'features' } = Astro.props as Props;
   data-feature-preview
   aria-labelledby="feature-preview-heading"
 >
-  <div class="feature-preview__frame">
-    <div class="feature-preview__parallax">
+  <div class="feature-preview__shell">
+    <div class="feature-preview__panel">
       <a class="feature-preview__badge" data-feature-badge href="/" aria-label="Consuelo home">
         <img src="/logo.svg" alt="" width="48" height="48" decoding="async" />
       </a>
 
-      <div class="feature-preview__panel">
-        <header class="feature-preview__header">
-          <div class="feature-preview__tabs" aria-hidden="true">
-            <span class="feature-preview__tab">FEATURE</span>
-            <span class="feature-preview__tab feature-preview__tab--active">PREVIEW</span>
-          </div>
-          <h2 id="feature-preview-heading" class="visually-hidden">Consuelo OS features</h2>
-        </header>
-
-        <div class="feature-preview__grid">
-          {
-            homeFeaturePreviewItems.map((feature) => (
-              <article class="feature-preview__item">
-                <p class="feature-preview__label">
-                  #{feature.number} {feature.label}
-                </p>
-                <h3
-                  class="feature-preview__title"
-                  data-pretext-title={feature.title}
-                  data-pretext-lines="2"
-                  aria-label={feature.title.replace('\n', ' ')}
-                >
-                  {
-                    feature.title.split('\n').map((line) => (
-                      <span class="feature-preview__title-line" aria-hidden="true">
-                        {line}
-                      </span>
-                    ))
-                  }
-                </h3>
-                <FeatureArtwork motif={feature.motif} alt={feature.imageAlt} />
-                <p class="feature-preview__body">{feature.body}</p>
-              </article>
-            ))
-          }
+      <header class="feature-preview__header">
+        <div class="feature-preview__tabs" aria-hidden="true">
+          <span class="feature-preview__tab">FEATURE</span>
+          <span class="feature-preview__tab feature-preview__tab--active">PREVIEW</span>
         </div>
+        <h2 id="feature-preview-heading" class="visually-hidden">Consuelo OS features</h2>
+      </header>
+
+      <div class="feature-preview__grid">
+        {
+          homeFeaturePreviewItems.map((feature) => (
+            <article class="feature-preview__item">
+              <p class="feature-preview__label">
+                #{feature.number} {feature.label}
+              </p>
+              <h3
+                class="feature-preview__title"
+                data-pretext-title={feature.title}
+                data-pretext-lines="2"
+                aria-label={feature.title.replace('\n', ' ')}
+              >
+                {
+                  feature.title.split('\n').map((line) => (
+                    <span class="feature-preview__title-line" aria-hidden="true">
+                      {line}
+                    </span>
+                  ))
+                }
+              </h3>
+              <FeatureArtwork motif={feature.motif} alt={feature.imageAlt} />
+              <p class="feature-preview__body">{feature.body}</p>
+            </article>
+          ))
+        }
       </div>
 
-      <div class="feature-preview__stop" data-feature-wordmark>
-        <p class="feature-preview__wordmark" aria-hidden="true">consuelo.</p>
+      <div class="feature-preview__wordmark-wrap" data-feature-wordmark>
+        <p class="feature-preview__wordmark" aria-hidden="true">CONSUELO</p>
       </div>
     </div>
   </div>
@@ -104,7 +102,7 @@ const { sectionId = 'features' } = Astro.props as Props;
 
 <style>
   .feature-preview {
-    --feature-frame: clamp(0.65rem, 1.2vw, 1rem);
+    --feature-frame: clamp(0.85rem, 1.8vw, 1.35rem);
     --feature-art-bg: #f0e9df;
     --feature-art-stone: #e4dbd0;
     --feature-art-ink: #1a1410;
@@ -114,61 +112,59 @@ const { sectionId = 'features' } = Astro.props as Props;
 
     background: var(--site-color-paper);
     color: var(--feature-art-ink);
-    padding: var(--feature-frame) var(--feature-frame) 0;
+    padding: var(--feature-frame) clamp(1.35rem, 4.8vw, 3.75rem) clamp(1.5rem, 3vw, 2.5rem);
   }
 
-  .feature-preview__frame {
-    position: relative;
+  .feature-preview__shell {
+    max-width: 92rem;
+    margin-inline: auto;
   }
 
-  .feature-preview__parallax {
+  .feature-preview__panel {
     position: relative;
-    display: grid;
-    gap: 0;
+    container-type: inline-size;
+    background: var(--feature-panel-bg);
+    padding: clamp(1.1rem, 2.2vw, 1.65rem) clamp(1.15rem, 2.6vw, 2rem)
+      clamp(1.75rem, 3.5vw, 2.75rem);
   }
 
   .feature-preview__badge {
     position: sticky;
-    top: calc(var(--feature-frame) + 1.25rem);
+    top: calc(var(--feature-frame) + 0.5rem);
     z-index: 3;
+    display: block;
     width: fit-content;
-    margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
-    padding: 0.35rem;
-    border: 1px solid rgba(26, 20, 16, 0.14);
+    margin: 0 0 clamp(0.85rem, 1.6vw, 1.15rem);
+    padding: 0.3rem;
+    border: 1px solid rgba(26, 20, 16, 0.12);
     background: var(--feature-panel-bg);
     line-height: 0;
   }
 
   .feature-preview__badge img {
     display: block;
-    width: clamp(2.4rem, 4.5vw, 3rem);
-    height: clamp(2.4rem, 4.5vw, 3rem);
-  }
-
-  .feature-preview__panel {
-    background: var(--feature-panel-bg);
-    padding: clamp(2rem, 4vw, 3.25rem) clamp(1.5rem, 3.5vw, 2.75rem)
-      clamp(3rem, 6vw, 4.5rem);
+    width: clamp(2.15rem, 3.8vw, 2.65rem);
+    height: clamp(2.15rem, 3.8vw, 2.65rem);
   }
 
   .feature-preview__header {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: clamp(2rem, 4vw, 3rem);
+    margin: 0 0 clamp(1.15rem, 2.2vw, 1.65rem);
   }
 
   .feature-preview__tabs {
     display: flex;
-    gap: 0.45rem;
+    gap: 0.4rem;
   }
 
   .feature-preview__tab {
     border: 1px solid rgba(26, 20, 16, 0.2);
     border-radius: 2px;
     color: rgba(26, 20, 16, 0.5);
-    font: 500 0.56rem / 1 var(--site-font-mono);
-    letter-spacing: 0.12em;
-    padding: 0.38rem 0.65rem;
+    font: 500 0.52rem / 1 var(--site-font-mono);
+    letter-spacing: 0.1em;
+    padding: 0.34rem 0.58rem;
     text-transform: uppercase;
   }
 
@@ -179,25 +175,22 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .feature-preview__grid {
     display: grid;
-    gap: clamp(3rem, 5.5vw, 4.75rem);
-    max-width: 68rem;
-    margin-inline: auto;
+    gap: clamp(2.25rem, 4vw, 3.25rem);
+    width: 100%;
   }
 
   .feature-preview__item {
     display: grid;
-    gap: clamp(0.7rem, 1.4vw, 1rem);
+    gap: clamp(0.45rem, 0.9vw, 0.62rem);
     align-content: start;
-    max-width: 20rem;
-    margin-inline: auto;
-    width: 100%;
+    min-width: 0;
   }
 
   .feature-preview__label {
     margin: 0;
-    color: rgba(61, 46, 36, 0.62);
-    font: 500 0.56rem / 1.2 var(--site-font-mono);
-    letter-spacing: 0.14em;
+    color: rgba(61, 46, 36, 0.58);
+    font: 500 0.5rem / 1.15 var(--site-font-mono);
+    letter-spacing: 0.13em;
     text-align: center;
     text-transform: uppercase;
   }
@@ -207,10 +200,10 @@ const { sectionId = 'features' } = Astro.props as Props;
     min-height: var(--feature-title-height, auto);
     color: var(--feature-art-ink);
     font-family: var(--site-font-display);
-    font-size: clamp(1.85rem, 3.4vw, 2.65rem);
+    font-size: clamp(1.65rem, 2.8vw, 2.35rem);
     font-weight: 300;
     letter-spacing: 0.01em;
-    line-height: 0.9;
+    line-height: 0.88;
     text-align: center;
     text-transform: uppercase;
     text-wrap: balance;
@@ -224,28 +217,29 @@ const { sectionId = 'features' } = Astro.props as Props;
   .feature-preview__body {
     margin: 0;
     color: rgba(26, 20, 16, 0.9);
-    font: 650 0.7rem / 1.5 var(--site-font-mono);
-    letter-spacing: 0.05em;
+    font: 650 0.66rem / 1.45 var(--site-font-mono);
+    letter-spacing: 0.045em;
     text-transform: uppercase;
   }
 
-  .feature-preview__stop {
-    margin-top: clamp(5rem, 10vw, 9rem);
-    padding-bottom: clamp(2rem, 4vw, 3rem);
-    background: var(--site-color-paper);
+  .feature-preview__wordmark-wrap {
+    margin-top: clamp(3.5rem, 7vw, 6.5rem);
+    overflow: hidden;
   }
 
   .feature-preview__wordmark {
     margin: 0;
-    color: var(--site-color-ink);
+    width: 100%;
+    color: var(--feature-art-ink);
     font-family: var(--site-font-display);
-    font-size: clamp(4.5rem, 14vw, 11rem);
+    font-size: clamp(4.8rem, 19cqi, 12.5rem);
     font-weight: 300;
-    letter-spacing: -0.03em;
-    line-height: 0.82;
-    text-transform: lowercase;
-    translate: 0 12%;
+    letter-spacing: -0.045em;
+    line-height: 0.78;
+    text-transform: uppercase;
+    translate: 0 10%;
     user-select: none;
+    white-space: nowrap;
   }
 
   .visually-hidden {
@@ -263,13 +257,8 @@ const { sectionId = 'features' } = Astro.props as Props;
   @media (min-width: 900px) {
     .feature-preview__grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      column-gap: clamp(1.5rem, 2.8vw, 2.25rem);
-      row-gap: clamp(3.5rem, 5vw, 5rem);
-    }
-
-    .feature-preview__item {
-      max-width: none;
-      margin-inline: 0;
+      column-gap: clamp(0.55rem, 1vw, 0.85rem);
+      row-gap: clamp(2rem, 3.2vw, 2.75rem);
     }
 
     .feature-preview__label,
@@ -279,8 +268,12 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   @media (max-width: 560px) {
+    .feature-preview {
+      padding-inline: clamp(1rem, 4.5vw, 1.35rem);
+    }
+
     .feature-preview__title {
-      font-size: clamp(1.75rem, 9vw, 2.35rem);
+      font-size: clamp(1.55rem, 8.5vw, 2.05rem);
     }
 
     .feature-preview__title-line {
@@ -288,7 +281,7 @@ const { sectionId = 'features' } = Astro.props as Props;
     }
 
     .feature-preview__body {
-      font-size: clamp(0.64rem, 2.7vw, 0.7rem);
+      font-size: clamp(0.6rem, 2.6vw, 0.66rem);
     }
   }
 </style>
