@@ -26,21 +26,39 @@ export type InstallDiagnostics = {
 
 const SECRET_KEY_PARTS = [
   'access_token',
+  'auth',
   'authorization',
   'bootstrap_token',
   'client_secret',
   'cloudflare_tunnel_token',
   'cloudflared_tunnel_token',
-  'code',
-  'device_code',
+  'cookie',
+  'key',
+  'password',
   'refresh_token',
   'secret',
   'state',
   'token',
-  'user_code',
 ] as const;
 
-const SECRET_QUERY_PARAM_PATTERN = /([?&](?:access_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|state|token|user_code)=)[^&#\s]*/gi;
+const EXACT_SECRET_KEYS = new Set([
+  'code',
+  'device_code',
+  'devicecode',
+  'user_code',
+  'usercode',
+]);
+
+const SAFE_DIAGNOSTIC_KEYS = new Set([
+  'error_code',
+  'errorcode',
+  'exit_code',
+  'exitcode',
+  'status_code',
+  'statuscode',
+]);
+
+const SECRET_QUERY_PARAM_PATTERN = /([?&](?:access_token|authorization|bootstrap_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|secret|state|token|user_code)=)[^&#\s]*/gi;
 const USER_PATH_PATTERN = /\/(?:Users|home)\/[^/\s]+(?=\/|$)/g;
 const TOKEN_REPLACEMENTS = [
   { pattern: /\b(cloudflared?[_-]tunnel[_-]token\s*=\s*)[^&#\s]+/gi, replacement: '$1[redacted]' },
@@ -58,7 +76,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function shouldRedactKey(key: string): boolean {
-  const normalizedKey = key.toLowerCase().replace(/-/g, '_');
+  const normalizedKey = key.toLowerCase().replace(/[-\s]/g, '_');
+  const compactKey = normalizedKey.replace(/_/g, '');
+  if (SAFE_DIAGNOSTIC_KEYS.has(normalizedKey) || SAFE_DIAGNOSTIC_KEYS.has(compactKey)) {
+    return false;
+  }
+  if (EXACT_SECRET_KEYS.has(normalizedKey) || EXACT_SECRET_KEYS.has(compactKey)) {
+    return true;
+  }
   return SECRET_KEY_PARTS.some((part) => normalizedKey.includes(part));
 }
 
