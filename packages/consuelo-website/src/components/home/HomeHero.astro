@@ -204,12 +204,11 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 		display: grid;
 		align-items: center;
 		background: var(--site-color-paper);
-		color: var(--site-color-ink);
+		color: var(--site-color-on-brand);
 		font-family: var(--site-font-body);
-		--home-hero-control-bg: #fffdf8;
-		--home-hero-control-line: rgba(28, 26, 23, 0.16);
-		--home-hero-control-shadow:
-			0 0 0 1px rgba(28, 26, 23, 0.08), 0 12px 28px rgba(28, 26, 23, 0.08);
+		--home-hero-control-bg: var(--site-color-surface);
+		--home-hero-control-line: var(--site-color-line);
+		--home-hero-control-shadow: var(--site-shadow-control);
 		padding-block: clamp(4.5rem, 7.2vw, 6.6rem) var(--site-space-7);
 		overflow: clip;
 	}
@@ -229,7 +228,7 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 	}
 
 	.home-hero__eyebrow {
-		color: var(--site-color-ink);
+		color: var(--site-color-on-brand);
 		display: flex;
 		gap: clamp(var(--site-space-2), 1.25vw, var(--site-space-3));
 		align-items: center;
@@ -246,7 +245,7 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 
 	.home-hero__title {
 		margin: 0;
-		color: var(--site-color-ink);
+		color: var(--site-color-on-brand);
 		font-family: var(--site-font-display);
 		font-size: clamp(3.2rem, 5.35vw, 5.65rem);
 		font-weight: 300;
@@ -281,7 +280,7 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 
 	.home-hero__action-label,
 	.home-hero__install-label {
-		color: var(--site-color-muted);
+		color: var(--site-color-muted-on-brand);
 	}
 
 	.home-hero__portal {
@@ -465,15 +464,6 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 		max-width: 100%;
 		height: auto;
 		margin-inline: auto 0;
-	}
-
-	@media (prefers-color-scheme: dark) {
-		.home-hero {
-			--home-hero-control-bg: #14130f;
-			--home-hero-control-line: rgba(247, 239, 231, 0.18);
-			--home-hero-control-shadow:
-				0 0 0 1px rgba(247, 239, 231, 0.08), 0 18px 38px rgba(0, 0, 0, 0.36);
-		}
 	}
 
 	@media (min-width: 1181px) {
