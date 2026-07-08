@@ -115,6 +115,52 @@ describe('Consuelo website structure', () => {
     }
   });
 
+  test('should expose the Hermes-style pricing route without wiring it into shared navigation', async () => {
+    expectFile('src/pages/pricing.astro');
+    expectFile('src/data/pricing-content.ts');
+
+    const pricingRoute = readSource('src/pages/pricing.astro');
+    const pricingContent = await import(pathToFileURL(join(sourceRoot, 'data/pricing-content.ts')).href);
+    const navigation = await import(pathToFileURL(join(sourceRoot, 'data/site-navigation.ts')).href);
+
+    expect(pricingRoute).toContain('../layouts/MarketingLayout.astro');
+    expect(pricingRoute).toContain('../components/site/SiteHeader.astro');
+    expect(pricingRoute).toContain('../data/pricing-content');
+    expect(pricingRoute).toContain('CHOOSE A PLAN');
+    expect(pricingRoute).toContain('Already have an account?');
+    expect(pricingRoute).toContain('pricing-page__panel');
+    expect(pricingRoute).toContain('grid-template-columns: repeat(4, minmax(0, 1fr));');
+    expect(pricingRoute).not.toContain('SiteFooter');
+    expect(pricingRoute).not.toContain('FAQ');
+    expect(pricingRoute).not.toContain('checkout');
+
+    expect(pricingContent.pricingHero.title).toBe('CHOOSE A PLAN');
+    expect(pricingContent.pricingHero.subtitle).toBe(
+      'All paid plans include monthly credits for hosted Consuelo usage.',
+    );
+    expect(pricingContent.pricingPlans.map((plan) => plan.name)).toEqual([
+      'Free',
+      'Plus',
+      'Super',
+      'Ultra',
+    ]);
+    expect(pricingContent.pricingPlans.map((plan) => plan.imageLabel)).toEqual([
+      'NO LOCK-IN',
+      'STAYS LOCKED',
+      'READ RECEIPTS',
+      'READ RECEIPTS',
+    ]);
+    expect(pricingContent.pricingPlans.map((plan) => plan.price)).toEqual(['$0', '$20', '$100', '$200']);
+    expect(pricingContent.pricingPlans.filter((plan) => plan.highlight).map((plan) => plan.name)).toEqual([
+      'Plus',
+    ]);
+    expect(pricingContent.pricingPlans.every((plan) => plan.bullets.length === 4)).toBe(true);
+
+    expect(navigation.siteHeaderLinks.map((link) => link.href)).not.toContain('/pricing');
+    expect(navigation.siteMobileMenuLinks.map((link) => link.href)).not.toContain('/pricing');
+    expect(navigation.footerLinks.map((link) => link.href)).not.toContain('/pricing');
+  });
+
   test('should support weekly changelog entries while preserving legacy entries', () => {
     const changelog = readSource('src/pages/changelog.astro');
 
