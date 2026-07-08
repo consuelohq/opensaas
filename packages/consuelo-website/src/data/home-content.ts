@@ -293,7 +293,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 1,
     label: 'CONNECT',
-    title: 'SAME ADDRESS',
+    title: 'SAME\nADDRESS',
     body: 'ChatGPT, Codex, Claude, Cursor, and whatever is next all enter the same house.',
     motif: 'connect',
     imageAlt: 'Sacred table with signals converging on one center',
@@ -301,7 +301,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 2,
     label: 'REMEMBER',
-    title: 'PERSISTENT MEMORY',
+    title: 'PERSISTENT\nMEMORY',
     body: 'You should not be the memory layer. Consuelo remembers and reports so your agent never forgets.',
     motif: 'remember',
     imageAlt: 'Inner memory chamber with glowing alcoves',
@@ -309,7 +309,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 3,
     label: 'MULTIPLAYER',
-    title: 'SAME ROOM',
+    title: 'SAME\nROOM',
     body: 'Invite collaborators when the work needs more hands. The room is already there.',
     motif: 'multiplayer',
     imageAlt: 'Shared sacred room with multiple entrances',
@@ -317,7 +317,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 4,
     label: 'OBSERVE',
-    title: 'READ RECEIPTS',
+    title: 'READ\nRECEIPTS',
     body: 'If an agent touched the work, there should be proof. See the traces without digging through a dead chat.',
     motif: 'observe',
     imageAlt: 'Reflecting court showing visible traces of work',
@@ -325,7 +325,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 5,
     label: 'SECURE',
-    title: 'STAYS LOCKED',
+    title: 'STAYS\nLOCKED',
     body: 'Effective agents without handing over keys to the whole house. Only the doors you choose.',
     motif: 'secure',
     imageAlt: 'Guarded threshold with one chosen opening',
@@ -333,7 +333,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 6,
     label: 'SWITCH',
-    title: 'NO LOCK-IN',
+    title: 'NO\nLOCK-IN',
     body: 'The best agent will keep changing. Your work should not have to move every time it does.',
     motif: 'switch',
     imageAlt: 'Many portals returning to the same palace',

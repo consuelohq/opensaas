@@ -198,15 +198,14 @@ describe('Consuelo website structure', () => {
     const svg = readSource('public/images/consuelo-integrations-hero.svg');
     const { homeTabs } = await import(pathToFileURL(join(sourceRoot, 'data/home-content.ts')).href);
 
-    expect(hero).toContain('aria-label="GIVE EVERY AGENT WORKSPACE SUPERPOWERS"');
-    expect(hero).toContain('>GIVE EVERY AGENT</span');
-    expect(hero).toContain('>GIVE EVERY</span');
-    expect(hero).toContain('>AGENT</span');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">WORKSPACE</span>');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true"><em>SUPERPOWERS</em></span>');
-    expect(hero).not.toContain('<span class="home-hero__title-line"><em>superpowers</em>.</span>');
-    expect(hero).not.toContain('<span class="home-hero__title-line"><em>SUPERPOWERS</em>.</span>');
-    expect(hero).not.toContain('aria-label="GIVE EVERY AGENT GIVE EVERY AGENT WORKSPACE SUPERPOWERS"');
+    expect(hero).toContain('aria-label="STOP STARTING OVER WITH EVERY NEW AGENT"');
+    expect(hero).toContain('>STOP STARTING OVER</span');
+    expect(hero).toContain('>STOP STARTING</span');
+    expect(hero).toContain('>OVER</span');
+    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">WITH EVERY</span>');
+    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">NEW AGENT</span>');
+    expect(hero).not.toContain('GIVE EVERY AGENT');
+    expect(hero).not.toContain('WORKSPACE SUPERPOWERS');
     expect(hero).toContain("import { prepare, layout } from '@chenglou/pretext'");
     expect(hero).toContain('data-pretext-title');
     expect(hero).toContain('data-pretext-lines');
