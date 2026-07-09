@@ -303,7 +303,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 2,
     label: 'REMEMBER',
-    title: 'PERSISTENT\nMEMORY',
+    title: 'SHARED\nMEMORY',
     body: 'You should not be the memory layer. Consuelo remembers and reports so your agent never forgets.',
     motif: 'remember',
     imageAlt: 'Inner memory chamber with glowing alcoves',
