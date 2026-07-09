@@ -122,6 +122,7 @@ describe('Consuelo website structure', () => {
     const pricingRoute = readSource('src/pages/pricing.astro');
     const redirects = readSource('public/_redirects');
     const pricingContent = await import(pathToFileURL(join(sourceRoot, 'data/pricing-content.ts')).href);
+    const { siteLinks } = await import(pathToFileURL(join(sourceRoot, 'data/site-links.ts')).href);
     const navigation = await import(pathToFileURL(join(sourceRoot, 'data/site-navigation.ts')).href);
 
     expect(pricingRoute).toContain('../layouts/MarketingLayout.astro');
@@ -157,6 +158,8 @@ describe('Consuelo website structure', () => {
       'Plus',
     ]);
     expect(pricingContent.pricingPlans.every((plan) => plan.bullets.length === 4)).toBe(true);
+    expect(siteLinks.pricing).toBe('/pricing');
+    expect(siteLinks.pricing).not.toBe(siteLinks.mercury);
 
     expect(navigation.siteHeaderLinks.map((link) => link.href)).not.toContain('/pricing');
     expect(navigation.siteMobileMenuLinks.map((link) => link.href)).not.toContain('/pricing');
