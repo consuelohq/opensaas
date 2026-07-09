@@ -14,7 +14,14 @@ const { motif, alt, assetSrc } = Astro.props as Props;
 <figure class="feature-artwork" data-motif={motif}>
   {
     assetSrc ? (
-      <img class="feature-artwork__image" src={assetSrc} alt={alt} loading="lazy" decoding="async" />
+      <img
+        class="feature-artwork__image"
+        src={assetSrc}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        data-motion="feature-artwork"
+      />
     ) : (
       <svg
         class="feature-artwork__placeholder"
@@ -111,8 +118,11 @@ const { motif, alt, assetSrc } = Astro.props as Props;
   .feature-artwork__image,
   .feature-artwork__placeholder {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: 110%;
+    height: 110%;
+    margin: -5%;
+    max-width: none;
     object-fit: cover;
+    transform-origin: center center;
   }
 </style>

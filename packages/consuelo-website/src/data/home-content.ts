@@ -294,7 +294,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 1,
     label: 'CONNECT',
-    title: 'SAME\nADDRESS',
+    title: 'SAME\nTOOLS',
     body: 'ChatGPT, Codex, Claude, Cursor, and whatever is next all enter the same house.',
     motif: 'connect',
     imageAlt: 'Sacred table with signals converging on one center',
@@ -324,7 +324,8 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     title: 'READ\nRECEIPTS',
     body: 'If an agent touched the work, there should be proof. See the traces without digging through a dead chat.',
     motif: 'observe',
-    imageAlt: 'Reflecting court showing visible traces of work',
+    imageAlt: 'Hand reaching toward visible traces of work',
+    assetSrc: '/images/features/observe.svg',
   },
   {
     number: 5,
@@ -332,7 +333,8 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     title: 'STAYS\nLOCKED',
     body: 'Effective agents without handing over keys to the whole house. Only the doors you choose.',
     motif: 'secure',
-    imageAlt: 'Guarded threshold with one chosen opening',
+    imageAlt: 'Lift-off scene with guarded threshold',
+    assetSrc: '/images/features/secure.svg',
   },
   {
     number: 6,
@@ -341,6 +343,7 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     body: 'The best agent will keep changing. Your work should not have to move every time it does.',
     motif: 'switch',
     imageAlt: 'Many portals returning to the same palace',
+    assetSrc: '/images/features/switch.svg',
   },
 ];
 

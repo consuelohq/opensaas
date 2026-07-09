@@ -1,5 +1,6 @@
 ---
 import SeoHead from '../components/SeoHead.astro';
+import SiteSmoothScroll from '../components/site/SiteSmoothScroll.astro';
 import { siteMetadata } from '../lib/site-seo';
 import { posthogKey, posthogHost } from '../config/analytics';
 import '../styles/tokens.css';
@@ -104,6 +105,7 @@ const {
     )}
   </head>
   <body>
+    <SiteSmoothScroll />
     <div class="launch-shell">
       <slot />
     </div>
@@ -117,7 +119,11 @@ const {
 
   html {
     background: var(--site-color-paper);
-    scroll-behavior: smooth;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
   }
 
   body {

@@ -14,6 +14,8 @@ const { sectionId = 'features' } = Astro.props as Props;
   class="feature-preview"
   aria-labelledby="feature-preview-heading"
   data-testid="home-feature-preview"
+  data-motion-section="feature-preview"
+  data-section="features"
 >
   <div class="feature-preview__panel">
     <div class="feature-preview__scroll-region">
@@ -22,13 +24,18 @@ const { sectionId = 'features' } = Astro.props as Props;
       <div class="feature-preview__inner">
         <div class="feature-preview__pin-column" aria-hidden="true">
           <div class="feature-preview__badge-pin">
-            <div class="feature-preview__badge">
-              <span class="feature-preview__badge-mark">C</span>
-            </div>
+            <img
+              class="feature-preview__badge-logo"
+              src="/images/logo/clean-headband-no-moon-blue-transparent.svg"
+              alt=""
+              width="52"
+              height="52"
+              decoding="async"
+            />
           </div>
         </div>
 
-        <div class="feature-preview__content">
+        <div class="feature-preview__content" data-feature-content-track>
           <header class="feature-preview__header">
             <p class="feature-preview__tabs" aria-hidden="true">
               <span class="feature-preview__tab feature-preview__tab--active">FEATURE</span>
@@ -83,30 +90,33 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .feature-preview__panel {
     --feature-pin-col: clamp(3.65rem, 5.25vw, 4.65rem);
-    --feature-badge-gap: 0.7rem;
+    --feature-badge-gap: 0.5rem;
+    --feature-badge-size: clamp(2.75rem, 4vw, 3.25rem);
+    --feature-header-offset: clamp(0.35rem, 0.85vw, 0.6rem);
     position: relative;
     display: flex;
     flex-direction: column;
     background: var(--site-color-surface);
-    overflow: visible;
+    overflow: hidden;
   }
 
-  /* Sticky boundary ends before the wordmark */
   .feature-preview__scroll-region {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     padding-top: var(--site-panel-pad);
+    overflow: hidden;
   }
 
-  /* Full-width blue sliver only — no white sticky bar */
   .feature-preview__blue-sliver {
-    position: sticky;
+    position: absolute;
     top: 0;
+    left: calc(-1 * var(--site-panel-pad));
     z-index: 12;
-    height: var(--site-sticky-sliver);
-    margin-top: calc(-1 * var(--site-panel-pad));
-    margin-bottom: calc(-1 * var(--site-sticky-sliver));
-    margin-inline: calc(-1 * var(--site-panel-pad));
     width: calc(100% + 2 * var(--site-panel-pad));
+    height: var(--site-sticky-sliver);
     background: var(--site-color-paper);
     pointer-events: none;
   }
@@ -115,37 +125,28 @@ const { sectionId = 'features' } = Astro.props as Props;
     display: grid;
     grid-template-columns: var(--feature-pin-col) minmax(0, 1fr);
     align-items: start;
+    padding-top: calc(var(--site-sticky-sliver) + var(--feature-badge-gap) * 0.25);
   }
 
   .feature-preview__pin-column {
-    align-self: start;
+    align-self: stretch;
+    min-height: 100%;
   }
 
   .feature-preview__badge-pin {
-    position: sticky;
-    top: calc(var(--site-sticky-sliver) + var(--feature-badge-gap));
+    position: relative;
     z-index: 11;
     display: flex;
     justify-content: center;
-    padding-top: var(--feature-badge-gap);
-    padding-bottom: 0.85rem;
+    padding-top: calc(var(--site-sticky-sliver) + var(--feature-badge-gap));
+    padding-bottom: 0.35rem;
   }
 
-  .feature-preview__badge {
-    display: grid;
-    place-items: center;
-    width: clamp(2.85rem, 4.2vw, 3.35rem);
-    height: clamp(2.85rem, 4.2vw, 3.35rem);
-    border: 1.5px solid var(--site-color-ink);
-    background: var(--site-color-surface);
-  }
-
-  .feature-preview__badge-mark {
-    font-family: var(--site-font-display);
-    font-size: clamp(1.35rem, 2vw, 1.65rem);
-    font-weight: 500;
-    line-height: 1;
-    color: var(--site-color-ink);
+  .feature-preview__badge-logo {
+    display: block;
+    width: var(--feature-badge-size);
+    height: var(--feature-badge-size);
+    object-fit: contain;
   }
 
   .feature-preview__content {
@@ -157,14 +158,15 @@ const { sectionId = 'features' } = Astro.props as Props;
       var(--site-panel-pad)
       0
       0;
+    will-change: transform;
   }
 
   .feature-preview__header {
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
-    margin: 0 0 clamp(1.25rem, 2.5vw, 2rem);
-    padding-top: 0.1rem;
+    margin: 0 0 clamp(1rem, 2vw, 1.65rem);
+    padding-top: var(--feature-header-offset);
   }
 
   .feature-preview__tabs {
@@ -220,6 +222,7 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .feature-preview__artwork {
     width: 100%;
+    overflow: hidden;
   }
 
   .feature-preview__description {
@@ -235,11 +238,14 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   .feature-preview__wordmark-wrap {
+    position: relative;
+    z-index: 10;
+    flex: 0 0 auto;
     margin-top: auto;
     padding:
       clamp(0.1rem, 0.5vw, 0.35rem)
       var(--site-panel-pad)
-      0;
+      clamp(0.2rem, 0.45vw, 0.4rem);
     overflow: visible;
   }
 
@@ -247,10 +253,10 @@ const { sectionId = 'features' } = Astro.props as Props;
     margin: 0;
     padding: 0;
     font-family: var(--site-font-display);
-    font-size: clamp(5.5rem, 20.5vw, 18rem);
+    font-size: clamp(5.15rem, 18.4vw, 16.1rem);
     font-weight: 400;
-    line-height: 0.66;
-    letter-spacing: -0.07em;
+    line-height: 0.68;
+    letter-spacing: -0.035em;
     text-transform: uppercase;
     color: var(--site-color-ink);
     white-space: nowrap;
@@ -292,6 +298,12 @@ const { sectionId = 'features' } = Astro.props as Props;
 
     .feature-preview__description {
       max-width: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feature-preview__content {
+      will-change: auto;
     }
   }
 

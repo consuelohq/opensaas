@@ -41,11 +41,10 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 			<div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
 				<p class="home-hero__action-label site-eyebrow">USE CONSUELO OS CLOUD</p>
 				<a class="home-hero__portal site-button site-button--secondary" href={osPortalHref}>
-					<svg viewBox="0 0 24 24" aria-hidden="true">
-						<path d="M7.5 18.5h9a4 4 0 0 0 .7-7.94A5.8 5.8 0 0 0 6.02 9.1a4.75 4.75 0 0 0 1.48 9.4Z"
-						></path>
+					<span>SIGN IN TO DEPLOY</span>
+					<svg class="home-hero__portal-arrow" viewBox="0 0 24 24" aria-hidden="true">
+						<path d="M5 12h14M13 6l6 6-6 6" />
 					</svg>
-					<span>Go to OS portal</span>
 				</a>
 			</div>
 
@@ -112,7 +111,11 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 			</div>
 		</div>
 
-		<figure class="home-hero__diagram" aria-label="Consuelo integrations diagram">
+		<figure
+			class="home-hero__diagram"
+			aria-label="Consuelo integrations diagram"
+			data-motion="hero-diagram"
+		>
 			<img
 				src="/images/consuelo-integrations-hero.svg?v=20260628-portrait"
 				alt="Developer tools and work surfaces connected to Consuelo"
@@ -302,10 +305,14 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 		padding: 0.72rem 1.15rem;
 	}
 
-	.home-hero__portal svg {
+	.home-hero__portal-arrow {
 		width: var(--site-space-4);
 		height: var(--site-space-4);
-		fill: currentColor;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 
 	.home-hero__install-wrap {
@@ -601,7 +608,7 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 			font-size: clamp(0.78rem, 3vw, 0.9rem);
 		}
 
-		.home-hero__portal svg {
+		.home-hero__portal-arrow {
 			width: 0.95rem;
 			height: 0.95rem;
 		}
