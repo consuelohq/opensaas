@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" fill="none" role="img" aria-hidden="true">
+  <rect width="400" height="280" fill="#5379AE" opacity="0.12"/>
+  <rect x="48" y="36" width="304" height="208" rx="10" fill="#FFFFFF" stroke="#5379AE" stroke-width="2"/>
+  <circle cx="72" cy="58" r="5" fill="#5379AE" opacity="0.35"/>
+  <circle cx="92" cy="58" r="5" fill="#5379AE" opacity="0.25"/>
+  <circle cx="112" cy="58" r="5" fill="#5379AE" opacity="0.25"/>
+  <rect x="68" y="84" width="264" height="12" rx="2" fill="#5379AE" opacity="0.18"/>
+  <rect x="68" y="108" width="220" height="10" rx="2" fill="#5379AE" opacity="0.14"/>
+  <rect x="68" y="130" width="248" height="10" rx="2" fill="#5379AE" opacity="0.14"/>
+  <rect x="68" y="152" width="180" height="10" rx="2" fill="#5379AE" opacity="0.1"/>
+  <path d="M68 188h264" stroke="#5379AE" stroke-width="1.5" opacity="0.2"/>
+  <text x="76" y="214" fill="#5379AE" font-family="monospace" font-size="11" opacity="0.85">$ curl -fsSL install.sh | bash</text>
+</svg>

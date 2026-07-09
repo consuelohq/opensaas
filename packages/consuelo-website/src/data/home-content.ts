@@ -104,6 +104,49 @@ export type HomeFeaturePreviewItem = {
   assetSrc?: string;
 };
 
+export type HomePlatformCard = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  imageSrc: string;
+  imageAlt: string;
+  ctaLabel: string;
+  ctaHref?: string;
+  terminalCommand?: string;
+  providers?: string[];
+};
+
+export const homePlatformCards: HomePlatformCard[] = [
+  {
+    id: 'macos',
+    eyebrow: 'macOS 12+',
+    title: 'Mac OS',
+    imageSrc: '/images/platforms/macos-art.svg',
+    imageAlt: 'Consuelo terminal install on macOS',
+    ctaLabel: 'Install via terminal',
+    terminalCommand: 'curl -fsSL https://os.consuelohq.com/install.sh | bash',
+  },
+  {
+    id: 'chat-native',
+    eyebrow: 'Chat native',
+    title: 'ChatGPT / Claude',
+    imageSrc: '/images/platforms/chat-native-art.svg',
+    imageAlt: 'Connect ChatGPT and Claude to Consuelo',
+    ctaLabel: 'Sign in to connect',
+    ctaHref: 'https://os.consuelohq.com',
+    providers: ['ChatGPT', 'Claude'],
+  },
+  {
+    id: 'cloud-workspace',
+    eyebrow: 'Always on',
+    title: 'Cloud Workspace',
+    imageSrc: '/images/platforms/cloud-workspace-art.svg',
+    imageAlt: 'Deploy Consuelo to the cloud',
+    ctaLabel: 'Deploy to Consuelo Cloud',
+    ctaHref: 'https://os.consuelohq.com',
+  },
+];
+
 export type HomeFooterSignup = {
   eyebrow: string;
   title: string;

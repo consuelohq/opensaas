@@ -1,0 +1,13 @@
+{
+  "routes": [
+    {
+      "routePath": "/t/:action",
+      "mountPath": "/t",
+      "method": "GET",
+      "module": [
+        "t/[action].ts:onRequestGet"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}
