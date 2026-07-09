@@ -208,6 +208,12 @@ type WorkspaceCloudflareProvisioningContract = {
     apiBaseUrl?: string;
     fetchImpl?: typeof fetch;
   }) => WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
+  createCloudflareWorkspaceProvisioningClient: (input: {
+    accountId: string;
+    apiToken: string;
+    apiBaseUrl?: string;
+    fetchImpl?: typeof fetch;
+  }) => WorkspaceCloudflareProvisioningClient;
   resolveTrustedOsMcpProviderIpRanges: (input: {
     sourceIds?: TrustedOsMcpProviderIpSourceId[];
     extraCidrs?: string[];
@@ -243,6 +249,7 @@ async function loadWorkspaceCloudflareProvisioningContract(): Promise<WorkspaceC
     'createOptionalManagedOsMcpIngressPolicyConfigFromEnv',
     'applyWorkspaceCloudflareProvisioningFromEnv',
     'createCloudflareManagedOsMcpIngressPolicyClient',
+    'createCloudflareWorkspaceProvisioningClient',
     'resolveTrustedOsMcpProviderIpRanges',
     'syncManagedOsMcpTrustedProviderIpAllowlist',
     'ensureManagedOsMcpIngressPolicy',
@@ -1456,6 +1463,98 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       tunnelCredential: 'credential_fixture',
     });
     expect(JSON.stringify(result.registryRecord)).not.toContain('credential_fixture');
+  });
+
+  it('should call Cloudflare APIs for remote tunnel, tunnel token, config, and DNS records', async () => {
+    const {
+      applyWorkspaceCloudflareProvisioning,
+      createCloudflareWorkspaceProvisioningClient,
+    } = await loadWorkspaceCloudflareProvisioningContract();
+    const calls: Array<{ method: string; url: string; body?: unknown }> = [];
+    const fetchImpl = async (request: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = String(request);
+      const method = init?.method ?? 'GET';
+      const body = init?.body ? JSON.parse(String(init.body)) as unknown : undefined;
+      calls.push({ method, url, ...(body ? { body } : {}) });
+
+      if (url.endsWith('/accounts/account_123/cfd_tunnel?name=workspace-workspace_123-connector-macbook-air')) {
+        return new Response(JSON.stringify({ success: true, result: [] }));
+      }
+      if (url.endsWith('/accounts/account_123/cfd_tunnel') && method === 'POST') {
+        return new Response(JSON.stringify({ success: true, result: { id: 'tunnel_123' } }));
+      }
+      if (url.endsWith('/accounts/account_123/cfd_tunnel/tunnel_123/token')) {
+        return new Response(JSON.stringify({ success: true, result: 'tunnel_token_123' }));
+      }
+      if (url.endsWith('/accounts/account_123/cfd_tunnel/tunnel_123/configurations') && method === 'PUT') {
+        return new Response(JSON.stringify({ success: true, result: {} }));
+      }
+      if (url.includes('/zones/zone_123/dns_records?type=CNAME&')) {
+        return new Response(JSON.stringify({ success: true, result: [] }));
+      }
+      if (url.endsWith('/zones/zone_123/dns_records') && method === 'POST') {
+        return new Response(JSON.stringify({ success: true, result: { id: `record_${calls.length}` } }));
+      }
+
+      return new Response(JSON.stringify({ success: false, errors: [{ message: `unexpected ${method} ${url}` }] }), { status: 500 });
+    };
+
+    const cloudflare = createCloudflareWorkspaceProvisioningClient({
+      accountId: 'account_123',
+      apiToken: 'api_token_123',
+      apiBaseUrl: 'https://api.cloudflare.test/client/v4',
+      fetchImpl,
+    });
+    const result = await applyWorkspaceCloudflareProvisioning({
+      cloudflare,
+      input: {
+        workspaceId: 'workspace_123',
+        workspaceSlug: 'kokayi',
+        baseDomain: 'consuelohq.com',
+        cloudflareZoneId: 'zone_123',
+        connectorId: 'connector_macbook_air',
+        localServiceUrl: 'http://127.0.0.1:8960',
+      },
+    });
+
+    expect(result.connectorBootstrap).toMatchObject({
+      connectorId: 'connector_macbook_air',
+      tunnelId: 'tunnel_123',
+      tunnelCredential: 'tunnel_token_123',
+    });
+    expect(calls.map((call) => call.method)).toEqual([
+      'GET',
+      'POST',
+      'GET',
+      'PUT',
+      'GET',
+      'POST',
+      'GET',
+      'POST',
+    ]);
+    expect(calls[3]?.body).toEqual({
+      config: {
+        ingress: [
+          {
+            hostname: 'connector-macbook-air.os-origin.consuelohq.com',
+            service: 'http://127.0.0.1:8960',
+          },
+          { service: 'http_status:404' },
+        ],
+      },
+    });
+    expect(calls[5]?.body).toMatchObject({
+      type: 'CNAME',
+      name: 'kokayi.consuelohq.com',
+      content: 'workspace-edge.consuelohq.com',
+      proxied: true,
+    });
+    expect(calls[7]?.body).toMatchObject({
+      type: 'CNAME',
+      name: 'connector-macbook-air.os-origin.consuelohq.com',
+      content: 'tunnel_123.cfargotunnel.com',
+      proxied: true,
+    });
   });
 
   it('should keep client bootstrap credentials separate from durable registry data', async () => {

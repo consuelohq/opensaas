@@ -947,7 +947,7 @@ const createCloudflareApiRequest = (
   input: CloudflareManagedOsMcpIngressPolicyClientInput,
 ): ((request: {
   operation: string;
-  method: 'GET' | 'POST' | 'PATCH';
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT';
   path: string;
   body?: unknown;
   allowNotFound?: boolean;
@@ -1010,6 +1010,251 @@ const createCloudflareManagedPolicyClientError = (
     `Cloudflare managed OS MCP policy client ${operation} failed: ${getErrorMessage(error)}`,
     { cause: error },
   );
+
+const createCloudflareWorkspaceProvisioningClientError = (
+  operation: string,
+  error: unknown,
+): Error =>
+  new Error(
+    `Cloudflare workspace provisioning client ${operation} failed: ${getErrorMessage(error)}`,
+    { cause: error },
+  );
+
+const readRequiredString = (input: {
+  value: Record<string, unknown>;
+  key: string;
+  operation: string;
+}): string => {
+  const value = readString(input.value, input.key);
+  if (!value) {
+    throw new Error(`Cloudflare API ${input.operation} response was missing ${input.key}`);
+  }
+
+  return value;
+};
+
+const readCloudflareResultArray = (input: {
+  value: unknown;
+  operation: string;
+}): unknown[] => {
+  if (!Array.isArray(input.value)) {
+    throw new Error(`Cloudflare API ${input.operation} response was not an array`);
+  }
+
+  return input.value;
+};
+
+const readTunnelToken = (input: {
+  value: unknown;
+  operation: string;
+}): string => {
+  if (typeof input.value === 'string' && input.value.trim()) {
+    return input.value.trim();
+  }
+  if (!isRecord(input.value)) {
+    throw new Error(`Cloudflare API ${input.operation} token response was invalid`);
+  }
+
+  const token =
+    readString(input.value, 'token') ??
+    readString(input.value, 'tunnel_token') ??
+    readString(input.value, 'tunnelToken') ??
+    readString(input.value, 'credential') ??
+    readString(input.value, 'tunnelCredential');
+  if (!token) {
+    throw new Error(`Cloudflare API ${input.operation} response was missing tunnel token`);
+  }
+
+  return token;
+};
+
+const findCloudflareRecordByName = (input: {
+  records: unknown[];
+  name: string;
+}): Record<string, unknown> | undefined =>
+  input.records.find((record): record is Record<string, unknown> =>
+    isRecord(record) && readString(record, 'name') === input.name,
+  );
+
+const findCloudflareTunnelByName = (input: {
+  tunnels: unknown[];
+  name: string;
+}): Record<string, unknown> | undefined =>
+  input.tunnels.find((tunnel): tunnel is Record<string, unknown> =>
+    isRecord(tunnel) &&
+    readString(tunnel, 'name') === input.name &&
+    !readString(tunnel, 'deleted_at'),
+  );
+
+export const createCloudflareWorkspaceProvisioningClient = (
+  input: CloudflareManagedOsMcpIngressPolicyClientInput,
+): WorkspaceCloudflareProvisioningClient => {
+  const accountId = normalizeOptionalValue(input.accountId);
+  if (!accountId) throw new Error('Cloudflare account id is required');
+  const request = createCloudflareApiRequest(input);
+
+  return {
+    async createOrReuseTunnel(input) {
+      try {
+        const tunnelsResult = await request({
+          operation: 'listCloudflareTunnels',
+          method: 'GET',
+          path: `${createCloudflarePath('accounts', accountId, 'cfd_tunnel')}?name=${encodeURIComponent(input.name)}`,
+        });
+        const existingTunnel = findCloudflareTunnelByName({
+          tunnels: readCloudflareResultArray({
+            value: tunnelsResult,
+            operation: 'listCloudflareTunnels',
+          }),
+          name: input.name,
+        });
+        let tunnel = existingTunnel;
+        if (!tunnel) {
+          const created = await request({
+            operation: 'createCloudflareTunnel',
+            method: 'POST',
+            path: createCloudflarePath('accounts', accountId, 'cfd_tunnel'),
+            body: {
+              name: input.name,
+              config_src: 'cloudflare',
+            },
+          });
+          if (!isRecord(created)) {
+            throw new Error('Cloudflare tunnel creation response was invalid');
+          }
+          tunnel = created;
+        }
+        const tunnelId = readRequiredString({
+          value: tunnel,
+          key: 'id',
+          operation: 'createOrReuseTunnel',
+        });
+        const tokenResult = await request({
+          operation: 'getCloudflareTunnelToken',
+          method: 'GET',
+          path: createCloudflarePath('accounts', accountId, 'cfd_tunnel', tunnelId, 'token'),
+        });
+
+        return {
+          tunnelId,
+          tunnelCredential: readTunnelToken({
+            value: tokenResult,
+            operation: 'getCloudflareTunnelToken',
+          }),
+          connectorCredentialId: input.connectorId,
+        };
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'createOrReuseTunnel',
+          error,
+        );
+      }
+    },
+    async putTunnelConfig(input) {
+      try {
+        await request({
+          operation: 'putCloudflareTunnelConfig',
+          method: 'PUT',
+          path: createCloudflarePath(
+            'accounts',
+            accountId,
+            'cfd_tunnel',
+            input.tunnelId,
+            'configurations',
+          ),
+          body: {
+            config: {
+              ingress: [
+                {
+                  hostname: input.hostname,
+                  service: input.localServiceUrl,
+                },
+                { service: 'http_status:404' },
+              ],
+            },
+          },
+        });
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'putTunnelConfig',
+          error,
+        );
+      }
+    },
+    async createOrReuseDnsRecord(input) {
+      try {
+        const recordsResult = await request({
+          operation: 'listCloudflareDnsRecords',
+          method: 'GET',
+          path: `${createCloudflarePath('zones', input.zoneId, 'dns_records')}?type=${input.type}&name=${encodeURIComponent(input.name)}`,
+        });
+        const existingRecord = findCloudflareRecordByName({
+          records: readCloudflareResultArray({
+            value: recordsResult,
+            operation: 'listCloudflareDnsRecords',
+          }),
+          name: input.name,
+        });
+
+        if (existingRecord) {
+          const recordId = readRequiredString({
+            value: existingRecord,
+            key: 'id',
+            operation: 'createOrReuseDnsRecord',
+          });
+          const existingContent = readString(existingRecord, 'content');
+          const existingProxied = readBoolean(existingRecord, 'proxied') ?? false;
+          if (existingContent === input.content && existingProxied === input.proxied) {
+            return { recordId };
+          }
+          await request({
+            operation: 'updateCloudflareDnsRecord',
+            method: 'PATCH',
+            path: createCloudflarePath('zones', input.zoneId, 'dns_records', recordId),
+            body: {
+              type: input.type,
+              name: input.name,
+              content: input.content,
+              proxied: input.proxied,
+              ttl: 1,
+            },
+          });
+
+          return { recordId };
+        }
+
+        const created = await request({
+          operation: 'createCloudflareDnsRecord',
+          method: 'POST',
+          path: createCloudflarePath('zones', input.zoneId, 'dns_records'),
+          body: {
+            type: input.type,
+            name: input.name,
+            content: input.content,
+            proxied: input.proxied,
+            ttl: 1,
+          },
+        });
+        if (!isRecord(created)) {
+          throw new Error('Cloudflare DNS record creation response was invalid');
+        }
+
+        return {
+          recordId: readRequiredString({
+            value: created,
+            key: 'id',
+            operation: 'createCloudflareDnsRecord',
+          }),
+        };
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'createOrReuseDnsRecord',
+          error,
+        );
+      }
+    },
+  };
+};
 
 export const createCloudflareManagedOsMcpIngressPolicyClient = (
   input: CloudflareManagedOsMcpIngressPolicyClientInput,
