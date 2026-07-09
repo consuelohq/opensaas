@@ -120,6 +120,7 @@ describe('Consuelo website structure', () => {
     expectFile('src/data/pricing-content.ts');
 
     const pricingRoute = readSource('src/pages/pricing.astro');
+    const redirects = readSource('public/_redirects');
     const pricingContent = await import(pathToFileURL(join(sourceRoot, 'data/pricing-content.ts')).href);
     const navigation = await import(pathToFileURL(join(sourceRoot, 'data/site-navigation.ts')).href);
 
@@ -133,6 +134,7 @@ describe('Consuelo website structure', () => {
     expect(pricingRoute).not.toContain('SiteFooter');
     expect(pricingRoute).not.toContain('FAQ');
     expect(pricingRoute).not.toContain('checkout');
+    expect(redirects).not.toContain('/pricing /mercury');
 
     expect(pricingContent.pricingHero.title).toBe('CHOOSE A PLAN');
     expect(pricingContent.pricingHero.subtitle).toBe(

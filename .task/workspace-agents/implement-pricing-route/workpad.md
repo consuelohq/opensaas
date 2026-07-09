@@ -47,6 +47,7 @@ started: 2026-07-08
 - `.task/workspace-agents/implement-pricing-route/read-log.json`
 - `.task/workspace-agents/implement-pricing-route/session.json`
 - `.task/workspace-agents/implement-pricing-route/workpad.md`
+- `packages/consuelo-website/public/_redirects`
 - `packages/consuelo-website/src/data/pricing-content.ts`
 - `packages/consuelo-website/src/pages/pricing.astro`
 - `packages/consuelo-website/tests/website-structure.test.js`
@@ -59,6 +60,7 @@ started: 2026-07-08
 - `.task/workspace-agents/implement-pricing-route/read-log.json`
 - `.task/workspace-agents/implement-pricing-route/session.json`
 - `.task/workspace-agents/implement-pricing-route/workpad.md`
+- `packages/consuelo-website/public/_redirects`
 - `packages/consuelo-website/src/data/pricing-content.ts`
 - `packages/consuelo-website/src/pages/pricing.astro`
 - `packages/consuelo-website/tests/website-structure.test.js`
@@ -66,6 +68,7 @@ started: 2026-07-08
 ## workspace-owned: activity log
 
 - 2026-07-08 23:51:26 fs.write: `.task/workspace-agents/implement-pricing-route/workpad.md`
+- 2026-07-09 00:09:11 fs.write: `packages/consuelo-website/public/_redirects`
 - Added focused structure test for route/content/nav contract.
 - Added pricing content data module.
 - Built static site and verified `/pricing/index.html` generation.
@@ -85,6 +88,7 @@ started: 2026-07-08
 - `browser.eval` mobile -> one computed grid column, image-label order preserved.
 - `review.run --base origin/main --no-tests` -> 0 issues in my changes; 1 pre-existing project typecheck note: no projects with `typecheck` target found.
 - 2026-07-08 23:51:43 `verify`: passed — OK
+- 2026-07-09 00:09:54 `verify`: passed — OK
 
 ## key decisions
 
@@ -125,7 +129,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/tasks/workspace-agents/implement-pricing-route.json`, `.task/workspace-agents/implement-pricing-route/current.json`, `.task/workspace-agents/implement-pricing-route/evidence-log.json`, `.task/workspace-agents/implement-pricing-route/read-log.json`, `.task/workspace-agents/implement-pricing-route/session.json`, `.task/workspace-agents/implement-pricing-route/workpad.md`, `packages/consuelo-website/src/data/pricing-content.ts`, `packages/consuelo-website/src/pages/pricing.astro`, `packages/consuelo-website/tests/website-structure.test.js`
+- changed files: `.task/tasks/workspace-agents/implement-pricing-route.json`, `.task/workspace-agents/implement-pricing-route/current.json`, `.task/workspace-agents/implement-pricing-route/evidence-log.json`, `.task/workspace-agents/implement-pricing-route/read-log.json`, `.task/workspace-agents/implement-pricing-route/session.json`, `.task/workspace-agents/implement-pricing-route/verify.json`, `.task/workspace-agents/implement-pricing-route/workpad.md`, `packages/consuelo-website/public/_redirects`, `packages/consuelo-website/src/data/pricing-content.ts`, `packages/consuelo-website/src/pages/pricing.astro`, `packages/consuelo-website/tests/website-structure.test.js`
 - matched rules: none
 - selected suites: none
 - run results: none
