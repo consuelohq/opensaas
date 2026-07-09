@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/diff-cockpit/rework-home-screen/workpad.md",
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "updatedAt": "2026-06-03T08:03:24.394Z"
+}

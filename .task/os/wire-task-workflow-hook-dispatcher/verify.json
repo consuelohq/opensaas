@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/wire-task-workflow-hook-dispatcher",
+  "base": "origin/stream/os",
+  "headSha": "5bd57498508d2f34adb7aa603ca5020f69c9869f",
+  "changeHash": "4703a1bb91f32d59b3715f3cc3bf51ddf9ee0d92ede881b4b3778a5f188d264d",
+  "changedFiles": [
+    "packages/os/hooks/dispatcher.js",
+    "packages/os/scripts/task-hook.js",
+    "packages/os/scripts/task-start.js",
+    "packages/os/tests/task-hook-dispatcher.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T18:39:52.785Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/wire-task-workflow-hook-dispatcher/current.json",
+        ".task/os/wire-task-workflow-hook-dispatcher/evidence-log.json",
+        ".task/os/wire-task-workflow-hook-dispatcher/read-log.json",
+        ".task/os/wire-task-workflow-hook-dispatcher/session.json",
+        ".task/os/wire-task-workflow-hook-dispatcher/workpad.md",
+        ".task/tasks/os/wire-task-workflow-hook-dispatcher.json",
+        "packages/os/hooks/dispatcher.js",
+        "packages/os/scripts/task-hook.js",
+        "packages/os/scripts/task-start.js",
+        "packages/os/tests/task-hook-dispatcher.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

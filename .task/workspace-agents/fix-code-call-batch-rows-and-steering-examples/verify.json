@@ -1,0 +1,97 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-code-call-batch-rows-and-steering-examples",
+  "base": "origin/task/workspace-agents/fix-code-call-batch-rows-and-steering-examples",
+  "headSha": "99cde55c990570c95bdad86ddb7d1427bdfd4aa7",
+  "changeHash": "633a8c454faceb9d8e7777ae98226eeb4e57ff27f8768ee6667ddcd0be0b9ab2",
+  "changedFiles": [
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tests/trace-watch.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-06-18T06:30:43.415Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-code-call-batch-rows-and-steering-examples.json",
+        ".task/workspace-agents/fix-code-call-batch-rows-and-steering-examples/current.json",
+        ".task/workspace-agents/fix-code-call-batch-rows-and-steering-examples/session.json",
+        ".task/workspace-agents/fix-code-call-batch-rows-and-steering-examples/workpad.md",
+        "packages/workspace/server.py",
+        "packages/workspace/tests/server_call_test.py",
+        "packages/workspace/tests/trace-watch.test.ts",
+        "scripts/operator/trace-watch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "trace-watch",
+          "critical": true,
+          "reason": "Trace renderer changes must compile.",
+          "matchedFiles": [
+            "scripts/operator/trace-watch.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7,
+          "outputTail": "Bundled 1 module in 3ms\n\n  trace-watch-test-selection.js  38.60 KB  (entry point)\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

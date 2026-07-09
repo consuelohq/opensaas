@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/show-batch-child-tool-names-in-trace-watch",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 570,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/570",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/570",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/570/show-batch-child-tool-names-in-trace-watch",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/570",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/570/show-batch-child-tool-names-in-trace-watch",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-batch-child-tool-names-in-trace-watch",
+  "taskSession": "tsk_6878c0e8720c",
+  "tmuxSession": "opensaas-workspace-agents-show-batch-child-tool-names-in-trace-watch-6878c0e8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-batch-child-tool-names-in-trace-watch/.task/workspace-agents/show-batch-child-tool-names-in-trace-watch/session.json",
+  "createdAt": "2026-05-24T06:28:56.695Z"
+}

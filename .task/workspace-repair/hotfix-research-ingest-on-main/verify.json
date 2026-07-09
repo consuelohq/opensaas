@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-repair/hotfix-research-ingest-on-main",
+  "base": "origin/main",
+  "headSha": "57145740e6422e5e7bda4d53c1c17631219afd48",
+  "changeHash": "d63e4759d0939358949caa33f4c71923dedd15c2fb36f23232c5fc465391fdc3",
+  "changedFiles": [
+    "packages/workspace/scripts/research-ingest.js"
+  ],
+  "verifiedAt": "2026-06-07T09:15:35.599Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-repair/hotfix-research-ingest-on-main.json",
+        ".task/workspace-repair/hotfix-research-ingest-on-main/current.json",
+        ".task/workspace-repair/hotfix-research-ingest-on-main/evidence-log.json",
+        ".task/workspace-repair/hotfix-research-ingest-on-main/read-log.json",
+        ".task/workspace-repair/hotfix-research-ingest-on-main/session.json",
+        ".task/workspace-repair/hotfix-research-ingest-on-main/workpad.md",
+        "packages/workspace/scripts/research-ingest.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

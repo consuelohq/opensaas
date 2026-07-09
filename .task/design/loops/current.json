@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/loops",
+  "baseBranch": "stream/design",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 943,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/943",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/943",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/943/loops",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/943",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/943/loops",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-loops",
+  "taskSession": "tsk_6d2d96886240",
+  "tmuxSession": "opensaas-design-loops-6d2d9688",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-loops/.task/design/loops/session.json",
+  "createdAt": "2026-06-10T08:48:38.393Z"
+}

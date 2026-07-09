@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/implement-hosted-embedding-gateway-default/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/index/embedder.js",
+    "packages/os/scripts/lib/index/store.js"
+  ],
+  "updatedAt": "2026-06-11T09:05:54.024Z"
+}

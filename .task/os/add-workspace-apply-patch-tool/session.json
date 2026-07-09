@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6bd580e6c564",
+  "tmuxSession": "opensaas-os-add-workspace-apply-patch-tool-6bd580e6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-apply-patch-tool",
+  "branch": "task/os/add-workspace-apply-patch-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-apply-patch-tool",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-apply-patch-tool",
+  "prNumber": 1031,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1031",
+  "createdAt": "2026-06-14T03:34:59.077Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-apply-patch-tool/.task/os/add-workspace-apply-patch-tool/session.json"
+}

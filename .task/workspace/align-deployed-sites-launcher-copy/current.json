@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/align-deployed-sites-launcher-copy",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1319,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1319",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1319",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1319/align-deployed-sites-launcher-copy",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1319",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1319/align-deployed-sites-launcher-copy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-align-deployed-sites-launcher-copy",
+  "taskSession": "tsk_32f0677211f3",
+  "tmuxSession": "opensaas-workspace-align-deployed-sites-launcher-copy-32f06772",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-align-deployed-sites-launcher-copy/.task/workspace/align-deployed-sites-launcher-copy/session.json",
+  "createdAt": "2026-07-01T06:02:03.349Z"
+}

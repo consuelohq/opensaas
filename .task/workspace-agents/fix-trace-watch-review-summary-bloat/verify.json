@@ -1,0 +1,26 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-trace-watch-review-summary-bloat",
+  "base": "origin/main",
+  "headSha": "ee85ba1309bdf851fb08f4d8d739a340f3a534b9",
+  "changeHash": "9041505800994bd42a9ab4020cc37a725d3693138a2bd6a9029b10c5fe97da5a",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-23T22:48:44.927Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_566d52d51c21",
+  "tmuxSession": "opensaas-workspace-agents-fix-github-pr-checks-fields-566d52d5",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-github-pr-checks-fields",
+  "branch": "task/workspace-agents/fix-github-pr-checks-fields",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-github-pr-checks-fields",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-github-pr-checks-fields",
+  "prNumber": 477,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/477",
+  "createdAt": "2026-05-23T03:40:12.337Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-github-pr-checks-fields/.task/workspace-agents/fix-github-pr-checks-fields/session.json"
+}

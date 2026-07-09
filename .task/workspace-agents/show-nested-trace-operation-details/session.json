@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0cfb6f24f233",
+  "tmuxSession": "opensaas-workspace-agents-show-nested-trace-operation-details-0cfb6f24",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/show-nested-trace-operation-details",
+  "branch": "task/workspace-agents/show-nested-trace-operation-details",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-nested-trace-operation-details",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-nested-trace-operation-details",
+  "prNumber": 581,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/581",
+  "createdAt": "2026-05-24T07:32:18.545Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-nested-trace-operation-details/.task/workspace-agents/show-nested-trace-operation-details/session.json"
+}

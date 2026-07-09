@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 // review.js — local code review: static checks + eslint + typecheck
-// splits findings into "yours" (from your diff) vs "pre-existing"
+// splits findings into "yours", "related pre-existing", and background "pre-existing"
 // usage: bun run review [options]
 
 const { execFileSync, execSync } = require('child_process');
@@ -10,9 +10,71 @@ const path = require('path');
 
 const { getTrackedChanges } = require('./lib/git');
 const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
+const { computeVerificationState } = require('./lib/verification');
+const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
+const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
+let outputCapture = null;
+let activeReviewRun = null;
 
-function writeStdout(s = '') { process.stdout.write(s + '\n'); }
-function writeStderr(s = '') { process.stderr.write(s + '\n'); }
+function writeStdout(s = '') {
+  const value = `${s}\n`;
+  if (outputCapture) {
+    outputCapture.stdout += value;
+    return;
+  }
+  process.stdout.write(value);
+}
+
+function writeStderr(s = '') {
+  const value = `${s}\n`;
+  if (outputCapture) {
+    outputCapture.stderr += value;
+    return;
+  }
+  process.stderr.write(value);
+}
+
+function startOutputCapture() {
+  outputCapture = { stdout: '', stderr: '' };
+}
+
+function stopOutputCapture() {
+  const captured = outputCapture || { stdout: '', stderr: '' };
+  outputCapture = null;
+  return captured;
+}
+
+function emitCapturedOutput(captured) {
+  if (!captured) return;
+  if (captured.stderr) process.stderr.write(captured.stderr);
+  if (captured.stdout) process.stdout.write(captured.stdout);
+}
+
+function replayReviewResult(result) {
+  if (result.stderr) process.stderr.write(result.stderr);
+  if (result.stdout) process.stdout.write(result.stdout);
+  process.exitCode = Number.isInteger(result.exitCode) ? result.exitCode : 1;
+}
+
+const FINDING_JSON_SAMPLE_LIMIT = 20;
+const FINDING_MESSAGE_PREVIEW_LIMIT = 500;
+
+function shouldUseReviewRunState(args) {
+  return Boolean((args.json || args.summaryJson) && !args.fix);
+}
+
+function beginStructuredReviewRun(root, branch, base, args) {
+  const verificationState = computeVerificationState(root, branch);
+  const identity = makeReviewRunIdentity({
+    repoRoot: root,
+    branch,
+    base,
+    verificationState,
+    args,
+  });
+
+  return beginReviewRun(root, identity);
+}
 
 function printHelp() {
   const lines = [
@@ -25,6 +87,7 @@ function printHelp() {
     '  --all                check all files, not just changed',
     '  --base <ref>         compare against ref (default: auto-detect stream or origin/main)',
     '  --json               json output',
+    '  --summary-json       compact semantic json output for agents',
     '  --quiet              only show failures',
     '  --no-tests           skip test suite',
     '  --strict             enable strictPropertyInitialization (shows hidden TS2564 errors)',
@@ -42,6 +105,7 @@ function parseArgs(argv) {
       case '--all': args.all = true; break;
       case '--base': args.base = argv[++i]; break;
       case '--json': args.json = true; break;
+      case '--summary-json': args.summaryJson = true; break;
       case '--quiet': args.quiet = true; break;
       case '--no-tests': args.noTests = true; break;
       case '--strict': args.strict = true; break;
@@ -570,24 +634,67 @@ function runTests(files) {
   return results;
 }
 
-function classifyFindings(allFindings, changedLines, base) {
+function normalizeReviewPath(file) {
+  return String(file || '').replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+function packageAreaRoot(file) {
+  const normalized = normalizeReviewPath(file);
+  const packageMatch = normalized.match(/^packages\/[^/]+\//);
+  if (packageMatch) return packageMatch[0];
+  const firstSegment = normalized.split('/')[0];
+  return firstSegment ? `${firstSegment}/` : '';
+}
+
+function collectRelatedReviewRoots(files, affectedProjects = []) {
+  const roots = new Set();
+
+  for (const project of affectedProjects) {
+    const root = normalizeReviewPath(project?.root);
+    if (root) roots.add(root.endsWith('/') ? root : `${root}/`);
+  }
+
+  for (const file of files) {
+    const root = packageAreaRoot(file);
+    if (root) roots.add(root);
+  }
+
+  return roots;
+}
+
+function isRelatedReviewFinding(finding, relatedRoots) {
+  const file = normalizeReviewPath(finding?.file);
+  if (!file) return false;
+  for (const root of relatedRoots) {
+    if (file.startsWith(root)) return true;
+  }
+  return false;
+}
+
+function classifyFindings(allFindings, changedLines, relatedRoots = new Set()) {
   const yours = [];
+  const relatedPreExisting = [];
   const preExisting = [];
 
-  for (const f of allFindings) {
-    if (!f.file || !changedLines.has(f.file)) {
-      preExisting.push(f);
+  for (const finding of allFindings) {
+    const file = normalizeReviewPath(finding.file);
+    if (!file || !changedLines.has(file)) {
+      if (isRelatedReviewFinding(finding, relatedRoots)) relatedPreExisting.push(finding);
+      else preExisting.push(finding);
       continue;
     }
-    const myLines = changedLines.get(f.file);
-    if (myLines.size === 0 || myLines.has(f.line)) {
-      yours.push(f);
+
+    const myLines = changedLines.get(file);
+    if (myLines.size === 0 || myLines.has(finding.line)) {
+      yours.push(finding);
+    } else if (isRelatedReviewFinding(finding, relatedRoots)) {
+      relatedPreExisting.push(finding);
     } else {
-      preExisting.push(f);
+      preExisting.push(finding);
     }
   }
 
-  return { yours, preExisting };
+  return { yours, relatedPreExisting, preExisting };
 }
 
 function printFindings(label, findings, quiet) {
@@ -597,12 +704,7 @@ function printFindings(label, findings, quiet) {
   }
 
   writeStdout(`${label}: ${findings.length} issue(s)`);
-  // group by rule
-  const byRule = {};
-  for (const f of findings) {
-    if (!byRule[f.rule]) byRule[f.rule] = [];
-    byRule[f.rule].push(f);
-  }
+  const byRule = groupFindingsByRule(findings);
 
   for (const [rule, items] of Object.entries(byRule)) {
     writeStdout(`  ${rule} (${items.length}):`);
@@ -610,15 +712,138 @@ function printFindings(label, findings, quiet) {
       const loc = item.file ? `${item.file}:${item.line}` : "(project)";
       writeStdout(`    ${loc} — ${item.msg}`);
     }
-    if (items.length > 10) {
-      writeStdout(`    ... and ${items.length - 10} more`);
-    }
   }
+}
+
+function groupFindingsByRule(findings) {
+  const byRule = {};
+  for (const finding of findings) {
+    const rule = finding.rule || 'UNKNOWN';
+    if (!byRule[rule]) byRule[rule] = [];
+    byRule[rule].push(finding);
+  }
+  return byRule;
+}
+
+function findingId(owner, index) {
+  const prefix = owner === 'your_change' ? 'your' : owner === 'related_pre_existing' ? 'related' : 'pre';
+  return `${prefix}_finding_${String(index + 1).padStart(4, '0')}`;
+}
+
+function previewText(value, limit = FINDING_MESSAGE_PREVIEW_LIMIT) {
+  const text = String(value || '').replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim();
+  return text.length > limit ? `${text.slice(0, limit)}... truncated ${text.length - limit} chars` : text;
+}
+
+function compactFinding(finding, index, owner) {
+  const fullMessage = finding.msg || '';
+  const message = previewText(fullMessage);
+  return {
+    id: findingId(owner, index),
+    owner,
+    rule: finding.rule || 'UNKNOWN',
+    file: finding.file || '',
+    line: finding.line || 0,
+    message,
+    messageChars: String(fullMessage).length,
+    messageTruncated: message !== String(fullMessage || ''),
+  };
+}
+
+function summarizeCompactFindings(findings) {
+  const byRule = {};
+  const byFile = {};
+  for (const finding of findings) {
+    byRule[finding.rule] = (byRule[finding.rule] || 0) + 1;
+    const file = finding.file || '(project)';
+    if (!byFile[file]) byFile[file] = { file, count: 0, rules: new Set() };
+    byFile[file].count += 1;
+    byFile[file].rules.add(finding.rule);
+  }
+
+  return {
+    total: findings.length,
+    byRule: Object.entries(byRule).map(([rule, count]) => ({ rule, count })),
+    byFile: Object.values(byFile)
+      .map((entry) => ({ file: entry.file, count: entry.count, rules: [...entry.rules].sort() }))
+      .sort((a, b) => b.count - a.count || a.file.localeCompare(b.file)),
+    sample: findings.slice(0, FINDING_JSON_SAMPLE_LIMIT),
+    truncated: findings.length > FINDING_JSON_SAMPLE_LIMIT,
+    omitted: Math.max(0, findings.length - FINDING_JSON_SAMPLE_LIMIT),
+  };
+}
+
+function summarizeReviewTests(testResults) {
+  const failed = testResults.filter((result) => !result.passed);
+  return {
+    totalSuites: testResults.length,
+    passedSuites: testResults.length - failed.length,
+    failedSuites: failed.length,
+    failures: failed.map((result, index) => ({
+      id: `suite_${String(index + 1).padStart(4, '0')}`,
+      package: result.pkg,
+      elapsed: result.elapsed,
+      suites: result.suites,
+      tests: result.tests,
+      failureCount: Array.isArray(result.failures) ? result.failures.length : 0,
+      failures: Array.isArray(result.failures) ? result.failures.slice(0, FINDING_JSON_SAMPLE_LIMIT) : [],
+      truncated: Array.isArray(result.failures) && result.failures.length > FINDING_JSON_SAMPLE_LIMIT,
+    })),
+  };
+}
+
+const RELATED_PRE_EXISTING_PROMPT = 'Related pre-existing findings are in the same package or area as this task. Fix mechanical issues in this task, or escalate to Ko when the fix needs product, ownership, or architectural judgment.';
+
+function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult }) {
+  const yourFindings = yours.map((finding, index) => compactFinding(finding, index, 'your_change'));
+  const relatedPreExistingFindings = relatedPreExisting.map((finding, index) => compactFinding(finding, index, 'related_pre_existing'));
+  const preExistingFindings = preExisting.map((finding, index) => compactFinding(finding, index, 'pre_existing'));
+  const testSummary = summarizeReviewTests(testResults);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (testResults.length > 0) checksRun.push('tests');
+
+  return {
+    schema: 'review.summary.v1',
+    base,
+    branch,
+    files: files.length,
+    affectedProjects,
+    checksRun,
+    summary: {
+      yourIssues: yourFindings.length,
+      relatedPreExistingIssues: relatedPreExistingFindings.length,
+      preExistingIssues: preExistingFindings.length,
+      failedTestSuites: testSummary.failedSuites,
+      blockingIssues: yourFindings.length + relatedPreExistingFindings.length + testSummary.failedSuites,
+    },
+    mustFix: yourFindings,
+    relatedPreExisting: relatedPreExistingFindings,
+    relatedPreExistingPrompt: relatedPreExistingFindings.length > 0 ? RELATED_PRE_EXISTING_PROMPT : null,
+    byRule: {
+      yourChanges: summarizeCompactFindings(yourFindings).byRule,
+      relatedPreExisting: summarizeCompactFindings(relatedPreExistingFindings).byRule,
+      preExisting: summarizeCompactFindings(preExistingFindings).byRule,
+    },
+    byFile: {
+      yourChanges: summarizeCompactFindings(yourFindings).byFile,
+      relatedPreExisting: summarizeCompactFindings(relatedPreExistingFindings).byFile,
+      preExisting: summarizeCompactFindings(preExistingFindings).byFile,
+    },
+    relatedPreExistingDigest: summarizeCompactFindings(relatedPreExistingFindings),
+    preExistingDigest: summarizeCompactFindings(preExistingFindings),
+    testSummary,
+    fullEvidence: {
+      command: `bun run review -- --base ${base} --json`,
+      note: 'Full raw findings remain available from review --json. Summary finding IDs are stable within this summary output and map by owner/rule/file/line/message.',
+    },
+    confidence: confidenceResult,
+  };
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) { printHelp(); return; }
+  const structuredOutput = args.json || args.summaryJson;
 
   // --mine: re-run review from the active task worktree
   if (args.mine) {
@@ -627,6 +852,22 @@ async function main() {
     const { resolveGitRoot } = require("./lib/paths");
     const repoRoot = resolveGitRoot(process.cwd());
     const requestedBranch = process.env.TASK_BRANCH;
+    const requestedWorktree = process.env.TASK_WORKTREE;
+
+    if (requestedWorktree) {
+      if (!fs.existsSync(requestedWorktree)) {
+        writeStderr(`task worktree not found: ${requestedWorktree}`);
+        process.exitCode = 1;
+        return;
+      }
+      writeStderr(`→ review scoped to: ${requestedWorktree}`);
+      const passthrough = process.argv.slice(2).filter((argument) => argument !== "--mine");
+      try {
+        execFileSync(process.execPath, [__filename, ...passthrough], { cwd: requestedWorktree, stdio: "inherit" });
+      } catch (error) { process.exitCode = error.status || 1; }
+      return;
+    }
+
     const worktrees = listWorktrees(repoRoot);
     const tasks = [];
     for (const wt of worktrees) {
@@ -672,29 +913,41 @@ async function main() {
   const root = gitRoot();
   if (!root) throw new Error("not in a git repository");
   process.chdir(root);
-  // ensure node_modules exists — symlink from main worktree if in a task worktree
-  const nodeModulesPath = path.join(root, 'node_modules');
-  if (!fs.existsSync(nodeModulesPath)) {
-    const mainRoot = run('git', ['worktree', 'list', '--porcelain']).split('\n')
-      .filter((l) => l.startsWith('worktree '))
-      .map((l) => l.replace('worktree ', ''))[0];
-    if (mainRoot && mainRoot !== root) {
-      const mainNodeModules = path.join(mainRoot, 'node_modules');
-      if (fs.existsSync(mainNodeModules)) {
-        fs.symlinkSync(mainNodeModules, nodeModulesPath);
-        if (!args.quiet) writeStdout('symlinked node_modules from main worktree');
-      }
-    }
-    if (!fs.existsSync(nodeModulesPath)) {
-      writeStderr('node_modules not found — run yarn install or check main worktree');
-    }
+  const mainRoot = run('git', ['worktree', 'list', '--porcelain']).split('\n')
+    .filter((line) => line.startsWith('worktree '))
+    .map((line) => line.replace('worktree ', ''))[0];
+
+  if (mainRoot && mainRoot !== root) {
+    linkTaskWorktreeNodeModules({
+      repoRoot: mainRoot,
+      worktreePath: root,
+      writeStderr: (message) => {
+        if (!args.quiet && !structuredOutput) writeStdout(message);
+      },
+    });
+  }
+
+  if (!fs.existsSync(path.join(root, 'node_modules'))) {
+    writeStderr('node_modules not found - run yarn install or check main worktree');
   }
 
   const base = args.base || detectBase();
   const branch = currentBranch();
 
-  if (!args.quiet) {
-    writeStdout(`review: ${branch} vs ${base}`);
+  let reviewRun = null;
+  if (shouldUseReviewRunState(args)) {
+    reviewRun = beginStructuredReviewRun(root, branch, base, args);
+    if (reviewRun.mode === 'replay') {
+      writeStderr(`→ review result reused for ${branch} (${reviewRun.identity.key.slice(0, 12)})`);
+      replayReviewResult(reviewRun.result);
+      return;
+    }
+    activeReviewRun = reviewRun;
+    startOutputCapture();
+  }
+
+  if (!args.quiet && !structuredOutput) {
+    writeStdout('review: ' + branch + ' vs ' + base);
     writeStdout('');
   }
 
@@ -707,8 +960,8 @@ async function main() {
     files: project.files,
   }));
 
-  if (!args.quiet) writeStdout(`checking ${files.length} changed file(s)...`);
-  if (!args.quiet && affectedProjects.length > 0) {
+  if (!args.quiet && !structuredOutput) writeStdout(`checking ${files.length} changed file(s)...`);
+  if (!args.quiet && !structuredOutput && affectedProjects.length > 0) {
     writeStdout(`affected projects: ${affectedProjects.map((project) => project.name).join(', ')}`);
   }
 
@@ -743,7 +996,7 @@ async function main() {
   }
 
   // print static check results
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout('');
     for (const name of checkNames) {
       const pad = name + ' '.repeat(Math.max(0, 18 - name.length));
@@ -753,28 +1006,28 @@ async function main() {
   }
 
   // run eslint — always, on changed files or all
-  if (!args.quiet) writeStdout('');
-  if (!args.quiet) writeStdout('running eslint...');
+  if (!args.quiet && !structuredOutput) writeStdout('');
+  if (!args.quiet && !structuredOutput) writeStdout('running eslint...');
   const eslintFiles = files.length > 0 ? files : getAllTsFiles(root);
   const eslintFindings = runEslint(eslintFiles, args.fix);
   allFindings.push(...eslintFindings);
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'ESLINT' + ' '.repeat(13)} ${eslintFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${eslintFindings.length})`}`);
   }
 
   // run typecheck — always, on affected packages
-  if (!args.quiet) writeStdout('running typecheck...');
+  if (!args.quiet && !structuredOutput) writeStdout('running typecheck...');
   const typecheckFiles = files.length > 0 ? files : getAllTsFiles(root);
   const typecheckFindings = runTypecheck(typecheckFiles);
   allFindings.push(...typecheckFindings);
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'TYPECHECK' + ' '.repeat(10)} ${typecheckFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${typecheckFindings.length})`}`);
   }
 
   // spec compliance (not per-file)
   const specFindings = checkSpecCompliance();
   allFindings.push(...specFindings.map((f) => ({ ...f, file: '' })));
-  if (!args.quiet && !args.json) {
+  if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'SPEC_COMPLIANCE' + ' '.repeat(4)} ${specFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${specFindings.length})`}`);
   }
 
@@ -789,7 +1042,7 @@ async function main() {
       const events = getEvidenceEvents(root);
       const updated = updateBeliefsWithEvents(state, events);
       confidenceResult = computeConfidence(root, updated, events);
-      if (!args.quiet && !args.json) {
+      if (!args.quiet && !structuredOutput) {
         const s = confidenceResult;
         const status = s.score >= 0.75 ? 'exploit' : s.score >= 0.55 ? 'gather more' : 'low';
         writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ${s.score.toFixed(2)} (${status})`);
@@ -800,11 +1053,11 @@ async function main() {
           writeStdout(`    uncertainty: ${s.uncertainties[0]}`);
         }
       }
-    } else if (!args.quiet && !args.json) {
+    } else if (!args.quiet && !structuredOutput) {
       writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ no evidence (decision system not used)`);
     }
   } catch {
-    if (!args.quiet && !args.json) {
+    if (!args.quiet && !structuredOutput) {
       writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ skipped (modules not available)`);
     }
   }
@@ -812,9 +1065,9 @@ async function main() {
   // run tests — default on, skip with --no-tests
   let testResults = [];
   if (!args.noTests) {
-    if (!args.quiet) writeStdout('running tests...');
+    if (!args.quiet && !structuredOutput) writeStdout('running tests...');
     testResults = runTests(files);
-    if (!args.quiet && !args.json) {
+    if (!args.quiet && !structuredOutput) {
       let totalPassed = 0;
       let totalFailed = 0;
       for (const r of testResults) {
@@ -834,38 +1087,52 @@ async function main() {
       }
     }
   } else {
-    if (!args.quiet && !args.json) {
+    if (!args.quiet && !structuredOutput) {
       writeStdout(`  ${'TESTS' + ' '.repeat(13)} ⊘ SKIPPED (--no-tests)`);
     }
   }
 
   // classify
-  const { yours, preExisting } = classifyFindings(allFindings, changedLines, base);
+  const relatedRoots = collectRelatedReviewRoots(files, affectedProjects);
+  const { yours, relatedPreExisting, preExisting } = classifyFindings(allFindings, changedLines, relatedRoots);
 
   // include test failures in exit code
   const testsFailed = testResults.some((r) => !r.passed);
 
-  if (args.json) {
-    writeStdout(JSON.stringify({ base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult }, null, 2));
+  if (args.json || args.summaryJson) {
+    const fullPayload = { base, branch, files: files.length, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidence: confidenceResult };
+    const payload = args.summaryJson
+      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult })
+      : fullPayload;
+    writeStdout(JSON.stringify(payload, null, 2));
+    if (reviewRun) {
+      const captured = stopOutputCapture();
+      finishReviewRun(reviewRun, { ...captured, exitCode: 0 });
+      activeReviewRun = null;
+      emitCapturedOutput(captured);
+    }
     return;
   }
 
   writeStdout('');
   printFindings('YOUR CHANGES', yours, args.quiet);
   writeStdout('');
-  printFindings('⚠ PRE-EXISTING (in your stream — you still own these)', preExisting, args.quiet);
+  printFindings('RELATED PRE-EXISTING (same package/area)', relatedPreExisting, args.quiet);
+  if (relatedPreExisting.length > 0) writeStdout(RELATED_PRE_EXISTING_PROMPT);
+  writeStdout('');
+  printFindings('PRE-EXISTING (background)', preExisting, args.quiet);
 
   writeStdout('');
-  const total = yours.length + preExisting.length;
-  if (total === 0 && !testsFailed) {
+  const blockingTotal = yours.length + relatedPreExisting.length;
+  if (blockingTotal === 0 && !testsFailed) {
     writeStdout('✓ all checks passed');
 
     // kick off ai review in tmux background if a PR exists
     try {
-      const taskFile = path.join(root, '.task', 'current.json');
-      if (fs.existsSync(taskFile)) {
-        const taskData = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
-        const prMatch = (taskData.prUrl || '').match(/\/pull\/(\d+)/);
+      const { findTaskMeta: findTaskMetaRecord } = require('./lib/task-meta');
+      const taskRecord = findTaskMetaRecord(root, { currentBranch: branch });
+      if (taskRecord?.data) {
+        const prMatch = (taskRecord.data.prUrl || '').match(/\/pull\/(\d+)/);
         if (prMatch) {
           const prNum = prMatch[1];
           const aiScript = path.join(root, 'packages/workspace/scripts/ai-review.js');
@@ -881,19 +1148,34 @@ async function main() {
       }
     } catch { /* non-critical */ }
   } else {
-    if (total > 0) {
-      writeStdout(`${total} lint/type issue(s): ${yours.length} yours, ${preExisting.length} pre-existing`);
+    if (blockingTotal > 0 || preExisting.length > 0) {
+      writeStdout(`${blockingTotal} blocking lint/type issue(s): ${yours.length} yours, ${relatedPreExisting.length} related pre-existing; ${preExisting.length} background pre-existing`);
     }
     if (testsFailed) {
       const failedSuites = testResults.filter((r) => !r.passed).map((r) => r.pkg);
       writeStdout(`test failures in: ${failedSuites.join(', ')}`);
     }
-    writeStdout('fix all issues in your stream before pushing.');
+    writeStdout('fix your-change and related pre-existing issues before pushing, or escalate related findings that need judgment.');
     process.exit(1);
   }
 }
 
 main().catch((err) => {
-  writeStderr(err.message);
+  let reported = false;
+  if (activeReviewRun && outputCapture) {
+    const captured = stopOutputCapture();
+    const stderr = captured.stderr + err.message + '\n';
+    finishReviewRun(activeReviewRun, {
+      stdout: captured.stdout,
+      stderr,
+      exitCode: 1,
+    });
+    activeReviewRun = null;
+    emitCapturedOutput({ stdout: captured.stdout, stderr });
+    reported = true;
+  } else if (outputCapture) {
+    emitCapturedOutput(stopOutputCapture());
+  }
+  if (!reported) writeStderr(err.message);
   process.exit(1);
 });

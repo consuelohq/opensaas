@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-public-gateway-security-tests",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 877,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/877",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/877",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/877/add-public-gateway-security-tests",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/877",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/877/add-public-gateway-security-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-public-gateway-security-tests",
+  "taskSession": "tsk_0395ac8c7189",
+  "tmuxSession": "opensaas-os-add-public-gateway-security-tests-0395ac8c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-public-gateway-security-tests/.task/os/add-public-gateway-security-tests/session.json",
+  "createdAt": "2026-06-09T20:04:32.490Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_172ca7fbd57e",
+  "tmuxSession": "opensaas-os-fix-os-google-callback-server-error-172ca7fb",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-google-callback-server-error",
+  "branch": "task/os/fix-os-google-callback-server-error",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-server-error",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-server-error",
+  "prNumber": 1053,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1053",
+  "createdAt": "2026-06-15T00:55:17.987Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-server-error/.task/os/fix-os-google-callback-server-error/session.json"
+}

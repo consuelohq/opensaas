@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/tests/security-gateway.test.ts",
+    "packages/os/tests/workspace-gateway-contract.test.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/workspace-cloudflare-gateway.contract.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/workspace-cloudflare-gateway.service.ts"
+  ],
+  "updatedAt": "2026-06-10T06:41:14.671Z"
+}

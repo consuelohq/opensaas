@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b2476de758bb",
+  "tmuxSession": "opensaas-workspace-agents-rename-task-intent-lifecycle-guidance-b2476de7",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-task-intent-lifecycle-guidance",
+  "branch": "task/workspace-agents/rename-task-intent-lifecycle-guidance",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-task-intent-lifecycle-guidance",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-task-intent-lifecycle-guidance",
+  "prNumber": 1151,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1151",
+  "createdAt": "2026-06-19T06:26:38.753Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-task-intent-lifecycle-guidance/.task/workspace-agents/rename-task-intent-lifecycle-guidance/session.json"
+}

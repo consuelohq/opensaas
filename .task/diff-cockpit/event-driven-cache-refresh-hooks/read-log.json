@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/diff-cockpit/tsconfig.json",
+    "packages/workspace/scripts/diff_cockpit.ts"
+  ],
+  "updatedAt": "2026-06-05T00:22:42.141Z"
+}

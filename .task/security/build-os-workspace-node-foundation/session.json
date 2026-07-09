@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cff4e1e6d108",
+  "tmuxSession": "opensaas-security-build-os-workspace-node-foundation-cff4e1e6",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/build-os-workspace-node-foundation",
+  "branch": "task/security/build-os-workspace-node-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-build-os-workspace-node-foundation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-build-os-workspace-node-foundation",
+  "prNumber": 1336,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1336",
+  "createdAt": "2026-07-02T18:11:59.978Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-build-os-workspace-node-foundation/.task/security/build-os-workspace-node-foundation/session.json"
+}

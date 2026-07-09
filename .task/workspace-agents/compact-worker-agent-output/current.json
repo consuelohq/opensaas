@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/compact-worker-agent-output",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 647,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/647",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/647",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/647/compact-worker-agent-output",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/647",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/647/compact-worker-agent-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-worker-agent-output",
+  "taskSession": "tsk_4a7f9c65894c",
+  "tmuxSession": "opensaas-workspace-agents-compact-worker-agent-output-4a7f9c65",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-worker-agent-output/.task/workspace-agents/compact-worker-agent-output/session.json",
+  "createdAt": "2026-05-29T04:14:10.121Z"
+}

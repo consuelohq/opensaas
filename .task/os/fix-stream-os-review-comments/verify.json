@@ -1,0 +1,76 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-stream-os-review-comments",
+  "base": "origin/stream/os",
+  "headSha": "ee9744515b54102e6108229399611d67f9f850b8",
+  "changeHash": "b9eda8f17e5d778d914cb9fc45d07e73229a5a40174d25817ab9aa16567edd0c",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/hooks/task/guidance.js",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/fs/read.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/fs-read.test.ts",
+    "packages/os/tests/tool-manifest.test.ts"
+  ],
+  "verifiedAt": "2026-06-16T03:43:51.616Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-stream-os-review-comments/current.json",
+        ".task/os/fix-stream-os-review-comments/evidence-log.json",
+        ".task/os/fix-stream-os-review-comments/read-log.json",
+        ".task/os/fix-stream-os-review-comments/session.json",
+        ".task/os/fix-stream-os-review-comments/verify.json",
+        ".task/os/fix-stream-os-review-comments/workpad.md",
+        ".task/tasks/os/fix-stream-os-review-comments.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/hooks/task/guidance.js",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/scripts/fs.js",
+        "packages/os/scripts/generate-tool-manifest.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/fs/read.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fs-read.test.ts",
+        "packages/os/tests/tool-manifest.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

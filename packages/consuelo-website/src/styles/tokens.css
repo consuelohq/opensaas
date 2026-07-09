@@ -1,0 +1,114 @@
+:root {
+  color-scheme: light;
+
+  /* Single brand palette — Hermes-style blue + white */
+  --site-color-brand: #5379AE;
+  --site-color-paper: #5379AE;
+  --site-color-on-brand: #FFFFFF;
+  --site-color-ink: #5379AE;
+  --site-color-surface: #FFFFFF;
+  --site-color-surface-raised: #FFFFFF;
+  --site-color-control: #FFFFFF;
+  --site-color-control-panel: #FFFFFF;
+  --site-color-muted: #6B8FB8;
+  --site-color-muted-on-brand: rgba(255, 255, 255, 0.72);
+  --site-color-accent: #5379AE;
+  --site-color-accent-ink: #FFFFFF;
+  --site-color-secondary: #3D5F8A;
+  --site-color-line: rgba(83, 121, 174, 0.22);
+  --site-color-line-strong: rgba(83, 121, 174, 0.38);
+  --site-color-soft: rgba(83, 121, 174, 0.08);
+  --site-color-panel: rgba(83, 121, 174, 0.06);
+  --site-color-panel-strong: rgba(83, 121, 174, 0.12);
+  --site-color-dropdown-bg: #FFFFFF;
+  --site-color-success: #2F8F52;
+  --site-color-shimmer-stop-1: rgba(83, 121, 174, 0.18);
+  --site-color-shimmer-stop-2: rgba(83, 121, 174, 0.42);
+  --site-color-shimmer-stop-3: rgba(83, 121, 174, 0.82);
+
+  /* Feature frame + artwork */
+  --site-frame-inset: clamp(1.25rem, 3.5vw, 2.75rem);
+  --site-panel-pad: clamp(1.25rem, 2.8vw, 2.25rem);
+  --site-sticky-sliver: clamp(0.55rem, 1.15vw, 0.85rem);
+  --site-color-art-bg: rgba(83, 121, 174, 0.1);
+  --site-color-art-ink: #5379AE;
+  --site-color-art-accent: #5379AE;
+  --site-color-art-muted: #8AA4C8;
+
+  --launch-bg: var(--site-color-paper);
+  --launch-fg: var(--site-color-on-brand);
+  --launch-muted: var(--site-color-muted-on-brand);
+  --launch-soft: var(--site-color-soft);
+  --launch-line: var(--site-color-line);
+  --launch-panel: var(--site-color-panel);
+  --launch-panel-strong: var(--site-color-panel-strong);
+  --launch-dropdown-bg: var(--site-color-dropdown-bg);
+  --launch-dropdown-shadow: var(--site-shadow-dropdown);
+  --launch-shimmer-stop-1: var(--site-color-shimmer-stop-1);
+  --launch-shimmer-stop-2: var(--site-color-shimmer-stop-2);
+  --launch-shimmer-stop-3: var(--site-color-shimmer-stop-3);
+  --launch-success: var(--site-color-success);
+  --launch-mono-font: var(--site-font-mono);
+
+  --site-font-display: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;
+  --site-font-body: var(--site-font-display);
+  --site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;
+
+  --site-text-xs: 0.75rem;
+  --site-text-sm: 0.875rem;
+  --site-text-md: 1rem;
+  --site-text-lg: 1.25rem;
+  --site-text-xl: 1.75rem;
+  --site-text-2xl: 2.5rem;
+  --site-text-3xl: 3.5rem;
+  --site-text-4xl: 5rem;
+
+  --site-leading-tight: 1.08;
+  --site-leading-display: 1.16;
+  --site-leading-body: 1.6;
+  --site-tracking-display: -0.04em;
+  --site-tracking-tight: -0.02em;
+
+  --site-space-1: 0.25rem;
+  --site-space-2: 0.5rem;
+  --site-space-3: 0.75rem;
+  --site-space-4: 1rem;
+  --site-space-5: 1.5rem;
+  --site-space-6: 2rem;
+  --site-space-7: 3rem;
+  --site-space-8: 5rem;
+  --site-space-section: clamp(3rem, 7vw, 5rem);
+
+  --site-container-max: 75rem;
+  --site-container-wide: 82rem;
+  --site-gutter: clamp(1.25rem, 4.8vw, 3rem);
+
+  --site-radius-sm: 0.5rem;
+  --site-radius-md: 0.75rem;
+  --site-radius-card: 1rem;
+  --site-radius-pill: 999px;
+
+  --site-shadow-border: 0 0 0 1px var(--site-color-line);
+  --site-shadow-control: 0 0 0 1px rgba(83, 121, 174, 0.2), 0 7px 18px rgba(83, 121, 174, 0.1);
+  --site-shadow-raised: 0 0 0 1px rgba(83, 121, 174, 0.12), 0 18px 52px rgba(83, 121, 174, 0.12);
+  --site-shadow-hover: 0 0 0 1px rgba(83, 121, 174, 0.18), 0 22px 64px rgba(83, 121, 174, 0.16);
+  --site-shadow-dropdown: 0 18px 45px rgba(83, 121, 174, 0.18);
+
+  --site-motion-fast: 140ms;
+  --site-motion-medium: 220ms;
+  --site-motion-slow: 420ms;
+  --site-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --site-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --site-z-header: 40;
+  --site-z-popover: 60;
+  --site-z-modal: 80;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --site-text-3xl: 2.5rem;
+    --site-text-4xl: 3.5rem;
+    --site-space-section: 3rem;
+  }
+}

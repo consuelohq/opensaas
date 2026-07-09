@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/restore-design-archive-server-publish",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 493,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/493",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/493",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/493/restore-design-archive-server-publish",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/493",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/493/restore-design-archive-server-publish",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-restore-design-archive-server-publish",
+  "taskSession": "tsk_c88bf74ea5df",
+  "tmuxSession": "opensaas-workspace-restore-design-archive-server-publish-c88bf74e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-restore-design-archive-server-publish/.task/workspace/restore-design-archive-server-publish/session.json",
+  "createdAt": "2026-05-23T06:05:25.290Z"
+}

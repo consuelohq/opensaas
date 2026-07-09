@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/workspace/README.md",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/context-trace.test.js"
+  ],
+  "updatedAt": "2026-05-22T08:37:29.334Z"
+}

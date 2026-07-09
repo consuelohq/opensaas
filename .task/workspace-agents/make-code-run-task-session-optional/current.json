@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/make-code-run-task-session-optional",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 533,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/533",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/533",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/533/make-code-run-task-session-optional",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/533",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/533/make-code-run-task-session-optional",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-code-run-task-session-optional",
+  "taskSession": "tsk_8c5b5348710b",
+  "tmuxSession": "opensaas-workspace-agents-make-code-run-task-session-optional-8c5b5348",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-code-run-task-session-optional/.task/workspace-agents/make-code-run-task-session-optional/session.json",
+  "createdAt": "2026-05-23T11:13:42.337Z"
+}

@@ -1,0 +1,11 @@
+---
+const { cols = 2 } = Astro.props;
+---
+
+<div class="mintlify-card-group" style={`--card-cols: ${cols};`}>
+  <slot />
+</div>
+
+<style>
+  .mintlify-card-group { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); margin: 1.25rem 0; }
+</style>

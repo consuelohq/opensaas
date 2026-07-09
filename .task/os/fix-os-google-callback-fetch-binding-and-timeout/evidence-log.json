@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+  "events": [
+    {
+      "id": "caa77645-af23-48f6-b910-3dc0fd5193a2",
+      "occurred_at": "2026-06-15T01:24:26.231Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-google-callback-fetch-binding-and-timeout"
+      }
+    },
+    {
+      "id": "12aa03bf-b78d-4a79-b4f2-0f9b677f0fe0",
+      "occurred_at": "2026-06-15T01:24:47.811Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-google-callback-fetch-binding-and-timeout"
+      }
+    },
+    {
+      "id": "58eb670e-4a09-4a43-a09c-46f7f2a38e7a",
+      "occurred_at": "2026-06-15T01:26:39.236Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-google-callback-fetch-binding-and-timeout"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-15T01:26:39.295Z"
+}

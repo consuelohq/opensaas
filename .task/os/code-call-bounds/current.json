@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/code-call-bounds",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1173,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1173",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1173",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1173/code-call-bounds",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1173",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1173/code-call-bounds",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-code-call-bounds",
+  "taskSession": "tsk_97271ffd09bc",
+  "tmuxSession": "opensaas-os-code-call-bounds-97271ffd",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-code-call-bounds/.task/os/code-call-bounds/session.json",
+  "createdAt": "2026-06-22T21:41:19.926Z"
+}

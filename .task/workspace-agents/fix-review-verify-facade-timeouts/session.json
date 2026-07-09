@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e9e58ca0e68b",
+  "tmuxSession": "opensaas-workspace-agents-fix-review-verify-facade-timeouts-e9e58ca0",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-review-verify-facade-timeouts",
+  "branch": "task/workspace-agents/fix-review-verify-facade-timeouts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-review-verify-facade-timeouts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-review-verify-facade-timeouts",
+  "prNumber": 568,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/568",
+  "createdAt": "2026-05-24T06:16:01.792Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-review-verify-facade-timeouts/.task/workspace-agents/fix-review-verify-facade-timeouts/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a46309a57d82",
+  "tmuxSession": "opensaas-sites-mobile-hero-scale-dark-background-a46309a5",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/mobile-hero-scale-dark-background",
+  "branch": "task/sites/mobile-hero-scale-dark-background",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-mobile-hero-scale-dark-background",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-mobile-hero-scale-dark-background",
+  "prNumber": 1266,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1266",
+  "createdAt": "2026-06-28T06:33:27.581Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-mobile-hero-scale-dark-background/.task/sites/mobile-hero-scale-dark-background/session.json"
+}

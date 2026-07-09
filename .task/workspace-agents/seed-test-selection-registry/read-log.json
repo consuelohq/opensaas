@@ -1,0 +1,11 @@
+{
+  "files": [
+    "package.json",
+    "packages/twenty-front/project.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/audit.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-05-24T09:02:33.324Z"
+}

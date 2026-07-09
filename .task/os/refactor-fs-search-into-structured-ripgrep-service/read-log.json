@@ -1,0 +1,16 @@
+{
+  "files": [
+    "packages/os/TOOLS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/fs/read.ts",
+    "packages/os/scripts/lib/fs/search.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/fs-read.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-16T20:29:08.149Z"
+}

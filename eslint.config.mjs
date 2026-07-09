@@ -57,7 +57,7 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: [],
+          allow: ['twenty-ui/*', 'twenty-shared/*'],
           depConstraints: [
             {
               sourceTag: 'scope:apps',

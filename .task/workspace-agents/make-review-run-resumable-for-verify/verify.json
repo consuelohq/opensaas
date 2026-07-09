@@ -1,0 +1,30 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/make-review-run-resumable-for-verify",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "7260f10ed37205db742711ee6b36b43f8447fba7",
+  "changeHash": "ffe60176388e300f05461eeb8c046ffe106d406e67689977fa1db882c0285f02",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/scripts/lib/review-run-state.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/tests/review-run-state.test.js"
+  ],
+  "verifiedAt": "2026-05-26T18:01:43.355Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

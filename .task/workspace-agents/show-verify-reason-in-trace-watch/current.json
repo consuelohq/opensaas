@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/show-verify-reason-in-trace-watch",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 585,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/585",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/585",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/585/show-verify-reason-in-trace-watch",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/585",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/585/show-verify-reason-in-trace-watch",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-verify-reason-in-trace-watch",
+  "taskSession": "tsk_43d1c01be9fa",
+  "tmuxSession": "opensaas-workspace-agents-show-verify-reason-in-trace-watch-43d1c01b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-verify-reason-in-trace-watch/.task/workspace-agents/show-verify-reason-in-trace-watch/session.json",
+  "createdAt": "2026-05-24T08:34:12.138Z"
+}

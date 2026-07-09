@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/trace-errors-operator-report",
+  "events": [
+    {
+      "id": "72f618ca-b49a-4bd7-a27c-5a5feb14144f",
+      "occurred_at": "2026-05-23T09:49:08.672Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/trace-errors-operator-report",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/trace-errors-operator-report"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-23T09:49:08.724Z"
+}

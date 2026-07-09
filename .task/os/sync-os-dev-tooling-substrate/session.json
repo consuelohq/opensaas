@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bc6d01770803",
+  "tmuxSession": "opensaas-os-sync-os-dev-tooling-substrate-bc6d0177",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-dev-tooling-substrate",
+  "branch": "task/os/sync-os-dev-tooling-substrate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-dev-tooling-substrate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-dev-tooling-substrate",
+  "prNumber": 658,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/658",
+  "createdAt": "2026-05-31T09:45:20.749Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-dev-tooling-substrate/.task/os/sync-os-dev-tooling-substrate/session.json"
+}

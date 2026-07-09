@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_974784dfdab5",
+  "tmuxSession": "opensaas-media-improve-media-svg-conversion-quality-and-optimiz-974784df",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/improve-media-svg-conversion-quality-and-optimization",
+  "branch": "task/media/improve-media-svg-conversion-quality-and-optimization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-improve-media-svg-conversion-quality-and-optimization",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-improve-media-svg-conversion-quality-and-optimization",
+  "prNumber": 1222,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1222",
+  "createdAt": "2026-06-27T19:36:28.992Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-improve-media-svg-conversion-quality-and-optimization/.task/media/improve-media-svg-conversion-quality-and-optimization/session.json"
+}

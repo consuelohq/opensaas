@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_23ca46ab7b14",
+  "tmuxSession": "opensaas-workspace-agents-fix-design-wiki-client-interactions-23ca46ab",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-design-wiki-client-interactions",
+  "branch": "task/workspace-agents/fix-design-wiki-client-interactions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-design-wiki-client-interactions",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-design-wiki-client-interactions",
+  "prNumber": 640,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/640",
+  "createdAt": "2026-05-29T01:33:20.283Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-design-wiki-client-interactions/.task/workspace-agents/fix-design-wiki-client-interactions/session.json"
+}

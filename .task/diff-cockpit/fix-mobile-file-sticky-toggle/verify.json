@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/fix-mobile-file-sticky-toggle",
+  "base": "origin/task/diff-cockpit/fix-mobile-file-sticky-toggle",
+  "headSha": "6d66796aa02fe52d33009d384d1b5aafce7b2193",
+  "changeHash": "5d5fcf715e4e6168e7d9cfc8fabcdba8f112ebfc08af7ffa2b065e6faa408bbb",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-09T17:07:43.268Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/fix-mobile-file-sticky-toggle/current.json",
+        ".task/diff-cockpit/fix-mobile-file-sticky-toggle/evidence-log.json",
+        ".task/diff-cockpit/fix-mobile-file-sticky-toggle/read-log.json",
+        ".task/diff-cockpit/fix-mobile-file-sticky-toggle/session.json",
+        ".task/diff-cockpit/fix-mobile-file-sticky-toggle/workpad.md",
+        ".task/tasks/diff-cockpit/fix-mobile-file-sticky-toggle.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

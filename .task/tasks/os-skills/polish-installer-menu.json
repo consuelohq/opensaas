@@ -1,0 +1,19 @@
+{
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/polish-installer-menu",
+  "baseBranch": "stream/os-skills",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 760,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/760",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/760",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/760/polish-installer-menu",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/760",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/760/polish-installer-menu",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-polish-installer-menu",
+  "taskSession": "tsk_2d07c17acc1f",
+  "tmuxSession": "opensaas-os-skills-polish-installer-menu-2d07c17a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-polish-installer-menu/.task/os-skills/polish-installer-menu/session.json",
+  "createdAt": "2026-06-05T00:55:42.181Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f4cc9a755411",
+  "tmuxSession": "opensaas-workspace-agents-fix-task-intent-review-comments-and-core-manifes-f4cc9a75",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-task-intent-review-comments-and-core-manifest",
+  "branch": "task/workspace-agents/fix-task-intent-review-comments-and-core-manifest",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-intent-review-comments-and-core-manifest",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-intent-review-comments-and-core-manifest",
+  "prNumber": 1169,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1169",
+  "createdAt": "2026-06-22T18:41:56.046Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-intent-review-comments-and-core-manifest/.task/workspace-agents/fix-task-intent-review-comments-and-core-manifest/session.json"
+}

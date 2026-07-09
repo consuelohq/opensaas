@@ -1,0 +1,10 @@
+{
+  "files": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/server.js"
+  ],
+  "updatedAt": "2026-05-23T06:21:16.192Z"
+}

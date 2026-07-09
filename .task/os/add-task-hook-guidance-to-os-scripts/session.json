@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6af6f4aa1af4",
+  "tmuxSession": "opensaas-os-add-task-hook-guidance-to-os-scripts-6af6f4aa",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-task-hook-guidance-to-os-scripts",
+  "branch": "task/os/add-task-hook-guidance-to-os-scripts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-task-hook-guidance-to-os-scripts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-task-hook-guidance-to-os-scripts",
+  "prNumber": 951,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/951",
+  "createdAt": "2026-06-11T05:15:05.015Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-task-hook-guidance-to-os-scripts/.task/os/add-task-hook-guidance-to-os-scripts/session.json"
+}

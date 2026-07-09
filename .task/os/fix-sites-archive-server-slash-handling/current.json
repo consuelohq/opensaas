@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-sites-archive-server-slash-handling",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 882,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/882",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/882",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/882/fix-sites-archive-server-slash-handling",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/882",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/882/fix-sites-archive-server-slash-handling",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-archive-server-slash-handling",
+  "taskSession": "tsk_7a50179185d2",
+  "tmuxSession": "opensaas-os-fix-sites-archive-server-slash-handling-7a501791",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-sites-archive-server-slash-handling/.task/os/fix-sites-archive-server-slash-handling/session.json",
+  "createdAt": "2026-06-09T20:29:26.469Z"
+}

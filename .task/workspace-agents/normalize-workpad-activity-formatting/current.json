@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/normalize-workpad-activity-formatting",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 491,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/491",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/491",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/491/normalize-workpad-activity-formatting",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/491",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/491/normalize-workpad-activity-formatting",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-normalize-workpad-activity-formatting",
+  "taskSession": "tsk_8a8a323e3e99",
+  "tmuxSession": "opensaas-workspace-agents-normalize-workpad-activity-formatting-8a8a323e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-normalize-workpad-activity-formatting/.task/workspace-agents/normalize-workpad-activity-formatting/session.json",
+  "createdAt": "2026-05-23T05:59:33.732Z"
+}

@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+  "events": [
+    {
+      "id": "a2e19bb8-e912-460a-a9ad-5d2e30610297",
+      "occurred_at": "2026-06-28T02:33:08.473Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/public/images/consuelo-integrations-hero.svg",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    },
+    {
+      "id": "a71100ad-e5d6-4d82-8c90-d2673ae1ceeb",
+      "occurred_at": "2026-06-28T02:33:17.633Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/tests/website-structure.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    },
+    {
+      "id": "7ff7fc15-d5e8-4aeb-b71d-a4ba39c89134",
+      "occurred_at": "2026-06-28T02:33:38.957Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/home/HomeHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    },
+    {
+      "id": "5594eb19-29a3-42f6-a04d-3cd7dc53204f",
+      "occurred_at": "2026-06-28T02:33:48.779Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/home/HomeHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    },
+    {
+      "id": "27ae805a-f90a-409a-b27d-05b8be8058e8",
+      "occurred_at": "2026-06-28T02:33:58.104Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/data/home-content.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    },
+    {
+      "id": "a95fa7d5-ad24-4bf7-b664-cf7e7025bd5d",
+      "occurred_at": "2026-06-28T02:34:14.225Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    },
+    {
+      "id": "5539b72f-fb67-4678-af00-01a2fea9a88f",
+      "occurred_at": "2026-06-28T02:34:22.426Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    },
+    {
+      "id": "3b712a4d-f285-4dd4-b904-004004d411ce",
+      "occurred_at": "2026-06-28T02:43:53.192Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/site-seo.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/sites/first-pass-consuelo-website-hero",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/sites/first-pass-consuelo-website-hero"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-28T02:43:53.253Z"
+}

@@ -1,0 +1,12 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/trace-gateway-boundary-contracts",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1005,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1005",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-trace-gateway-boundary-contracts",
+  "createdAt": "2026-06-13T12:54:21.987Z"
+}

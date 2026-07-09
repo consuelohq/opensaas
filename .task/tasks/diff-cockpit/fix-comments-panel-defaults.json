@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-comments-panel-defaults",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 1044,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1044",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1044",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1044/fix-comments-panel-defaults",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1044",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1044/fix-comments-panel-defaults",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-comments-panel-defaults",
+  "taskSession": "tsk_4c161c869e0f",
+  "tmuxSession": "opensaas-diff-cockpit-fix-comments-panel-defaults-4c161c86",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-comments-panel-defaults/.task/diff-cockpit/fix-comments-panel-defaults/session.json",
+  "createdAt": "2026-06-14T22:36:53.921Z"
+}

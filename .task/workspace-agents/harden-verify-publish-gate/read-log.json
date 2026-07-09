@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/workspace-agents/harden-verify-publish-gate/verify.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/task-session.test.js",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-05-24T05:06:41.960Z"
+}

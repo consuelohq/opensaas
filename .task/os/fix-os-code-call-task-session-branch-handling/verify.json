@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-os-code-call-task-session-branch-handling",
+  "base": "origin/stream/os",
+  "headSha": "0948edf54d422dc4034d82581b9fcb37622fc930",
+  "changeHash": "23a5a9737c7cf6af1fdc74acbd549bf7a7c8105bcd7105e73487219a536b370a",
+  "changedFiles": [
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/facade/facade.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T18:48:35.174Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-os-code-call-task-session-branch-handling/current.json",
+        ".task/os/fix-os-code-call-task-session-branch-handling/evidence-log.json",
+        ".task/os/fix-os-code-call-task-session-branch-handling/read-log.json",
+        ".task/os/fix-os-code-call-task-session-branch-handling/session.json",
+        ".task/os/fix-os-code-call-task-session-branch-handling/workpad.md",
+        ".task/tasks/os/fix-os-code-call-task-session-branch-handling.json",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

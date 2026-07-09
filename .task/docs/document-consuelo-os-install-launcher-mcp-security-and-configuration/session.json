@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_131db3cc95d7",
+  "tmuxSession": "opensaas-docs-document-consuelo-os-install-launcher-mcp-securi-131db3cc",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration",
+  "branch": "task/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-document-consuelo-os-install-launcher-mcp-security-and-configuration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-document-consuelo-os-install-launcher-mcp-security-and-configuration",
+  "prNumber": 1340,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1340",
+  "createdAt": "2026-07-02T19:53:36.317Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-document-consuelo-os-install-launcher-mcp-security-and-configuration/.task/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration/session.json"
+}

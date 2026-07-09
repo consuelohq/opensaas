@@ -1,0 +1,19 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/fix-consuelo-workspace-contracts-gate",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "stream/ci",
+  "startFrom": "stream",
+  "prNumber": 1240,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1240",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1240",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1240/fix-consuelo-workspace-contracts-gate",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1240",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1240/fix-consuelo-workspace-contracts-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workspace-contracts-gate",
+  "taskSession": "tsk_55f888708db6",
+  "tmuxSession": "opensaas-ci-fix-consuelo-workspace-contracts-gate-55f88870",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workspace-contracts-gate/.task/ci/fix-consuelo-workspace-contracts-gate/session.json",
+  "createdAt": "2026-06-28T00:27:48.539Z"
+}

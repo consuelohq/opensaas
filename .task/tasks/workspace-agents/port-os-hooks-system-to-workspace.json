@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/port-os-hooks-system-to-workspace",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1111,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1111",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1111",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1111/port-os-hooks-system-to-workspace",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1111",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1111/port-os-hooks-system-to-workspace",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-os-hooks-system-to-workspace",
+  "taskSession": "tsk_940d3d6aa62c",
+  "tmuxSession": "opensaas-workspace-agents-port-os-hooks-system-to-workspace-940d3d6a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-port-os-hooks-system-to-workspace/.task/workspace-agents/port-os-hooks-system-to-workspace/session.json",
+  "createdAt": "2026-06-17T13:47:58.896Z"
+}

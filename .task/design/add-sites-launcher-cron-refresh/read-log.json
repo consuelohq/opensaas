@@ -1,0 +1,9 @@
+{
+  "files": [
+    "cron_jobs/README.md",
+    "cron_jobs/diff_cockpit/cron.json",
+    "cron_jobs/index.ts",
+    "cron_jobs/tests/cron_jobs.test.ts"
+  ],
+  "updatedAt": "2026-06-13T15:57:14.651Z"
+}

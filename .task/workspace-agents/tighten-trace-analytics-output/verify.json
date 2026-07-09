@@ -1,0 +1,25 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/tighten-trace-analytics-output",
+  "base": "origin/main",
+  "headSha": "365266792fa4016e2ef5181a6dd9ca2837641bd4",
+  "changeHash": "2eb551dc4c069319b84338554c5d3a2708c4a3a55fc6e35e90fce150f83c1da5",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/ai-review.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "verifiedAt": "2026-05-23T19:29:07.653Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

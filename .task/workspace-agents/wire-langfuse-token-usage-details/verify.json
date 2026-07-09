@@ -1,0 +1,25 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/wire-langfuse-token-usage-details",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "67edfa19862f87636a0f8c5709f61ad5cf1ea470",
+  "changeHash": "af828ba95ed6f282ac23c95792463b0db0b110484dc200af60f26aa02a68a553",
+  "changedFiles": [
+    "packages/workspace/README.md",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/context-trace.test.js"
+  ],
+  "verifiedAt": "2026-05-22T08:40:14.086Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

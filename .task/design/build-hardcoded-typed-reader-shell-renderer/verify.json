@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/build-hardcoded-typed-reader-shell-renderer",
+  "base": "origin/stream/design",
+  "headSha": "807d2f3dbe3faf109deea523a0eaf5cf1e9107d8",
+  "changeHash": "525a96dfb364a8fc069e59d7f87a25874d52dfa8521fa81e653c941f20ac3cce",
+  "changedFiles": [
+    "areas/consuelo-design/AGENTS.md",
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/guide.md",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "verifiedAt": "2026-06-06T15:34:29.596Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/current.json",
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/evidence-log.json",
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/final-validation.md",
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/read-log.json",
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/reader-smoke.json",
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/reader-smoke/index.html",
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/session.json",
+        ".task/design/build-hardcoded-typed-reader-shell-renderer/workpad.md",
+        ".task/tasks/design/build-hardcoded-typed-reader-shell-renderer.json",
+        "areas/consuelo-design/AGENTS.md",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/consuelo-design/templates/digital-eguides/guide.md",
+        "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+        "packages/workspace/scripts/consuelo-design.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

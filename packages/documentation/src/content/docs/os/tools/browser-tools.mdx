@@ -1,0 +1,80 @@
+---
+title: "Browser tools"
+description: "Use the browser tool family for rendered-page validation, screenshots, accessibility snapshots, and user-flow testing."
+---
+
+# Browser tools
+
+Browser tools provide rendered-page evidence. Use them when the task depends on what a web app actually shows or how a user flow behaves in a live browser.
+
+The browser family is part of the full OS tool manifest, not the default core subset. When the exact browser tool is not already visible in steering, use `tools.search` first and then call the discovered tool by its real name.
+
+A typical validation flow opens a page, waits for a stable state, and captures an accessibility snapshot:
+
+```ts
+await workspace.call({
+  tool: "browser.open",
+  input: {
+    url: "https://example.com",
+    preset: "desktop",
+    full: true,
+  },
+  timeout: 300,
+})
+
+await workspace.call({
+  tool: "browser.wait",
+  input: { load: "networkidle" },
+  timeout: 300,
+})
+
+await workspace.call({
+  tool: "browser.snap",
+  input: {},
+  timeout: 300,
+})
+```
+
+`browser.open` opens a URL and accepts viewport options such as `preset`, `device`, `width`, `height`, `colorScheme`, `headed`, and `full`. `browser.app` and `browser.consuelo` are convenience openers for Consuelo-hosted pages. The generic `browser` wrapper is available, but named tools are clearer when they match the job.
+
+Use `browser.snap` before interacting with page elements. The snapshot gives a semantic view of the page and refs for lower-level actions. When the target can be described by visible semantics, `browser.find` is usually clearer than a raw ref:
+
+```ts
+await workspace.call({
+  tool: "browser.find",
+  input: {
+    by: "role",
+    value: "button",
+    name: "Submit",
+    action: "click",
+  },
+  timeout: 300,
+})
+```
+
+The interaction tools include `browser.find`, `browser.click`, `browser.fill`, `browser.wait`, `browser.dialog`, `browser.download`, `browser.clipboard`, and `browser.tabs`. Use them to exercise the smallest user flow that proves the behavior under review.
+
+The evidence tools include `browser.screenshot`, `browser.get`, `browser.network`, `browser.trace`, and `browser.test`. Use `browser.screenshot` for visual proof, `browser.get` for current page facts such as title or URL, `browser.network` when request behavior matters, `browser.trace` when a debugging artifact is needed, and `browser.test` when the flow should be scripted as a browser-backed test.
+
+```ts
+await workspace.call({
+  tool: "browser.screenshot",
+  input: {
+    name: "settings-save-flow",
+    full: true,
+  },
+  timeout: 300,
+})
+
+await workspace.call({
+  tool: "browser.get",
+  input: { target: "url" },
+  timeout: 300,
+})
+```
+
+Authentication and low-level escape hatches are explicit. `browser.login` runs a saved login profile, `browser.reauth` restarts browser state before login, `browser.eval` evaluates code on the current page, and `browser.raw` passes through to the underlying browser runner. Use the named tool first and record why a lower-level escape hatch was necessary.
+
+Close active sessions with `browser.close` when stale page state would affect the next validation run.
+
+A good browser proof should show the page opened in the intended mode, the agent interacted through user-visible state, and the final page state was captured with the right evidence tool.

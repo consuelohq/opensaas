@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b46e13e476dc",
+  "tmuxSession": "opensaas-workspace-republish-design-wiki-archive-b46e13e4",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/republish-design-wiki-archive",
+  "branch": "task/workspace/republish-design-wiki-archive",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-republish-design-wiki-archive",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-republish-design-wiki-archive",
+  "prNumber": 490,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/490",
+  "createdAt": "2026-05-23T05:59:29.227Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-republish-design-wiki-archive/.task/workspace/republish-design-wiki-archive/session.json"
+}

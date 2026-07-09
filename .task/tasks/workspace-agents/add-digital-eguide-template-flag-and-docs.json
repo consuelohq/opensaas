@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 374,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/374",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-digital-eguide-template-flag-and-docs",
+  "taskSession": "tsk_be21e44faf54",
+  "tmuxSession": "opensaas-workspace-agents-add-digital-eguide-template-flag-and-docs-be21e44f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-digital-eguide-template-flag-and-docs/.task/session.json",
+  "createdAt": "2026-05-12T03:44:34.936Z"
+}

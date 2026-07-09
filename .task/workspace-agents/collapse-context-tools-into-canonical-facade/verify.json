@@ -1,0 +1,179 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/collapse-context-tools-into-canonical-facade",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "22fcbf65d560e8cdf83f92b7b0fe3e585860b405",
+  "changeHash": "0f11455e88cde75ef38f1491b29013446abba750fb2f2b3376c9a2de953e655e",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/scripts/context.js",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/manifests/core-manifest.json",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/tool-manifest.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-18T01:57:22.838Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/collapse-context-tools-into-canonical-facade.json",
+        ".task/workspace-agents/collapse-context-tools-into-canonical-facade/current.json",
+        ".task/workspace-agents/collapse-context-tools-into-canonical-facade/evidence-log.json",
+        ".task/workspace-agents/collapse-context-tools-into-canonical-facade/read-log.json",
+        ".task/workspace-agents/collapse-context-tools-into-canonical-facade/session.json",
+        ".task/workspace-agents/collapse-context-tools-into-canonical-facade/workpad.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/manifest.config.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/scripts/context.js",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/manifests/core-manifest.json",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/scripts/context.js",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "packages/workspace/tests/tool-manifest.test.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/schemas.ts",
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md",
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 170,
+          "outputTail": "Code\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.060Z\"}\n(pass) typed facade executor > validates input for task.call [0.28ms]\n(pass) typed facade executor > validates input for task.cleanup [0.13ms]\n(pass) typed facade executor > validates input for task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.06ms]\n{\"level\":\"error\",\"tool\":\"task.exec\",\"command\":\"workspace task.exec\",\"implementationCommand\":\"workspace task.exec\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.060Z\"}\n(pass) typed facade executor > validates input for task.exec [0.14ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.061Z\"}\n(pass) typed facade executor > validates input for task.init [0.24ms]\n(pass) typed facade executor > validates input for task.merge [0.09ms]\n(pass) typed facade executor > validates input for task.pr [0.11ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.061Z\"}\n(pass) typed facade executor > validates input for task.push [0.26ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.061Z\"}\n(pass) typed facade executor > validates input for task.start [0.28ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.062Z\"}\n(pass) typed facade executor > validates input for tmp [0.30ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.062Z\"}\n(pass) typed facade executor > validates input for tools.search [0.33ms]\n(pass) typed facade executor > validates input for verify [0.10ms]\n(pass) typed facade executor > validates input for wait [0.15ms]\n(pass) typed facade executor > validates input for website.deploy [0.08ms]\n{\"level\":\"error\",\"tool\":\"worker.call\",\"command\":\"workspace worker.call\",\"implementationCommand\":\"workspace worker.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-18T01:57:22.063Z\"}\n(pass) typed facade executor > validates input for worker.call [0.37ms]\n\n 125 pass\n 430 filtered out\n 0 fail\n 58 expect() calls\nRan 125 tests across 1 file. [163.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 557,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-collapse-context-tools-into-canonical-facade\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 88\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:57:22\n\u001b[2m   Duration \u001b[22m 214ms\u001b[2m (transform 53ms, setup 0ms, import 58ms, tests 88ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

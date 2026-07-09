@@ -1,13 +1,13 @@
 ---
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
 
 const description = 'Page not found';
 ---
 
-<LaunchLayout title="404 - Not Found" description={description}>
-  <LaunchHeader />
+<MarketingLayout title="404 - Not Found" description={description}>
+  <SiteHeader />
 
   <section class="launch-section">
     <div class="launch-content launch-content--wide not-found-hero">
@@ -18,8 +18,8 @@ const description = 'Page not found';
     </div>
   </section>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <style>
   .not-found-hero {

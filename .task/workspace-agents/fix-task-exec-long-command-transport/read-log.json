@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/task-exec.js",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-05-23T02:27:39.059Z"
+}

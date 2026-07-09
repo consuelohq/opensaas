@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/improve-missing-fs-alias-guidance",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1077,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1077",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1077",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1077/improve-missing-fs-alias-guidance",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1077",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1077/improve-missing-fs-alias-guidance",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-missing-fs-alias-guidance",
+  "taskSession": "tsk_e816ee264251",
+  "tmuxSession": "opensaas-workspace-agents-improve-missing-fs-alias-guidance-e816ee26",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-missing-fs-alias-guidance/.task/workspace-agents/improve-missing-fs-alias-guidance/session.json",
+  "createdAt": "2026-06-16T04:32:04.204Z"
+}

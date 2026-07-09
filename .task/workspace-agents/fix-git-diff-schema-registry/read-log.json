@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/task-meta.js",
+    "packages/workspace/scripts/lib/workspace-state.js",
+    "packages/workspace/scripts/status.js",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/task-meta.test.js"
+  ],
+  "updatedAt": "2026-05-22T09:04:08.783Z"
+}

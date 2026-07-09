@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/operator-artifact-commands",
+  "events": [
+    {
+      "id": "45814083-5f55-458e-959c-6e7cca248a69",
+      "occurred_at": "2026-06-11T07:26:09.383Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/operator-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/operator-artifact-commands"
+      }
+    },
+    {
+      "id": "dfe791c5-828e-4dda-8c7a-19a00c80fec8",
+      "occurred_at": "2026-06-11T07:27:05.266Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/operator-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/operator-artifact-commands"
+      }
+    },
+    {
+      "id": "f4399aac-608d-4cdb-b049-92c1723cf0d3",
+      "occurred_at": "2026-06-11T07:35:13.232Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/operator-artifact-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/operator-artifact-commands"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T07:35:13.289Z"
+}

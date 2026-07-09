@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/finish-managed-os-mcp-ingress-provisioning",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1147,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1147",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1147",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1147/finish-managed-os-mcp-ingress-provisioning",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1147",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1147/finish-managed-os-mcp-ingress-provisioning",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-finish-managed-os-mcp-ingress-provisioning",
+  "taskSession": "tsk_8813501d2987",
+  "tmuxSession": "opensaas-security-finish-managed-os-mcp-ingress-provisioning-8813501d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-finish-managed-os-mcp-ingress-provisioning/.task/security/finish-managed-os-mcp-ingress-provisioning/session.json",
+  "createdAt": "2026-06-19T02:57:13.441Z"
+}

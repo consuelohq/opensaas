@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_30e6c4fca87e",
+  "tmuxSession": "opensaas-workspace-agents-tmp-workspace-agents-metadata-hygiene-followup-30e6c4fc",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/tmp-workspace-agents-metadata-hygiene-followup",
+  "branch": "task/workspace-agents/tmp-workspace-agents-metadata-hygiene-followup",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tmp-workspace-agents-metadata-hygiene-followup",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tmp-workspace-agents-metadata-hygiene-followup",
+  "prNumber": 455,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/455",
+  "createdAt": "2026-05-22T07:07:05.574Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tmp-workspace-agents-metadata-hygiene-followup/.task/workspace-agents/tmp-workspace-agents-metadata-hygiene-followup/session.json"
+}

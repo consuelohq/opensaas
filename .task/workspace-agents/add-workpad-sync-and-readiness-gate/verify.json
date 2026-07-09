@@ -1,0 +1,28 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/add-workpad-sync-and-readiness-gate",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "58b92a00112f78fc6fbec1fe29e0dce23c183f33",
+  "changeHash": "95a9f1755ddd6fb734923a6fe9875f6d2e7cf398f8fdbc6f204c37273abd1794",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "verifiedAt": "2026-05-23T04:22:15.761Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

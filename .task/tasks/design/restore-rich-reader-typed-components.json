@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/restore-rich-reader-typed-components",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 820,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/820",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/820",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/820/restore-rich-reader-typed-components",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/820",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/820/restore-rich-reader-typed-components",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-restore-rich-reader-typed-components",
+  "taskSession": "tsk_e189ae27fbf1",
+  "tmuxSession": "opensaas-design-restore-rich-reader-typed-components-e189ae27",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-restore-rich-reader-typed-components/.task/design/restore-rich-reader-typed-components/session.json",
+  "createdAt": "2026-06-06T17:24:55.536Z"
+}

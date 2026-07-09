@@ -14,26 +14,25 @@ import {
   type QueueItem,
 } from '@/dialer/types/queue';
 
-const mockAuthenticatedFetch = jest.fn();
+const mockStartDialerCall = jest.fn();
+const mockTerminateDialerCall = jest.fn();
 const mockPlayDialingStartedSound = jest.fn();
 const mockPlayErrorSound = jest.fn();
 
-jest.mock('@/dialer/utils/authenticatedFetch', () => ({
-  authenticatedFetch: (...args: unknown[]) => mockAuthenticatedFetch(...args),
+jest.mock('@/dialer/hooks/useStartDialerCall', () => ({
+  useStartDialerCall: () => ({
+    startDialerCall: mockStartDialerCall,
+    terminateDialerCall: mockTerminateDialerCall,
+  }),
 }));
 
 jest.mock('@/dialer/utils/notificationSounds', () => ({
-  playCallConnectedSound: jest.fn(),
   playDialingStartedSound: () => mockPlayDialingStartedSound(),
   playErrorSound: () => mockPlayErrorSound(),
 }));
 
 jest.mock('@sentry/react', () => ({
   captureException: jest.fn(),
-}));
-
-jest.mock('~/config', () => ({
-  REACT_APP_SERVER_BASE_URL: 'https://app.example.test',
 }));
 
 const createContact = (id: string, phone: string) => ({
@@ -67,7 +66,7 @@ const createQueueItem = (
 });
 
 const activeParallelQueue: CallQueue = {
-  id: 'queue-1',
+  id: 'list-1',
   name: 'test queue',
   description: null,
   sourceType: 'list',
@@ -102,23 +101,24 @@ const queueItems = [
   createQueueItem('item-2', '+18054259549', 'pending'),
 ];
 
+const queueItemsWithStaleListQueueId = queueItems.map((item) => ({
+  ...item,
+  queueId: 'list-1',
+}));
+
 const renderUseParallelDialer = (
   initializeState: (snap: MutableSnapshot) => void,
 ) => renderHookWithRecoil(() => useParallelDialer(), { initializeState });
 
 describe('useParallelDialer', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    mockAuthenticatedFetch.mockReset();
+    mockStartDialerCall.mockReset();
+    mockTerminateDialerCall.mockReset();
     mockPlayDialingStartedSound.mockReset();
     mockPlayErrorSound.mockReset();
   });
 
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('returns false without playing audio when recoil queue state is not hydrated yet', async () => {
+  it('returns skipped without playing audio when recoil queue state is not hydrated yet', async () => {
     const { result } = renderUseParallelDialer((snap) => {
       snap.set(activeQueueState, null);
       snap.set(queueItemsState, queueItems);
@@ -135,34 +135,41 @@ describe('useParallelDialer', () => {
 
     expect(startResult).toEqual({ status: 'skipped', reason: 'disabled' });
     expect(mockPlayDialingStartedSound).not.toHaveBeenCalled();
-    expect(mockAuthenticatedFetch).not.toHaveBeenCalled();
+    expect(mockStartDialerCall).not.toHaveBeenCalled();
   });
 
-  it('returns true after creating a parallel batch from a calling item and a pending item', async () => {
-    mockAuthenticatedFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        groupId: 'pg_test',
-        calls: [
-          {
-            callSid: 'CA1',
-            customerNumber: '+13472030054',
-            position: 1,
-            status: 'dialing',
-          },
-          {
-            callSid: 'CA2',
-            customerNumber: '+18054259549',
-            position: 2,
-            status: 'dialing',
-          },
-        ],
-      }),
+  it('starts a predictive GraphQL call with the explicit runtime queue ID', async () => {
+    mockStartDialerCall.mockResolvedValue({
+      sessionId: 'session_test',
+      twilioGroupId: 'pg_test',
+      queueId: 'queue-1',
+      selectionStrategy: 'predictive',
+      requestedFanout: 2,
+      actualFanout: 1,
+      status: 'dialing',
+      capacity: {
+        requestedFanout: 2,
+        callableTargetCount: 2,
+        availableCallerIdCount: 1,
+        reducedCapacityReasons: ['caller-id-capacity'],
+        blockedReasons: [],
+        actualFanout: 1,
+      },
+      calls: [
+        {
+          callSid: 'CA1',
+          contactId: 'item-1-contact',
+          customerNumber: '+13472030054',
+          callerId: '+12025550123',
+          position: 1,
+          status: 'dialing',
+        },
+      ],
     });
 
     const { result } = renderUseParallelDialer((snap) => {
       snap.set(activeQueueState, activeParallelQueue);
-      snap.set(queueItemsState, queueItems);
+      snap.set(queueItemsState, queueItemsWithStaleListQueueId);
       snap.set(currentQueueIndexState, 0);
     });
 
@@ -171,132 +178,36 @@ describe('useParallelDialer', () => {
     > | null = null;
 
     await act(async () => {
-      startResult = await result.current.startParallelBatch();
+      startResult = await result.current.startParallelBatch({
+        queueId: 'queue-1',
+      });
     });
 
     expect(startResult).toEqual({ status: 'started', groupId: 'pg_test' });
     expect(mockPlayDialingStartedSound).toHaveBeenCalledTimes(1);
-    expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
-    expect(mockAuthenticatedFetch.mock.calls[0][0]).toBe(
-      'https://app.example.test/api/v1/calls/parallel',
-    );
-    expect(
-      JSON.parse(mockAuthenticatedFetch.mock.calls[0][1].body),
-    ).toMatchObject({
+    expect(mockStartDialerCall).toHaveBeenCalledWith({
+      source: 'queue',
+      selectionStrategy: 'predictive',
+      requestedFanout: 2,
       queueId: 'queue-1',
-      customerNumbers: ['+13472030054', '+18054259549'],
-      contactIds: ['item-1-contact', 'item-2-contact'],
-      profileId: 'conservative',
     });
-  });
-
-  it('returns blocked without audio or polling when caller ID is locked', async () => {
-    mockAuthenticatedFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 409,
-      json: async () => ({
-        error: { code: 'CALLER_ID_LOCKED', retryAfterMs: 5000 },
-      }),
-    });
-
-    const { result } = renderUseParallelDialer((snap) => {
-      snap.set(activeQueueState, activeParallelQueue);
-      snap.set(queueItemsState, queueItems);
-      snap.set(currentQueueIndexState, 0);
-    });
-
-    let startResult: Awaited<
-      ReturnType<typeof result.current.startParallelBatch>
-    > | null = null;
-
-    await act(async () => {
-      startResult = await result.current.startParallelBatch();
-    });
-
-    expect(startResult).toEqual({
-      status: 'blocked',
-      reason: 'caller-id-locked',
-      responseStatus: 409,
-      retryAfterMs: 5000,
-    });
-    expect(mockPlayDialingStartedSound).not.toHaveBeenCalled();
-    expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
-    expect(result.current.isDialing).toBe(false);
-    expect(result.current.activeCalls).toEqual([]);
-
-    await act(async () => {
-      jest.advanceTimersByTime(500);
-      await Promise.resolve();
-    });
-
-    expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
-  });
-
-  it('stops polling and fails the active batch when status lookup returns non-ok', async () => {
-    mockAuthenticatedFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          groupId: 'pg_test',
-          calls: [
-            {
-              callSid: 'CA1',
-              customerNumber: '+13472030054',
-              position: 1,
-              status: 'dialing',
-              contactId: 'item-1-contact',
-            },
-            {
-              callSid: 'CA2',
-              customerNumber: '+18054259549',
-              position: 2,
-              status: 'dialing',
-              contactId: 'item-2-contact',
-            },
-          ],
-        }),
-      })
-      .mockResolvedValueOnce({ ok: false, status: 404 })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
-
-    const { result } = renderUseParallelDialer((snap) => {
-      snap.set(activeQueueState, activeParallelQueue);
-      snap.set(queueItemsState, queueItems);
-      snap.set(currentQueueIndexState, 0);
-    });
-
-    await act(async () => {
-      await result.current.startParallelBatch();
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(500);
-      await Promise.resolve();
-    });
-
-    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
-      'https://app.example.test/api/v1/calls/parallel/pg_test/terminate',
+    expect(result.current.activeCalls).toEqual([
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        callSid: 'CA1',
+        contactId: 'item-1-contact',
+        customerNumber: '+13472030054',
+        fromNumber: '+12025550123',
+        position: 1,
+        status: 'dialing',
       },
-    );
-    expect(mockPlayErrorSound).toHaveBeenCalledTimes(1);
-
-    await act(async () => {
-      jest.advanceTimersByTime(500);
-      await Promise.resolve();
-    });
-
-    expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(3);
+    ]);
   });
 
-  it('terminates and clears an active parallel group when canceled', async () => {
-    mockAuthenticatedFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
+  it('terminates backend group before clearing local parallel state when canceled', async () => {
+    mockTerminateDialerCall.mockResolvedValue({
+      twilioGroupId: 'pg_test',
+      status: 'completed',
     });
-
     const { result } = renderUseParallelDialer((snap) => {
       snap.set(activeQueueState, {
         ...activeParallelQueue,
@@ -306,6 +217,7 @@ describe('useParallelDialer', () => {
           {
             callSid: 'CA1',
             customerNumber: '+13472030054',
+            fromNumber: '+12025550123',
             position: 1,
             status: 'dialing',
           },
@@ -319,14 +231,39 @@ describe('useParallelDialer', () => {
       await result.current.cancelParallelDial();
     });
 
-    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
-      'https://app.example.test/api/v1/calls/parallel/pg_test/terminate',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
+    expect(mockStartDialerCall).not.toHaveBeenCalled();
+    expect(mockTerminateDialerCall).toHaveBeenCalledWith('pg_test');
     expect(result.current.activeCalls).toEqual([]);
+    expect(result.current.isDialing).toBe(false);
+  });
+
+  it('keeps local parallel state visible when cancel terminate fails', async () => {
+    mockTerminateDialerCall.mockRejectedValue(new Error('terminate failed'));
+    const { result } = renderUseParallelDialer((snap) => {
+      snap.set(activeQueueState, {
+        ...activeParallelQueue,
+        parallelDialingActive: true,
+        parallelGroupId: 'pg_test',
+        parallelActiveCalls: [
+          {
+            callSid: 'CA1',
+            customerNumber: '+13472030054',
+            fromNumber: '+12025550123',
+            position: 1,
+            status: 'dialing',
+          },
+        ],
+      });
+      snap.set(queueItemsState, queueItems);
+      snap.set(currentQueueIndexState, 0);
+    });
+
+    await act(async () => {
+      await result.current.cancelParallelDial();
+    });
+
+    expect(mockTerminateDialerCall).toHaveBeenCalledWith('pg_test');
+    expect(mockPlayErrorSound).toHaveBeenCalledTimes(1);
     expect(result.current.isDialing).toBe(false);
   });
 });

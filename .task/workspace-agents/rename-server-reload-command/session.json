@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9f0c4fabfbf8",
+  "tmuxSession": "opensaas-workspace-agents-rename-server-reload-command-9f0c4fab",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-server-reload-command",
+  "branch": "task/workspace-agents/rename-server-reload-command",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-server-reload-command",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-server-reload-command",
+  "prNumber": 495,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/495",
+  "createdAt": "2026-05-23T06:17:29.748Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-server-reload-command/.task/workspace-agents/rename-server-reload-command/session.json"
+}

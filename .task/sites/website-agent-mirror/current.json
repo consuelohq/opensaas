@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/website-agent-mirror",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1247,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1247",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1247",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1247/website-agent-mirror",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1247",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1247/website-agent-mirror",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-website-agent-mirror",
+  "taskSession": "tsk_9838c721bcb3",
+  "tmuxSession": "opensaas-sites-website-agent-mirror-9838c721",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-website-agent-mirror/.task/sites/website-agent-mirror/session.json",
+  "createdAt": "2026-06-28T01:55:26.873Z"
+}

@@ -1,0 +1,71 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/release-harden-os-installer-runtime-dependencies",
+  "base": "origin/stream/security",
+  "headSha": "074c3d2fec1a254977dc059d54f995557fc884e5",
+  "changeHash": "f4872fc9d152ac1fa95f451a9b66407ac633c3293194a5dbcaea26a575e8bffb",
+  "changedFiles": [
+    "packages/os/README.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/docs/installer-runtime-release-checklist.md",
+    "packages/os/docs/security-tightening-evidence.md",
+    "packages/os/docs/stream-security-pr-1154-scope-audit.md",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/lib/workspace-connector-transport.ts",
+    "packages/os/scripts/start-portless-daemon.sh",
+    "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
+    "packages/os/tests/installer-runtime-dependencies.test.ts"
+  ],
+  "verifiedAt": "2026-06-21T02:35:10.298Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/release-harden-os-installer-runtime-dependencies/current.json",
+        ".task/security/release-harden-os-installer-runtime-dependencies/session.json",
+        ".task/security/release-harden-os-installer-runtime-dependencies/workpad.md",
+        ".task/tasks/security/release-harden-os-installer-runtime-dependencies.json",
+        "packages/os/README.md",
+        "packages/os/SCRIPTS.md",
+        "packages/os/docs/installer-runtime-release-checklist.md",
+        "packages/os/docs/security-tightening-evidence.md",
+        "packages/os/docs/stream-security-pr-1154-scope-audit.md",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/generate-system-daemons.sh",
+        "packages/os/scripts/install-system-daemons.sh",
+        "packages/os/scripts/lib/workspace-connector-transport.ts",
+        "packages/os/scripts/start-portless-daemon.sh",
+        "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
+        "packages/os/tests/installer-runtime-dependencies.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

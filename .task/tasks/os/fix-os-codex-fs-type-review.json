@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-codex-fs-type-review",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1170,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1170",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1170",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1170/fix-os-codex-fs-type-review",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1170",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1170/fix-os-codex-fs-type-review",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-codex-fs-type-review",
+  "taskSession": "tsk_79144ddf5337",
+  "tmuxSession": "opensaas-os-fix-os-codex-fs-type-review-79144ddf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-codex-fs-type-review/.task/os/fix-os-codex-fs-type-review/session.json",
+  "createdAt": "2026-06-22T18:48:48.117Z"
+}

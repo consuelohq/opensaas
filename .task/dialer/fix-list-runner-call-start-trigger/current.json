@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-list-runner-call-start-trigger",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 539,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/539",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/539",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/539/fix-list-runner-call-start-trigger",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/539",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/539/fix-list-runner-call-start-trigger",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-list-runner-call-start-trigger",
+  "taskSession": "tsk_ec1a043508c3",
+  "tmuxSession": "opensaas-dialer-fix-list-runner-call-start-trigger-ec1a0435",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-list-runner-call-start-trigger/.task/dialer/fix-list-runner-call-start-trigger/session.json",
+  "createdAt": "2026-05-23T19:48:40.683Z"
+}

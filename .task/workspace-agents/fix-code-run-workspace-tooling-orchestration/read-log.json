@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/codemode/executor.ts"
+  ],
+  "updatedAt": "2026-05-21T19:09:04.430Z"
+}

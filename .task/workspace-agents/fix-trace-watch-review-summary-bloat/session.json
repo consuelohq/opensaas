@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b506f0f8c31f",
+  "tmuxSession": "opensaas-workspace-agents-fix-trace-watch-review-summary-bloat-b506f0f8",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-trace-watch-review-summary-bloat",
+  "branch": "task/workspace-agents/fix-trace-watch-review-summary-bloat",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-trace-watch-review-summary-bloat",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-trace-watch-review-summary-bloat",
+  "prNumber": 548,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/548",
+  "createdAt": "2026-05-23T22:38:42.217Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-trace-watch-review-summary-bloat/.task/workspace-agents/fix-trace-watch-review-summary-bloat/session.json"
+}

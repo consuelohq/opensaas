@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6547a6e3257f",
+  "tmuxSession": "opensaas-workspace-agents-wire-langfuse-token-usage-details-6547a6e3",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/wire-langfuse-token-usage-details",
+  "branch": "task/workspace-agents/wire-langfuse-token-usage-details",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-wire-langfuse-token-usage-details",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-wire-langfuse-token-usage-details",
+  "prNumber": 465,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/465",
+  "createdAt": "2026-05-22T08:33:33.577Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-wire-langfuse-token-usage-details/.task/workspace-agents/wire-langfuse-token-usage-details/session.json"
+}

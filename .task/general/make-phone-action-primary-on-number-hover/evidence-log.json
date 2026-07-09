@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+  "events": [
+    {
+      "id": "7c156199-d15b-46f7-825c-bbf9a5c8b6ca",
+      "occurred_at": "2026-05-25T23:27:12.048Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/components/RecordTableCellEditButton.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "268f0f91-b6a8-4ff8-96ed-19bb81013661",
+      "occurred_at": "2026-05-25T23:27:14.806Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/hooks/useGetSecondaryRecordTableCellButton.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "9f7b359a-78c5-422b-bd67-ab9c4c974e4c",
+      "occurred_at": "2026-05-25T23:27:21.035Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/components/RecordTableCellButtons.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "443835be-ba12-4f24-9aa4-f198344c7dc2",
+      "occurred_at": "2026-05-25T23:27:28.984Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-ui/src/input/button/components/LightIconButtonGroup.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "fd2452b6-49ab-4f9a-938a-21f1a4ade8e9",
+      "occurred_at": "2026-05-25T23:27:32.774Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/record-field/ui/utils/getFieldButtonIcon.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "cb01f663-50aa-4185-a4b0-fee2509b5235",
+      "occurred_at": "2026-05-25T23:27:59.244Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/hooks/useGetSecondaryRecordTableCellButton.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "ce8a0e0c-04d9-4470-8901-a6a64669008a",
+      "occurred_at": "2026-05-25T23:28:20.670Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/hooks/useGetSecondaryRecordTableCellButton.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "17d3e31a-8a00-40ff-a95f-2886d1fd6e02",
+      "occurred_at": "2026-05-25T23:29:29.282Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/ClickToCallButton.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    },
+    {
+      "id": "b8ee010f-2117-4ca1-b44f-9945f1b28636",
+      "occurred_at": "2026-05-25T23:29:53.150Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/record-table/record-table-cell/hooks/useGetSecondaryRecordTableCellButton.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/make-phone-action-primary-on-number-hover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/make-phone-action-primary-on-number-hover"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-25T23:29:53.205Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-sites-sqlite-lazy-import",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1156,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1156",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1156",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1156/fix-os-sites-sqlite-lazy-import",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1156",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1156/fix-os-sites-sqlite-lazy-import",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-sites-sqlite-lazy-import",
+  "taskSession": "tsk_df29bacc519a",
+  "tmuxSession": "opensaas-security-fix-os-sites-sqlite-lazy-import-df29bacc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-sites-sqlite-lazy-import/.task/security/fix-os-sites-sqlite-lazy-import/session.json",
+  "createdAt": "2026-06-19T14:20:05.811Z"
+}

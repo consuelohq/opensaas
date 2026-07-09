@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/harden-task-node-modules-symlink-discovery",
+  "events": [
+    {
+      "id": "1155bfbd-fa9e-40f1-be7e-2a25af1045f8",
+      "occurred_at": "2026-06-14T01:06:19.045Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-node-modules.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/harden-task-node-modules-symlink-discovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/harden-task-node-modules-symlink-discovery"
+      }
+    },
+    {
+      "id": "d205fa32-a20c-4d67-b5d2-eac1cd63f02e",
+      "occurred_at": "2026-06-14T01:06:59.571Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-node-modules.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/harden-task-node-modules-symlink-discovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/harden-task-node-modules-symlink-discovery"
+      }
+    },
+    {
+      "id": "f285970c-110e-48ce-b4d2-49f185f57fd4",
+      "occurred_at": "2026-06-14T01:08:41.299Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-node-modules.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/harden-task-node-modules-symlink-discovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/harden-task-node-modules-symlink-discovery"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-14T01:08:41.358Z"
+}

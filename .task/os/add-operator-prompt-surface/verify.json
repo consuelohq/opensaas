@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-operator-prompt-surface",
+  "base": "origin/stream/os",
+  "headSha": "d6a9ab647685a3057d95dfc7177bf5a20c5025ea",
+  "changeHash": "24b7239d87c22706994b50cbdd476981a76d2fce9d8d7c3f6400c414b2069f53",
+  "changedFiles": [
+    "operator/README.md",
+    "operator/operator.ts",
+    "operator/prompts/review.md",
+    "package.json",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/operator.ts",
+    "packages/os/tests/install-state.test.ts",
+    "tests/operator.test.ts"
+  ],
+  "verifiedAt": "2026-06-09T23:36:30.023Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-operator-prompt-surface/current.json",
+        ".task/os/add-operator-prompt-surface/evidence-log.json",
+        ".task/os/add-operator-prompt-surface/read-log.json",
+        ".task/os/add-operator-prompt-surface/session.json",
+        ".task/os/add-operator-prompt-surface/workpad.md",
+        ".task/tasks/os/add-operator-prompt-surface.json",
+        "operator/README.md",
+        "operator/operator.ts",
+        "operator/prompts/review.md",
+        "package.json",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/operator.ts",
+        "packages/os/tests/install-state.test.ts",
+        "tests/operator.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

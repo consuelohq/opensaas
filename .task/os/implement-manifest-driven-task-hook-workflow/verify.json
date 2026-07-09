@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/implement-manifest-driven-task-hook-workflow",
+  "base": "origin/stream/os",
+  "headSha": "202648a34f919dcb21d29ab33239e384be5620ef",
+  "changeHash": "9dc2a1020bcde45afbaff6bb53c9e6e909ecd1cc315e4e67f063db28f7ac6efc",
+  "changedFiles": [
+    "packages/os/hooks/task/workflow.js"
+  ],
+  "verifiedAt": "2026-06-11T07:16:07.964Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/implement-manifest-driven-task-hook-workflow/current.json",
+        ".task/os/implement-manifest-driven-task-hook-workflow/evidence-log.json",
+        ".task/os/implement-manifest-driven-task-hook-workflow/read-log.json",
+        ".task/os/implement-manifest-driven-task-hook-workflow/session.json",
+        ".task/os/implement-manifest-driven-task-hook-workflow/workpad.md",
+        ".task/tasks/os/implement-manifest-driven-task-hook-workflow.json",
+        "packages/os/hooks/task/workflow.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

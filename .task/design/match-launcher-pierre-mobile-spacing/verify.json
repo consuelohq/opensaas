@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/match-launcher-pierre-mobile-spacing",
+  "base": "origin/task/design/match-launcher-pierre-mobile-spacing",
+  "headSha": "b5d9dfc8d54c63fdd6fd0fda2fcb2816a28fc57d",
+  "changeHash": "cf7c01cd3b32e297ded050868ec1201a94f37622dd26a5751fb72b5bd7aa41b0",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-11T09:01:23.227Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/match-launcher-pierre-mobile-spacing/current.json",
+        ".task/design/match-launcher-pierre-mobile-spacing/evidence-log.json",
+        ".task/design/match-launcher-pierre-mobile-spacing/read-log.json",
+        ".task/design/match-launcher-pierre-mobile-spacing/session.json",
+        ".task/design/match-launcher-pierre-mobile-spacing/workpad.md",
+        ".task/tasks/design/match-launcher-pierre-mobile-spacing.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

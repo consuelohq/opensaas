@@ -1,0 +1,33 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-stream-review-comments",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "9246603d96272450ddb91387917328da30c8f92f",
+  "changeHash": "247ec1b128b20fc85d78137ec30bf074c347550b76b3ae8f5eab04882538349c",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/lib/review-run-state.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-05-26T19:02:04.367Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

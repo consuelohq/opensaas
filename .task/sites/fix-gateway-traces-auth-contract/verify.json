@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/fix-gateway-traces-auth-contract",
+  "base": "origin/task/sites/fix-gateway-traces-auth-contract",
+  "headSha": "dc12e65226c40e239eff41d03972306aa459cd03",
+  "changeHash": "6addf9cb9d60b9adb46519d6508669618f53922a7158303b55cf8235f40a9bc7",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+  ],
+  "verifiedAt": "2026-06-16T17:30:59.271Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/fix-gateway-traces-auth-contract/current.json",
+        ".task/sites/fix-gateway-traces-auth-contract/evidence-log.json",
+        ".task/sites/fix-gateway-traces-auth-contract/read-log.json",
+        ".task/sites/fix-gateway-traces-auth-contract/session.json",
+        ".task/sites/fix-gateway-traces-auth-contract/workpad.md",
+        ".task/tasks/sites/fix-gateway-traces-auth-contract.json",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

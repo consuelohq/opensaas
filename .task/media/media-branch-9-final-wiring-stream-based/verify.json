@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/media/media-branch-9-final-wiring-stream-based",
+  "base": "origin/stream/media",
+  "headSha": "3f467a5411327232aa23c57839a8965bc014d6f3",
+  "changeHash": "7b51a9f28b9651820cd4a6f63bcef915d021f25e61df3002d34403724050683d",
+  "changedFiles": [
+    "packages/os/scripts/lib/media/artifacts.ts",
+    "packages/os/scripts/lib/media/dependency-catalog.ts",
+    "packages/os/scripts/lib/media/export.ts",
+    "packages/os/scripts/lib/media/schema.ts",
+    "packages/os/scripts/media.ts",
+    "packages/os/tests/media/27-export-package.test.ts"
+  ],
+  "verifiedAt": "2026-06-26T15:54:05.984Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/media/media-branch-9-final-wiring-stream-based/current.json",
+        ".task/media/media-branch-9-final-wiring-stream-based/session.json",
+        ".task/media/media-branch-9-final-wiring-stream-based/workpad.md",
+        ".task/tasks/media/media-branch-9-final-wiring-stream-based.json",
+        "packages/os/scripts/lib/media/artifacts.ts",
+        "packages/os/scripts/lib/media/dependency-catalog.ts",
+        "packages/os/scripts/lib/media/export.ts",
+        "packages/os/scripts/lib/media/schema.ts",
+        "packages/os/scripts/media.ts",
+        "packages/os/tests/media/27-export-package.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

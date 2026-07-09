@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/operator-artifact-commands",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 960,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/960",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/960",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/960/operator-artifact-commands",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/960",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/960/operator-artifact-commands",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-operator-artifact-commands",
+  "taskSession": "tsk_3b2558deef37",
+  "tmuxSession": "opensaas-os-operator-artifact-commands-3b2558de",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-operator-artifact-commands/.task/os/operator-artifact-commands/session.json",
+  "createdAt": "2026-06-11T07:17:58.070Z"
+}

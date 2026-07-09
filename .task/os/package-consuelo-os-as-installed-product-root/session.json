@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e33ae4a1d7de",
+  "tmuxSession": "opensaas-os-package-consuelo-os-as-installed-product-root-e33ae4a1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/package-consuelo-os-as-installed-product-root",
+  "branch": "task/os/package-consuelo-os-as-installed-product-root",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-package-consuelo-os-as-installed-product-root",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-package-consuelo-os-as-installed-product-root",
+  "prNumber": 776,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/776",
+  "createdAt": "2026-06-05T05:19:23.511Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-package-consuelo-os-as-installed-product-root/.task/os/package-consuelo-os-as-installed-product-root/session.json"
+}

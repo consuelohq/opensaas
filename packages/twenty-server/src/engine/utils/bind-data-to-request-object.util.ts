@@ -3,11 +3,11 @@ import { type APP_LOCALES, SOURCE_LOCALE } from 'twenty-shared/translations';
 
 import { type AuthContext } from 'src/engine/core-modules/auth/types/auth-context.type';
 
-export const bindDataToRequestObject = (
+export function bindDataToRequestObject(
   data: AuthContext,
   request: Request,
   metadataVersion: number | undefined,
-) => {
+): void {
   request.user = data.user;
   request.apiKey = data.apiKey;
   request.application = data.application;
@@ -25,4 +25,4 @@ export const bindDataToRequestObject = (
     data.userWorkspace?.locale ??
     (request.headers['x-locale'] as keyof typeof APP_LOCALES) ??
     SOURCE_LOCALE;
-};
+}

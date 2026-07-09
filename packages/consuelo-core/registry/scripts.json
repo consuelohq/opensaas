@@ -1,0 +1,315 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "id": "code-run",
+      "ownerPackage": "workspace",
+      "packageJsonPath": "package.json",
+      "scriptName": "code-run",
+      "command": "bun packages/workspace/scripts/code-run.ts",
+      "resolvedTargets": [
+        "packages/workspace/scripts/code-run.ts"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/code-run.ts",
+        "reason": "Root operator script currently delegates code mode to the workspace control-plane implementation."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "os.bootstrap",
+      "ownerPackage": "os",
+      "packageJsonPath": "packages/os/package.json",
+      "scriptName": "bootstrap",
+      "command": "bash ./scripts/bootstrap.sh",
+      "resolvedTargets": [
+        "packages/os/scripts/bootstrap.sh"
+      ],
+      "exposure": "public",
+      "migrationStatus": "os-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/os",
+        "commit": "7d79c8ad31",
+        "path": "packages/os/scripts/bootstrap.sh",
+        "reason": "The hosted/local bootstrap entrypoint is part of the public OS installer surface."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/os/tests/install-state.test.ts"
+      ]
+    },
+    {
+      "id": "os.call",
+      "ownerPackage": "os",
+      "packageJsonPath": "packages/os/package.json",
+      "scriptName": "call",
+      "command": "bun ./scripts/os.ts call",
+      "resolvedTargets": [
+        "packages/os/scripts/os.ts"
+      ],
+      "exposure": "runtime",
+      "migrationStatus": "os-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/os",
+        "commit": "7d79c8ad31",
+        "path": "packages/os/scripts/os.ts",
+        "reason": "OS call is the public runtime facade for local user/agent OS behavior."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/os/tests/facade"
+      ]
+    },
+    {
+      "id": "os.generate-skills-registry",
+      "ownerPackage": "os",
+      "packageJsonPath": "packages/os/package.json",
+      "scriptName": "generate-skills-registry",
+      "command": "bun ./scripts/generate-skills-registry.ts",
+      "resolvedTargets": [
+        "packages/os/scripts/generate-skills-registry.ts"
+      ],
+      "exposure": "internal",
+      "migrationStatus": "os-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/os",
+        "commit": "b6233b465e",
+        "path": "packages/os/scripts/generate-skills-registry.ts",
+        "reason": "The compact OS skills registry generator was shipped on the OS stream and remains OS-owned."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/os/tests/skills-registry.test.ts"
+      ]
+    },
+    {
+      "id": "os.install:local",
+      "ownerPackage": "os",
+      "packageJsonPath": "packages/os/package.json",
+      "scriptName": "install:local",
+      "command": "bun ./scripts/install.ts",
+      "resolvedTargets": [
+        "packages/os/scripts/install.ts"
+      ],
+      "exposure": "public",
+      "migrationStatus": "os-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/os",
+        "commit": "7d79c8ad31",
+        "path": "packages/os/scripts/install.ts",
+        "reason": "Local install is the user-facing OS installer entrypoint."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/os/tests/install-state.test.ts"
+      ]
+    },
+    {
+      "id": "os.release-install",
+      "ownerPackage": "workspace",
+      "packageJsonPath": "package.json",
+      "scriptName": "os:release-install",
+      "command": "bun packages/workspace/scripts/os-release-install.ts",
+      "resolvedTargets": [
+        "packages/workspace/scripts/os-release-install.ts"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/os-release-install.ts",
+        "reason": "The OS release publisher uses Ko/operator Cloudflare permissions and stays in workspace."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "os.task.start",
+      "ownerPackage": "os",
+      "packageJsonPath": "packages/os/package.json",
+      "scriptName": "task:start",
+      "command": "bun ./scripts/task-start.js",
+      "resolvedTargets": [
+        "packages/os/scripts/task-start.js"
+      ],
+      "exposure": "runtime",
+      "migrationStatus": "copied-pending-core",
+      "sourceOfTruth": {
+        "ref": "origin/stream/os",
+        "commit": "b6233b465e",
+        "path": "packages/os/scripts/task-start.js",
+        "reason": "Copied OS task script exists for OS migration work; workspace source remains authoritative until callers and ownership migrate."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit",
+        "drift-report"
+      ]
+    },
+    {
+      "id": "research:ingest",
+      "ownerPackage": "workspace",
+      "packageJsonPath": "package.json",
+      "scriptName": "research:ingest",
+      "command": "bun packages/workspace/scripts/research-ingest.js",
+      "resolvedTargets": [
+        "packages/workspace/scripts/research-ingest.js"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/workspace-repair",
+        "commit": "57bdf02cae",
+        "path": "packages/workspace/scripts/research-ingest.js",
+        "reason": "Workspace repair restored research ingest after OS copy drift; workspace remains the operator source."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit",
+        "ownership-guardrail",
+        "packages/workspace/tests/research-ingest.test.js"
+      ]
+    },
+    {
+      "id": "review.run",
+      "ownerPackage": "workspace",
+      "packageJsonPath": "package.json",
+      "scriptName": "review",
+      "command": "bun packages/workspace/scripts/review.js",
+      "resolvedTargets": [
+        "packages/workspace/scripts/review.js"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/review.js",
+        "reason": "Workspace review remains the operator review facade used by task sessions."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "status",
+      "ownerPackage": "workspace",
+      "packageJsonPath": "package.json",
+      "scriptName": "status",
+      "command": "bun packages/workspace/scripts/status.js",
+      "resolvedTargets": [
+        "packages/workspace/scripts/status.js"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/status.js",
+        "reason": "Root status currently reports workspace/task state through the workspace control plane."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "task.start",
+      "ownerPackage": "workspace",
+      "packageJsonPath": "package.json",
+      "scriptName": "task:start",
+      "command": "bun packages/workspace/scripts/task-start.js",
+      "resolvedTargets": [
+        "packages/workspace/scripts/task-start.js"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/task-start.js",
+        "reason": "Task start remains workspace-owned while task workflow migration is incomplete."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit",
+        "ownership-guardrail"
+      ]
+    },
+    {
+      "id": "verify",
+      "ownerPackage": "workspace",
+      "packageJsonPath": "package.json",
+      "scriptName": "verify",
+      "command": "bun packages/workspace/scripts/verify.js",
+      "resolvedTargets": [
+        "packages/workspace/scripts/verify.js"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/verify.js",
+        "reason": "Verify is the task-session validation facade and remains workspace-owned."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "diff_cockpit",
+      "ownerPackage": "diff-cockpit",
+      "packageJsonPath": "package.json",
+      "scriptName": "diff_cockpit",
+      "command": "bun packages/workspace/scripts/diff_cockpit.ts",
+      "resolvedTargets": [
+        "packages/workspace/scripts/diff_cockpit.ts"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/diff-cockpit",
+        "path": "packages/workspace/scripts/diff_cockpit.ts",
+        "reason": "Root operator script opens canonical diffs.consuelohq.com live PR review URLs."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ]
+    },
+    {
+      "id": "workspace.diff_cockpit",
+      "ownerPackage": "diff-cockpit",
+      "packageJsonPath": "packages/workspace/package.json",
+      "scriptName": "diff_cockpit",
+      "command": "bun ./scripts/diff_cockpit.ts",
+      "resolvedTargets": [
+        "packages/workspace/scripts/diff_cockpit.ts"
+      ],
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/diff-cockpit",
+        "path": "packages/workspace/scripts/diff_cockpit.ts",
+        "reason": "Workspace package alias keeps the operator launcher discoverable beside other workspace scripts."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/build-trace-home-tui-inspector",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 682,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/682",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/682",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/682/build-trace-home-tui-inspector",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/682",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/682/build-trace-home-tui-inspector",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-build-trace-home-tui-inspector",
+  "taskSession": "tsk_fdc86a5ff261",
+  "tmuxSession": "opensaas-workspace-agents-build-trace-home-tui-inspector-fdc86a5f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-build-trace-home-tui-inspector/.task/workspace-agents/build-trace-home-tui-inspector/session.json",
+  "createdAt": "2026-06-02T00:20:34.483Z"
+}

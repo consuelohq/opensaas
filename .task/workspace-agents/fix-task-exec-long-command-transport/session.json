@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3c60c47d6d8c",
+  "tmuxSession": "opensaas-workspace-agents-fix-task-exec-long-command-transport-3c60c47d",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-task-exec-long-command-transport",
+  "branch": "task/workspace-agents/fix-task-exec-long-command-transport",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-exec-long-command-transport",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-exec-long-command-transport",
+  "prNumber": 471,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/471",
+  "createdAt": "2026-05-23T02:21:04.790Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-exec-long-command-transport/.task/workspace-agents/fix-task-exec-long-command-transport/session.json"
+}

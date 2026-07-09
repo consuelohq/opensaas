@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "updatedAt": "2026-05-23T06:01:54.928Z"
+}

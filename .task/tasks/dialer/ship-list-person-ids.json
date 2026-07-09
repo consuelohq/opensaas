@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/ship-list-person-ids",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 535,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/535",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/535",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/535/ship-list-person-ids",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/535",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/535/ship-list-person-ids",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-list-person-ids",
+  "taskSession": "tsk_bb24a6c0a336",
+  "tmuxSession": "opensaas-dialer-ship-list-person-ids-bb24a6c0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-list-person-ids/.task/dialer/ship-list-person-ids/session.json",
+  "createdAt": "2026-05-23T19:13:30.448Z"
+}

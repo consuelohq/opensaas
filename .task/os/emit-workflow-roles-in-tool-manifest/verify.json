@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/emit-workflow-roles-in-tool-manifest",
+  "base": "origin/stream/os",
+  "headSha": "fbf598e084b63f2f99ab583bd9753bfe7f5eef88",
+  "changeHash": "5606a1543263caae7b7805deed86bb64f0bbce580694c24b19714d8a863b0854",
+  "changedFiles": [
+    "packages/os/hooks/README.md",
+    "packages/os/hooks/dispatcher.js",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/tests/task-manifest-workflow-roles.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json"
+  ],
+  "verifiedAt": "2026-06-11T18:56:54.692Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/emit-workflow-roles-in-tool-manifest/current.json",
+        ".task/os/emit-workflow-roles-in-tool-manifest/evidence-log.json",
+        ".task/os/emit-workflow-roles-in-tool-manifest/read-log.json",
+        ".task/os/emit-workflow-roles-in-tool-manifest/session.json",
+        ".task/os/emit-workflow-roles-in-tool-manifest/workpad.md",
+        ".task/tasks/os/emit-workflow-roles-in-tool-manifest.json",
+        "packages/os/hooks/README.md",
+        "packages/os/hooks/dispatcher.js",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/tests/task-manifest-workflow-roles.test.ts",
+        "packages/os/tooling/dev-tool-manifest.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

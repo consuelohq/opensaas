@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/replace-shallow-os-docs-with-real-docs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 423,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/423",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/423",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/423/replace-shallow-os-docs-with-real-docs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/423",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/423/replace-shallow-os-docs-with-real-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-replace-shallow-os-docs-with-real-docs",
+  "taskSession": "tsk_f6c92e275fe0",
+  "tmuxSession": "opensaas-os-replace-shallow-os-docs-with-real-docs-f6c92e27",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-replace-shallow-os-docs-with-real-docs/.task/session.json",
+  "createdAt": "2026-05-21T05:56:20.952Z"
+}

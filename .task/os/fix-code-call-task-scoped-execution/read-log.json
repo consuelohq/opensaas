@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/scripts/lib/code-call/runtime.ts",
+    "packages/os/scripts/lib/code-call/types.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/code-call.test.ts"
+  ],
+  "updatedAt": "2026-06-16T22:19:13.275Z"
+}

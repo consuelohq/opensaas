@@ -1,0 +1,263 @@
+name: Consuelo CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Base ref for manual verification
+        required: false
+        default: origin/main
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  consuelo-changes:
+    name: Consuelo / changed files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      base_ref: ${{ steps.classify.outputs.base_ref }}
+      verify: ${{ steps.classify.outputs.verify }}
+      workflow_security: ${{ steps.classify.outputs.workflow_security }}
+      workspace_contracts: ${{ steps.classify.outputs.workspace_contracts }}
+      os_contracts: ${{ steps.classify.outputs.os_contracts }}
+      dialer: ${{ steps.classify.outputs.dialer }}
+      sites_gateway_cloudflare: ${{ steps.classify.outputs.sites_gateway_cloudflare }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify Consuelo changes
+        id: classify
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          case "${{ github.event_name }}" in
+            pull_request)
+              base_ref="origin/${{ github.base_ref }}"
+              ;;
+            merge_group)
+              merge_base_ref="$(jq -r '.merge_group.base_ref // "refs/heads/main"' "$GITHUB_EVENT_PATH")"
+              base_ref="${merge_base_ref#refs/heads/}"
+              base_ref="origin/${base_ref}"
+              ;;
+            workflow_dispatch)
+              base_ref="${{ github.event.inputs.base || 'origin/main' }}"
+              ;;
+            *)
+              base_ref="origin/main"
+              ;;
+          esac
+
+          if [[ "$base_ref" == origin/* ]]; then
+            base_branch="${base_ref#origin/}"
+            git fetch --no-tags --prune origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}"
+          fi
+
+          git diff --name-only --diff-filter=ACMR "${base_ref}...HEAD" > /tmp/consuelo-changed-files.txt
+          cat /tmp/consuelo-changed-files.txt
+
+          has_change() {
+            grep -E "$1" /tmp/consuelo-changed-files.txt >/dev/null 2>&1
+          }
+
+          write_output() {
+            local name="$1"
+            local value="$2"
+            echo "${name}=${value}" >> "$GITHUB_OUTPUT"
+          }
+
+          workflow_security=false
+          workspace_contracts=false
+          os_contracts=false
+          dialer=false
+          sites_gateway_cloudflare=false
+          verify=false
+
+          if has_change '^\.github/'; then workflow_security=true; verify=true; fi
+          if has_change '^(package\.json|yarn\.lock|nx\.json|tsconfig[^/]*\.json)$'; then verify=true; fi
+          if has_change '^packages/workspace/'; then workspace_contracts=true; verify=true; fi
+          if has_change '^packages/os/'; then os_contracts=true; verify=true; fi
+          if has_change '^packages/dialer/'; then dialer=true; verify=true; fi
+          if has_change '^packages/api/'; then verify=true; fi
+          if has_change '^packages/consuelo-core/'; then verify=true; fi
+          if has_change '^packages/consuelo-docs/'; then verify=true; fi
+          if has_change '^packages/consuelo-website/'; then verify=true; fi
+          if has_change '^packages/twenty-server/src/engine/core-modules/consuelo-api/'; then dialer=true; verify=true; fi
+          if has_change '(^packages/os/cloudflare/|gateway|sites-gateway|workspace-edge|wrangler\.toml$)'; then sites_gateway_cloudflare=true; os_contracts=true; verify=true; fi
+
+          write_output base_ref "$base_ref"
+          write_output verify "$verify"
+          write_output workflow_security "$workflow_security"
+          write_output workspace_contracts "$workspace_contracts"
+          write_output os_contracts "$os_contracts"
+          write_output dialer "$dialer"
+          write_output sites_gateway_cloudflare "$sites_gateway_cloudflare"
+
+  workflow-security:
+    name: Consuelo / workflow security
+    needs: consuelo-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: No workflow changes
+        if: needs.consuelo-changes.outputs.workflow_security != 'true'
+        run: echo "No GitHub workflow changes detected."
+
+      - uses: actions/checkout@v4
+        if: needs.consuelo-changes.outputs.workflow_security == 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Review changed workflows
+        if: needs.consuelo-changes.outputs.workflow_security == 'true'
+        run: node packages/workspace/scripts/ci/check-github-workflows.cjs "${{ needs.consuelo-changes.outputs.base_ref }}"
+
+  verify:
+    name: Consuelo / verify
+    needs: consuelo-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: No Consuelo verification changes
+        if: needs.consuelo-changes.outputs.verify != 'true'
+        run: echo "No Consuelo-owned or cross-cutting changes detected."
+
+      - uses: actions/checkout@v4
+        if: needs.consuelo-changes.outputs.verify == 'true'
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        if: needs.consuelo-changes.outputs.verify == 'true'
+
+      - name: Install dependencies
+        if: needs.consuelo-changes.outputs.verify == 'true'
+        uses: ./.github/actions/yarn-install
+
+      - name: Run workspace verify
+        if: needs.consuelo-changes.outputs.verify == 'true'
+        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests
+
+  workspace-contracts:
+    name: Consuelo / workspace contracts
+    needs: consuelo-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: No workspace contract changes
+        if: needs.consuelo-changes.outputs.workspace_contracts != 'true'
+        run: echo "No workspace contract changes detected."
+
+      - uses: actions/checkout@v4
+        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
+
+      - name: Install dependencies
+        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
+        uses: ./.github/actions/yarn-install
+
+      - name: Run workspace contract gate
+        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
+        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests
+
+  os-contracts:
+    name: Consuelo / OS contracts
+    needs: consuelo-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: No OS contract changes
+        if: needs.consuelo-changes.outputs.os_contracts != 'true'
+        run: echo "No OS contract changes detected."
+
+      - uses: actions/checkout@v4
+        if: needs.consuelo-changes.outputs.os_contracts == 'true'
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        if: needs.consuelo-changes.outputs.os_contracts == 'true'
+
+      - name: Install dependencies
+        if: needs.consuelo-changes.outputs.os_contracts == 'true'
+        uses: ./.github/actions/yarn-install
+
+      - name: Run OS contract tests
+        if: needs.consuelo-changes.outputs.os_contracts == 'true'
+        working-directory: packages/os
+        run: |
+          bun x vitest run \
+            tests/tool-manifest.test.ts \
+            tests/security-gateway.test.ts \
+            tests/workspace-gateway-contract.test.ts
+
+  dialer:
+    name: Consuelo / dialer
+    needs: consuelo-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: No dialer changes
+        if: needs.consuelo-changes.outputs.dialer != 'true'
+        run: echo "No dialer changes detected."
+
+      - uses: actions/checkout@v4
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+
+      - name: Install dependencies
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        uses: ./.github/actions/yarn-install
+
+      - name: Run dialer tests
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        run: bun test packages/dialer/src
+
+  sites-gateway-cloudflare:
+    name: Consuelo / Sites Gateway + Cloudflare
+    needs: consuelo-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: No Sites Gateway or Cloudflare changes
+        if: needs.consuelo-changes.outputs.sites_gateway_cloudflare != 'true'
+        run: echo "No Sites Gateway or Cloudflare changes detected."
+
+      - uses: actions/checkout@v4
+        if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
+
+      - name: Install dependencies
+        if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
+        uses: ./.github/actions/yarn-install
+
+      - name: Run Sites Gateway and Cloudflare tests
+        if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
+        run: |
+          bun x vitest run \
+            packages/os/tests/consuelo-sites-gateway.test.ts \
+            packages/os/tests/consuelo-sites-gateway-policy.test.ts \
+            packages/os/tests/cloudflare-worker-deployment-contract.test.ts

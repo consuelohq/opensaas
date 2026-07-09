@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-apply-patch-tool",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1031,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1031",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1031",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1031/add-workspace-apply-patch-tool",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1031",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1031/add-workspace-apply-patch-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-apply-patch-tool",
+  "taskSession": "tsk_6bd580e6c564",
+  "tmuxSession": "opensaas-os-add-workspace-apply-patch-tool-6bd580e6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-apply-patch-tool/.task/os/add-workspace-apply-patch-tool/session.json",
+  "createdAt": "2026-06-14T03:34:59.079Z"
+}

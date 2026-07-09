@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+  "events": [
+    {
+      "id": "624c0113-e1f9-42ee-aee7-370c73a148da",
+      "occurred_at": "2026-05-24T05:50:18.810Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-operations-in-trace-watch"
+      }
+    },
+    {
+      "id": "ce8750ee-0256-46f9-88f8-641b2903c3f6",
+      "occurred_at": "2026-05-24T05:50:39.969Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-operations-in-trace-watch"
+      }
+    },
+    {
+      "id": "e4e33e7f-8fdf-4f3b-8175-60ff20b5d19a",
+      "occurred_at": "2026-05-24T05:50:40.680Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-operations-in-trace-watch"
+      }
+    },
+    {
+      "id": "8de262b6-cc0d-4cec-ab6e-3519f661da9b",
+      "occurred_at": "2026-05-24T05:54:34.744Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-operations-in-trace-watch"
+      }
+    },
+    {
+      "id": "17f56173-0a8c-418f-a577-0f42e6431bdd",
+      "occurred_at": "2026-05-24T06:12:59.183Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-operations-in-trace-watch"
+      }
+    },
+    {
+      "id": "3f8f0b1d-b5f8-4b52-bcc6-9db2922a0d5f",
+      "occurred_at": "2026-05-24T06:16:54.172Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-operations-in-trace-watch"
+      }
+    },
+    {
+      "id": "2b5365d8-0a7c-42c3-ace3-8c33ba828fc4",
+      "occurred_at": "2026-05-24T06:16:58.455Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/show-nested-operations-in-trace-watch",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/show-nested-operations-in-trace-watch"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-24T06:16:58.521Z"
+}

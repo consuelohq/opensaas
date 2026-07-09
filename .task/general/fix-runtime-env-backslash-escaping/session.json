@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_09cb93185bdc",
+  "tmuxSession": "opensaas-general-fix-runtime-env-backslash-escaping-09cb9318",
+  "area": "general",
+  "stream": "stream/general",
+  "taskBranch": "task/general/fix-runtime-env-backslash-escaping",
+  "branch": "task/general/fix-runtime-env-backslash-escaping",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-fix-runtime-env-backslash-escaping",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-fix-runtime-env-backslash-escaping",
+  "prNumber": 603,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/603",
+  "createdAt": "2026-05-26T17:13:15.009Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-fix-runtime-env-backslash-escaping/.task/general/fix-runtime-env-backslash-escaping/session.json"
+}

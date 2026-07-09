@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a9a361b0bc4a",
+  "tmuxSession": "opensaas-workspace-promote-qwen3-2560-embeddings-default-a9a361b0",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/promote-qwen3-2560-embeddings-default",
+  "branch": "task/workspace/promote-qwen3-2560-embeddings-default",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-promote-qwen3-2560-embeddings-default",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-promote-qwen3-2560-embeddings-default",
+  "prNumber": 631,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/631",
+  "createdAt": "2026-05-28T23:13:59.769Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-promote-qwen3-2560-embeddings-default/.task/workspace/promote-qwen3-2560-embeddings-default/session.json"
+}

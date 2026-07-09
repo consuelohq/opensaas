@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_70e5e43dc9e4",
+  "tmuxSession": "opensaas-os-move-os-daemon-off-workspace-mcp-port-70e5e43d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/move-os-daemon-off-workspace-mcp-port",
+  "branch": "task/os/move-os-daemon-off-workspace-mcp-port",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-os-daemon-off-workspace-mcp-port",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-os-daemon-off-workspace-mcp-port",
+  "prNumber": 1058,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1058",
+  "createdAt": "2026-06-15T02:14:01.677Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-move-os-daemon-off-workspace-mcp-port/.task/os/move-os-daemon-off-workspace-mcp-port/session.json"
+}

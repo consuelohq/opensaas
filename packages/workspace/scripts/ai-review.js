@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync, execFileSync } = require('child_process');
+const { findTaskMeta: findTaskMetaRecord, getTaskReviewsDir } = require('./lib/task-meta');
 
 const PI_PROXY_URL = 'http://127.0.0.1:11434/v1/chat/completions';
 const REVIEW_MODEL = 'google/gemma-4-31b-it';
@@ -58,13 +59,9 @@ function gitRoot() {
 }
 
 function detectPrNumber() {
-  const taskFile = path.join(process.cwd(), '.task', 'current.json');
-  if (!fs.existsSync(taskFile)) return null;
-  try {
-    const data = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
-    const m = (data.prUrl || '').match(/\/pull\/(\d+)/);
-    return m ? parseInt(m[1], 10) : null;
-  } catch { return null; }
+  const record = findTaskMetaRecord(process.cwd(), { currentBranch: run('git branch --show-current') });
+  const m = (record?.data?.prUrl || '').match(/\/pull\/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
 }
 
 function getDiff(prNumber) {
@@ -95,7 +92,7 @@ function getConfidence(root) {
 
 function getStaticReview(root) {
   try {
-    const output = execFileSync('node', [path.join(root, 'packages/workspace/scripts/review.js'), '--json', '--no-tests'], {
+    const output = execFileSync('node', [path.join(root, 'packages/workspace/scripts/review.js'), '--summary-json', '--no-tests'], {
       encoding: 'utf8',
       cwd: root,
       maxBuffer: 10 * 1024 * 1024,
@@ -103,6 +100,29 @@ function getStaticReview(root) {
     });
     return JSON.parse(output);
   } catch { return null; }
+}
+
+
+function findingCount(value) {
+  if (Array.isArray(value)) return value.length;
+  if (value && typeof value.total === 'number') return value.total;
+  return 0;
+}
+
+function reviewIssueCount(review, key, fallback) {
+  if (review?.summary && typeof review.summary[key] === 'number') return review.summary[key];
+  return findingCount(fallback);
+}
+
+function findingSample(value, limit = 5) {
+  if (Array.isArray(value)) return value.slice(0, limit);
+  if (value && Array.isArray(value.sample)) return value.sample.slice(0, limit);
+  return [];
+}
+
+function reviewMustFixSample(review, limit = 5) {
+  if (Array.isArray(review?.mustFix)) return review.mustFix.slice(0, limit);
+  return findingSample(review?.yours, limit);
 }
 
 function buildSystemPrompt(confidence, staticReview) {
@@ -150,12 +170,12 @@ use this to calibrate your review — low confidence means look harder for misse
   }
 
   if (staticReview) {
-    const yourCount = (staticReview.yours || []).length;
-    const preCount = (staticReview.preExisting || []).length;
+    const yourCount = reviewIssueCount(staticReview, 'yourIssues', staticReview.yours);
+    const preCount = reviewIssueCount(staticReview, 'preExistingIssues', staticReview.preExisting);
     if (yourCount > 0 || preCount > 0) {
       prompt += `\n## static analysis already found
 ${yourCount} issue(s) in changed code, ${preCount} pre-existing.
-${(staticReview.yours || []).slice(0, 5).map(f => `- ${f.rule}: ${f.file}:${f.line} — ${f.msg}`).join('\n')}
+${reviewMustFixSample(staticReview, 5).map(f => `- ${f.rule}: ${f.file}:${f.line} — ${f.message || f.msg}`).join('\n')}
 don't repeat these — focus on semantic issues the static checks can't catch.
 `;
     }
@@ -230,16 +250,9 @@ ${diff}
 }
 
 function writeReviewFile(root, prNumber, content) {
-  // write to .task/reviews/ if in a task worktree, otherwise /tmp
-  const taskDir = path.join(root, '.task', 'reviews');
+  const taskRecord = findTaskMetaRecord(root, { currentBranch: run('git branch --show-current', { cwd: root }) });
   const tmpDir = '/tmp';
-  let outDir;
-
-  if (fs.existsSync(path.join(root, '.task'))) {
-    outDir = taskDir;
-  } else {
-    outDir = tmpDir;
-  }
+  const outDir = taskRecord?.data ? getTaskReviewsDir(taskRecord.dir, taskRecord.data) : tmpDir;
 
   fs.mkdirSync(outDir, { recursive: true });
   const outPath = path.join(outDir, `ai-${prNumber}.md`);

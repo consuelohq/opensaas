@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-os-google-approval-review-comments",
+  "base": "origin/stream/os",
+  "headSha": "6b5a0b3888052f1544f43ff293aa7bfc43586e16",
+  "changeHash": "a217228de2ad4bff8f7cd87fbe017399c5e72b23ba25bfdd1bec7d2e349521aa",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/workspace/scripts/os-release-device-auth.ts"
+  ],
+  "verifiedAt": "2026-06-15T00:38:48.988Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-os-google-approval-review-comments/current.json",
+        ".task/os/fix-os-google-approval-review-comments/evidence-log.json",
+        ".task/os/fix-os-google-approval-review-comments/read-log.json",
+        ".task/os/fix-os-google-approval-review-comments/session.json",
+        ".task/os/fix-os-google-approval-review-comments/workpad.md",
+        ".task/tasks/os/fix-os-google-approval-review-comments.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts",
+        "packages/workspace/scripts/os-release-device-auth.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

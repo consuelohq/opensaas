@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_eec63822cc6b",
+  "tmuxSession": "opensaas-os-fix-hosted-installer-local-cloud-flow-eec63822",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-hosted-installer-local-cloud-flow",
+  "branch": "task/os/fix-hosted-installer-local-cloud-flow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-installer-local-cloud-flow",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-installer-local-cloud-flow",
+  "prNumber": 987,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/987",
+  "createdAt": "2026-06-12T21:23:11.034Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-installer-local-cloud-flow/.task/os/fix-hosted-installer-local-cloud-flow/session.json"
+}

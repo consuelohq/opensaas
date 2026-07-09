@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/refactor-delegated-runtime-modules",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 643,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/643",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/643",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/643/refactor-delegated-runtime-modules",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/643",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/643/refactor-delegated-runtime-modules",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-refactor-delegated-runtime-modules",
+  "taskSession": "tsk_20f867bfc94c",
+  "tmuxSession": "opensaas-workspace-agents-refactor-delegated-runtime-modules-20f867bf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-refactor-delegated-runtime-modules/.task/workspace-agents/refactor-delegated-runtime-modules/session.json",
+  "createdAt": "2026-05-29T02:48:45.380Z"
+}

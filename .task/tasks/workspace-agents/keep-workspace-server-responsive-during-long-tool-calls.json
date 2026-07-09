@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/keep-workspace-server-responsive-during-long-tool-calls",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 437,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/437",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/437",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/437/keep-workspace-server-responsive-during-long-tool-calls",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/437",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/437/keep-workspace-server-responsive-during-long-tool-calls",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-keep-workspace-server-responsive-during-long-tool-calls",
+  "taskSession": "tsk_2c7898687836",
+  "tmuxSession": "opensaas-workspace-agents-keep-workspace-server-responsive-during-long-too-2c789868",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-keep-workspace-server-responsive-during-long-tool-calls/.task/session.json",
+  "createdAt": "2026-05-21T09:21:25.626Z"
+}

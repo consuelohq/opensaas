@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/workspace/scripts/git-diff.js",
+    "packages/workspace/tests/git-diff.test.ts"
+  ],
+  "updatedAt": "2026-05-23T03:10:57.776Z"
+}

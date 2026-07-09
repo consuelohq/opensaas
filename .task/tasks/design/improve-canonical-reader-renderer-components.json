@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/improve-canonical-reader-renderer-components",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 666,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/666",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/666",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/666/improve-canonical-reader-renderer-components",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/666",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/666/improve-canonical-reader-renderer-components",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-improve-canonical-reader-renderer-components",
+  "taskSession": "tsk_9acaabb63478",
+  "tmuxSession": "opensaas-design-improve-canonical-reader-renderer-components-9acaabb6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-improve-canonical-reader-renderer-components/.task/design/improve-canonical-reader-renderer-components/session.json",
+  "createdAt": "2026-05-31T12:14:59.860Z"
+}

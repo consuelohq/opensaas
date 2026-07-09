@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-device-approval-review-comments",
+  "base": "origin/task/os/fix-device-approval-review-comments",
+  "headSha": "0be851405cb261f7ccf6d0926dbb5f7ae0cc1ac9",
+  "changeHash": "14630f35837a9e69622fb0d284912ddce186b21079a91e633ec41f676bc1cad3",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/tests/oauth-device-http-client.test.ts",
+    "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-06-13T15:37:22.011Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-device-approval-review-comments/current.json",
+        ".task/os/fix-device-approval-review-comments/session.json",
+        ".task/os/fix-device-approval-review-comments/verify.json",
+        ".task/os/fix-device-approval-review-comments/workpad.md",
+        ".task/os/implement-device-approval-auth-hardening/current.json",
+        ".task/os/implement-device-approval-auth-hardening/evidence-log.json",
+        ".task/os/implement-device-approval-auth-hardening/read-log.json",
+        ".task/os/implement-device-approval-auth-hardening/session.json",
+        ".task/os/implement-device-approval-auth-hardening/verify.json",
+        ".task/os/implement-device-approval-auth-hardening/workpad.md",
+        ".task/tasks/os/fix-device-approval-review-comments.json",
+        ".task/tasks/os/implement-device-approval-auth-hardening.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/tests/oauth-device-http-client.test.ts",
+        "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

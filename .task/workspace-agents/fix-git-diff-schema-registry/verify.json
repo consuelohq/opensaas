@@ -1,0 +1,27 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-git-diff-schema-registry",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "f42c61e251093f1a0c1aafbbace51af0236d46cf",
+  "changeHash": "0c37c64d459971be63d6ff5f50ace61b9158cde149bb5f0469774309a7518434",
+  "changedFiles": [
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/task-meta.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/task-meta.test.ts"
+  ],
+  "verifiedAt": "2026-05-22T09:14:53.469Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

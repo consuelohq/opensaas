@@ -1,0 +1,22 @@
+{
+  "id": "motion-frame",
+  "title": "Motion Frame",
+  "uses": [
+    "office"
+  ],
+  "workflow": "motion-frame",
+  "defaultTool": "office.generateMotionFrame",
+  "primaryOpenDesignSkill": "motion-frames",
+  "fallbackOpenDesignSkills": [
+    "hyperframes",
+    "web-prototype"
+  ],
+  "templates": [
+    "motion-frame"
+  ],
+  "extraRules": [
+    "Include website motion context and animations.md.",
+    "Validate animation behavior in browser, not just static markup.",
+    "Prepare reusable motion/frame source for HyperFrames when relevant."
+  ]
+}

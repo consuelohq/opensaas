@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_032600499d27",
+  "tmuxSession": "opensaas-os-resolve-stream-os-main-merge-conflicts-03260049",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-stream-os-main-merge-conflicts",
+  "branch": "task/os/resolve-stream-os-main-merge-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-stream-os-main-merge-conflicts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-stream-os-main-merge-conflicts",
+  "prNumber": 700,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/700",
+  "createdAt": "2026-06-02T18:06:46.347Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-stream-os-main-merge-conflicts/.task/os/resolve-stream-os-main-merge-conflicts/session.json"
+}

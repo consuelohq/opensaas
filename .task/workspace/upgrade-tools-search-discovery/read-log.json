@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/index/embedder.js",
+    "packages/workspace/scripts/lib/index/embedding-config.js",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/tests/tools-search-v2.test.ts"
+  ],
+  "updatedAt": "2026-05-31T19:38:03.903Z"
+}

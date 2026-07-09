@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/homepage-cache-headers",
+  "base": "origin/task/diff-cockpit/homepage-cache-headers",
+  "headSha": "95ae4703e837ab22942be6bced83a96373d3946b",
+  "changeHash": "ce7b58fda80a1d19007c8e25d29fbb63613b93280f7035f9556e2b3054d45161",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T18:19:26.419Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/homepage-cache-headers/current.json",
+        ".task/diff-cockpit/homepage-cache-headers/evidence-log.json",
+        ".task/diff-cockpit/homepage-cache-headers/read-log.json",
+        ".task/diff-cockpit/homepage-cache-headers/session.json",
+        ".task/diff-cockpit/homepage-cache-headers/verify.json",
+        ".task/diff-cockpit/homepage-cache-headers/workpad.md",
+        ".task/tasks/diff-cockpit/homepage-cache-headers.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

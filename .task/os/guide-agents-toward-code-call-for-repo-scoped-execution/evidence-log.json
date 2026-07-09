@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/guide-agents-toward-code-call-for-repo-scoped-execution",
+  "events": [
+    {
+      "id": "41255a6d-b128-4ca5-a009-b4558634649f",
+      "occurred_at": "2026-06-16T21:51:24.890Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guide-agents-toward-code-call-for-repo-scoped-execution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guide-agents-toward-code-call-for-repo-scoped-execution"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-16T21:51:24.940Z"
+}

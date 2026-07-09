@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+  "events": [
+    {
+      "id": "48589d86-0a99-4672-94dc-35515d15940a",
+      "occurred_at": "2026-06-14T03:53:07.691Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "e9a68d16-c12b-4cf0-af19-c1c3a625b999",
+      "occurred_at": "2026-06-14T03:53:07.779Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "af8d7596-91c5-4433-afd4-8379a58eef38",
+      "occurred_at": "2026-06-14T03:53:22.839Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "a79bd9e3-24ec-43d6-9e94-71bfcdf5b82f",
+      "occurred_at": "2026-06-14T03:53:42.848Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-site-snapshot-publishing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "0368496c-2f50-4b7d-8111-cd0355bc92c0",
+      "occurred_at": "2026-06-14T03:53:42.886Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "1ccf77c9-3021-4d29-9085-2f0baf2b5d27",
+      "occurred_at": "2026-06-14T03:54:40.711Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-state.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "ea0a7a33-43f6-4c51-acd0-f098e1c513ba",
+      "occurred_at": "2026-06-14T03:54:58.156Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/wire-install-edge-site-snapshot-publish/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "774043ce-33fe-4a4e-87af-4fe65b642965",
+      "occurred_at": "2026-06-14T03:55:49.235Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/workspace-edge/migrations/0002_site_snapshot_route_targets.sql",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "6713f30f-9977-442c-897a-273b589ac924",
+      "occurred_at": "2026-06-14T03:56:19.053Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "a48905b3-5aa4-45fd-bf60-e56b4599d614",
+      "occurred_at": "2026-06-14T03:59:46.553Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/cloudflare-edge-router.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "58857c28-2781-426f-9046-a4cbe36932f9",
+      "occurred_at": "2026-06-14T04:00:19.254Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-edge-site-publisher.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "8729c8ef-3309-4617-9438-fd6beb663493",
+      "occurred_at": "2026-06-14T04:03:57.453Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-edge-site-publisher.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "c5946c2c-d67f-46d0-88b2-cb5b8f663175",
+      "occurred_at": "2026-06-14T04:05:30.082Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "dd00b892-4632-41ca-8201-63bf01c1390f",
+      "occurred_at": "2026-06-14T04:06:08.557Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "5e2c371d-5652-4512-8eb5-0b8ba829710b",
+      "occurred_at": "2026-06-14T04:07:02.734Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "de1972e1-3345-4d68-b21f-5568c738b639",
+      "occurred_at": "2026-06-14T04:07:48.180Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "d9a813a9-d9bb-4201-97bc-2094a49d522e",
+      "occurred_at": "2026-06-14T04:08:56.317Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    },
+    {
+      "id": "ce74b71f-477e-49e4-8a10-a2a7545e3ab9",
+      "occurred_at": "2026-06-14T04:10:04.129Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/wire-install-edge-site-snapshot-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/wire-install-edge-site-snapshot-publish"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-14T04:10:04.186Z"
+}

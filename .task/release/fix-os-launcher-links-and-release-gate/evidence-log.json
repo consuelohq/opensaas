@@ -1,0 +1,888 @@
+{
+  "version": 1,
+  "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+  "events": [
+    {
+      "id": "d9dae82e-050a-44f0-83e5-526986722935",
+      "occurred_at": "2026-06-30T04:29:31.601Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "2c07a240-cb96-4b20-8bc3-70208995b219",
+      "occurred_at": "2026-06-30T04:29:52.553Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "2d5c9d8d-aad2-4807-8de5-b1fec5bd940b",
+      "occurred_at": "2026-06-30T04:29:54.122Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/sites.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "0196c50f-d94d-4aec-9545-26344e6f3b46",
+      "occurred_at": "2026-06-30T04:29:55.543Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/office-theme.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "431009d2-6403-4a7b-ab27-78a4081b63a4",
+      "occurred_at": "2026-06-30T04:29:57.115Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/office.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "12b1707f-b0ba-4a39-a1e1-2299ab6cff26",
+      "occurred_at": "2026-06-30T04:29:58.793Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/office.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "fc453ba4-ac3d-4451-8b0a-371639bc97d6",
+      "occurred_at": "2026-06-30T04:30:35.504Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/sites.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "1c527ca5-cc31-40f0-bec1-d70c3c6a1321",
+      "occurred_at": "2026-06-30T04:30:38.466Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "a9b5c1ee-fd9e-40a6-b138-095b378cc6da",
+      "occurred_at": "2026-06-30T04:30:40.040Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "00972fa6-ba67-42f3-a58a-5501ae4c7df7",
+      "occurred_at": "2026-06-30T04:30:41.637Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/sites.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "5611d0c4-d34b-4eae-a743-ba963e8aacb9",
+      "occurred_at": "2026-06-30T04:31:00.545Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/os-release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "84349ab0-dc8c-4221-896d-7684c5aa0d30",
+      "occurred_at": "2026-06-30T04:31:04.800Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/os-release-install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "f1d7a26b-2568-4c37-88bc-6888b30e432e",
+      "occurred_at": "2026-06-30T04:31:06.250Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "9ecd9763-059e-4d53-a3b6-da8c11e3ec55",
+      "occurred_at": "2026-06-30T04:32:28.056Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "2dbbcd6a-ec39-411a-aaef-aaf4ab0b7da5",
+      "occurred_at": "2026-06-30T04:32:31.526Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "ce3a91fc-c10d-41a3-b763-bc67ac04037d",
+      "occurred_at": "2026-06-30T04:32:52.747Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "08206c33-daae-411a-8658-5df46bb190d7",
+      "occurred_at": "2026-06-30T04:32:54.246Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "d9cb4260-b8b1-4ea5-bf7b-9617a662f5d7",
+      "occurred_at": "2026-06-30T04:32:55.832Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "92bb8fc2-a1fc-4433-bb22-3d1361515d1b",
+      "occurred_at": "2026-06-30T04:32:58.595Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-cloudflare-edge-router.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "52c3640d-c93d-43a3-a0ec-2941a3e45161",
+      "occurred_at": "2026-06-30T04:33:14.187Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "d09bf455-f032-4e7a-a552-47f693d56fe3",
+      "occurred_at": "2026-06-30T04:33:15.853Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "0531d89f-df54-4570-9d62-3aa128569872",
+      "occurred_at": "2026-06-30T04:33:17.354Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "62f2f5bb-f5a0-40f1-a423-f03f23e4b71a",
+      "occurred_at": "2026-06-30T04:33:18.925Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "1b12eb6e-7fc9-4c67-b835-012d107898b9",
+      "occurred_at": "2026-06-30T04:33:39.343Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "bdf7746a-17bf-473c-b570-0fd275c4862a",
+      "occurred_at": "2026-06-30T04:33:59.273Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-edge-site-publisher.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "964c8731-61b0-44ee-ba83-8e09224a1cf3",
+      "occurred_at": "2026-06-30T04:34:46.978Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "9902f71f-41c7-40dd-934c-8393f337e698",
+      "occurred_at": "2026-06-30T04:34:48.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "995c7adc-5b8d-49f6-ab67-9b3ef7a6360a",
+      "occurred_at": "2026-06-30T04:34:50.440Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "265e93dc-275c-404f-bcc2-654026cc0137",
+      "occurred_at": "2026-06-30T04:34:51.892Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "95fb36fe-c7e9-4cb3-9b18-d61f7945c3a0",
+      "occurred_at": "2026-06-30T04:35:10.129Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "dc2044a7-fe0a-46a5-996b-e4778c66f2b3",
+      "occurred_at": "2026-06-30T04:35:29.939Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "02283300-c640-4f8c-b9bf-466c0144f3f6",
+      "occurred_at": "2026-06-30T04:36:41.291Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/os-release-device-auth.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "514e9620-4a5d-4b04-9085-1a761fd4f228",
+      "occurred_at": "2026-06-30T04:37:10.233Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/sites.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "b83a943e-18b1-45f6-9fbe-8c7886fcc457",
+      "occurred_at": "2026-06-30T04:42:22.480Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-edge-site-publisher.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "4dfe9c80-137f-4128-95f7-eea98d7604e3",
+      "occurred_at": "2026-06-30T04:43:06.001Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-edge-site-publisher.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "6dac0bbc-c7f6-4658-a736-3d03a849bd69",
+      "occurred_at": "2026-06-30T04:43:15.227Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/os-release-device-auth.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "63510f1b-93e3-490d-af69-51f9a748496a",
+      "occurred_at": "2026-06-30T04:44:13.933Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "07f93f4f-d246-434f-a663-6d560e8ea478",
+      "occurred_at": "2026-06-30T04:44:22.896Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "376861ab-2cfc-4c08-9407-484d7ea9c471",
+      "occurred_at": "2026-06-30T04:44:32.425Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "d585c0be-0f41-4a10-94b7-422d96d67730",
+      "occurred_at": "2026-06-30T04:44:40.774Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "72707bed-7cd5-43ab-b5c2-b289387c4bb7",
+      "occurred_at": "2026-06-30T04:44:47.973Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "1d35f68c-dd50-40b0-bf09-cb39b46d44af",
+      "occurred_at": "2026-06-30T04:45:03.362Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "92645817-798a-4fdf-ad5b-78471f0b2da3",
+      "occurred_at": "2026-06-30T04:45:31.640Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "73712d71-8a70-4ca4-bc56-43ccff4bae5f",
+      "occurred_at": "2026-06-30T04:46:18.861Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-gateway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "59af1b49-5b7d-42de-bfbf-77ae6c7afc9a",
+      "occurred_at": "2026-06-30T04:46:28.574Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/office.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "1f69e6f2-c527-493e-9a47-94fd191a80b5",
+      "occurred_at": "2026-06-30T04:46:36.648Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/office.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "14148d72-6e40-4951-a099-3da4725b2428",
+      "occurred_at": "2026-06-30T04:49:59.732Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/sites.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "80ea685c-b193-4c54-9670-80331b7b639e",
+      "occurred_at": "2026-06-30T04:50:54.196Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/sites.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "a0dc8587-d89f-4c3e-9398-fcf8c5cd297d",
+      "occurred_at": "2026-06-30T04:53:24.986Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "c1593488-7c63-4cd9-8cf0-bf9738ea2fae",
+      "occurred_at": "2026-06-30T04:55:33.667Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/sites-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "4ad8c199-cafe-478b-94e7-b3afdcc8b5e5",
+      "occurred_at": "2026-06-30T04:55:51.367Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-edge-site-publisher.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "eaf482a2-df92-45a9-8108-758eeff8dc85",
+      "occurred_at": "2026-06-30T04:56:02.142Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "3725e493-642c-45a1-b227-3c612fe6d5f7",
+      "occurred_at": "2026-06-30T04:59:25.722Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/office-theme.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "b338fd98-f853-4b1b-9dde-bd9092755acd",
+      "occurred_at": "2026-06-30T04:59:36.194Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/office.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    },
+    {
+      "id": "82489adb-96b6-4b33-9913-dcde6315f810",
+      "occurred_at": "2026-06-30T05:00:43.443Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-gateway-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/release/fix-os-launcher-links-and-release-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/release/fix-os-launcher-links-and-release-gate"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-30T05:00:43.522Z"
+}

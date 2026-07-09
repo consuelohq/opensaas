@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/make-cloudflare-workspace-gateway-contracts-green",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 929,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/929",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/929",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/929/make-cloudflare-workspace-gateway-contracts-green",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/929",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/929/make-cloudflare-workspace-gateway-contracts-green",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-cloudflare-workspace-gateway-contracts-green",
+  "taskSession": "tsk_2587c8b118a2",
+  "tmuxSession": "opensaas-security-make-cloudflare-workspace-gateway-contracts-gree-2587c8b1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-cloudflare-workspace-gateway-contracts-green/.task/security/make-cloudflare-workspace-gateway-contracts-green/session.json",
+  "createdAt": "2026-06-10T05:44:32.457Z"
+}

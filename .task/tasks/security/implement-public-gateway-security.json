@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/implement-public-gateway-security",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 894,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/894",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/894",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/894/implement-public-gateway-security",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/894",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/894/implement-public-gateway-security",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-public-gateway-security",
+  "taskSession": "tsk_47b776f7f1c4",
+  "tmuxSession": "opensaas-security-implement-public-gateway-security-47b776f7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-implement-public-gateway-security/.task/security/implement-public-gateway-security/session.json",
+  "createdAt": "2026-06-09T22:37:32.148Z"
+}

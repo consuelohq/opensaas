@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3c2dcdcf6af8",
+  "tmuxSession": "opensaas-diff-cockpit-author-avatars-in-pr-inbox-3c2dcdcf",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/author-avatars-in-pr-inbox",
+  "branch": "task/diff-cockpit/author-avatars-in-pr-inbox",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-author-avatars-in-pr-inbox",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-author-avatars-in-pr-inbox",
+  "prNumber": 986,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/986",
+  "createdAt": "2026-06-12T20:07:12.555Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-author-avatars-in-pr-inbox/.task/diff-cockpit/author-avatars-in-pr-inbox/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 344,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/344",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display",
+  "taskSession": "tsk_307e45e1cfa8",
+  "tmuxSession": "opensaas-workspace-agents-fix-workspace-status-changed-file-path-display-307e45e1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display/.task/session.json",
+  "createdAt": "2026-05-08T21:43:34.442Z"
+}

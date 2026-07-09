@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-platform-safety-block-page",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1033,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1033",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1033",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1033/add-workspace-platform-safety-block-page",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1033",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1033/add-workspace-platform-safety-block-page",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-platform-safety-block-page",
+  "taskSession": "tsk_95bb4c913125",
+  "tmuxSession": "opensaas-os-add-workspace-platform-safety-block-page-95bb4c91",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-platform-safety-block-page/.task/os/add-workspace-platform-safety-block-page/session.json",
+  "createdAt": "2026-06-14T04:45:22.845Z"
+}

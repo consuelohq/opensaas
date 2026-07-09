@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4530797e9792",
+  "tmuxSession": "opensaas-dialer-ship-queue-person-phone-fallback-4530797e",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/ship-queue-person-phone-fallback",
+  "branch": "task/dialer/ship-queue-person-phone-fallback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-person-phone-fallback",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-person-phone-fallback",
+  "prNumber": 554,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/554",
+  "createdAt": "2026-05-24T01:41:46.886Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-ship-queue-person-phone-fallback/.task/dialer/ship-queue-person-phone-fallback/session.json"
+}

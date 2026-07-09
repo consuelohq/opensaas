@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d8cc92af06df",
+  "tmuxSession": "opensaas-workspace-agents-find-shared-spec-task-shell-d8cc92af",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/find-shared-spec-task-shell",
+  "branch": "task/workspace-agents/find-shared-spec-task-shell",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-find-shared-spec-task-shell",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-find-shared-spec-task-shell",
+  "prNumber": 909,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/909",
+  "createdAt": "2026-06-10T02:04:38.131Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-find-shared-spec-task-shell/.task/workspace-agents/find-shared-spec-task-shell/session.json"
+}

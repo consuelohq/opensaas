@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/repair-wiki-route",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 634,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/634",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/634",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/634/repair-wiki-route",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/634",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/634/repair-wiki-route",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-wiki-route",
+  "taskSession": "tsk_062ea8b81e38",
+  "tmuxSession": "opensaas-workspace-agents-repair-wiki-route-062ea8b8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-wiki-route/.task/workspace-agents/repair-wiki-route/session.json",
+  "createdAt": "2026-05-28T23:58:10.506Z"
+}

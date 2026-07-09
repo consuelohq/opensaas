@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1056,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1056",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1056",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1056/fix-os-google-callback-fetch-binding-and-timeout",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1056",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1056/fix-os-google-callback-fetch-binding-and-timeout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-fetch-binding-and-timeout",
+  "taskSession": "tsk_fe0b78a38c66",
+  "tmuxSession": "opensaas-os-fix-os-google-callback-fetch-binding-and-timeout-fe0b78a3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-fetch-binding-and-timeout/.task/os/fix-os-google-callback-fetch-binding-and-timeout/session.json",
+  "createdAt": "2026-06-15T01:24:04.825Z"
+}

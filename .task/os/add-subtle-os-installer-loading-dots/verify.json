@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-subtle-os-installer-loading-dots",
+  "base": "main",
+  "headSha": "8b60f3e33b997ae974290d300b9a36a4b04166b8",
+  "changeHash": "7caee499ea086df689356b52eeca8da4a4d5791b4edc6d67b4b47a12f05f0436",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/compact-daemon-output.test.ts"
+  ],
+  "verifiedAt": "2026-06-04T04:27:19.501Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-subtle-os-installer-loading-dots/current.json",
+        ".task/os/add-subtle-os-installer-loading-dots/evidence-log.json",
+        ".task/os/add-subtle-os-installer-loading-dots/read-log.json",
+        ".task/os/add-subtle-os-installer-loading-dots/session.json",
+        ".task/os/add-subtle-os-installer-loading-dots/verify.json",
+        ".task/os/add-subtle-os-installer-loading-dots/workpad.md",
+        ".task/tasks/os/add-subtle-os-installer-loading-dots.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/compact-daemon-output.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

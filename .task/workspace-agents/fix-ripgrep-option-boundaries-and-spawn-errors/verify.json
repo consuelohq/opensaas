@@ -1,0 +1,107 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "0069748d4cfc0efdd0375cdf8d61d851f696b1bc",
+  "changeHash": "319b72f45f720726b9fce20ff9f3541c5b0d4ca4106a94382d507e6244ff481b",
+  "changedFiles": [
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/fs/search.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/fs-search.test.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/fs/search.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/fs-search.test.ts"
+  ],
+  "verifiedAt": "2026-06-17T04:26:23.238Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors.json",
+        ".task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors/current.json",
+        ".task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors/evidence-log.json",
+        ".task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors/read-log.json",
+        ".task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors/session.json",
+        ".task/workspace-agents/fix-ripgrep-option-boundaries-and-spawn-errors/workpad.md",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/fs/search.ts",
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/fs-search.test.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/fs/search.ts",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "packages/workspace/tests/fs-search.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/executor.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 207,
+          "outputTail": "\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-17T04:26:23.031Z\"}\n(pass) typed facade executor > validates input for mac.search [0.35ms]\n(pass) typed facade executor > validates input for mac.list [0.24ms]\n{\"level\":\"error\",\"tool\":\"mac.process\",\"command\":\"workspace mac.process\",\"implementationCommand\":\"workspace mac.process\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-17T04:26:23.032Z\"}\n(pass) typed facade executor > validates input for mac.process [0.46ms]\n{\"level\":\"error\",\"tool\":\"mac.port\",\"command\":\"workspace mac.port\",\"implementationCommand\":\"workspace mac.port\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-17T04:26:23.032Z\"}\n(pass) typed facade executor > validates input for mac.port [0.34ms]\n{\"level\":\"error\",\"tool\":\"code.run\",\"command\":\"workspace code.run\",\"implementationCommand\":\"workspace code.run\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-17T04:26:23.033Z\"}\n(pass) typed facade executor > validates input for code.run [0.51ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-17T04:26:23.033Z\"}\n(pass) typed facade executor > validates input for tools.search [0.40ms]\n(pass) typed facade executor > validates input for generate.docs\n(pass) typed facade executor > validates input for generate.types\n{\"level\":\"error\",\"tool\":\"design.publish\",\"command\":\"workspace design.publish\",\"implementationCommand\":\"workspace office publish\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-06-17T04:26:23.034Z\"}\n(pass) typed facade executor > validates input for design.publish [0.43ms]\n(pass) typed facade executor > validates input for design.refresh [0.13ms]\n(pass) typed facade executor > validates input for office.run [0.09ms]\n(pass) typed facade executor > validates input for office.getDesignSystem [0.02ms]\n(pass) typed facade executor > validates input for office.listSkills\n(pass) typed facade executor > validates input for office.listDesignSystems\n(pass) typed facade executor > validates input for office.upstreamStatus\n(pass) typed facade executor > validates input for office.railwayCheck\n(pass) typed facade executor > validates input for office.check\n(pass) typed facade executor > validates input for office.generateWebsite [0.11ms]\n(pass) typed facade executor > validates input for office.generateDemo\n(pass) typed facade executor > validates input for office.generateImageBrief\n(pass) typed facade executor > validates input for office.generateDigitalEguide [0.12ms]\n(pass) typed facade executor > validates input for office.generateEmail\n(pass) typed facade executor > validates input for office.generateMotionFrame\n(pass) typed facade executor > validates input for office.renderHyperframes\n(pass) typed facade executor > validates input for office.uiBg\n(pass) typed facade executor > validates input for office.uiStop\n(pass) typed facade executor > validates input for office.uiStatus\n(pass) typed facade executor > validates input for office.uiLogs\n(pass) typed facade executor > validates input for office.odBuild\n\n 129 pass\n 440 filtered out\n 0 fail\n 59 expect() calls\nRan 129 tests across 1 file. [198.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

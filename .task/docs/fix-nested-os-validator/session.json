@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_817a9521b2b5",
+  "tmuxSession": "opensaas-docs-fix-nested-os-validator-817a9521",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/fix-nested-os-validator",
+  "branch": "task/docs/fix-nested-os-validator",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-nested-os-validator",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-nested-os-validator",
+  "prNumber": 1257,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1257",
+  "createdAt": "2026-06-28T04:33:58.754Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-nested-os-validator/.task/docs/fix-nested-os-validator/session.json"
+}

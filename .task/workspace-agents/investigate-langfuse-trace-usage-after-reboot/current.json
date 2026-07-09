@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/investigate-langfuse-trace-usage-after-reboot",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 500,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/500",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/500",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/500/investigate-langfuse-trace-usage-after-reboot",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/500",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/500/investigate-langfuse-trace-usage-after-reboot",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-langfuse-trace-usage-after-reboot",
+  "taskSession": "tsk_ec36eb32c8ca",
+  "tmuxSession": "opensaas-workspace-agents-investigate-langfuse-trace-usage-after-reboot-ec36eb32",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-langfuse-trace-usage-after-reboot/.task/workspace-agents/investigate-langfuse-trace-usage-after-reboot/session.json",
+  "createdAt": "2026-05-23T06:43:12.861Z"
+}

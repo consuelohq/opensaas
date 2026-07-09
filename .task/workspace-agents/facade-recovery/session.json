@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0f03fa2e66b7",
+  "tmuxSession": "opensaas-workspace-agents-facade-recovery-0f03fa2e",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/facade-recovery",
+  "branch": "task/workspace-agents/facade-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-facade-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-facade-recovery",
+  "prNumber": 623,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/623",
+  "createdAt": "2026-05-28T21:06:05.821Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-facade-recovery/.task/workspace-agents/facade-recovery/session.json"
+}

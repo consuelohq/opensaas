@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/mobile-inbox-backlog",
+  "base": "origin/task/diff-cockpit/mobile-inbox-backlog",
+  "headSha": "84813d920fc8b61635fe4c025e3913a0dda2fb0c",
+  "changeHash": "c88d278f9dd0d8022130a8218e1cd2f77c87865e437a06335a2c3b5d12b36299",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-10T01:58:41.632Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/mobile-inbox-backlog/current.json",
+        ".task/diff-cockpit/mobile-inbox-backlog/session.json",
+        ".task/diff-cockpit/mobile-inbox-backlog/verify.json",
+        ".task/diff-cockpit/mobile-inbox-backlog/workpad.md",
+        ".task/tasks/diff-cockpit/mobile-inbox-backlog.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

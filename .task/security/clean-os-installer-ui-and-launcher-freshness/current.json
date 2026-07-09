@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/clean-os-installer-ui-and-launcher-freshness",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1188,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1188",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1188",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1188/clean-os-installer-ui-and-launcher-freshness",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1188",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1188/clean-os-installer-ui-and-launcher-freshness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-clean-os-installer-ui-and-launcher-freshness",
+  "taskSession": "tsk_0ecc3b36066e",
+  "tmuxSession": "opensaas-security-clean-os-installer-ui-and-launcher-freshness-0ecc3b36",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-clean-os-installer-ui-and-launcher-freshness/.task/security/clean-os-installer-ui-and-launcher-freshness/session.json",
+  "createdAt": "2026-06-23T05:26:32.983Z"
+}

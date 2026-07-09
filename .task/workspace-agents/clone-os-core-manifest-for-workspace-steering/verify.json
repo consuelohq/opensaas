@@ -1,0 +1,70 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/clone-os-core-manifest-for-workspace-steering",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "dc4b70ff39e54f0cc38150b89b12d6fc499b2b82",
+  "changeHash": "9f84632badc2b6db3a9882054734dbcdf2aa04093568760c7b5aeec761213617",
+  "changedFiles": [
+    "packages/workspace/STEERING.md",
+    "packages/workspace/manifests/core-manifest.json",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/manifests/workflow-bundles.json",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/generate-tool-manifest.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tests/tool-manifest.test.ts"
+  ],
+  "verifiedAt": "2026-06-17T05:58:38.931Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/clone-os-core-manifest-for-workspace-steering.json",
+        ".task/workspace-agents/clone-os-core-manifest-for-workspace-steering/current.json",
+        ".task/workspace-agents/clone-os-core-manifest-for-workspace-steering/evidence-log.json",
+        ".task/workspace-agents/clone-os-core-manifest-for-workspace-steering/read-log.json",
+        ".task/workspace-agents/clone-os-core-manifest-for-workspace-steering/session.json",
+        ".task/workspace-agents/clone-os-core-manifest-for-workspace-steering/verify.json",
+        ".task/workspace-agents/clone-os-core-manifest-for-workspace-steering/workpad.md",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/manifests/core-manifest.json",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/generate-tool-manifest.ts",
+        "packages/workspace/server.py",
+        "packages/workspace/tests/server_call_test.py",
+        "packages/workspace/tests/tool-manifest.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

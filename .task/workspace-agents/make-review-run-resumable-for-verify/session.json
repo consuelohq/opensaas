@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_74571cbf3627",
+  "tmuxSession": "opensaas-workspace-agents-make-review-run-resumable-for-verify-74571cbf",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/make-review-run-resumable-for-verify",
+  "branch": "task/workspace-agents/make-review-run-resumable-for-verify",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-review-run-resumable-for-verify",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-review-run-resumable-for-verify",
+  "prNumber": 604,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/604",
+  "createdAt": "2026-05-26T17:47:39.983Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-review-run-resumable-for-verify/.task/workspace-agents/make-review-run-resumable-for-verify/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2486f961a66f",
+  "tmuxSession": "opensaas-os-skills-install-full-os-tool-manifest-into-user-home-2486f961",
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/install-full-os-tool-manifest-into-user-home",
+  "branch": "task/os-skills/install-full-os-tool-manifest-into-user-home",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-install-full-os-tool-manifest-into-user-home",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-install-full-os-tool-manifest-into-user-home",
+  "prNumber": 765,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/765",
+  "createdAt": "2026-06-05T03:12:23.815Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-install-full-os-tool-manifest-into-user-home/.task/os-skills/install-full-os-tool-manifest-into-user-home/session.json"
+}

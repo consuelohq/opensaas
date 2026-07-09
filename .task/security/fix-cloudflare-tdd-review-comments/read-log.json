@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
+    "packages/os/tests/cloudflare-worker-deployment-contract.test.ts",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+    "packages/os/tests/oauth-device-onboarding-contract.test.ts",
+    "packages/os/tests/workspace-edge-beta-smoke-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-11T18:34:26.492Z"
+}

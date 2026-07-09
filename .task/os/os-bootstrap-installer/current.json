@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/os-bootstrap-installer",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 687,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/687",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/687",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/687/os-bootstrap-installer",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/687",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/687/os-bootstrap-installer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-bootstrap-installer",
+  "taskSession": "tsk_a8a8b2ee7650",
+  "tmuxSession": "opensaas-os-os-bootstrap-installer-a8a8b2ee",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-bootstrap-installer/.task/os/os-bootstrap-installer/session.json",
+  "createdAt": "2026-06-02T01:37:15.920Z"
+}

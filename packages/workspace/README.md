@@ -10,7 +10,7 @@ it is designed for people who want local-machine power without throwing away saf
 - command guardrails with audit logging and `trash` rewrites for deletes
 - supabase-backed memory with semantic search via nvidia embeddings
 - progressive loading for steering + skills so clients do not need the whole world up front
-- optional langsmith tracing on every tool call
+- optional Langfuse tracing on every tool call with local SQLite fallback
 - cloudflare tunnel + WAF workflow for safe exposure to chatgpt connectors
 
 ## quick start
@@ -91,13 +91,17 @@ rewritten examples:
 
 every command is logged to `/tmp/sandbox-audit.jsonl` with timestamp, command prefix, exit code, and any guardrail block reason.
 
-### langsmith observability
+### Langfuse observability
 
-when `LANGCHAIN_TRACING_V2=true` and `LANGCHAIN_API_KEY` are set, every tool call is wrapped with `langsmith.traceable`. that gives you a per-tool execution trail without changing the public MCP surface.
+Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_BASE_URL` to send remote tool-call generation observations to Langfuse. `WORKSPACE_OBSERVABILITY_PROVIDER` defaults to `langfuse`; set it to `none` to disable remote observability or `langsmith` to use the legacy LangSmith path explicitly.
+
+Workspace observations attach estimated token usage through Langfuse `usage_details` so Langfuse consumption dashboards can show token usage. Cost details are not emitted.
+
+Local `context.trace` SQLite logging still runs independently, so workspace tool history and estimated input/output/total token counts remain queryable even when the remote provider is unavailable.
 
 ### memory + progressive loading
 
-`get_steering` loads a steering markdown file first, then appends a compact skill index from the memory backend. the client sees the high-level operating context up front, and can fetch full skill docs only when needed via `brain_get_skill`.
+`get_steering` loads the steering markdown once for bootstrap. After bootstrap, clients should use `workspace.call` for every typed workspace operation.
 
 this keeps the initial context compact while still making larger skill libraries usable.
 
@@ -116,26 +120,9 @@ export REPO_TREE_FILE=/tmp/repo-tree.txt
 
 | tool | purpose |
 |------|---------|
-| `get_steering` | load steering file + skill index |
-| `brain_search` | keyword search over memories |
-| `brain_vector_search` | semantic search over memories |
-| `brain_remember` | save a memory |
-| `brain_get_memory` | fetch a memory by id |
-| `brain_list_skills` | list available skills |
-| `brain_get_skill` | fetch a skill doc |
-| `sandbox_exec` | run shell commands in the configured workspace |
-| `sandbox_read_file` | read a file from disk |
-| `sandbox_write_file` | write a file to disk |
-| `sandbox_list_files` | list files from disk |
-| `gh api repos/.../contents/<path>` | read a file from the repo (use gh CLI) |
-| `gh pr view` | fetch a pull request (CLI, not a workspace tool) |
-| `gh pr list` | list pull requests (CLI, not a workspace tool) |
-| `github_push_files` | push files to a branch via the git database api |
-| `invoke_opencode` | spawn an opencode tmux session |
-| `invoke_kiro` | spawn a kiro tmux session |
-| `slack_post` | post to slack |
-| `handoff_save` | save a conversation handoff |
-| `handoff_load` | load a conversation handoff |
+| `get_steering` | bootstrap steering once per server process |
+| `call` | run a manifest-backed typed workspace tool with `{ tool, input, taskSession, timeout }` |
+| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to every task-scoped `workspace.call` instead of relying on shared root task metadata |
 
 ## contributed files in this package
 

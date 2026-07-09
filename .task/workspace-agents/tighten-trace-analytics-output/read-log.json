@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/ai-review.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/verify.js",
+    "scripts/operator/trace-analytics.ts"
+  ],
+  "updatedAt": "2026-05-23T19:27:43.928Z"
+}

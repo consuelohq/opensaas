@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/harden-task-node-modules-symlink-discovery",
+  "base": "origin/task/os/harden-task-node-modules-symlink-discovery",
+  "headSha": "aaaeda17de6597c4b16a93eab9755d80a9398c8f",
+  "changeHash": "a01866bba8300f3a3c762e69d8495aae44f405d9e2566cbe192c27fd17ec5703",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/task-node-modules.js",
+    "packages/workspace/tests/task-node-modules.test.js"
+  ],
+  "verifiedAt": "2026-06-14T01:11:39.374Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/harden-task-node-modules-symlink-discovery/current.json",
+        ".task/os/harden-task-node-modules-symlink-discovery/evidence-log.json",
+        ".task/os/harden-task-node-modules-symlink-discovery/read-log.json",
+        ".task/os/harden-task-node-modules-symlink-discovery/session.json",
+        ".task/os/harden-task-node-modules-symlink-discovery/workpad.md",
+        ".task/tasks/os/harden-task-node-modules-symlink-discovery.json",
+        "packages/workspace/scripts/lib/task-node-modules.js",
+        "packages/workspace/tests/task-node-modules.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

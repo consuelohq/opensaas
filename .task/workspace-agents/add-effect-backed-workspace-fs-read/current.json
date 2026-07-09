@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-effect-backed-workspace-fs-read",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1075,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1075",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1075",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1075/add-effect-backed-workspace-fs-read",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1075",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1075/add-effect-backed-workspace-fs-read",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-effect-backed-workspace-fs-read",
+  "taskSession": "tsk_bd5844185b1e",
+  "tmuxSession": "opensaas-workspace-agents-add-effect-backed-workspace-fs-read-bd584418",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-effect-backed-workspace-fs-read/.task/workspace-agents/add-effect-backed-workspace-fs-read/session.json",
+  "createdAt": "2026-06-16T04:11:49.289Z"
+}

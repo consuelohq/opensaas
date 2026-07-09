@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-task-exec-long-command-transport",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "e934ddbc744e58cc4e94a82efa2c59c5c1814d96",
+  "changeHash": "efa02c561af7db54c0f0c1c2742957207861c5df9956523a3ebdc48b10098d6e",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/task-exec.js"
+  ],
+  "verifiedAt": "2026-05-23T02:29:29.378Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

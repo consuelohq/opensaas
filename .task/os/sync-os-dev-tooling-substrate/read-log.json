@@ -1,0 +1,26 @@
+{
+  "files": [
+    ".task/os/sync-os-dev-tooling-substrate/worker-instructions.md",
+    ".task/os/sync-os-dev-tooling-substrate/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-docs.ts",
+    "packages/os/scripts/generate-types.ts",
+    "packages/os/scripts/lib/facade/branch-resolver.ts",
+    "packages/os/scripts/lib/facade/client.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/facade/types.ts",
+    "packages/os/scripts/lib/worker/runtime.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/test-selection.js",
+    "packages/os/scripts/tools-search.ts",
+    "packages/os/scripts/workspace.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/tool-manifest.json",
+    "packages/workspace/package.json",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-05-31T11:36:26.815Z"
+}

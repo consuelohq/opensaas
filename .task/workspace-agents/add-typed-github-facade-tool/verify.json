@@ -1,0 +1,32 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/add-typed-github-facade-tool",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "c9a7fd335c5da84a2d1f8e888aa7776b2478b281",
+  "changeHash": "48f671e17eafc3b1b2609e5a95d42dc62f8a1e8c14a2b9951049bb1bcbc7c930",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/github.js",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/github.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-22T04:26:13.058Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

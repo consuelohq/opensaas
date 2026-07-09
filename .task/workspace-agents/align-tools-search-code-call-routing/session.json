@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b9baff19f60b",
+  "tmuxSession": "opensaas-workspace-agents-align-tools-search-code-call-routing-b9baff19",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/align-tools-search-code-call-routing",
+  "branch": "task/workspace-agents/align-tools-search-code-call-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-align-tools-search-code-call-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-align-tools-search-code-call-routing",
+  "prNumber": 1133,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1133",
+  "createdAt": "2026-06-18T05:46:30.115Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-align-tools-search-code-call-routing/.task/workspace-agents/align-tools-search-code-call-routing/session.json"
+}

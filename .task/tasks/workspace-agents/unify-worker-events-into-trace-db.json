@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/unify-worker-events-into-trace-db",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 659,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/659",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/659",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/659/unify-worker-events-into-trace-db",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/659",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/659/unify-worker-events-into-trace-db",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-worker-events-into-trace-db",
+  "taskSession": "tsk_5f1dc66fd398",
+  "tmuxSession": "opensaas-workspace-agents-unify-worker-events-into-trace-db-5f1dc66f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-worker-events-into-trace-db/.task/workspace-agents/unify-worker-events-into-trace-db/session.json",
+  "createdAt": "2026-05-31T10:28:20.798Z"
+}

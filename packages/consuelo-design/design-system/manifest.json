@@ -15,8 +15,16 @@
       "path": "../consuelo-website/AGENTS.md"
     },
     {
+      "role": "website-design-tokens",
+      "path": "../consuelo-website/src/styles/tokens.css"
+    },
+    {
+      "role": "website-css-primitives",
+      "path": "../consuelo-website/src/styles/primitives.css"
+    },
+    {
       "role": "design-tooling-agent-rules",
-      "path": "consuelo-design/AGENTS.md"
+      "path": "../../areas/consuelo-design/AGENTS.md"
     }
   ],
   "upstreamDesignSystemsPolicy": "Do not import upstream/open-design/design-systems as Consuelo design systems during the first integration."

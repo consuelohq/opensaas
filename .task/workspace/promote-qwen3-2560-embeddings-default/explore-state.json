@@ -1,0 +1,745 @@
+{
+  "query": "test selection registry changed file packages/dialer/src/dialer.ts selects dialer specs",
+  "budget": 5,
+  "results": [
+    {
+      "path": "packages/dialer/src/dialer.ts",
+      "score": 0.9221,
+      "belief_prior": 0.711,
+      "symbol": "Dialer",
+      "chunk_type": "class",
+      "file_outline": "Dialer Dialer.provider Dialer.localPresence Dialer.conference Dialer.parallel Dialer.callerIdLock Dialer.config Dialer.constructor Dialer.withCallerIdLock Dialer.withLocalPresence Dialer.resolveCallerId Dialer.dial Dialer.hangup Dialer.getToken Dialer.provisionNumber Dialer.isCallCompleted Dialer.createCall Dialer.generateConferenceTwiml Dialer.addCustomerToConference Dialer.initiateTransfer Dialer.completeTransfer Dialer.cancelTransfer Dialer.holdParticipant Dialer.muteParticipant Dialer.listParticipants Dialer.listNumbers Dialer.searchAvailableNumbers Dialer.releaseNumber Dialer.getRecording",
+      "typed_edges": [
+        {
+          "path": "packages/dialer/src/dialer.spec.ts",
+          "type": "imports",
+          "symbol": "./dialer"
+        },
+        {
+          "path": "packages/dialer/src/dialer.spec.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/dialer.spec.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/dialer.spec.ts",
+          "type": "imported_by",
+          "symbol": "./dialer"
+        },
+        {
+          "path": "packages/dialer/src/dialer.spec.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/dialer.spec.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/index.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/types.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/index.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/types.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 9889,
+      "chunk_count": 31,
+      "last_modified": null,
+      "has_test": true,
+      "package": "dialer",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.7514,
+      "reason": "hybrid match: class Dialer",
+      "preview": "export class Dialer {",
+      "graph_connections": [
+        "packages/dialer/src/dialer.spec.ts",
+        "packages/dialer/src/index.ts",
+        "packages/dialer/src/types.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 46,
+        "end": 46
+      },
+      "target": {
+        "key": "packages/dialer/src/dialer.ts:class:Dialer:46-46",
+        "path": "packages/dialer/src/dialer.ts",
+        "kind": "class",
+        "name": "Dialer",
+        "symbol_path": "Dialer",
+        "node_type": "class_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 46,
+          "end": 46
+        },
+        "content_hash": "106459c6fc7ba4cd8e5a547dc40729438c99b7ff8f413238ce66a304e299ef61",
+        "preview": "export class Dialer {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 1,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.22666666666666663,
+        "graphRelevance": 0.22666666666666663,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.16999999999999998,
+        "nameMatch": 1,
+        "rawScore": 0.9220500000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 1,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 6.799999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/test-selection.js",
+      "score": 0.859,
+      "belief_prior": 0.6795,
+      "symbol": "readJson",
+      "chunk_type": "function",
+      "file_outline": "readJson writeJson rel walk groupFor groupCandidatesFor kindFor discoverTests projectRootFromProjectFile discoverProjects discoverPackageScripts globToRegExp matchesPattern commandKey normalizeRule createAutoRules loadRules buildRegistry changedFiles isDocumentationJson docsOnly sourceCodeFiles select testSuiteTimeoutMs runSuites parseArgs valueFor valuesFor print humanSummary markdownReport main",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 18061,
+      "chunk_count": 34,
+      "last_modified": 1779821665,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": true,
+      "evidence_state": null,
+      "information_value": 0.8333,
+      "reason": "hybrid match: function readJson",
+      "preview": "function readJson(file, fallback = null) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }",
+      "graph_connections": [
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 13,
+        "end": 16
+      },
+      "target": {
+        "key": "packages/workspace/scripts/test-selection.js:function:readJson:13-16",
+        "path": "packages/workspace/scripts/test-selection.js",
+        "kind": "function",
+        "name": "readJson",
+        "symbol_path": "readJson",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 13,
+          "end": 16
+        },
+        "content_hash": "d2feea5d23401e4faf3ede942a78f8c88feae32ec3e94c71590c1f678acb7767",
+        "preview": "function readJson(file, fallback = null) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.20500000000000002,
+        "nameMatch": 1,
+        "rawScore": 0.8590000000000001,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.6,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/tests/test-selection.test.js",
+      "score": 0.794,
+      "belief_prior": 0.647,
+      "symbol": "describe: test selection registry",
+      "chunk_type": "test",
+      "file_outline": "run json",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/context-trace.test.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4281,
+      "chunk_count": 5,
+      "last_modified": 1779821665,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": true,
+      "evidence_state": null,
+      "information_value": 1.3767,
+      "reason": "hybrid match: test describe: test selection registry",
+      "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);",
+      "graph_connections": [
+        "packages/workspace/tests/chunker.test.js",
+        "packages/workspace/tests/codemode.test.ts",
+        "packages/workspace/tests/context-trace.test.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 28,
+        "end": 120
+      },
+      "target": {
+        "key": "packages/workspace/tests/test-selection.test.js:test:describe: test selection registry:28-120",
+        "path": "packages/workspace/tests/test-selection.test.js",
+        "kind": "test",
+        "name": "describe: test selection registry",
+        "symbol_path": "describe: test selection registry",
+        "node_type": "call_expression",
+        "parent_name": null,
+        "lines": {
+          "start": 28,
+          "end": 120
+        },
+        "content_hash": "309f7bd3576739fa8fada01a1880a00ae360be2968cf2c3fb5e50b8e6048931e",
+        "preview": "describe('test selection registry', () => { it('discovers and seeds the existing test inventory', () => { const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.255,
+        "nameMatch": 1,
+        "rawScore": 0.794,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.85,
+        "tokenCoverage": 0.4,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+      "score": 0.7773,
+      "belief_prior": 0.6386,
+      "symbol": "useChangePageLayoutDragSelection",
+      "chunk_type": "function",
+      "file_outline": "useChangePageLayoutDragSelection",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/__tests__/useChangePageLayoutDragSelection.test.tsx",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useBasePageLayout.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/__tests__/useChangePageLayoutDragSelection.test.tsx",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useBasePageLayout.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutFrontComponentWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutGraphWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutFrontComponentWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutGraphWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutIframeWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutStandaloneRichTextWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutTab.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreateWidgetFromClick.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCurrentPageLayout.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCurrentPageLayoutOrThrow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useDeletePageLayoutTab.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useDeletePageLayoutWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useDuplicatePageLayoutTab.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useDuplicatePageLayoutWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useEditPageLayoutWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useMovePageLayoutTab.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useOpportunityDefaultChartConfig.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/usePageLayoutDraftState.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/usePageLayoutHandleLayoutChange.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/usePageLayoutTabWithVisibleWidgetsOrThrow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/usePageLayoutWithRelationWidgets.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useRecordPageLayoutId.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useRecordPageLayoutIdFromRecordStoreOrThrow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useRemovePageLayoutWidgetAndPreservePosition.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useReorderPageLayoutTabs.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useReorderPageLayoutWidgets.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useResetDraftPageLayoutToPersistedPageLayout.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useResolveFieldMetadataIdFromNameOrId.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useSavePageLayout.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useSetIsPageLayoutInEditMode.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useStartPageLayoutDragSelection.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useTemporaryFieldsConfiguration.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useUpdatePageLayoutTab.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useUpdatePageLayoutWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useUpdatePageLayoutWithTabsAndWidgets.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 1388,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.301,
+      "reason": "hybrid match: function useChangePageLayoutDragSelection",
+      "preview": "export const useChangePageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/page-layout/hooks/__tests__/useChangePageLayoutDragSelection.test.tsx",
+        "packages/twenty-front/src/modules/page-layout/hooks/useBasePageLayout.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutFrontComponentWidget.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutGraphWidget.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutIframeWidget.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutStandaloneRichTextWidget.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutTab.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useCreateWidgetFromClick.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 7,
+        "end": 37
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts:function:useChangePageLayoutDragSelection:7-37",
+        "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+        "kind": "function",
+        "name": "useChangePageLayoutDragSelection",
+        "symbol_path": "useChangePageLayoutDragSelection",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 7,
+          "end": 37
+        },
+        "content_hash": "35ed7709bdaf9728fbd1d87104f46e74f24ed219be751843185f905d05a20795",
+        "preview": "export const useChangePageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.4800000000000004,
+        "graphRelevance": 0.4800000000000004,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.16999999999999998,
+        "nameMatch": 1,
+        "rawScore": 0.7772500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 14.400000000000013
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+      "score": 0.7603,
+      "belief_prior": 0.6301,
+      "symbol": "useEndPageLayoutDragSelection",
+      "chunk_type": "function",
+      "file_outline": "useEndPageLayoutDragSelection",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/__tests__/useEndPageLayoutDragSelection.test.tsx",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/__tests__/useEndPageLayoutDragSelection.test.tsx",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useBasePageLayout.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutFrontComponentWidget.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 2893,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.1097,
+      "reason": "hybrid match: function useEndPageLayoutDragSelection",
+      "preview": "export const useEndPageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/page-layout/hooks/__tests__/useEndPageLayoutDragSelection.test.tsx",
+        "packages/twenty-front/src/modules/page-layout/hooks/useBasePageLayout.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts",
+        "packages/twenty-front/src/modules/page-layout/hooks/useCreatePageLayoutFrontComponentWidget.ts",
+        "packages/twenty-shared/src/utils/applyDiff.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 13,
+        "end": 71
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts:function:useEndPageLayoutDragSelection:13-71",
+        "path": "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts",
+        "kind": "function",
+        "name": "useEndPageLayoutDragSelection",
+        "symbol_path": "useEndPageLayoutDragSelection",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 13,
+          "end": 71
+        },
+        "content_hash": "dd3071231099b204d167aaee161f50c19edc5f652a6e5faf28b3dd7bb94eca52",
+        "preview": "export const useEndPageLayoutDragSelection = ( pageLayoutIdFromProps?: string, ) => {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.19666666666666666,
+        "graphRelevance": 0.19666666666666666,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.16999999999999998,
+        "nameMatch": 1,
+        "rawScore": 0.7602500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 5.8999999999999995
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15399,
+    "total_chunks": 74028,
+    "last_indexed": "2026-05-28T23:18:58.390Z",
+    "last_full_index": "2026-04-29T01:40:26.658Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-1024d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 1024,
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/dialer/src/dialer.ts": {
+      "prior": 0.711,
+      "posterior": 0.711,
+      "observations": []
+    },
+    "packages/workspace/scripts/test-selection.js": {
+      "prior": 0.6795,
+      "posterior": 0.6795,
+      "observations": []
+    },
+    "packages/workspace/tests/test-selection.test.js": {
+      "prior": 0.647,
+      "posterior": 0.647,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/page-layout/hooks/useChangePageLayoutDragSelection.ts": {
+      "prior": 0.6386,
+      "posterior": 0.6386,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/page-layout/hooks/useEndPageLayoutDragSelection.ts": {
+      "prior": 0.6301,
+      "posterior": 0.6301,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/workspace/promote-qwen3-2560-embeddings-default",
+  "mode": "exploring",
+  "worktree_id": "task/workspace/promote-qwen3-2560-embeddings-default",
+  "updated_at": "2026-05-28T23:22:18.973Z"
+}

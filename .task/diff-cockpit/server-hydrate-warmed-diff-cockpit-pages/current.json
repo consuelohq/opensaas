@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 991,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/991",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/991",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/991/server-hydrate-warmed-diff-cockpit-pages",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/991",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/991/server-hydrate-warmed-diff-cockpit-pages",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-server-hydrate-warmed-diff-cockpit-pages",
+  "taskSession": "tsk_42e31180ed80",
+  "tmuxSession": "opensaas-diff-cockpit-server-hydrate-warmed-diff-cockpit-pages-42e31180",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-server-hydrate-warmed-diff-cockpit-pages/.task/diff-cockpit/server-hydrate-warmed-diff-cockpit-pages/session.json",
+  "createdAt": "2026-06-13T05:13:14.253Z"
+}

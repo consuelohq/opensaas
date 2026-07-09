@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/fix-trace-home-review-comments",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 697,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/697",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/697",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/697/fix-trace-home-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/697",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/697/fix-trace-home-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-review-comments",
+  "taskSession": "tsk_4bc67f1a189b",
+  "tmuxSession": "opensaas-workspace-fix-trace-home-review-comments-4bc67f1a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-trace-home-review-comments/.task/workspace/fix-trace-home-review-comments/session.json",
+  "createdAt": "2026-06-02T06:34:18.042Z"
+}

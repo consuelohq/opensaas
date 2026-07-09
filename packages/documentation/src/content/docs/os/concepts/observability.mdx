@@ -1,0 +1,67 @@
+---
+title: Observability
+description: How Consuelo OS records what happened.
+---
+
+# Observability
+
+Every OS call should be traceable.
+
+A trace ID connects the request, skill execution, logs, artifacts, approvals, and safe errors. This is what makes local OS supportable and cloud OS auditable.
+
+## What gets recorded
+
+Record | Purpose
+--- | ---
+Call record | Shows that the portal received a request.
+Execution record | Shows which skill ran and what happened.
+Trace ID | Connects every related record.
+Artifact record | Shows durable outputs created by the skill.
+Approval record | Shows human decisions for high-impact steps.
+Capability state | Shows what was connected or missing.
+Safe error | Explains failure without leaking sensitive payloads.
+
+## Local observability
+
+Local OS should store execution metadata in SQLite and write logs under the local OS home.
+
+```text
+~/.consuelo/os/consuelo.db
+~/.consuelo/os/logs/
+~/.consuelo/os/runs/
+```
+
+Local mode should still leave evidence. A local run should have a trace ID, status, timestamps, and artifact links.
+
+## Cloud observability
+
+Cloud OS should record execution metadata in the app and connect to hosted observability tools for team support.
+
+Cloud mode should make it easy to answer: what ran, who requested it, what records were used, what artifacts were created, which approvals happened, and where the error occurred.
+
+## Execution record shape
+
+Field | Purpose
+--- | ---
+`executionId` | Stable execution identifier.
+`traceId` | Cross-system trace.
+`workspaceId` | Workspace scope.
+`userId` | User who requested the action.
+`skillName` | Skill that ran.
+`status` | Completed, failed, paused, or waiting for approval.
+`startedAt` | Start timestamp.
+`finishedAt` | End timestamp.
+`artifactIds` | Outputs created.
+`approvalIds` | Approval requests created.
+`safeErrorMessage` | Human-readable failure summary.
+
+## Error language
+
+Errors should be product-level whenever possible. Users should see missing capability, validation failed, approval required, or execution failed. Low-level stack traces belong in logs and internal debugging surfaces.
+
+## Related
+
+- [OS portal](/os/concepts/portal)
+- [Skills](/os/concepts/skills)
+- [Files and artifacts](/os/concepts/files-and-artifacts)
+- [Approvals](/os/concepts/approvals)

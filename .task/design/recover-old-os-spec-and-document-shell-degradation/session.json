@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ffa3b8003697",
+  "tmuxSession": "opensaas-design-recover-old-os-spec-and-document-shell-degradati-ffa3b800",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/recover-old-os-spec-and-document-shell-degradation",
+  "branch": "task/design/recover-old-os-spec-and-document-shell-degradation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-recover-old-os-spec-and-document-shell-degradation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-recover-old-os-spec-and-document-shell-degradation",
+  "prNumber": 816,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/816",
+  "createdAt": "2026-06-06T13:53:27.989Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-recover-old-os-spec-and-document-shell-degradation/.task/design/recover-old-os-spec-and-document-shell-degradation/session.json"
+}

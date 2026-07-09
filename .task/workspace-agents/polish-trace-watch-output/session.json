@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e8227e60bb3d",
+  "tmuxSession": "opensaas-workspace-agents-polish-trace-watch-output-e8227e60",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/polish-trace-watch-output",
+  "branch": "task/workspace-agents/polish-trace-watch-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-trace-watch-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-trace-watch-output",
+  "prNumber": 525,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/525",
+  "createdAt": "2026-05-23T10:03:46.491Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-trace-watch-output/.task/workspace-agents/polish-trace-watch-output/session.json"
+}

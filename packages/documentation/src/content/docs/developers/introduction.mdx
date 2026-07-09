@@ -1,0 +1,25 @@
+---
+title: Developer Guide
+description: Build against Consuelo APIs, agent primitives, and OS tool surfaces.
+---
+
+import Card from '../../../components/mintlify/Card.astro';
+import CardGroup from '../../../components/mintlify/CardGroup.astro';
+
+# Developer Guide
+
+Use these docs when you are extending Consuelo, integrating with workspace data, or building agent-aware workflows.
+
+<CardGroup cols={3}>
+  <Card title="Agent Development" href="/developers/agent/overview/">
+    Understand the agent runtime, tool registry, code mode, CRM tools, and tracing model.
+  </Card>
+
+  <Card title="API" href="/developers/api/overview/">
+    Authenticate, query GraphQL, work with contacts, and integrate voice workflows.
+  </Card>
+
+  <Card title="OS Tools" href="/os/tools/overview/">
+    Use the workspace facade and browser tools that agents call to do real work.
+  </Card>
+</CardGroup>

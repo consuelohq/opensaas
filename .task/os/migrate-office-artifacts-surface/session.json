@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c796b57ce089",
+  "tmuxSession": "opensaas-os-migrate-office-artifacts-surface-c796b57c",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/migrate-office-artifacts-surface",
+  "branch": "task/os/migrate-office-artifacts-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-office-artifacts-surface",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-office-artifacts-surface",
+  "prNumber": 767,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/767",
+  "createdAt": "2026-06-05T03:45:41.918Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-office-artifacts-surface/.task/os/migrate-office-artifacts-surface/session.json"
+}

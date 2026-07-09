@@ -1,0 +1,392 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+  "events": [
+    {
+      "id": "b7bc631f-cb39-4cfe-9e0c-ad1479561d3a",
+      "occurred_at": "2026-06-11T18:48:31.397Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/generate-tool-manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "3a8bbad0-9b7e-4f26-bbaa-eee0cd7f3b6a",
+      "occurred_at": "2026-06-11T18:48:31.724Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/manifest.config.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "0282a135-2efe-4031-8cd5-b13ee772d07a",
+      "occurred_at": "2026-06-11T18:48:32.058Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "76c618c3-118a-4f06-a17f-0270eacb735a",
+      "occurred_at": "2026-06-11T18:48:32.492Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/core.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "7f3acc17-c8fc-4353-a577-c522eb3e50f1",
+      "occurred_at": "2026-06-11T18:48:32.827Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/dispatcher.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "87c6c335-4405-4414-bed6-7659128c6a26",
+      "occurred_at": "2026-06-11T18:48:33.192Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-dispatcher.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "dac8b00a-3e51-4c9a-8977-bdea56d70c55",
+      "occurred_at": "2026-06-11T18:48:33.537Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "513e53aa-1998-422e-a8bb-90b0d2d083a1",
+      "occurred_at": "2026-06-11T18:48:33.861Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "1a4d1230-e6f8-4971-8798-1a8340ae362b",
+      "occurred_at": "2026-06-11T18:48:34.195Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "dd6be03c-dab8-43cd-82af-baaf259a79ea",
+      "occurred_at": "2026-06-11T18:49:02.789Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/generate-tool-manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "0e0d3908-4d55-4652-bb36-0b84d3729900",
+      "occurred_at": "2026-06-11T18:49:23.506Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "fba81e49-fce4-48c1-b3cf-2896542daba8",
+      "occurred_at": "2026-06-11T18:49:23.844Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "512e61d9-cd73-4235-8fc9-bc9ec6002337",
+      "occurred_at": "2026-06-11T18:49:24.204Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/core.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "07e3f248-f1b9-4eca-b8bf-d031c9244d28",
+      "occurred_at": "2026-06-11T18:49:54.737Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/dispatcher.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "ebbf94a3-6f39-4774-8bb4-919a956ef4b5",
+      "occurred_at": "2026-06-11T18:51:08.113Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "b284ff31-cb63-4118-9c28-efba9841f2c1",
+      "occurred_at": "2026-06-11T18:51:20.688Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/dispatcher.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "4e74ecbf-21b7-4105-8441-c092a7377ab0",
+      "occurred_at": "2026-06-11T18:51:21.165Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/dispatcher.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "1a4081b3-a196-4e62-a048-60f49d29057c",
+      "occurred_at": "2026-06-11T18:51:37.598Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/dispatcher.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "447f2e74-ea09-49a3-94ba-6de58395c235",
+      "occurred_at": "2026-06-11T18:53:32.417Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/README.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "bf5858d2-29fd-4188-81ff-c1475b074051",
+      "occurred_at": "2026-06-11T18:54:52.281Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/dev-tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "5f6dcdf6-1616-4713-b411-b2d5a3670f0e",
+      "occurred_at": "2026-06-11T18:54:52.598Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "905ee6b8-5891-459e-a131-264cf75fb24d",
+      "occurred_at": "2026-06-11T18:54:52.915Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/core.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "f44a77e0-ce09-41a3-ba76-c068a03f24a3",
+      "occurred_at": "2026-06-11T18:56:03.956Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-manifest-workflow-roles.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    },
+    {
+      "id": "a8307038-575e-4602-9ea3-b40025315833",
+      "occurred_at": "2026-06-11T18:56:23.755Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-manifest-workflow-roles.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/emit-workflow-roles-in-tool-manifest",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/emit-workflow-roles-in-tool-manifest"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T18:56:23.810Z"
+}

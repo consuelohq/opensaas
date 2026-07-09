@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/polish-trace-watch-output",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "79acdfa90c7955876c4a876a98f140612061170e",
+  "changeHash": "3933e0eef1956adc0668b8da3b1a29521d7d78893692dfec48effdd41b171a07",
+  "changedFiles": [
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-23T10:05:26.927Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

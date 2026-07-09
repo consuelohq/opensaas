@@ -1,0 +1,14 @@
+{
+  "files": [
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/oauth-device-onboarding-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-12T20:04:48.990Z"
+}

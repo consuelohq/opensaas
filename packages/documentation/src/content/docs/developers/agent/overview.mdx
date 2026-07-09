@@ -1,0 +1,90 @@
+---
+title: Agent Overview
+description: Architecture and key modules of the Consuelo AI agent package.
+---
+
+import Note from '../../../../components/mintlify/Note.astro';
+
+
+The `@consuelo/agent` package provides an AI assistant that lives inside the CRM. It has full access to your workspace data, can execute multi-step tool calls, and streams responses using the AI SDK UI message protocol.
+
+## Architecture
+
+```
+┌──────────────┐     ChatRequest      ┌──────────────┐
+│   Frontend   │ ──────────────────→  │  handleChat  │
+│  (UI Stream) │ ←──────────────────  │  (chat.ts)   │
+└──────────────┘   UIMessageStream    └──────┬───────┘
+                                             │
+                                    ┌────────▼────────┐
+                                    │  AgentService   │
+                                    │  (agent.ts)     │
+                                    └────────┬────────┘
+                                             │
+                        ┌────────────────────┼────────────────────┐
+                        │                    │                    │
+                  ┌─────▼─────┐      ┌──────▼──────┐     ┌──────▼──────┐
+                  │   Tools   │      │  Code Mode  │     │   Tracing   │
+                  │ (registry)│      │ (executor)  │     │ (langfuse)  │
+                  └───────────┘      └─────────────┘     └─────────────┘
+```
+
+## Key Modules
+
+| Module | File | Purpose |
+| --- | --- | --- |
+| **AgentService** | `agent.ts` | Core chat loop — resolves model, builds system prompt, runs `streamText` |
+| **handleChat** | `chat.ts` | Request handler — manages conversations, wires streaming, persists state |
+| **ToolRegistry** | `tools/` | Register and manage tools the agent can call |
+| **CrmClient** | `crm/` | Query contacts, deals, calls, and integrations from the CRM |
+| **AgentExecutor** | `executor/` | Sandboxed JS execution via `isolated-vm` for code mode |
+| **TracingService** | `tracing/` | Langfuse integration for observability and execution history |
+| **Security** | `security/` | XSS stripping, URL validation, output truncation, concurrency limits |
+| **Artifacts** | `artifacts/` | Convert sandbox output files into typed artifacts |
+
+## Providers
+
+The agent supports any OpenAI-compatible API. Configure via `AgentConfig`:
+
+| Provider | Base URL | Env Var |
+| --- | --- | --- |
+| Moonshot | `api.moonshot.ai/v1` | `MOONSHOT_API_KEY` |
+| Zhipu | `open.bigmodel.cn/api/paas/v4` | `ZHIPU_API_KEY` |
+| MiniMax | `api.minimax.io/v1` | `MINIMAX_API_KEY` |
+| NVIDIA | `integrate.api.nvidia.com/v1` | `NVIDIA_API_KEY` |
+
+## Quick Start
+
+```typescript
+import { AgentService, createToolRegistry, createCrmTools } from '@consuelo/agent';
+
+const tools = createToolRegistry();
+const crmTools = createCrmTools({ graphqlUrl: 'https://api.consuelohq.com/graphql', token });
+for (const tool of crmTools) tools.register(tool);
+
+const agent = new AgentService({
+  config: {
+    provider: 'moonshot',
+    model: 'kimi-k2.5',
+    systemPrompt: 'You are a helpful sales assistant.',
+    maxSteps: 5,
+  },
+  context: {
+    userId: '<user-id>',
+    workspaceId: '<workspace-id>',
+    recentActivity: [],
+    connectedIntegrations: [],
+    memories: [],
+  },
+  tools,
+});
+
+const result = await agent.chat({
+  messages: [{ role: 'user', content: 'Show my open deals' }],
+});
+```
+
+<Note>
+  The agent uses lazy imports for all provider SDKs and optional dependencies.
+  Only the provider you configure needs to be installed.
+</Note>

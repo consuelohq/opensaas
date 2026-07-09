@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-wiki-revision-guard",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 823,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/823",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/823",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/823/add-wiki-revision-guard",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/823",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/823/add-wiki-revision-guard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-wiki-revision-guard",
+  "taskSession": "tsk_81f6254574ff",
+  "tmuxSession": "opensaas-design-add-wiki-revision-guard-81f62545",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-wiki-revision-guard/.task/design/add-wiki-revision-guard/session.json",
+  "createdAt": "2026-06-06T19:14:00.777Z"
+}

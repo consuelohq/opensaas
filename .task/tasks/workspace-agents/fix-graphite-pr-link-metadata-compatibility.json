@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 405,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/405",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-graphite-pr-link-metadata-compatibility",
+  "taskSession": "tsk_9a63367f0f57",
+  "tmuxSession": "opensaas-workspace-agents-fix-graphite-pr-link-metadata-compatibility-9a63367f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-graphite-pr-link-metadata-compatibility/.task/session.json",
+  "createdAt": "2026-05-20T14:41:39.570Z"
+}

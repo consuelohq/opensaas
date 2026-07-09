@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9b2226ee3e70",
+  "tmuxSession": "opensaas-workspace-agents-fix-reader-shell-rail-drawer-labels-9b2226ee",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-reader-shell-rail-drawer-labels",
+  "branch": "task/workspace-agents/fix-reader-shell-rail-drawer-labels",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-reader-shell-rail-drawer-labels",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-reader-shell-rail-drawer-labels",
+  "prNumber": 930,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/930",
+  "createdAt": "2026-06-10T05:55:24.833Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-reader-shell-rail-drawer-labels/.task/workspace-agents/fix-reader-shell-rail-drawer-labels/session.json"
+}

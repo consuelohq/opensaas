@@ -27,6 +27,7 @@ export type GoogleRequest = Omit<
     action: SocialSSOSignInUpActionType;
     workspaceId?: string;
     billingCheckoutSessionState?: string;
+    osDeviceUserCode?: string;
   };
 };
 
@@ -53,6 +54,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         billingCheckoutSessionState: req.query.billingCheckoutSessionState,
         workspacePersonalInviteToken: req.query.workspacePersonalInviteToken,
         action: req.query.action,
+        osDeviceUserCode: req.query.osDeviceUserCode,
       }),
     };
 
@@ -94,6 +96,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       workspaceId: state.workspaceId,
       billingCheckoutSessionState: state.billingCheckoutSessionState,
       action: state.action,
+      osDeviceUserCode: state.osDeviceUserCode,
       locale: state.locale,
     };
 

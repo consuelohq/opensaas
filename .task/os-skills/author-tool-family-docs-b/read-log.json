@@ -1,0 +1,18 @@
+{
+  "files": [
+    "packages/consuelo-docs/os/skills/research-ingest.mdx",
+    "packages/consuelo-docs/os/tools/browser-tools.mdx",
+    "packages/consuelo-docs/os/tools/exploration-tools.mdx",
+    "packages/consuelo-docs/os/tools/filesystem-tools.mdx",
+    "packages/consuelo-docs/os/tools/github-and-review-tools.mdx",
+    "packages/consuelo-docs/os/tools/task-and-stream-tools.mdx",
+    "packages/consuelo-docs/os/tools/tool-search.mdx",
+    "packages/consuelo-docs/package.json",
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/scripts/tools-search.ts",
+    "packages/os/skills/task/SKILL.md"
+  ],
+  "updatedAt": "2026-06-05T07:57:45.662Z"
+}

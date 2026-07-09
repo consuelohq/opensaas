@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/dialer/fix-queue-call-target-resolution/workpad.md",
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+    "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+    "packages/twenty-server/package.json",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+    "packages/twenty-server/src/engine/workspace-datasource/utils/get-workspace-schema-name.util.ts",
+    "packages/twenty-server/src/engine/workspace-datasource/workspace-datasource.service.ts"
+  ],
+  "updatedAt": "2026-05-23T22:24:41.100Z"
+}

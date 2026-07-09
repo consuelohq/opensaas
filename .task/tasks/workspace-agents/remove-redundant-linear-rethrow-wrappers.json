@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/remove-redundant-linear-rethrow-wrappers",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 319,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/319",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-remove-redundant-linear-rethrow-wrappers",
+  "createdAt": "2026-05-05T00:39:42.300Z"
+}

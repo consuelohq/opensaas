@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3239fad7f7db",
+  "tmuxSession": "opensaas-os-wire-clack-tty-3239fad7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-clack-tty",
+  "branch": "task/os/wire-clack-tty",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-clack-tty",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-clack-tty",
+  "prNumber": 729,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/729",
+  "createdAt": "2026-06-03T06:35:26.861Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-clack-tty/.task/os/wire-clack-tty/session.json"
+}

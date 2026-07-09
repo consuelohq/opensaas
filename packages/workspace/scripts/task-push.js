@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { pathToFileURL } = require('url');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const AUTHOR = { name: 'kokayicobb', email: 'kokayicobb@users.noreply.github.com' };
@@ -27,16 +28,18 @@ const {
   refExists,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const {
   assertCommitMessageFormat,
   assertTaskBranchName,
   isStreamBranchName,
 } = require('./lib/validation');
-const { collectTaskMetaFiles, findTaskMeta, validateBranchMatch } = require('./lib/task-meta');
+const { collectTaskMetaFiles, findTaskMeta, getTaskCurrentMetaPath, getTaskWorkpadPath, validateBranchMatch } = require('./lib/task-meta');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const { getVerifyStampMismatch } = require('./lib/verification');
+const { assertWorkpadReady, syncFilesChanged } = require('./lib/task-workpad');
 
-const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify']);
+const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--approved', '--ack-workpad-incomplete']);
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -45,6 +48,35 @@ function writeStdout(value = '') {
 function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);
 }
+
+function parseEnvLine(line) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith('#')) return null;
+  const match = trimmed.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+  if (!match) return null;
+  let value = match[2] || '';
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    value = value.slice(1, -1);
+  }
+  return [match[1], value];
+}
+
+function loadDotEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const content = fs.readFileSync(filePath, 'utf8');
+  for (const line of content.split(/\r?\n/)) {
+    const entry = parseEnvLine(line);
+    if (!entry) continue;
+    const [key, value] = entry;
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+function loadLocalEnv(repoRoot) {
+  loadDotEnvFile(path.join(repoRoot, '.env'));
+  loadDotEnvFile(path.join(repoRoot, 'packages', '.env'));
+}
+
 
 function printHelp() {
   writeStdout('usage: bun run task:push -- --message "fix(area): summary" [options]');
@@ -56,11 +88,13 @@ function printHelp() {
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
   writeStdout('  --area <name>          select task by area');
   writeStdout('  --branch <name>        select exact task branch');
-  writeStdout('  --pr <number>          select task by pr number');
+  writeStdout('  --pr <number-or-url>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
-  writeStdout('  --verify               require a matching .task/verify.json stamp (default)');
-  writeStdout('  --no-verify            visibly bypass the verify stamp check');
+  writeStdout('  --verify               require a matching publish-valid verify stamp (default)');
+  writeStdout('  --approved            Ko-approved path for invalid/missing verify stamp; requires --reason');
+  writeStdout('  --reason <text>        required explanation when using --approved');
+  writeStdout('  --ack-workpad-incomplete allow publish when Ko explicitly approved an incomplete workpad');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -72,6 +106,7 @@ function parseArgs(argv) {
     json: false,
     changed: false,
     verify: true,
+    approved: false,
   };
 
   let index = 0;
@@ -118,7 +153,8 @@ function parseArgs(argv) {
         args.branch = value;
         break;
       case '--pr':
-        args.prNumber = Number.parseInt(value, 10);
+      case '--github':
+        args.prNumber = resolvePrRefNumber(value);
         break;
       case '--cwd':
         args.cwd = value;
@@ -132,8 +168,14 @@ function parseArgs(argv) {
       case '--verify':
         args.verify = true;
         break;
-      case '--no-verify':
-        args.verify = false;
+      case '--approved':
+        args.approved = true;
+        break;
+      case '--reason':
+        args.reason = value;
+        break;
+      case '--ack-workpad-incomplete':
+        args.ackWorkpadIncomplete = true;
         break;
       case '--json':
         args.json = true;
@@ -149,7 +191,7 @@ function parseArgs(argv) {
   }
 
   if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
-    throw new Error('invalid --pr value');
+    throw new Error('invalid --pr/--github value');
   }
 
   return args;
@@ -178,7 +220,7 @@ function getSelectedTaskContext(args, startDirectory) {
     taskMeta: {
       dir: selected.task.worktreePath,
       data: selected.task.meta,
-      path: path.join(selected.task.worktreePath, '.task', 'current.json'),
+      path: getTaskCurrentMetaPath(selected.task.worktreePath, selected.task.meta),
     },
   };
 }
@@ -366,6 +408,36 @@ function printPlan(branch, files, useJson) {
   }
 }
 
+
+async function runPostTaskPushHooks({ repo, taskMeta }) {
+  const hooks = [];
+  if (!process.env.DIFF_COCKPIT_REFRESH_TOKEN) {
+    hooks.push({ name: 'diff-cockpit/cache-refresh', skipped: true, reason: 'DIFF_COCKPIT_REFRESH_TOKEN not set' });
+    return hooks;
+  }
+
+  const pulls = [];
+  const prNumber = Number(taskMeta && taskMeta.prNumber);
+  if (Number.isInteger(prNumber) && prNumber > 0) pulls.push(prNumber);
+
+  try {
+    const hookPath = path.join(__dirname, '..', 'hooks', 'diff-cockpit', 'cache-refresh.ts');
+    const hookModule = await import(pathToFileURL(hookPath).href);
+    const result = await hookModule.refreshDiffCockpitCache({
+      repo,
+      pulls,
+      reason: 'task.push',
+    });
+    hooks.push({ name: 'diff-cockpit/cache-refresh', ok: true, refreshed: result.refreshed });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    hooks.push({ name: 'diff-cockpit/cache-refresh', ok: false, error: message });
+    writeStderr(`hook warning: diff-cockpit/cache-refresh failed: ${message}`);
+  }
+
+  return hooks;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -381,18 +453,23 @@ async function main() {
   assertCommitMessageFormat(args.message);
 
   const { branch, repoRoot, taskMeta } = getTaskContext(args);
+  loadLocalEnv(repoRoot);
 
-  if (args.verify) {
-    const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
-    if (verifyMismatch) {
+  const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
+  if (verifyMismatch) {
+    if (!args.approved) {
       throw new Error(
-        `verify required before task:push: ${verifyMismatch}.\n` +
+        `publish-valid verify required before task:push: ${verifyMismatch}.\n` +
         'run: bun run verify\n' +
-        'or explicitly bypass with: bun run task:push -- --no-verify --message "fix(area): summary" --changed',
+        'approved path requires explicit Ko approval: bun run task:push -- --approved --reason "Ko approved: ..." --message "fix(area): summary" --changed',
       );
     }
-  } else {
-    writeStderr('warning: task:push bypassing verify because --no-verify was provided');
+    if (!args.reason || args.reason.trim().length < 12) {
+      throw new Error('approved task:push requires --reason with explicit Ko approval context');
+    }
+    writeStderr(`DANGEROUS PUSH BYPASS USED: ${args.reason}`);
+  } else if (args.approved) {
+    writeStderr('warning: --approved provided but verify stamp is publish-valid; path not needed');
   }
 
   if (args.changed) {
@@ -403,7 +480,7 @@ async function main() {
   const userFiles = resolveFiles(args, repoRoot);
 
   // update workpad "files changed" section with the actual files being pushed
-  const workpadPath = path.join(repoRoot, '.task', 'workpad.md');
+  const workpadPath = taskMeta?.data ? getTaskWorkpadPath(repoRoot, taskMeta.data) : path.join(repoRoot, '.task', 'workpad.md');
   if (fs.existsSync(workpadPath)) {
     const nonMetaFiles = userFiles.filter((f) => !f.path.startsWith('.task/'));
     if (nonMetaFiles.length > 0) {
@@ -501,7 +578,7 @@ async function main() {
   });
 
   // save workpad to supabase memories for future agent context
-  const workpadFile = path.join(repoRoot, '.task', 'workpad.md');
+  const workpadFile = taskMeta?.data ? getTaskWorkpadPath(repoRoot, taskMeta.data) : path.join(repoRoot, '.task', 'workpad.md');
   if (fs.existsSync(workpadFile)) {
     try {
       const dotenvPath = path.join(__dirname, '..', '..', '.env');
@@ -538,12 +615,17 @@ async function main() {
     }
   }
 
+  const hooks = await runPostTaskPushHooks({ repo: args.repo, taskMeta: taskMeta?.data });
+
   const result = {
     repo: args.repo,
     branch,
     sha: commit.sha,
     message: args.message,
+    approved: Boolean(args.approved && verifyMismatch),
+    approvalReason: args.approved && verifyMismatch ? args.reason : undefined,
     files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
+    hooks,
   };
 
   if (args.json) {

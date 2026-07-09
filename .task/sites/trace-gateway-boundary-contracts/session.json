@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ad40b9886332",
+  "tmuxSession": "opensaas-sites-trace-gateway-boundary-contracts-ad40b988",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/trace-gateway-boundary-contracts",
+  "branch": "task/sites/trace-gateway-boundary-contracts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-trace-gateway-boundary-contracts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-trace-gateway-boundary-contracts",
+  "prNumber": 1005,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1005",
+  "createdAt": "2026-06-13T12:54:21.987Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-trace-gateway-boundary-contracts/.task/sites/trace-gateway-boundary-contracts/session.json"
+}

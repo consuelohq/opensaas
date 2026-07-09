@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a15727873c55",
+  "tmuxSession": "opensaas-diff-cockpit-remove-unused-cached-json-helper-a1572787",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/remove-unused-cached-json-helper",
+  "branch": "task/diff-cockpit/remove-unused-cached-json-helper",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-remove-unused-cached-json-helper",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-remove-unused-cached-json-helper",
+  "prNumber": 1165,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1165",
+  "createdAt": "2026-06-20T22:27:52.752Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-remove-unused-cached-json-helper/.task/diff-cockpit/remove-unused-cached-json-helper/session.json"
+}

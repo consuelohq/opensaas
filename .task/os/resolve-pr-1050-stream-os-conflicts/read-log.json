@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/os/tooling/script-parity-classifications.json"
+  ],
+  "updatedAt": "2026-06-16T23:02:55.326Z"
+}

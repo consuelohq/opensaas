@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 441,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/441",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/441",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/441/add-code-run-workspace-namespace-helpers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/441",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/441/add-code-run-workspace-namespace-helpers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-code-run-workspace-namespace-helpers",
+  "taskSession": "tsk_a083e44f6eeb",
+  "tmuxSession": "opensaas-workspace-agents-add-code-run-workspace-namespace-helpers-a083e44f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-code-run-workspace-namespace-helpers/.task/session.json",
+  "createdAt": "2026-05-21T19:03:57.511Z"
+}

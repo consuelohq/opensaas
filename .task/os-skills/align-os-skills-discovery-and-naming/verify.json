@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-skills/align-os-skills-discovery-and-naming",
+  "base": "origin/task/os-skills/align-os-skills-discovery-and-naming",
+  "headSha": "ff1d90a6ce4a39a69e2d1e5e2ba466cd629a61fa",
+  "changeHash": "4ab8ce499e9d474845778d94d03e676b1fb9049f63d507224630dc0cd994893a",
+  "changedFiles": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/skills.ts",
+    "packages/os/skills/skills.json",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/skills/task/skill.json",
+    "packages/os/tests/fixtures/skills/task-os-replacements.json",
+    "packages/os/tests/fixtures/skills/task-workspace.SKILL.md",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/skill-migration.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T17:20:06.181Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-skills/align-os-skills-discovery-and-naming/current.json",
+        ".task/os-skills/align-os-skills-discovery-and-naming/evidence-log.json",
+        ".task/os-skills/align-os-skills-discovery-and-naming/read-log.json",
+        ".task/os-skills/align-os-skills-discovery-and-naming/session.json",
+        ".task/os-skills/align-os-skills-discovery-and-naming/workpad.md",
+        ".task/tasks/os-skills/align-os-skills-discovery-and-naming.json",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/skills.ts",
+        "packages/os/skills/skills.json",
+        "packages/os/skills/task/SKILL.md",
+        "packages/os/skills/task/skill.json",
+        "packages/os/tests/fixtures/skills/task-os-replacements.json",
+        "packages/os/tests/fixtures/skills/task-workspace.SKILL.md",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/skill-migration.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

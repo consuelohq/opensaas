@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/investigate-get-steering-trace-capture",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 829,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/829",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/829",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/829/investigate-get-steering-trace-capture",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/829",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/829/investigate-get-steering-trace-capture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-get-steering-trace-capture",
+  "taskSession": "tsk_a8915ba01fcb",
+  "tmuxSession": "opensaas-workspace-agents-investigate-get-steering-trace-capture-a8915ba0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-get-steering-trace-capture/.task/workspace-agents/investigate-get-steering-trace-capture/session.json",
+  "createdAt": "2026-06-07T09:06:54.102Z"
+}

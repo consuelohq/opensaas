@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/debug-git-diff-working-tree-output",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 475,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/475",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/475",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/475/debug-git-diff-working-tree-output",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/475",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/475/debug-git-diff-working-tree-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-debug-git-diff-working-tree-output",
+  "taskSession": "tsk_171c1f5d4e2d",
+  "tmuxSession": "opensaas-workspace-agents-debug-git-diff-working-tree-output-171c1f5d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-debug-git-diff-working-tree-output/.task/workspace-agents/debug-git-diff-working-tree-output/session.json",
+  "createdAt": "2026-05-23T03:03:34.706Z"
+}

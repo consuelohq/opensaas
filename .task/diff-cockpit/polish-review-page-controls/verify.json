@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/polish-review-page-controls",
+  "base": "origin/task/diff-cockpit/polish-review-page-controls",
+  "headSha": "adb4bf6889684e70f86dd78f87e2c0e839a30575",
+  "changeHash": "5b08617fb32f31ed1a39c337ce010ae98fc896a17552e4ce87cb35809b1ab516",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-10T06:49:28.461Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/polish-review-page-controls/current.json",
+        ".task/diff-cockpit/polish-review-page-controls/evidence-log.json",
+        ".task/diff-cockpit/polish-review-page-controls/read-log.json",
+        ".task/diff-cockpit/polish-review-page-controls/session.json",
+        ".task/diff-cockpit/polish-review-page-controls/workpad.md",
+        ".task/tasks/diff-cockpit/polish-review-page-controls.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

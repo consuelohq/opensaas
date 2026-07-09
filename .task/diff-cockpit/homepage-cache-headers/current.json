@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/homepage-cache-headers",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 750,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/750",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/750",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/750/homepage-cache-headers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/750",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/750/homepage-cache-headers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-homepage-cache-headers",
+  "taskSession": "tsk_db0bccc4c2c8",
+  "tmuxSession": "opensaas-diff-cockpit-homepage-cache-headers-db0bccc4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-homepage-cache-headers/.task/diff-cockpit/homepage-cache-headers/session.json",
+  "createdAt": "2026-06-03T18:12:22.142Z"
+}

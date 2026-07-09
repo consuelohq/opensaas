@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-artifact-version-rollback-table",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 945,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/945",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/945",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/945/add-os-artifact-version-rollback-table",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/945",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/945/add-os-artifact-version-rollback-table",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-artifact-version-rollback-table",
+  "taskSession": "tsk_db04b637b7d0",
+  "tmuxSession": "opensaas-os-add-os-artifact-version-rollback-table-db04b637",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-artifact-version-rollback-table/.task/os/add-os-artifact-version-rollback-table/session.json",
+  "createdAt": "2026-06-11T02:32:44.719Z"
+}

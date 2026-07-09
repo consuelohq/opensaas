@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/add-script-parity-audit-tests",
+  "events": [
+    {
+      "id": "cc482a8b-ad4b-4872-ad2d-0f1d28dac0c5",
+      "occurred_at": "2026-06-13T05:23:30.515Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".pr1-write-probe",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-script-parity-audit-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-script-parity-audit-tests"
+      }
+    },
+    {
+      "id": "5669c538-dc70-41ae-8916-221ece81708c",
+      "occurred_at": "2026-06-13T05:23:31.349Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/add-script-parity-audit-tests/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-script-parity-audit-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-script-parity-audit-tests"
+      }
+    },
+    {
+      "id": "c36124b4-f315-4167-b1bf-7e2125ae2498",
+      "occurred_at": "2026-06-13T05:25:39.196Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-script-parity-audit-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-script-parity-audit-tests"
+      }
+    },
+    {
+      "id": "7e89edfa-bab7-4c45-b364-43e1b9a55abc",
+      "occurred_at": "2026-06-13T05:25:40.064Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/task-session.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-script-parity-audit-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-script-parity-audit-tests"
+      }
+    },
+    {
+      "id": "f08669d6-305f-40b5-8185-43e6b34e0fa8",
+      "occurred_at": "2026-06-13T05:25:43.222Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-script-parity-audit-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-script-parity-audit-tests"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-13T05:25:43.274Z"
+}

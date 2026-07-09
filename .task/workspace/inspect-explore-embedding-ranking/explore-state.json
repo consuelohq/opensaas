@@ -1,0 +1,726 @@
+{
+  "query": "browser screenshot rendered page extraction authenticated docs js heavy page accessibility snapshot",
+  "budget": 5,
+  "results": [
+    {
+      "path": "packages/workspace/scripts/browser.js",
+      "score": 0.7021,
+      "belief_prior": 0.601,
+      "symbol": "browserOptionArgs",
+      "chunk_type": "function",
+      "file_outline": "writeStdout writeStderr printHelp printHelp ensureScreenshotDir shouldUseProfile withProfile run screenshotPath parseOptions parsePositiveInteger applyPresetDefaults browserOptionArgs applyPageOptions cmdOpen describeBrowserOptions cmdScreenshot cmdSnap cmdClick cmdFill loginArgs cmdLogin cmdReauth cmdEval cmdRaw cmdNetwork cmdPassthrough cmdInteract cmdWait cmdFind cmdGet cmdBatch cmdTabs cmdCookies main part 1 main part 2",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 20975,
+      "chunk_count": 42,
+      "last_modified": 1778677169,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.0374,
+      "reason": "hybrid match: function browserOptionArgs",
+      "preview": "function browserOptionArgs(opts) { const args = []; if (opts.headed) args.push('--headed');",
+      "graph_connections": [
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 207,
+        "end": 214
+      },
+      "target": {
+        "key": "packages/workspace/scripts/browser.js:function:browserOptionArgs:207-214",
+        "path": "packages/workspace/scripts/browser.js",
+        "kind": "function",
+        "name": "browserOptionArgs",
+        "symbol_path": "browserOptionArgs",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 207,
+          "end": 214
+        },
+        "content_hash": "4b745faf48521e66a64e43e6bdf7544b1e8a6a6c8d6cb174ec65ac707892b4d0",
+        "preview": "function browserOptionArgs(opts) { const args = []; if (opts.headed) args.push('--headed');"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.060000000000000005,
+        "graphRelevance": 0.060000000000000005,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.13,
+        "nameMatch": 1,
+        "rawScore": 0.7020500000000002,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3,
+        "weightedEdges": 1.8
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/files/components/FileBrowser.tsx",
+      "score": 0.6912,
+      "belief_prior": 0.5956,
+      "symbol": "FileBrowser part 1",
+      "chunk_type": "function",
+      "file_outline": "FileBrowser part 1 FileBrowser part 1 FileBrowser part 2",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/files/components/FileAttachments.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/components/FileAttachments.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/components/FileCard.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/components/FileDropZone.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/index.ts",
+          "type": "imported_by",
+          "symbol": "./components/FileBrowser"
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-ui/src/input/button/components/AnimatedButton.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/input"
+        },
+        {
+          "path": "packages/twenty-ui/src/layout/animated-expandable-container/components/AnimatedExpandableContainer.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/layout"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/components/FileCard.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/components/FileDropZone.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/components/FilePreview.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/files/index.ts",
+          "type": "imports",
+          "symbol": "./components/FileBrowser"
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-ui/src/input/button/components/AnimatedButton.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/input"
+        },
+        {
+          "path": "packages/twenty-ui/src/layout/animated-expandable-container/components/AnimatedExpandableContainer.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/layout"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 9854,
+      "chunk_count": 6,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.4558,
+      "reason": "hybrid match: function FileBrowser part 1",
+      "preview": "export const FileBrowser = ({ onFileClick }: FileBrowserProps) => { const { t } = useLingui(); const [fileBrowserView, setFileBrowserView] =",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/files/components/FileAttachments.tsx",
+        "packages/twenty-front/src/modules/files/components/FileCard.tsx",
+        "packages/twenty-front/src/modules/files/components/FileDropZone.tsx",
+        "packages/twenty-front/src/modules/files/index.ts",
+        "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+        "packages/twenty-ui/src/input/button/components/AnimatedButton.tsx",
+        "packages/twenty-ui/src/layout/animated-expandable-container/components/AnimatedExpandableContainer.tsx",
+        "packages/twenty-front/src/modules/files/components/FilePreview.tsx"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 168,
+        "end": 308
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/files/components/FileBrowser.tsx:function:FileBrowser part 1:168-308",
+        "path": "packages/twenty-front/src/modules/files/components/FileBrowser.tsx",
+        "kind": "function",
+        "name": "FileBrowser part 1",
+        "symbol_path": "FileBrowser part 1",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 168,
+          "end": 308
+        },
+        "content_hash": "1e12ca1b37661ea6657138ffd2d7dcb7cea631527d3a2ff52fb6a65dcbd12aff",
+        "preview": "export const FileBrowser = ({ onFileClick }: FileBrowserProps) => { const { t } = useLingui(); const [fileBrowserView, setFileBrowserView] ="
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.33666666666666667,
+        "graphRelevance": 0.33666666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.09999999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.6911500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.1,
+        "weightedEdges": 10.1
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/dialer/utils/authenticatedFetch.ts",
+      "score": 0.6882,
+      "belief_prior": 0.5941,
+      "symbol": "authenticatedFetch",
+      "chunk_type": "function",
+      "file_outline": "authenticatedFetch",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/__tests__/authenticatedFetch.test.ts",
+          "type": "imports",
+          "symbol": "../authenticatedFetch"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/__tests__/authenticatedFetch.test.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/analyticsCalculator.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/__tests__/authenticatedFetch.test.ts",
+          "type": "imported_by",
+          "symbol": "../authenticatedFetch"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/__tests__/authenticatedFetch.test.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/analyticsCalculator.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/avatarColor.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/avatarColor.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/callDuration.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/callPersistence.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/contactAdapter.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/notificationSounds.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/parseCoachingScript.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/dialer/utils/phoneFormat.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 505,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.4612,
+      "reason": "hybrid match: function authenticatedFetch",
+      "preview": "export const authenticatedFetch = async ( url: string, options: RequestInit = {},",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/dialer/utils/__tests__/authenticatedFetch.test.ts",
+        "packages/twenty-front/src/modules/dialer/utils/analyticsCalculator.ts",
+        "packages/twenty-front/src/modules/dialer/utils/avatarColor.ts",
+        "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+        "packages/twenty-front/src/modules/dialer/utils/callDuration.ts",
+        "packages/twenty-front/src/modules/dialer/utils/callPersistence.ts",
+        "packages/twenty-front/src/modules/dialer/utils/contactAdapter.ts",
+        "packages/twenty-front/src/modules/dialer/utils/notificationSounds.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 3,
+        "end": 16
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/dialer/utils/authenticatedFetch.ts:function:authenticatedFetch:3-16",
+        "path": "packages/twenty-front/src/modules/dialer/utils/authenticatedFetch.ts",
+        "kind": "function",
+        "name": "authenticatedFetch",
+        "symbol_path": "authenticatedFetch",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 3,
+          "end": 16
+        },
+        "content_hash": "b1c18f01dff97853172c0f9a0f79d382c24001e5476322b64a657d5bc926ccf2",
+        "preview": "export const authenticatedFetch = async ( url: string, options: RequestInit = {},"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.2866666666666667,
+        "graphRelevance": 0.2866666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.09999999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.6881500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.1,
+        "weightedEdges": 8.6
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useDispatchObjectRecordEventsFromSseToBrowserEvents.ts",
+      "score": 0.6828,
+      "belief_prior": 0.5914,
+      "symbol": "useDispatchObjectRecordEventsFromSseToBrowserEvents",
+      "chunk_type": "function",
+      "file_outline": "useDispatchObjectRecordEventsFromSseToBrowserEvents",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useHandleSseClientConnectionRetry.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useListenToObjectRecordEventsForQuery.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useOnDbEvent.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useHandleSseClientConnectionRetry.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useListenToObjectRecordEventsForQuery.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useOnDbEvent.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerEventStreamCreation.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerEventStreamDestroy.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerOptimisticEffectFromSseCreateEvents.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerOptimisticEffectFromSseDeleteEvents.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerOptimisticEffectFromSseEvents.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerOptimisticEffectFromSseRestoreEvents.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerOptimisticEffectFromSseUpdateEvents.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 2433,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.471,
+      "reason": "hybrid match: function useDispatchObjectRecordEventsFromSseToBrowserEvents",
+      "preview": "export const useDispatchObjectRecordEventsFromSseToBrowserEvents = () => { const { objectMetadataItems } = useObjectMetadataItems(); const dispatchObjectRecordEventsFromSseToBrowserEvents = useCallback(",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/sse-db-event/hooks/useHandleSseClientConnectionRetry.ts",
+        "packages/twenty-front/src/modules/sse-db-event/hooks/useListenToObjectRecordEventsForQuery.ts",
+        "packages/twenty-front/src/modules/sse-db-event/hooks/useOnDbEvent.ts",
+        "packages/twenty-shared/src/utils/applyDiff.ts",
+        "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerEventStreamCreation.ts",
+        "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerEventStreamDestroy.ts",
+        "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerOptimisticEffectFromSseCreateEvents.ts",
+        "packages/twenty-front/src/modules/sse-db-event/hooks/useTriggerOptimisticEffectFromSseDeleteEvents.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 9,
+        "end": 56
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/sse-db-event/hooks/useDispatchObjectRecordEventsFromSseToBrowserEvents.ts:function:useDispatchObjectRecordEventsFromSseToBrowserEvents:9-56",
+        "path": "packages/twenty-front/src/modules/sse-db-event/hooks/useDispatchObjectRecordEventsFromSseToBrowserEvents.ts",
+        "kind": "function",
+        "name": "useDispatchObjectRecordEventsFromSseToBrowserEvents",
+        "symbol_path": "useDispatchObjectRecordEventsFromSseToBrowserEvents",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 9,
+          "end": 56
+        },
+        "content_hash": "ba9b5578edf9b9165a8ce471dba143de0642de3cfadc0e82277f9048cea3b074",
+        "preview": "export const useDispatchObjectRecordEventsFromSseToBrowserEvents = () => { const { objectMetadataItems } = useObjectMetadataItems(); const dispatchObjectRecordEventsFromSseToBrowserEvents = useCallback("
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.19666666666666663,
+        "graphRelevance": 0.19666666666666663,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.09999999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.6827500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.1,
+        "weightedEdges": 5.899999999999999
+      }
+    },
+    {
+      "path": "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-disable-introspection-and-suggestions-for-unauthenticated-users.hook.ts",
+      "score": 0.6774,
+      "belief_prior": 0.5887,
+      "symbol": "useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers",
+      "chunk_type": "function",
+      "file_outline": "useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-graphql-error-handler.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-validate-graphql-query-complexity.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-graphql-error-handler.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-validate-graphql-query-complexity.hook.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 873,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-server",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.0694,
+      "reason": "hybrid match: function useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers",
+      "preview": "export const useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers = ( isProductionEnvironment: boolean, ): Plugin<GraphQLContext> => ({",
+      "graph_connections": [
+        "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-graphql-error-handler.hook.ts",
+        "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-validate-graphql-query-complexity.hook.ts",
+        "packages/twenty-shared/src/utils/applyDiff.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 8,
+        "end": 19
+      },
+      "target": {
+        "key": "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-disable-introspection-and-suggestions-for-unauthenticated-users.hook.ts:function:useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers:8-19",
+        "path": "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-disable-introspection-and-suggestions-for-unauthenticated-users.hook.ts",
+        "kind": "function",
+        "name": "useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers",
+        "symbol_path": "useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 8,
+          "end": 19
+        },
+        "content_hash": "2d24eb64f0937c9fe7a640e318973a2f06480448446b5216feb48ebe1582cb03",
+        "preview": "export const useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers = ( isProductionEnvironment: boolean, ): Plugin<GraphQLContext> => ({"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.10666666666666667,
+        "graphRelevance": 0.10666666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.09999999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.6773500000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.1,
+        "weightedEdges": 3.2
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15400,
+    "total_chunks": 74064,
+    "last_indexed": "2026-05-29T02:44:19.316Z",
+    "last_full_index": "2026-05-29T01:47:02.611Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-8b-4096d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-8b-4096d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 4096,
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/workspace/scripts/browser.js": {
+      "prior": 0.601,
+      "posterior": 0.601,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/files/components/FileBrowser.tsx": {
+      "prior": 0.5956,
+      "posterior": 0.5956,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/dialer/utils/authenticatedFetch.ts": {
+      "prior": 0.5941,
+      "posterior": 0.5941,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/sse-db-event/hooks/useDispatchObjectRecordEventsFromSseToBrowserEvents.ts": {
+      "prior": 0.5914,
+      "posterior": 0.5914,
+      "observations": []
+    },
+    "packages/twenty-server/src/engine/core-modules/graphql/hooks/use-disable-introspection-and-suggestions-for-unauthenticated-users.hook.ts": {
+      "prior": 0.5887,
+      "posterior": 0.5887,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/workspace/inspect-explore-embedding-ranking",
+  "mode": "exploring",
+  "worktree_id": "task/workspace/inspect-explore-embedding-ranking",
+  "updated_at": "2026-05-29T02:47:48.033Z"
+}

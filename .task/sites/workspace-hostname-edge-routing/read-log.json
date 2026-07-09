@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/sites/workspace-hostname-edge-routing/workpad.md",
+    "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-gateway.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/cloudflare-worker-deployment-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-14T01:03:23.125Z"
+}

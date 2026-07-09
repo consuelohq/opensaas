@@ -1,0 +1,19 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/investigate-flaky-danger-js-github-api-fetch-failures",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1224,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1224",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1224",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1224/investigate-flaky-danger-js-github-api-fetch-failures",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1224",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1224/investigate-flaky-danger-js-github-api-fetch-failures",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-investigate-flaky-danger-js-github-api-fetch-failures",
+  "taskSession": "tsk_10ae1d9347dc",
+  "tmuxSession": "opensaas-ci-investigate-flaky-danger-js-github-api-fetch-fai-10ae1d93",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-investigate-flaky-danger-js-github-api-fetch-failures/.task/ci/investigate-flaky-danger-js-github-api-fetch-failures/session.json",
+  "createdAt": "2026-06-27T20:20:17.742Z"
+}

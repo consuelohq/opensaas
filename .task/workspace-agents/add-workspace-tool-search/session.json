@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a05909fcdbf3",
+  "tmuxSession": "opensaas-workspace-agents-add-workspace-tool-search-a05909fc",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-workspace-tool-search",
+  "branch": "task/workspace-agents/add-workspace-tool-search",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-search",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-search",
+  "prNumber": 655,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/655",
+  "createdAt": "2026-05-30T19:42:18.564Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-search/.task/workspace-agents/add-workspace-tool-search/session.json"
+}

@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/release/fix-installer-copy-and-launcher-links",
+  "base": "origin/task/release/fix-installer-copy-and-launcher-links",
+  "headSha": "36e02d35e5df62d06ddeb5139733878eca8d93b1",
+  "changeHash": "2d889320da4d51306f8ea6b9c237bdffbe630532b9212ea96be6f5607b87a6b9",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/sites-cli.test.ts",
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/tests/office-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-30T15:31:43.883Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/release/fix-installer-copy-and-launcher-links/current.json",
+        ".task/release/fix-installer-copy-and-launcher-links/session.json",
+        ".task/release/fix-installer-copy-and-launcher-links/workpad.md",
+        ".task/tasks/release/fix-installer-copy-and-launcher-links.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/tests/office-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

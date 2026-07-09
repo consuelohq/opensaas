@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_70a486d55807",
+  "tmuxSession": "opensaas-workspace-agents-tighten-tools-search-ranking-70a486d5",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/tighten-tools-search-ranking",
+  "branch": "task/workspace-agents/tighten-tools-search-ranking",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-tools-search-ranking",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-tools-search-ranking",
+  "prNumber": 656,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/656",
+  "createdAt": "2026-05-31T03:38:21.136Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tighten-tools-search-ranking/.task/workspace-agents/tighten-tools-search-ranking/session.json"
+}

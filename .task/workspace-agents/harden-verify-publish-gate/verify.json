@@ -1,0 +1,34 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/harden-verify-publish-gate",
+  "base": "origin/main",
+  "headSha": "8d7c44c1312bc388bd8d8c0beee830ac84f05f5d",
+  "changeHash": "a5f53e44dc404a2486d6651d8bbdaa696cd32cf58e6d95a59497f5118b63d28a",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/verification.test.js",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-24T05:07:35.780Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,10 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-16T04:38:49.566Z"
+}

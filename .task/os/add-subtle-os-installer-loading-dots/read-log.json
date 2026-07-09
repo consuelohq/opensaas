@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/add-subtle-os-installer-loading-dots/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/compact-daemon-output.test.ts",
+    "packages/os/scripts/install-tty.test.ts"
+  ],
+  "updatedAt": "2026-06-04T04:23:35.321Z"
+}

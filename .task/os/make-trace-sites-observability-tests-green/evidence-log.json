@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/make-trace-sites-observability-tests-green",
+  "events": [
+    {
+      "id": "4a16ac82-f948-46a0-8878-27c004725bca",
+      "occurred_at": "2026-06-17T03:54:41.839Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-trace-sites-observability-tests-green",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-trace-sites-observability-tests-green"
+      }
+    },
+    {
+      "id": "58bbbf35-1a39-48fc-a3fb-e1122e51a73d",
+      "occurred_at": "2026-06-17T03:54:51.009Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-trace-sites-observability-tests-green",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-trace-sites-observability-tests-green"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-17T03:54:51.076Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5d27b2e71c20",
+  "tmuxSession": "opensaas-diff-cockpit-fix-edge-cache-writes-5d27b2e7",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-edge-cache-writes",
+  "branch": "task/diff-cockpit/fix-edge-cache-writes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-edge-cache-writes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-edge-cache-writes",
+  "prNumber": 881,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/881",
+  "createdAt": "2026-06-09T20:24:01.209Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-edge-cache-writes/.task/diff-cockpit/fix-edge-cache-writes/session.json"
+}

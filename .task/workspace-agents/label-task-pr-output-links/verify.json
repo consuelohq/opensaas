@@ -1,0 +1,26 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/label-task-pr-output-links",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "85fe8c64700079e51f0273232c1218502205fde9",
+  "changeHash": "e738e585c1951f2680ce75d65c5d168ed77766a2d251353947685c5d611b680e",
+  "changedFiles": [
+    "packages/workspace/scripts/task-pr.js"
+  ],
+  "verifiedAt": "2026-05-24T07:06:42.351Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

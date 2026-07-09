@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+  "events": [
+    {
+      "id": "c6c35a1a-c381-41d1-9271-baf562abbf9c",
+      "occurred_at": "2026-05-22T08:33:58.437Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "7880e428-ff88-4fbf-adb9-14959ebe6fca",
+      "occurred_at": "2026-05-22T08:33:58.757Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "52e8d312-acaa-403a-9904-f55d2b1f012f",
+      "occurred_at": "2026-05-22T08:33:59.060Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "3b124c46-8b7c-47aa-82af-44a1f6058275",
+      "occurred_at": "2026-05-22T08:33:59.408Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/context-trace.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "a8a2caeb-f605-41ee-94ab-ee1b3051d6d2",
+      "occurred_at": "2026-05-22T08:34:06.718Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "12662cce-11c3-4538-af29-c99a7b3d27fb",
+      "occurred_at": "2026-05-22T08:34:14.120Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/context-trace.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "1a9edb99-4ac5-410a-917b-faa3e396a964",
+      "occurred_at": "2026-05-22T08:35:48.381Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "4f309f79-06fa-4682-bfd4-8c95bb7dd728",
+      "occurred_at": "2026-05-22T08:35:48.681Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "7a6f93bc-f7e8-4e37-a22e-afe612856ab7",
+      "occurred_at": "2026-05-22T08:35:48.973Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "3ab5976e-0694-473b-90a8-b209ba01e64d",
+      "occurred_at": "2026-05-22T08:35:59.268Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "a41ddad0-7139-4315-aae5-9c035f9d3755",
+      "occurred_at": "2026-05-22T08:36:48.967Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/context-trace.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "ed724b77-46d2-48e5-92fd-f063498ee059",
+      "occurred_at": "2026-05-22T08:36:55.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "89e477b5-ce41-451c-bb19-3a3d92d342ca",
+      "occurred_at": "2026-05-22T08:37:04.730Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    },
+    {
+      "id": "53458a37-aa8e-4d52-90c8-2b1fc02fa1fc",
+      "occurred_at": "2026-05-22T08:37:29.387Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/README.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/wire-langfuse-token-usage-details",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/wire-langfuse-token-usage-details"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-22T08:37:29.441Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d15d1579faeb",
+  "tmuxSession": "opensaas-workspace-inspect-explore-embedding-ranking-d15d1579",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/inspect-explore-embedding-ranking",
+  "branch": "task/workspace/inspect-explore-embedding-ranking",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-inspect-explore-embedding-ranking",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-inspect-explore-embedding-ranking",
+  "prNumber": 641,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/641",
+  "createdAt": "2026-05-29T02:29:41.959Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-inspect-explore-embedding-ranking/.task/workspace/inspect-explore-embedding-ranking/session.json"
+}

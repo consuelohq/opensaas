@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d64d11c82828",
+  "tmuxSession": "opensaas-workspace-agents-add-typed-github-facade-tool-d64d11c8",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-typed-github-facade-tool",
+  "branch": "task/workspace-agents/add-typed-github-facade-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-github-facade-tool",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-github-facade-tool",
+  "prNumber": 447,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/447",
+  "createdAt": "2026-05-22T04:16:07.241Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-github-facade-tool/.task/workspace-agents/add-typed-github-facade-tool/session.json"
+}

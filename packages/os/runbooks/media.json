@@ -1,0 +1,14 @@
+{
+  "id": "media",
+  "ownedBy": "os",
+  "steps": [
+    "doctor",
+    "probe",
+    "ingest",
+    "timeline.validate",
+    "compose",
+    "qa",
+    "export",
+    "artifact.handoff"
+  ]
+}

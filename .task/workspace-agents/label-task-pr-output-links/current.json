@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/label-task-pr-output-links",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 576,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/576",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/576",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/576/label-task-pr-output-links",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/576",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/576/label-task-pr-output-links",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-label-task-pr-output-links",
+  "taskSession": "tsk_ebd1fdaa7894",
+  "tmuxSession": "opensaas-workspace-agents-label-task-pr-output-links-ebd1fdaa",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-label-task-pr-output-links/.task/workspace-agents/label-task-pr-output-links/session.json",
+  "createdAt": "2026-05-24T07:04:48.855Z"
+}

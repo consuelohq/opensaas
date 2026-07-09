@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/normalize-workpad-activity-formatting",
+  "base": "origin/main",
+  "headSha": "c3954f8dbcd0e982243486b0b6ca8932d3aed83d",
+  "changeHash": "b8b548b3eef8b83efd010f5cd1837eda865fb907e37249b68d8cd39b274b4ab2",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "verifiedAt": "2026-05-23T06:03:26.216Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

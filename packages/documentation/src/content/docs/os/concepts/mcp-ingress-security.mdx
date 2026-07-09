@@ -1,0 +1,101 @@
+---
+title: MCP Ingress Security
+description: How Consuelo OS protects hosted /mcp and /traces endpoints with fail-closed Cloudflare rules and trusted provider IP allowlists.
+---
+
+# MCP ingress security
+
+Hosted Consuelo OS workspaces expose MCP at `/mcp` and observability traces at `/traces`.
+
+Those paths are intentionally narrow and protected. Untrusted traffic should fail closed at the edge before it reaches workspace runtime.
+
+## Protected paths
+
+The managed ingress policy applies to:
+
+```text
+/mcp
+/traces
+```
+
+Workspace provisioning creates a Cloudflare custom ruleset with two rules:
+
+1. **Allow** requests whose source IP is in the configured account IP list
+2. **Block** every other request to those paths
+
+The allow rule also skips selected managed WAF phases so provider traffic is not blocked by generic managed signatures after the IP check passes.
+
+## Fail-closed model
+
+The policy is list-based and explicit:
+
+```text
+ip.src in $<CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME>
+  -> allow /mcp and /traces
+else
+  -> block
+```
+
+There is no implicit open fallback. If a provider's egress range is missing from the list, that provider cannot reach your hosted MCP endpoint even if the MCP URL and bearer token are correct.
+
+This is separate from local agent connection state on the workspace launcher. A zero local-agent count usually reflects local install config, not Cloudflare filtering.
+
+## Trusted provider sources
+
+Platform provisioning can sync official provider CIDRs into the Cloudflare account IP list.
+
+Current source ids:
+
+| Source id | Provider surface | Source |
+| --- | --- | --- |
+| `openai_chatgpt_connectors` | ChatGPT Connectors egress | `https://openai.com/chatgpt-connectors.json` |
+| `openai_codex_cloud` | OpenAI Codex cloud egress | `https://openai.com/chatgpt-agents.json` |
+| `anthropic_claude` | Anthropic outbound MCP/tool-call IPv4 | Static CIDR from Anthropic docs |
+
+Enable sources through environment configuration during platform provisioning:
+
+```bash
+CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES=openai_chatgpt_connectors,openai_codex_cloud,anthropic_claude
+```
+
+Add manual CIDRs when a provider does not yet publish a machine-readable feed:
+
+```bash
+CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS=203.0.113.0/24,2001:db8:203::/48
+```
+
+Provisioning upserts list items into the existing account IP list. It does not rewrite the firewall expression.
+
+## What is not auto-allowed
+
+Local-user public IPs are not automatically added to the allowlist.
+
+Preferred long-term model for local agents:
+
+- outbound device- or workspace-authenticated paths
+- connector trust established during install
+
+Public IP allowlisting should remain a temporary operator escape hatch, not the default local-agent connectivity model.
+
+## Operator checklist
+
+When a cloud agent cannot reach hosted `/mcp`:
+
+1. Confirm the MCP URL is correct for the workspace hostname
+2. Confirm the connector token or OAuth path is valid
+3. Confirm the provider source id is enabled in `CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES`
+4. Confirm the synced CIDRs exist in the Cloudflare account IP list referenced by the managed rule
+5. Confirm the request is hitting `/mcp` or `/traces`, not a frontend catch-all route
+
+For OpenAI feeds, smoke the published JSON endpoints before assuming provisioning drift.
+
+## Related operator docs
+
+Internal implementation and contract tests live in `packages/os/scripts/lib/workspace-cloudflare-provisioning.ts` and the provisioning contract tests under `packages/os/tests/`.
+
+## Related
+
+- [Connect agents](/os/getting-started/connect-agents/)
+- [Workspace launcher](/os/getting-started/workspace-launcher/)
+- [Observability](/os/concepts/observability/)
+- [Local and cloud](/os/concepts/local-and-cloud/)

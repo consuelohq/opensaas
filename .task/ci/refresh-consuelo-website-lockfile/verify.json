@@ -1,0 +1,50 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/ci/refresh-consuelo-website-lockfile",
+  "base": "origin/stream/ci",
+  "headSha": "0e8693fe637262b276e5b141ab58be3c5870d31b",
+  "changeHash": "e3acbf4f807d60d7060a02a39873cc80059456f08fbecdad372675948ce8d08e",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock"
+  ],
+  "verifiedAt": "2026-06-28T00:07:44.655Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/ci/refresh-consuelo-website-lockfile/current.json",
+        ".task/ci/refresh-consuelo-website-lockfile/session.json",
+        ".task/ci/refresh-consuelo-website-lockfile/verify.json",
+        ".task/ci/refresh-consuelo-website-lockfile/workpad.md",
+        ".task/tasks/ci/refresh-consuelo-website-lockfile.json",
+        "packages/consuelo-website/bun.lock"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "no testable source files changed",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

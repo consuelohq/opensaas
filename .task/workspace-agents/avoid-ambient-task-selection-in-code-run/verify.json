@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/avoid-ambient-task-selection-in-code-run",
+  "base": "origin/main",
+  "headSha": "183a0240f296628334cd6166965ec27f2a0cf8ee",
+  "changeHash": "17a7ec8f6eb03fc2efb13b2321e68fe407e3c7f81b377166ffd07e11879c9ceb",
+  "changedFiles": [
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T21:51:49.686Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

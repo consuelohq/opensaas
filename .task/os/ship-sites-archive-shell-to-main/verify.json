@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/ship-sites-archive-shell-to-main",
+  "base": "origin/stream/os",
+  "headSha": "dd6d0a429c3eba7a93d097660c47dfbeaf38a078",
+  "changeHash": "04af7c79887394bb9eee006a6cced4dd01ddb6daf7f046baee2d4f7b99b455af",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-09T20:19:30.041Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/ship-sites-archive-shell-to-main/current.json",
+        ".task/os/ship-sites-archive-shell-to-main/session.json",
+        ".task/os/ship-sites-archive-shell-to-main/workpad.md",
+        ".task/tasks/os/ship-sites-archive-shell-to-main.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

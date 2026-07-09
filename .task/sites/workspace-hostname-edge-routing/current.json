@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/workspace-hostname-edge-routing",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1028,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1028",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1028",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1028/workspace-hostname-edge-routing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1028",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1028/workspace-hostname-edge-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-workspace-hostname-edge-routing",
+  "taskSession": "tsk_1b4a8005bff8",
+  "tmuxSession": "opensaas-sites-workspace-hostname-edge-routing-1b4a8005",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-workspace-hostname-edge-routing/.task/sites/workspace-hostname-edge-routing/session.json",
+  "createdAt": "2026-06-14T00:44:04.020Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f5289e5d9ca4",
+  "tmuxSession": "opensaas-diff-cockpit-mobile-table-inbox-f5289e5d",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/mobile-table-inbox",
+  "branch": "task/diff-cockpit/mobile-table-inbox",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-table-inbox",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-table-inbox",
+  "prNumber": 911,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/911",
+  "createdAt": "2026-06-10T02:14:09.413Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-table-inbox/.task/diff-cockpit/mobile-table-inbox/session.json"
+}
