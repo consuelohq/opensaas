@@ -136,6 +136,8 @@ describe('Consuelo website structure', () => {
     expect(pricingRoute).not.toContain('FAQ');
     expect(pricingRoute).not.toContain('checkout');
     expect(redirects).not.toContain('/pricing /mercury');
+    expect(redirects).toContain('/pricing /pricing/index.html 200');
+    expect(redirects).toContain('/pricing/ /pricing/index.html 200');
 
     expect(pricingContent.pricingHero.title).toBe('CHOOSE A PLAN');
     expect(pricingContent.pricingHero.subtitle).toBe(

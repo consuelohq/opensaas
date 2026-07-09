@@ -69,6 +69,7 @@ started: 2026-07-08
 
 - 2026-07-08 23:51:26 fs.write: `.task/workspace-agents/implement-pricing-route/workpad.md`
 - 2026-07-09 00:09:11 fs.write: `packages/consuelo-website/public/_redirects`
+- 2026-07-09 00:29:04 fs.write: `packages/consuelo-website/public/_redirects`
 - Added focused structure test for route/content/nav contract.
 - Added pricing content data module.
 - Built static site and verified `/pricing/index.html` generation.
@@ -90,6 +91,7 @@ started: 2026-07-08
 - 2026-07-08 23:51:43 `verify`: passed — OK
 - 2026-07-09 00:09:54 `verify`: passed — OK
 - 2026-07-09 00:24:34 `verify`: passed — OK
+- 2026-07-09 00:29:45 `verify`: passed — OK
 
 ## key decisions
 
@@ -130,7 +132,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/workspace-agents/implement-pricing-route/workpad.md`, `packages/consuelo-website/src/data/site-links.ts`, `packages/consuelo-website/tests/website-structure.test.js`
+- changed files: `.task/workspace-agents/implement-pricing-route/workpad.md`, `packages/consuelo-website/public/_redirects`, `packages/consuelo-website/tests/website-structure.test.js`
 - matched rules: none
 - selected suites: none
 - run results: none

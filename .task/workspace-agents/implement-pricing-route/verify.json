@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/workspace-agents/implement-pricing-route",
   "base": "origin/task/workspace-agents/implement-pricing-route",
-  "headSha": "4e9b344c7ca131d75774ea544d3ba0716a7f39bd",
-  "changeHash": "5d86e00c5fad0fb275935a084f7024e5f6e051c6d62ead38e9262c068592c38e",
+  "headSha": "3372ab57cde58426d54e5b3e43943259ef2528a5",
+  "changeHash": "a659215029ac53128217a26a5bb9f75a0ca3c3bf7e8f238f43d16a1c18cbc688",
   "changedFiles": [
-    "packages/consuelo-website/src/data/site-links.ts",
+    "packages/consuelo-website/public/_redirects",
     "packages/consuelo-website/tests/website-structure.test.js"
   ],
-  "verifiedAt": "2026-07-09T00:24:33.994Z",
+  "verifiedAt": "2026-07-09T00:29:45.072Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -25,7 +25,7 @@
       "passed": true,
       "changedFiles": [
         ".task/workspace-agents/implement-pricing-route/workpad.md",
-        "packages/consuelo-website/src/data/site-links.ts",
+        "packages/consuelo-website/public/_redirects",
         "packages/consuelo-website/tests/website-structure.test.js"
       ],
       "matchedRules": [],
