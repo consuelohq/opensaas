@@ -97,25 +97,24 @@ const { sectionId = 'features' } = Astro.props as Props;
     display: flex;
     flex-direction: column;
     background: var(--site-color-surface);
-    overflow: hidden;
+    overflow: visible;
   }
 
   .feature-preview__scroll-region {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
     padding-top: var(--site-panel-pad);
-    overflow: hidden;
+    overflow: visible;
   }
 
   .feature-preview__blue-sliver {
-    position: absolute;
+    position: sticky;
     top: 0;
-    left: calc(-1 * var(--site-panel-pad));
     z-index: 12;
-    width: calc(100% + 2 * var(--site-panel-pad));
     height: var(--site-sticky-sliver);
+    margin-top: calc(-1 * var(--site-panel-pad));
+    margin-bottom: calc(-1 * var(--site-sticky-sliver));
+    margin-inline: calc(-1 * var(--site-panel-pad));
+    width: calc(100% + 2 * var(--site-panel-pad));
     background: var(--site-color-paper);
     pointer-events: none;
   }
@@ -123,8 +122,7 @@ const { sectionId = 'features' } = Astro.props as Props;
   .feature-preview__inner {
     display: grid;
     grid-template-columns: var(--feature-pin-col) minmax(0, 1fr);
-    align-items: start;
-    padding-top: calc(var(--site-sticky-sliver) + var(--feature-badge-gap) * 0.25);
+    align-items: stretch;
   }
 
   .feature-preview__pin-column {
@@ -133,11 +131,12 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   .feature-preview__badge-pin {
-    position: relative;
+    position: sticky;
+    top: calc(var(--site-sticky-sliver) + var(--feature-badge-gap));
     z-index: 11;
     display: flex;
     justify-content: center;
-    padding-top: calc(var(--site-sticky-sliver) + var(--feature-badge-gap));
+    padding-top: var(--feature-badge-gap);
     padding-bottom: 0.35rem;
   }
 
@@ -157,7 +156,6 @@ const { sectionId = 'features' } = Astro.props as Props;
       var(--site-panel-pad)
       0
       0;
-    will-change: transform;
   }
 
   .feature-preview__header {
@@ -237,14 +235,11 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   .feature-preview__wordmark-wrap {
-    position: relative;
-    z-index: 10;
-    flex: 0 0 auto;
-    margin-top: clamp(-1.75rem, -2.8vw, -0.85rem);
+    margin-top: 0;
     padding:
-      0
+      clamp(0.1rem, 0.5vw, 0.35rem)
       var(--site-panel-pad)
-      clamp(0.15rem, 0.35vw, 0.3rem);
+      clamp(0.2rem, 0.45vw, 0.4rem);
     overflow: visible;
   }
 
@@ -297,12 +292,6 @@ const { sectionId = 'features' } = Astro.props as Props;
 
     .feature-preview__description {
       max-width: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .feature-preview__content {
-      will-change: auto;
     }
   }
 

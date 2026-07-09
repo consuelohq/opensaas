@@ -2,7 +2,6 @@
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
-import HomeFeatureScrollSpacer from '../components/home/HomeFeatureScrollSpacer.astro';
 import HomeHero from '../components/home/HomeHero.astro';
 import { getSoftwareApplicationSchema } from '../lib/site-seo';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
@@ -32,7 +31,6 @@ const schemaEntries = [
   <SiteHeader pageSections={[]} />
   <HomeHero sectionId="intro" />
   <HomeFeaturePreview sectionId="features" />
-  <HomeFeatureScrollSpacer />
   <SiteFooter />
 </MarketingLayout>
 
