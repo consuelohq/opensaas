@@ -96,7 +96,7 @@ describe('Consuelo Sites Gateway contract service', () => {
       ok: true,
       publicBoundary: 'consuelo-gateway',
       route: {
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
         gatewayServiceName: 'trace-sites-read-layer',
         gatewayAdapterName: 'trace-sites-read-layer',
@@ -152,7 +152,7 @@ describe('Consuelo Sites Gateway contract service', () => {
         gatewayServiceName: 'trace-sites-read-layer',
         gatewayAdapterName: 'trace-sites-read-layer',
         capability: 'trace-read',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
       })],
     });
@@ -209,7 +209,7 @@ describe('Consuelo Sites Gateway contract service', () => {
         capability: 'trace-live',
         gatewayServiceName: 'trace-sites-live-endpoints',
         gatewayAdapterName: 'trace-sites-live-endpoints',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
       }),
     ]));

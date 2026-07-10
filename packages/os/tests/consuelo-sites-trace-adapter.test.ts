@@ -15,7 +15,7 @@ describe('Consuelo Sites Trace adapter registration', () => {
         capability: 'trace-read',
         gatewayServiceName: 'trace-sites-read-layer',
         gatewayAdapterName: 'trace-sites-read-layer',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
         publicBoundary: 'consuelo-gateway',
       }),
@@ -24,7 +24,7 @@ describe('Consuelo Sites Trace adapter registration', () => {
         capability: 'trace-live',
         gatewayServiceName: 'trace-sites-live-endpoints',
         gatewayAdapterName: 'trace-sites-live-endpoints',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
         publicBoundary: 'consuelo-gateway',
       }),
@@ -51,7 +51,7 @@ describe('Consuelo Sites Trace adapter registration', () => {
     const serialized = JSON.stringify(createTraceConsueloSiteServiceRegistry());
 
     expect(serialized).toContain('trace-sites-read-layer');
-    expect(serialized).toContain('/traces/*');
+    expect(serialized).toContain('/observability/*');
     expect(serialized).toContain('/gateway/traces/*');
     expect(serialized).not.toContain('backendServiceName');
     expect(serialized).not.toContain('implementationPath');

@@ -1008,6 +1008,11 @@ describe('os device authority worker', () => {
 
   it('should return a terminal failure when workspace connector provisioning fails', async () => {
     const entryPoints = ['Google OAuth callback', 'workspace-selection POST', 'direct approval'] as const;
+    const leakedCredentials = [
+      'header-bearer-credential-fixture',
+      'standalone-bearer-credential-fixture',
+      'api-token-credential-fixture',
+    ];
 
     for (const entryPoint of entryPoints) {
       const store = createMemoryDeviceGrantStore();
@@ -1023,7 +1028,12 @@ describe('os device authority worker', () => {
         fetchImpl: googleFetch,
         workspaceRouteRegistry: routeRegistry.binding,
         workspaceConnectorProvisioner: async () => {
-          throw new Error('controlled connector provisioning failure\nCLOUDFLARE_API_TOKEN=fixture-secret');
+          throw new Error([
+            'controlled connector provisioning failure',
+            'Authorization: Bearer header-bearer-credential-fixture',
+            'Bearer standalone-bearer-credential-fixture',
+            'CLOUDFLARE_API_TOKEN=api-token-credential-fixture',
+          ].join('\n'));
         },
       });
       const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
@@ -1108,7 +1118,9 @@ describe('os device authority worker', () => {
         expect(failureText, entryPoint).toContain('Workspace route setup failed');
       }
       expect(failureText, entryPoint).toContain('controlled connector provisioning failure');
-      expect(failureText, entryPoint).not.toContain('fixture-secret');
+      for (const credential of leakedCredentials) {
+        expect(failureText, entryPoint).not.toContain(credential);
+      }
 
       const poll = async () => handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
         method: 'POST',
@@ -1133,7 +1145,9 @@ describe('os device authority worker', () => {
           error_description: expect.stringContaining('controlled connector provisioning failure'),
         });
         expect(body.error, entryPoint).not.toBe('authorization_pending');
-        expect(JSON.stringify(body), entryPoint).not.toContain('fixture-secret');
+        for (const credential of leakedCredentials) {
+          expect(JSON.stringify(body), entryPoint).not.toContain(credential);
+        }
       }
 
       const persisted = await store.byUserCode(String(codeJson.user_code));
@@ -1145,7 +1159,9 @@ describe('os device authority worker', () => {
       expect(persisted, entryPoint).not.toHaveProperty('connectorToken');
       expect(persisted, entryPoint).not.toHaveProperty('cloudflareTunnelToken');
       expect(persisted, entryPoint).not.toHaveProperty('accessToken');
-      expect(JSON.stringify(persisted), entryPoint).not.toContain('fixture-secret');
+      for (const credential of leakedCredentials) {
+        expect(JSON.stringify(persisted), entryPoint).not.toContain(credential);
+      }
       expect(routeRegistry.statements, entryPoint).toEqual([]);
     }
   });
