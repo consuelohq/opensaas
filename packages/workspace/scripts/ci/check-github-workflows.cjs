@@ -55,16 +55,8 @@ const writePermissionAllowlist = new Set([
   '.github/workflows/ci-utils.yaml',
   '.github/workflows/cd-deploy-main.yaml',
   '.github/workflows/cd-deploy-tag.yaml',
-  '.github/workflows/ci-release-create.yaml',
-  '.github/workflows/ci-release-merge.yaml',
-  '.github/workflows/claude.yml',
-
-  '.github/workflows/i18n-pull.yaml',
-  '.github/workflows/i18n-push.yaml',
-  '.github/workflows/i18n-qa-report.yaml',
   '.github/workflows/preview-env-dispatch.yaml',
   '.github/workflows/preview-env-keepalive.yaml',
-  '.github/workflows/upstream-sync.yml',
 ]);
 
 const findings = [];
