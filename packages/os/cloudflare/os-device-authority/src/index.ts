@@ -6,7 +6,8 @@ import {
   createCloudflareWorkspaceProvisioningClient,
 } from '../../../scripts/lib/workspace-cloudflare-provisioning';
 
-type GrantStatus = 'pending' | 'approved' | 'denied';
+type GrantStatus = 'pending' | 'approved' | 'denied' | 'failed';
+type GrantFailureCode = 'workspace_route_setup_failed';
 type WorkspaceNodeRole = 'home' | 'member';
 type WorkspaceNodeStatus = 'created' | 'reconnected';
 type StrongerAuthMethod = 'google' | 'passkey' | 'magic_link' | 'hardware_key' | 'admin_invite';
@@ -28,6 +29,9 @@ type Grant = {
   connectorToken?: string;
   connectorExpiresAt?: number;
   cloudflareTunnelToken?: string;
+  accessToken?: string;
+  failureCode?: GrantFailureCode;
+  failureMessage?: string;
   nodeId?: string;
   nodeName?: string;
   nodeRole?: WorkspaceNodeRole;
@@ -185,6 +189,7 @@ const TTL_MS = 15 * 60 * 1000;
 const BOOTSTRAP_TTL_MS = 10 * 60 * 1000;
 const INTERVAL = 5;
 const GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code';
+const WORKSPACE_ROUTE_SETUP_FAILURE_CODE = 'workspace_route_setup_failed' as const;
 const TOKEN_KEY = 'access' + '_token';
 const CONNECTOR_TOKEN_KEY = 'connector_bootstrap' + '_token';
 const CLOUDFLARE_TUNNEL_TOKEN_KEY = 'cloudflare_tunnel' + '_token';
@@ -1006,6 +1011,39 @@ async function commitGrantApproval(input: { store: Store; grant: Grant; accountI
   }
 }
 
+function safeWorkspaceRouteSetupFailureMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  const normalized = raw
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\b(CLOUDFLARE_API_TOKEN|api[_ -]?token|authorization|bearer)\s*[:=]\s*\S+/gi, '$1=[redacted]')
+    .trim();
+  return (normalized || 'workspace connector provisioning failed').slice(0, 320);
+}
+
+async function failGrantWorkspaceRouteSetup(input: {
+  store: Store;
+  grant: Grant;
+  error: unknown;
+}): Promise<string> {
+  const failureMessage = safeWorkspaceRouteSetupFailureMessage(input.error);
+  input.grant.status = 'failed';
+  input.grant.failureCode = WORKSPACE_ROUTE_SETUP_FAILURE_CODE;
+  input.grant.failureMessage = failureMessage;
+  delete input.grant.connectorToken;
+  delete input.grant.connectorExpiresAt;
+  delete input.grant.cloudflareTunnelToken;
+  delete input.grant.accessToken;
+  try {
+    await input.store.put(input.grant);
+  } catch (error: unknown) {
+    throw new Error(
+      `grant failure persistence failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+  return failureMessage;
+}
+
 function defaultSiteSnapshot(input?: DefaultSiteSnapshot): Required<DefaultSiteSnapshot> {
   return {
     key: input?.key?.trim() || DEFAULT_SITE_SNAPSHOT_KEY,
@@ -1143,7 +1181,15 @@ export function createOsDeviceAuthorityHandler(input: {
     try {
       const url = new URL(request.url);
       if (url.pathname === '/') return Response.redirect(new URL('/login/device', origin), 302);
-      if (url.pathname === '/health') return json({ ok: true, service: 'consuelo-os-device-authority' });
+      if (url.pathname === '/health') {
+        return json({
+          ok: true,
+          service: 'consuelo-os-device-authority',
+          connector_provisioning_configured: Boolean(
+            input.workspaceRouteRegistry?.exec && input.workspaceConnectorProvisioner,
+          ),
+        });
+      }
       if (url.pathname === '/.well-known/oauth-authorization-server') return json(authorizationServerMetadata(origin));
       if (isProtectedResourceMetadataPath(url.pathname)) return json(oauthProtectedResourceMetadata(origin));
       if (isMcpRequestPath(url.pathname)) {
@@ -1259,7 +1305,12 @@ export function createOsDeviceAuthorityHandler(input: {
               defaultSiteSnapshot: input.defaultSiteSnapshot,
             });
           } catch (error: unknown) {
-            return text(page({ code: oauthState.userCode, origin, error: `Workspace route setup failed (${error instanceof Error ? error.message : String(error)}). Restart the installer after platform setup is fixed.` }), { status: 502 });
+            const failureMessage = await failGrantWorkspaceRouteSetup({
+              store: input.store,
+              grant,
+              error,
+            });
+            return text(page({ code: oauthState.userCode, origin, error: `Workspace route setup failed (${failureMessage}). Restart the installer after platform setup is fixed.` }), { status: 502 });
           }
           await input.store.delOAuthState(stateValue);
           await commitGrantApproval({ store: input.store, grant, accountId, nowMs: now() });
@@ -1325,7 +1376,12 @@ export function createOsDeviceAuthorityHandler(input: {
             defaultSiteSnapshot: input.defaultSiteSnapshot,
           });
         } catch (error: unknown) {
-          return json({ error: 'workspace_route_setup_failed', message: error instanceof Error ? error.message : String(error) }, { status: 502 });
+          const failureMessage = await failGrantWorkspaceRouteSetup({
+            store: input.store,
+            grant: g,
+            error,
+          });
+          return json({ error: WORKSPACE_ROUTE_SETUP_FAILURE_CODE, message: failureMessage }, { status: 502 });
         }
         await commitGrantApproval({ store: input.store, grant: g, accountId: g.accountId, nowMs: now() });
         await input.store.del(g.hash);
@@ -1365,7 +1421,12 @@ export function createOsDeviceAuthorityHandler(input: {
             defaultSiteSnapshot: input.defaultSiteSnapshot,
           });
         } catch (error: unknown) {
-          return json({ error: 'workspace_route_setup_failed', message: error instanceof Error ? error.message : String(error) }, { status: 502 });
+          const failureMessage = await failGrantWorkspaceRouteSetup({
+            store: input.store,
+            grant: g,
+            error,
+          });
+          return json({ error: WORKSPACE_ROUTE_SETUP_FAILURE_CODE, message: failureMessage }, { status: 502 });
         }
         await commitGrantApproval({ store: input.store, grant: g, accountId: auth.accountId, nowMs: now() });
         return json({ status: 'approved', account_id: auth.accountId, account_auth_method: auth.method, device_public_key_thumbprint: g.devicePublicKeyThumbprint, device_public_key_bound: true });
@@ -1382,6 +1443,12 @@ export function createOsDeviceAuthorityHandler(input: {
         const proofPayload = p.get(DEVICE_PROOF_PAYLOAD_KEY) ?? '';
         const proof = p.get(DEVICE_PROOF_KEY) ?? '';
         if (!await verifyDevicePublicKeyProof(g, { clientId, deviceCode, proofPayload, proof })) return json({ error: 'invalid_device_public_key_proof' }, { status: 400 });
+        if (g.status === 'failed') {
+          return json({
+            error: g.failureCode ?? WORKSPACE_ROUTE_SETUP_FAILURE_CODE,
+            error_description: g.failureMessage ?? 'workspace connector provisioning failed',
+          }, { status: 400 });
+        }
         if (g.lastPoll && now() - g.lastPoll < g.interval * 1000) { g.interval += INTERVAL; g.lastPoll = now(); await input.store.put(g); return json({ error: 'slow_down', interval: g.interval }, { status: 400 }); }
         g.lastPoll = now(); await input.store.put(g);
         if (g.status !== 'approved') {
