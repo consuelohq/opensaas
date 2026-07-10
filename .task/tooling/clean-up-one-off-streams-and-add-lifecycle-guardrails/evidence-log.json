@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails",
+  "events": [
+    {
+      "id": "0023572d-ca34-4958-9662-d5d17dbb4344",
+      "occurred_at": "2026-07-10T23:33:04.391Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-10T23:33:04.449Z"
+}

@@ -5163,6 +5163,46 @@
     "sessionRequired": false
   },
   {
+    "name": "stream.cleanup",
+    "methodPath": [
+      "stream",
+      "cleanup"
+    ],
+    "description": "preview or remove safe local stream refs that are fully backed by origin",
+    "category": "stream",
+    "underlying": "workspace stream.cleanup",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "StreamCleanupInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "stream:cleanup",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "apply",
+          "flag": "--apply",
+          "kind": "boolean"
+        },
+        {
+          "source": "keep",
+          "flag": "--keep",
+          "kind": "array"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "stream.sync",
     "methodPath": [
       "stream",
@@ -5666,6 +5706,11 @@
           "source": "startFrom",
           "flag": "--start-from",
           "kind": "value"
+        },
+        {
+          "source": "createStream",
+          "flag": "--create-stream",
+          "kind": "boolean"
         }
       ],
       "jsonFlag": "--json"
