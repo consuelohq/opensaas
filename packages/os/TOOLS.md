@@ -7495,15 +7495,15 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.login
+### workspace.browser.headed
 
-run a saved browser auth login profile
+open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent
 
 | Field | Value |
 | --- | --- |
 | Category | utilities |
-| Signature | `workspace.browser.login({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace browser.login` |
+| Signature | `workspace.browser.headed({ url: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace browser.headed` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
 
@@ -7511,10 +7511,9 @@ run a saved browser auth login profile
 
 ```ts
 await workspace.call({
-  "tool": "browser.login",
+  "tool": "browser.headed",
   "input": {
-    "name": "consuelo",
-    "headed": true,
+    "url": "https://dash.cloudflare.com",
     "dryRun": true
   }
 });
@@ -7699,70 +7698,9 @@ await workspace.call({
   "tool": "browser.raw",
   "input": {
     "args": [
-      "auth",
+      "tab",
       "list"
     ],
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.browser.reauth
-
-restart the browser daemon and run a saved auth login profile
-
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.reauth({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace browser.reauth` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "browser.reauth",
-  "input": {
-    "name": "consuelo",
-    "headed": true,
     "dryRun": true
   }
 });
@@ -7882,6 +7820,65 @@ capture an accessibility snapshot
 ```ts
 await workspace.call({
   "tool": "browser.snap",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.browser.status
+
+report safe browser daemon and page status without authentication values
+
+| Field | Value |
+| --- | --- |
+| Category | utilities |
+| Signature | `workspace.browser.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace browser.status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "browser.status",
   "input": {
     "dryRun": true
   }

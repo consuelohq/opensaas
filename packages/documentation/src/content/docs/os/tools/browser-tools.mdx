@@ -35,7 +35,7 @@ await workspace.call({
 })
 ```
 
-`browser.open` opens a URL and accepts viewport options such as `preset`, `device`, `width`, `height`, `colorScheme`, `headed`, and `full`. `browser.app` and `browser.consuelo` are convenience openers for Consuelo-hosted pages. The generic `browser` wrapper is available, but named tools are clearer when they match the job.
+`browser.open` opens a URL and accepts viewport options such as `preset`, `device`, `width`, `height`, `colorScheme`, `headed`, and `full`. When `headed` is true it uses the same lifecycle as `browser.headed`. `browser.app` and `browser.consuelo` are convenience openers for Consuelo-hosted pages. The generic `browser` wrapper is available, but named tools are clearer when they match the job.
 
 Use `browser.snap` before interacting with page elements. The snapshot gives a semantic view of the page and refs for lower-level actions. When the target can be described by visible semantics, `browser.find` is usually clearer than a raw ref:
 
@@ -73,7 +73,7 @@ await workspace.call({
 })
 ```
 
-Authentication and low-level escape hatches are explicit. `browser.login` runs a saved login profile, `browser.reauth` restarts browser state before login, `browser.eval` evaluates code on the current page, and `browser.raw` passes through to the underlying browser runner. Use the named tool first and record why a lower-level escape hatch was necessary.
+For authentication requiring a human, use `browser.headed` with the exact target URL. It opens the shared persistent browser visibly for login, MFA, CAPTCHA, passkeys, or consent and leaves the window running. After the user finishes, continue with `browser.status`, `browser.snap`, or `browser.open`; the authenticated state remains in the same browser home. `browser.eval` evaluates code on the current page, and `browser.raw` passes through to the underlying browser runner. Use the named tool first and record why a lower-level escape hatch was necessary.
 
 Close active sessions with `browser.close` when stale page state would affect the next validation run.
 
