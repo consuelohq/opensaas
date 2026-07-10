@@ -49,7 +49,6 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | task lifecycle | 13 |
 | tooling | 1 |
 | utilities | 34 |
-| workflow | 1 |
 
 ## Tools by category
 
@@ -5365,12 +5364,12 @@ await workspace.call({
 
 ### workspace.task.start
 
-create a task branch, worktree, and draft PR
+Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.
 
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.start({ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.start({ stream?: string; area?: string; title: string; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; description?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace task.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
@@ -5383,7 +5382,8 @@ await workspace.call({
   "input": {
     "stream": "stream/workspace-agents",
     "title": "example task",
-    "dryRun": true
+    "dryRun": true,
+    "workflow": "task"
   }
 });
 ```
@@ -7623,70 +7623,6 @@ await workspace.call({
   "input": {
     "buildOnly": true,
     "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-## workflow
-
-### workspace.task.intent
-
-Start or dispatch the task workflow lifecycle guidance for scoped task work.
-
-| Field | Value |
-| --- | --- |
-| Category | workflow |
-| Signature | `workspace.task.intent({ action: "start" &#124; "dispatch"; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace task.intent` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 120000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "task.intent",
-  "input": {
-    "action": "start",
-    "workflow": "task",
-    "area": "workspace-agents",
-    "title": "example task-intent flow"
   }
 });
 ```

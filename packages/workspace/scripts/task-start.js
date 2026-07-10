@@ -39,7 +39,8 @@ const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { parsePrRef } = require('./lib/pr-ref');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
-const { dispatchHookEvent, renderHookResult } = require('../hooks/dispatcher.js');
+const { renderHookResult } = require('../hooks/dispatcher.js');
+const { createWorkflowIntentRuntime } = require('../hooks/intent.js');
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
 
@@ -59,6 +60,7 @@ function printHelp() {
   writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
   writeStdout('options:');
+  writeStdout('  --workflow <value>    workflow bundle to return: task|office|design|sites (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
   writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
@@ -77,6 +79,7 @@ function parseArgs(argv) {
     repo: DEFAULT_REPO,
     json: false,
     startFrom: DEFAULT_START_FROM,
+    workflow: 'task',
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -104,6 +107,9 @@ function parseArgs(argv) {
         break;
       case '--title':
         args.title = value;
+        break;
+      case '--workflow':
+        args.workflow = value;
         break;
       case '--stream':
       case '--base':
@@ -183,6 +189,8 @@ function printResult(result, useJson) {
     return;
   }
 
+  writeStdout(`workflow: ${result.requestedWorkflow}`);
+  writeStdout(`resolved workflow: ${result.workflow}`);
   writeStdout(`area: ${result.area}`);
   writeStdout(`stream: ${result.stream}`);
   writeStdout(`start from: ${result.startFrom}`);
@@ -195,6 +203,7 @@ function printResult(result, useJson) {
   writeStdout(`created pr: ${result.createdPr}`);
   writeStdout(`task session: ${result.taskSession}`);
   writeStdout(`tmux session: ${result.tmuxSession}`);
+  writeStdout(`workflow tools: ${result.manifestBundle?.tools?.map((tool) => tool.name).join(', ') || ''}`);
   writeStdout(`pr: #${result.prNumber}`);
   writeStdout(`url: ${result.prUrl}`);
   writeStdout(`github: ${result.githubPrUrl}`);
@@ -605,52 +614,48 @@ async function main() {
     ].join('\n');
     fs.writeFileSync(workpadPath, workpad, 'utf8');
 
-    printResult(
-      {
-        area,
-        stream,
-        sourceBranch,
-        startFrom: args.startFrom,
-        branch: taskBranch,
-        worktreePath,
-        prNumber: pullRequest.number,
-        prUrl: graphitePrUrl,
-        githubPrUrl: pullRequest.html_url,
-        graphitePrUrl,
-        taskSession: taskSessionMeta.taskSession,
-        tmuxSession: taskSessionMeta.tmuxSession,
-        createdBranch: remoteTaskDetails.created,
-        createdWorktree,
-        bootstrappedBranch,
-        createdPr,
-      },
-      args.json,
-    );
+    const taskResult = {
+      area,
+      stream,
+      sourceBranch,
+      startFrom: args.startFrom,
+      branch: taskBranch,
+      worktreePath,
+      prNumber: pullRequest.number,
+      prUrl: graphitePrUrl,
+      githubPrUrl: pullRequest.html_url,
+      graphitePrUrl,
+      taskSession: taskSessionMeta.taskSession,
+      tmuxSession: taskSessionMeta.tmuxSession,
+      createdBranch: remoteTaskDetails.created,
+      createdWorktree,
+      bootstrappedBranch,
+      createdPr,
+    };
+    const workflowStart = createWorkflowIntentRuntime().start({
+      workflow: args.workflow,
+      taskSession: taskSessionMeta.taskSession,
+      area,
+      title: args.title,
+      branch: taskBranch,
+      worktreePath,
+      taskResult,
+    });
+    const combinedResult = {
+      ...taskResult,
+      workflow: workflowStart.workflow,
+      requestedWorkflow: workflowStart.requestedWorkflow,
+      manifestBundle: workflowStart.manifestBundle,
+      hookEvent: workflowStart.hookEvent,
+      hookResult: workflowStart.hookResult,
+    };
 
-    // guard 4: emit manifest-driven task hook guidance for non-JSON callers
-    if (!args.json) {
-      try {
-        const guidance = dispatchHookEvent({
-          event: {
-            event: 'tool.postInvoke',
-            tool: 'task.start',
-            workflow: 'task',
-            result: {
-              area,
-              branch: taskBranch,
-              taskSession: taskSessionMeta.taskSession,
-              worktreePath,
-            },
-          },
-        });
-        if (guidance) {
-          writeStderr('');
-          writeStderr('task hook guidance:');
-          writeStderr(renderHookResult(guidance).trimEnd());
-        }
-      } catch (error) {
-        writeStderr(`warning: task hook guidance failed: ${error instanceof Error ? error.message : String(error)}`);
-      }
+    printResult(combinedResult, args.json);
+
+    if (!args.json && workflowStart.hookResult) {
+      writeStderr('');
+      writeStderr('workflow guidance:');
+      writeStderr(renderHookResult(workflowStart.hookResult).trimEnd());
     }
   } catch (error) {
     throw error;

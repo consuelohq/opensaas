@@ -2119,7 +2119,7 @@ The workspace app exposes exactly two MCP entry points:
 * `workspace.get_steering()`
 * `workspace.call({ tool, input, taskSession, timeout })`
 
-All workspace operations, including tools with names like `code.call`, `bay=tch`, `tools.search`, or `task.intent`, are invoked through `workspace.call`.
+All workspace operations, including tools with names like `code.call`, `bay=tch`, `tools.search`, or `task.start`, are invoked through `workspace.call`.
 
 ## Steering bootstrap rule
 
@@ -2137,7 +2137,7 @@ Do not call `get_steering` again just because:
 * the agent wants the full manifest again
 * a workflow phase says to run `stream.context`, `task.start`, or validation
 
-`get_steering` is bootstrap, not task start. Task work starts with the task workflow tools, usually `stream.context` and `task.start`. Do not call get_steering again.
+`get_steering` is bootstrap, not task start. For scoped repo work, call the core `task.start` tool directly; do not search for task-start tooling first. Run `stream.context` first only when fresh stream context is actually needed. Do not call get_steering again.
 
 ## Tool discovery rule
 
@@ -2181,7 +2181,7 @@ packages/workspace/tooling/tool-manifest.json
 
 defines every workspace operation:
 
-* `name` — the tool identifier, such as `task.intent`, `code.call`, or `explore`
+* `name` — the tool identifier, such as `task.start`, `code.call`, or `explore`
 * `description` — what the tool does
 * `inputSchema` — the Zod input schema name
 * `defaultTimeout` — max execution time in milliseconds
@@ -2383,15 +2383,15 @@ Good queries:
 
 ```text
 task intent
-where is task intent handled
-workflow intent hook
+where is task start handled
+workflow start hook
 task.start lifecycle
 ```
 
 Bad queries combine several hypotheses into one search string:
 
 ```text
-task intent workflowRole script intent task-intent task.intent
+task start workflow lifecycle branch worktree hook manifest schema
 ```
 
 `explore` ranks results for one query. It does not cross-check several different search intents inside the same query. When there are multiple plausible phrasings, run them as parallel independent probes with `batch`.
@@ -2403,12 +2403,12 @@ await workspace.call({
     steps: [
       {
         tool: "explore",
-        input: { query: "task intent", limit: 8 },
+        input: { query: "task start", limit: 8 },
         parallel: true,
       },
       {
         tool: "explore",
-        input: { query: "where is task intent handled", limit: 8 },
+        input: { query: "where is task start handled", limit: 8 },
         parallel: true,
       },
     ],

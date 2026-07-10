@@ -90,7 +90,6 @@
     "cloudflare:workspace-edge:seed": "bun ./scripts/seed-workspace-edge-route.ts",
     "platform:managed-os-mcp-ingress:provision": "bun ./scripts/provision-managed-os-mcp-ingress-policy.ts",
     "smoke:workspace-edge": "bun ./scripts/smoke-workspace-edge.ts",
-    "task-intent": "bun ./scripts/task-intent.js",
     "media": "bun ./scripts/media.ts",
     "media:doctor": "bun ./scripts/media.ts doctor --json",
     "media:install": "bun ./scripts/media.ts install",
