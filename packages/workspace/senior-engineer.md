@@ -31,7 +31,7 @@ Preference order:
 1. Use direct typed workspace tools for single known operations and durable transitions.
 2. Use `context.search` and`explore` for discovery and prior context.
 3. Use no-session `code.run` for multi-step read/investigation before a task exists.
-4. Use `task.intent` to start a task workflow with just-in-time tool discovery and hooks.
+4. Call `task.start` directly at the beginning of scoped repo work. It is a core tool: do not use `tools.search` or exploratory search to find task-start tooling first. The call creates the real task session and returns the workflow bundle plus lifecycle hooks.
 5. Use task-scoped `code.run` for semantic workflows that compose multiple typed tools inside a task.
 6. Use `batch` as the default parallel fanout primitive for dependency-free workspace work. Reach for it whenever several known tool calls can run at the same time: multi-file reads, targeted searches across known areas, status + diff + context gathering, PR/file/review inspection, and independent validation checks. `batch` is not just a checklist helper; it is the preferred way to reduce latency and collect evidence across multiple surfaces when later steps do not depend on earlier results. Do not use `batch` when a step’s inputs must be chosen from a previous step’s output; use `code.run` for that kind of semantic workflow.
 7. Use `git.diff` for structured diff inspection after edits.
@@ -108,13 +108,13 @@ An `explore` query should be short and single-intent. Use one concept, subsystem
 Good:
 
 ```text
-task intent workflow
+task start workflow
 ```
 
 Bad:
 
 ```text
-task intent workflowRole script intent task-intent task.intent
+task start workflowRole branch worktree lifecycle hook manifest schema
 ```
 
 The failure mode is query blending: several competing hypotheses inside one query make retrieval less precise. `explore` does not reason across multiple query meanings in one call.
@@ -128,12 +128,12 @@ await workspace.call({
     steps: [
       {
         tool: "explore",
-        input: { query: "task intent", limit: 8 },
+        input: { query: "task start", limit: 8 },
         parallel: true,
       },
       {
         tool: "explore",
-        input: { query: "where is task intent handled", limit: 8 },
+        input: { query: "where is task start handled", limit: 8 },
         parallel: true,
       },
     ],
