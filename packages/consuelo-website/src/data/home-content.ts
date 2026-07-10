@@ -86,6 +86,70 @@ export type HomeMercuryHighlight = {
   text: string;
 };
 
+export type FeatureArtworkMotif =
+  | 'connect'
+  | 'remember'
+  | 'multiplayer'
+  | 'observe'
+  | 'secure'
+  | 'switch';
+
+export type HomeFeaturePreviewItem = {
+  number: number;
+  label: string;
+  title: string;
+  body: string;
+  motif: FeatureArtworkMotif;
+  imageAlt: string;
+  assetSrc?: string;
+};
+
+export type HomePlatformCardCtaIcon = 'terminal' | 'sign-in' | 'cloud';
+
+export type HomePlatformCard = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  imageSrc: string;
+  imageAlt: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaIcon: HomePlatformCardCtaIcon;
+};
+
+export const homePlatformCards: HomePlatformCard[] = [
+  {
+    id: 'macos',
+    eyebrow: 'macOS 12+',
+    title: 'Mac OS',
+    imageSrc: '/images/platforms/macos-art.svg',
+    imageAlt: 'Consuelo terminal install on macOS',
+    ctaLabel: 'Install via terminal',
+    ctaHref: '#install',
+    ctaIcon: 'terminal',
+  },
+  {
+    id: 'chat-native',
+    eyebrow: 'Chat native',
+    title: 'ChatGPT / Claude',
+    imageSrc: '/images/platforms/chat-native-art.svg',
+    imageAlt: 'Connect ChatGPT and Claude to Consuelo',
+    ctaLabel: 'Sign in to connect',
+    ctaHref: 'https://os.consuelohq.com',
+    ctaIcon: 'sign-in',
+  },
+  {
+    id: 'cloud-workspace',
+    eyebrow: 'Always on',
+    title: 'Cloud Workspace',
+    imageSrc: '/images/platforms/cloud-workspace-art.svg',
+    imageAlt: 'Deploy Consuelo to the cloud',
+    ctaLabel: 'Deploy to Consuelo Cloud',
+    ctaHref: 'https://os.consuelohq.com',
+    ctaIcon: 'cloud',
+  },
+];
+
 export type HomeFooterSignup = {
   eyebrow: string;
   title: string;
@@ -271,6 +335,63 @@ export const homeMercuryPromo: HomeMercuryPromoContent = {
 };
 
 export const homeMercuryHighlights: HomeMercuryHighlight[] = [];
+
+export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
+  {
+    number: 1,
+    label: 'CONNECT',
+    title: 'SAME\nTOOLS',
+    body: 'ChatGPT, Codex, Claude, Cursor, and whatever is next all enter the same house.',
+    motif: 'connect',
+    imageAlt: 'Sacred table with signals converging on one center',
+    assetSrc: '/images/features/connect.svg',
+  },
+  {
+    number: 2,
+    label: 'REMEMBER',
+    title: 'SHARED\nMEMORY',
+    body: 'You should not be the memory layer. Consuelo remembers and reports so your agent never forgets.',
+    motif: 'remember',
+    imageAlt: 'Inner memory chamber with glowing alcoves',
+    assetSrc: '/images/features/remember.svg',
+  },
+  {
+    number: 3,
+    label: 'MULTIPLAYER',
+    title: 'SAME\nROOM',
+    body: 'Invite collaborators when the work needs more hands. The room is already there.',
+    motif: 'multiplayer',
+    imageAlt: 'Shared sacred room with multiple entrances',
+    assetSrc: '/images/features/multiplayer.svg',
+  },
+  {
+    number: 4,
+    label: 'OBSERVE',
+    title: 'READ\nRECEIPTS',
+    body: 'If an agent touched the work, there should be proof. See the traces without digging through a dead chat.',
+    motif: 'observe',
+    imageAlt: 'Hand reaching toward visible traces of work',
+    assetSrc: '/images/features/observe.svg',
+  },
+  {
+    number: 5,
+    label: 'SECURE',
+    title: 'STAYS\nLOCKED',
+    body: 'Effective agents without handing over keys to the whole house. Only the doors you choose.',
+    motif: 'secure',
+    imageAlt: 'Lift-off scene with guarded threshold',
+    assetSrc: '/images/features/secure.svg',
+  },
+  {
+    number: 6,
+    label: 'SWITCH',
+    title: 'NO\nLOCK-IN',
+    body: 'The best agent will keep changing. Your work should not have to move every time it does.',
+    motif: 'switch',
+    imageAlt: 'Many portals returning to the same palace',
+    assetSrc: '/images/features/switch.svg',
+  },
+];
 
 export const homeFooterSignup: HomeFooterSignup = {
   eyebrow: 'Be the first to know when we release new products',
