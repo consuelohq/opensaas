@@ -1016,7 +1016,9 @@ function safeWorkspaceRouteSetupFailureMessage(error: unknown): string {
   const normalized = raw
     .replace(/[\r\n\t]+/g, ' ')
     .replace(/\s+/g, ' ')
-    .replace(/\b(CLOUDFLARE_API_TOKEN|api[_ -]?token|authorization|bearer)\s*[:=]\s*\S+/gi, '$1=[redacted]')
+    .replace(/\bAuthorization\s*[:=]\s*Bearer\s+\S+/gi, 'Authorization=[redacted]')
+    .replace(/\bBearer\s+\S+/gi, 'Bearer [redacted]')
+    .replace(/\b(CLOUDFLARE_API_TOKEN|api[_ -]?token|authorization)\s*[:=]\s*\S+/gi, '$1=[redacted]')
     .trim();
   return (normalized || 'workspace connector provisioning failed').slice(0, 320);
 }
