@@ -285,6 +285,7 @@
     "trace:errors": "bun scripts/operator/trace-errors.ts",
     "trace:watch": "bun scripts/operator/trace-watch.ts",
     "trace:home": "bun scripts/operator/trace-home.ts",
+    "trace:dashboard": "bun scripts/operator/trace-dashboard-build.ts",
     "test-selection:generate": "node packages/workspace/scripts/test-selection.js generate",
     "test-selection:check": "node packages/workspace/scripts/test-selection.js check",
     "test-selection:nightly": "node packages/workspace/scripts/test-selection.js nightly",
