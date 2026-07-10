@@ -98,7 +98,7 @@ Defaults:
 
 ### os:release-device-auth — release the OS device approval authority
 
-Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. The release verifies `/health` and the fail-closed device-public-key requirement after deploy.
+Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. Before any snapshot upload or Worker deploy, the release verifies that the remote Worker has the required server-side `CLOUDFLARE_API_TOKEN` secret. The release then verifies `/health`, including connector-provisioning readiness, and the fail-closed device-public-key requirement after deploy.
 
 ```bash
 bun run os:release-device-auth -- --dry-run

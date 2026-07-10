@@ -1,0 +1,95 @@
+name: Consuelo Production Release
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Production surface to release.
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - website
+          - os
+
+concurrency:
+  group: consuelo-production-release
+  cancel-in-progress: false
+
+jobs:
+  deploy-website:
+    name: Consuelo / website deploy
+    if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'website'
+    environment: consuelo / production
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install website dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/consuelo-website
+
+      - name: Deploy Consuelo website
+        run: |
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN"
+            exit 1
+          fi
+          bun run website:deploy -- --branch main --json
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+
+  release-os:
+    name: Consuelo / OS release
+    needs: deploy-website
+    if: >-
+      always() &&
+      (github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'os') &&
+      (needs.deploy-website.result == 'success' || needs.deploy-website.result == 'skipped')
+    environment: consuelo / production
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install OS dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/os
+
+      - name: Install Wrangler
+        run: bun install --global wrangler@4.105.0
+
+      - name: Release Consuelo OS
+        run: |
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN"
+            exit 1
+          fi
+          bun run os:release
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
