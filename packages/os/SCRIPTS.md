@@ -596,6 +596,7 @@ creates a new task branch, git worktree, and draft PR. the worktree is created u
 bun run task:start -- --area dialer --title "normalize phone numbers"
 bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
+bun run task:start -- --area new-area --title "first task" --create-stream  # explicit new durable stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
 ```
@@ -707,6 +708,23 @@ when cleanup removes a task worktree, it reads `.task/session.json` and `.task/c
 ```bash
 bun run stream:list                   # show all streams with status, divergence, warnings
 ```
+
+---
+
+### stream:cleanup — preview or remove safe local stream refs
+
+previews redundant local `stream/*` refs by default. a branch is removable only when `origin/<branch>` exists, the local branch has zero unique commits, and no worktree has it checked out. remote streams and task branches are never deleted.
+
+```bash
+bun run stream:cleanup                         # preview only
+bun run stream:cleanup -- --keep stream/tooling
+bun run stream:cleanup -- --apply              # remove only the reviewed safe local refs
+bun run stream:cleanup -- --json
+```
+
+**stream:cleanup failure modes**
+- local-only, diverged, current, checked-out, or explicitly kept branches are reported as protected
+- an origin fetch failure stops cleanup before classification or mutation
 
 ---
 

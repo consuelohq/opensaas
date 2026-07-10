@@ -373,6 +373,7 @@ export const TaskStartInput = z.object({
   github: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
+  createStream: z.boolean().optional(),
 }).refine((input) => Boolean(input.area || input.stream || input.pr || input.github), {
   message: 'provide area/stream or a PR reference',
   path: ['area'],
@@ -580,6 +581,13 @@ export const StreamInput = z.object({
 export const StreamListInput = z.object({
   ...requestFields,
   repo: optionalString,
+});
+
+export const StreamCleanupInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  apply: z.boolean().optional(),
+  keep: stringArray,
 });
 
 export const ReviewInput = z.object({
@@ -1153,6 +1161,7 @@ export const schemaRegistry = {
   AuditInput,
   StreamInput,
   StreamListInput,
+  StreamCleanupInput,
   ReviewInput,
   VerifyInput,
   PrReviewInput,
@@ -1241,7 +1250,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskStartInput: '{ stream?: string; area?: string; title?: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; pr?: string | number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskStartInput: '{ stream?: string; area?: string; title?: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; pr?: string | number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPrInput: '{ branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1262,6 +1271,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
+  StreamCleanupInput: '{ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ReviewInput: "{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",
   VerifyInput: '{ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',

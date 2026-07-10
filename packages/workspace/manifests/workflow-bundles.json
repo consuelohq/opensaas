@@ -799,6 +799,11 @@
                   "source": "startFrom",
                   "flag": "--start-from",
                   "kind": "value"
+                },
+                {
+                  "source": "createStream",
+                  "flag": "--create-stream",
+                  "kind": "boolean"
                 }
               ],
               "jsonFlag": "--json"
