@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d7bbc96268d4",
+  "tmuxSession": "opensaas-security-legacy-ci-cleanup-d7bbc962",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/legacy-ci-cleanup",
+  "branch": "task/security/legacy-ci-cleanup",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-legacy-ci-cleanup",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-legacy-ci-cleanup",
+  "prNumber": 1387,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1387",
+  "createdAt": "2026-07-10T22:54:34.163Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-legacy-ci-cleanup/.task/security/legacy-ci-cleanup/session.json"
+}

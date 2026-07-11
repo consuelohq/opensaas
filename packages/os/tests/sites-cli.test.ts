@@ -217,7 +217,7 @@ describe('Sites CLI', () => {
       kind: 'consuelo-chatgpt-mcp-connection',
       auth: 'bearer',
       url: 'https://legacy-workspace.consuelohq.com/mcp',
-      localUrl: 'http://127.0.0.1:8960/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
       tokenId: 'token_existing',
       bearerToken: 'cst_existing',
       scopes: ['route:/mcp:read', 'tool:*:read'],

@@ -1,9 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  createMemoryDeviceGrantStore,
-  createOsDeviceAuthorityHandler,
-} from '../cloudflare/os-device-authority/src/index';
+import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
+import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
@@ -174,7 +172,7 @@ function createCapturedWorkspaceConnectorProvisioner(): CapturedWorkspaceConnect
         connectorId: input.connectorId,
         cloudflareTunnelToken: `cloudflare_tunnel_token_fixture_${connectorLabel}`,
         tunnelOriginUrl: `https://${connectorLabel}.os-origin.consuelohq.com`,
-        localServiceUrl: 'http://127.0.0.1:8960',
+        localServiceUrl: 'http://127.0.0.1:46321',
       };
     },
   };
@@ -203,6 +201,15 @@ const failingGoogleTokenFetch: typeof fetch = async (input) => {
   }
   return new Response(JSON.stringify({ error: 'unexpected_google_fetch' }), { status: 500 });
 };
+
+function successfulWorkspaceRouteSetup() {
+  const routeRegistry = createCapturedRouteRegistry();
+  const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
+  return {
+    workspaceRouteRegistry: routeRegistry.binding,
+    workspaceConnectorProvisioner: connectorProvisioner.provisioner,
+  };
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -637,6 +644,7 @@ describe('os device authority worker', () => {
 
   it('should register home, member, and reconnecting nodes for one account workspace', async () => {
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -963,6 +971,209 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
   });
 
+  it('should report connector provisioning readiness when required bindings exist', async () => {
+    const routeRegistry = createCapturedRouteRegistry();
+    const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
+    const cases = [
+      {
+        name: 'both bindings',
+        workspaceRouteRegistry: routeRegistry.binding,
+        workspaceConnectorProvisioner: connectorProvisioner.provisioner,
+        expected: true,
+      },
+      {
+        name: 'missing route registry',
+        workspaceRouteRegistry: undefined,
+        workspaceConnectorProvisioner: connectorProvisioner.provisioner,
+        expected: false,
+      },
+      {
+        name: 'missing connector provisioner',
+        workspaceRouteRegistry: routeRegistry.binding,
+        workspaceConnectorProvisioner: undefined,
+        expected: false,
+      },
+    ];
+
+    for (const testCase of cases) {
+      const handler = createOsDeviceAuthorityHandler({
+        store: createMemoryDeviceGrantStore(),
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        workspaceRouteRegistry: testCase.workspaceRouteRegistry,
+        workspaceConnectorProvisioner: testCase.workspaceConnectorProvisioner,
+      });
+
+      const response = await handler(new Request(`${origin}/health`));
+
+      expect(response.status, testCase.name).toBe(200);
+      await expect(response.json(), testCase.name).resolves.toMatchObject({
+        ok: true,
+        connector_provisioning_configured: testCase.expected,
+      });
+    }
+  });
+
+  it('should return a terminal failure when workspace connector provisioning fails', async () => {
+    const entryPoints = ['Google OAuth callback', 'workspace-selection POST', 'direct approval'] as const;
+    const leakedCredentials = [
+      'header-bearer-credential-fixture',
+      'standalone-bearer-credential-fixture',
+      'api-token-credential-fixture',
+    ];
+
+    for (const entryPoint of entryPoints) {
+      const store = createMemoryDeviceGrantStore();
+      const routeRegistry = createCapturedRouteRegistry();
+      const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+      const handler = createOsDeviceAuthorityHandler({
+        store,
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        approvalAssertionSecret,
+        googleOAuthClientId: 'test-google-client-id',
+        googleOAuthClientSecret: 'test-google-client-secret',
+        fetchImpl: googleFetch,
+        workspaceRouteRegistry: routeRegistry.binding,
+        workspaceConnectorProvisioner: async () => {
+          throw new Error([
+            'controlled connector provisioning failure',
+            'Authorization: Bearer header-bearer-credential-fixture',
+            'Bearer standalone-bearer-credential-fixture',
+            'CLOUDFLARE_API_TOKEN=api-token-credential-fixture',
+          ].join('\n'));
+        },
+      });
+      const codeResponse = await handler(new Request(CONSUELO_DEVICE_CODE_URL, {
+        method: 'POST',
+        ...form({
+          client_id: 'consuelo-os-installer',
+          scope: 'workspace:read os:connector:register',
+          ...(entryPoint === 'workspace-selection POST'
+            ? {}
+            : {
+                workspace_name: 'MacBook Air Test',
+                workspace_slug: 'macbook-air-test',
+                workspace_host: 'macbook-air-test.consuelohq.com',
+              }),
+          device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+          device_key_algorithm: 'Ed25519',
+        }),
+      }));
+      expect(codeResponse.status, entryPoint).toBe(200);
+      const codeJson = await codeResponse.json() as Record<string, string | number>;
+
+      let failureResponse: Response;
+      if (entryPoint === 'Google OAuth callback') {
+        const start = await handler(new Request(
+          `${origin}/login/google/start?user_code=${String(codeJson.user_code).replace('-', '')}`,
+        ));
+        const state = new URL(start.headers.get('location') ?? '').searchParams.get('state');
+        failureResponse = await handler(new Request(
+          `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`,
+        ));
+      } else {
+        const approve = await handler(new Request(`${origin}/login/device/approve`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'x-consuelo-account-assertion': await authAssertion({
+              accountId: 'account_google_123',
+              authMethod: 'google',
+              expiresAt: '2026-06-13T00:20:00.000Z',
+            }),
+          },
+          body: new URLSearchParams({
+            user_code: String(codeJson.user_code).replace('-', ''),
+          }).toString(),
+        }));
+        if (entryPoint === 'direct approval') {
+          failureResponse = approve;
+        } else {
+          expect(approve.status, entryPoint).toBe(200);
+          await expect(approve.json(), entryPoint).resolves.toMatchObject({
+            status: 'workspace_required',
+          });
+          failureResponse = await handler(new Request(`${origin}/login/device/workspace`, {
+            method: 'POST',
+            ...form({
+              client_id: 'consuelo-os-installer',
+              device_code: String(codeJson.device_code),
+              workspace_name: 'MacBook Air Test',
+              workspace_slug: 'macbook-air-test',
+              workspace_host: 'macbook-air-test.consuelohq.com',
+              ...await proofFields({
+                clientId: 'consuelo-os-installer',
+                deviceCode: String(codeJson.device_code),
+                deviceKeyPair,
+              }),
+            }),
+          }));
+        }
+      }
+
+      expect(failureResponse.status, entryPoint).toBe(502);
+      const failureContentType = failureResponse.headers.get('content-type') ?? '';
+      let failureText: string;
+      if (failureContentType.includes('application/json')) {
+        const failureBody = await failureResponse.json() as Record<string, unknown>;
+        expect(failureBody, entryPoint).toMatchObject({
+          error: 'workspace_route_setup_failed',
+        });
+        failureText = JSON.stringify(failureBody);
+      } else {
+        failureText = await failureResponse.text();
+        expect(failureText, entryPoint).toContain('Workspace route setup failed');
+      }
+      expect(failureText, entryPoint).toContain('controlled connector provisioning failure');
+      for (const credential of leakedCredentials) {
+        expect(failureText, entryPoint).not.toContain(credential);
+      }
+
+      const poll = async () => handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+        method: 'POST',
+        ...form({
+          client_id: 'consuelo-os-installer',
+          device_code: String(codeJson.device_code),
+          grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+          ...await proofFields({
+            clientId: 'consuelo-os-installer',
+            deviceCode: String(codeJson.device_code),
+            deviceKeyPair,
+          }),
+        }),
+      }));
+
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const response = await poll();
+        const body = await response.json() as Record<string, unknown>;
+        expect(response.status, `${entryPoint} poll ${attempt + 1}`).toBe(400);
+        expect(body, `${entryPoint} poll ${attempt + 1}`).toMatchObject({
+          error: 'workspace_route_setup_failed',
+          error_description: expect.stringContaining('controlled connector provisioning failure'),
+        });
+        expect(body.error, entryPoint).not.toBe('authorization_pending');
+        for (const credential of leakedCredentials) {
+          expect(JSON.stringify(body), entryPoint).not.toContain(credential);
+        }
+      }
+
+      const persisted = await store.byUserCode(String(codeJson.user_code));
+      expect(persisted, entryPoint).toMatchObject({
+        status: 'failed',
+        failureCode: 'workspace_route_setup_failed',
+        failureMessage: expect.stringContaining('controlled connector provisioning failure'),
+      });
+      expect(persisted, entryPoint).not.toHaveProperty('connectorToken');
+      expect(persisted, entryPoint).not.toHaveProperty('cloudflareTunnelToken');
+      expect(persisted, entryPoint).not.toHaveProperty('accessToken');
+      for (const credential of leakedCredentials) {
+        expect(JSON.stringify(persisted), entryPoint).not.toContain(credential);
+      }
+      expect(routeRegistry.statements, entryPoint).toEqual([]);
+    }
+  });
+
   it('should fail closed when route registry is configured without connector provisioning', async () => {
     const routeRegistry = createCapturedRouteRegistry();
     const handler = createOsDeviceAuthorityHandler({
@@ -1166,6 +1377,7 @@ describe('os device authority worker', () => {
 
   it('should approve a pending OS device when Google OAuth callback succeeds', async () => {
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -1212,6 +1424,7 @@ describe('os device authority worker', () => {
 
   it('should hide the device code box when terminal-return pages are rendered', async () => {
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -1266,6 +1479,7 @@ describe('os device authority worker', () => {
     });
 
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -1367,6 +1581,7 @@ describe('os device authority worker', () => {
   it('serves hardened GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => currentMs,

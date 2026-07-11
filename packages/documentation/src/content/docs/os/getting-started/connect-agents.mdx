@@ -86,7 +86,7 @@ An agent can be installed on your machine but still show as disconnected if you 
 Local agents can also use the local MCP endpoint while the OS service is running:
 
 ```text
-http://127.0.0.1:8960/mcp
+http://127.0.0.1:46321/mcp
 ```
 
 Hosted and local MCP URLs should point at the same workspace tools and manifest. Prefer the hosted URL for cloud connectors and the local URL for on-machine agents when you are developing locally.
@@ -101,7 +101,7 @@ Use this order when something is not connected:
 | Provider allowlist includes provider egress ranges | Required for hosted `/mcp` | Not applicable |
 | Agent selected during install | Not applicable | Required |
 | `config.json` shows `connected: true` | Not applicable | Required |
-| Local OS service healthy on `127.0.0.1:8960/health` | Optional | Required for local MCP |
+| Local OS service healthy on `127.0.0.1:46321/health` | Optional | Required for local MCP |
 | Workspace health returns OK on hosted `/health` | Recommended | Recommended |
 
 ## MCP scopes

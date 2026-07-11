@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import type { SpawnSyncReturns } from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -56,6 +57,9 @@ function parseBootstrapSummary(stdout: string) {
     bunStatus: string;
     portlessStatus: string;
     cloudflaredStatus: string;
+    sourceStatus: string;
+    dependencyStatus: string;
+    onboardingStatus: string;
     dependencies: {
       runtime: Record<string, { status: string; path: string | null }>;
       operator: Record<string, { classification: string }>;
@@ -69,6 +73,13 @@ function writeExecutable(filePath: string, contents: string): void {
 
 function readBootstrap(): string {
   return readFileSync(join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'), 'utf8');
+}
+
+function readDaemonInstaller(): string {
+  return readFileSync(
+    join(PACKAGE_ROOT, 'scripts', 'install-system-daemons.sh'),
+    'utf8',
+  );
 }
 
 function extractShellFunction(source: string, name: string): string {
@@ -116,6 +127,29 @@ function installerEnv(overrides: Record<string, string>): NodeJS.ProcessEnv {
   return { ...env, ...overrides };
 }
 
+function resolveCutoverLocalHealthUrl(
+  envFile: string,
+  overrides: Record<string, string> = {},
+): SpawnSyncReturns<string> {
+  const installer = readDaemonInstaller();
+  const script = [
+    extractShellFunction(installer, 'load_env_file'),
+    extractShellFunction(installer, 'resolve_cutover_local_port'),
+    extractShellFunction(installer, 'resolve_cutover_local_health_url'),
+    'resolve_cutover_local_health_url "$ENV_FILE"',
+  ].join('\n');
+  const env = installerEnv({});
+  delete env.CONSUELO_OS_PORT;
+  delete env.PORT;
+  delete env.WORKSPACE_DAEMON_PORT;
+  delete env.WORKSPACE_CUTOVER_LOCAL_HEALTH_URL;
+
+  return spawnSync('/bin/bash', ['-c', script], {
+    encoding: 'utf8',
+    env: { ...env, ENV_FILE: envFile, ...overrides },
+  });
+}
+
 function writeCloudflaredPlist(filePath: string, label: string): void {
   writeFileSync(
     filePath,
@@ -146,6 +180,34 @@ afterEach(() => {
 });
 
 describe('public installer runtime dependencies', () => {
+  it('should probe the configured daemon port during cutover', () => {
+    const home = createTempHome('consuelo-os-installer-runtime-cutover-port-');
+    const envFile = join(home, '.env');
+    writeFileSync(envFile, 'CONSUELO_OS_PORT=47001\n');
+
+    const configured = resolveCutoverLocalHealthUrl(envFile, { PORT: '47002' });
+    expect(configured.status).toBe(0);
+    expect(configured.stdout.trim()).toBe('http://127.0.0.1:47001/health');
+
+    const daemonOverride = resolveCutoverLocalHealthUrl(envFile, {
+      WORKSPACE_DAEMON_PORT: '47003',
+    });
+    expect(daemonOverride.status).toBe(0);
+    expect(daemonOverride.stdout.trim()).toBe('http://127.0.0.1:47003/health');
+
+    const explicitHealthUrl = resolveCutoverLocalHealthUrl(envFile, {
+      WORKSPACE_CUTOVER_LOCAL_HEALTH_URL: 'http://127.0.0.1:48000/health',
+    });
+    expect(explicitHealthUrl.status).toBe(0);
+    expect(explicitHealthUrl.stdout.trim()).toBe(
+      'http://127.0.0.1:48000/health',
+    );
+
+    const defaultPort = resolveCutoverLocalHealthUrl(join(home, 'missing.env'));
+    expect(defaultPort.status).toBe(0);
+    expect(defaultPort.stdout.trim()).toBe('http://127.0.0.1:46321/health');
+  });
+
   it('should use bounded retrying curl when fetching source and runtime network artifacts', () => {
     const bootstrap = readBootstrap();
 
@@ -205,7 +267,7 @@ describe('public installer runtime dependencies', () => {
 
     expect(result.status).toBe(0);
     expect(result.stderr).toContain('dry-run: Bun is missing and would be installed');
-    expect(result.stderr).toContain('portless is not installed; Consuelo OS will use http://127.0.0.1:8960');
+    expect(result.stderr).toContain('portless is not installed; Consuelo OS will use http://127.0.0.1:46321');
     expect(result.stderr).toContain('dry-run: cloudflared is missing and would be installed');
     expect(result.stderr).not.toMatch(/wrangler.*required/i);
     expect(result.stderr).not.toMatch(/CLOUDFLARE_(ACCOUNT_ID|API_TOKEN).*required/);
@@ -218,6 +280,65 @@ describe('public installer runtime dependencies', () => {
     expect(summary.dependencies.runtime.portless.path).toBeNull();
     expect(summary.dependencies.runtime.cloudflared.status).toBe('would_install');
     expect(summary.dependencies.operator.wrangler.classification).toBe('operator_only');
+  });
+
+  it('should keep a hosted clean-machine dry-run non-mutating when source is absent', () => {
+    const home = createTempHome('consuelo-os-installer-runtime-hosted-dry-run-');
+    const sourceDir = join(home, 'source');
+    const workingDir = join(home, 'working');
+    const binDir = join(home, 'bin');
+    const bunCaptureFile = join(home, 'bun-invoked');
+    mkdirSync(workingDir, { recursive: true });
+    mkdirSync(binDir, { recursive: true });
+    writeExecutable(
+      join(binDir, 'bun'),
+      '#!/bin/sh\nprintf invoked > "$BUN_CAPTURE_FILE"\nexit 42\n',
+    );
+
+    const result = spawnSync(
+      '/bin/bash',
+      [
+        join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'),
+        '--dry-run',
+        '--yes',
+        '--json',
+        '--mode',
+        'local',
+        '--skip-daemons',
+      ],
+      {
+        cwd: workingDir,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          HOME: home,
+          CONSUELO_HOME: join(home, '.consuelo', 'os'),
+          CONSUELO_OS_SOURCE_DIR: sourceDir,
+          CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
+          BUN_CAPTURE_FILE: bunCaptureFile,
+          PATH: [binDir, SYSTEM_PATH].join(delimiter),
+        },
+      },
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.stderr).toContain(
+      `dry-run: would download Consuelo OS source from https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz to ${sourceDir}`,
+    );
+    expect(result.stderr).toContain(
+      `dry-run: would install Consuelo OS runtime dependencies with: bun --cwd ${sourceDir}/packages/os install`,
+    );
+    expect(result.stderr).toContain(
+      `dry-run: would run: bun --cwd ${sourceDir}/packages/os ./scripts/install.ts --dry-run --yes --json`,
+    );
+    expect(result.stderr).not.toContain('ENOENT');
+    expect(existsSync(sourceDir)).toBe(false);
+    expect(existsSync(bunCaptureFile)).toBe(false);
+
+    const summary = parseBootstrapSummary(result.stdout);
+    expect(summary.sourceStatus).toBe('would_download');
+    expect(summary.dependencyStatus).toBe('would_install');
+    expect(summary.onboardingStatus).toBe('would_run');
   });
 
   it('should keep portless as an optional enhancement when it is already installed', () => {

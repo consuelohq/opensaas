@@ -179,198 +179,77 @@ describe('Consuelo website structure', () => {
     expect(changelog).toContain('grid-template-columns: 160px minmax(0, 1fr)');
   });
 
-  test('should render only the first-pass warm editorial hero baseline on the homepage', () => {
+  test('should compose the approved Consuelo OS homepage when rendering the public root', () => {
     const homepage = readSource('src/pages/index.astro');
+
     expect(homepage).toContain("../layouts/MarketingLayout.astro");
     expect(homepage).toContain("../components/site/SiteHeader.astro");
     expect(homepage).toContain("../components/site/SiteFooter.astro");
     expect(homepage).toContain("../components/home/HomeHero.astro");
-    expect(homepage).toContain('<MarketingLayout');
-    expect(homepage).toContain('<SiteHeader pageSections={[]} />');
-    expect(homepage).toContain('<HomeHero sectionId="intro" />');
-    expect(homepage).toContain('<SiteFooter');
-
-    [
-      'HomeOverview',
-      'HomeStats',
-      'HomePrivacy',
-      'HomeFaq',
-      'HomeMercuryPromo',
-      'homeFaqItems',
-      'homePageSections',
-      'bootHomeHeroMotion',
-      'bootProofSvgMotion',
-      'getFaqSchema',
-    ].forEach((oldSurface) => {
-      expect(homepage).not.toContain(oldSurface);
-    });
+    expect(homepage).toContain("../components/home/HomeFeaturePreview.astro");
+    expect(homepage).toContain("../components/home/HomeCloudCta.astro");
+    expect(homepage).toContain('getFaqSchema(homeFaqItems)');
+    expect(homepage).toContain('Consuelo OS | Your workspace, connected to every agent');
+    expect(homepage).not.toContain('HomePlatformCards');
   });
 
-  test('should build the homepage hero from the existing SVG asset and website design tokens', () => {
+  test('should expose auth and the released installer when rendering the hero', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
 
-    expect(hero).toContain('/images/consuelo-integrations-hero.svg?v=20260628-portrait');
-    expect(hero).toContain('GIVE EVERY AGENT');
-    expect(hero).toContain('WORKSPACE');
-    expect(hero).toContain('<em>SUPERPOWERS</em>');
-    expect(hero).not.toContain('<em>superpowers</em>.');
-    expect(hero).toContain('SUPERPOWERS');
+    expect(hero).toContain('YOUR WORKSPACE, CONNECTED TO EVERY AGENT.');
+    expect(hero).toContain('Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.');
     expect(hero).toContain('OPEN SOURCE');
     expect(hero).toContain('MIT LICENSE');
-    expect(hero).toContain('USE CONSUELO OS CLOUD');
-    expect(hero).toContain('Go to OS portal');
-
-    expect(hero).toContain('homeTabs.map');
-    expect(hero).toContain('role="tablist"');
-    expect(hero).toContain('data-tab-button');
-    expect(hero).toContain('data-copy-button');
-
-    expect(hero).toContain('site-section');
-    expect(hero).toContain('site-container');
-    expect(hero).toContain('site-eyebrow');
-    expect(hero).toContain('site-card');
-
-    expect(hero).toContain('var(--site-color-paper)');
-    expect(hero).toContain('var(--site-color-ink)');
-    expect(readSource('src/styles/tokens.css')).toContain('--site-color-accent');
-    expect(hero).toContain('var(--site-font-display)');
-    expect(hero).toContain('var(--site-font-body)');
-    expect(hero).toContain('var(--site-font-mono)');
-    expect(hero).toContain('var(--site-space-');
-    expect(hero).toContain('var(--site-radius-');
-    expect(hero).toContain('box-shadow: var(--home-hero-control-shadow);')
-
-    expect(hero).not.toContain('--launch-');
-    expect(hero).not.toContain('#FAF7F2');
-    expect(hero).not.toContain('#C0512F');
+    expect(hero).toContain('SIGN IN');
+    expect(hero).toContain('DOWNLOAD LOCALLY');
+    expect(hero).toContain('curl -fsSL https://install.consuelohq.com/os | bash');
+    expect(hero).toContain('data-copy-install');
+    expect(hero).toContain('prefers-reduced-motion: reduce');
   });
 
-  test('should tune the homepage hero toward the Hermes-inspired editorial layout', async () => {
-    const hero = readSource('src/components/home/HomeHero.astro');
-    const layout = readSource('src/layouts/MarketingLayout.astro');
-    const svg = readSource('public/images/consuelo-integrations-hero.svg');
-    const { homeTabs } = await import(pathToFileURL(join(sourceRoot, 'data/home-content.ts')).href);
-
-    expect(hero).toContain('aria-label="STOP STARTING OVER WITH EVERY NEW AGENT"');
-    expect(hero).toContain('>STOP STARTING OVER</span');
-    expect(hero).toContain('>STOP STARTING</span');
-    expect(hero).toContain('>OVER</span');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">WITH EVERY</span>');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">NEW AGENT</span>');
-    expect(hero).not.toContain('GIVE EVERY AGENT');
-    expect(hero).not.toContain('WORKSPACE SUPERPOWERS');
-    expect(hero).toContain("import { prepare, layout } from '@chenglou/pretext'");
-    expect(hero).toContain('data-pretext-title');
-    expect(hero).toContain('data-pretext-lines');
-    expect(hero).toContain('INSTALL VIA TERMINAL');
-    expect(hero).toContain('<figure class="home-hero__diagram"');
-    expect(hero).not.toContain('<figure class="home-hero__diagram site-card"');
-    expect(hero).not.toContain('radial-gradient');
-    expect(hero).not.toContain('var(--site-shadow-raised)');
-
-    expect(layout).toContain('width: 100%;');
-    expect(layout).not.toContain('border-left: 1px solid var(--site-color-line);');
-    expect(layout).not.toContain('border-right: 1px solid var(--site-color-line);');
-
-    expect(homeTabs.map((tab) => tab.label)).toEqual(['macOS / Linux', 'ChatGPT']);
-    expect(homeTabs[0].value).toContain('curl -fsSL https://os.consuelohq.com/install.sh | bash');
-
-    expect(svg).toContain('--tile-bg: #FAF7F2;');
-    expect(svg).toContain('--wire: rgba(192, 81, 47, 0.28);');
-    expect(svg).not.toContain('--tile-bg: #FFFFFF;');
-    expect(svg).not.toContain('--label: #0B1F3A;');
-    expect(svg).toContain(".label { font: 500 15px 'monoFont', 'monoFont Fallback', 'Courier New', monospace;");
-    expect(svg).not.toContain('Inter, ui-sans-serif');
-    expect(svg).toContain(".label { font: 500 15px 'monoFont', 'monoFont Fallback', 'Courier New', monospace;");
-    expect(svg).not.toContain('Inter, ui-sans-serif');
-  });
-
-  test('should keep the next hero pass responsive and visually quieter', () => {
-    const hero = readSource('src/components/home/HomeHero.astro');
-
-    expect(hero).toContain('grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);');
-    expect(hero).toContain('color: var(--site-color-muted);');
-    expect(hero).toContain('font-size: clamp(3.2rem, 5.35vw, 5.65rem);');
-    expect(hero).toContain('border-radius: calc(var(--site-radius-sm) * 0.25);');
-    expect(hero).toContain('@media (max-width: 1180px)');
-    expect(hero).toContain('@media (max-width: 860px)');
-    expect(hero).toContain('@media (max-width: 560px)');
-    expect(hero).not.toContain('font-size: clamp(4.2rem, 8.8vw, 8.5rem);');
-    expect(hero).not.toContain('font-size: clamp(2.8rem, 16vw, 4.5rem);');
-    expect(hero).not.toContain('max-width: 54rem;');
-    expect(hero).not.toContain("'Claude'");
-    expect(hero).not.toContain("'Cursor'");
-  });
-
-  test('should keep the mobile hero scaled down against the dark office background', () => {
-    const hero = readSource('src/components/home/HomeHero.astro');
+  test('should use the approved Hermes blue and real open font stack when loading marketing tokens', () => {
     const tokens = readSource('src/styles/tokens.css');
 
-    expect(hero).toContain('font-size: clamp(2.8rem, 9.2vw, 4.45rem);');
-    expect(hero).toContain('font-size: clamp(2.84rem, 12.25vw, 3.95rem);');
-    expect(hero).toContain('padding-block: clamp(5.75rem, 20vw, 7.4rem) var(--site-space-7);');
-    expect(hero).toContain('font-size: clamp(0.64rem, 2.6vw, 0.72rem);');
-    expect(hero).toContain('padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);');
-
-    expect(tokens).toContain('--site-color-dark-paper: #0F0F0D;');
-    expect(tokens).toContain('--site-color-dark-surface: #191814;');
-    expect(tokens).toContain('--site-color-dark-surface-raised: #221F1A;');
-    expect(tokens).toContain('--site-color-dark-control: #191814;');
-    expect(tokens).toContain('--site-color-dark-control-panel: #221F1A;');
-    expect(tokens).toContain('--site-color-control: var(--site-color-dark-control);');
-    expect(tokens).toContain('--site-color-control-panel: var(--site-color-dark-control-panel);');
-    expect(tokens).not.toContain('--site-color-dark-paper: #0B0D0C;');
-    expect(tokens).not.toContain('--site-color-dark-paper: #211915;');
+    expect(tokens).toContain("@import '@fontsource-variable/bodoni-moda'");
+    expect(tokens).toContain("@import '@fontsource-variable/inter'");
+    expect(tokens).toContain("--site-color-brand: #0000F2");
+    expect(tokens).toContain("--site-color-paper: #0000F2");
+    expect(tokens).toContain("'Bodoni Moda Variable'");
+    expect(tokens).toContain("'Inter Variable'");
+    expect(tokens).toContain("'Geist Mono'");
+    expect(tokens).not.toContain('#5379AE');
   });
 
-  test('should keep hero controls bordered, compact, mono, and quiet like the Hermes reference', () => {
-    const hero = readSource('src/components/home/HomeHero.astro');
-    const tokens = readSource('src/styles/tokens.css');
+  test('should provide a compact six-feature media grid and accessible FAQ when rendering the product panel', () => {
+    const panel = readSource('src/components/home/HomeFeaturePreview.astro');
+    const media = readSource('src/components/home/FeatureMedia.astro');
+    const faq = readSource('src/components/home/HomeFaq.astro');
+    const content = readSource('src/data/home-content.ts');
 
-    expect(hero).toContain('width: fit-content;');
-    expect(hero).toContain('border: 1px solid var(--home-hero-control-line);');
-    expect(hero).toContain('font-size: clamp(0.78rem, 0.95vw, 0.88rem);');
-    expect(hero).toContain('font-family: var(--site-font-mono);');
-    expect(hero).toContain('font-size: clamp(0.78rem, 0.95vw, 0.88rem);');
-    expect(hero).toContain('font-weight: 400;');
-    expect(hero).toContain('font: 400 clamp(0.78rem, 0.95vw, 0.88rem) / 1 var(--site-font-mono);');
-    expect(hero).toContain('border-bottom: 1px solid var(--home-hero-control-line);');
-    expect(hero).toContain('border-bottom-color: transparent;');
-    expect(hero).toContain('width: min(100%, 30rem);');
-    expect(hero).toContain('--home-hero-value-size: clamp(0.72rem, 3.2vw, 0.9rem);');
-    expect(hero).toContain('gap: clamp(0.45rem, 2vw, var(--site-space-3));');
-    expect(hero).toContain('padding: 0.78rem 1.22rem;');
-    expect(hero).toContain('gap: clamp(0.55rem, 2.4vw, 0.72rem);');
-    expect(hero).toContain('padding: 0.82rem clamp(1rem, 4.2vw, 1.18rem) 0;');
-    expect(hero).toContain('padding: 0 0 0.82rem;');
-    expect(hero).toContain('padding: 0.92rem clamp(1rem, 4.2vw, 1.18rem);');
-
-    expect(hero).not.toContain('background: color-mix(in srgb, var(--site-color-accent) 7%, transparent);');
-    expect(hero).not.toContain('font: 700 var(--site-text-xs) / 1 var(--site-font-mono);');
-
-    expect(tokens).toContain('--site-shadow-control:');
-    expect(tokens).toContain('--site-color-control: #FFFFFF;');
-    expect(tokens).toContain('--site-color-control-panel: #FBF7F0;');
+    expect(panel).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
+    expect(panel).toContain('<FeatureMedia');
+    expect(panel).toContain('<HomeFaq');
+    expect(media).toContain('aspect-ratio: 475 / 178');
+    expect(media).toContain('<video autoplay muted loop playsinline');
+    expect(faq).toContain('<details>');
+    expect(faq).toContain('<summary>');
+    expect(content).toContain("label: 'CONTROL'");
+    expect(content).toContain("label: 'OBSERVE'");
+    expect(content).toContain("label: 'SWITCH'");
   });
 
-  test('should include the rebuilt Consuelo OS header contract from the header stream', () => {
+  test('should expose the approved navigation when rendering the OS header', () => {
     const header = readSource('src/components/site/SiteHeader.astro');
-    const packageJson = readSource('package.json');
 
-    expectFile('tests/site-header.test.mjs');
-    expect(packageJson).toContain('\"test:header\"');
-    expect(header).toContain('data-desktop-header-slot');
-    expect(header).toContain('data-mobile-header-slot');
-    expect(header).toContain('Consuelo OS');
-    expect(header).toContain('PORTAL');
-    expect(header).toContain('INSTALL');
+    expect(header).toContain('CONSUELO');
+    expect(header).toContain('DOCS');
+    expect(header).toContain('PRICING');
+    expect(header).toContain('CLOUD');
     expect(header).toContain('aria-label="Discord"');
     expect(header).toContain('aria-label="GitHub"');
-    expect(header).toContain('launch-header__socials');
-    expect(header).not.toContain('launch-header__menu-toggle');
-    expect(header).not.toContain('siteMobileMenuLinks');
-    expect(header).not.toContain('Login');
-    expect(header).not.toContain('Free');
+    expect(header).toContain('data-mobile-menu-toggle');
+    expect(header).not.toContain('PORTAL');
+    expect(header).not.toContain('INSTALL');
     expect(header).not.toContain('position: sticky;');
     expect(header).not.toContain('position: fixed;');
   });
@@ -386,7 +265,7 @@ describe('Consuelo website structure', () => {
     expect(seoHead).toContain('application/ld+json');
 
     const siteSeo = readSource('src/lib/site-seo.ts');
-    expect(siteSeo).toContain("themeColorDark: '#0F0F0D'");
+    expect(siteSeo).toContain("themeColorDark: '#0000F2'");
 
     const { siteLinks, ghlMarketplaceUrl } = await import(pathToFileURL(join(sourceRoot, 'data/site-links.ts')).href);
     expect(siteLinks.app).toBe('https://app.consuelohq.com');
@@ -413,8 +292,8 @@ describe('Consuelo website structure', () => {
     expectFile('src/data/contact-content.ts');
 
     const homeFaq = readSource('src/components/home/HomeFaq.astro');
-    expect(homeFaq).toContain('set:html={item.answer}');
-    expect(homeFaq).not.toContain('{item.answer}</p>');
+    expect(homeFaq).toContain('<p>{item.answer}</p>');
+    expect(homeFaq).not.toContain('set:html={item.answer}');
 
     const homeContent = readSource('src/data/home-content.ts');
     expect(homeContent).toContain('linkHref: siteLinks.privacy');
@@ -515,9 +394,9 @@ describe('Consuelo website structure', () => {
     expect(agentRules).not.toContain('SiteLayout.astro');
 
     const design = readRepo('packages/consuelo-website/DESIGN.md');
-    expect(design).toContain('Warm editorial');
-    expect(design).toContain('#FAF7F2');
-    expect(design).toContain('#C0512F');
+    expect(design).toContain('blue editorial system');
+    expect(design).toContain('#0000F2');
+    expect(design).toContain('Bodoni Moda Variable');
     expect(design).toContain('tokens.css');
     expect(design).toContain('primitives.css');
     expect(design).toContain('Do not invent');
@@ -526,16 +405,15 @@ describe('Consuelo website structure', () => {
     expect(tokens).toContain('--site-color-paper');
     expect(tokens).toContain('--site-color-ink');
     expect(tokens).toContain('--site-color-accent');
-    expect(tokens).toContain('--site-color-dark-paper');
+    expect(tokens).toContain('--site-color-on-brand');
     expect(tokens).toContain('--site-space-section');
     expect(tokens).toContain('--site-radius-card');
-    expect(tokens).toContain('@media (prefers-color-scheme: dark)');
-    expect(tokens).toContain("--site-font-display: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;");
-    expect(tokens).toContain('--site-font-body: var(--site-font-display);');
-    expect(tokens).toContain("--site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;");
-    expect(tokens).not.toContain("--site-font-display: 'Georgia'");
-    expect(tokens).not.toContain("--site-font-body: 'Geist'");
-    expect(tokens).not.toContain("--site-font-mono: 'Geist Mono'");
+    expect(tokens).not.toContain('@media (prefers-color-scheme: dark)');
+    expect(tokens).toContain("--site-font-display: 'Bodoni Moda Variable'");
+    expect(tokens).toContain("--site-font-body: 'Inter Variable'");
+    expect(tokens).toContain("--site-font-mono: 'Geist Mono'");
+    expect(tokens).not.toContain("'displayFont'");
+    expect(tokens).not.toContain("'monoFont'");
 
     const primitives = readRepo('packages/consuelo-website/src/styles/primitives.css');
     expect(primitives).toContain('.site-container');

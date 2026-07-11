@@ -1,4 +1,5 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, test } from 'vitest';
@@ -22,8 +23,7 @@ printf '%s\n' 'https://consuelo-website-test.pages.dev'
 }
 
 function runDeploy({ env = {} } = {}) {
-  const proc = Bun.spawnSync({
-    cmd: ['bun', scriptPath, '--skip-build', '--json'],
+  const proc = spawnSync('bun', [scriptPath, '--skip-build', '--json'], {
     cwd: websiteDir,
     env: {
       ...process.env,
@@ -33,14 +33,13 @@ function runDeploy({ env = {} } = {}) {
       CLOUDFLARE_ACCOUNT_ID: '',
       ...env,
     },
-    stdout: 'pipe',
-    stderr: 'pipe',
+    encoding: 'utf8',
   });
 
   return {
-    exitCode: proc.exitCode,
-    stdout: new TextDecoder().decode(proc.stdout),
-    stderr: new TextDecoder().decode(proc.stderr),
+    exitCode: proc.status ?? 1,
+    stdout: proc.stdout ?? '',
+    stderr: proc.stderr ?? '',
   };
 }
 
@@ -70,10 +69,39 @@ describe('website-deploy cloudflare auth handling', () => {
   });
 });
 
-test('GitHub Actions workflow accepts canonical and fallback Cloudflare secret names', () => {
-  const workflow = readFileSync(join(repoRoot, '.github/workflows/consuelo-website-deploy.yaml'), 'utf8');
+test('GitHub Actions production release uses dedicated Cloudflare credentials for website and OS', () => {
+  const legacyWorkflowPath = join(repoRoot, '.github/workflows/consuelo-website-deploy.yaml');
+  const workflowPath = join(repoRoot, '.github/workflows/consuelo-production-release.yaml');
 
-  expect(workflow).toContain('CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CF_ACCOUNT_ID }}');
-  expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN || secrets.CLOUDFLARE_PAGES_API_TOKEN || secrets.CF_API_TOKEN }}');
+  expect(existsSync(legacyWorkflowPath)).toBe(false);
+  const workflow = readFileSync(workflowPath, 'utf8');
+
+  expect(workflow).toContain('name: Consuelo Production Release');
+  expect(workflow).toContain('branches: [main]');
+  expect(workflow).not.toContain('paths:');
+  expect(workflow).toContain('workflow_dispatch:');
+  expect(workflow).toContain('- all');
+  expect(workflow).toContain('- website');
+  expect(workflow).toContain('- os');
+  expect(workflow.split('environment: consuelo / production')).toHaveLength(3);
+  expect(workflow).toContain('needs: deploy-website');
+  expect(workflow).toContain("inputs.target == 'website'");
+  expect(workflow).toContain("inputs.target == 'os'");
+  expect(workflow).toContain("needs.deploy-website.result == 'success'");
+  expect(workflow).toContain("needs.deploy-website.result == 'skipped'");
+  expect(workflow).toContain('bun run website:deploy -- --branch main --json');
+  expect(workflow).toContain('bun install --global wrangler@4.105.0');
+  expect(workflow).toContain('bun run os:release');
+  expect(workflow).toContain('Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID');
+  expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN');
+  expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN');
+  expect(workflow).toContain('CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}');
+  expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}');
+  expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}');
+  expect(workflow).not.toContain('secrets.CLOUDFLARE_ACCOUNT_ID');
+  expect(workflow).not.toContain('secrets.CLOUDFLARE_API_TOKEN');
+  expect(workflow).not.toContain('CF_ACCOUNT_ID');
+  expect(workflow).not.toContain('CF_API_TOKEN');
+  expect(workflow).not.toContain('GITHUB_TOKEN');
 });
 

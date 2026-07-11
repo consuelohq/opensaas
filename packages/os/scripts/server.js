@@ -7,9 +7,9 @@ const path = require('path');
 
 const LABEL = 'com.consuelo.os';
 const WORKSPACE_DIR = path.resolve(__dirname, '..');
-const PORT = process.env.CONSUELO_OS_PORT || process.env.PORT || '8960';
+const PORT = process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
 const HEALTH = `http://127.0.0.1:${PORT}/health`;
-const SERVER_TS = path.join(WORKSPACE_DIR, 'scripts', 'server.ts');
+const SERVER_TS = path.join(WORKSPACE_DIR, 'scripts', 'server', 'main.ts');
 const LOG_FILE = path.join(process.env.CONSUELO_HOME || path.join(process.env.HOME || '/tmp', '.consuelo', 'os'), 'logs', 'server.log');
 
 
@@ -52,7 +52,7 @@ function health() {
 }
 
 function findServerPid() {
-  const pid = run(`pgrep -f "packages/os/scripts/server.ts|${SERVER_TS}"`);
+  const pid = run(`pgrep -f "packages/os/scripts/server/main.ts|${SERVER_TS}"`);
   return pid && /^\d+$/.test(pid) ? pid : null;
 }
 

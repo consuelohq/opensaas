@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/prelaunch-local-port-cutover",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1412,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1412",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1412",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1412/prelaunch-local-port-cutover",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1412",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1412/prelaunch-local-port-cutover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-prelaunch-local-port-cutover",
+  "taskSession": "tsk_d7bee540cdac",
+  "tmuxSession": "opensaas-security-prelaunch-local-port-cutover-d7bee540",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-prelaunch-local-port-cutover/.task/security/prelaunch-local-port-cutover/session.json",
+  "createdAt": "2026-07-11T05:16:01.543Z"
+}

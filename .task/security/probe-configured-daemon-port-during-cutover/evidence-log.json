@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/security/probe-configured-daemon-port-during-cutover",
+  "events": [
+    {
+      "id": "f2934f7c-cfd5-4276-ab4a-2355551aec87",
+      "occurred_at": "2026-07-11T18:42:09.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/security/probe-configured-daemon-port-during-cutover/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/probe-configured-daemon-port-during-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/probe-configured-daemon-port-during-cutover"
+      }
+    },
+    {
+      "id": "ad1b6f9f-fef5-4ba5-9460-429a79068894",
+      "occurred_at": "2026-07-11T18:42:16.499Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/probe-configured-daemon-port-during-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/probe-configured-daemon-port-during-cutover"
+      }
+    },
+    {
+      "id": "26714361-55a5-4e72-bd45-8962371ba1e1",
+      "occurred_at": "2026-07-11T18:42:27.592Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/start-consuelo-daemon.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/probe-configured-daemon-port-during-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/probe-configured-daemon-port-during-cutover"
+      }
+    },
+    {
+      "id": "c88a4f11-9df9-4b29-b3b1-cec12b09ad5f",
+      "occurred_at": "2026-07-11T18:42:54.968Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/installer-runtime-dependencies.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/probe-configured-daemon-port-during-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/probe-configured-daemon-port-during-cutover"
+      }
+    },
+    {
+      "id": "4cf357b4-dcae-4ef7-a26b-1dde6d49b7fe",
+      "occurred_at": "2026-07-11T18:45:03.955Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/local-os-port-cutover.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/probe-configured-daemon-port-during-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/probe-configured-daemon-port-during-cutover"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-11T18:45:04.036Z"
+}
