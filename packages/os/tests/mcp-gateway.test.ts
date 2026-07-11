@@ -17,7 +17,7 @@ import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from '../scripts/lib/mcp-gateway';
-import { handleRequest } from '../scripts/server.ts';
+import { handleRequest } from '../scripts/server/app';
 import { removeSafeTempDir } from './safe-temp-cleanup';
 
 type JsonObject = Record<string, unknown>;

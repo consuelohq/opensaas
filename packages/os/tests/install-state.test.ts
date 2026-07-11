@@ -156,7 +156,7 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'source', 'tools'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'skills'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'package.json'))).toBe(false);
-    expect(existsSync(join(tempHome, 'scripts', 'server.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'scripts', 'server', 'main.ts'))).toBe(true);
     expect(existsSync(join(tempHome, 'scripts', 'server.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'))).toBe(true);
