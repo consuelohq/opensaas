@@ -1,22 +1,33 @@
 {
   "files": [
     ".task/trace-site/connect-perpetual-trace-pagination/session.json",
+    ".task/trace-site/connect-perpetual-trace-pagination/verify.json",
     ".task/trace-site/connect-perpetual-trace-pagination/workpad.md",
     "packages/os/package.json",
+    "packages/os/scripts/lib/consuelo-sites-trace-adapter.ts",
     "packages/os/scripts/lib/trace-sites-gateway-contract.ts",
     "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
+    "packages/os/scripts/lib/trace-sites-gateway-read-layer.ts",
     "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
     "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/server/routes/traces.ts",
     "packages/os/scripts/server/services/trace-gateway.ts",
     "packages/os/tests/trace-sites-browser-client.test.ts",
     "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+    "packages/os/tests/workspace-cloudflare-edge-router.test.ts",
     "packages/workspace/scripts/office.ts",
     "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
     "packages/workspace/scripts/trace-site-inspector/browser.ts",
+    "packages/workspace/scripts/trace-site-inspector/deploy.ts",
     "packages/workspace/scripts/trace-site-inspector/model.ts",
+    "packages/workspace/scripts/trace-site-inspector/preview.ts",
     "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/senior-engineer.md",
     "packages/workspace/test-selection.registry.json",
-    "packages/workspace/test-selection.rules.json"
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tsconfig.json"
   ],
-  "updatedAt": "2026-07-11T08:01:30.572Z"
+  "updatedAt": "2026-07-11T15:03:27.302Z"
 }

@@ -13,6 +13,16 @@ export type TracePrefetchRequestDetail = {
   fail: () => void;
 };
 
+export type TraceHistoryTransport = {
+  fetchJson: (url: string) => Promise<unknown>;
+};
+
+declare global {
+  interface Window {
+    __consueloTraceHistoryTransport?: TraceHistoryTransport;
+  }
+}
+
 export function deriveTraceHistoryCursor(
   rows: Iterable<TraceRecord>,
   explicitCursor?: string | null,
@@ -86,19 +96,11 @@ export function installTracePaginationTransport(): () => void {
 
 async function fetchTraceHistoryPage(cursor: string): Promise<TraceHistoryPage> {
   try {
-    const response = await fetch(traceHistoryUrl(cursor), {
-      credentials: 'same-origin',
-      headers: { accept: 'application/json' },
-    });
-    const payload = (await response.json()) as unknown;
-    if (!response.ok) {
-      const envelope = asRecord(payload);
-      const error = asRecord(envelope?.error);
-      throw new Error(
-        clean(error?.message) ||
-          `Trace history request failed (${response.status}).`,
-      );
+    const transport = window.__consueloTraceHistoryTransport;
+    if (!transport) {
+      throw new Error('Trusted trace history transport is unavailable.');
     }
+    const payload = await transport.fetchJson(traceHistoryUrl(cursor));
     return parseTraceHistoryResponse(payload);
   } catch (error: unknown) {
     throw error instanceof Error
