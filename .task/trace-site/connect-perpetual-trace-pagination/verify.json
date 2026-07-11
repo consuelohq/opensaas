@@ -4,19 +4,13 @@
   "mode": "full",
   "branch": "task/trace-site/connect-perpetual-trace-pagination",
   "base": "origin/task/trace-site/connect-perpetual-trace-pagination",
-  "headSha": "5d102e0cfcedce6f87be268fe2c53e266ee0c852",
-  "changeHash": "fb4eae1b6cd07e4c0bc6661bc39efde154a62f98def4f3f7afb5f7a8a62e094d",
+  "headSha": "3afc28abeb0b6355208471bf098faa6a1252c263",
+  "changeHash": "d515e91dd4d89aa30090cbf7efbcdad76b4f6988eeda04a09e4bfade5f6fe4ca",
   "changedFiles": [
-    "packages/workspace/scripts/office.ts",
-    "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
-    "packages/workspace/scripts/trace-site-inspector/deploy.ts",
-    "packages/workspace/scripts/trace-site-inspector/pagination-browser.ts",
-    "packages/workspace/scripts/trace-site-inspector/preview.ts",
-    "packages/workspace/test-selection.registry.json",
-    "packages/workspace/test-selection.rules.json",
-    "packages/workspace/tests/trace-site-inspector.test.ts"
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
   ],
-  "verifiedAt": "2026-07-11T15:05:54.675Z",
+  "verifiedAt": "2026-07-11T15:12:31.592Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -32,56 +26,23 @@
       "changedFiles": [
         ".task/trace-site/connect-perpetual-trace-pagination/evidence-log.json",
         ".task/trace-site/connect-perpetual-trace-pagination/read-log.json",
-        ".task/trace-site/connect-perpetual-trace-pagination/verify.json",
         ".task/trace-site/connect-perpetual-trace-pagination/workpad.md",
-        "packages/workspace/scripts/office.ts",
-        "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
-        "packages/workspace/scripts/trace-site-inspector/deploy.ts",
-        "packages/workspace/scripts/trace-site-inspector/pagination-browser.ts",
-        "packages/workspace/scripts/trace-site-inspector/preview.ts",
-        "packages/workspace/test-selection.registry.json",
-        "packages/workspace/test-selection.rules.json",
-        "packages/workspace/tests/trace-site-inspector.test.ts"
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
       ],
       "matchedRules": [
-        {
-          "id": "workspace-test-selection",
-          "critical": true,
-          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
-          "matchedFiles": [
-            "packages/workspace/test-selection.registry.json",
-            "packages/workspace/test-selection.rules.json"
-          ],
-          "origin": "explicit"
-        },
         {
           "id": "trace-site-pagination",
           "critical": true,
           "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
           "matchedFiles": [
-            "packages/workspace/scripts/office.ts",
-            "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
-            "packages/workspace/scripts/trace-site-inspector/deploy.ts",
-            "packages/workspace/scripts/trace-site-inspector/pagination-browser.ts",
-            "packages/workspace/scripts/trace-site-inspector/preview.ts",
-            "packages/workspace/tests/trace-site-inspector.test.ts"
+            "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+            "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
           ],
           "origin": "explicit"
         }
       ],
       "selectedSuites": [
-        {
-          "name": "workspace test selection tests",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/test-selection.test.js"
-          ],
-          "ruleId": "workspace-test-selection",
-          "critical": true
-        },
         {
           "name": "trace gateway history endpoints",
           "command": [
@@ -127,24 +88,6 @@
       "run": true,
       "runResults": [
         {
-          "name": "workspace test selection tests",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/test-selection.test.js"
-          ],
-          "ruleId": "workspace-test-selection",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 1487,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1079\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 838\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:47\n\u001b[2m   Duration \u001b[22m 1.19s\u001b[2m (transform 16ms, setup 0ms, import 23ms, tests 1.08s, environment 0ms)\u001b[22m\n\n"
-        },
-        {
           "name": "trace gateway history endpoints",
           "command": [
             "bun",
@@ -160,8 +103,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 434,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:49\n\u001b[2m   Duration \u001b[22m 184ms\u001b[2m (transform 76ms, setup 0ms, import 92ms, tests 22ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 463,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:12:26\n\u001b[2m   Duration \u001b[22m 178ms\u001b[2m (transform 75ms, setup 0ms, import 91ms, tests 19ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "trace gateway DB resolution",
@@ -179,8 +122,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 590,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-gateway-service.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:49\n\u001b[2m   Duration \u001b[22m 292ms\u001b[2m (transform 129ms, setup 0ms, import 201ms, tests 3ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 596,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-gateway-service.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:12:26\n\u001b[2m   Duration \u001b[22m 280ms\u001b[2m (transform 123ms, setup 0ms, import 189ms, tests 2ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "trace site inspector pagination",
@@ -198,8 +141,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 4368,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/workspace\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-site-inspector.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3735\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve interactive inspector behavior when the trace list is virtualized \u001b[33m 1322\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should append older history pages while preserving inspector state and terminal behavior \u001b[33m 2303\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:50\n\u001b[2m   Duration \u001b[22m 4.16s\u001b[2m (transform 84ms, setup 0ms, import 336ms, tests 3.73s, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 4429,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/workspace\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-site-inspector.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3805\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve interactive inspector behavior when the trace list is virtualized \u001b[33m 1345\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should append older history pages while preserving inspector state and terminal behavior \u001b[33m 2367\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:12:27\n\u001b[2m   Duration \u001b[22m 4.22s\u001b[2m (transform 94ms, setup 0ms, import 330ms, tests 3.80s, environment 0ms)\u001b[22m\n\n"
         }
       ],
       "failedSuites": []
