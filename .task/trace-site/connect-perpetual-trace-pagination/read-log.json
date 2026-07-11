@@ -1,0 +1,21 @@
+{
+  "files": [
+    ".task/trace-site/connect-perpetual-trace-pagination/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/trace-sites-gateway-contract.ts",
+    "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/server/services/trace-gateway.ts",
+    "packages/os/tests/trace-sites-browser-client.test.ts",
+    "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/trace-site-inspector/browser.ts",
+    "packages/workspace/scripts/trace-site-inspector/model.ts",
+    "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-07-11T07:49:11.118Z"
+}

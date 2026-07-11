@@ -29,15 +29,30 @@
 }
 
 .trxFooter[data-trace-virtual-footer]::after {
-  content: 'virtual window';
+  display: none;
+  content: '';
+}
+
+.trxFooter[data-trace-virtual-footer] [data-trace-scroll-top] {
+  margin-left: auto;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
   color: var(--trace-muted, #9f9583);
-  font:
-    700 10px/1 ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    monospace;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  cursor: pointer;
+  font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.04em;
+}
+
+.trxFooter[data-trace-virtual-footer] [data-trace-scroll-top]:hover,
+.trxFooter[data-trace-virtual-footer] [data-trace-scroll-top]:focus-visible {
+  color: var(--trace-text, #eee4d2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.trxFooter[data-trace-virtual-footer] [data-trace-scroll-top][hidden] {
+  display: none !important;
 }
 
 .cmdkMenuLaunch,

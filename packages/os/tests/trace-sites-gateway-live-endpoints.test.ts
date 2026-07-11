@@ -62,6 +62,74 @@ function request(path: string): Request {
   });
 }
 
+async function createHistoryFixtureDb(dbPath: string): Promise<void> {
+  const { Database } = await import('bun:sqlite');
+  const db = new Database(dbPath);
+  db.exec(`
+    CREATE TABLE tool_traces (
+      id TEXT PRIMARY KEY,
+      ts TEXT NOT NULL,
+      trace_id TEXT NOT NULL,
+      mcp_trace_id TEXT,
+      source TEXT NOT NULL,
+      tool TEXT NOT NULL,
+      task_session TEXT,
+      branch TEXT,
+      worktree TEXT,
+      status TEXT NOT NULL,
+      ok INTEGER NOT NULL,
+      code TEXT,
+      exit_code INTEGER,
+      duration_ms INTEGER,
+      input_json TEXT,
+      resolved_input_json TEXT,
+      result_json TEXT,
+      stderr TEXT,
+      input_tokens INTEGER,
+      output_tokens INTEGER,
+      total_tokens INTEGER
+    );
+  `);
+  const insert = db.prepare(`
+    INSERT INTO tool_traces (
+      id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch,
+      worktree, status, ok, code, exit_code, duration_ms, input_json,
+      resolved_input_json, result_json, stderr, input_tokens, output_tokens,
+      total_tokens
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  for (let index = 1; index <= 4; index += 1) {
+    insert.run(
+      `row_${index}`,
+      `2026-07-11T00:00:0${index}.000Z`,
+      `trc_history_${index}`,
+      `mcp_history_${index}`,
+      'workspace',
+      index === 2 ? 'batch' : 'workspace.call',
+      'tsk_history',
+      'task/trace-site/connect-perpetual-trace-pagination',
+      '/tmp/history-worktree',
+      index === 2 ? 'error' : 'ok',
+      index === 2 ? 0 : 1,
+      index === 2 ? 'COMMAND_FAILED' : 'OK',
+      index === 2 ? 1 : 0,
+      index * 100,
+      JSON.stringify({ index, original: true }),
+      JSON.stringify({ index, resolved: true }),
+      JSON.stringify({
+        ok: index !== 2,
+        message: `history result ${index}`,
+        data: index === 2 ? { results: [{ ok: false, tool: 'fs.read' }] } : {},
+      }),
+      index === 2 ? 'history fixture failed' : '',
+      index * 10,
+      index * 20,
+      index * 30,
+    );
+  }
+  db.close();
+}
+
 describe('Trace Sites gateway live endpoints', () => {
   it('serves recent Trace Site events through gateway JSON without exposing direct backend targets', async () => {
     const endpoints = createTraceSitesGatewayLiveEndpoints({
@@ -110,6 +178,67 @@ describe('Trace Sites gateway live endpoints', () => {
       ok: true,
       route: '/gateway/traces/aggregates',
       data: { summary: { calls: 1, totalTraceBurn: 500, outputTokens: 380 } },
+    });
+  });
+
+  it('serves older rich trace pages through the authenticated recent route without changing the live cursor contract', async () => {
+    const dbPath = join(tempDir, 'history-endpoint.db');
+    await createHistoryFixtureDb(dbPath);
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: createLocalTraceSitesReadBackend({ dbPath }),
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+
+    const denied = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=older&cursor=id%3Arow_4&limit=2&sourceMode=local-networked',
+      ),
+    );
+    expect(denied.status).toBe(403);
+    expect(await denied.json()).toMatchObject({
+      ok: false,
+      error: { code: 'RAW_PAYLOAD_ACCESS_DENIED' },
+      errors: ['RAW_PAYLOAD_ACCESS_DENIED'],
+    });
+
+    const first = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=older&cursor=id%3Arow_4&limit=2&sourceMode=local-networked&includeRawPayload=true',
+      ),
+    );
+
+    expect(first.status).toBe(200);
+    expect(await first.json()).toMatchObject({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: '/gateway/traces/recent',
+      data: {
+        direction: 'older',
+        nextCursor: '000000000002',
+        rows: [
+          { recordId: 'row_3', traceId: 'trc_history_3' },
+          {
+            recordId: 'row_2',
+            traceId: 'trc_history_2',
+            status: 'error',
+            batchResultsCount: 1,
+          },
+        ],
+      },
+    });
+
+    const terminal = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=older&cursor=000000000002&limit=2&sourceMode=local-networked&includeRawPayload=true',
+      ),
+    );
+    expect(await terminal.json()).toMatchObject({
+      ok: true,
+      data: {
+        direction: 'older',
+        nextCursor: null,
+        rows: [{ recordId: 'row_1' }],
+      },
     });
   });
 
@@ -252,5 +381,62 @@ describe('Trace Sites local trace backend adapter', () => {
         success: true,
       }),
     ]);
+  });
+
+  it('reads overlap-free rich older-history pages from an opaque record cursor', async () => {
+    const dbPath = join(tempDir, 'history.db');
+    await createHistoryFixtureDb(dbPath);
+
+    const backend = createLocalTraceSitesReadBackend({ dbPath });
+    expect(backend.readHistoryPage).toBeTypeOf('function');
+
+    const first = await backend.readHistoryPage!({
+      workspaceId: 'wrk_live',
+      workspaceHost: 'testing.consuelohq.com',
+      site: 'trace-burn-intelligence',
+      sourceMode: 'local-networked',
+      cursor: 'id:row_4',
+      limit: 2,
+    });
+
+    expect(first.nextCursor).toBe('000000000002');
+    expect(first.rows.map((historyRow) => historyRow.recordId)).toEqual([
+      'row_3',
+      'row_2',
+    ]);
+    expect(first.rows[1]).toMatchObject({
+      id: 'row_2',
+      recordId: 'row_2',
+      traceId: 'trc_history_2',
+      name: 'batch',
+      traceName: 'batch',
+      branch: 'task/trace-site/connect-perpetual-trace-pagination',
+      status: 'error',
+      ok: false,
+      code: 'COMMAND_FAILED',
+      exitCode: 1,
+      durationMs: 200,
+      inputTokens: 20,
+      outputTokens: 40,
+      tokens: 60,
+      rawInputJson: JSON.stringify({ index: 2, original: true }),
+      rawResolvedInputJson: JSON.stringify({ index: 2, resolved: true }),
+      rawStderr: 'history fixture failed',
+      batchResultsCount: 1,
+    });
+
+    const terminal = await backend.readHistoryPage!({
+      workspaceId: 'wrk_live',
+      workspaceHost: 'testing.consuelohq.com',
+      site: 'trace-burn-intelligence',
+      sourceMode: 'local-networked',
+      cursor: first.nextCursor!,
+      limit: 2,
+    });
+
+    expect(terminal.rows.map((historyRow) => historyRow.recordId)).toEqual([
+      'row_1',
+    ]);
+    expect(terminal.nextCursor).toBeNull();
   });
 });
