@@ -5,9 +5,11 @@ export type LocalOsServerConfig = {
   name: string;
 };
 
-function resolveLocalOsPort(): number {
-  const configured = process.env.CONSUELO_OS_PORT ?? process.env.PORT;
-  if (configured === undefined) return DEFAULT_LOCAL_OS_PORT;
+export function resolveLocalOsPortOverride(
+  env: NodeJS.ProcessEnv = process.env,
+): number | undefined {
+  const configured = env.CONSUELO_OS_PORT ?? env.PORT;
+  if (configured === undefined) return undefined;
 
   const normalized = configured.trim();
   if (!/^\d+$/.test(normalized)) {
@@ -27,7 +29,7 @@ function resolveLocalOsPort(): number {
 
 export function loadLocalOsServerConfig(): LocalOsServerConfig {
   return {
-    port: resolveLocalOsPort(),
+    port: resolveLocalOsPortOverride() ?? DEFAULT_LOCAL_OS_PORT,
     name: process.env.CONSUELO_OS_SERVER_NAME ?? 'consuelo-os',
   };
 }
