@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
+    "@tanstack/virtual-core": "^3.17.3",
     "effect": "^3.21.3",
     "execa": "^9.6.1",
     "node-llama-cpp": "^3.18.1",

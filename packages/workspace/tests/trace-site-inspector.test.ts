@@ -19,13 +19,20 @@ import {
   SYNTHETIC_TRACE_FEED,
   assertSanitizedTracePreview,
   sanitizeTracePreviewHtml,
+  standaloneTracePreviewHtml,
 } from '../scripts/trace-site-inspector/preview';
 
 import {
   INSPECTOR_CSS_HREF,
   INSPECTOR_SCRIPT_SRC,
+  INSPECTOR_VERSION,
   patchTraceInspectorHtml,
 } from '../scripts/trace-site-inspector/deploy';
+
+import {
+  mergeTraceRows,
+  shouldPrefetchTracePage,
+} from '../scripts/trace-site-inspector/trace-list';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -110,6 +117,86 @@ describe('trace-site inspector model', () => {
   });
 });
 
+describe('trace-site virtual list state', () => {
+  test('merges cursor pages, deduplicates identities, and retains a bounded window around selection', () => {
+    const current = Array.from({ length: 8 }, (_, index) =>
+      row({
+        id: `record-${index}`,
+        recordId: `record-${index}`,
+        traceId: `trace-${index}`,
+        startTime: `2026-07-11T00:00:${String(20 - index).padStart(2, '0')}.000Z`,
+      }),
+    );
+    const incoming = [
+      { ...current[7] },
+      ...Array.from({ length: 5 }, (_, index) =>
+        row({
+          id: `record-${index + 8}`,
+          recordId: `record-${index + 8}`,
+          traceId: `trace-${index + 8}`,
+          startTime: `2026-07-11T00:00:${String(12 - index).padStart(2, '0')}.000Z`,
+        }),
+      ),
+    ];
+
+    const merged = mergeTraceRows(current, incoming, {
+      direction: 'append',
+      maxRows: 6,
+      selectedKey: 'record-9',
+    });
+
+    expect(merged).toHaveLength(6);
+    expect(merged.map(stableTraceKey)).toEqual([
+      'record-7',
+      'record-8',
+      'record-9',
+      'record-10',
+      'record-11',
+      'record-12',
+    ]);
+    expect(new Set(merged.map(stableTraceKey)).size).toBe(6);
+  });
+
+  test('prefetches from virtual range proximity only when another cursor page is available', () => {
+    expect(
+      shouldPrefetchTracePage({
+        lastVirtualIndex: 224,
+        rowCount: 250,
+        threshold: 25,
+        nextCursor: 'cursor-2',
+        fetching: false,
+      }),
+    ).toBe(true);
+    expect(
+      shouldPrefetchTracePage({
+        lastVirtualIndex: 180,
+        rowCount: 250,
+        threshold: 25,
+        nextCursor: 'cursor-2',
+        fetching: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldPrefetchTracePage({
+        lastVirtualIndex: 249,
+        rowCount: 250,
+        threshold: 25,
+        nextCursor: null,
+        fetching: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldPrefetchTracePage({
+        lastVirtualIndex: 249,
+        rowCount: 250,
+        threshold: 25,
+        nextCursor: 'cursor-2',
+        fetching: true,
+      }),
+    ).toBe(false);
+  });
+});
+
 describe('trace-site inspector deployment contract', () => {
   test('patches versioned overlay assets exactly once', () => {
     const html =
@@ -136,6 +223,13 @@ describe('trace-site inspector deployment contract', () => {
       new URL('../scripts/trace-site-inspector/inspector.css', import.meta.url),
       'utf8',
     );
+    const virtualListSource = readFileSync(
+      new URL(
+        '../scripts/trace-site-inspector/virtual-list-browser.ts',
+        import.meta.url,
+      ),
+      'utf8',
+    );
 
     for (const section of [
       'summary',
@@ -149,6 +243,13 @@ describe('trace-site inspector deployment contract', () => {
     }
     expect(browserSource).toContain('sessionStorage');
     expect(browserSource).toContain('MutationObserver');
+
+    expect(virtualListSource).toContain("from '@tanstack/virtual-core'");
+    expect(virtualListSource).toContain('new Virtualizer');
+    expect(virtualListSource).toContain('shouldPrefetchTracePage');
+    expect(virtualListSource).not.toContain('@tanstack/react-virtual');
+    expect(virtualListSource).not.toContain("from 'react'");
+    expect(INSPECTOR_VERSION).toBe('v29');
     expect(css).toContain('.cmdkMenuLaunch');
     expect(css).toContain('.lfMenuButton');
     expect(css).toContain('@media (max-width: 900px)');
@@ -169,7 +270,22 @@ describe('sanitized Cloudflare trace preview', () => {
     expect(sanitized).not.toContain('trc_private');
     expect(() => assertSanitizedTracePreview(sanitized)).not.toThrow();
     expect(SYNTHETIC_TRACE_FEED.meta.synthetic).toBe(true);
-    expect(SYNTHETIC_TRACE_FEED.failures).toHaveLength(1);
+    expect(SYNTHETIC_TRACE_FEED.failures.length).toBeGreaterThan(1);
+    expect(
+      SYNTHETIC_TRACE_FEED.failures.some(
+        (failure) => failure.recordId === 'demo-record-005',
+      ),
+    ).toBe(true);
+  });
+
+  test('generates a large virtualized preview without server-rendering every trace row', () => {
+    const html = standaloneTracePreviewHtml();
+
+    expect(SYNTHETIC_TRACE_FEED.rows.length).toBeGreaterThanOrEqual(5_000);
+    expect(html).toContain('data-trace-virtual-list');
+    expect(html).toContain('data-trace-virtual-content');
+    expect(html).not.toContain('class="trxRow"');
+    expect(html).toContain('data-trace-total="5000"');
   });
 
   test('fails closed when private markers remain', () => {
