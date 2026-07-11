@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7fad25a2420d",
+  "tmuxSession": "opensaas-security-lock-bun-as-the-only-os-product-server-7fad25a2",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/lock-bun-as-the-only-os-product-server",
+  "branch": "task/security/lock-bun-as-the-only-os-product-server",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-lock-bun-as-the-only-os-product-server",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-lock-bun-as-the-only-os-product-server",
+  "prNumber": 1401,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1401",
+  "createdAt": "2026-07-11T03:18:51.048Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-lock-bun-as-the-only-os-product-server/.task/security/lock-bun-as-the-only-os-product-server/session.json"
+}
