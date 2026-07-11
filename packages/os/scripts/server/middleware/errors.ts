@@ -1,4 +1,5 @@
 import type { VerificationResult } from '../../lib/security-gateway';
+import { logLocalOsServerError } from '../logger';
 
 type JsonObject = Record<string, unknown>;
 
@@ -39,23 +40,29 @@ export function verificationResponse(
 }
 
 export function internalError(error: unknown): Response {
-  const message = error instanceof Error
-    ? error.message.slice(0, 240)
-    : 'OS call failed.';
+  logLocalOsServerError('local_os.internal_error', error, {
+    code: 'INTERNAL_SERVER_ERROR',
+    status: 500,
+  });
   return jsonResponse({
     ok: false,
-    error: { code: 'INTERNAL_SERVER_ERROR', message },
+    error: {
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'OS request failed.',
+    },
   }, 500);
 }
 
 export function invalidRequest(error: unknown): Response {
+  logLocalOsServerError('local_os.invalid_request', error, {
+    code: 'INVALID_REQUEST',
+    status: 400,
+  });
   return jsonResponse({
     ok: false,
     error: {
       code: 'INVALID_REQUEST',
-      message: error instanceof Error
-        ? error.message.slice(0, 240)
-        : 'Invalid request',
+      message: 'Invalid request.',
     },
   }, 400);
 }
