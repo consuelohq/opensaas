@@ -1,0 +1,44 @@
+---
+type Props = {
+  imageSrc: string;
+  imageAlt: string;
+  videoSrc?: string;
+  posterSrc?: string;
+};
+
+const { imageSrc, imageAlt, videoSrc, posterSrc } = Astro.props as Props;
+---
+
+<div class="feature-media">
+  {
+    videoSrc ? (
+      <video autoplay muted loop playsinline preload="metadata" poster={posterSrc ?? imageSrc}>
+        <source src={videoSrc} />
+      </video>
+    ) : (
+      <img src={imageSrc} alt={imageAlt} width="1200" height="900" loading="lazy" decoding="async" />
+    )
+  }
+</div>
+
+<style>
+  .feature-media {
+    width: 100%;
+    aspect-ratio: 475 / 178;
+    overflow: hidden;
+    background: var(--site-color-brand);
+  }
+
+  .feature-media img,
+  .feature-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feature-media video {
+      display: none;
+    }
+  }
+</style>
