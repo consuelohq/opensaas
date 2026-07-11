@@ -11,9 +11,10 @@ import {
   openBrowserEffect,
   statusBrowserEffect,
 } from '../scripts/lib/browser/service';
+import { BrowserServiceError } from '../scripts/lib/browser/errors';
 import type { BrowserProcessRequest, BrowserProcessResult } from '../scripts/lib/browser/types';
 
-const profilePath = '/Users/kokayi/.agent-browser-ko';
+const profilePath = '/tmp/agent-browser-profile';
 
 type RecordedCall = BrowserProcessRequest;
 
@@ -42,12 +43,21 @@ function context(outputs: Record<string, string> = {}) {
   };
 }
 
-function manifest(packageName: 'workspace' | 'os'): Array<{ name: string; description: string }> {
+function manifest(packageName: 'workspace' | 'os'): Array<{
+  name: string;
+  description: string;
+  capabilities?: { readOnly: boolean; mutating: boolean; safeToRetry: boolean };
+}> {
   const repoRoot = join(import.meta.dirname, '..', '..', '..');
   const path = packageName === 'workspace'
     ? join(repoRoot, 'packages', 'workspace', 'tooling', 'tool-manifest.json')
     : join(repoRoot, 'packages', 'os', 'tooling', 'dev-tool-manifest.json');
-  return JSON.parse(readFileSync(path, 'utf8')) as Array<{ name: string; description: string }>;
+  return JSON.parse(readFileSync(path, 'utf8')) as Array<{
+    name: string;
+    description: string;
+    capabilities?: { readOnly: boolean; mutating: boolean; safeToRetry: boolean };
+  }>;
+
 }
 
 describe('browser persistent headed handoff', () => {
@@ -64,7 +74,7 @@ describe('browser persistent headed handoff', () => {
     expect(testContext.calls.map((call) => call.args)).toEqual([
       ['close', '--all'],
       ['--profile', profilePath, '--headed', 'open', 'about:blank'],
-      ['--profile', profilePath, 'open', 'https://dash.cloudflare.com'],
+      ['--profile', profilePath, 'open', 'https://dash.cloudflare.com/'],
       ['--profile', profilePath, 'get', 'url'],
       ['--profile', profilePath, 'get', 'title'],
     ]);
@@ -104,7 +114,7 @@ describe('browser persistent headed handoff', () => {
 
     expect(calls[0]?.args).toEqual(['close', '--all']);
     expect(calls[1]?.args).toEqual(['--profile', profilePath, '--headed', 'open', 'about:blank']);
-    expect(calls[2]?.args).toEqual(['--profile', profilePath, 'open', 'https://github.com']);
+    expect(calls[2]?.args).toEqual(['--profile', profilePath, 'open', 'https://github.com/']);
     expect(result.leftRunning).toBe(true);
   });
 
@@ -121,7 +131,7 @@ describe('browser persistent headed handoff', () => {
       '--profile', profilePath, '--headed', 'open', 'about:blank',
     ]);
     expect(testContext.calls[2]?.args).toEqual([
-      '--profile', profilePath, 'open', 'https://github.com',
+      '--profile', profilePath, 'open', 'https://github.com/',
     ]);
   });
 
@@ -133,9 +143,65 @@ describe('browser persistent headed handoff', () => {
     }, testContext.value));
 
     expect(testContext.calls[0]?.args).toEqual([
-      '--profile', profilePath, 'open', 'https://example.com',
+      '--profile', profilePath, 'open', 'https://example.com/',
     ]);
     expect(testContext.calls.some((call) => call.args[0] === 'close')).toBe(false);
+  });
+
+
+  it('should forward provider options when opening existing or headed browsers', async () => {
+    const existingContext = context();
+    await Effect.runPromise(openBrowserEffect({
+      url: 'https://example.com',
+      provider: 'ios',
+    }, existingContext.value));
+    expect(existingContext.calls[0]?.args).toEqual([
+      '--profile', profilePath, '--provider', 'ios', 'open', 'https://example.com/',
+    ]);
+
+    const headedContext = context();
+    await Effect.runPromise(openBrowserEffect({
+      url: 'https://example.com',
+      headed: true,
+      provider: 'ios',
+    }, headedContext.value));
+    expect(headedContext.calls.slice(1, 5).map((call) => call.args)).toEqual([
+      ['--profile', profilePath, '--provider', 'ios', '--headed', 'open', 'about:blank'],
+      ['--profile', profilePath, '--provider', 'ios', 'open', 'https://example.com/'],
+      ['--profile', profilePath, '--provider', 'ios', 'get', 'url'],
+      ['--profile', profilePath, '--provider', 'ios', 'get', 'title'],
+    ]);
+  });
+
+  it.each([
+    ['runtime missing', { stdout: '', stderr: 'missing', exitCode: 1, timedOut: false, runtimeMissing: true }, 'BROWSER_RUNTIME_MISSING'],
+    ['timeout', { stdout: '', stderr: '', exitCode: 124, timedOut: true, runtimeMissing: false }, 'BROWSER_TIMEOUT'],
+  ] as const)('should propagate a typed %s failure when browser status cannot run', async (_label, result, code) => {
+    const testContext = {
+      config: {
+        profilePath,
+        screenshotDir: '/tmp/opensaas-screenshots',
+        defaultTimeoutMs: 30_000,
+      },
+      process: {
+        run: (_request: BrowserProcessRequest) => Effect.succeed(result),
+      },
+    };
+
+    const failure = await Effect.runPromise(Effect.flip(statusBrowserEffect({}, testContext)));
+    expect(failure).toBeInstanceOf(BrowserServiceError);
+    expect((failure as BrowserServiceError).code).toBe(code);
+  });
+
+  it('should return invalid URL errors through the Effect error channel', async () => {
+    const testContext = context();
+    const failure = await Effect.runPromise(Effect.flip(openBrowserEffect({
+      url: 'not a valid URL',
+    }, testContext.value)));
+
+    expect(failure).toBeInstanceOf(BrowserServiceError);
+    expect((failure as BrowserServiceError).code).toBe('BROWSER_INVALID_URL');
+    expect(testContext.calls).toEqual([]);
   });
 
   it('should report safe browser status without authentication values', async () => {
@@ -233,5 +299,11 @@ describe('browser persistent headed handoff', () => {
     expect(names).not.toContain('browser.login');
     expect(names).not.toContain('browser.reauth');
     expect(headed?.description).toMatch(/user.*login|login.*user|human/i);
+
+    const snap = entries.find((entry) => entry.name === 'browser.snap');
+    expect(snap?.capabilities).toMatchObject({ readOnly: true, mutating: false, safeToRetry: true });
+
+    const screenshot = entries.find((entry) => entry.name === 'browser.screenshot');
+    expect(screenshot?.capabilities).toMatchObject({ readOnly: false, mutating: false, safeToRetry: false });
   });
 });

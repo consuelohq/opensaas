@@ -121,19 +121,27 @@ function asCliError(cause: unknown): Error {
 function emit(result: BrowserProcessResult): void {
   if (result.stdout) out(result.stdout);
   if (result.exitCode !== 0) {
-    out(`error: ${result.stderr || result.stdout || `exit code ${result.exitCode}`}`);
+    out(`error: ${result.stderr || `exit code ${result.exitCode}`}`);
     process.exitCode = 1;
   }
 }
 
-async function applyPageOptions(opts: CliOptions): Promise<void> {
-  try {
-    if (opts.device) await run(['set', 'device', opts.device]);
-    if (opts.colorScheme === 'dark' || opts.colorScheme === 'light') await run(['set', 'media', opts.colorScheme]);
-    if (opts.width && opts.height) await run(['set', 'viewport', opts.width, opts.height]);
-  } catch (cause: unknown) {
-    throw asCliError(cause);
+function emitRun(args: string[]): Promise<void> {
+  return run(args).then(emit);
+}
+
+function applyPageOptions(opts: CliOptions): Promise<void> {
+  const commands: string[][] = [];
+  if (opts.device) commands.push(['set', 'device', opts.device]);
+  if (opts.colorScheme === 'dark' || opts.colorScheme === 'light') {
+    commands.push(['set', 'media', opts.colorScheme]);
   }
+  if (opts.width && opts.height) commands.push(['set', 'viewport', opts.width, opts.height]);
+
+  return commands.reduce<Promise<void>>(
+    (previous, command) => previous.then(() => run(command)).then(() => undefined),
+    Promise.resolve(),
+  );
 }
 
 function screenshotPath(name = 'page'): string {
@@ -142,143 +150,147 @@ function screenshotPath(name = 'page'): string {
   return join(context.config.screenshotDir, `${name}-${timestamp}.png`);
 }
 
-async function headed(url: string): Promise<void> {
-  try {
-    const result = await Effect.runPromise(headedBrowserEffect({ url }, context));
-    out(JSON.stringify(result, null, 2));
-  } catch (cause: unknown) {
-    throw asCliError(cause);
-  }
+function headed(url: string, opts: CliOptions): Promise<void> {
+  return Effect.runPromise(headedBrowserEffect({ url, provider: opts.provider }, context))
+    .then((result) => out(JSON.stringify(result, null, 2)));
 }
 
-async function open(url: string, opts: CliOptions): Promise<void> {
-  try {
-    if (opts.headed) {
-      await headed(url);
-      return;
-    }
-    await Effect.runPromise(openBrowserEffect({ url }, context));
-    await applyPageOptions(opts);
-    await run(['wait', '--load', 'networkidle']);
-    const snapshot = await run(['snapshot', '-i']);
-    const path = screenshotPath(new URL(url).hostname);
-    await run(['screenshot', path, ...(opts.full ? ['--full'] : [])]);
-    const title = await run(['get', 'title']);
-    const currentUrl = await run(['get', 'url']);
-    out('');
-    out(`url: ${currentUrl.stdout}`);
-    out(`title: ${title.stdout}`);
-    out(`screenshot: ${path}`);
-    out('');
-    out('--- interactive elements ---');
-    out(snapshot.stdout);
-  } catch (cause: unknown) {
-    throw asCliError(cause);
-  }
+function open(url: string, opts: CliOptions): Promise<void> {
+  if (opts.headed) return headed(url, opts);
+
+  return Effect.runPromise(openBrowserEffect({ url, provider: opts.provider }, context))
+    .then(() => applyPageOptions(opts))
+    .then(() => run(['wait', '--load', 'networkidle']))
+    .then(() => run(['snapshot', '-i']))
+    .then((snapshot) => {
+      const path = screenshotPath(new URL(url).hostname);
+      return run(['screenshot', path, ...(opts.full ? ['--full'] : [])])
+        .then(() => Promise.all([run(['get', 'title']), run(['get', 'url'])]))
+        .then(([title, currentUrl]) => {
+          out('');
+          out(`url: ${currentUrl.stdout}`);
+          out(`title: ${title.stdout}`);
+          out(`screenshot: ${path}`);
+          out('');
+          out('--- interactive elements ---');
+          out(snapshot.stdout);
+        });
+    });
 }
 
-async function interact(command: string, args: string[]): Promise<void> {
-  try {
-    const result = await run([command, ...args]);
+function interact(command: string, args: string[]): Promise<void> {
+  return run([command, ...args]).then((result) => {
     emit(result);
-    if (result.exitCode !== 0) return;
-    await run(['wait', '500']);
-    const snapshot = await run(['snapshot', '-i']);
-    if (snapshot.stdout) {
-      out('');
-      out('--- updated elements ---');
-      out(snapshot.stdout);
-    }
-  } catch (cause: unknown) {
-    throw asCliError(cause);
-  }
+    if (result.exitCode !== 0) return undefined;
+    return run(['wait', '500'])
+      .then(() => run(['snapshot', '-i']))
+      .then((snapshot) => {
+        if (!snapshot.stdout) return;
+        out('');
+        out('--- updated elements ---');
+        out(snapshot.stdout);
+      });
+  });
 }
 
-async function tabs(argv: string[]): Promise<void> {
-  try {
-    const action = argv[1];
-    const parts = argv.slice(2);
-    const labelIndex = parts.indexOf('--label');
-    const label = labelIndex >= 0 ? parts[labelIndex + 1] : undefined;
-    const cleaned = labelIndex >= 0 ? parts.filter((_, i) => i !== labelIndex && i !== labelIndex + 1) : parts;
-    const positional = cleaned.filter((part) => !part.startsWith('-'));
-    if (!action || action === 'list') return emit(await run(['tab', ...cleaned]));
-    if (action === 'new') {
-      const destination = positional.at(-1);
-      const destinationIndex = destination === undefined ? -1 : cleaned.lastIndexOf(destination);
-      const forwarded = cleaned.filter((_, index) => index !== destinationIndex);
-      return emit(await run(['tab', 'new', ...(label ? ['--label', label] : []), ...forwarded, ...(destination ? [destination] : [])]));
-    }
-    if (action === 'select' || action === 'switch') return emit(await run(['tab', positional[0] || '']));
-    if (action === 'close') return emit(await run(['tab', 'close', ...(positional[0] ? [positional[0]] : [])]));
-    emit(await run(['tab', action, ...cleaned]));
-  } catch (cause: unknown) {
-    throw asCliError(cause);
+function tabs(argv: string[]): Promise<void> {
+  const action = argv[1];
+  const parts = argv.slice(2);
+  const labelIndex = parts.indexOf('--label');
+  const label = labelIndex >= 0 ? parts[labelIndex + 1] : undefined;
+  const cleaned = labelIndex >= 0
+    ? parts.filter((_, index) => index !== labelIndex && index !== labelIndex + 1)
+    : parts;
+  const positional = cleaned.filter((part) => !part.startsWith('-'));
+
+  if (!action || action === 'list') return emitRun(['tab', ...cleaned]);
+  if (action === 'new') {
+    const destination = positional.at(-1);
+    const destinationIndex = destination === undefined ? -1 : cleaned.lastIndexOf(destination);
+    const forwarded = cleaned.filter((_, index) => index !== destinationIndex);
+    return emitRun([
+      'tab',
+      'new',
+      ...(label ? ['--label', label] : []),
+      ...forwarded,
+      ...(destination ? [destination] : []),
+    ]);
   }
+  if (action === 'select' || action === 'switch') return emitRun(['tab', positional[0] || '']);
+  if (action === 'close') return emitRun(['tab', 'close', ...(positional[0] ? [positional[0]] : [])]);
+  return emitRun(['tab', action, ...cleaned]);
 }
 
-async function main(argv = process.argv.slice(2)): Promise<void> {
-  try {
-    const { opts, args } = parse(argv);
-    const command = args[0];
-    if (!command || command === '--help' || command === 'help') return help();
-    if (command === 'login' || command === 'reauth') {
-      throw new Error('browser.login and browser.reauth were removed; use browser.headed <url>');
-    }
-    if (command === 'raw') return emit(await run(args.slice(1)));
-    if (command === 'headed') {
-      if (!args[1]) throw new Error('url required. usage: bun run browser -- headed <url>');
-      return headed(args[1]);
-    }
-    if (command === 'status') return out(JSON.stringify(await Effect.runPromise(statusBrowserEffect({}, context)), null, 2));
-    if (command === 'open' || command === 'url') {
-      if (!args[1]) throw new Error('url required. usage: bun run browser -- open <url>');
-      return open(args[1], opts);
-    }
-    if (command === 'consuelo') return open(CONSUELO_URL, opts);
-    if (command === 'app') return open(APP_URL, opts);
-    if (command === 'close') {
-      await Effect.runPromise(closeBrowserEffect(context));
-      return out('browser closed');
-    }
-    if (command === 'screenshot' || command === 'ss') {
-      await applyPageOptions(opts);
+function main(argv = process.argv.slice(2)): Promise<void> {
+  if (argv[0] === 'raw') return emitRun(argv.slice(1));
+
+  const { opts, args } = parse(argv);
+  const command = args[0];
+  if (!command || command === '--help' || command === 'help') {
+    help();
+    return Promise.resolve();
+  }
+  if (command === 'login' || command === 'reauth') {
+    throw new Error('browser.login and browser.reauth were removed; use browser.headed <url>');
+  }
+  if (command === 'headed') {
+    if (!args[1]) throw new Error('url required. usage: bun run browser -- headed <url>');
+    return headed(args[1], opts);
+  }
+  if (command === 'status') {
+    return Effect.runPromise(statusBrowserEffect({}, context))
+      .then((result) => out(JSON.stringify(result, null, 2)));
+  }
+  if (command === 'open' || command === 'url') {
+    if (!args[1]) throw new Error('url required. usage: bun run browser -- open <url>');
+    return open(args[1], opts);
+  }
+  if (command === 'consuelo') return open(CONSUELO_URL, opts);
+  if (command === 'app') return open(APP_URL, opts);
+  if (command === 'close') {
+    return Effect.runPromise(closeBrowserEffect(context)).then(() => out('browser closed'));
+  }
+  if (command === 'screenshot' || command === 'ss') {
+    return applyPageOptions(opts).then(() => {
       const path = screenshotPath(args[1]);
-      emit(await run(['screenshot', path, ...(opts.full ? ['--full'] : [])]));
-      return out(`screenshot: ${path}`);
-    }
-    if (command === 'snap' || command === 'snapshot') return emit(await run(['snapshot', '-i']));
-    if (command === 'click') return interact('click', [args[1]]);
-    if (command === 'dblclick') return interact('dblclick', [args[1]]);
-    if (command === 'fill') return interact('fill', [args[1], args.slice(2).join(' ')]);
-    if (command === 'type') return emit(await run(['type', args[1], args.slice(2).join(' ')]));
-    if (command === 'hover') return emit(await run(['hover', args[1]]));
-    if (command === 'select' || command === 'check' || command === 'uncheck') return interact(command, args.slice(1));
-    if (command === 'scroll') return emit(await run(['scroll', ...args.slice(1)]));
-    if (command === 'eval') return emit(await run(['eval', args.slice(1).join(' ')]));
-    if (command === 'get') {
-      const target = args[1] === 'attribute' ? 'attr' : args[1];
-      return emit(await run(['get', ...(target ? [target] : []), ...args.slice(2)]));
-    }
-    if (command === 'tabs') return tabs(args);
-    if (command === 'cookies') {
-      const [, action, name, value] = args;
-      return emit(await run(!action || action === 'list' ? ['cookies'] : ['cookies', action, ...(name ? [name] : []), ...(value ? [value] : [])]));
-    }
-    if (command === 'network' && args[1] === 'requests') {
-      const result = await run(args);
+      return emitRun(['screenshot', path, ...(opts.full ? ['--full'] : [])])
+        .then(() => out(`screenshot: ${path}`));
+    });
+  }
+  if (command === 'snap' || command === 'snapshot') return emitRun(['snapshot', '-i']);
+  if (command === 'click') return interact('click', [args[1]]);
+  if (command === 'dblclick') return interact('dblclick', [args[1]]);
+  if (command === 'fill') return interact('fill', [args[1], args.slice(2).join(' ')]);
+  if (command === 'type') return interact('type', [args[1], args.slice(2).join(' ')]);
+  if (command === 'hover') return emitRun(['hover', args[1]]);
+  if (command === 'select' || command === 'check' || command === 'uncheck') {
+    return interact(command, args.slice(1));
+  }
+  if (command === 'scroll') return emitRun(['scroll', ...args.slice(1)]);
+  if (command === 'eval') return emitRun(['eval', args.slice(1).join(' ')]);
+  if (command === 'get') {
+    const target = args[1] === 'attribute' ? 'attr' : args[1];
+    return emitRun(['get', ...(target ? [target] : []), ...args.slice(2)]);
+  }
+  if (command === 'tabs') return tabs(args);
+  if (command === 'cookies') {
+    const [, action, name, value] = args;
+    return emitRun(!action || action === 'list'
+      ? ['cookies']
+      : ['cookies', action, ...(name ? [name] : []), ...(value ? [value] : [])]);
+  }
+  if (command === 'network' && args[1] === 'requests') {
+    return run(args).then((result) => {
       const noise = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|map)(\?|$)|^data:|\/webpack|\/hot-update|\/socket\.io|\/ws$|__nextjs|_next\/static|chrome-extension/i;
       const filtered = result.stdout.split('\n').filter((line) => line.trim() && !noise.test(line));
       result.stdout = filtered.join('\n') || 'no meaningful network requests (all filtered as static assets)';
-      return emit(result);
-    }
-    if (['wait', 'find', 'batch', 'tab', 'storage', 'console', 'errors', 'download', 'clipboard', 'set', 'dialog', 'network', 'trace'].includes(command)) {
-      return emit(await run(args));
-    }
-    emit(await run(args));
-  } catch (cause: unknown) {
-    throw asCliError(cause);
+      emit(result);
+    });
   }
+  if (['wait', 'find', 'batch', 'tab', 'storage', 'console', 'errors', 'download', 'clipboard', 'set', 'dialog', 'network', 'trace'].includes(command)) {
+    return emitRun(args);
+  }
+  return emitRun(args);
 }
 
 export async function runBrowserCli(argv?: string[]): Promise<void> {

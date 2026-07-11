@@ -916,6 +916,11 @@
               "source": "url",
               "kind": "value",
               "required": true
+            },
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value"
             }
           ]
         },
@@ -1127,7 +1132,7 @@
         "underlying": "workspace browser.screenshot",
         "capabilities": {
           "readOnly": false,
-          "mutating": true,
+          "mutating": false,
           "deterministic": false,
           "safeToRetry": false
         },
@@ -1206,10 +1211,10 @@
         "category": "utilities",
         "underlying": "workspace browser.snap",
         "capabilities": {
-          "readOnly": false,
-          "mutating": true,
+          "readOnly": true,
+          "mutating": false,
           "deterministic": false,
-          "safeToRetry": false
+          "safeToRetry": true
         },
         "defaultTimeout": 300000,
         "inputSchema": "EmptyInput",

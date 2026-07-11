@@ -332,7 +332,7 @@ export const FsHttpInput = z.object({
   ...requestFields,
   ...dryRunField,
   method: z.enum(['get', 'post', 'put', 'patch', 'delete', 'head']).optional(),
-  url: z.string().url(),
+  url: z.url(),
   headers: z.record(z.string(), z.string()).optional(),
   body: z.string().optional(),
 });
@@ -665,7 +665,7 @@ export const BrowserInput = z.object({
 export const BrowserOpenInput = z.object({
   ...requestFields,
   ...dryRunField,
-  url: z.string().url(),
+  url: z.url(),
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
   ...browserDeviceFlags,
@@ -677,7 +677,8 @@ export const BrowserOpenInput = z.object({
 export const BrowserHeadedInput = z.object({
   ...requestFields,
   ...dryRunField,
-  url: z.string().url(),
+  url: z.url(),
+  provider: optionalString,
 });
 
 export const BrowserPageInput = z.object({
@@ -1241,7 +1242,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserHeadedInput: '{ url: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserHeadedInput: '{ url: string; provider?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserScreenshotInput: '{ name?: string; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserElementInput: '{ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

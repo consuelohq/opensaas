@@ -5,9 +5,9 @@ import { BrowserServiceError } from './errors';
 import { createBrowserProcess } from './process';
 import type {
   BrowserContext,
+  BrowserExistingResult,
   BrowserHeadedResult,
   BrowserOpenInput,
-  BrowserOpenResult,
   BrowserProcessResult,
   BrowserStatus,
 } from './types';
@@ -17,12 +17,15 @@ export function createBrowserContext(env: NodeJS.ProcessEnv = process.env): Brow
   return { config, process: createBrowserProcess(config.defaultTimeoutMs) };
 }
 
-function validateUrl(value: string): string {
-  try {
-    return new URL(value).toString();
-  } catch {
-    throw new BrowserServiceError('BROWSER_INVALID_URL', `Invalid browser URL: ${value}`);
-  }
+function validateUrl(value: string) {
+  return Effect.try({
+    try: () => new URL(value).toString(),
+    catch: () => new BrowserServiceError('BROWSER_INVALID_URL', `Invalid browser URL: ${value}`),
+  });
+}
+
+function providerArgs(provider?: string): string[] {
+  return provider ? ['--provider', provider] : [];
 }
 
 function commandFailure(operation: string, result: BrowserProcessResult): BrowserServiceError {
@@ -60,18 +63,19 @@ function runRequired(
   return Effect.flatMap(runBrowserCommandEffect(input, context), (result) => ensureSuccess(operation, result));
 }
 
-export function headedBrowserEffect(input: { url: string }, context: BrowserContext) {
+export function headedBrowserEffect(input: { url: string; provider?: string }, context: BrowserContext) {
   return Effect.gen(function* () {
-    const url = validateUrl(input.url);
+    const url = yield* validateUrl(input.url);
+    const provider = providerArgs(input.provider);
     const close = yield* runBrowserCommandEffect({ args: ['close', '--all'], useProfile: false }, context);
     if (close.runtimeMissing || close.timedOut) {
       return yield* Effect.fail(commandFailure('browser daemon restart', close));
     }
 
-    yield* runRequired('headed browser launch', { args: ['--headed', 'open', 'about:blank'] }, context);
-    yield* runRequired('headed browser navigation', { args: ['open', input.url] }, context);
-    const currentUrl = yield* runRequired('browser URL read', { args: ['get', 'url'] }, context);
-    const title = yield* runRequired('browser title read', { args: ['get', 'title'] }, context);
+    yield* runRequired('headed browser launch', { args: [...provider, '--headed', 'open', 'about:blank'] }, context);
+    yield* runRequired('headed browser navigation', { args: [...provider, 'open', url] }, context);
+    const currentUrl = yield* runRequired('browser URL read', { args: [...provider, 'get', 'url'] }, context);
+    const title = yield* runRequired('browser title read', { args: [...provider, 'get', 'title'] }, context);
 
     return {
       mode: 'headed',
@@ -84,17 +88,17 @@ export function headedBrowserEffect(input: { url: string }, context: BrowserCont
 }
 
 export function openBrowserEffect(input: BrowserOpenInput, context: BrowserContext) {
-  if (input.headed) return headedBrowserEffect({ url: input.url }, context);
+  if (input.headed) return headedBrowserEffect({ url: input.url, provider: input.provider }, context);
 
   return Effect.gen(function* () {
-    const url = validateUrl(input.url);
-    yield* runRequired('browser open', { args: ['open', input.url] }, context);
+    const url = yield* validateUrl(input.url);
+    yield* runRequired('browser open', { args: [...providerArgs(input.provider), 'open', url] }, context);
     return {
       mode: 'existing',
       profilePath: context.config.profilePath,
       url,
       leftRunning: true,
-    } satisfies BrowserOpenResult;
+    } satisfies BrowserExistingResult;
   });
 }
 
@@ -104,9 +108,9 @@ function hasActiveSession(summary: string): boolean {
 
 export function statusBrowserEffect(_input: Record<string, never>, context: BrowserContext) {
   return Effect.gen(function* () {
-    const session = yield* runBrowserCommandEffect({ args: ['session', 'list'] }, context);
+    const session = yield* runRequired('browser status', { args: ['session', 'list'] }, context);
     const sessionSummary = session.stdout.trim();
-    if (session.exitCode !== 0 || !hasActiveSession(sessionSummary)) {
+    if (!hasActiveSession(sessionSummary)) {
       return {
         profilePath: context.config.profilePath,
         reachable: false,
@@ -116,15 +120,15 @@ export function statusBrowserEffect(_input: Record<string, never>, context: Brow
       } satisfies BrowserStatus;
     }
 
-    const url = yield* runBrowserCommandEffect({ args: ['get', 'url'] }, context);
-    const title = yield* runBrowserCommandEffect({ args: ['get', 'title'] }, context);
+    const url = yield* runRequired('browser URL read', { args: ['get', 'url'] }, context);
+    const title = yield* runRequired('browser title read', { args: ['get', 'title'] }, context);
 
     return {
       profilePath: context.config.profilePath,
-      reachable: url.exitCode === 0,
+      reachable: true,
       sessionSummary,
-      url: url.exitCode === 0 ? url.stdout.trim() : '',
-      title: title.exitCode === 0 ? title.stdout.trim() : '',
+      url: url.stdout.trim(),
+      title: title.stdout.trim(),
     } satisfies BrowserStatus;
   });
 }
