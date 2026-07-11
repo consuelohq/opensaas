@@ -783,12 +783,16 @@ describe('sanitized Cloudflare trace preview', () => {
       'utf8',
     );
     const historyRoute =
-      'if (url.pathname === "/gateway/traces/recent") return createArchiveTraceHistoryResponse({ request, dbPath: latestTraceDb() });';
+      'if (url.pathname === "/gateway/traces/recent") return createArchiveTraceHistoryResponse({ request, dbPath: resolveTraceDbPath() });';
     const archiveRootRoute =
       'if (url.pathname === "/") return new Response(renderSitesLauncher()';
 
     expect(officeSource).toContain(
       "import { createArchiveTraceHistoryResponse } from ",
+    );
+    expect(officeSource).toContain("import { resolveTraceDbPath } from ");
+    expect(officeSource).toContain(
+      'function latestTraceDb(){ return resolveTraceDbPath(); }',
     );
     expect(officeSource).toContain(historyRoute);
     expect(officeSource.indexOf(historyRoute)).toBeLessThan(

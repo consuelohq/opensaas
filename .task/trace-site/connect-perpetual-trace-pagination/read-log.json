@@ -13,6 +13,7 @@
     "packages/os/scripts/lib/workspace-edge-route-seed.ts",
     "packages/os/scripts/server/routes/traces.ts",
     "packages/os/scripts/server/services/trace-gateway.ts",
+    "packages/os/tests/trace-gateway-service.test.ts",
     "packages/os/tests/trace-sites-browser-client.test.ts",
     "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
     "packages/os/tests/workspace-cloudflare-edge-router.test.ts",
@@ -29,5 +30,5 @@
     "packages/workspace/test-selection.rules.json",
     "packages/workspace/tsconfig.json"
   ],
-  "updatedAt": "2026-07-11T15:09:31.650Z"
+  "updatedAt": "2026-07-11T15:16:56.039Z"
 }
