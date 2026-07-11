@@ -211,6 +211,38 @@ describe('trace-site virtual list state', () => {
     ).toEqual(['record-4', 'record-5', 'record-6', 'record-7']);
   });
 
+  test('should retain newest rows and current selection when appending older history', () => {
+    const current = Array.from({ length: 6 }, (_, index) =>
+      row({
+        id: `record-${index}`,
+        recordId: `record-${index}`,
+        traceId: `trace-${index}`,
+      }),
+    );
+    const older = Array.from({ length: 3 }, (_, index) =>
+      row({
+        id: `record-${index + 6}`,
+        recordId: `record-${index + 6}`,
+        traceId: `trace-${index + 6}`,
+      }),
+    );
+
+    expect(
+      mergeTraceRows(current, older, {
+        direction: 'history',
+        maxRows: 6,
+        selectedKey: 'record-4',
+      }).map(stableTraceKey),
+    ).toEqual([
+      'record-0',
+      'record-1',
+      'record-2',
+      'record-3',
+      'record-4',
+      'record-5',
+    ]);
+  });
+
   test('should request prefetch when the virtual range approaches an available next page', () => {
     expect(
       shouldPrefetchTracePage({

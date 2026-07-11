@@ -21,7 +21,11 @@ import {
   deriveTraceHistoryCursor,
   type TracePrefetchRequestDetail,
 } from './pagination-browser';
-import { mergeTraceRows, shouldPrefetchTracePage } from './trace-list';
+import {
+  mergeTraceRows,
+  shouldPrefetchTracePage,
+  type TracePageDirection,
+} from './trace-list';
 
 const MAX_RETAINED_ROWS = 5_000;
 const PREFETCH_THRESHOLD = 25;
@@ -170,7 +174,7 @@ class TraceVirtualListController {
     this.nextCursor = nextCursor;
     this.lastRequestedCursor = null;
     this.fetching = false;
-    this.setRows(rows, 'append');
+    this.setRows(rows, 'history');
   }
 
   prependRows(rows: TraceRecord[]): void {
@@ -246,7 +250,7 @@ class TraceVirtualListController {
     );
   }
 
-  private setRows(rows: TraceRecord[], direction: 'append' | 'prepend'): void {
+  private setRows(rows: TraceRecord[], direction: TracePageDirection): void {
     this.rows = mergeTraceRows(this.rows, rows, {
       direction,
       maxRows: MAX_RETAINED_ROWS,

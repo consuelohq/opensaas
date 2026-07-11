@@ -1,6 +1,6 @@
 import { dedupeTraceRows, stableTraceKey, type TraceRecord } from './model';
 
-export type TracePageDirection = 'append' | 'prepend';
+export type TracePageDirection = 'append' | 'prepend' | 'history';
 
 export type MergeTraceRowsOptions = {
   direction: TracePageDirection;
@@ -45,6 +45,7 @@ export function retainTraceWindow(
 
   const window =
     direction === 'append' ? rows.slice(-limit) : rows.slice(0, limit);
+  if (direction === 'history') return window;
   if (!selectedKey || window.some((row) => stableTraceKey(row) === selectedKey))
     return window;
 

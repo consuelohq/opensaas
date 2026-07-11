@@ -40,8 +40,8 @@ started: 2026-07-11
 
 ## files changed
 
-- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
-- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- `packages/workspace/scripts/office.ts`
+- `packages/workspace/tests/trace-site-inspector.test.ts`
 
 
 ## workspace-owned: files changed
@@ -76,6 +76,9 @@ started: 2026-07-11
 - 2026-07-11 15:18:39 `checkFiles`: passed — OK
 - 2026-07-11 15:19:01 `review.run`: passed — OK
 - 2026-07-11 15:19:21 `verify`: passed — OK
+- 2026-07-11 15:25:42 `checkFiles`: passed — OK
+- 2026-07-11 15:26:03 `review.run`: passed — OK
+- 2026-07-11 15:26:25 `verify`: passed — OK
 
 ## key decisions
 
@@ -106,6 +109,7 @@ started: 2026-07-11
 - Codex review identified a P1: a static browser cannot create the internal OS gateway signature. The direct browser fetch was removed. The existing private Tailnet archive now owns the same-origin data route, while the public Cloudflare preview is terminal and transport-free.
 - Codex review identified a P2: `id:<traceId>` cursors only queried `tool_traces.id`, so alias-only feed rows could fall back to the newest row and duplicate visible history. The resolver now uses one parameterized query across `id`, `trace_id`, and `mcp_trace_id`, ordered by newest matching rowid.
 - Codex review identified a second P2: the archive server's shard-only DB helper diverged from the runtime gateway's supported DB path contract. The generated server now imports `resolveTraceDbPath`, uses it for the history route, and delegates batch enrichment through the same resolver.
+- Codex review identified a third P2: accepted older pages used append retention, which kept the oldest tail and evicted latest traces at the cap. A dedicated `history` direction now appends in display order while retaining the newest head window; existing selection remains retained because it is already in the current window.
 - The first real-shard probe used a relative module import from the `code.call` temporary directory and failed before reading data. Retrying with an absolute file URL passed; no repository state changed during the failed probe.
 
 ## review wait
@@ -135,6 +139,14 @@ started: 2026-07-11
 - Alias-fix fallback: address new findings or poll bounded pending checks; do not promote while failures or unresolved findings remain.
 - Alias-fix wake result: 2026-07-11T15:14:50Z; PR #1415 was at `075fb6cc0cd3f7464ba92136b142266e175f90a2` with 47 checks, 0 failed, and 2 running.
 - Alias-fix review result: Codex added one actionable P2 because the private archive's local `latestTraceDb()` helper omitted the supported direct `traces/traces.db` layout and explicit DB overrides. Promotion remained blocked.
+- Direct-DB wait reason: allow review bots and required PR checks to process `f332bfdb77ba07e5393c32c6117d35c950c662da`.
+- Direct-DB wait start: 2026-07-11T15:19:39Z.
+- Direct-DB wait duration: 100 seconds.
+- Direct-DB resume action: inspect PR #1415 reviews, inline comments, and all check conclusions immediately after wake.
+- Direct-DB expected signal: no new actionable review finding and no failed required check.
+- Direct-DB fallback: address new findings or poll bounded pending checks; do not promote while failures or unresolved findings remain.
+- Direct-DB wake result: 2026-07-11T15:21:36Z; PR #1415 was at `f332bfdb77ba07e5393c32c6117d35c950c662da` with 47 checks, 0 failed, and 3 running.
+- Direct-DB review result: Codex added one actionable P2 because older history pages still used live-feed append retention and could evict the newest rows after the 5,000-row cap. Promotion remained blocked.
 
 ## validation evidence
 
@@ -160,6 +172,7 @@ started: 2026-07-11
 - Production-shaped alias proof: both `trace_id` and `mcp_trace_id` cursors returned 3 rows strictly older than the visible boundary and excluded the boundary row.
 - Direct DB resolver regression: the inspector source contract failed red because `office.ts` did not import `resolveTraceDbPath`; it passed green after the generated archive server reused the gateway resolver.
 - Resolver/office proof: 1 gateway resolver test, 15 office source tests, and 18 inspector tests passed.
+- History retention proof: 19 inspector tests passed, including a capped-window regression that preserves newest rows and current selection; strict browser TypeScript passed and the bundle is 95,622 bytes.
 
 ---
 
@@ -217,7 +230,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/trace-site/connect-perpetual-trace-pagination/evidence-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/read-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/workpad.md`, `packages/workspace/scripts/office.ts`, `packages/workspace/tests/trace-site-inspector.test.ts`
+- changed files: `.task/trace-site/connect-perpetual-trace-pagination/evidence-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/read-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/workpad.md`, `packages/workspace/scripts/trace-site-inspector/trace-list.ts`, `packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts`, `packages/workspace/tests/trace-site-inspector.test.ts`
 - matched rules: `trace-site-pagination`
 - selected suites: `trace gateway history endpoints`, `trace gateway DB resolution`, `trace site inspector pagination`
 - run results: `trace gateway history endpoints` passed, `trace gateway DB resolution` passed, `trace site inspector pagination` passed
