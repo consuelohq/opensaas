@@ -4,13 +4,14 @@
   "mode": "full",
   "branch": "task/trace-site/connect-perpetual-trace-pagination",
   "base": "origin/task/trace-site/connect-perpetual-trace-pagination",
-  "headSha": "075fb6cc0cd3f7464ba92136b142266e175f90a2",
-  "changeHash": "350e5c307c959d21bf22bbd5d14337d25c3898594d1439d46b5d6e046b7b05dc",
+  "headSha": "f332bfdb77ba07e5393c32c6117d35c950c662da",
+  "changeHash": "961c3ae79315c1d4489d8b2ce89b7bbe6edef2d4c57fbc8d87a7005f08bfa98e",
   "changedFiles": [
-    "packages/workspace/scripts/office.ts",
+    "packages/workspace/scripts/trace-site-inspector/trace-list.ts",
+    "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
     "packages/workspace/tests/trace-site-inspector.test.ts"
   ],
-  "verifiedAt": "2026-07-11T15:19:21.429Z",
+  "verifiedAt": "2026-07-11T15:26:25.830Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -27,7 +28,8 @@
         ".task/trace-site/connect-perpetual-trace-pagination/evidence-log.json",
         ".task/trace-site/connect-perpetual-trace-pagination/read-log.json",
         ".task/trace-site/connect-perpetual-trace-pagination/workpad.md",
-        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/trace-site-inspector/trace-list.ts",
+        "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
         "packages/workspace/tests/trace-site-inspector.test.ts"
       ],
       "matchedRules": [
@@ -36,7 +38,8 @@
           "critical": true,
           "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
           "matchedFiles": [
-            "packages/workspace/scripts/office.ts",
+            "packages/workspace/scripts/trace-site-inspector/trace-list.ts",
+            "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
             "packages/workspace/tests/trace-site-inspector.test.ts"
           ],
           "origin": "explicit"
@@ -103,8 +106,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 565,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 20\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:19:15\n\u001b[2m   Duration \u001b[22m 216ms\u001b[2m (transform 74ms, setup 0ms, import 89ms, tests 20ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 462,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 17\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:26:20\n\u001b[2m   Duration \u001b[22m 166ms\u001b[2m (transform 72ms, setup 0ms, import 87ms, tests 17ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "trace gateway DB resolution",
@@ -122,8 +125,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 583,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-gateway-service.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:19:16\n\u001b[2m   Duration \u001b[22m 278ms\u001b[2m (transform 119ms, setup 0ms, import 189ms, tests 5ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 678,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-gateway-service.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:26:20\n\u001b[2m   Duration \u001b[22m 343ms\u001b[2m (transform 177ms, setup 0ms, import 256ms, tests 4ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "trace site inspector pagination",
@@ -141,8 +144,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 4352,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/workspace\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-site-inspector.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3719\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve interactive inspector behavior when the trace list is virtualized \u001b[33m 1226\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should append older history pages while preserving inspector state and terminal behavior \u001b[33m 2356\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:19:16\n\u001b[2m   Duration \u001b[22m 4.15s\u001b[2m (transform 96ms, setup 0ms, import 344ms, tests 3.72s, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 4346,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/workspace\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-site-inspector.test.ts \u001b[2m(\u001b[22m\u001b[2m19 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3723\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve interactive inspector behavior when the trace list is virtualized \u001b[33m 1252\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should append older history pages while preserving inspector state and terminal behavior \u001b[33m 2364\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m19 passed\u001b[39m\u001b[22m\u001b[90m (19)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:26:21\n\u001b[2m   Duration \u001b[22m 4.15s\u001b[2m (transform 90ms, setup 0ms, import 337ms, tests 3.72s, environment 0ms)\u001b[22m\n\n"
         }
       ],
       "failedSuites": []
