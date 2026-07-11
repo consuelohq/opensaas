@@ -20,10 +20,10 @@ async function waitForHealth(port: number): Promise<Record<string, unknown>> {
 }
 
 describe('OS raw steering routing', () => {
-  it('reports get_steering, call, and mcp in the server-visible tool surface', async () => {
+  it('keeps MCP separate from the two server-visible tools', async () => {
     const port = 19000 + Math.floor(Math.random() * 1000);
     const home = mkdtempSync(join(tmpdir(), 'consuelo-os-raw-steering-'));
-    const server = spawn('bun', ['scripts/server.ts'], {
+    const server = spawn('bun', ['scripts/server/main.ts'], {
       cwd: packageRoot,
       env: {
         ...process.env,
@@ -42,8 +42,10 @@ describe('OS raw steering routing', () => {
       const legacyPath = '/get_' + 'dev' + '_steering';
       const legacyResponse = await fetch(`http://127.0.0.1:${port}${legacyPath}`);
 
-      expect(body.tools).toBe(3);
-      expect(body.toolNames).toEqual(['get_steering', 'call', 'mcp']);
+      expect(body.tools).toBe(2);
+      expect(body.toolNames).toEqual(['get_steering', 'call']);
+      expect(body.protocols).toEqual(['mcp']);
+      expect(body.endpoints).toEqual(['/mcp']);
       expect(legacyResponse.status).toBe(401);
     } finally {
       server.kill('SIGTERM');
