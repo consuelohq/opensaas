@@ -101,7 +101,7 @@ export type HomeFeaturePreviewItem = {
   body: string;
   motif: FeatureArtworkMotif;
   imageAlt: string;
-  assetSrc?: string;
+  assetSrc: string;
 };
 
 export type HomePlatformCardCtaIcon = 'terminal' | 'sign-in' | 'cloud';
@@ -170,12 +170,14 @@ export const homeHero: HomeHeroContent = {
         'Bring calls, GTM data, files, analytics, and agents into one workspace built to help your team decide what to do next.',
 };
 
+export const INSTALL_COMMAND = 'curl -fsSL https://install.consuelohq.com/os | bash';
+
 export const homeTabs: HomeTab[] = [
   {
     id: 'terminal',
     label: 'macOS / Linux',
     kind: 'command',
-    value: 'curl -fsSL https://install.consuelohq.com/os | bash',
+    value: INSTALL_COMMAND,
     imageSrc: '/images/gifs/demo-light.gif',
     darkImageSrc: '/images/gifs/demo-dark.gif',
     imageAlt: 'Consuelo terminal install preview',
