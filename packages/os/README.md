@@ -8,7 +8,7 @@ The current package proves this spine:
 get_steering -> call -> Bun skill -> structured result -> local execution record
 ```
 
-The product runtime path is Bun/TypeScript. Python files remain only as temporary compatibility/bootstrap surfaces until the Bun server fully replaces transport needs.
+The product server is Bun/TypeScript. Python is reserved for optional utilities and is not a supported server transport.
 
 ## OS portal
 
@@ -109,12 +109,12 @@ cd packages/os
 bun run server:run
 ```
 
-The server listens on `127.0.0.1:8850` by default.
+The server listens on `127.0.0.1:8960` by default.
 
 Override the port with:
 
 ```bash
-export CONSUELO_OS_PORT=8851
+export CONSUELO_OS_PORT=8961
 ```
 
 The server exposes:
