@@ -33,6 +33,7 @@ type ReleaseModule = {
       writeOut: (message?: string) => void;
       writeErr: (message?: string) => void;
       fetchImpl?: typeof fetch;
+      sleepImpl?: (ms: number) => Promise<void>;
     },
   ) => Promise<number>;
   assertDeviceAuthorityHealth: (health: {
@@ -208,17 +209,86 @@ describe('OS device authority release contract', () => {
     })).not.toThrow();
   });
 
+  it('should retry verification until connector provisioning is ready', async () => {
+    const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
+    const output: string[] = [];
+    const errors: string[] = [];
+    const delays: number[] = [];
+    let healthAttempts = 0;
+
+    const exitCode = await runDeviceAuthorityReleaseCli([
+      '--verify-only',
+      '--verify-attempts',
+      '3',
+      '--verify-delay-ms',
+      '1',
+    ], {
+      commandRunner(command) {
+        throw new Error(`unexpected command: ${command.command}`);
+      },
+      async fetchImpl(input) {
+        const url = String(input);
+        if (url === 'https://os.consuelohq.com/health') {
+          healthAttempts += 1;
+          return Response.json({
+            ok: true,
+            connector_provisioning_configured: healthAttempts > 1,
+          });
+        }
+        if (url.startsWith('https://os.consuelohq.com/login/device?')) {
+          return new Response(
+            '<a href="https://os.consuelohq.com/login/google/start?user_code=RELSMOKE">Continue</a>',
+          );
+        }
+        if (url === 'https://os.consuelohq.com/login/device/code') {
+          return Response.json(
+            { error: 'device_public_key_required' },
+            { status: 400 },
+          );
+        }
+        throw new Error(`unexpected request: ${url}`);
+      },
+      async sleepImpl(ms) {
+        delays.push(ms);
+      },
+      writeOut(message = '') {
+        output.push(message);
+      },
+      writeErr(message = '') {
+        errors.push(message);
+      },
+    });
+
+    expect(exitCode).toBe(0);
+    expect(healthAttempts).toBe(2);
+    expect(delays).toEqual([1]);
+    expect(errors).toEqual([]);
+    expect(output).toContain(
+      'Verifying https://os.consuelohq.com/health (attempt 1/3)',
+    );
+    expect(output).toContain(
+      'Verifying https://os.consuelohq.com/health (attempt 2/3)',
+    );
+  });
+
   it('should report one concise error when asynchronous verification fails', async () => {
     const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
     const errors: string[] = [];
 
-    const exitCode = await runDeviceAuthorityReleaseCli(['--verify-only'], {
+    const exitCode = await runDeviceAuthorityReleaseCli([
+      '--verify-only',
+      '--verify-attempts',
+      '2',
+      '--verify-delay-ms',
+      '1',
+    ], {
       commandRunner(command) {
         throw new Error(`unexpected command: ${command.command}`);
       },
       async fetchImpl() {
         throw new Error('controlled asynchronous health failure');
       },
+      async sleepImpl() {},
       writeOut() {},
       writeErr(message = '') {
         errors.push(message);
@@ -227,7 +297,7 @@ describe('OS device authority release contract', () => {
 
     expect(exitCode).toBe(1);
     expect(errors).toEqual([
-      'Device authority verification failed: Device authority request failed: controlled asynchronous health failure',
+      'Device authority verification failed after 2 attempts: Device authority request failed: controlled asynchronous health failure',
     ]);
     expect(errors.join('\n')).not.toMatch(/\n\s*at\s|Bun v\d|\.ts:\d+:\d+/);
   });

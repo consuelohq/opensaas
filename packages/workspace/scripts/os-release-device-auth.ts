@@ -18,6 +18,8 @@ const HEALTH_URL = 'https://os.consuelohq.com/health';
 const DEVICE_PAGE_URL = 'https://os.consuelohq.com/login/device?user_code=RELSMOKE';
 const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
 const REQUEST_TIMEOUT_MS = 30_000;
+const DEFAULT_VERIFY_ATTEMPTS = 12;
+const DEFAULT_VERIFY_DELAY_MS = 5_000;
 const SNAPSHOT_BUCKET = 'consuelo-sites-snapshots';
 const DEFAULT_SNAPSHOT_WORKSPACE_ID = 'workspace_testing';
 const DEFAULT_SNAPSHOT_HOST = 'sites.consuelohq.com';
@@ -27,6 +29,8 @@ type Options = {
   dryRun: boolean;
   verifyOnly: boolean;
   noVerify: boolean;
+  verifyAttempts: number;
+  verifyDelayMs: number;
   help: boolean;
 };
 
@@ -53,6 +57,7 @@ type ReleaseDependencies = {
   writeOut: (message?: string) => void;
   writeErr: (message?: string) => void;
   fetchImpl: typeof fetch;
+  sleepImpl: (ms: number) => Promise<void>;
 };
 
 type ReleaseDependencyOverrides = Partial<ReleaseDependencies>;
@@ -73,6 +78,10 @@ function defaultWriteOut(message = ''): void {
 
 function defaultWriteErr(message = ''): void {
   process.stderr.write(`${message}\n`);
+}
+
+function defaultSleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function defaultCommandRunner(input: ReleaseCommand): ReleaseCommandResult {
@@ -99,6 +108,7 @@ function dependencies(
     writeOut: overrides.writeOut ?? defaultWriteOut,
     writeErr: overrides.writeErr ?? defaultWriteErr,
     fetchImpl: overrides.fetchImpl ?? fetch,
+    sleepImpl: overrides.sleepImpl ?? defaultSleep,
   };
 }
 
@@ -111,6 +121,8 @@ Options:
   --dry-run       Run wrangler deploy --dry-run only
   --verify-only   Skip deploy and verify the current live Worker
   --no-verify     Skip live verification after deploy
+  --verify-attempts <n>  Verification attempts after deploy. Default: ${DEFAULT_VERIFY_ATTEMPTS}
+  --verify-delay-ms <n>  Delay between verification attempts. Default: ${DEFAULT_VERIFY_DELAY_MS}
   --help          Show this help
 
 Examples:
@@ -125,10 +137,13 @@ function parseArgs(argv: string[]): Options {
     dryRun: false,
     verifyOnly: false,
     noVerify: false,
+    verifyAttempts: DEFAULT_VERIFY_ATTEMPTS,
+    verifyDelayMs: DEFAULT_VERIFY_DELAY_MS,
     help: false,
   };
 
-  for (const arg of argv) {
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
     switch (arg) {
       case '--help':
       case '-h':
@@ -143,6 +158,18 @@ function parseArgs(argv: string[]): Options {
       case '--no-verify':
         options.noVerify = true;
         break;
+      case '--verify-attempts':
+        options.verifyAttempts = parsePositiveInteger(
+          requireValue(argv, ++index, arg),
+          arg,
+        );
+        break;
+      case '--verify-delay-ms':
+        options.verifyDelayMs = parsePositiveInteger(
+          requireValue(argv, ++index, arg),
+          arg,
+        );
+        break;
       default:
         throw new Error(`Unknown option: ${arg}`);
     }
@@ -156,6 +183,22 @@ function parseArgs(argv: string[]): Options {
   }
 
   return options;
+}
+
+function requireValue(argv: string[], index: number, flag: string): string {
+  const value = argv[index];
+  if (!value || value.startsWith('--')) {
+    throw new Error(`${flag} requires a value`);
+  }
+  return value;
+}
+
+function parsePositiveInteger(value: string, flag: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${flag} requires a positive integer`);
+  }
+  return parsed;
 }
 
 function snapshotVersionId(html: string): string {
@@ -317,7 +360,9 @@ export function assertDeviceAuthorityHealth(health: HealthResponse): void {
   }
 }
 
-async function verifyDeviceAuthority(deps: ReleaseDependencies): Promise<void> {
+async function verifyDeviceAuthorityAttempt(
+  deps: ReleaseDependencies,
+): Promise<void> {
   try {
     const health = await readJson(HEALTH_URL, deps.fetchImpl);
     assertDeviceAuthorityHealth(health);
@@ -348,10 +393,38 @@ async function verifyDeviceAuthority(deps: ReleaseDependencies): Promise<void> {
     }
     deps.writeOut('Verified device_public_key_required hardening contract');
   } catch (error: unknown) {
-    throw new Error(
-      `Device authority verification failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    if (error instanceof Error) throw error;
+    throw new Error(String(error));
   }
+}
+
+async function verifyDeviceAuthority(
+  options: Pick<Options, 'verifyAttempts' | 'verifyDelayMs'>,
+  deps: ReleaseDependencies,
+): Promise<void> {
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= options.verifyAttempts; attempt += 1) {
+    deps.writeOut(
+      `Verifying ${HEALTH_URL} (attempt ${attempt}/${options.verifyAttempts})`,
+    );
+
+    try {
+      await verifyDeviceAuthorityAttempt(deps);
+      return;
+    } catch (error: unknown) {
+      lastError = error;
+      if (attempt === options.verifyAttempts) break;
+      const message = error instanceof Error ? error.message : String(error);
+      deps.writeOut(`Verification not ready: ${message}`);
+      await deps.sleepImpl(options.verifyDelayMs);
+    }
+  }
+
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(
+    `Device authority verification failed after ${options.verifyAttempts} attempts: ${message}`,
+  );
 }
 
 async function runDeviceAuthorityRelease(
@@ -395,7 +468,7 @@ async function runDeviceAuthorityRelease(
   }
 
   if (!options.dryRun && !options.noVerify) {
-    await verifyDeviceAuthority(deps);
+    await verifyDeviceAuthority(options, deps);
   }
 }
 
