@@ -1,0 +1,607 @@
+/* Internal Trace Burn Intelligence inspector overlay v24. */
+.cmdkMenuLaunch,
+#tbmLiveTraceModal .lfMenuButton {
+  display: none !important;
+}
+
+#tbmLiveTraceModal .trxRail:has(.tiInspector) {
+  overflow: hidden !important;
+  background: #090806 !important;
+}
+
+#tbmLiveTraceModal .trxRailInner:has(.tiInspector),
+#tbmLiveTraceModal [data-inspector]:has(.tiInspector) {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.tiInspector {
+  --ti-bg: #090806;
+  --ti-panel: #0f0d0a;
+  --ti-panel-2: #15120e;
+  --ti-line: rgba(243, 234, 211, 0.13);
+  --ti-line-soft: rgba(243, 234, 211, 0.08);
+  --ti-text: #eee4d2;
+  --ti-muted: #9f9583;
+  --ti-amber: #c6a15b;
+  --ti-green: #99ad7b;
+  --ti-red: #d06d52;
+  display: grid;
+  grid-template-columns: minmax(286px, 34%) minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  color: var(--ti-text);
+  background: var(--ti-bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.tiInspector * {
+  box-sizing: border-box;
+}
+.tiInspector button {
+  font: inherit;
+  color: inherit;
+}
+.tiMobileBar {
+  display: none;
+}
+
+.tiSidebar {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  border-right: 1px solid var(--ti-line);
+  background: #0b0907;
+  overflow: hidden;
+}
+
+.tiTraceCard {
+  padding: 16px;
+  border-bottom: 1px solid var(--ti-line);
+  background: linear-gradient(
+    180deg,
+    rgba(198, 161, 91, 0.07),
+    transparent 72%
+  );
+}
+
+.tiEyebrow {
+  color: var(--ti-muted);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.tiTraceTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tiTraceTitle h2,
+.tiPreviewHeader h2,
+.tiBranchCard h3 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ti-text);
+  font-size: 15px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiStatus.error,
+.tiPeerStatus.error {
+  color: var(--ti-red);
+}
+.tiStatus.success,
+.tiPeerStatus.success {
+  color: var(--ti-green);
+}
+
+.tiTraceCard > p {
+  display: -webkit-box;
+  margin: 10px 0;
+  overflow: hidden;
+  color: #cfc4b2;
+  font-size: 12px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.tiTraceMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tiTraceMetrics span,
+.tiBranchCalls,
+.tiPreviewActions button {
+  border: 1px solid var(--ti-line);
+  border-radius: 999px;
+  background: rgba(243, 234, 211, 0.035);
+  color: #d8cdbb;
+  font-size: 10px;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.tiTraceCard code {
+  display: block;
+  margin-top: 10px;
+  overflow: hidden;
+  color: var(--ti-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiBranchCard {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.tiBranchCard > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 14px 10px;
+}
+
+.tiBranchCard h3 {
+  max-width: 210px;
+  margin-top: 6px;
+  color: var(--ti-amber);
+  font-size: 12px;
+}
+
+.tiBranchTotals,
+.tiFactsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  padding: 0 14px 12px;
+}
+
+.tiFact {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--ti-line-soft);
+  border-radius: 7px;
+  background: rgba(243, 234, 211, 0.025);
+}
+
+.tiFact span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ti-muted);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.tiFact b {
+  display: block;
+  overflow: hidden;
+  color: var(--ti-text);
+  font-size: 11px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiPeerList {
+  min-height: 0;
+  overflow: auto;
+  border-top: 1px solid var(--ti-line-soft);
+  overscroll-behavior: contain;
+}
+
+.tiPeer {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--ti-line-soft);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tiPeer:hover,
+.tiPeer.active {
+  background: rgba(198, 161, 91, 0.09);
+}
+
+.tiPeerMain {
+  min-width: 0;
+}
+.tiPeerMain b,
+.tiPeerMain small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tiPeerMain b {
+  color: #ddd2bf;
+  font-size: 11px;
+}
+.tiPeerMain small {
+  margin-top: 3px;
+  color: var(--ti-muted);
+  font-size: 9px;
+}
+.tiPeerTokens,
+.tiPeerDuration {
+  color: var(--ti-muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tiPreview {
+  min-width: 0;
+  min-height: 0 !important;
+  height: auto;
+  padding: 0 !important;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--ti-bg);
+}
+
+.tiPreviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 60px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ti-line);
+  background: #0d0b09;
+}
+
+.tiPreviewHeader h2 {
+  margin-top: 6px;
+  font-size: 16px;
+}
+.tiPreviewActions button {
+  cursor: pointer;
+}
+
+.tiTabs {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--ti-line);
+  background: #0b0907;
+  scrollbar-width: none;
+}
+
+.tiTabs::-webkit-scrollbar {
+  display: none;
+}
+.tiTabs button {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 11px 10px 9px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ti-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.tiTabs button.active {
+  border-bottom-color: var(--ti-amber);
+  color: var(--ti-text);
+}
+
+.tiTabs button i {
+  position: absolute;
+  top: 7px;
+  right: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ti-red);
+}
+
+.tiPanel {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px;
+  overscroll-behavior: contain;
+}
+
+.tiSummaryHero,
+.tiErrorHero,
+.tiEmpty {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--ti-line);
+  border-radius: 9px;
+  background: var(--ti-panel);
+}
+
+.tiSummaryTool,
+.tiErrorEyebrow {
+  color: var(--ti-amber);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tiSummaryHero p,
+.tiErrorHero p,
+.tiEmpty p {
+  margin: 8px 0 0;
+  color: #d8cdbc;
+  font-size: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.tiErrorHero {
+  border-color: rgba(208, 109, 82, 0.35);
+  background: rgba(208, 109, 82, 0.08);
+}
+
+.tiErrorHero h3 {
+  margin: 8px 0 0;
+  color: #f0c1b4;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.tiErrorEyebrow {
+  color: var(--ti-red);
+}
+.tiFactsGrid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  padding: 0;
+}
+
+.tiPayload,
+.tiFailedChildren {
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid var(--ti-line);
+  border-radius: 9px;
+  background: var(--ti-panel);
+}
+
+.tiPayload > header,
+.tiFailedChildren > header {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  border-bottom: 1px solid var(--ti-line-soft);
+  background: rgba(243, 234, 211, 0.035);
+}
+
+.tiPayload h3,
+.tiFailedChildren h3 {
+  margin: 0;
+  color: #d8cdbb;
+  font-size: 11px;
+}
+
+.tiPayload button {
+  border: 0;
+  background: transparent;
+  color: var(--ti-muted);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.tiPayload pre {
+  max-width: 100%;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  color: #e3d8c6;
+  font:
+    11px/1.55 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.tiInspector.is-wrapped .tiPayload pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tiErrorPayload {
+  border-color: rgba(208, 109, 82, 0.23);
+}
+.tiFailedChildren > header span {
+  color: var(--ti-red);
+  font-size: 10px;
+}
+.tiFailedChildren article {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ti-line-soft);
+}
+.tiFailedChildren article:last-child {
+  border-bottom: 0;
+}
+.tiFailedChildren article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tiFailedChildren article b {
+  color: #e1d6c4;
+  font-size: 11px;
+}
+.tiFailedChildren article span {
+  color: var(--ti-red);
+  font-size: 9px;
+}
+.tiFailedChildren article p {
+  margin: 6px 0 0;
+  color: #cbbfad;
+  font-size: 10px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.tiEmptyCompact {
+  padding: 16px;
+  color: var(--ti-muted);
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  #tbmLiveTraceModal.open
+    .trxShell:not(.closed)
+    .trxRailInner[data-inspector]:has(.tiInspector),
+  #tbmLiveTraceModal.open
+    .trxShell:not(.closed)
+    [data-inspector]:has(.tiInspector) {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .cmdkMenuLaunch {
+    display: inline-flex !important;
+  }
+
+  #tbmLiveTraceModal .trxRail:has(.tiInspector) {
+    position: fixed !important;
+    inset: 38px 0 0 !important;
+    z-index: 230 !important;
+    display: block !important;
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(100dvh - 38px) !important;
+    min-height: calc(100dvh - 38px) !important;
+    border: 0 !important;
+    transform: none !important;
+  }
+
+  #tbmLiveTraceModal .trxResizer {
+    display: none !important;
+  }
+
+  .tiInspector {
+    position: relative;
+    display: block;
+    width: 100vw;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .tiMobileBar {
+    height: 44px;
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) 72px;
+    align-items: center;
+    padding: 0 8px;
+    border-bottom: 1px solid var(--ti-line);
+    background: #080706;
+  }
+
+  .tiMobileBar > span {
+    overflow: hidden;
+    color: #d9cfbd;
+    font-size: 11px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tiMobileBar button {
+    min-height: 32px;
+    border: 1px solid var(--ti-line);
+    border-radius: 7px;
+    background: var(--ti-panel);
+    color: #d9cfbd;
+    font-size: 10px;
+  }
+
+  .tiSidebar {
+    position: absolute;
+    inset: 44px 0 0;
+    z-index: 3;
+    display: none;
+    width: 100%;
+    height: calc(100% - 44px);
+    border-right: 0;
+    background: #090806;
+  }
+
+  .tiInspector.mobile-menu-open .tiSidebar {
+    display: grid;
+  }
+
+  .tiPreview {
+    width: 100%;
+    height: calc(100% - 44px) !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+
+  .tiPreviewHeader {
+    min-height: 54px;
+    padding: 10px 12px;
+  }
+  .tiPreviewHeader h2 {
+    font-size: 14px;
+  }
+  .tiTabs {
+    padding: 0 6px;
+  }
+  .tiTabs button {
+    min-height: 42px;
+    padding-inline: 9px;
+  }
+  .tiPanel {
+    padding: 10px;
+  }
+  .tiPayload pre {
+    font-size: 10px;
+  }
+  .tiBranchCard h3 {
+    max-width: 72vw;
+  }
+}
