@@ -1,10 +1,11 @@
 ---
+import { INSTALL_COMMAND } from '../../data/home-content';
+
 type Props = {
   sectionId?: string;
 };
 
 const { sectionId = 'intro' } = Astro.props as Props;
-const installCommand = 'curl -fsSL https://install.consuelohq.com/os | bash';
 ---
 
 <section class="os-hero" id={sectionId} data-section="hero">
@@ -27,27 +28,41 @@ const installCommand = 'curl -fsSL https://install.consuelohq.com/os | bash';
     <div class="os-hero__actions">
       <a class="os-hero__button" href="https://os.consuelohq.com">SIGN IN</a>
       <button class="os-hero__button os-hero__button--quiet" type="button" data-copy-install>
-        DOWNLOAD LOCALLY
+        <span data-copy-label>DOWNLOAD LOCALLY</span>
       </button>
     </div>
 
     <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
-      <code>{installCommand}</code>
+      <code>{INSTALL_COMMAND}</code>
       <span data-copy-label>COPY</span>
     </button>
   </div>
 </section>
 
-<script define:vars={{ installCommand }}>
+<script define:vars={{ INSTALL_COMMAND }}>
+  const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
+    (label) => label instanceof HTMLElement,
+  );
+  const defaultLabels = new Map(labels.map((label) => [label, label.textContent ?? '']));
+
   document.querySelectorAll('[data-copy-install]').forEach((button) => {
     button.addEventListener('click', async () => {
-      await navigator.clipboard?.writeText(installCommand);
-      document.querySelectorAll('[data-copy-label]').forEach((label) => {
+      if (!navigator.clipboard) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(INSTALL_COMMAND);
+      } catch {
+        return;
+      }
+
+      labels.forEach((label) => {
         label.textContent = 'COPIED';
       });
       window.setTimeout(() => {
-        document.querySelectorAll('[data-copy-label]').forEach((label) => {
-          label.textContent = 'COPY';
+        labels.forEach((label) => {
+          label.textContent = defaultLabels.get(label) ?? '';
         });
       }, 1500);
     });

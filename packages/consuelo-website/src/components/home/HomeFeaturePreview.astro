@@ -37,7 +37,7 @@ const { sectionId = 'features' } = Astro.props as Props;
               <h3>
                 {item.title.split('\n').map((line) => <span>{line}</span>)}
               </h3>
-              <FeatureMedia imageSrc={item.assetSrc ?? ''} imageAlt={item.imageAlt} />
+              <FeatureMedia imageSrc={item.assetSrc} imageAlt={item.imageAlt} />
               <p class="product-panel__description">{item.body}</p>
             </article>
           ))
@@ -166,7 +166,7 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .product-panel__description {
     margin: 1rem 0 0;
-    color: #15156f;
+    color: var(--site-color-muted);
     font: 590 0.68rem/1.55 var(--site-font-mono);
     letter-spacing: 0.075em;
     text-transform: uppercase;

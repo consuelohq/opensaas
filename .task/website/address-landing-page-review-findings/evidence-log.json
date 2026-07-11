@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/website/address-landing-page-review-findings",
+  "events": [
+    {
+      "id": "b1287c3b-f0ac-4106-abc5-98ce54b60d3f",
+      "occurred_at": "2026-07-11T20:37:21.021Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/website/address-landing-page-review-findings/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/address-landing-page-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/address-landing-page-review-findings"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-11T20:37:21.136Z"
+}
