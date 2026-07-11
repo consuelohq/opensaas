@@ -9,7 +9,7 @@ export const siteLinks = {
   github: 'https://github.com/consuelohq/opensaas',
   changelog: '/changelog',
   mercury: '/mercury',
-  pricing: '/mercury',
+  pricing: '/pricing',
   enterprise: '/contact',
   login: 'https://app.consuelohq.com',
   free: 'https://app.consuelohq.com',

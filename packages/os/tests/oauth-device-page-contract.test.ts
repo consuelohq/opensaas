@@ -38,8 +38,8 @@ describe('device login page static-hosting contract', () => {
   });
 
   it('starts Google-backed approval through the app/backend bridge', () => {
-    expect(devicePage).toContain('Sign in to Consuelo OS');
-    expect(devicePage).toContain('Continue with Google');
+    expect(devicePage).toContain('Authorize this device');
+    expect(devicePage).toContain('Approve with Google');
     expect(devicePage).toContain('/auth/google');
     expect(devicePage).toContain('action=os-device-approval');
     expect(devicePage).toContain('osDeviceUserCode');

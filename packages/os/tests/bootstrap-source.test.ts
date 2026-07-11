@@ -1,9 +1,47 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, symlinkSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
 const readBootstrap = () => readFileSync(join(process.cwd(), 'scripts', 'bootstrap.sh'), 'utf8');
 
+
+function runBootstrapFunction(
+  source: string,
+  name: string,
+  input: string,
+  options: { env?: NodeJS.ProcessEnv } = {},
+): string {
+  const fn = extractShellFunction(source, name);
+  const result = spawnSync('/bin/bash', ['-c', `set -euo pipefail
+${fn}
+${name}`], {
+    input,
+    encoding: 'utf8',
+    env: { ...process.env, BASH_ENV: '/dev/null', ENV: '/dev/null', ...options.env },
+  });
+  if (result.error) {
+    throw new Error(`${name} failed to start: ${result.error.message}`);
+  }
+  if (result.status === null) {
+    throw new Error(`${name} terminated by signal ${result.signal ?? 'unknown'}`);
+  }
+  if (result.status !== 0) {
+    throw new Error(result.stderr || `${name} failed with status ${result.status}`);
+  }
+  return result.stdout;
+}
+
+function createSedOnlyPath(): string {
+  const directory = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-sed-'));
+  const sedPath = ['/usr/bin/sed', '/bin/sed'].find((candidate) => existsSync(candidate));
+  if (!sedPath) {
+    throw new Error('sed binary not found for fallback redaction test');
+  }
+  symlinkSync(sedPath, join(directory, 'sed'));
+  return directory;
+}
 function extractShellFunction(source: string, name: string): string {
   const lines = source.split('\n');
   const start = lines.findIndex((line) => line === `${name}() {`);
@@ -123,6 +161,73 @@ describe('bootstrap source refresh controls', () => {
   });
 
 
+  it('resolves existing legacy nested installs before creating a fresh flattened home', () => {
+    const bootstrap = readBootstrap();
+
+    expect(bootstrap).toContain('resolve_os_home()');
+    expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"');
+    expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
+    expect(bootstrap).toContain('resolve_runtime_home()');
+    expect(bootstrap).toContain('RUNTIME_HOME="$(resolve_runtime_home)"');
+    expect(bootstrap).toContain('[ -f "$LEGACY_OS_HOME/package.json" ]');
+    expect(bootstrap).toContain('[ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]');
+  });
+
+
+  const createSensitiveTranscript = () => [
+    '\u001B[32m◇\u001B[39m Consuelo OS',
+    '    C7UD-BR7N',
+    '\u001B]8;;https://os.consuelohq.com/login/device?user_code=C7UDBR7N\u0007click here\u001B]8;;\u0007',
+    'Full URL: https://os.consuelohq.com/login/device?user_code=C7UDBR7N&device_code=device-secret&token=osat_secret',
+    'Callback: https://os.consuelohq.com/callback?authorization=auth-secret&bootstrap_token=boot-secret&state=state-secret&secret=plain-secret&code=code-secret',
+    'path=/Users/kokayikobb/.consuelo and /home/kokayi/.consuelo',
+    'Authorization: Bearer abc.def.ghi',
+    'cloudflare_tunnel_token=secret-token-123',
+    'client_secret=client-secret-456',
+    'MCP_TOKEN=mcp-secret',
+    'pat_secretprefix',
+  ].join('\n');
+
+  function expectRedactedTranscript(redacted: string): void {
+    expect(redacted).not.toContain('\u001B');
+    expect(redacted).not.toContain('C7UD-BR7N');
+    expect(redacted).not.toContain('C7UDBR7N');
+    expect(redacted).not.toContain('device-secret');
+    expect(redacted).not.toContain('osat_secret');
+    expect(redacted).not.toContain('auth-secret');
+    expect(redacted).not.toContain('boot-secret');
+    expect(redacted).not.toContain('state-secret');
+    expect(redacted).not.toContain('plain-secret');
+    expect(redacted).not.toContain('code-secret');
+    expect(redacted).not.toContain('kokayikobb');
+    expect(redacted).not.toContain('kokayi');
+    expect(redacted).not.toContain('abc.def.ghi');
+    expect(redacted).not.toContain('secret-token-123');
+    expect(redacted).not.toContain('client-secret-456');
+    expect(redacted).not.toContain('mcp-secret');
+    expect(redacted).not.toContain('pat_secretprefix');
+    expect(redacted).toContain('[redacted]');
+    expect(redacted).toContain('/Users/[user]/.consuelo');
+    expect(redacted).toContain('/home/[user]/.consuelo');
+  }
+
+  it('should redact child installer PTY transcripts before saving diagnostics when perl is available', () => {
+    const bootstrap = readBootstrap();
+
+    expectRedactedTranscript(runBootstrapFunction(bootstrap, 'redact_dev_log_line', createSensitiveTranscript()));
+  });
+
+  it('should redact child installer PTY transcripts before saving diagnostics when using sed fallback', () => {
+    const bootstrap = readBootstrap();
+    const sedOnlyPath = createSedOnlyPath();
+
+    expectRedactedTranscript(
+      runBootstrapFunction(bootstrap, 'redact_dev_log_line', createSensitiveTranscript(), {
+        env: { PATH: sedOnlyPath },
+      }),
+    );
+  });
   it('forwards daemon decisions into interactive onboarding', () => {
     const bootstrap = readBootstrap();
     const runner = extractShellFunction(bootstrap, 'run_install_with_script_pty');

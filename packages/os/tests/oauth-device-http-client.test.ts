@@ -3,12 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
+  CONSUELO_DEVICE_WORKSPACE_URL,
   CONSUELO_OAUTH_ACCESS_TOKEN_URL,
 } from '../scripts/lib/workspace-device-authorization';
 import {
   generateWorkspaceDeviceKeyPair,
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
+  selectWorkspaceForDeviceLogin,
   type DeviceLoginFetch,
 } from '../scripts/lib/workspace-device-login-client';
 
@@ -23,7 +25,41 @@ function jsonResponse(body: unknown, init: { ok?: boolean; status?: number } = {
 }
 
 describe('workspace device-login HTTP client', () => {
-  it('requests a GitHub-shaped device code from consuelohq.com with a retained device key pair', async () => {
+  it('starts device authorization without pre-auth workspace fields', async () => {
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl: DeviceLoginFetch = async (url, init) => {
+      calls.push({ url: String(url), init });
+      return jsonResponse({
+        device_code: 'dev_live_auth_first',
+        user_code: 'WXYZ-1234',
+        verification_uri: CONSUELO_DEVICE_VERIFICATION_URL,
+        verification_uri_complete: CONSUELO_DEVICE_VERIFICATION_URL + '?user_code=WXYZ1234',
+        expires_in: 900,
+        interval: 5,
+      });
+    };
+
+    const result = await requestWorkspaceDeviceCode({
+      clientId: 'consuelo-os-installer',
+      scope: ['workspace:read', 'os:connector:register'],
+      deviceKeyPair,
+      fetchImpl,
+      now: '2026-06-13T00:00:00.000Z',
+    });
+
+    expect(result.status).toBe('started');
+    expect(calls).toHaveLength(1);
+    const requestBody = new URLSearchParams(String(calls[0].init?.body));
+    expect(requestBody.get('client_id')).toBe('consuelo-os-installer');
+    expect(requestBody.get('scope')).toBe('workspace:read os:connector:register');
+    expect(requestBody.get('device_public_key_jwk')).toBe(deviceKeyPair.publicKeyJwk);
+    expect(requestBody.get('workspace_name')).toBeNull();
+    expect(requestBody.get('workspace_slug')).toBeNull();
+    expect(requestBody.get('workspace_host')).toBeNull();
+  });
+
+  it('requests a GitHub-shaped device code from consuelohq.com with an optional retained workspace identity', async () => {
     const deviceKeyPair = generateWorkspaceDeviceKeyPair();
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     const fetchImpl: DeviceLoginFetch = async (url, init) => {
@@ -152,6 +188,63 @@ describe('workspace device-login HTTP client', () => {
     })).resolves.toMatchObject({ status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' });
   });
 
+  it('should preserve workspace selection server error messages when route setup fails', async () => {
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl: DeviceLoginFetch = async (url, init) => {
+      calls.push({ url: String(url), init });
+      return jsonResponse(
+        {
+          error: 'workspace_route_setup_failed',
+          message: 'missing route registry binding',
+        },
+        { ok: false, status: 502 },
+      );
+    };
+
+    const result = await selectWorkspaceForDeviceLogin({
+      clientId: 'consuelo-os-installer',
+      deviceCode: 'dev_workspace_required',
+      intervalSeconds: 5,
+      workspaceName: 'testing',
+      workspaceSlug: 'testing',
+      workspaceHost: 'testing.consuelohq.com',
+      deviceKeyPair,
+      fetchImpl,
+    });
+
+    expect(result).toMatchObject({
+      status: 'unavailable',
+      message: 'workspace_route_setup_failed: missing route registry binding',
+    });
+    expect(calls[0].url).toBe(CONSUELO_DEVICE_WORKSPACE_URL);
+    const requestBody = new URLSearchParams(String(calls[0].init?.body));
+    expect(requestBody.get('workspace_slug')).toBe('testing');
+    expect(requestBody.get('workspace_host')).toBe('testing.consuelohq.com');
+    expect(requestBody.get('device_public_key_proof')).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+
+  it('should preserve poll server error messages when token exchange fails', async () => {
+    const fetchImpl: DeviceLoginFetch = async () =>
+      jsonResponse(
+        {
+          error: 'temporarily_unavailable',
+          message: 'device grant store unavailable',
+        },
+        { ok: false, status: 503 },
+      );
+
+    await expect(pollWorkspaceDeviceAccessToken({
+      clientId: 'consuelo-os-installer',
+      deviceCode: 'dev_unavailable',
+      intervalSeconds: 5,
+      fetchImpl,
+    })).resolves.toMatchObject({
+      status: 'unavailable',
+      message: 'temporarily_unavailable: device grant store unavailable',
+    });
+  });
+
   it('returns unavailable instead of throwing when website endpoints are offline', async () => {
     const fetchImpl: DeviceLoginFetch = async () => {
       throw new Error('network down');
@@ -160,9 +253,6 @@ describe('workspace device-login HTTP client', () => {
     await expect(requestWorkspaceDeviceCode({
       clientId: 'consuelo-os-installer',
       scope: ['workspace:read'],
-      workspaceName: 'testing',
-      workspaceSlug: 'testing',
-      workspaceHost: 'testing.consuelohq.com',
       fetchImpl,
     })).resolves.toMatchObject({ status: 'unavailable' });
 

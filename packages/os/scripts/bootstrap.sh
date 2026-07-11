@@ -4,7 +4,32 @@ set -euo pipefail
 PROGRAM="Consuelo OS bootstrap"
 HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
 HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
-OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"
+DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"
+LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"
+resolve_os_home() {
+  if [ -n "${CONSUELO_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_HOME"
+    return 0
+  fi
+  if [ -d "$LEGACY_OS_HOME" ] && [ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]; then
+    printf '%s\n' "$LEGACY_OS_HOME"
+    return 0
+  fi
+  printf '%s\n' "$DEFAULT_OS_HOME"
+}
+OS_HOME="$(resolve_os_home)"
+resolve_runtime_home() {
+  if [ -n "${CONSUELO_RUNTIME_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_RUNTIME_HOME"
+    return 0
+  fi
+  if [ "$OS_HOME" = "$LEGACY_OS_HOME" ] && [ -f "$LEGACY_OS_HOME/package.json" ]; then
+    printf '%s\n' "$LEGACY_OS_HOME"
+    return 0
+  fi
+  printf '%s\n' "$OS_HOME/runtime/current"
+}
+RUNTIME_HOME="$(resolve_runtime_home)"
 RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
 DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
 SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
@@ -36,6 +61,11 @@ SKIP_DAEMONS=0
 JSON=0
 REFRESH_SOURCE=1
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
+DEV_DIAGNOSTICS="${CONSUELO_OS_DEV_DIAGNOSTICS:-0}"
+DEV_REPORT_ROOT="${CONSUELO_OS_DEV_REPORTS_DIR:-$HOME/.consuelo-dev-reports}"
+DEV_REPORT_DIR="${CONSUELO_OS_DEV_REPORT_DIR:-}"
+CHILD_INSTALL_RAW_TRANSCRIPT=""
+CHILD_INSTALL_TRANSCRIPT=""
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
@@ -86,17 +116,94 @@ Options:
 Environment overrides:
   CONSUELO_OS_SOURCE_DIR       temporary checkout/download directory for hosted installs
   CONSUELO_OS_REPO_ARCHIVE_URL source archive URL; defaults to the main branch archive
-  CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/os/bin
+  CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/bin
+  CONSUELO_OS_DEV_DIAGNOSTICS  set to 1 to write temporary development install diagnostics
   PORTLESS_BIN                 absolute portless binary path to reuse
   CLOUDFLARED_BIN              absolute cloudflared binary path to reuse
 USAGE
 }
 
+dev_diagnostics_enabled() {
+  [ "$DEV_DIAGNOSTICS" = "1" ]
+}
+
+redact_dev_log_line() {
+  if command -v perl >/dev/null 2>&1; then
+    perl -CS -pe '
+      s/\e\][^\a]*(?:\a|\e\\)//g;
+      s/\e\[[0-9;?]*[ -\/]*[@-~]//g;
+      s#/(Users|home)/[^/\s]+#/$1/[user]#g;
+      s{([?&](?:access_token|authorization|bootstrap_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|secret|state|token|user_code)=)[^&\#\s]+}{$1[redacted]}gi;
+      s#\bAuthorization\s*:\s*Bearer\s+[^\s]+#Authorization: [redacted]#gi;
+      s#\bBearer\s+[^\s]+#[redacted]#gi;
+      s#\b((?:[A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|KEY|AUTH|COOKIE|CODE|STATE)[A-Z0-9_]*|client_secret|device_code|user_code)\s*[:=]\s*)[^&\s]+#$1[redacted]#gi;
+      s#\b(?:cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+\b#[redacted]#gi;
+      s#\b[A-Z0-9]{4}-[A-Z0-9]{4}\b#[redacted]#g;
+    '
+    return 0
+  fi
+
+  local esc bel
+  esc="$(printf '\033')"
+  bel="$(printf '\007')"
+
+  sed -E \
+    -e "s#${esc}\\][^${bel}]*${bel}##g" \
+    -e "s#${esc}\\][^${esc}]*${esc}\\\\##g" \
+    -e "s#${esc}\[[0-9;?]*[ -/]*[@-~]##g" \
+    -e 's#(/(Users|home)/)[^/[:space:]]+#\1[user]#g' \
+    -e 's#([?&](access_token|authorization|bootstrap_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|secret|state|token|user_code)=)[^&#[:space:]]+#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])(Authorization[[:space:]]*:[[:space:]]*Bearer[[:space:]]*)[^[:space:]]+#\1Authorization: [redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])Bearer[[:space:]]+[^[:space:]]+#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])([A-Za-z0-9_]*(TOKEN|SECRET|PASSWORD|KEY|AUTH|COOKIE|CODE|STATE)[A-Za-z0-9_]*|client_secret|device_code|user_code)[[:space:]]*[:=][[:space:]]*[^&[:space:]]+#\1\2=[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])((cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+)#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})([^A-Za-z0-9]|$)#\1[redacted]\3#g'
+}
+
+init_dev_diagnostics() {
+  dev_diagnostics_enabled || return 0
+  if [ -z "$DEV_REPORT_DIR" ]; then
+    DEV_REPORT_DIR="$DEV_REPORT_ROOT/bootstrap-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+  fi
+  mkdir -p "$DEV_REPORT_DIR"
+  chmod 700 "$DEV_REPORT_DIR" 2>/dev/null || true
+  CHILD_INSTALL_RAW_TRANSCRIPT="$DEV_REPORT_DIR/child-installer.raw.log"
+  CHILD_INSTALL_TRANSCRIPT="$DEV_REPORT_DIR/child-installer.log"
+  export CONSUELO_OS_DEV_REPORT_DIR="$DEV_REPORT_DIR"
+  printf '%s
+' "bootstrap diagnostics started" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
+}
+
+dev_log() {
+  dev_diagnostics_enabled || return 0
+  [ -n "$DEV_REPORT_DIR" ] || return 0
+  printf '%s %s
+' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
+}
+
+finalize_child_install_transcript() {
+  dev_diagnostics_enabled || return 0
+  [ -n "$CHILD_INSTALL_RAW_TRANSCRIPT" ] || return 0
+  [ -f "$CHILD_INSTALL_RAW_TRANSCRIPT" ] || return 0
+  redact_dev_log_line < "$CHILD_INSTALL_RAW_TRANSCRIPT" > "$CHILD_INSTALL_TRANSCRIPT" || true
+  rm -f "$CHILD_INSTALL_RAW_TRANSCRIPT"
+  dev_log "child installer transcript: $CHILD_INSTALL_TRANSCRIPT"
+}
+
+child_install_transcript_hint() {
+  if dev_diagnostics_enabled && [ -n "$CHILD_INSTALL_TRANSCRIPT" ] && [ -f "$CHILD_INSTALL_TRANSCRIPT" ]; then
+    printf ' Child installer transcript: %s' "$CHILD_INSTALL_TRANSCRIPT"
+  fi
+}
+
 log() {
+  dev_log "$*"
   if [ "$JSON" -eq 1 ]; then
-    printf '%s\n' "$*" >&2
+    printf '%s
+' "$*" >&2
   else
-    printf '%s\n' "$*"
+    printf '%s
+' "$*"
   fi
 }
 
@@ -1002,6 +1109,8 @@ run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
   local install_args=(./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}")
+  local script_output="/dev/null"
+  local status=0
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
     install_args+=(--install-daemons)
   fi
@@ -1009,7 +1118,12 @@ run_install_with_script_pty() {
     install_args+=(--skip-daemons)
   fi
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" "${install_args[@]}" < /dev/tty
+  if dev_diagnostics_enabled && [ -n "$CHILD_INSTALL_RAW_TRANSCRIPT" ]; then
+    script_output="$CHILD_INSTALL_RAW_TRANSCRIPT"
+  fi
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q "$script_output" "$BUN_BIN" --cwd "$os_dir" "${install_args[@]}" < /dev/tty || status=$?
+  finalize_child_install_transcript
+  return "$status"
 }
 
 run_install_with_tty() {
@@ -1019,13 +1133,49 @@ run_install_with_tty() {
   run_install_with_script_pty "$os_dir" "$os_home"
 }
 
+validate_onboarding_json() {
+  local onboarding_payload="$1"
+  local validation_error
+  local validation_status=0
+
+  if [ -z "$onboarding_payload" ]; then
+    fail "Consuelo OS interactive onboarding did not complete: onboarding result file was empty.$(child_install_transcript_hint)"
+  fi
+
+  validation_error="$(ONBOARDING_JSON_PAYLOAD="$onboarding_payload" "$BUN_BIN" --print '
+(() => {
+  const raw = process.env.ONBOARDING_JSON_PAYLOAD || "";
+  const fail = (message) => { process.stderr.write(message); process.exit(1); };
+  let payload;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    fail("onboarding result was not valid JSON");
+  }
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    fail("onboarding result was not a JSON object");
+  }
+  if (typeof payload.installDaemons !== "boolean") {
+    fail("onboarding result did not include installDaemons");
+  }
+  if (!payload.onboarding || typeof payload.onboarding !== "object" || Array.isArray(payload.onboarding)) {
+    fail("onboarding result did not include onboarding details");
+  }
+  return "ok";
+})()
+' 2>&1 >/dev/null)" || validation_status=$?
+  if [ "$validation_status" -ne 0 ]; then
+    fail "Consuelo OS interactive onboarding did not complete: ${validation_error:-onboarding result was invalid}.$(child_install_transcript_hint)"
+  fi
+}
+
 run_onboarding() { # run_onboarding_json
   local os_dir="$REPO_DIR/packages/os"
   local os_home="$OS_HOME"
 
 
   if [ "$DRY_RUN" -eq 1 ]; then
-    if [ -n "$BUN_BIN" ]; then
+    if [ -n "$BUN_BIN" ] && [ -f "$os_dir/scripts/install.ts" ]; then
       "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --dry-run --yes --json --mode "${OS_MODE:-local}"
       ONBOARDING_STATUS="dry_run"
     else
@@ -1054,9 +1204,18 @@ run_onboarding() { # run_onboarding_json
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
     fi
     ONBOARDING_RESULT_FILE="$(mktemp "${TMPDIR:-/tmp}/consueloo-onboardin.XXXXXX")"
-    run_install_with_tty "$os_dir" "$os_home"
-    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE")"
+    local install_status=0
+    if run_install_with_tty "$os_dir" "$os_home"; then
+      install_status=0
+    else
+      install_status=$?
+    fi
+    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE" 2>/dev/null || true)"
     rm -f "$ONBOARDING_RESULT_FILE"
+    if [ "$install_status" -ne 0 ]; then
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status)."
+    fi
+    validate_onboarding_json "$ONBOARDING_JSON"
     if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
       INSTALL_DAEMONS=1
     else
@@ -1097,7 +1256,7 @@ run_daemon_dry_run() {
 }
 
 install_daemons_quiet() {
-  local os_dir="$OS_HOME"
+  local os_dir="$REPO_DIR/packages/os"
   (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
 }
 
@@ -1135,7 +1294,7 @@ maybe_install_daemons() {
   fi
 
   if [ "$DEBUG" = "1" ]; then
-    local os_dir="$OS_HOME"
+    local os_dir="$REPO_DIR/packages/os"
     CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
     run_with_loading_dots "setting up background service" install_daemons_quiet
@@ -1156,6 +1315,7 @@ print_success_summary() {
 
 main() {
   parse_args "$@"
+  init_dev_diagnostics
   choose_os_mode
   handle_cloud_mode
   check_mac_prerequisites
@@ -1175,4 +1335,3 @@ main() {
 }
 
 main "$@"
-

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
+import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
 import {
   renderLauncherOnboarding,
   type LauncherLocalAgent,
@@ -683,17 +684,27 @@ function readJsonFile<TData>(filePath: string): TData | null {
   }
 }
 
+function rewriteChatGptMcpConfigUrl(configPath: string, config: ChatGptMcpConfig): void {
+  if (config.url === CHATGPT_MCP_URL) return;
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+  fs.writeFileSync(configPath, `${JSON.stringify({ ...config, url: CHATGPT_MCP_URL, updatedAt: nowIso() }, null, 2)}
+`, { mode: 0o600 });
+}
+
 function launcherMcpUrl(home: string): string {
-  const mcpConfig = readJsonFile<ChatGptMcpConfig>(path.join(home, 'security', 'generated', 'chatgpt-mcp.json'));
-  if (typeof mcpConfig?.url === 'string' && mcpConfig.url.length > 0) {
-    return mcpConfig.url;
+  const configPaths = [
+    path.join(home, 'node', 'security', 'generated', 'chatgpt-mcp.json'),
+    path.join(home, 'security', 'generated', 'chatgpt-mcp.json'),
+  ];
+  for (const configPath of configPaths) {
+    const mcpConfig = readJsonFile<ChatGptMcpConfig>(configPath);
+    if (typeof mcpConfig?.url === 'string' && mcpConfig.url.length > 0) {
+      rewriteChatGptMcpConfigUrl(configPath, mcpConfig);
+      return CHATGPT_MCP_URL;
+    }
   }
 
-  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
-  const workspaceHost = config?.workspace?.host;
-  return typeof workspaceHost === 'string' && workspaceHost.length > 0
-    ? `https://${workspaceHost}/mcp`
-    : 'https://os.consuelohq.com/mcp';
+  return CHATGPT_MCP_URL;
 }
 
 function launcherLocalAgents(home: string): LauncherLocalAgent[] {

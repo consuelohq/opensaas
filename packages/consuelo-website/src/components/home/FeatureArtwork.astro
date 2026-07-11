@@ -1,0 +1,128 @@
+---
+import type { FeatureArtworkMotif } from '../../data/home-content';
+
+type Props = {
+  motif: FeatureArtworkMotif;
+  alt: string;
+  /** Replace with final SVG asset path when ready, e.g. /images/features/connect.svg */
+  assetSrc?: string;
+};
+
+const { motif, alt, assetSrc } = Astro.props as Props;
+---
+
+<figure class="feature-artwork" data-motif={motif}>
+  {
+    assetSrc ? (
+      <img
+        class="feature-artwork__image"
+        src={assetSrc}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        data-motion="feature-artwork"
+      />
+    ) : (
+      <svg
+        class="feature-artwork__placeholder"
+        viewBox="0 0 400 400"
+        role="img"
+        aria-label={alt}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect width="400" height="400" fill="var(--site-color-art-bg)" />
+        {motif === 'connect' && (
+          <g fill="none" stroke="var(--site-color-art-ink)" stroke-width="2.5" stroke-linecap="round">
+            <ellipse cx="200" cy="210" rx="72" ry="18" opacity="0.9" />
+            <path d="M128 210 H272" opacity="0.35" />
+            <circle cx="200" cy="168" r="34" fill="var(--site-color-art-muted)" stroke="none" opacity="0.85" />
+            <path d="M200 134 V88 M168 168 L128 128 M232 168 L272 128 M168 252 L128 292 M232 252 L272 292" opacity="0.55" />
+            <circle cx="128" cy="128" r="8" fill="var(--site-color-art-accent)" stroke="none" />
+            <circle cx="272" cy="128" r="8" fill="var(--site-color-art-accent)" stroke="none" />
+            <circle cx="128" cy="292" r="8" fill="var(--site-color-art-accent)" stroke="none" />
+            <circle cx="272" cy="292" r="8" fill="var(--site-color-art-accent)" stroke="none" />
+            <circle cx="200" cy="88" r="8" fill="var(--site-color-art-accent)" stroke="none" />
+          </g>
+        )}
+        {motif === 'remember' && (
+          <g fill="none" stroke="var(--site-color-art-ink)" stroke-width="2.5">
+            <path d="M120 300 V140 Q120 100 200 100 Q280 100 280 140 V300" opacity="0.7" />
+            <path d="M148 300 V168 Q148 132 200 132 Q252 132 252 168 V300" opacity="0.45" />
+            <rect x="168" y="220" width="64" height="48" rx="4" fill="var(--site-color-art-muted)" stroke="none" opacity="0.5" />
+            <circle cx="200" cy="244" r="18" fill="var(--site-color-art-accent)" stroke="none" opacity="0.75" />
+            <ellipse cx="200" cy="168" rx="28" ry="34" fill="var(--site-color-art-muted)" stroke="none" opacity="0.65" />
+          </g>
+        )}
+        {motif === 'multiplayer' && (
+          <g fill="none" stroke="var(--site-color-art-ink)" stroke-width="2.5" stroke-linecap="round">
+            <path d="M80 300 H320" opacity="0.35" />
+            <path d="M120 300 V180 Q120 120 200 120 Q280 120 280 180 V300" />
+            <path d="M148 300 V200 Q148 148 200 148 Q252 148 252 200 V300" opacity="0.5" />
+            <path d="M80 220 H120 M280 220 H320 M80 180 H120 M280 180 H320" opacity="0.55" />
+            <circle cx="80" cy="220" r="10" fill="var(--site-color-art-accent)" stroke="none" />
+            <circle cx="320" cy="220" r="10" fill="var(--site-color-art-accent)" stroke="none" />
+            <circle cx="80" cy="180" r="10" fill="var(--site-color-art-accent)" stroke="none" opacity="0.7" />
+            <circle cx="320" cy="180" r="10" fill="var(--site-color-art-accent)" stroke="none" opacity="0.7" />
+          </g>
+        )}
+        {motif === 'observe' && (
+          <g fill="none" stroke="var(--site-color-art-ink)" stroke-width="2.5">
+            <ellipse cx="200" cy="268" rx="120" ry="28" opacity="0.35" />
+            <ellipse cx="200" cy="268" rx="88" ry="18" fill="var(--site-color-art-muted)" stroke="none" opacity="0.6" />
+            <path d="M140 268 Q200 220 260 268" opacity="0.5" />
+            <circle cx="200" cy="248" r="6" fill="var(--site-color-art-accent)" stroke="none" />
+            <path d="M168 248 L188 228 M232 248 L212 228" opacity="0.45" />
+            <path d="M100 120 H300 M120 100 H280" opacity="0.3" stroke-linecap="round" />
+          </g>
+        )}
+        {motif === 'secure' && (
+          <g fill="none" stroke="var(--site-color-art-ink)" stroke-width="2.5" stroke-linecap="round">
+            <path d="M120 300 V160 Q120 108 200 108 Q280 108 280 160 V300" />
+            <path d="M200 108 V72" opacity="0.4" />
+            <rect x="176" y="200" width="48" height="72" rx="2" fill="var(--site-color-art-muted)" stroke="var(--site-color-art-ink)" opacity="0.7" />
+            <circle cx="200" cy="236" r="14" fill="var(--site-color-art-accent)" stroke="none" opacity="0.8" />
+            <path d="M148 300 V180 M252 300 V180" opacity="0.35" />
+          </g>
+        )}
+        {motif === 'switch' && (
+          <g fill="none" stroke="var(--site-color-art-ink)" stroke-width="2.5" stroke-linecap="round">
+            <path d="M200 88 L200 148" />
+            <path d="M120 300 L200 148 L280 300" opacity="0.55" />
+            <path d="M96 300 L160 188 M304 300 L240 188" opacity="0.4" />
+            <path d="M72 300 L128 212 M328 300 L272 212" opacity="0.28" />
+            <rect x="172" y="148" width="56" height="40" rx="3" fill="var(--site-color-art-muted)" stroke="none" opacity="0.75" />
+            <circle cx="200" cy="168" r="10" fill="var(--site-color-art-accent)" stroke="none" />
+          </g>
+        )}
+        <circle cx="200" cy="200" r="168" fill="url(#feature-art-glow)" opacity="0.35" />
+        <defs>
+          <radialGradient id="feature-art-glow" cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stop-color="var(--site-color-art-accent)" stop-opacity="0.35" />
+            <stop offset="100%" stop-color="var(--site-color-art-accent)" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+      </svg>
+    )
+  }
+</figure>
+
+<style>
+  .feature-artwork {
+    margin: 0;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--site-color-art-bg);
+  }
+
+  .feature-artwork__image,
+  .feature-artwork__placeholder {
+    display: block;
+    width: 110%;
+    height: 110%;
+    margin: -5%;
+    max-width: none;
+    object-fit: cover;
+    transform-origin: center center;
+  }
+</style>

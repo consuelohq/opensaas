@@ -29,6 +29,7 @@ const selectedSlugs = [
   'tools/office',
   'tools/media/getting-started',
   'os/tools/browser-tools',
+  'os/tools/subagents',
   'os/tools/overview',
   'developers/introduction',
   'developers/agent/overview',

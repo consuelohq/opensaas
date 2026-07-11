@@ -1,0 +1,80 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/installer-diagnostics-and-node-foundation",
+  "base": "HEAD",
+  "headSha": "1115191b68a28da0162c9594dd7114fe8ab929fd",
+  "changeHash": "7fdec2835e12c9866daa29fdce4532d1455b03e94c12469d677f66dcfa5cd639",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install-tty.test.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/install-diagnostics.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/scripts/lib/workspace-device-authorization.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/install-diagnostics.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-07-03T19:35:38.533Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/installer-diagnostics-and-node-foundation/current.json",
+        ".task/security/installer-diagnostics-and-node-foundation/session.json",
+        ".task/security/installer-diagnostics-and-node-foundation/verify.json",
+        ".task/security/installer-diagnostics-and-node-foundation/workpad.md",
+        ".task/tasks/security/installer-diagnostics-and-node-foundation.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install-tty.test.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/consuelo-home.ts",
+        "packages/os/scripts/lib/install-diagnostics.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/install-diagnostics.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

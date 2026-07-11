@@ -1,0 +1,48 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/implement-pricing-route",
+  "base": "origin/task/workspace-agents/implement-pricing-route",
+  "headSha": "3372ab57cde58426d54e5b3e43943259ef2528a5",
+  "changeHash": "a659215029ac53128217a26a5bb9f75a0ca3c3bf7e8f238f43d16a1c18cbc688",
+  "changedFiles": [
+    "packages/consuelo-website/public/_redirects",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-07-09T00:29:45.072Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/workspace-agents/implement-pricing-route/workpad.md",
+        "packages/consuelo-website/public/_redirects",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

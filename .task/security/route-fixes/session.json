@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8d43d598b2c4",
+  "tmuxSession": "opensaas-security-route-fixes-8d43d598",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/route-fixes",
+  "branch": "task/security/route-fixes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-route-fixes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-route-fixes",
+  "prNumber": 1385,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1385",
+  "createdAt": "2026-07-10T22:40:53.357Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-route-fixes/.task/security/route-fixes/session.json"
+}

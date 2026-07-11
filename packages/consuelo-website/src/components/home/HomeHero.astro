@@ -7,7 +7,7 @@ type Props = {
 
 const { sectionId } = Astro.props as Props
 const osPortalHref = 'https://os.consuelohq.com'
-const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
+const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 ---
 
 <section class="home-hero site-section" id={sectionId} data-section="hero">
@@ -23,33 +23,32 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 				class="home-hero__title"
 				data-pretext-title={heroTitleText}
 				data-pretext-lines="3"
-				aria-label="GIVE EVERY AGENT WORKSPACE SUPERPOWERS"
+				aria-label="STOP STARTING OVER WITH EVERY NEW AGENT"
 			>
 				<span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true"
-					>GIVE EVERY AGENT</span
+					>STOP STARTING OVER</span
 				>
 				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
-					>GIVE EVERY</span
+					>STOP STARTING</span
 				>
 				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
-					>AGENT</span
+					>OVER</span
 				>
-				<span class="home-hero__title-line" aria-hidden="true">WORKSPACE</span>
-				<span class="home-hero__title-line" aria-hidden="true"><em>SUPERPOWERS</em></span>
+				<span class="home-hero__title-line" aria-hidden="true">WITH EVERY</span>
+				<span class="home-hero__title-line" aria-hidden="true">NEW AGENT</span>
 			</h1>
 
 			<div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
 				<p class="home-hero__action-label site-eyebrow">USE CONSUELO OS CLOUD</p>
 				<a class="home-hero__portal site-button site-button--secondary" href={osPortalHref}>
-					<svg viewBox="0 0 24 24" aria-hidden="true">
-						<path d="M7.5 18.5h9a4 4 0 0 0 .7-7.94A5.8 5.8 0 0 0 6.02 9.1a4.75 4.75 0 0 0 1.48 9.4Z"
-						></path>
+					<span>SIGN IN TO DEPLOY</span>
+					<svg class="home-hero__portal-arrow" viewBox="0 0 24 24" aria-hidden="true">
+						<path d="M5 12h14M13 6l6 6-6 6" />
 					</svg>
-					<span>Go to OS portal</span>
 				</a>
 			</div>
 
-			<div class="home-hero__install-wrap">
+			<div class="home-hero__install-wrap" id="install">
 				<p class="home-hero__install-label site-eyebrow">INSTALL VIA TERMINAL</p>
 				<div class="home-hero__install site-card" data-hero-install>
 					<div
@@ -112,7 +111,11 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 			</div>
 		</div>
 
-		<figure class="home-hero__diagram" aria-label="Consuelo integrations diagram">
+		<figure
+			class="home-hero__diagram"
+			aria-label="Consuelo integrations diagram"
+			data-motion="hero-diagram"
+		>
 			<img
 				src="/images/consuelo-integrations-hero.svg?v=20260628-portrait"
 				alt="Developer tools and work surfaces connected to Consuelo"
@@ -204,12 +207,11 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 		display: grid;
 		align-items: center;
 		background: var(--site-color-paper);
-		color: var(--site-color-ink);
+		color: var(--site-color-on-brand);
 		font-family: var(--site-font-body);
-		--home-hero-control-bg: #fffdf8;
-		--home-hero-control-line: rgba(28, 26, 23, 0.16);
-		--home-hero-control-shadow:
-			0 0 0 1px rgba(28, 26, 23, 0.08), 0 12px 28px rgba(28, 26, 23, 0.08);
+		--home-hero-control-bg: var(--site-color-surface);
+		--home-hero-control-line: var(--site-color-line);
+		--home-hero-control-shadow: var(--site-shadow-control);
 		padding-block: clamp(4.5rem, 7.2vw, 6.6rem) var(--site-space-7);
 		overflow: clip;
 	}
@@ -229,7 +231,7 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 	}
 
 	.home-hero__eyebrow {
-		color: var(--site-color-ink);
+		color: var(--site-color-on-brand);
 		display: flex;
 		gap: clamp(var(--site-space-2), 1.25vw, var(--site-space-3));
 		align-items: center;
@@ -246,7 +248,7 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 
 	.home-hero__title {
 		margin: 0;
-		color: var(--site-color-ink);
+		color: var(--site-color-on-brand);
 		font-family: var(--site-font-display);
 		font-size: clamp(3.2rem, 5.35vw, 5.65rem);
 		font-weight: 300;
@@ -281,7 +283,7 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 
 	.home-hero__action-label,
 	.home-hero__install-label {
-		color: var(--site-color-muted);
+		color: var(--site-color-muted-on-brand);
 	}
 
 	.home-hero__portal {
@@ -303,10 +305,14 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 		padding: 0.72rem 1.15rem;
 	}
 
-	.home-hero__portal svg {
+	.home-hero__portal-arrow {
 		width: var(--site-space-4);
 		height: var(--site-space-4);
-		fill: currentColor;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 
 	.home-hero__install-wrap {
@@ -467,15 +473,6 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 		margin-inline: auto 0;
 	}
 
-	@media (prefers-color-scheme: dark) {
-		.home-hero {
-			--home-hero-control-bg: #14130f;
-			--home-hero-control-line: rgba(247, 239, 231, 0.18);
-			--home-hero-control-shadow:
-				0 0 0 1px rgba(247, 239, 231, 0.08), 0 18px 38px rgba(0, 0, 0, 0.36);
-		}
-	}
-
 	@media (min-width: 1181px) {
 		.home-hero__inner {
 			grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);
@@ -611,7 +608,7 @@ const heroTitleText = 'GIVE EVERY AGENT\nWORKSPACE\nSUPERPOWERS'
 			font-size: clamp(0.78rem, 3vw, 0.9rem);
 		}
 
-		.home-hero__portal svg {
+		.home-hero__portal-arrow {
 			width: 0.95rem;
 			height: 0.95rem;
 		}

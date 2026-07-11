@@ -1,7 +1,9 @@
 ---
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
+import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
 import HomeHero from '../components/home/HomeHero.astro';
+import HomePlatformCards from '../components/home/HomePlatformCards.astro';
 import { getSoftwareApplicationSchema } from '../lib/site-seo';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
 
@@ -29,5 +31,13 @@ const schemaEntries = [
 >
   <SiteHeader pageSections={[]} />
   <HomeHero sectionId="intro" />
+  <HomePlatformCards sectionId="platforms" />
+  <HomeFeaturePreview sectionId="features" />
   <SiteFooter />
 </MarketingLayout>
+
+<script>
+  import { bootHomeScrollMotion } from '../lib/home-scroll-motion';
+
+  bootHomeScrollMotion();
+</script>

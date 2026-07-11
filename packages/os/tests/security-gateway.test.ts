@@ -299,13 +299,15 @@ describe('Consuelo OS public gateway security contract', () => {
       process.stdout.write(JSON.stringify(result));
     `);
 
-    const generatedAuthPath = join(tempHome, 'security', 'generated', 'auth.json');
-    const generatedCaddyPath = join(tempHome, 'security', 'generated', 'Caddyfile');
-    const overridesPath = join(tempHome, 'security', 'overrides');
+    const generatedAuthPath = join(tempHome, 'node', 'security', 'generated', 'auth.json');
+    const generatedCaddyPath = join(tempHome, 'node', 'caddy', 'Caddyfile');
+    const overridesPath = join(tempHome, 'node', 'security', 'overrides');
     const configPath = join(tempHome, 'config.json');
 
-    expect(existsSync(join(tempHome, 'security'))).toBe(true);
-    expect(existsSync(join(tempHome, 'security', 'generated'))).toBe(true);
+    expect(existsSync(join(tempHome, 'security'))).toBe(false);
+    expect(existsSync(join(tempHome, 'node', 'security'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'security', 'generated'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'caddy'))).toBe(true);
     expect(existsSync(overridesPath)).toBe(true);
     expect(existsSync(generatedAuthPath)).toBe(true);
     expect(existsSync(generatedCaddyPath)).toBe(true);
@@ -1167,7 +1169,7 @@ describe('Consuelo OS public gateway security contract', () => {
       process.stdout.write(JSON.stringify(result));
     `);
 
-    const caddyfile = readFileSync(join(tempHome, 'security', 'generated', 'Caddyfile'), 'utf8');
+    const caddyfile = readFileSync(join(tempHome, 'node', 'caddy', 'Caddyfile'), 'utf8');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8999');
     expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8850');
   });
@@ -1245,16 +1247,16 @@ describe('Consuelo OS public gateway security contract', () => {
       const { provisionLocalOs, runDoctor } = await import('./scripts/lib/install-state.ts');
       const home = process.env.CONSUELO_OS_HOME;
       provisionLocalOs({ mode: 'local' });
-      rmSync(join(home, 'security', 'generated', 'auth.json'), { force: true });
-      rmSync(join(home, 'security', 'generated', 'Caddyfile'), { force: true });
+      rmSync(join(home, 'node', 'security', 'generated', 'auth.json'), { force: true });
+      rmSync(join(home, 'node', 'caddy', 'Caddyfile'), { force: true });
       const result = await runDoctor(home);
-      const checks = result.checks.filter((check) => check.message.includes('security/generated'));
+      const checks = result.checks.filter((check) => check.message.includes('node/security') || check.message.includes('node/caddy'));
       process.stdout.write(JSON.stringify({ ok: result.ok, checks }));
     `);
 
     expect(result).toMatchObject({ ok: false });
-    expect(JSON.stringify(result)).toContain('security/generated/auth.json');
-    expect(JSON.stringify(result)).toContain('security/generated/Caddyfile');
+    expect(JSON.stringify(result)).toContain('node/security/generated/auth.json');
+    expect(JSON.stringify(result)).toContain('node/caddy/Caddyfile');
     expect(JSON.stringify(result)).toContain('unhealthy');
   });
 

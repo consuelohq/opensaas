@@ -1,0 +1,100 @@
+---
+title: Workspace Launcher
+description: The Consuelo OS meta-launcher page for MCP connection, workspace links, and local agent status.
+---
+
+# Workspace launcher
+
+After install and workspace device authentication, Consuelo OS serves a simple meta-launcher page on your workspace hostname.
+
+The launcher is the first place to copy your MCP URL, jump to workspace sites, and see which local agents are connected.
+
+## Where to find it
+
+Open your workspace hostname:
+
+```text
+https://<workspace>.consuelohq.com/
+```
+
+The hosted `https://os.consuelohq.com/` root remains the device sign-in entrypoint. Your launcher lives on the workspace hostname created during install.
+
+## Main panel
+
+The left side of the launcher focuses on onboarding:
+
+- **Welcome to Consuelo OS**
+- **Here is the URL to connect ChatGPT to your workspace.**
+- A copyable MCP URL field, for example `https://<workspace>.consuelohq.com/mcp`
+- Workspace details:
+  - Contact: `support@consuelohq.com`
+  - Location: USA
+  - Status: Online
+  - Open position: Systems Engineer
+
+Use the **Copy** button to place the MCP URL on your clipboard, then paste it into ChatGPT Connectors.
+
+## Right sidebar
+
+The right panel uses subtle secondary text and generous whitespace. It is organized into standalone sections.
+
+### Connect to your cloud agents
+
+ChatGPT is the first supported cloud connector. The launcher links directly to ChatGPT Connectors settings.
+
+### Sites
+
+Quick links into workspace sites:
+
+| Link | Destination |
+| --- | --- |
+| Go to market | `https://sites.consuelohq.com/gtm` |
+| Artifacts | `https://sites.consuelohq.com/office` |
+| Observability | `https://sites.consuelohq.com/observability` |
+| Code review | `https://sites.consuelohq.com/diffs` |
+
+### Guides and Tips
+
+- [Documentation](https://docs.consuelohq.com/)
+
+### Writing
+
+- Decision loops
+
+## Local agent status
+
+The bottom-right status area shows how many local agents are connected to your workspace.
+
+Examples:
+
+- `Connected to 2 local agents` with a list of connected agent names
+- `Connected to 0 local agents` with `No local agents connected to workspace yet.`
+
+The count reads from `~/.consuelo/os/config.json`. An agent appears only when install connected it and persisted `connected: true` for that agent.
+
+If you selected agents during install but still see zero:
+
+1. Re-run install and confirm the agents step saved your selections
+2. Check `~/.consuelo/os/config.json` for an `agents` array with `connected: true`
+3. Confirm the local agent was detected on disk during install
+
+Local agent count and hosted MCP reachability are separate concerns. A zero count usually means local config was not persisted, not that Cloudflare blocked the request.
+
+## Design intent
+
+The launcher replaces the older terminal-first onboarding surface.
+
+It is intentionally minimal:
+
+- one obvious MCP URL
+- a small set of workspace links
+- a live view of local agent connection state
+
+Use it as the default handoff page after install. Deeper workspace configuration will move into [Settings](/os/concepts/configuration/) over time.
+
+## Related
+
+- [Install Consuelo OS](/os/getting-started/install/)
+- [Connect agents](/os/getting-started/connect-agents/)
+- [Configuration](/os/concepts/configuration/)
+- [OS portal](/os/concepts/portal/)
