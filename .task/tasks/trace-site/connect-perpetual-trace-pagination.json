@@ -3,17 +3,10 @@
   "stream": "stream/trace-site",
   "taskBranch": "task/trace-site/connect-perpetual-trace-pagination",
   "baseBranch": "stream/trace-site",
-  "sourceBranch": "stream/trace-site",
-  "startFrom": "stream",
+  "sourceBranch": "main",
+  "startFrom": "main",
   "prNumber": 1415,
   "prUrl": "https://github.com/consuelohq/opensaas/pull/1415",
-  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1415",
-  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1415/connect-perpetual-trace-pagination",
-  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1415",
-  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1415/connect-perpetual-trace-pagination",
   "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination",
-  "taskSession": "tsk_f88a1458e41e",
-  "tmuxSession": "opensaas-trace-site-connect-perpetual-trace-pagination-f88a1458",
-  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/.task/trace-site/connect-perpetual-trace-pagination/session.json",
-  "createdAt": "2026-07-11T07:22:53.346Z"
+  "createdAt": "2026-07-11T08:01:18.397Z"
 }

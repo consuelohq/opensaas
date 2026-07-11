@@ -1,5 +1,6 @@
 import {
   copyFileSync,
+  existsSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -11,6 +12,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { afterEach, describe, expect, test } from 'vitest';
+
+const browserTest = playwrightChromiumAvailable() ? test : test.skip;
+
+function playwrightChromiumAvailable(): boolean {
+  try {
+    return existsSync(chromium.executablePath());
+  } catch {
+    return false;
+  }
+}
 
 import {
   branchSummary,
@@ -283,7 +294,7 @@ describe('trace-site inspector deployment contract', () => {
     ).toHaveLength(1);
   });
 
-  test('should preserve interactive inspector behavior when the trace list is virtualized', async () => {
+  browserTest('should preserve interactive inspector behavior when the trace list is virtualized', async () => {
     const root = mkdtempSync(join(tmpdir(), 'trace-inspector-runtime-'));
     roots.push(root);
     const archiveRoot = join(root, 'site');
@@ -414,7 +425,7 @@ describe('trace-site inspector deployment contract', () => {
     }
   }, 15_000);
 
-  test('should append older history pages while preserving inspector state and terminal behavior', async () => {
+  browserTest('should append older history pages while preserving inspector state and terminal behavior', async () => {
     const root = mkdtempSync(join(tmpdir(), 'trace-inspector-pagination-'));
     roots.push(root);
     const archiveRoot = join(root, 'site');
