@@ -439,4 +439,36 @@ describe('Trace Sites local trace backend adapter', () => {
     ]);
     expect(terminal.nextCursor).toBeNull();
   });
+
+  it('resolves trace and MCP trace aliases before the newest-row fallback', async () => {
+    const dbPath = join(tempDir, 'history-aliases.db');
+    await createHistoryFixtureDb(dbPath);
+    const backend = createLocalTraceSitesReadBackend({ dbPath });
+
+    const fromTraceId = await backend.readHistoryPage!({
+      workspaceId: 'wrk_live',
+      workspaceHost: 'testing.consuelohq.com',
+      site: 'trace-burn-intelligence',
+      sourceMode: 'local-networked',
+      cursor: 'id:trc_history_4',
+      limit: 2,
+    });
+    const fromMcpTraceId = await backend.readHistoryPage!({
+      workspaceId: 'wrk_live',
+      workspaceHost: 'testing.consuelohq.com',
+      site: 'trace-burn-intelligence',
+      sourceMode: 'local-networked',
+      cursor: 'id:mcp_history_4',
+      limit: 2,
+    });
+
+    expect(fromTraceId.rows.map((historyRow) => historyRow.recordId)).toEqual([
+      'row_3',
+      'row_2',
+    ]);
+    expect(fromMcpTraceId.rows.map((historyRow) => historyRow.recordId)).toEqual([
+      'row_3',
+      'row_2',
+    ]);
+  });
 });

@@ -76,6 +76,14 @@ const TRACE_HISTORY_PAGE_SQL = [
   'LIMIT ?;',
 ].join('\n');
 
+const TRACE_HISTORY_CURSOR_SQL = [
+  'SELECT rowid',
+  'FROM tool_traces',
+  'WHERE id = ? OR trace_id = ? OR mcp_trace_id = ?',
+  'ORDER BY rowid DESC',
+  'LIMIT 1;',
+].join('\n');
+
 const RECENT_TRACE_EVENTS_SQL = [
   'SELECT',
   '  rowid,',
@@ -268,8 +276,8 @@ function resolveHistoryBeforeRowid(
   const recordId = cursor.startsWith('id:') ? cursor.slice(3) : cursor;
   if (recordId) {
     const matched = db
-      .query('SELECT rowid FROM tool_traces WHERE id = ? LIMIT 1')
-      .get(recordId) as { rowid?: number } | null;
+      .query(TRACE_HISTORY_CURSOR_SQL)
+      .get(recordId, recordId, recordId) as { rowid?: number } | null;
     if (matched?.rowid && matched.rowid > 0) return matched.rowid;
   }
 

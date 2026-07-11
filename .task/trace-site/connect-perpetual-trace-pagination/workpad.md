@@ -36,27 +36,18 @@ started: 2026-07-11
 - The existing private Tailnet archive serves the same-origin `/gateway/traces/recent` history route and reads the local trace backend server-side. Raw history still requires explicit `includeRawPayload=true`; omission returns 403 before the backend read.
 - The public Cloudflare preview removes the private transport and publishes `nextCursor: null`, so it remains synthetic and terminal.
 - The browser appends/deduplicates pages, preserves selection/tab/filter state, reports loaded root count, stops at terminal exhaustion, and exposes root-index-based `Scroll to top`.
-- Strict review is clean and full verification is publish-valid. The follow-up commit, PR checks, stream promotion, and private artifact refresh remain.
+- The private transport fix is pushed. A subsequent Codex P2 on alias cursor resolution is fixed and locally proven; strict review, final verification, republish, PR checks, stream promotion, and private artifact refresh remain.
 
 ## files changed
 
-- `packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts`
-- `packages/os/scripts/lib/trace-sites-gateway-read-layer.ts`
-- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
-- `packages/os/scripts/server/services/trace-gateway.ts`
-- `packages/os/tests/trace-gateway-service.test.ts`
-- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
 - `packages/workspace/scripts/office.ts`
-- `packages/workspace/scripts/trace-site-inspector/archive-history.ts`
-- `packages/workspace/scripts/trace-site-inspector/browser.ts`
 - `packages/workspace/scripts/trace-site-inspector/deploy.ts`
-- `packages/workspace/scripts/trace-site-inspector/inspector.css`
 - `packages/workspace/scripts/trace-site-inspector/pagination-browser.ts`
 - `packages/workspace/scripts/trace-site-inspector/preview.ts`
-- `packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts`
 - `packages/workspace/test-selection.registry.json`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/trace-site-inspector.test.ts`
+- `packages/workspace/scripts/trace-site-inspector/archive-history.ts`
 
 
 ## workspace-owned: files changed
@@ -85,6 +76,9 @@ started: 2026-07-11
 - 2026-07-11 15:03:50 `verify`: passed — OK
 - 2026-07-11 15:04:29 `verify`: passed — OK
 - 2026-07-11 15:05:54 `verify`: passed — OK
+- 2026-07-11 15:11:53 `checkFiles`: passed — OK
+- 2026-07-11 15:12:11 `review.run`: passed — OK
+- 2026-07-11 15:12:31 `verify`: passed — OK
 
 ## key decisions
 
@@ -113,6 +107,7 @@ started: 2026-07-11
 - A combined Bun/Vitest invocation cannot import the broader OS server graph because of existing Zod interop behavior; gateway SQLite tests run under Bun, while the resolver test runs under the package's normal Node/Vitest runner.
 - GitHub's verify job restores `node_modules` but not Playwright's browser cache. Browser integration tests now run when `chromium.executablePath()` exists and skip only when the executable is absent; the portable contract suite still runs in CI.
 - Codex review identified a P1: a static browser cannot create the internal OS gateway signature. The direct browser fetch was removed. The existing private Tailnet archive now owns the same-origin data route, while the public Cloudflare preview is terminal and transport-free.
+- Codex review identified a P2: `id:<traceId>` cursors only queried `tool_traces.id`, so alias-only feed rows could fall back to the newest row and duplicate visible history. The resolver now uses one parameterized query across `id`, `trace_id`, and `mcp_trace_id`, ordered by newest matching rowid.
 - The first real-shard probe used a relative module import from the `code.call` temporary directory and failed before reading data. Retrying with an absolute file URL passed; no repository state changed during the failed probe.
 
 ## review wait
@@ -126,6 +121,14 @@ started: 2026-07-11
 - Wake result: 2026-07-11T07:55:31Z; PR #1415 had 47 checks, 0 failed, 2 pending, and 0 submitted reviews. No CodeRabbit finding was present after the required window.
 - CI poll result: 2026-07-11T07:56:29Z; 45 checks passed/skipped and 2 failed because the registry-selected inspector suite attempted Playwright without a browser cache on Linux.
 - Recovery proof: local mode runs all 15 tests; simulated missing-browser mode passes 13 portable tests with exactly 2 skips.
+- Follow-up wait reason: allow review bots and required PR checks to process the trusted private-archive transport fix at `3afc28abeb0b6355208471bf098faa6a1252c263`.
+- Follow-up wait start: 2026-07-11T15:06:17Z.
+- Follow-up wait duration: 100 seconds.
+- Follow-up resume action: inspect PR #1415 reviews, inline comments, and all check conclusions immediately after wake.
+- Follow-up expected signal: no unresolved actionable review finding and no failed required check.
+- Follow-up fallback: address actionable findings or poll bounded pending checks; do not promote while any failure or unresolved P1/P0 remains.
+- Follow-up wake result: 2026-07-11T15:08:31Z; PR #1415 was at `3afc28abeb0b6355208471bf098faa6a1252c263` with 47 checks, 0 failed, and 2 running (`Consuelo / verify`, `Consuelo / workspace contracts`).
+- Follow-up review result: Codex added one actionable P2 on `trace_id`/`mcp_trace_id` cursor aliases. Promotion stayed blocked and the finding was addressed test-first.
 
 ## validation evidence
 
@@ -147,6 +150,8 @@ started: 2026-07-11
 - Private archive adapter on the production-shaped 16,024-row shard returned two pages of 3 rich rows, with 6 unique keys, valid continuation, and no overlap.
 - Follow-up strict repository review: zero findings.
 - Follow-up full verify: publish-valid and stamped; 4 selected suites passed (6 registry tests, 8 gateway tests, 1 DB resolver test, 18 inspector tests); DB guard passed with 0 risks and 0 findings.
+- Alias cursor regression: the focused OS suite failed red with `row_4,row_3` instead of `row_3,row_2`, then passed green at 9/9 after the resolver change.
+- Production-shaped alias proof: both `trace_id` and `mcp_trace_id` cursors returned 3 rows strictly older than the visible boundary and excluded the boundary row.
 
 ---
 
@@ -203,8 +208,8 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/trace-site/connect-perpetual-trace-pagination/evidence-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/read-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/verify.json`, `.task/trace-site/connect-perpetual-trace-pagination/workpad.md`, `packages/workspace/scripts/office.ts`, `packages/workspace/scripts/trace-site-inspector/archive-history.ts`, `packages/workspace/scripts/trace-site-inspector/deploy.ts`, `packages/workspace/scripts/trace-site-inspector/pagination-browser.ts`, `packages/workspace/scripts/trace-site-inspector/preview.ts`, `packages/workspace/test-selection.registry.json`, `packages/workspace/test-selection.rules.json`, `packages/workspace/tests/trace-site-inspector.test.ts`
-- matched rules: `workspace-test-selection`, `trace-site-pagination`
-- selected suites: `workspace test selection tests`, `trace gateway history endpoints`, `trace gateway DB resolution`, `trace site inspector pagination`
-- run results: `workspace test selection tests` passed, `trace gateway history endpoints` passed, `trace gateway DB resolution` passed, `trace site inspector pagination` passed
+- changed files: `.task/trace-site/connect-perpetual-trace-pagination/evidence-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/read-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/workpad.md`, `packages/os/scripts/lib/trace-sites-local-read-backend.ts`, `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- matched rules: `trace-site-pagination`
+- selected suites: `trace gateway history endpoints`, `trace gateway DB resolution`, `trace site inspector pagination`
+- run results: `trace gateway history endpoints` passed, `trace gateway DB resolution` passed, `trace site inspector pagination` passed
 - failed suites: none
