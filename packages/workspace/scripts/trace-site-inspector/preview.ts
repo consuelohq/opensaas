@@ -336,6 +336,7 @@ export const SYNTHETIC_TRACE_FEED = {
     tokens: totalTokens,
     cost: totalCost,
     synthetic: true,
+    nextCursor: null,
   },
   rows,
   failures: rows.filter((row) => row.status === 'error'),
@@ -357,7 +358,11 @@ export function serializeTraceSeed(value: unknown): string {
 
 export function sanitizeTracePreviewHtml(html: string): string {
   const seed = serializeTraceSeed(SYNTHETIC_TRACE_FEED);
-  const replaced = html.replace(
+  const withoutPrivateTransport = html.replace(
+    /<script[^>]*id=["']consuelo-trace-history-transport["'][^>]*>[\s\S]*?<\/script>\s*/gi,
+    '',
+  );
+  const replaced = withoutPrivateTransport.replace(
     /(<script[^>]*id=["']trace-seed-data["'][^>]*>)[\s\S]*?(<\/script>)/,
     `$1${seed}$2`,
   );

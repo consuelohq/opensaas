@@ -145,6 +145,7 @@
         "packages/os/scripts/server/services/trace-gateway.ts",
         "packages/os/tests/trace-gateway-service.test.ts",
         "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/workspace/scripts/office.ts",
         "packages/workspace/scripts/trace-site-inspector/**",
         "packages/workspace/tests/trace-site-inspector.test.ts"
       ],

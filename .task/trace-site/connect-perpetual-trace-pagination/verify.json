@@ -3,25 +3,20 @@
   "publishValid": true,
   "mode": "full",
   "branch": "task/trace-site/connect-perpetual-trace-pagination",
-  "base": "origin/stream/trace-site",
-  "headSha": "0aacda5d569b24ed312e2311a7261ef100b6e60a",
-  "changeHash": "2bba7e261e031198dc13fe6ce77c2bfe9e78ba20ab14a97196a057dd54aba433",
+  "base": "origin/task/trace-site/connect-perpetual-trace-pagination",
+  "headSha": "5d102e0cfcedce6f87be268fe2c53e266ee0c852",
+  "changeHash": "fb4eae1b6cd07e4c0bc6661bc39efde154a62f98def4f3f7afb5f7a8a62e094d",
   "changedFiles": [
-    "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
-    "packages/os/scripts/lib/trace-sites-gateway-read-layer.ts",
-    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
-    "packages/os/scripts/server/services/trace-gateway.ts",
-    "packages/os/tests/trace-gateway-service.test.ts",
-    "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
-    "packages/workspace/scripts/trace-site-inspector/browser.ts",
-    "packages/workspace/scripts/trace-site-inspector/inspector.css",
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
+    "packages/workspace/scripts/trace-site-inspector/deploy.ts",
     "packages/workspace/scripts/trace-site-inspector/pagination-browser.ts",
-    "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/scripts/trace-site-inspector/preview.ts",
     "packages/workspace/test-selection.registry.json",
     "packages/workspace/test-selection.rules.json",
     "packages/workspace/tests/trace-site-inspector.test.ts"
   ],
-  "verifiedAt": "2026-07-11T08:02:22.370Z",
+  "verifiedAt": "2026-07-11T15:05:54.675Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -35,23 +30,15 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
-        ".task/tasks/trace-site/connect-perpetual-trace-pagination.json",
-        ".task/trace-site/connect-perpetual-trace-pagination/current.json",
         ".task/trace-site/connect-perpetual-trace-pagination/evidence-log.json",
         ".task/trace-site/connect-perpetual-trace-pagination/read-log.json",
-        ".task/trace-site/connect-perpetual-trace-pagination/session.json",
         ".task/trace-site/connect-perpetual-trace-pagination/verify.json",
         ".task/trace-site/connect-perpetual-trace-pagination/workpad.md",
-        "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
-        "packages/os/scripts/lib/trace-sites-gateway-read-layer.ts",
-        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
-        "packages/os/scripts/server/services/trace-gateway.ts",
-        "packages/os/tests/trace-gateway-service.test.ts",
-        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
-        "packages/workspace/scripts/trace-site-inspector/browser.ts",
-        "packages/workspace/scripts/trace-site-inspector/inspector.css",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
+        "packages/workspace/scripts/trace-site-inspector/deploy.ts",
         "packages/workspace/scripts/trace-site-inspector/pagination-browser.ts",
-        "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+        "packages/workspace/scripts/trace-site-inspector/preview.ts",
         "packages/workspace/test-selection.registry.json",
         "packages/workspace/test-selection.rules.json",
         "packages/workspace/tests/trace-site-inspector.test.ts"
@@ -72,16 +59,11 @@
           "critical": true,
           "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
           "matchedFiles": [
-            "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
-            "packages/os/scripts/lib/trace-sites-gateway-read-layer.ts",
-            "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
-            "packages/os/scripts/server/services/trace-gateway.ts",
-            "packages/os/tests/trace-gateway-service.test.ts",
-            "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
-            "packages/workspace/scripts/trace-site-inspector/browser.ts",
-            "packages/workspace/scripts/trace-site-inspector/inspector.css",
+            "packages/workspace/scripts/office.ts",
+            "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
+            "packages/workspace/scripts/trace-site-inspector/deploy.ts",
             "packages/workspace/scripts/trace-site-inspector/pagination-browser.ts",
-            "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+            "packages/workspace/scripts/trace-site-inspector/preview.ts",
             "packages/workspace/tests/trace-site-inspector.test.ts"
           ],
           "origin": "explicit"
@@ -159,8 +141,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1522,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1081\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 835\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:02:15\n\u001b[2m   Duration \u001b[22m 1.21s\u001b[2m (transform 21ms, setup 0ms, import 33ms, tests 1.08s, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 1487,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1079\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 838\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:47\n\u001b[2m   Duration \u001b[22m 1.19s\u001b[2m (transform 16ms, setup 0ms, import 23ms, tests 1.08s, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "trace gateway history endpoints",
@@ -178,8 +160,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 432,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:02:16\n\u001b[2m   Duration \u001b[22m 166ms\u001b[2m (transform 74ms, setup 0ms, import 86ms, tests 21ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 434,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:49\n\u001b[2m   Duration \u001b[22m 184ms\u001b[2m (transform 76ms, setup 0ms, import 92ms, tests 22ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "trace gateway DB resolution",
@@ -197,8 +179,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 703,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-gateway-service.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:02:17\n\u001b[2m   Duration \u001b[22m 317ms\u001b[2m (transform 135ms, setup 0ms, import 205ms, tests 4ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 590,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-gateway-service.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:49\n\u001b[2m   Duration \u001b[22m 292ms\u001b[2m (transform 129ms, setup 0ms, import 201ms, tests 3ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "trace site inspector pagination",
@@ -216,8 +198,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 4415,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/workspace\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-site-inspector.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3844\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve interactive inspector behavior when the trace list is virtualized \u001b[33m 1395\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should append older history pages while preserving inspector state and terminal behavior \u001b[33m 2339\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m15 passed\u001b[39m\u001b[22m\u001b[90m (15)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:02:17\n\u001b[2m   Duration \u001b[22m 4.22s\u001b[2m (transform 70ms, setup 0ms, import 299ms, tests 3.84s, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 4368,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-connect-perpetual-trace-pagination/packages/workspace\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-site-inspector.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3735\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve interactive inspector behavior when the trace list is virtualized \u001b[33m 1322\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should append older history pages while preserving inspector state and terminal behavior \u001b[33m 2303\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:05:50\n\u001b[2m   Duration \u001b[22m 4.16s\u001b[2m (transform 84ms, setup 0ms, import 336ms, tests 3.73s, environment 0ms)\u001b[22m\n\n"
         }
       ],
       "failedSuites": []

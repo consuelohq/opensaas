@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 const browserTest = playwrightChromiumAvailable() ? test : test.skip;
 
@@ -41,8 +41,13 @@ import {
 import {
   INSPECTOR_CSS_HREF,
   INSPECTOR_SCRIPT_SRC,
+  TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT,
   patchTraceInspectorHtml,
 } from '../scripts/trace-site-inspector/deploy';
+
+import {
+  createArchiveTraceHistoryResponse,
+} from '../scripts/trace-site-inspector/archive-history';
 
 import {
   mergeTraceRows,
@@ -275,6 +280,58 @@ describe('trace-site virtual list state', () => {
       }),
     ).toThrow('rows');
   });
+
+  test('should expose older history only through the trusted private archive boundary', async () => {
+    const readHistoryPage = vi.fn(async () => ({
+      rows: [row({ id: 'older-1', recordId: 'older-1' })],
+      nextCursor: null,
+    }));
+    const backend = {
+      readRecentEvents: vi.fn(),
+      readCachedAggregate: vi.fn(),
+      readHistoryPage,
+    };
+
+    const denied = await createArchiveTraceHistoryResponse({
+      request: new Request(
+        'https://private.example/gateway/traces/recent?direction=older&cursor=id%3Arecord-2&limit=75&site=trace-burn-intelligence&sourceMode=local-networked',
+      ),
+      dbPath: '/private/traces.db',
+      backend,
+    });
+    expect(denied.status).toBe(403);
+    expect(await denied.json()).toMatchObject({
+      ok: false,
+      error: { code: 'RAW_PAYLOAD_ACCESS_DENIED' },
+    });
+    expect(readHistoryPage).not.toHaveBeenCalled();
+
+    const allowed = await createArchiveTraceHistoryResponse({
+      request: new Request(
+        'https://private.example/gateway/traces/recent?direction=older&cursor=id%3Arecord-2&limit=75&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true',
+      ),
+      dbPath: '/private/traces.db',
+      backend,
+    });
+    expect(allowed.status).toBe(200);
+    expect(await allowed.json()).toMatchObject({
+      ok: true,
+      publicBoundary: 'consuelo-sites-private-archive',
+      data: {
+        direction: 'older',
+        rows: [{ recordId: 'older-1' }],
+        nextCursor: null,
+      },
+    });
+    expect(readHistoryPage).toHaveBeenCalledWith({
+      workspaceId: 'private-tailnet-archive',
+      workspaceHost: 'private.example',
+      site: 'trace-burn-intelligence',
+      sourceMode: 'local-networked',
+      cursor: 'id:record-2',
+      limit: 75,
+    });
+  });
 });
 
 describe('trace-site inspector deployment contract', () => {
@@ -496,27 +553,32 @@ describe('trace-site inspector deployment contract', () => {
       await page.evaluate((pageRows) => {
         const target = window as Window & {
           __traceHistoryRequests?: string[];
+          __consueloTraceHistoryTransport?: {
+            fetchJson: (url: string) => Promise<unknown>;
+          };
+          __plainFetchCalls?: number;
         };
         target.__traceHistoryRequests = [];
-        window.fetch = async (input: RequestInfo | URL) => {
-          target.__traceHistoryRequests!.push(String(input));
-          await new Promise((resolve) => window.setTimeout(resolve, 150));
-          return new Response(
-            JSON.stringify({
+        target.__plainFetchCalls = 0;
+        window.fetch = async () => {
+          target.__plainFetchCalls = (target.__plainFetchCalls ?? 0) + 1;
+          throw new Error('The inspector must not call fetch directly.');
+        };
+        target.__consueloTraceHistoryTransport = {
+          fetchJson: async (url: string) => {
+            target.__traceHistoryRequests!.push(url);
+            await new Promise((resolve) => window.setTimeout(resolve, 150));
+            return {
               ok: true,
-              publicBoundary: 'consuelo-gateway',
+              publicBoundary: 'consuelo-sites-private-archive',
               route: '/gateway/traces/recent',
               data: {
                 direction: 'older',
                 rows: pageRows,
                 nextCursor: null,
               },
-            }),
-            {
-              status: 200,
-              headers: { 'content-type': 'application/json' },
-            },
-          );
+            };
+          },
         };
         history.replaceState(null, '', '#trace=runtime-record-10');
       }, olderRows);
@@ -611,6 +673,9 @@ describe('trace-site inspector deployment contract', () => {
           requestUrl: (
             window as Window & { __traceHistoryRequests?: string[] }
           ).__traceHistoryRequests?.[0],
+          plainFetchCalls: (
+            window as Window & { __plainFetchCalls?: number }
+          ).__plainFetchCalls,
         };
       });
       expect(appended).toMatchObject({
@@ -621,6 +686,7 @@ describe('trace-site inspector deployment contract', () => {
         tab: 'output',
         query: 'runtime',
         topButtonVisible: true,
+        plainFetchCalls: 0,
       });
       expect(appended.height).toBeGreaterThan(initial.height);
       expect(appended.requestUrl).toContain(
@@ -679,6 +745,8 @@ describe('sanitized Cloudflare trace preview', () => {
     expect(sanitized).not.toContain('trc_private');
     expect(() => assertSanitizedTracePreview(sanitized)).not.toThrow();
     expect(SYNTHETIC_TRACE_FEED.meta.synthetic).toBe(true);
+    expect(SYNTHETIC_TRACE_FEED.meta.nextCursor).toBeNull();
+    expect(sanitized).not.toContain('consuelo-trace-history-transport');
     expect(SYNTHETIC_TRACE_FEED.failures.length).toBeGreaterThan(1);
     expect(
       SYNTHETIC_TRACE_FEED.failures.some(
@@ -695,6 +763,37 @@ describe('sanitized Cloudflare trace preview', () => {
     expect(html).toContain('data-trace-virtual-content');
     expect(html).not.toContain('class="trxRow"');
     expect(html).toContain('data-trace-total="5000"');
+    expect(html).not.toContain('consuelo-trace-history-transport');
+  });
+
+  test('should install the trusted transport only in the private artifact HTML', () => {
+    const html = '<!doctype html><html><head></head><body></body></html>';
+    const patched = patchTraceInspectorHtml(html);
+
+    expect(TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT).toContain(
+      '__consueloTraceHistoryTransport',
+    );
+    expect(patched).toContain('consuelo-trace-history-transport');
+    expect(patched).toContain('__consueloTraceHistoryTransport');
+  });
+
+  test('should route private archive history before static artifact handling', () => {
+    const officeSource = readFileSync(
+      new URL('../scripts/office.ts', import.meta.url),
+      'utf8',
+    );
+    const historyRoute =
+      'if (url.pathname === "/gateway/traces/recent") return createArchiveTraceHistoryResponse({ request, dbPath: latestTraceDb() });';
+    const archiveRootRoute =
+      'if (url.pathname === "/") return new Response(renderSitesLauncher()';
+
+    expect(officeSource).toContain(
+      "import { createArchiveTraceHistoryResponse } from ",
+    );
+    expect(officeSource).toContain(historyRoute);
+    expect(officeSource.indexOf(historyRoute)).toBeLessThan(
+      officeSource.indexOf(archiveRootRoute),
+    );
   });
 
   test('should escape script-closing markup when serializing trace seed data', () => {
