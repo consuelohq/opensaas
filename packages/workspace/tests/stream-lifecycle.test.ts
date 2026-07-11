@@ -73,7 +73,7 @@ function createCleanupFixture(): string {
 }
 
 describe('stream lifecycle safety', () => {
-  it('marks only origin-backed zero-ahead local streams as removable', () => {
+  it('should mark a local stream as removable when it is origin-backed and zero commits ahead', () => {
     expect(classifyLocalStream({
       branch: 'stream/safe',
       currentBranch: 'main',
@@ -90,13 +90,13 @@ describe('stream lifecycle safety', () => {
     ['local-only branch', { currentBranch: 'main', remoteExists: false, ahead: null, behind: null, worktreePaths: [] }, 'no origin backup'],
     ['ahead branch', { currentBranch: 'main', remoteExists: true, ahead: 1, behind: 0, worktreePaths: [] }, '1 unique local commit'],
     ['kept branch', { currentBranch: 'main', remoteExists: true, ahead: 0, behind: 0, worktreePaths: [], kept: true }, 'explicitly kept'],
-  ])('protects a %s', (_label, input, expectedReason) => {
+  ])('should protect a %s when removal would be unsafe', (_label, input, expectedReason) => {
     const result = classifyLocalStream({ branch: 'stream/example', ...input });
     expect(result.removable).toBe(false);
     expect(result.reasons).toContain(expectedReason);
   });
 
-  it('requires explicit approval before creating a missing remote stream', () => {
+  it('should require explicit approval when creating a missing remote stream', () => {
     expect(resolveRemoteStreamAction({
       streamBranch: 'stream/tooling',
       remoteExists: true,
@@ -116,7 +116,7 @@ describe('stream lifecycle safety', () => {
     })).toThrow('pass --create-stream');
   });
 
-  it('previews by default and applies only safe local branch removals', () => {
+  it('should preview by default and remove only safe branches when apply is explicit', () => {
     const repo = createCleanupFixture();
 
     const preview = spawnSync('bun', [workspaceCleanupScript, '--json'], {
@@ -163,7 +163,7 @@ describe('stream lifecycle safety', () => {
   });
 
 
-  it('exposes stream cleanup and explicit stream creation in public manifests', () => {
+  it('should expose cleanup and explicit creation when public manifests are generated', () => {
     for (const manifestPath of [
       resolve(import.meta.dirname, '../tooling/tool-manifest.json'),
       resolve(import.meta.dirname, '../../os/tooling/dev-tool-manifest.json'),
@@ -187,7 +187,7 @@ describe('stream lifecycle safety', () => {
     }
   });
 
-  it('documents explicit stream creation in both task start CLIs', () => {
+  it('should document explicit stream creation when task start help is requested', () => {
     for (const script of [
       resolve(import.meta.dirname, '../scripts/task-start.js'),
       resolve(import.meta.dirname, '../../os/scripts/task-start.js'),
@@ -198,7 +198,7 @@ describe('stream lifecycle safety', () => {
     }
   });
 
-  it('keeps workspace and OS cleanup runtimes byte-identical', () => {
+  it('should keep cleanup runtimes byte-identical when workspace and OS ship together', () => {
     expect(existsSync(osCleanupScript)).toBe(true);
     expect(existsSync(osLifecycleModule)).toBe(true);
     expect(readFileSync(workspaceCleanupScript, 'utf8')).toBe(readFileSync(osCleanupScript, 'utf8'));

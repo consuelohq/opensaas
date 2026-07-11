@@ -18,17 +18,22 @@ function runAgentBrowser(request: BrowserProcessRequest, defaultTimeoutMs: numbe
     let stderr = '';
     let settled = false;
     let timedOut = false;
+    let killTimer: NodeJS.Timeout | undefined;
 
     const finish = (result: BrowserProcessResult): void => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      if (killTimer) clearTimeout(killTimer);
       resolve(result);
     };
 
     const timer = setTimeout(() => {
       timedOut = true;
       child.kill('SIGTERM');
+      killTimer = setTimeout(() => {
+        if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+      }, 250);
     }, request.timeoutMs ?? defaultTimeoutMs);
 
     child.stdout.setEncoding('utf8');
@@ -48,7 +53,7 @@ function runAgentBrowser(request: BrowserProcessRequest, defaultTimeoutMs: numbe
       finish({
         stdout: stdout.trim(),
         stderr: stderr.trim(),
-        exitCode: code ?? 0,
+        exitCode: timedOut ? 124 : (code ?? 1),
         timedOut,
         runtimeMissing: false,
       });

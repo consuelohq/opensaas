@@ -31,6 +31,7 @@ export type BrowserContext = {
 export type BrowserOpenInput = {
   url: string;
   headed?: boolean;
+  provider?: string;
 };
 
 export type BrowserHeadedResult = {
@@ -41,12 +42,14 @@ export type BrowserHeadedResult = {
   leftRunning: true;
 };
 
-export type BrowserOpenResult = {
+export type BrowserExistingResult = {
   mode: 'existing';
   profilePath: string;
   url: string;
   leftRunning: true;
 };
+
+export type BrowserOpenResult = BrowserHeadedResult | BrowserExistingResult;
 
 export type BrowserStatus = {
   profilePath: string;

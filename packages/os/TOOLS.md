@@ -7561,7 +7561,7 @@ open the shared persistent browser visibly when the user must complete login, MF
 | Field | Value |
 | --- | --- |
 | Category | utilities |
-| Signature | `workspace.browser.headed({ url: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.browser.headed({ url: string; provider?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace browser.headed` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -7810,7 +7810,7 @@ capture a browser screenshot
 | Category | utilities |
 | Signature | `workspace.browser.screenshot({ name?: string; full?: boolean; preset?: "desktop" &#124; "mobile" &#124; "tablet" &#124; "ipad" &#124; "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" &#124; "light" &#124; "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace browser.screenshot` |
-| Capability | writes state · mutating · single-shot |
+| Capability | writes state · non-mutating · single-shot |
 | Default timeout | 300000ms |
 
 #### Example call
@@ -7871,7 +7871,7 @@ capture an accessibility snapshot
 | Category | utilities |
 | Signature | `workspace.browser.snap({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace browser.snap` |
-| Capability | writes state · mutating · single-shot |
+| Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
 
 #### Example call
