@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const INSPECTOR_VERSION = 'v28';
+export const INSPECTOR_VERSION = 'v29';
 export const INSPECTOR_CSS_HREF = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.css`;
 export const INSPECTOR_SCRIPT_SRC = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.js`;
 
