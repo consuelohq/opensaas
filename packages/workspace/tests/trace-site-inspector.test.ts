@@ -364,6 +364,115 @@ describe('trace-site virtual list state', () => {
       limit: 75,
     });
   });
+
+  test('should enrich paginated batch children from their ordered batch steps', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'trace-history-batch-'));
+    roots.push(root);
+    const dbPath = join(root, 'traces.db');
+    const inputJson = JSON.stringify({
+      steps: [
+        { tool: 'fs.read', input: { path: 'child-a.txt' } },
+        { tool: 'fs.list', input: { path: 'missing' } },
+      ],
+    });
+    const resultJson = JSON.stringify({
+      data: {
+        results: [
+          {
+            ok: true,
+            code: 'OK',
+            traceId: 'child-a-trace',
+            durationMs: 11,
+            inputTokens: 1,
+            outputTokens: 2,
+            data: { output: 'child A output' },
+          },
+          {
+            ok: false,
+            code: 'COMMAND_FAILED',
+            traceId: 'child-b-trace',
+            durationMs: 22,
+            inputTokens: 3,
+            outputTokens: 4,
+            message: 'child B failed',
+            data: { output: 'child B output' },
+          },
+        ],
+      },
+    });
+    const quote = (value: string) => `'${value.replaceAll("'", "''")}'`;
+    execFileSync('sqlite3', [
+      dbPath,
+      `CREATE TABLE tool_traces (trace_id TEXT, tool TEXT, input_json TEXT, result_json TEXT); INSERT INTO tool_traces VALUES ('batch-trace', 'batch', ${quote(inputJson)}, ${quote(resultJson)});`,
+    ]);
+
+    const backend = {
+      readRecentEvents: vi.fn(),
+      readCachedAggregate: vi.fn(),
+      readHistoryPage: vi.fn(async () => ({
+        rows: [
+          row({
+            id: 'batch-history',
+            recordId: 'batch-history',
+            traceId: 'batch-trace',
+            name: 'batch',
+          }),
+        ],
+        nextCursor: null,
+      })),
+    };
+    const response = await createArchiveTraceHistoryResponse({
+      request: new Request(
+        'https://private.example/gateway/traces/recent?direction=older&cursor=id%3Abatch-history&limit=75&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true',
+      ),
+      dbPath,
+      backend,
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      data: {
+        rows: [
+          {
+            recordId: 'batch-history',
+            batchResultsCount: 2,
+            batchResultsJson: [
+              {
+                tool: 'fs.read',
+                name: 'fs.read',
+                traceName: 'fs.read',
+                traceId: 'child-a-trace',
+                status: 'success',
+                code: 'OK',
+                durationMs: 11,
+                inputTokens: 1,
+                outputTokens: 2,
+                input: { path: 'child-a.txt' },
+                output: 'child A output',
+                rawResultJson: { ok: true },
+              },
+              {
+                tool: 'fs.list',
+                name: 'fs.list',
+                traceName: 'fs.list',
+                traceId: 'child-b-trace',
+                status: 'error',
+                code: 'COMMAND_FAILED',
+                durationMs: 22,
+                inputTokens: 3,
+                outputTokens: 4,
+                input: { path: 'missing' },
+                output: 'child B output',
+                rawResultJson: { ok: false, message: 'child B failed' },
+              },
+            ],
+          },
+        ],
+        nextCursor: null,
+      },
+    });
+  });
 });
 
 describe('trace-site inspector deployment contract', () => {
@@ -382,6 +491,438 @@ describe('trace-site inspector deployment contract', () => {
       twice.match(new RegExp(INSPECTOR_SCRIPT_SRC.replaceAll('/', '\\/'), 'g')),
     ).toHaveLength(1);
   });
+
+  browserTest('should select batch children independently and never paint the obsolete detail layout', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'trace-inspector-selection-'));
+    roots.push(root);
+    const scriptPath = join(root, 'trace-inspector-v29.js');
+    const cssPath = join(root, 'trace-inspector-v29.css');
+    execFileSync(
+      'bun',
+      [
+        'build',
+        new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
+          .pathname,
+        '--target=browser',
+        '--format=esm',
+        `--outfile=${scriptPath}`,
+      ],
+      { stdio: 'pipe' },
+    );
+    copyFileSync(
+      new URL('../scripts/trace-site-inspector/inspector.css', import.meta.url),
+      cssPath,
+    );
+
+    const batchParent = row({
+      id: 'batch-parent',
+      recordId: 'batch-parent',
+      traceId: 'parent-trace',
+      name: 'batch',
+      status: 'error',
+      code: 'COMMAND_FAILED',
+      input: 'parent input',
+      output: 'parent output',
+      inputTokens: 10,
+      outputTokens: 20,
+      tokens: 30,
+      batchResultsJson: [
+        {
+          id: 'child-a',
+          recordId: 'child-a',
+          traceId: 'child-a-trace',
+          tool: 'fs.read',
+          name: 'fs.read',
+          status: 'success',
+          code: 'OK',
+          input: 'child A input',
+          output: 'child A output',
+          rawInputJson: { path: 'child-a.txt' },
+          rawResultJson: { ok: true, value: 'child A raw result' },
+          durationMs: 11,
+          inputTokens: 1,
+          outputTokens: 2,
+        },
+        {
+          id: 'child-b',
+          recordId: 'child-b',
+          traceId: 'child-b-trace',
+          tool: 'fs.list',
+          name: 'fs.list',
+          status: 'error',
+          code: 'COMMAND_FAILED',
+          input: 'child B input',
+          output: 'child B output',
+          rawInputJson: { path: 'missing' },
+          rawResultJson: { ok: false, error: 'child B raw result' },
+          durationMs: 22,
+          inputTokens: 3,
+          outputTokens: 4,
+        },
+      ],
+    });
+    const branchPeer = row({
+      id: 'peer-root',
+      recordId: 'peer-root',
+      traceId: 'peer-trace',
+      name: 'review.run',
+      input: 'peer input',
+      output: 'peer output',
+    });
+    const staleBatchParent = {
+      ...batchParent,
+      batchResultsJson: [
+        {
+          traceId: 'child-a-trace',
+          status: 'success',
+          code: 'OK',
+          durationMs: 11,
+          inputTokens: 1,
+          outputTokens: 2,
+        },
+        {
+          traceId: 'child-b-trace',
+          status: 'error',
+          code: 'COMMAND_FAILED',
+          durationMs: 22,
+          inputTokens: 3,
+          outputTokens: 4,
+        },
+      ],
+    };
+    const fillerRows = Array.from({ length: 180 }, (_, index) =>
+      row({
+        id: `filler-${index}`,
+        recordId: `filler-${index}`,
+        traceId: `filler-trace-${index}`,
+        name: 'code.call',
+        input: `filler input ${index}`,
+        output: `filler output ${index}`,
+      }),
+    );
+    const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+      html,body{margin:0;height:100%}.trxShell{display:grid;grid-template-columns:45% 55%;height:100vh}.trxShell.closed .trxRail{display:none}.trxTablePane{display:grid;grid-template-rows:auto 1fr auto;min-height:0}.trxTableScroll{height:100%;overflow:auto}.trxRail{height:100vh}.trxRailInner,[data-inspector]{height:100%}.trxRow{height:44px}.trxFooter{display:flex;justify-content:space-between;padding:8px}
+    </style></head><body>
+      <div class="trxShell closed">
+        <div class="trxTablePane">
+          <input data-search aria-label="Search traces" />
+          <div class="trxTableScroll"><div data-trace-rows></div></div>
+          <footer class="trxFooter"><span><b data-trace-count>182</b> traces</span></footer>
+        </div>
+        <div class="trxRail"><div class="trxRailInner" data-inspector><div class="legacy-detail-layout"><aside>TRACE duplicate parent summary</aside><main>obsolete detail</main></div></div></div>
+      </div>
+      <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-selection' }, rows: [staleBatchParent, branchPeer, ...fillerRows] })}</script>
+      <script>
+        history.replaceState(null, '', '#trace=batch-parent');
+        window.__traceFirstPaintStates = [];
+        window.__legacyTraceRowClicks = 0;
+        window.__legacyTraceBackClicks = 0;
+        document.addEventListener('click', (event) => {
+          const target = event.target instanceof Element ? event.target : null;
+          if (target?.closest('.trxRow')) {
+            window.__legacyTraceRowClicks += 1;
+            window.__traceSelectedKey = 'legacy-overwrite';
+            const mount = document.querySelector('[data-inspector]');
+            if (mount) mount.innerHTML = '';
+          }
+          if (target?.closest('[data-ti-back]')) {
+            window.__legacyTraceBackClicks += 1;
+            document.querySelector('.trxShell')?.classList.add('detail-open');
+          }
+        });
+        requestAnimationFrame(() => window.__traceFirstPaintStates.push({
+          legacy: Boolean(document.querySelector('.legacy-detail-layout')),
+          boot: Boolean(document.querySelector('.tiInspectorBoot')),
+          firstSidebar: document.querySelector('.tiSidebar .tiEyebrow')?.textContent || ''
+        }));
+      </script>
+    </body></html>`;
+    const patchedHtml = patchTraceInspectorHtml(runtimeHtml);
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const page = await browser.newPage({
+        viewport: { width: 1440, height: 900 },
+      });
+      page.setDefaultTimeout(7_000);
+      await page.route('http://trace.test/**', async (route) => {
+        const pathname = new URL(route.request().url()).pathname;
+        if (pathname.endsWith('trace-inspector-v29.css')) {
+          await route.fulfill({ contentType: 'text/css', body: readFileSync(cssPath) });
+          return;
+        }
+        if (pathname.endsWith('trace-inspector-v29.js')) {
+          await new Promise((resolve) => setTimeout(resolve, 180));
+          await route.fulfill({ contentType: 'text/javascript', body: readFileSync(scriptPath) });
+          return;
+        }
+        if (pathname.endsWith('/live-traces.json')) {
+          await route.fulfill({
+            contentType: 'application/json',
+            body: JSON.stringify({
+              meta: { nextCursor: 'cursor-selection' },
+              rows: [batchParent, branchPeer, ...fillerRows],
+            }),
+          });
+          return;
+        }
+        await route.fulfill({ contentType: 'text/html', body: patchedHtml });
+      });
+      await page.goto('http://trace.test/trace-burn-intelligence', { waitUntil: 'commit' });
+      await page.waitForFunction(
+        () =>
+          ((window as Window & { __traceFirstPaintStates?: unknown[] })
+            .__traceFirstPaintStates?.length ?? 0) > 0,
+      );
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & {
+              __traceFirstPaintStates?: Array<{
+                legacy: boolean;
+                boot: boolean;
+                firstSidebar: string;
+              }>;
+            }).__traceFirstPaintStates?.[0],
+        ),
+      ).toEqual({ legacy: false, boot: true, firstSidebar: 'Branch' });
+
+      await page.waitForFunction(
+        () =>
+          Boolean(
+            document.querySelector('.trxRow[data-trace-key="child-a"]'),
+          ) &&
+          Boolean(
+            document.querySelector('.trxRow[data-trace-key="child-b"]'),
+          ) &&
+          Boolean(document.querySelector('.tiInspector:not(.tiInspectorBoot)')),
+      );
+      const initialRows = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.trxRow')]
+          .filter((element) =>
+            ['batch-parent', 'child-a', 'child-b'].includes(
+              element.dataset.traceKey ?? '',
+            ),
+          )
+          .map((element) => ({
+            key: element.dataset.traceKey,
+            rowKey: element.dataset.rowKey,
+            selected: element.getAttribute('aria-selected'),
+          })),
+      );
+      expect(initialRows).toEqual([
+        { key: 'batch-parent', rowKey: 'batch-parent::trace', selected: 'true' },
+        { key: 'child-a', rowKey: 'batch-parent::0:fs.read', selected: 'false' },
+        { key: 'child-b', rowKey: 'batch-parent::1:fs.list', selected: 'false' },
+      ]);
+
+      const assertSelection = async (
+        key: string,
+        expected: string[],
+        rejected: string[],
+      ) => {
+        await page.locator(`.trxRow[data-trace-key="${key}"]`).click();
+        await page.waitForFunction(
+          (selectionKey) =>
+            (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey === selectionKey &&
+            document.querySelector<HTMLElement>('.tiInspector')?.dataset
+              .tiTraceKey === selectionKey,
+          key,
+        );
+        await page.locator('[data-ti-tab="summary"]').click();
+        const state = await page.evaluate(() => ({
+          selected: (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey,
+          selectedRows: [
+            ...document.querySelectorAll<HTMLElement>('.trxRow.selected'),
+          ].map((element) => element.dataset.traceKey),
+          activePeers: [
+            ...document.querySelectorAll<HTMLElement>('.tiPeer.active'),
+          ].map((element) => element.dataset.traceKey),
+          text: document.querySelector<HTMLElement>('[data-inspector]')?.innerText,
+          firstSidebar: document.querySelector<HTMLElement>(
+            '.tiSidebar .tiEyebrow',
+          )?.textContent,
+          traceCard: Boolean(document.querySelector('.tiTraceCard')),
+          detailOpen: document
+            .querySelector('.trxShell')
+            ?.classList.contains('detail-open'),
+          closed: document
+            .querySelector('.trxShell')
+            ?.classList.contains('closed'),
+          inspectorWidth:
+            document.querySelector('.tiInspector')?.getBoundingClientRect()
+              .width ?? 0,
+        }));
+        expect(state.selected).toBe(key);
+        expect(state.selectedRows).toEqual([key]);
+        expect(state.activePeers).toEqual([key]);
+        expect(state.firstSidebar).toBe('Branch');
+        expect(state.traceCard).toBe(false);
+        expect(state.detailOpen).toBe(true);
+        expect(state.closed).toBe(false);
+        expect(state.inspectorWidth).toBeGreaterThan(0);
+        for (const value of expected) expect(state.text).toContain(value);
+        for (const value of rejected) expect(state.text).not.toContain(value);
+      };
+
+      const assertPanel = async (
+        tab: string,
+        expected: string,
+        rejected?: string,
+      ) => {
+        await page.locator(`[data-ti-tab="${tab}"]`).click();
+        const text = await page.locator('[data-ti-panel]').innerText();
+        expect(text).toContain(expected);
+        if (rejected) expect(text).not.toContain(rejected);
+      };
+
+      await assertSelection(
+        'batch-parent',
+        ['batch', 'error', 'COMMAND_FAILED', '120ms', '30 tok', 'parent-trace'],
+        ['child A raw result'],
+      );
+      await assertPanel('input', 'parent input', 'child A input');
+      await assertPanel('output', 'parent output', 'child A output');
+      await assertSelection(
+        'child-a',
+        ['fs.read', 'success · OK', '11ms', '3 tok', 'child-a-trace'],
+        ['parent output', 'child B raw result'],
+      );
+      await assertPanel('input', 'child A input', 'parent input');
+      await assertPanel('output', 'child A output', 'parent output');
+      await assertPanel('raw', 'child A raw result', 'child B raw result');
+      await assertSelection(
+        'child-b',
+        ['fs.list', 'error · COMMAND_FAILED', '22ms', '7 tok', 'child-b-trace'],
+        ['parent output', 'child A raw result'],
+      );
+      await assertPanel('input', 'child B input', 'parent input');
+      await assertPanel('output', 'child B output', 'parent output');
+      await assertPanel('raw', 'child B raw result', 'child A raw result');
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { __legacyTraceRowClicks?: number })
+              .__legacyTraceRowClicks,
+        ),
+      ).toBe(0);
+
+      await page.locator('.tiPeer[data-trace-key="child-a"]').click();
+      await page.waitForFunction(
+        () =>
+          (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey === 'child-a',
+      );
+      await page.locator('[data-ti-tab="output"]').click();
+      expect(await page.locator('.tiPreview').innerText()).toContain('child A output');
+
+      await page.locator('.tiPeer[data-trace-key="peer-root"]').click();
+      await page.waitForFunction(
+        () =>
+          (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey === 'peer-root',
+      );
+      await page.locator('[data-search]').fill('review.run');
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+        ),
+      ).toBe('peer-root');
+      await page.locator('[data-search]').fill('');
+
+      await page.locator('.trxRow[data-trace-key="child-b"]').click();
+      await page.evaluate(() => {
+        (
+          window as Window & {
+            __traceVirtualList?: {
+              appendPage: (
+                rows: Array<Record<string, unknown>>,
+                cursor: string | null,
+              ) => void;
+            };
+          }
+        ).__traceVirtualList?.appendPage(
+          [
+            {
+              id: 'older-root',
+              recordId: 'older-root',
+              traceId: 'older-trace',
+              branch: 'task/trace-site/example',
+              name: 'fs.read',
+              status: 'success',
+            },
+          ],
+          null,
+        );
+      });
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+        ),
+      ).toBe('child-b');
+
+      await page.locator('[data-ti-tab="output"]').click();
+
+      await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.trxTableScroll');
+        if (list) list.scrollTop = list.scrollHeight;
+      });
+      await page.waitForTimeout(100);
+      expect(await page.locator('.tiPreview').innerText()).toContain('child B output');
+
+      await page.locator('[data-ti-back]').dispatchEvent('click');
+      expect(
+        await page.evaluate(() => ({
+          selected: (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey,
+          detailOpen: document
+            .querySelector('.trxShell')
+            ?.classList.contains('detail-open'),
+          closed: document
+            .querySelector('.trxShell')
+            ?.classList.contains('closed'),
+          inspector: Boolean(document.querySelector('.tiInspector')),
+        })),
+      ).toEqual({
+        selected: 'child-b',
+        detailOpen: false,
+        closed: true,
+        inspector: true,
+      });
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { __legacyTraceBackClicks?: number })
+              .__legacyTraceBackClicks,
+        ),
+      ).toBe(0);
+      await page.evaluate(() => {
+        (
+          window as Window & {
+            __traceVirtualList?: { scrollToKey: (key: string) => void };
+          }
+        ).__traceVirtualList?.scrollToKey('child-b');
+      });
+      await page.locator('.trxRow[data-trace-key="child-b"]').click();
+      expect(
+        await page.evaluate(() => ({
+          detailOpen: document
+            .querySelector('.trxShell')
+            ?.classList.contains('detail-open'),
+          closed: document
+            .querySelector('.trxShell')
+            ?.classList.contains('closed'),
+        })),
+      ).toEqual({ detailOpen: true, closed: false });
+    } finally {
+      await browser.close();
+    }
+  }, 25_000);
 
   browserTest('should preserve interactive inspector behavior when the trace list is virtualized', async () => {
     const root = mkdtempSync(join(tmpdir(), 'trace-inspector-runtime-'));
@@ -505,10 +1046,19 @@ describe('trace-site inspector deployment contract', () => {
       await page.locator('.tiMobileBack').click();
       await page.waitForFunction(
         () =>
-          !(window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey &&
-          !document.querySelector('[data-inspector] .tiInspector'),
+          !document
+            .querySelector('.trxShell')
+            ?.classList.contains('detail-open'),
       );
+      expect(
+        await page.evaluate(() => ({
+          selected: (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey,
+          inspector: Boolean(
+            document.querySelector('[data-inspector] .tiInspector'),
+          ),
+        })),
+      ).toEqual({ selected: 'runtime-record-0', inspector: true });
     } finally {
       await browser.close();
     }
@@ -598,6 +1148,9 @@ describe('trace-site inspector deployment contract', () => {
         };
         target.__consueloTraceHistoryTransport = {
           fetchJson: async (url: string) => {
+            if (url === '/trace-burn-intelligence/live-traces.json') {
+              return { rows: [] };
+            }
             target.__traceHistoryRequests!.push(url);
             await new Promise((resolve) => window.setTimeout(resolve, 150));
             return {
