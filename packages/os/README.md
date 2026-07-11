@@ -109,7 +109,7 @@ cd packages/os
 bun run server:run
 ```
 
-The server listens on `127.0.0.1:8960` by default.
+The server listens on `127.0.0.1:46321` by default.
 
 Override the port with:
 
@@ -198,7 +198,7 @@ com.consuelo.system
 com.consuelo.watchdog
 ```
 
-Portless is optional. If present, status output may also include `com.consuelo.portless.system`; otherwise Consuelo OS uses the regular local service port on `http://127.0.0.1:8960`.
+Portless is optional. If present, status output may also include `com.consuelo.portless.system`; otherwise Consuelo OS uses the regular local service port on `http://127.0.0.1:46321`.
 
 Logs go under:
 

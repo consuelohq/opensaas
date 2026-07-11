@@ -172,7 +172,7 @@ function createCapturedWorkspaceConnectorProvisioner(): CapturedWorkspaceConnect
         connectorId: input.connectorId,
         cloudflareTunnelToken: `cloudflare_tunnel_token_fixture_${connectorLabel}`,
         tunnelOriginUrl: `https://${connectorLabel}.os-origin.consuelohq.com`,
-        localServiceUrl: 'http://127.0.0.1:8960',
+        localServiceUrl: 'http://127.0.0.1:46321',
       };
     },
   };

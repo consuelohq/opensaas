@@ -1513,7 +1513,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         baseDomain: 'consuelohq.com',
         cloudflareZoneId: 'zone_123',
         connectorId: 'connector_macbook_air',
-        localServiceUrl: 'http://127.0.0.1:8960',
+        localServiceUrl: 'http://127.0.0.1:46321',
       },
     });
 
@@ -1537,7 +1537,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         ingress: [
           {
             hostname: 'connector-macbook-air.os-origin.consuelohq.com',
-            service: 'http://127.0.0.1:8960',
+            service: 'http://127.0.0.1:46321',
           },
           { service: 'http_status:404' },
         ],

@@ -209,7 +209,7 @@ describe('public installer runtime dependencies', () => {
 
     expect(result.status).toBe(0);
     expect(result.stderr).toContain('dry-run: Bun is missing and would be installed');
-    expect(result.stderr).toContain('portless is not installed; Consuelo OS will use http://127.0.0.1:8960');
+    expect(result.stderr).toContain('portless is not installed; Consuelo OS will use http://127.0.0.1:46321');
     expect(result.stderr).toContain('dry-run: cloudflared is missing and would be installed');
     expect(result.stderr).not.toMatch(/wrangler.*required/i);
     expect(result.stderr).not.toMatch(/CLOUDFLARE_(ACCOUNT_ID|API_TOKEN).*required/);

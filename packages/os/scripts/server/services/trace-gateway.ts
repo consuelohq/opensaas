@@ -49,7 +49,7 @@ export function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
         workspaceId: scope.workspaceId === 'workspace-unknown'
           ? config.workspaceId
           : scope.workspaceId,
-        workspaceHost: scope.workspaceHost === '127.0.0.1:8960'
+        workspaceHost: scope.workspaceHost === '127.0.0.1:46321'
           ? config.workspaceHost
           : scope.workspaceHost,
       };

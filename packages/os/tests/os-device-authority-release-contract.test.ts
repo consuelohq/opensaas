@@ -104,7 +104,7 @@ describe('OS device authority release contract', () => {
       CLOUDFLARE_ZONE_ID: '3787f63d39977227bc1cb346e0d67dc9',
       OS_DEVICE_AUTH_BASE_DOMAIN: 'consuelohq.com',
       OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME: 'workspace-edge.consuelohq.com',
-      OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL: 'http://127.0.0.1:8960',
+      OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL: 'http://127.0.0.1:46321',
     });
   });
 

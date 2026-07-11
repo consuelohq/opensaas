@@ -164,7 +164,7 @@ describe('dangerous material policy', () => {
         nonce: 'dangerous-material-ingress-1',
       });
       const { handleRequest } = await import('./scripts/server/app.ts?dangerous-material-ingress');
-      const httpResponse = await handleRequest(new Request('http://127.0.0.1:8960/call', {
+      const httpResponse = await handleRequest(new Request('http://127.0.0.1:46321/call', {
         method: 'POST',
         headers: signed.headers,
         body,

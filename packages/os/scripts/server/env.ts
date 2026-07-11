@@ -1,4 +1,4 @@
-export const DEFAULT_LOCAL_OS_PORT = 8960;
+export const DEFAULT_LOCAL_OS_PORT = 46321;
 
 export type LocalOsServerConfig = {
   port: number;
