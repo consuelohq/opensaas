@@ -40,14 +40,8 @@ started: 2026-07-11
 
 ## files changed
 
-- `packages/workspace/scripts/office.ts`
-- `packages/workspace/scripts/trace-site-inspector/deploy.ts`
-- `packages/workspace/scripts/trace-site-inspector/pagination-browser.ts`
-- `packages/workspace/scripts/trace-site-inspector/preview.ts`
-- `packages/workspace/test-selection.registry.json`
-- `packages/workspace/test-selection.rules.json`
-- `packages/workspace/tests/trace-site-inspector.test.ts`
-- `packages/workspace/scripts/trace-site-inspector/archive-history.ts`
+- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
+- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
 
 
 ## workspace-owned: files changed
@@ -79,6 +73,9 @@ started: 2026-07-11
 - 2026-07-11 15:11:53 `checkFiles`: passed — OK
 - 2026-07-11 15:12:11 `review.run`: passed — OK
 - 2026-07-11 15:12:31 `verify`: passed — OK
+- 2026-07-11 15:18:39 `checkFiles`: passed — OK
+- 2026-07-11 15:19:01 `review.run`: passed — OK
+- 2026-07-11 15:19:21 `verify`: passed — OK
 
 ## key decisions
 
@@ -108,6 +105,7 @@ started: 2026-07-11
 - GitHub's verify job restores `node_modules` but not Playwright's browser cache. Browser integration tests now run when `chromium.executablePath()` exists and skip only when the executable is absent; the portable contract suite still runs in CI.
 - Codex review identified a P1: a static browser cannot create the internal OS gateway signature. The direct browser fetch was removed. The existing private Tailnet archive now owns the same-origin data route, while the public Cloudflare preview is terminal and transport-free.
 - Codex review identified a P2: `id:<traceId>` cursors only queried `tool_traces.id`, so alias-only feed rows could fall back to the newest row and duplicate visible history. The resolver now uses one parameterized query across `id`, `trace_id`, and `mcp_trace_id`, ordered by newest matching rowid.
+- Codex review identified a second P2: the archive server's shard-only DB helper diverged from the runtime gateway's supported DB path contract. The generated server now imports `resolveTraceDbPath`, uses it for the history route, and delegates batch enrichment through the same resolver.
 - The first real-shard probe used a relative module import from the `code.call` temporary directory and failed before reading data. Retrying with an absolute file URL passed; no repository state changed during the failed probe.
 
 ## review wait
@@ -129,6 +127,14 @@ started: 2026-07-11
 - Follow-up fallback: address actionable findings or poll bounded pending checks; do not promote while any failure or unresolved P1/P0 remains.
 - Follow-up wake result: 2026-07-11T15:08:31Z; PR #1415 was at `3afc28abeb0b6355208471bf098faa6a1252c263` with 47 checks, 0 failed, and 2 running (`Consuelo / verify`, `Consuelo / workspace contracts`).
 - Follow-up review result: Codex added one actionable P2 on `trace_id`/`mcp_trace_id` cursor aliases. Promotion stayed blocked and the finding was addressed test-first.
+- Alias-fix wait reason: allow review bots and required PR checks to process `075fb6cc0cd3f7464ba92136b142266e175f90a2`.
+- Alias-fix wait start: 2026-07-11T15:12:47Z.
+- Alias-fix wait duration: 100 seconds.
+- Alias-fix resume action: inspect PR #1415 reviews, inline comments, and all check conclusions immediately after wake.
+- Alias-fix expected signal: no new actionable review finding and no failed required check.
+- Alias-fix fallback: address new findings or poll bounded pending checks; do not promote while failures or unresolved findings remain.
+- Alias-fix wake result: 2026-07-11T15:14:50Z; PR #1415 was at `075fb6cc0cd3f7464ba92136b142266e175f90a2` with 47 checks, 0 failed, and 2 running.
+- Alias-fix review result: Codex added one actionable P2 because the private archive's local `latestTraceDb()` helper omitted the supported direct `traces/traces.db` layout and explicit DB overrides. Promotion remained blocked.
 
 ## validation evidence
 
@@ -152,6 +158,8 @@ started: 2026-07-11
 - Follow-up full verify: publish-valid and stamped; 4 selected suites passed (6 registry tests, 8 gateway tests, 1 DB resolver test, 18 inspector tests); DB guard passed with 0 risks and 0 findings.
 - Alias cursor regression: the focused OS suite failed red with `row_4,row_3` instead of `row_3,row_2`, then passed green at 9/9 after the resolver change.
 - Production-shaped alias proof: both `trace_id` and `mcp_trace_id` cursors returned 3 rows strictly older than the visible boundary and excluded the boundary row.
+- Direct DB resolver regression: the inspector source contract failed red because `office.ts` did not import `resolveTraceDbPath`; it passed green after the generated archive server reused the gateway resolver.
+- Resolver/office proof: 1 gateway resolver test, 15 office source tests, and 18 inspector tests passed.
 
 ---
 
@@ -182,6 +190,7 @@ bun run task:finish
 - `packages/os/scripts/lib/workspace-edge-route-seed.ts`
 - `packages/os/scripts/server/routes/traces.ts`
 - `packages/os/scripts/server/services/trace-gateway.ts`
+- `packages/os/tests/trace-gateway-service.test.ts`
 - `packages/os/tests/trace-sites-browser-client.test.ts`
 - `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
 - `packages/os/tests/trace-sites-gateway-live-stream.test.ts`
@@ -208,7 +217,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/trace-site/connect-perpetual-trace-pagination/evidence-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/read-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/workpad.md`, `packages/os/scripts/lib/trace-sites-local-read-backend.ts`, `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- changed files: `.task/trace-site/connect-perpetual-trace-pagination/evidence-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/read-log.json`, `.task/trace-site/connect-perpetual-trace-pagination/workpad.md`, `packages/workspace/scripts/office.ts`, `packages/workspace/tests/trace-site-inspector.test.ts`
 - matched rules: `trace-site-pagination`
 - selected suites: `trace gateway history endpoints`, `trace gateway DB resolution`, `trace site inspector pagination`
 - run results: `trace gateway history endpoints` passed, `trace gateway DB resolution` passed, `trace site inspector pagination` passed

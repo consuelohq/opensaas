@@ -777,23 +777,26 @@ describe('sanitized Cloudflare trace preview', () => {
     expect(patched).toContain('__consueloTraceHistoryTransport');
   });
 
-  test('should route private archive history before static artifact handling', () => {
-    const officeSource = readFileSync(
-      new URL('../scripts/office.ts', import.meta.url),
+  test('should route private trace history through the canonical OS gateway', () => {
+    const routesSource = readFileSync(
+      new URL('../../os/scripts/server/routes/traces.ts', import.meta.url),
       'utf8',
     );
-    const historyRoute =
-      'if (url.pathname === "/gateway/traces/recent") return createArchiveTraceHistoryResponse({ request, dbPath: latestTraceDb() });';
-    const archiveRootRoute =
-      'if (url.pathname === "/") return new Response(renderSitesLauncher()';
+    const appSource = readFileSync(
+      new URL('../../os/scripts/server/app.ts', import.meta.url),
+      'utf8',
+    );
+    const gatewaySource = readFileSync(
+      new URL('../../os/scripts/server/services/trace-gateway.ts', import.meta.url),
+      'utf8',
+    );
 
-    expect(officeSource).toContain(
-      "import { createArchiveTraceHistoryResponse } from ",
+    expect(routesSource).toContain("'/gateway/traces/recent'");
+    expect(routesSource).toContain('return traceGatewayEndpoints().handle(request)');
+    expect(appSource.indexOf("app.route('/', createTraceRoutes())")).toBeLessThan(
+      appSource.indexOf('app.notFound('),
     );
-    expect(officeSource).toContain(historyRoute);
-    expect(officeSource.indexOf(historyRoute)).toBeLessThan(
-      officeSource.indexOf(archiveRootRoute),
-    );
+    expect(gatewaySource).toContain('resolveCanonicalTraceDbPath()');
   });
 
   test('should escape script-closing markup when serializing trace seed data', () => {
