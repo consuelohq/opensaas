@@ -351,8 +351,12 @@ export const PRIVATE_MARKERS = [
   'trc_',
 ];
 
+export function serializeTraceSeed(value: unknown): string {
+  return JSON.stringify(value).replaceAll('<', '\\u003c');
+}
+
 export function sanitizeTracePreviewHtml(html: string): string {
-  const seed = JSON.stringify(SYNTHETIC_TRACE_FEED).replaceAll('<', '\u003c');
+  const seed = serializeTraceSeed(SYNTHETIC_TRACE_FEED);
   const replaced = html.replace(
     /(<script[^>]*id=["']trace-seed-data["'][^>]*>)[\s\S]*?(<\/script>)/,
     `$1${seed}$2`,
@@ -384,7 +388,7 @@ export function assertSanitizedTracePreview(
 }
 
 export function standaloneTracePreviewHtml(): string {
-  const seed = JSON.stringify(SYNTHETIC_TRACE_FEED).replaceAll('<', '\\u003c');
+  const seed = serializeTraceSeed(SYNTHETIC_TRACE_FEED);
 
   return `<!doctype html>
 <html lang="en">
@@ -481,7 +485,7 @@ export async function buildSanitizedTracePreview(input: {
 
     const html = standaloneTracePreviewHtml();
     assertSanitizedTracePreview(html, 'standalone sanitized preview');
-    const feed = JSON.stringify(SYNTHETIC_TRACE_FEED, null, 2) + '\\n';
+    const feed = JSON.stringify(SYNTHETIC_TRACE_FEED, null, 2) + '\n';
     assertSanitizedTracePreview(feed, 'synthetic feed');
     const assets = [
       basename(INSPECTOR_CSS_HREF),
@@ -498,11 +502,11 @@ export async function buildSanitizedTracePreview(input: {
     await writeFile(join(siteRoot, 'live-traces.json'), feed);
     await writeFile(
       join(outputRoot, 'index.html'),
-      '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/trace-burn-intelligence/"><title>Trace preview</title><a href="/trace-burn-intelligence/">Open sanitized trace preview</a>\\n',
+      '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/trace-burn-intelligence/"><title>Trace preview</title><a href="/trace-burn-intelligence/">Open sanitized trace preview</a>\n',
     );
     await writeFile(
       join(outputRoot, '_headers'),
-      '/trace-burn-intelligence/*\\n  Cache-Control: no-store\\n  X-Content-Type-Options: nosniff\\n  Referrer-Policy: no-referrer\\n',
+      '/trace-burn-intelligence/*\n  Cache-Control: no-store\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n',
     );
 
     return {
@@ -524,15 +528,6 @@ export async function buildSanitizedTracePreview(input: {
     );
   }
 }
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
 function parseArgs(argv: string[]): {
   archiveRoot: string;
   outputRoot: string;

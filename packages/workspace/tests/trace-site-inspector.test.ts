@@ -1,12 +1,15 @@
 import {
+  copyFileSync,
   mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
   mkdirSync,
 } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { chromium } from 'playwright';
 import { afterEach, describe, expect, test } from 'vitest';
 
 import {
@@ -20,17 +23,19 @@ import {
   assertSanitizedTracePreview,
   sanitizeTracePreviewHtml,
   standaloneTracePreviewHtml,
+  buildSanitizedTracePreview,
+  serializeTraceSeed,
 } from '../scripts/trace-site-inspector/preview';
 
 import {
   INSPECTOR_CSS_HREF,
   INSPECTOR_SCRIPT_SRC,
-  INSPECTOR_VERSION,
   patchTraceInspectorHtml,
 } from '../scripts/trace-site-inspector/deploy';
 
 import {
   mergeTraceRows,
+  retainTraceWindow,
   shouldPrefetchTracePage,
 } from '../scripts/trace-site-inspector/trace-list';
 
@@ -54,7 +59,7 @@ const row = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('trace-site inspector model', () => {
-  test('uses stable trace identity and deduplicates alias entries in branch totals', () => {
+  test('should deduplicate alias entries when calculating branch totals', () => {
     const first = row();
     const alias = { ...first };
     const failed = row({
@@ -88,7 +93,7 @@ describe('trace-site inspector model', () => {
     });
   });
 
-  test('prefers a nested actionable child failure over a generic command failure', () => {
+  test('should prefer an actionable child failure when the parent error is generic', () => {
     const insight = extractTraceError(
       row({
         status: 'error',
@@ -118,7 +123,7 @@ describe('trace-site inspector model', () => {
 });
 
 describe('trace-site virtual list state', () => {
-  test('merges cursor pages, deduplicates identities, and retains a bounded window around selection', () => {
+  test('should retain a bounded deduplicated window when appending cursor pages', () => {
     const current = Array.from({ length: 8 }, (_, index) =>
       row({
         id: `record-${index}`,
@@ -157,7 +162,35 @@ describe('trace-site virtual list state', () => {
     expect(new Set(merged.map(stableTraceKey)).size).toBe(6);
   });
 
-  test('prefetches from virtual range proximity only when another cursor page is available', () => {
+  test('should retain a contiguous selected window when append eviction would drop selection', () => {
+    const rows = Array.from({ length: 10 }, (_, index) =>
+      row({
+        id: `record-${index}`,
+        recordId: `record-${index}`,
+        traceId: `trace-${index}`,
+      }),
+    );
+
+    expect(
+      retainTraceWindow(rows, 4, 'append', 'record-2').map(stableTraceKey),
+    ).toEqual(['record-2', 'record-3', 'record-4', 'record-5']);
+  });
+
+  test('should retain a contiguous selected window when prepend eviction would drop selection', () => {
+    const rows = Array.from({ length: 10 }, (_, index) =>
+      row({
+        id: `record-${index}`,
+        recordId: `record-${index}`,
+        traceId: `trace-${index}`,
+      }),
+    );
+
+    expect(
+      retainTraceWindow(rows, 4, 'prepend', 'record-7').map(stableTraceKey),
+    ).toEqual(['record-4', 'record-5', 'record-6', 'record-7']);
+  });
+
+  test('should request prefetch when the virtual range approaches an available next page', () => {
     expect(
       shouldPrefetchTracePage({
         lastVirtualIndex: 224,
@@ -198,7 +231,7 @@ describe('trace-site virtual list state', () => {
 });
 
 describe('trace-site inspector deployment contract', () => {
-  test('patches versioned overlay assets exactly once', () => {
+  test('should patch versioned overlay assets once when deployment runs repeatedly', () => {
     const html =
       '<!doctype html><html><head><title>Trace</title></head><body><main></main></body></html>';
     const once = patchTraceInspectorHtml(html);
@@ -214,52 +247,140 @@ describe('trace-site inspector deployment contract', () => {
     ).toHaveLength(1);
   });
 
-  test('ships real preview sections and desktop/mobile layout rules', () => {
-    const browserSource = readFileSync(
-      new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url),
-      'utf8',
+  test('should preserve interactive inspector behavior when the trace list is virtualized', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'trace-inspector-runtime-'));
+    roots.push(root);
+    const archiveRoot = join(root, 'site');
+    mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
+    const runtimeRows = Array.from({ length: 500 }, (_, index) =>
+      row({
+        id: `runtime-record-${index}`,
+        recordId: `runtime-record-${index}`,
+        traceId: `runtime-trace-${index}`,
+        displayTime: `00:${String(Math.floor(index / 60)).padStart(2, '0')}:${String(index % 60).padStart(2, '0')}`,
+        output: `runtime output ${index}`,
+      }),
     );
-    const css = readFileSync(
+    const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+        html,body{margin:0;height:100%}.trxShell{display:grid;grid-template-columns:45% 55%;height:100vh}.trxTableScroll{height:100vh;overflow:auto}.trxRail{height:100vh}.trxRailInner,[data-inspector]{height:100%}
+      </style></head><body>
+        <div class="trxShell detail-open">
+          <div class="trxTableScroll"><div data-trace-rows></div></div>
+          <div class="trxRail"><button type="button" data-ti-back>Back</button><div class="trxRailInner"><div data-inspector></div></div></div>
+        </div>
+        <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
+      </body></html>`;
+    const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v29.js');
+    const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v29.css');
+    execFileSync(
+      'bun',
+      [
+        'build',
+        new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
+          .pathname,
+        '--target=browser',
+        '--format=esm',
+        `--outfile=${scriptPath}`,
+      ],
+      { stdio: 'pipe' },
+    );
+    copyFileSync(
       new URL('../scripts/trace-site-inspector/inspector.css', import.meta.url),
-      'utf8',
-    );
-    const virtualListSource = readFileSync(
-      new URL(
-        '../scripts/trace-site-inspector/virtual-list-browser.ts',
-        import.meta.url,
-      ),
-      'utf8',
+      cssPath,
     );
 
-    for (const section of [
-      'summary',
-      'input',
-      'output',
-      'error',
-      'metadata',
-      'raw',
-    ]) {
-      expect(browserSource).toContain(`id: '${section}'`);
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const page = await browser.newPage({
+        viewport: { width: 1440, height: 900 },
+      });
+      page.setDefaultTimeout(5_000);
+      let prefetchCursor = '';
+      await page.exposeFunction('capturePrefetchCursor', (cursor: string) => {
+        prefetchCursor = cursor;
+      });
+      await page.setContent(runtimeHtml, { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => {
+        history.replaceState(null, '', '#trace=runtime-record-0');
+        document.addEventListener('trace:prefetch-request', (event) => {
+          const detail = (event as CustomEvent<{ cursor: string }>).detail;
+          event.preventDefault();
+          void (
+            window as Window & {
+              capturePrefetchCursor: (cursor: string) => Promise<void>;
+            }
+          ).capturePrefetchCursor(detail.cursor);
+        });
+      });
+      await page.addStyleTag({ path: cssPath });
+      await page.addScriptTag({ path: scriptPath, type: 'module' });
+      await page.waitForFunction(
+        () =>
+          document.querySelectorAll('.trxRow').length > 0 &&
+          Boolean(document.querySelector('.tiInspector')),
+      );
+
+      const desktop = await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.trxTableScroll');
+        return {
+          total: Number(list?.dataset.traceTotal ?? 0),
+          mounted: document.querySelectorAll('.trxRow').length,
+          tabs: Array.from(
+            document.querySelectorAll<HTMLElement>('[data-ti-tab]'),
+          ).map((tab) => tab.dataset.tiTab),
+        };
+      });
+      expect(desktop.total).toBe(500);
+      expect(desktop.mounted).toBeGreaterThan(0);
+      expect(desktop.mounted).toBeLessThan(100);
+      expect(desktop.tabs).toEqual([
+        'summary',
+        'input',
+        'output',
+        'error',
+        'metadata',
+        'raw',
+      ]);
+
+      await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.trxTableScroll');
+        if (list) list.scrollTop = list.scrollHeight;
+      });
+      await page.waitForFunction(
+        () =>
+          document
+            .querySelector<HTMLElement>('.trxTableScroll')
+            ?.dataset.traceRange?.endsWith('499') ?? false,
+      );
+      await expect.poll(() => prefetchCursor).toBe('cursor-2');
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      const mobile = await page.evaluate(() => ({
+        viewport: [innerWidth, innerHeight],
+        mounted: document.querySelectorAll('.trxRow').length,
+        backDisplay: getComputedStyle(
+          document.querySelector<HTMLElement>('.tiMobileBack')!,
+        ).display,
+      }));
+      expect(mobile.viewport).toEqual([390, 844]);
+      expect(mobile.mounted).toBeLessThan(100);
+      expect(mobile.backDisplay).not.toBe('none');
+
+      await page.locator('.tiMobileBack').click();
+      await page.waitForFunction(
+        () =>
+          !(window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey &&
+          !document.querySelector('[data-inspector] .tiInspector'),
+      );
+    } finally {
+      await browser.close();
     }
-    expect(browserSource).toContain('sessionStorage');
-    expect(browserSource).toContain('MutationObserver');
-
-    expect(virtualListSource).toContain("from '@tanstack/virtual-core'");
-    expect(virtualListSource).toContain('new Virtualizer');
-    expect(virtualListSource).toContain('shouldPrefetchTracePage');
-    expect(virtualListSource).not.toContain('@tanstack/react-virtual');
-    expect(virtualListSource).not.toContain("from 'react'");
-    expect(INSPECTOR_VERSION).toBe('v29');
-    expect(css).toContain('.cmdkMenuLaunch');
-    expect(css).toContain('.lfMenuButton');
-    expect(css).toContain('@media (max-width: 900px)');
-    expect(css).toContain('100dvh');
-    expect(css).toContain('.tiInspector.mobile-menu-open');
-  });
+  }, 15_000);
 });
 
 describe('sanitized Cloudflare trace preview', () => {
-  test('replaces private seed data with synthetic rows and rejects private markers', () => {
+  test('should replace private seed data when building a sanitized preview', () => {
     const privateHtml =
       '<!doctype html><html><head></head><body><script id="trace-seed-data" type="application/json">{"path":"/Users/private/worktree","trace":"trc_private"}</script></body></html>';
     const sanitized = sanitizeTracePreviewHtml(privateHtml);
@@ -278,7 +399,7 @@ describe('sanitized Cloudflare trace preview', () => {
     ).toBe(true);
   });
 
-  test('generates a large virtualized preview without server-rendering every trace row', () => {
+  test('should avoid server-rendering trace rows when generating a large preview', () => {
     const html = standaloneTracePreviewHtml();
 
     expect(SYNTHETIC_TRACE_FEED.rows.length).toBeGreaterThanOrEqual(5_000);
@@ -288,7 +409,50 @@ describe('sanitized Cloudflare trace preview', () => {
     expect(html).toContain('data-trace-total="5000"');
   });
 
-  test('fails closed when private markers remain', () => {
+  test('should escape script-closing markup when serializing trace seed data', () => {
+    expect(serializeTraceSeed({ output: '</script><img src=x>' })).toBe(
+      '{"output":"\\u003c/script>\\u003cimg src=x>"}',
+    );
+  });
+
+  test('should emit line-based Cloudflare files when building preview output', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'trace-preview-files-'));
+    roots.push(root);
+    const archiveRoot = join(root, 'archive');
+    const outputRoot = join(root, 'public');
+    mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
+    writeFileSync(
+      join(archiveRoot, '_astro', 'trace-inspector-v29.css'),
+      'body{}',
+    );
+    writeFileSync(
+      join(archiveRoot, '_astro', 'trace-inspector-v29.js'),
+      'export{}',
+    );
+
+    await buildSanitizedTracePreview({ archiveRoot, outputRoot });
+
+    const headers = readFileSync(join(outputRoot, '_headers'), 'utf8');
+    const redirect = readFileSync(join(outputRoot, 'index.html'), 'utf8');
+    const feed = readFileSync(
+      join(outputRoot, 'trace-burn-intelligence', 'live-traces.json'),
+      'utf8',
+    );
+    expect(headers.split('\n')).toEqual([
+      '/trace-burn-intelligence/*',
+      '  Cache-Control: no-store',
+      '  X-Content-Type-Options: nosniff',
+      '  Referrer-Policy: no-referrer',
+      '',
+    ]);
+    expect(headers).not.toContain('\\n');
+    expect(redirect.endsWith('\n')).toBe(true);
+    expect(redirect).not.toContain('\\n');
+    expect(feed.endsWith('\n')).toBe(true);
+    expect(feed.endsWith('\\n')).toBe(false);
+  });
+
+  test('should fail closed when a private marker remains in preview output', () => {
     for (const marker of PRIVATE_MARKERS) {
       expect(() =>
         assertSanitizedTracePreview(`safe prefix ${marker} unsafe suffix`),
