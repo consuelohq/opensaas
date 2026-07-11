@@ -11,4 +11,4 @@ COPY tooling/ tooling/
 
 EXPOSE 8960
 
-CMD ["bun", "./scripts/server.ts"]
+CMD ["bun", "./scripts/server/main.ts"]
