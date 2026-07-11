@@ -1,5 +1,6 @@
 import {
   copyFileSync,
+  existsSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -10,7 +11,17 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+
+const browserTest = playwrightChromiumAvailable() ? test : test.skip;
+
+function playwrightChromiumAvailable(): boolean {
+  try {
+    return existsSync(chromium.executablePath());
+  } catch {
+    return false;
+  }
+}
 
 import {
   branchSummary,
@@ -30,14 +41,24 @@ import {
 import {
   INSPECTOR_CSS_HREF,
   INSPECTOR_SCRIPT_SRC,
+  TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT,
   patchTraceInspectorHtml,
 } from '../scripts/trace-site-inspector/deploy';
+
+import {
+  createArchiveTraceHistoryResponse,
+} from '../scripts/trace-site-inspector/archive-history';
 
 import {
   mergeTraceRows,
   retainTraceWindow,
   shouldPrefetchTracePage,
 } from '../scripts/trace-site-inspector/trace-list';
+import {
+  deriveTraceHistoryCursor,
+  parseTraceHistoryResponse,
+  traceHistoryUrl,
+} from '../scripts/trace-site-inspector/pagination-browser';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -190,6 +211,38 @@ describe('trace-site virtual list state', () => {
     ).toEqual(['record-4', 'record-5', 'record-6', 'record-7']);
   });
 
+  test('should retain newest rows and current selection when appending older history', () => {
+    const current = Array.from({ length: 6 }, (_, index) =>
+      row({
+        id: `record-${index}`,
+        recordId: `record-${index}`,
+        traceId: `trace-${index}`,
+      }),
+    );
+    const older = Array.from({ length: 3 }, (_, index) =>
+      row({
+        id: `record-${index + 6}`,
+        recordId: `record-${index + 6}`,
+        traceId: `trace-${index + 6}`,
+      }),
+    );
+
+    expect(
+      mergeTraceRows(current, older, {
+        direction: 'history',
+        maxRows: 6,
+        selectedKey: 'record-4',
+      }).map(stableTraceKey),
+    ).toEqual([
+      'record-0',
+      'record-1',
+      'record-2',
+      'record-3',
+      'record-4',
+      'record-5',
+    ]);
+  });
+
   test('should request prefetch when the virtual range approaches an available next page', () => {
     expect(
       shouldPrefetchTracePage({
@@ -228,6 +281,89 @@ describe('trace-site virtual list state', () => {
       }),
     ).toBe(false);
   });
+
+  test('should derive and parse the same-origin older-history transport contract', () => {
+    const rows = [
+      row({ id: 'record-1', recordId: 'record-1' }),
+      row({ id: 'record-2', recordId: 'record-2' }),
+    ];
+
+    expect(deriveTraceHistoryCursor(rows)).toBe('id:record-2');
+    expect(deriveTraceHistoryCursor(rows, '000000000123')).toBe(
+      '000000000123',
+    );
+    expect(traceHistoryUrl('id:record-2', 75)).toBe(
+      '/gateway/traces/recent?direction=older&cursor=id%3Arecord-2&limit=75&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true',
+    );
+    expect(
+      parseTraceHistoryResponse({
+        ok: true,
+        data: {
+          direction: 'older',
+          rows,
+          nextCursor: null,
+        },
+      }),
+    ).toEqual({ rows, nextCursor: null });
+    expect(() =>
+      parseTraceHistoryResponse({
+        ok: true,
+        data: { direction: 'older', rows: 'not-an-array', nextCursor: null },
+      }),
+    ).toThrow('rows');
+  });
+
+  test('should expose older history only through the trusted private archive boundary', async () => {
+    const readHistoryPage = vi.fn(async () => ({
+      rows: [row({ id: 'older-1', recordId: 'older-1' })],
+      nextCursor: null,
+    }));
+    const backend = {
+      readRecentEvents: vi.fn(),
+      readCachedAggregate: vi.fn(),
+      readHistoryPage,
+    };
+
+    const denied = await createArchiveTraceHistoryResponse({
+      request: new Request(
+        'https://private.example/gateway/traces/recent?direction=older&cursor=id%3Arecord-2&limit=75&site=trace-burn-intelligence&sourceMode=local-networked',
+      ),
+      dbPath: '/private/traces.db',
+      backend,
+    });
+    expect(denied.status).toBe(403);
+    expect(await denied.json()).toMatchObject({
+      ok: false,
+      error: { code: 'RAW_PAYLOAD_ACCESS_DENIED' },
+    });
+    expect(readHistoryPage).not.toHaveBeenCalled();
+
+    const allowed = await createArchiveTraceHistoryResponse({
+      request: new Request(
+        'https://private.example/gateway/traces/recent?direction=older&cursor=id%3Arecord-2&limit=75&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true',
+      ),
+      dbPath: '/private/traces.db',
+      backend,
+    });
+    expect(allowed.status).toBe(200);
+    expect(await allowed.json()).toMatchObject({
+      ok: true,
+      publicBoundary: 'consuelo-sites-private-archive',
+      data: {
+        direction: 'older',
+        rows: [{ recordId: 'older-1' }],
+        nextCursor: null,
+      },
+    });
+    expect(readHistoryPage).toHaveBeenCalledWith({
+      workspaceId: 'private-tailnet-archive',
+      workspaceHost: 'private.example',
+      site: 'trace-burn-intelligence',
+      sourceMode: 'local-networked',
+      cursor: 'id:record-2',
+      limit: 75,
+    });
+  });
 });
 
 describe('trace-site inspector deployment contract', () => {
@@ -247,7 +383,7 @@ describe('trace-site inspector deployment contract', () => {
     ).toHaveLength(1);
   });
 
-  test('should preserve interactive inspector behavior when the trace list is virtualized', async () => {
+  browserTest('should preserve interactive inspector behavior when the trace list is virtualized', async () => {
     const root = mkdtempSync(join(tmpdir(), 'trace-inspector-runtime-'));
     roots.push(root);
     const archiveRoot = join(root, 'site');
@@ -377,6 +513,256 @@ describe('trace-site inspector deployment contract', () => {
       await browser.close();
     }
   }, 15_000);
+
+  browserTest('should append older history pages while preserving inspector state and terminal behavior', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'trace-inspector-pagination-'));
+    roots.push(root);
+    const archiveRoot = join(root, 'site');
+    mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
+    const runtimeRows = Array.from({ length: 250 }, (_, index) =>
+      row({
+        id: `runtime-record-${index}`,
+        recordId: `runtime-record-${index}`,
+        traceId: `runtime-trace-${index}`,
+        displayTime: `00:${String(Math.floor(index / 60)).padStart(2, '0')}:${String(index % 60).padStart(2, '0')}`,
+        input: `runtime input ${index}`,
+        output: `runtime output ${index}`,
+      }),
+    );
+    const olderRows = [
+      { ...runtimeRows[249] },
+      ...Array.from({ length: 75 }, (_, index) => {
+        const sequence = index + 250;
+        return row({
+          id: `runtime-record-${sequence}`,
+          recordId: `runtime-record-${sequence}`,
+          traceId: `runtime-trace-${sequence}`,
+          displayTime: `older-${sequence}`,
+          input: `runtime input ${sequence}`,
+          output: `runtime output ${sequence}`,
+        });
+      }),
+    ];
+    const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+        html,body{margin:0;height:100%}.trxShell{display:grid;grid-template-columns:45% 55%;height:100vh}.trxTablePane{display:grid;grid-template-rows:auto 1fr auto;min-height:0}.trxTableScroll{height:100%;overflow:auto}.trxRail{height:100vh}.trxRailInner,[data-inspector]{height:100%}.trxFooter{display:flex;justify-content:space-between;padding:8px}
+      </style></head><body>
+        <div class="trxShell detail-open">
+          <div class="trxTablePane">
+            <input data-search aria-label="Search traces" />
+            <div class="trxTableScroll"><div data-trace-rows></div></div>
+            <footer class="trxFooter"><span><b data-trace-count>250</b> traces</span></footer>
+          </div>
+          <div class="trxRail"><button type="button" data-ti-back>Back</button><div class="trxRailInner"><div data-inspector></div></div></div>
+        </div>
+        <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
+      </body></html>`;
+    const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v29.js');
+    const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v29.css');
+    execFileSync(
+      'bun',
+      [
+        'build',
+        new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
+          .pathname,
+        '--target=browser',
+        '--format=esm',
+        `--outfile=${scriptPath}`,
+      ],
+      { stdio: 'pipe' },
+    );
+    copyFileSync(
+      new URL('../scripts/trace-site-inspector/inspector.css', import.meta.url),
+      cssPath,
+    );
+
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const page = await browser.newPage({
+        viewport: { width: 1440, height: 900 },
+      });
+      page.setDefaultTimeout(5_000);
+      await page.setContent(runtimeHtml, { waitUntil: 'domcontentloaded' });
+      await page.evaluate((pageRows) => {
+        const target = window as Window & {
+          __traceHistoryRequests?: string[];
+          __consueloTraceHistoryTransport?: {
+            fetchJson: (url: string) => Promise<unknown>;
+          };
+          __plainFetchCalls?: number;
+        };
+        target.__traceHistoryRequests = [];
+        target.__plainFetchCalls = 0;
+        window.fetch = async () => {
+          target.__plainFetchCalls = (target.__plainFetchCalls ?? 0) + 1;
+          throw new Error('The inspector must not call fetch directly.');
+        };
+        target.__consueloTraceHistoryTransport = {
+          fetchJson: async (url: string) => {
+            target.__traceHistoryRequests!.push(url);
+            await new Promise((resolve) => window.setTimeout(resolve, 150));
+            return {
+              ok: true,
+              publicBoundary: 'consuelo-sites-private-archive',
+              route: '/gateway/traces/recent',
+              data: {
+                direction: 'older',
+                rows: pageRows,
+                nextCursor: null,
+              },
+            };
+          },
+        };
+        history.replaceState(null, '', '#trace=runtime-record-10');
+      }, olderRows);
+      await page.addStyleTag({ path: cssPath });
+      await page.addScriptTag({ path: scriptPath, type: 'module' });
+      await page.waitForFunction(
+        () =>
+          document.querySelectorAll('.trxRow').length > 0 &&
+          Boolean(document.querySelector('.tiInspector')),
+      );
+      await page.locator('[data-search]').fill('runtime');
+      await page.locator('[data-ti-tab="output"]').click();
+
+      const initial = await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
+        return {
+          total: Number(list.dataset.traceTotal),
+          count: document.querySelector('[data-trace-count]')?.textContent,
+          height: list.scrollHeight,
+          selected: (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey,
+          tab: document.querySelector<HTMLElement>('[data-ti-tab].active')?.dataset
+            .tiTab,
+          query: (document.querySelector('[data-search]') as HTMLInputElement)
+            .value,
+          virtualDomText: document.body.textContent?.includes('Virtual DOM'),
+        };
+      });
+      expect(initial).toMatchObject({
+        total: 250,
+        count: '250',
+        selected: 'runtime-record-10',
+        tab: 'output',
+        query: 'runtime',
+        virtualDomText: false,
+      });
+
+      await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.trxTableScroll');
+        if (list) list.scrollTop = list.scrollHeight;
+      });
+      await page.waitForFunction(
+        () =>
+          ((window as Window & { __traceHistoryRequests?: string[] })
+            .__traceHistoryRequests?.length ?? 0) === 1,
+      );
+      await page.evaluate(() => {
+        document.dispatchEvent(
+          new CustomEvent('trace:prefetch-request', {
+            cancelable: true,
+            detail: {
+              cursor: 'cursor-2',
+              rowCount: 250,
+              lastVirtualIndex: 249,
+              accept: () => {},
+              fail: () => {},
+            },
+          }),
+        );
+      });
+      await page.waitForTimeout(40);
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { __traceHistoryRequests?: string[] })
+              .__traceHistoryRequests?.length ?? 0,
+        ),
+      ).toBe(1);
+
+      await page.waitForFunction(
+        () =>
+          document.querySelector<HTMLElement>('.trxTableScroll')?.dataset
+            .traceTotal === '325',
+      );
+      const appended = await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
+        const topButton = document.querySelector<HTMLButtonElement>(
+          '[data-trace-scroll-top]',
+        );
+        return {
+          total: Number(list.dataset.traceTotal),
+          count: document.querySelector('[data-trace-count]')?.textContent,
+          height: list.scrollHeight,
+          cursor: list.dataset.traceNextCursor,
+          selected: (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey,
+          tab: document.querySelector<HTMLElement>('[data-ti-tab].active')?.dataset
+            .tiTab,
+          query: (document.querySelector('[data-search]') as HTMLInputElement)
+            .value,
+          topButtonVisible: Boolean(topButton && !topButton.hidden),
+          requestUrl: (
+            window as Window & { __traceHistoryRequests?: string[] }
+          ).__traceHistoryRequests?.[0],
+          plainFetchCalls: (
+            window as Window & { __plainFetchCalls?: number }
+          ).__plainFetchCalls,
+        };
+      });
+      expect(appended).toMatchObject({
+        total: 325,
+        count: '325',
+        cursor: '',
+        selected: 'runtime-record-10',
+        tab: 'output',
+        query: 'runtime',
+        topButtonVisible: true,
+        plainFetchCalls: 0,
+      });
+      expect(appended.height).toBeGreaterThan(initial.height);
+      expect(appended.requestUrl).toContain(
+        '/gateway/traces/recent?direction=older&cursor=cursor-2',
+      );
+
+      await page.locator('[data-trace-scroll-top]').click();
+      await page.waitForFunction(
+        () =>
+          (document.querySelector<HTMLElement>('.trxTableScroll')?.scrollTop ?? 1) <
+          1,
+      );
+      expect(
+        await page.evaluate(() => ({
+          buttonHidden: document.querySelector<HTMLButtonElement>(
+            '[data-trace-scroll-top]',
+          )?.hidden,
+          selected: (window as Window & { __traceSelectedKey?: string })
+            .__traceSelectedKey,
+          query: (document.querySelector('[data-search]') as HTMLInputElement)
+            .value,
+        })),
+      ).toEqual({
+        buttonHidden: true,
+        selected: 'runtime-record-10',
+        query: 'runtime',
+      });
+
+      await page.evaluate(() => {
+        const list = document.querySelector<HTMLElement>('.trxTableScroll');
+        if (list) list.scrollTop = list.scrollHeight;
+      });
+      await page.waitForTimeout(250);
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { __traceHistoryRequests?: string[] })
+              .__traceHistoryRequests?.length ?? 0,
+        ),
+      ).toBe(1);
+    } finally {
+      await browser.close();
+    }
+  }, 15_000);
 });
 
 describe('sanitized Cloudflare trace preview', () => {
@@ -391,6 +777,8 @@ describe('sanitized Cloudflare trace preview', () => {
     expect(sanitized).not.toContain('trc_private');
     expect(() => assertSanitizedTracePreview(sanitized)).not.toThrow();
     expect(SYNTHETIC_TRACE_FEED.meta.synthetic).toBe(true);
+    expect(SYNTHETIC_TRACE_FEED.meta.nextCursor).toBeNull();
+    expect(sanitized).not.toContain('consuelo-trace-history-transport');
     expect(SYNTHETIC_TRACE_FEED.failures.length).toBeGreaterThan(1);
     expect(
       SYNTHETIC_TRACE_FEED.failures.some(
@@ -407,6 +795,41 @@ describe('sanitized Cloudflare trace preview', () => {
     expect(html).toContain('data-trace-virtual-content');
     expect(html).not.toContain('class="trxRow"');
     expect(html).toContain('data-trace-total="5000"');
+    expect(html).not.toContain('consuelo-trace-history-transport');
+  });
+
+  test('should install the trusted transport only in the private artifact HTML', () => {
+    const html = '<!doctype html><html><head></head><body></body></html>';
+    const patched = patchTraceInspectorHtml(html);
+
+    expect(TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT).toContain(
+      '__consueloTraceHistoryTransport',
+    );
+    expect(patched).toContain('consuelo-trace-history-transport');
+    expect(patched).toContain('__consueloTraceHistoryTransport');
+  });
+
+  test('should route private archive history before static artifact handling', () => {
+    const officeSource = readFileSync(
+      new URL('../scripts/office.ts', import.meta.url),
+      'utf8',
+    );
+    const historyRoute =
+      'if (url.pathname === "/gateway/traces/recent") return createArchiveTraceHistoryResponse({ request, dbPath: resolveTraceDbPath() });';
+    const archiveRootRoute =
+      'if (url.pathname === "/") return new Response(renderSitesLauncher()';
+
+    expect(officeSource).toContain(
+      "import { createArchiveTraceHistoryResponse } from ",
+    );
+    expect(officeSource).toContain("import { resolveTraceDbPath } from ");
+    expect(officeSource).toContain(
+      'function latestTraceDb(){ return resolveTraceDbPath(); }',
+    );
+    expect(officeSource).toContain(historyRoute);
+    expect(officeSource.indexOf(historyRoute)).toBeLessThan(
+      officeSource.indexOf(archiveRootRoute),
+    );
   });
 
   test('should escape script-closing markup when serializing trace seed data', () => {

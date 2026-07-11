@@ -9,6 +9,7 @@ import {
   totalTokens,
   type TraceRecord,
 } from './model';
+import { installTracePaginationTransport } from './pagination-browser';
 import { installTraceVirtualList } from './virtual-list-browser';
 
 type PreviewTab = 'summary' | 'input' | 'output' | 'error' | 'metadata' | 'raw';
@@ -505,6 +506,7 @@ observer.observe(observerRoot, {
   attributeFilter: ['class', 'aria-selected'],
 });
 
+installTracePaginationTransport();
 installTraceVirtualList();
 document.addEventListener('trace:selection-change', () => render(true));
 window.addEventListener('resize', scheduleRender);

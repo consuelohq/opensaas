@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 export const INSPECTOR_VERSION = 'v29';
 export const INSPECTOR_CSS_HREF = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.css`;
 export const INSPECTOR_SCRIPT_SRC = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.js`;
+export const TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT = `<script id="consuelo-trace-history-transport">(()=>{const route='/gateway/traces/recent';const normalizeError=error=>error instanceof Error?error:new Error('Trace history request failed.');window.__consueloTraceHistoryTransport={fetchJson(url){if(typeof url!=='string'||!url.startsWith(route+'?'))return Promise.reject(new Error('Trace history route is not allowed.'));return fetch(url,{credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>({response,payload}))).then(({response,payload})=>{if(!response.ok){const message=payload&&payload.error&&typeof payload.error.message==='string'?payload.error.message:'Trace history request failed.';throw new Error(message)}return payload},error=>{throw normalizeError(error)})}}})()</script>`;
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultArchiveRoot = resolve(
@@ -32,14 +33,22 @@ export function patchTraceInspectorHtml(html: string): string {
     /<script[^>]+src=["'][^"']*trace-inspector-v\d+\.js["'][^>]*><\/script>\s*/g,
     '',
   );
+  const withoutOldTransport = withoutOldJs.replace(
+    /<script[^>]*id=["']consuelo-trace-history-transport["'][^>]*>[\s\S]*?<\/script>\s*/gi,
+    '',
+  );
   const cssTag = `<link rel="stylesheet" href="${INSPECTOR_CSS_HREF}">`;
   const scriptTag = `<script type="module" src="${INSPECTOR_SCRIPT_SRC}"></script>`;
-  const withCss = withoutOldJs.includes(INSPECTOR_CSS_HREF)
-    ? withoutOldJs
-    : withoutOldJs.replace('</head>', `${cssTag}</head>`);
-  return withCss.includes(INSPECTOR_SCRIPT_SRC)
-    ? withCss
-    : withCss.replace('</body>', `${scriptTag}</body>`);
+  const withCss = withoutOldTransport.includes(INSPECTOR_CSS_HREF)
+    ? withoutOldTransport
+    : withoutOldTransport.replace('</head>', `${cssTag}</head>`);
+  const withTransport = withCss.replace(
+    '</body>',
+    `${TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT}</body>`,
+  );
+  return withTransport.includes(INSPECTOR_SCRIPT_SRC)
+    ? withTransport
+    : withTransport.replace('</body>', `${scriptTag}</body>`);
 }
 
 export async function deployTraceInspector(

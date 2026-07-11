@@ -17,7 +17,15 @@ import {
   totalTokens,
   type TraceRecord,
 } from './model';
-import { mergeTraceRows, shouldPrefetchTracePage } from './trace-list';
+import {
+  deriveTraceHistoryCursor,
+  type TracePrefetchRequestDetail,
+} from './pagination-browser';
+import {
+  mergeTraceRows,
+  shouldPrefetchTracePage,
+  type TracePageDirection,
+} from './trace-list';
 
 const MAX_RETAINED_ROWS = 5_000;
 const PREFETCH_THRESHOLD = 25;
@@ -50,14 +58,6 @@ type TraceListDiagnostics = {
   nextCursor: string | null;
 };
 
-type TracePrefetchRequestDetail = {
-  cursor: string;
-  rowCount: number;
-  lastVirtualIndex: number;
-  accept: (rows: TraceRecord[], nextCursor: string | null) => void;
-  fail: () => void;
-};
-
 type ChildOperation = TraceRecord & {
   children?: ChildOperation[];
   depth: number;
@@ -78,6 +78,7 @@ export type TraceVirtualListApi = {
   replaceRows: (rows: TraceRecord[], nextCursor?: string | null) => void;
   setNextCursor: (nextCursor: string | null) => void;
   scrollToKey: (key: string) => void;
+  scrollToTop: () => void;
   diagnostics: () => TraceListDiagnostics | null;
 };
 
@@ -107,6 +108,7 @@ class TraceVirtualListController {
   private ownedFingerprint = '';
   private mountedCount = 0;
   private range = 'empty';
+  private historyPageAccepted = false;
   private readonly virtualizer: TraceVirtualizer;
   private readonly unmount: () => void;
 
@@ -114,6 +116,7 @@ class TraceVirtualListController {
     private readonly target: TraceListTarget,
     rows: TraceRecord[],
     nextCursor: string | null,
+    private cursorWasDerived: boolean,
   ) {
     this.rows = mergeTraceRows([], rows, {
       direction: 'append',
@@ -152,7 +155,12 @@ class TraceVirtualListController {
     if (!(map instanceof Map)) return;
     const fingerprint = mapFingerprint(map);
     if (map === this.ownedMap && fingerprint === this.ownedFingerprint) return;
-    this.replaceRows(dedupeTraceRows(map.values()));
+    const rows = dedupeTraceRows(map.values());
+    const nextCursor =
+      this.cursorWasDerived && !this.historyPageAccepted
+        ? deriveTraceHistoryCursor(rows)
+        : this.nextCursor;
+    this.replaceRows(rows, nextCursor);
   }
 
   syncFilters(): void {
@@ -161,10 +169,12 @@ class TraceVirtualListController {
   }
 
   appendPage(rows: TraceRecord[], nextCursor: string | null): void {
+    this.historyPageAccepted = true;
+    this.cursorWasDerived = false;
     this.nextCursor = nextCursor;
     this.lastRequestedCursor = null;
     this.fetching = false;
-    this.setRows(rows, 'append');
+    this.setRows(rows, 'history');
   }
 
   prependRows(rows: TraceRecord[]): void {
@@ -185,6 +195,7 @@ class TraceVirtualListController {
   }
 
   setNextCursor(nextCursor: string | null): void {
+    this.cursorWasDerived = false;
     if (nextCursor !== this.nextCursor) this.lastRequestedCursor = null;
     this.nextCursor = nextCursor;
     this.updateDiagnostics();
@@ -194,6 +205,10 @@ class TraceVirtualListController {
   scrollToKey(key: string): void {
     const index = this.items.findIndex((item) => item.traceKey === key);
     if (index >= 0) this.virtualizer.scrollToIndex(index, { align: 'auto' });
+  }
+
+  scrollToTop(): void {
+    this.target.scroller.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   diagnostics(): TraceListDiagnostics {
@@ -235,7 +250,7 @@ class TraceVirtualListController {
     );
   }
 
-  private setRows(rows: TraceRecord[], direction: 'append' | 'prepend'): void {
+  private setRows(rows: TraceRecord[], direction: TracePageDirection): void {
     this.rows = mergeTraceRows(this.rows, rows, {
       direction,
       maxRows: MAX_RETAINED_ROWS,
@@ -308,7 +323,7 @@ class TraceVirtualListController {
     this.range =
       first === undefined || last === undefined ? 'empty' : `${first}-${last}`;
     this.updateDiagnostics();
-    this.updateFooter();
+    this.updateFooter(this.firstVisibleRootIndex(virtualItems));
     this.maybeRequestNextPage(this.lastVisibleRootIndex(virtualItems));
   }
 
@@ -323,14 +338,36 @@ class TraceVirtualListController {
     this.target.scroller.dataset.traceNextCursor = this.nextCursor ?? '';
   }
 
-  private updateFooter(): void {
+  private updateFooter(firstVisibleRootIndex: number | null): void {
     const footer = this.target.scroller
       .closest('.trxTablePane')
       ?.querySelector<HTMLElement>('.trxFooter');
     if (!footer) return;
     footer.dataset.traceVirtualFooter = '';
     const count = footer.querySelector<HTMLElement>('[data-trace-count]');
-    if (count) count.textContent = String(this.filteredRows.length);
+    if (count) count.textContent = String(this.rows.length);
+    let scrollTop = footer.querySelector<HTMLButtonElement>(
+      '[data-trace-scroll-top]',
+    );
+    if (!scrollTop) {
+      scrollTop = document.createElement('button');
+      scrollTop.type = 'button';
+      scrollTop.dataset.traceScrollTop = '';
+      scrollTop.textContent = 'Scroll to top';
+      scrollTop.setAttribute('aria-label', 'Scroll trace history to top');
+      footer.append(scrollTop);
+    }
+    scrollTop.hidden =
+      firstVisibleRootIndex === null || firstVisibleRootIndex < 100;
+  }
+
+  private firstVisibleRootIndex(
+    virtualItems = this.virtualizer.getVirtualItems(),
+  ): number | null {
+    const scrollTop = this.target.scroller.scrollTop;
+    const visible =
+      virtualItems.find((item) => item.end > scrollTop) ?? virtualItems.at(0);
+    return visible ? (this.items[visible.index]?.rootIndex ?? null) : null;
   }
 
   private lastVisibleRootIndex(
@@ -371,6 +408,7 @@ class TraceVirtualListController {
           accept: (rows, nextCursor) => this.appendPage(rows, nextCursor),
           fail: () => {
             this.fetching = false;
+            this.lastRequestedCursor = null;
             this.target.scroller.dataset.tracePrefetch = 'failed';
           },
         },
@@ -680,9 +718,22 @@ function initialRows(): TraceRecord[] {
   return dedupeTraceRows(seedPayload().rows ?? []);
 }
 
-function initialNextCursor(): string | null {
-  const value = seedPayload().meta?.nextCursor;
-  return typeof value === 'string' && value ? value : null;
+function initialCursorState(rows: TraceRecord[]): {
+  cursor: string | null;
+  derived: boolean;
+} {
+  const meta = seedPayload().meta;
+  if (meta && Object.hasOwn(meta, 'nextCursor')) {
+    const value = meta.nextCursor;
+    return {
+      cursor: deriveTraceHistoryCursor(
+        rows,
+        typeof value === 'string' ? value : null,
+      ),
+      derived: false,
+    };
+  }
+  return { cursor: deriveTraceHistoryCursor(rows), derived: true };
 }
 
 function seedPayload(): TraceFeedPayload {
@@ -759,10 +810,13 @@ export function installTraceVirtualList(): () => void {
     if (!target) return;
     if (!controller?.isMountedOn(target)) {
       controller?.destroy();
+      const rows = initialRows();
+      const cursorState = initialCursorState(rows);
       controller = new TraceVirtualListController(
         target,
-        initialRows(),
-        initialNextCursor(),
+        rows,
+        cursorState.cursor,
+        cursorState.derived,
       );
     } else {
       controller.syncFromWindow();
@@ -808,6 +862,11 @@ export function installTraceVirtualList(): () => void {
       if (target.closest('[data-clear-filters], [data-cockpit-page]')) {
         resetFilters();
       }
+      if (target.closest('[data-trace-scroll-top]')) {
+        event.preventDefault();
+        controller?.scrollToTop();
+        return;
+      }
       if (branch || tool || status || target.closest('[data-clear-filters]')) {
         queueMicrotask(() => controller?.syncFilters());
       }
@@ -826,6 +885,7 @@ export function installTraceVirtualList(): () => void {
       controller?.replaceRows(rows, nextCursor),
     setNextCursor: (nextCursor) => controller?.setNextCursor(nextCursor),
     scrollToKey: (key) => controller?.scrollToKey(key),
+    scrollToTop: () => controller?.scrollToTop(),
     diagnostics: () => controller?.diagnostics() ?? null,
   };
 
