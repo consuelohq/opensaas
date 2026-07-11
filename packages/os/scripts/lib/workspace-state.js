@@ -272,8 +272,9 @@ function getLatestRailwayDeploy(service = DEFAULT_SERVICE, cwd = process.cwd()) 
 }
 
 function getWorkspaceServerHealth(timeout = 2500) {
+  const port = process.env.CONSUELO_OS_PORT || process.env.PORT || '8960';
   return new Promise((resolve) => {
-    const request = http.get('http://localhost:8850/health', { timeout }, (response) => {
+    const request = http.get(`http://127.0.0.1:${port}/health`, { timeout }, (response) => {
       let body = '';
       response.setEncoding('utf8');
       response.on('data', (chunk) => {
