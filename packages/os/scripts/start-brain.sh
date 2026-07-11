@@ -49,4 +49,4 @@ if [ -z "$bun_bin" ]; then
   exit 1
 fi
 
-exec "$bun_bin" "$root_dir/scripts/server.ts"
+exec "$bun_bin" "$root_dir/scripts/server/main.ts"

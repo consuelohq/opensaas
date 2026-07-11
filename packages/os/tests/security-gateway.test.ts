@@ -249,7 +249,7 @@ async function loadGatewayModule(): Promise<GatewayModule> {
 
 function serverRequestEval(path: string, init: { method?: string; headers?: Record<string, string>; body?: string } = {}): string {
   return `
-    const { handleRequest } = await import('./scripts/server.ts');
+    const { handleRequest } = await import('./scripts/server/app.ts');
     const response = await handleRequest(new Request('http://127.0.0.1:8850${path}', {
       method: ${JSON.stringify(init.method ?? 'GET')},
       headers: ${JSON.stringify(init.headers ?? {})},
@@ -932,7 +932,7 @@ describe('Consuelo OS public gateway security contract', () => {
         timestamp: new Date().toISOString(),
         nonce: 'server-call-signed-nonce',
       });
-      const { handleRequest } = await import('./scripts/server.ts');
+      const { handleRequest } = await import('./scripts/server/app.ts');
       async function request(init) {
         const response = await handleRequest(new Request('http://127.0.0.1:8850/call', {
           method: 'POST',
@@ -1214,7 +1214,7 @@ describe('Consuelo OS public gateway security contract', () => {
       delete process.env.CONSUELO_OS_AUTH_CONFIG;
       process.env.CONSUELO_HOME = home;
       process.env.CONSUELO_OS_HOME = home;
-      const { handleRequest } = await import('./scripts/server.ts');
+      const { handleRequest } = await import('./scripts/server/app.ts');
       const response = await handleRequest(new Request('http://127.0.0.1:8850/call', {
         method: 'POST',
         headers: signed.headers,
