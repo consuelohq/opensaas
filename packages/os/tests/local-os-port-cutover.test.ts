@@ -9,7 +9,10 @@ import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { provisionLocalOs } from '../scripts/lib/install-state';
-import { loadLocalOsServerConfig } from '../scripts/server/env';
+import {
+  loadLocalOsServerConfig,
+  resolveLocalOsPortOverride,
+} from '../scripts/server/env';
 
 const osRoot = resolve(import.meta.dirname, '..');
 const repoRoot = resolve(osRoot, '..', '..');
@@ -48,6 +51,20 @@ describe('prelaunch local OS port cutover', () => {
 
     process.env.CONSUELO_OS_PORT = '47001';
     expect(loadLocalOsServerConfig().port).toBe(47_001);
+  });
+
+  it('should resolve explicit installer port overrides with runtime validation', () => {
+    expect(
+      resolveLocalOsPortOverride({
+        CONSUELO_OS_PORT: '8960',
+        PORT: '47001',
+      }),
+    ).toBe(8_960);
+    expect(resolveLocalOsPortOverride({ PORT: '47001' })).toBe(47_001);
+    expect(resolveLocalOsPortOverride({})).toBeUndefined();
+    expect(() => resolveLocalOsPortOverride({ CONSUELO_OS_PORT: 'invalid' })).toThrow(
+      'Invalid local OS port',
+    );
   });
 
   it('should generate install state and gateway configuration for 46321 by default', () => {
@@ -164,6 +181,44 @@ describe('prelaunch local OS port cutover', () => {
     expect(config.port).toBe(47_002);
     expect(caddy).toContain('reverse_proxy 127.0.0.1:47002');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:47002/mcp');
+  });
+
+  it('should preserve an explicit legacy environment override during reprovisioning', () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-explicit-legacy-env-port-'));
+    temporaryHomes.push(home);
+    const workspaceBootstrap = {
+      workspaceId: 'workspace_explicit_legacy_port',
+      workspaceSlug: 'explicit-legacy-port',
+      workspaceHost: 'explicit-legacy-port.consuelohq.com',
+      connectorId: 'connector_explicit_legacy_port',
+      connectorTransport: 'cloudflare-tunnel' as const,
+      cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+    };
+    const explicitPort = resolveLocalOsPortOverride({ CONSUELO_OS_PORT: '8960' });
+
+    provisionLocalOs({ home, mode: 'local', port: 8_960, workspaceBootstrap });
+    provisionLocalOs({ home, mode: 'local', port: explicitPort, workspaceBootstrap });
+
+    const config = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { port: number };
+    const caddy = readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');
+    const chatgptMcp = JSON.parse(
+      readFileSync(join(home, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'),
+    ) as { localUrl: string };
+    const cloudflaredPlist = readFileSync(
+      join(home, 'node', 'security', 'generated', 'com.consuelo.os.cloudflared.connector-explicit-legacy-port.plist'),
+      'utf8',
+    );
+
+    expect(config.port).toBe(8_960);
+    expect(caddy).toContain('reverse_proxy 127.0.0.1:8960');
+    expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:8960/mcp');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:8960');
+  });
+
+  it('should pass the validated environment override into provisioning', () => {
+    const installSource = source('scripts/install.ts');
+
+    expect(installSource).toContain('port: resolveLocalOsPortOverride()');
   });
 
   it('should declare 46321 across every active default-port surface', () => {
