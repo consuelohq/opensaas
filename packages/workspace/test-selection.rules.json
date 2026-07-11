@@ -137,6 +137,55 @@
       "reason": "Workspace script/docs changes should keep audit behavior covered."
     },
     {
+      "id": "trace-site-pagination",
+      "critical": true,
+      "source": [
+        "packages/os/scripts/lib/trace-sites-gateway-*.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/scripts/server/services/trace-gateway.ts",
+        "packages/os/tests/trace-gateway-service.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/workspace/scripts/trace-site-inspector/**",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "trace gateway history endpoints",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ]
+        },
+        {
+          "name": "trace gateway DB resolution",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-gateway-service.test.ts"
+          ]
+        },
+        {
+          "name": "trace site inspector pagination",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/workspace",
+            "tests/trace-site-inspector.test.ts"
+          ]
+        }
+      ],
+      "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior."
+    },
+    {
       "id": "dialer-package",
       "critical": true,
       "source": [
