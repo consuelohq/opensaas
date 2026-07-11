@@ -1,0 +1,19 @@
+{
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/repair-trace-tree-selection-and-remove-detail-flash",
+  "baseBranch": "stream/trace-site",
+  "sourceBranch": "stream/trace-site",
+  "startFrom": "stream",
+  "prNumber": 1416,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1416",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1416",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1416/repair-trace-tree-selection-and-remove-detail-flash",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1416",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1416/repair-trace-tree-selection-and-remove-detail-flash",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-repair-trace-tree-selection-and-remove-detail-flash",
+  "taskSession": "tsk_974495a6c919",
+  "tmuxSession": "opensaas-trace-site-repair-trace-tree-selection-and-remove-detail-fl-974495a6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-repair-trace-tree-selection-and-remove-detail-flash/.task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/session.json",
+  "createdAt": "2026-07-11T17:17:20.111Z"
+}

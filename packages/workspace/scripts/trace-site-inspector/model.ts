@@ -1,5 +1,12 @@
 export type TraceRecord = Record<string, unknown>;
 
+export type TraceChildRecord = TraceRecord & {
+  __traceSelectionKey: string;
+  __traceParentKey: string;
+  __traceDepth: number;
+  __tracePath: string;
+};
+
 export type BranchSummary = {
   branch: string;
   calls: number;
@@ -27,7 +34,8 @@ export function stableTraceKey(row: TraceRecord | null | undefined): string {
   if (!row) return '';
   const metadata = asRecord(row.metadata);
   return clean(
-    row.recordId ??
+    row.__traceSelectionKey ??
+      row.recordId ??
       row.id ??
       metadata?.trace_id ??
       row.traceId ??
@@ -35,6 +43,14 @@ export function stableTraceKey(row: TraceRecord | null | undefined): string {
       metadata?.id ??
       metadata?.rowid,
   );
+}
+
+export function traceParentKey(row: TraceRecord | null | undefined): string {
+  return clean(row?.__traceParentKey) || stableTraceKey(row);
+}
+
+export function isBatchChild(row: TraceRecord | null | undefined): boolean {
+  return Boolean(clean(row?.__traceParentKey));
 }
 
 export function branchName(row: TraceRecord | null | undefined): string {
@@ -154,6 +170,97 @@ export function parseMaybeJson(value: unknown): unknown {
     }
   }
   return current;
+}
+
+const childTraceCache = new WeakMap<
+  TraceRecord,
+  { source: unknown; children: TraceChildRecord[] }
+>();
+
+export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
+  const sourceValue = parent.batchResultsJson;
+  const cached = childTraceCache.get(parent);
+  if (cached && cached.source === sourceValue) return cached.children;
+
+  const parsed = parseMaybeJson(sourceValue);
+  const parsedRecord = asRecord(parsed);
+  const source = Array.isArray(parsed)
+    ? parsed
+    : (parsedRecord?.children ?? parsedRecord?.results);
+  if (!Array.isArray(source)) {
+    childTraceCache.set(parent, { source: sourceValue, children: [] });
+    return [];
+  }
+
+  const parentKey = stableTraceKey(parent);
+  const result: TraceChildRecord[] = [];
+  const walk = (
+    value: unknown,
+    depth: number,
+    parentPath: string,
+    siblingIndex: number,
+  ): void => {
+    const record = asRecord(value);
+    if (!record) return;
+    const data = asRecord(record.data);
+    const label =
+      clean(record.tool ?? record.name ?? record.facadeTool ?? record.label) ||
+      'child';
+    const segment = `${siblingIndex}:${label}`;
+    const path = parentPath ? `${parentPath}/${segment}` : segment;
+    const nativeKey = stableTraceKey(record);
+    const selectionKey = nativeKey || `${parentKey}::child:${path}`;
+    const status =
+      clean(record.status) ||
+      (record.ok === false ? 'error' : record.ok === true ? 'success' : '');
+    const child = {
+      ...record,
+      name: record.name ?? record.tool ?? record.facadeTool ?? record.label,
+      traceName:
+        record.traceName ?? record.name ?? record.tool ?? record.facadeTool,
+      traceId: record.traceId ?? record.trace_id,
+      branch: record.branch ?? parent.branch,
+      taskSession: record.taskSession ?? parent.taskSession,
+      worktree: record.worktree ?? parent.worktree,
+      startTime: record.startTime ?? parent.startTime,
+      displayTime: record.displayTime ?? parent.displayTime,
+      status,
+      durationMs:
+        record.durationMs ?? record.duration_ms ?? data?.durationMs ?? data?.duration_ms,
+      inputTokens:
+        record.inputTokens ?? record.input_tokens ?? data?.inputTokens ?? data?.input_tokens,
+      outputTokens:
+        record.outputTokens ?? record.output_tokens ?? data?.outputTokens ?? data?.output_tokens,
+      tokens:
+        record.tokens ?? record.totalTokens ?? record.total_tokens ?? data?.totalTokens,
+      input:
+        record.input ?? record.rawInputJson ?? record.inputObj ?? data?.input,
+      output:
+        record.output ??
+        record.message ??
+        data?.output ??
+        data?.stdout ??
+        data?.message,
+      rawResultJson: record.rawResultJson ?? record,
+      __traceSelectionKey: selectionKey,
+      __traceParentKey: parentKey,
+      __traceDepth: depth,
+      __tracePath: path,
+    } as TraceChildRecord;
+    result.push(child);
+
+    const nestedParsed = parseMaybeJson(
+      record.children ?? record.results ?? data?.children ?? data?.results,
+    );
+    if (Array.isArray(nestedParsed)) {
+      nestedParsed.forEach((nested, index) =>
+        walk(nested, depth + 1, path, index),
+      );
+    }
+  };
+  source.forEach((child, index) => walk(child, 1, '', index));
+  childTraceCache.set(parent, { source: sourceValue, children: result });
+  return result;
 }
 
 export function totalTokens(row: TraceRecord): number {

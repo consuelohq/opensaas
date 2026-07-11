@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/workpad.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
+    "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+    "packages/workspace/scripts/trace-site-inspector/inspector.css",
+    "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/trace-site-inspector.test.ts"
+  ],
+  "updatedAt": "2026-07-11T18:09:53.252Z"
+}

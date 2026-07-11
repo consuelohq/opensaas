@@ -8,13 +8,16 @@ import {
 } from '@tanstack/virtual-core';
 
 import {
+  childTraceRecords,
   clean,
   dedupeTraceRows,
+  isBatchChild,
   isFailure,
   number,
-  parseMaybeJson,
   stableTraceKey,
+  traceParentKey,
   totalTokens,
+  type TraceChildRecord,
   type TraceRecord,
 } from './model';
 import {
@@ -58,18 +61,12 @@ type TraceListDiagnostics = {
   nextCursor: string | null;
 };
 
-type ChildOperation = TraceRecord & {
-  children?: ChildOperation[];
-  depth: number;
-  path: string;
-};
-
 type VirtualTraceItem = {
   key: string;
   traceKey: string;
   rootIndex: number;
   row: TraceRecord;
-  child: ChildOperation | null;
+  child: TraceChildRecord | null;
 };
 
 export type TraceVirtualListApi = {
@@ -79,6 +76,7 @@ export type TraceVirtualListApi = {
   setNextCursor: (nextCursor: string | null) => void;
   scrollToKey: (key: string) => void;
   scrollToTop: () => void;
+  select: (key: string) => void;
   diagnostics: () => TraceListDiagnostics | null;
 };
 
@@ -121,7 +119,7 @@ class TraceVirtualListController {
     this.rows = mergeTraceRows([], rows, {
       direction: 'append',
       maxRows: MAX_RETAINED_ROWS,
-      selectedKey: currentSelectedKey(),
+      selectedKey: currentSelectedRootKey(),
     });
     this.nextCursor = nextCursor;
     this.target.scroller.dataset.traceVirtualList = 'active';
@@ -160,7 +158,7 @@ class TraceVirtualListController {
       this.cursorWasDerived && !this.historyPageAccepted
         ? deriveTraceHistoryCursor(rows)
         : this.nextCursor;
-    this.replaceRows(rows, nextCursor);
+    this.replaceRows(rows.filter((row) => !isBatchChild(row)), nextCursor);
   }
 
   syncFilters(): void {
@@ -188,7 +186,7 @@ class TraceVirtualListController {
     this.rows = mergeTraceRows([], rows, {
       direction: 'append',
       maxRows: MAX_RETAINED_ROWS,
-      selectedKey: currentSelectedKey(),
+      selectedKey: currentSelectedRootKey(),
     });
     this.refreshItems();
     this.commitItems(false);
@@ -225,6 +223,13 @@ class TraceVirtualListController {
   select(key: string): void {
     const target = traceWindow();
     target.__traceSelectedKey = key;
+    const shell = document.querySelector<HTMLElement>('.trxShell');
+    shell?.classList.remove('closed');
+    shell?.classList.add('detail-open');
+    const hash = `trace=${encodeURIComponent(key)}`;
+    if (location.hash.slice(1) !== hash) {
+      history.replaceState(null, '', `${location.pathname}${location.search}#${hash}`);
+    }
     for (const row of this.target.content.querySelectorAll<HTMLElement>(
       '.trxRow',
     )) {
@@ -254,7 +259,7 @@ class TraceVirtualListController {
     this.rows = mergeTraceRows(this.rows, rows, {
       direction,
       maxRows: MAX_RETAINED_ROWS,
-      selectedKey: currentSelectedKey(),
+      selectedKey: currentSelectedRootKey(),
     });
     this.refreshItems();
     this.commitItems(false);
@@ -436,10 +441,10 @@ function flattenTraceItems(rows: TraceRecord[]): VirtualTraceItem[] {
       row,
       child: null,
     });
-    for (const child of childOperations(row)) {
+    for (const child of childTraceRecords(row)) {
       items.push({
-        key: `${traceKey}::${child.path}`,
-        traceKey,
+        key: `${traceKey}::${child.__tracePath}`,
+        traceKey: stableTraceKey(child),
         rootIndex,
         row,
         child,
@@ -447,54 +452,6 @@ function flattenTraceItems(rows: TraceRecord[]): VirtualTraceItem[] {
     }
   });
   return items;
-}
-
-const childOperationsCache = new WeakMap<
-  TraceRecord,
-  { source: unknown; operations: ChildOperation[] }
->();
-
-function childOperations(row: TraceRecord): ChildOperation[] {
-  const cached = childOperationsCache.get(row);
-  if (cached && cached.source === row.batchResultsJson)
-    return cached.operations;
-
-  const parsed = parseMaybeJson(row.batchResultsJson);
-  const source = Array.isArray(parsed)
-    ? parsed
-    : (asRecord(parsed)?.children ?? asRecord(parsed)?.results);
-  if (!Array.isArray(source)) {
-    childOperationsCache.set(row, {
-      source: row.batchResultsJson,
-      operations: [],
-    });
-    return [];
-  }
-
-  const result: ChildOperation[] = [];
-  const walk = (value: unknown, depth: number, parentPath: string) => {
-    const record = asRecord(value);
-    if (!record) return;
-    const label = clean(
-      record.path ?? record.tool ?? record.name ?? record.label,
-    );
-    const path = label || `${parentPath || 'child'}-${result.length + 1}`;
-    const operation = {
-      ...record,
-      depth,
-      path: parentPath ? `${parentPath}/${path}` : path,
-    } as ChildOperation;
-    result.push(operation);
-    const children = parseMaybeJson(record.children);
-    if (Array.isArray(children))
-      children.forEach((child) => walk(child, depth + 1, operation.path));
-  };
-  source.forEach((child) => walk(child, 1, ''));
-  childOperationsCache.set(row, {
-    source: row.batchResultsJson,
-    operations: result,
-  });
-  return result;
 }
 
 function createTraceRow(
@@ -505,13 +462,13 @@ function createTraceRow(
 ): HTMLButtonElement {
   const button = document.createElement('button');
   button.className = item.child
-    ? `trxRow trxNestedRow depth-${item.child.depth}`
+    ? `trxRow trxNestedRow depth-${item.child.__traceDepth}`
     : 'trxRow';
   button.type = 'button';
   button.dataset.traceKey = item.traceKey;
   button.dataset.rowKey = item.key;
   button.dataset.virtualIndex = String(virtualItem.index);
-  if (item.child) button.dataset.operationPath = item.child.path;
+  if (item.child) button.dataset.operationPath = item.child.__tracePath;
   button.setAttribute('aria-selected', String(item.traceKey === selectedKey));
   button.classList.toggle('selected', item.traceKey === selectedKey);
   button.style.transform = `translateY(${Math.round(
@@ -577,11 +534,11 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
 function appendChildCells(
   button: HTMLElement,
   parent: TraceRecord,
-  child: ChildOperation,
+  child: TraceChildRecord,
 ): void {
   const branch = clean(parent.branch ?? parent.taskSession) || 'no-branch';
   const status = isFailure(child) ? 'error' : clean(child.status) || 'success';
-  button.style.setProperty('--depth', String(child.depth));
+  button.style.setProperty('--depth', String(child.__traceDepth));
   button.style.setProperty('--branch-color', branchColor(branch));
 
   appendCell(button, 'trxTreeCell', '');
@@ -641,17 +598,23 @@ function matchesCurrentFilters(row: TraceRecord): boolean {
   if (filters.tool && tool !== filters.tool) return false;
   if (filters.status && status !== filters.status) return false;
   if (!filters.query) return true;
-  const haystack = [
-    row.displayTime,
-    row.time,
-    tool,
-    branch,
-    status,
-    row.input,
-    row.output,
-    row.summary,
-    stableTraceKey(row),
-  ]
+  const haystack = [row, ...childTraceRecords(row)]
+    .flatMap((record) => [
+      record.displayTime,
+      record.time,
+      record.name,
+      record.traceName,
+      record.tool,
+      record.branch,
+      record.taskSession,
+      record.status,
+      record.code,
+      record.input,
+      record.output,
+      record.summary,
+      record.traceId,
+      stableTraceKey(record),
+    ])
     .map((value) => clean(value).toLowerCase())
     .join(' ');
   return haystack.includes(filters.query);
@@ -712,9 +675,17 @@ function currentSelectedKey(): string {
   return hashKey;
 }
 
+function currentSelectedRootKey(): string {
+  const key = currentSelectedKey();
+  if (!key) return '';
+  const selected = traceWindow().__traceRowsByTraceId?.get(key);
+  return selected ? traceParentKey(selected) : key;
+}
+
 function initialRows(): TraceRecord[] {
   const map = traceWindow().__traceRowsByTraceId;
-  if (map instanceof Map) return dedupeTraceRows(map.values());
+  if (map instanceof Map)
+    return dedupeTraceRows(map.values()).filter((row) => !isBatchChild(row));
   return dedupeTraceRows(seedPayload().rows ?? []);
 }
 
@@ -753,6 +724,12 @@ function traceMapForRows(rows: TraceRecord[]): Map<string, TraceRecord> {
     if (stableKey) map.set(stableKey, row);
     const traceId = clean(row.traceId ?? row.trace);
     if (traceId) map.set(traceId, row);
+    for (const child of childTraceRecords(row)) {
+      const childKey = stableTraceKey(child);
+      if (childKey) map.set(childKey, child);
+      const childTraceId = clean(child.traceId ?? child.trace);
+      if (childTraceId && !map.has(childTraceId)) map.set(childTraceId, child);
+    }
   }
   return map;
 }
@@ -787,12 +764,6 @@ function findTraceListTarget(): TraceListTarget | null {
   return content && scroller ? { scroller, content } : null;
 }
 
-function asRecord(value: unknown): TraceRecord | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as TraceRecord)
-    : null;
-}
-
 function resetFilters(): void {
   filters.query = '';
   filters.branch = null;
@@ -802,6 +773,10 @@ function resetFilters(): void {
 
 export function installTraceVirtualList(): () => void {
   let controller: TraceVirtualListController | null = null;
+  let pendingReplacement: {
+    rows: TraceRecord[];
+    nextCursor?: string | null;
+  } | null = null;
   let scheduled = false;
 
   const sync = () => {
@@ -820,6 +795,13 @@ export function installTraceVirtualList(): () => void {
       );
     } else {
       controller.syncFromWindow();
+    }
+    if (pendingReplacement) {
+      controller.replaceRows(
+        pendingReplacement.rows,
+        pendingReplacement.nextCursor,
+      );
+      pendingReplacement = null;
     }
   };
 
@@ -872,8 +854,20 @@ export function installTraceVirtualList(): () => void {
       }
 
       const row = target.closest<HTMLElement>('.trxRow');
-      if (row?.dataset.traceKey) controller?.select(row.dataset.traceKey);
-      if (target.closest('[data-ti-back]')) controller?.clearSelection();
+      if (row?.dataset.traceKey) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        controller?.select(row.dataset.traceKey);
+        return;
+      }
+      if (target.closest('[data-ti-back]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const shell = document.querySelector<HTMLElement>('.trxShell');
+        shell?.classList.remove('detail-open');
+        shell?.classList.add('closed');
+        return;
+      }
     },
     true,
   );
@@ -881,11 +875,14 @@ export function installTraceVirtualList(): () => void {
   traceWindow().__traceVirtualList = {
     appendPage: (rows, nextCursor) => controller?.appendPage(rows, nextCursor),
     prependRows: (rows) => controller?.prependRows(rows),
-    replaceRows: (rows, nextCursor) =>
-      controller?.replaceRows(rows, nextCursor),
+    replaceRows: (rows, nextCursor) => {
+      if (controller) controller.replaceRows(rows, nextCursor);
+      else pendingReplacement = { rows, nextCursor };
+    },
     setNextCursor: (nextCursor) => controller?.setNextCursor(nextCursor),
     scrollToKey: (key) => controller?.scrollToKey(key),
     scrollToTop: () => controller?.scrollToTop(),
+    select: (key) => controller?.select(key),
     diagnostics: () => controller?.diagnostics() ?? null,
   };
 
