@@ -199,7 +199,7 @@ describe('MCP gateway credential lifecycle', () => {
         routeMode: 'workspace-subdomain',
         connectorMode: 'outbound-os-connector',
         hostname: 'mcp-test.consuelohq.com',
-        upstream: { host: '127.0.0.1', port: 8960 },
+        upstream: { host: '127.0.0.1', port: 46321 },
       },
       tokens: {
         tok_legacy: {
@@ -264,7 +264,7 @@ describe('MCP gateway adapter', () => {
     const token = issueMcpToken(config, ['route:/mcp:read', 'tool:*:read']);
     const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
 
-    const response = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
       method: 'POST',
       headers: {
         authorization: `Bearer ${token.bearerToken}`,
@@ -278,7 +278,7 @@ describe('MCP gateway adapter', () => {
     expect(json.result).toBeDefined();
 
     const missingScopeToken = issueMcpToken(config, ['route:/mcp:read']);
-    const denied = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+    const denied = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
       method: 'POST',
       headers: {
         authorization: `Bearer ${missingScopeToken.bearerToken}`,
@@ -301,7 +301,7 @@ describe('MCP gateway adapter', () => {
     const config = createConfig();
     const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
 
-    const missing = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+    const missing = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-consuelo-hostname': config.workspaceHost },
       body,
@@ -326,7 +326,7 @@ describe('MCP gateway adapter', () => {
       });
     });
 
-    const accepted = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+    const accepted = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
       method: 'POST',
       headers: {
         authorization: 'Bearer coa_test_oauth_access_token',
@@ -348,7 +348,7 @@ describe('MCP gateway adapter', () => {
     createConfig();
     const dynamicHost = 'probe-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
 
-    const response = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
       method: 'GET',
       headers: { 'x-consuelo-hostname': dynamicHost },
     }));
@@ -431,7 +431,7 @@ describe('MCP gateway server route', () => {
       timestamp: new Date().toISOString(),
       nonce: 'nonce-server-tools-list',
     });
-    const response = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
       method: 'POST',
       headers: signed.headers,
       body,
@@ -461,7 +461,7 @@ describe('MCP gateway server route', () => {
       timestamp: new Date().toISOString(),
       nonce: 'nonce-server-missing-scope',
     });
-    const response = await handleRequest(new Request('http://127.0.0.1:8960/mcp', {
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
       method: 'POST',
       headers: signed.headers,
       body,

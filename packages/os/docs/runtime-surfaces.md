@@ -32,7 +32,7 @@ The supported product server is Bun/TypeScript. Optional Python utilities remain
 
 Local OS state defaults to `~/.consuelo/os` and can be changed with `CONSUELO_HOME`. The runtime records calls in SQLite at `~/.consuelo/os/consuelo.db` and creates local folders for artifacts, logs, runs, and temp files.
 
-The default local port is `8960`. Override it with `CONSUELO_OS_PORT`.
+The default local port is `46321`. Override it with `CONSUELO_OS_PORT`.
 
 ## Skills
 

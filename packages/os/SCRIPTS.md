@@ -50,9 +50,11 @@ bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
 
 Background services stay user-level only. Baseline labels are `com.consuelo.system` and `com.consuelo.watchdog`; `com.consuelo.portless.system` is generated only when portless is configured or discoverable. Plists go in `~/Library/LaunchAgents`; logs go under `~/Library/Logs/Consuelo`.
 
+After LaunchAgent cutover, the installer probes the same local port the daemon resolves from `WORKSPACE_DAEMON_PORT`, the OS `.env` values, and the `46321` default. `WORKSPACE_CUTOVER_LOCAL_HEALTH_URL` remains an explicit repair/testing override.
+
 The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelohq.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
 
-Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:8960` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
+Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:46321` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
 
 ---
 

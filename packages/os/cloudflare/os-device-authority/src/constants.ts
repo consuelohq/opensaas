@@ -34,7 +34,7 @@ export const DEFAULT_SITE_SNAPSHOT_KEY =
 export const DEFAULT_SITE_SNAPSHOT_VERSION_ID = 'sha256-15c3f6f5c611b43c';
 export const DEFAULT_SITE_ID = 'launcher';
 export const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
-export const DEFAULT_CONNECTOR_LOCAL_SERVICE_URL = 'http://127.0.0.1:8960';
+export const DEFAULT_CONNECTOR_LOCAL_SERVICE_URL = 'http://127.0.0.1:46321';
 export const CHATGPT_OAUTH_CLIENT_ID = 'chatgpt-consuelo-os';
 export const CHATGPT_REDIRECT_PREFIX = 'https://chatgpt.com/connector/oauth/';
 export const MCP_OAUTH_TTL_MS = 60 * 60 * 1000;

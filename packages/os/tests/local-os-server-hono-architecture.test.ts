@@ -132,7 +132,7 @@ describe('local OS Hono server architecture', () => {
     process.env.CONSUELO_OS_AUTH_CONFIG = join(home, 'missing-auth.json');
 
     const response = await handleRequest(new Request(
-      `http://127.0.0.1:8960${testCase.path}`,
+      `http://127.0.0.1:46321${testCase.path}`,
       { method: testCase.method },
     ));
 
@@ -154,7 +154,7 @@ describe('local OS Hono server architecture', () => {
     process.env.CONSUELO_OS_AUTH_CONFIG = join(home, 'missing-auth.json');
 
     const response = await handleRequest(
-      new Request('http://127.0.0.1:8960/mcp', { method: 'GET' }),
+      new Request('http://127.0.0.1:46321/mcp', { method: 'GET' }),
     );
 
     expect(response.status).toBe(401);
@@ -179,7 +179,7 @@ describe('local OS Hono server architecture', () => {
     process.env.CONSUELO_OS_AUTH_CONFIG = config.generatedAuthPath;
 
     const response = await handleRequest(
-      new Request('http://127.0.0.1:8960/unknown'),
+      new Request('http://127.0.0.1:46321/unknown'),
     );
 
     expect(response.status).toBe(404);
