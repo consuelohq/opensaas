@@ -7,7 +7,7 @@ type Props = {
 
 const { sectionId } = Astro.props as Props
 const osPortalHref = 'https://os.consuelohq.com'
-const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
+const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 ---
 
 <section class="home-hero site-section" id={sectionId} data-section="hero">
@@ -23,19 +23,23 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 				class="home-hero__title"
 				data-pretext-title={heroTitleText}
 				data-pretext-lines="3"
-				aria-label="STOP STARTING OVER WITH EVERY NEW AGENT"
+				aria-label="YOUR WORKSPACE, CONNECTED TO EVERY AGENT."
 			>
 				<span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true"
-					>STOP STARTING OVER</span
+					>YOUR WORKSPACE,</span
+				>
+				<span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true"
+					>CONNECTED TO EVERY AGENT.</span
 				>
 				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
-					>STOP STARTING</span
+					>YOUR WORKSPACE,</span
 				>
 				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
-					>OVER</span
+					>CONNECTED TO</span
 				>
-				<span class="home-hero__title-line" aria-hidden="true">WITH EVERY</span>
-				<span class="home-hero__title-line" aria-hidden="true">NEW AGENT</span>
+				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
+					>EVERY AGENT.</span
+				>
 			</h1>
 
 			<div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
@@ -110,19 +114,6 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 				</div>
 			</div>
 		</div>
-
-		<figure
-			class="home-hero__diagram"
-			aria-label="Consuelo integrations diagram"
-			data-motion="hero-diagram"
-		>
-			<img
-				src="/images/consuelo-integrations-hero.svg?v=20260628-portrait"
-				alt="Developer tools and work surfaces connected to Consuelo"
-				loading="eager"
-				decoding="async"
-			/>
-		</figure>
 	</div>
 </section>
 
@@ -452,34 +443,6 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 		display: block;
 	}
 
-	.home-hero__diagram {
-		position: relative;
-		z-index: 0;
-		min-width: 0;
-		margin: 0;
-		padding: 0;
-		overflow: visible;
-		background: transparent;
-		border: 0;
-		border-radius: 0;
-		box-shadow: none;
-	}
-
-	.home-hero__diagram img {
-		display: block;
-		width: min(100%, 41rem);
-		max-width: 100%;
-		height: auto;
-		margin-inline: auto 0;
-	}
-
-	@media (min-width: 1181px) {
-		.home-hero__inner {
-			grid-template-columns: minmax(0, 35rem) minmax(0, 41rem);
-			justify-content: space-between;
-		}
-	}
-
 	@media (max-width: 1180px) {
 		.home-hero {
 			min-height: auto;
@@ -497,16 +460,6 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 
 		.home-hero__title {
 			font-size: clamp(3.05rem, 7.4vw, 5.35rem);
-		}
-
-		.home-hero__diagram {
-			order: 2;
-			margin-block-start: 0;
-		}
-
-		.home-hero__diagram img {
-			width: min(100%, 41rem);
-			margin-inline: auto;
 		}
 	}
 
@@ -621,10 +574,6 @@ const heroTitleText = 'STOP STARTING OVER\nWITH EVERY\nNEW AGENT'
 		.home-hero__panel-action {
 			width: var(--site-space-4);
 			height: var(--site-space-4);
-		}
-
-		.home-hero__diagram {
-			margin-block-start: clamp(1.4rem, 7vw, 2.4rem);
 		}
 	}
 </style>

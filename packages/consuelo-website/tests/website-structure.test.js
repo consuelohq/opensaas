@@ -251,20 +251,19 @@ describe('Consuelo website structure', () => {
     const svg = readSource('public/images/consuelo-integrations-hero.svg');
     const { homeTabs } = await import(pathToFileURL(join(sourceRoot, 'data/home-content.ts')).href);
 
-    expect(hero).toContain('aria-label="STOP STARTING OVER WITH EVERY NEW AGENT"');
-    expect(hero).toContain('>STOP STARTING OVER</span');
-    expect(hero).toContain('>STOP STARTING</span');
-    expect(hero).toContain('>OVER</span');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">WITH EVERY</span>');
-    expect(hero).toContain('<span class="home-hero__title-line" aria-hidden="true">NEW AGENT</span>');
+    expect(hero).toContain('aria-label="YOUR WORKSPACE, CONNECTED TO EVERY AGENT."');
+    expect(hero).toContain('>YOUR WORKSPACE,</span');
+    expect(hero).toContain('>CONNECTED TO EVERY AGENT.</span');
+    expect(hero).toContain('>CONNECTED TO</span');
+    expect(hero).toContain('>EVERY AGENT.</span');
     expect(hero).not.toContain('GIVE EVERY AGENT');
     expect(hero).not.toContain('WORKSPACE SUPERPOWERS');
     expect(hero).toContain("import { prepare, layout } from '@chenglou/pretext'");
     expect(hero).toContain('data-pretext-title');
     expect(hero).toContain('data-pretext-lines');
     expect(hero).toContain('INSTALL VIA TERMINAL');
-    expect(hero).toContain('<figure class="home-hero__diagram"');
-    expect(hero).not.toContain('<figure class="home-hero__diagram site-card"');
+    expect(hero).not.toContain('home-hero__diagram');
+    expect(hero).not.toContain('consuelo-integrations-hero.svg');
     expect(hero).not.toContain('radial-gradient');
     expect(hero).not.toContain('var(--site-shadow-raised)');
 
