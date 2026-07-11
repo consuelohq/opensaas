@@ -1102,6 +1102,20 @@ bun run mac -- port find --json
 
 ---
 
+### consuelo-reload — manage the local Consuelo OS server
+
+Use this command to inspect, start, stop, or restart the local Bun server. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
+
+```bash
+bun run consuelo-reload -- status
+bun run consuelo-reload -- start
+bun run consuelo-reload -- reload
+bun run consuelo-reload -- stop
+bun run consuelo-reload -- logs
+```
+
+---
+
 ### server — manage the workspace MCP server
 
 ```bash
