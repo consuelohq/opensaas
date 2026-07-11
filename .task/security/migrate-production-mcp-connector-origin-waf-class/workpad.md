@@ -39,6 +39,10 @@ started: 2026-07-11
 - Next bounded check: run the same exact migration in `--dry-run` mode with the existing Pages token to determine whether it already carries Rulesets permission. No policy write is possible in this check.
 - The task worktree was synchronized to remote commit `3985855ddf57e1ed2c83109d289ec16faf1fab77` before preparing the probe.
 - Scoped strict review passes with zero findings. Full verify is blocked only by unrelated pre-existing `api`, `twenty-server`, and `twenty-sdk` failures selected repository-wide for the workflow-only diff; the focused migration suite remains green.
+- Read-only Pages-token probe dispatched as production workflow run `29168034947` from branch commit `8e39fe55127ed5abdd6ff36a45a80ac4d6e880a9`.
+- Run `29168034947` completed with failure only in the dry-run WAF step. The Pages token also returned Cloudflare API code `10000` while reading the custom ruleset. Because the CLI was invoked with `--dry-run`, no policy write was possible.
+- Confirmed external blocker: neither protected production token has Cloudflare Zone Rulesets/WAF read-edit permission, and the authenticated dashboard is blocked by Cloudflare human verification in the automation browser.
+- Final workflow contract uses a dedicated protected secret named `CLOUDFLARE_WAF_API_TOKEN`; diagnostic reuse of the OS and Pages tokens is removed. The migration remains explicit workflow-dispatch only and fails before API access when the secret is absent.
 
 ## wait plan
 
@@ -47,13 +51,13 @@ started: 2026-07-11
 - Resume action: read run `29167637882` status, job conclusions, and migration-step log output.
 - Expected signal: workflow conclusion `success` and migration output status `migrated` or `unchanged` for both managed rule refs.
 - Fallback: stop on failed/cancelled conclusion or bounded timeout and inspect the exact failing job logs before any further production mutation.
+- Probe wait cycle: poll run `29168034947` after 20 seconds; success requires workflow success plus migration status `planned` or `unchanged`, while failure requires exact log inspection and no policy write.
+- Probe observed result: completed/failure; exact error `Cloudflare read custom ruleset failed: [{"code":10000,"message":"Authentication error"}]`; next decision is to stop WAF mutations until a least-privilege Rulesets token is supplied.
 
 ## files changed
 
 - `.github/workflows/consuelo-production-release.yaml`
-- `packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts`
-- `packages/os/scripts/migrate-managed-os-mcp-origin-class.ts`
-- `packages/os/tests/managed-os-mcp-origin-class-migration.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -79,6 +83,7 @@ started: 2026-07-11
 - 2026-07-11 20:59:21 `verify`: failed — COMMAND_FAILED
 - 2026-07-11 20:59:23 `verify`: failed — COMMAND_FAILED
 - 2026-07-11 20:59:54 `review.run`: passed — OK
+- 2026-07-11 21:03:15 `review.run`: passed — OK
 
 ## key decisions
 
@@ -121,3 +126,10 @@ bun run task:finish
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
 
 - 2026-07-11 21:00:03 apply-patch: `.task/security/migrate-production-mcp-connector-origin-waf-class/workpad.md`
+
+- 2026-07-11 21:00:37 apply-patch: `.task/security/migrate-production-mcp-connector-origin-waf-class/workpad.md`
+
+- 2026-07-11 21:01:48 apply-patch: `.task/security/migrate-production-mcp-connector-origin-waf-class/workpad.md`
+
+- 2026-07-11 21:02:31 apply-patch: `.github/workflows/consuelo-production-release.yaml`
+- 2026-07-11 21:02:31 apply-patch: `.task/security/migrate-production-mcp-connector-origin-waf-class/workpad.md`
