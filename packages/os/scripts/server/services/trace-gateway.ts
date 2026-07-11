@@ -10,6 +10,30 @@ import { loadAuthConfigForRequest } from '../middleware/auth';
 
 let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
 
+type TraceWorkspaceHostResolutionInput = {
+  request: Request;
+  scopeWorkspaceHost: string;
+  configuredWorkspaceHost: string;
+};
+
+const isLoopbackHostname = (hostname: string): boolean => {
+  const normalized = hostname.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  return normalized === 'localhost' || normalized === '::1' || normalized.startsWith('127.');
+};
+
+export function resolveTraceWorkspaceHost(
+  input: TraceWorkspaceHostResolutionInput,
+): string {
+  if (input.request.headers.get('x-consuelo-workspace-host')?.trim()) {
+    return input.scopeWorkspaceHost;
+  }
+
+  const requestHostname = new URL(input.request.url).hostname;
+  return isLoopbackHostname(requestHostname)
+    ? input.configuredWorkspaceHost || input.scopeWorkspaceHost
+    : input.scopeWorkspaceHost;
+}
+
 function resolveTraceDbPath(): string {
   const traceDbEnv = process.env.CONSUELO_TRACE_DB ?? process.env.TRACE_DB ?? '';
   if (traceDbEnv) return traceDbEnv;
@@ -49,9 +73,11 @@ export function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
         workspaceId: scope.workspaceId === 'workspace-unknown'
           ? config.workspaceId
           : scope.workspaceId,
-        workspaceHost: scope.workspaceHost === '127.0.0.1:46321'
-          ? config.workspaceHost
-          : scope.workspaceHost,
+        workspaceHost: resolveTraceWorkspaceHost({
+          request: traceRequest,
+          scopeWorkspaceHost: scope.workspaceHost,
+          configuredWorkspaceHost: config.workspaceHost,
+        }),
       };
     },
   });
