@@ -323,7 +323,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
               kind: 'os-connector',
               connectorId: 'connector_123',
               connectorStatus: 'connected',
-              tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+              tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
             },
           };
         },
@@ -369,7 +369,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
               kind: 'os-connector',
               connectorId: 'connector_123',
               connectorStatus: 'connected',
-              tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+              tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
             },
           };
         },
@@ -438,7 +438,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
             kind: 'os-connector',
             connectorId: 'connector_123',
             connectorStatus: 'connected',
-            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+            tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
           },
         };
       },
@@ -461,7 +461,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(await response.text()).toBe('os ok');
     expect(upstreamRequests).toHaveLength(1);
     expect(upstreamRequests[0].url).toBe(
-      'https://connector-123.os-origin.consuelohq.com/traces/runs/trc_123',
+      'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com/traces/runs/trc_123',
     );
     expect(upstreamRequests[0].headers.get('x-consuelo-workspace-id')).toBe(
       'workspace_123',
@@ -493,7 +493,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
             kind: 'os-connector',
             connectorId: 'connector_123',
             connectorStatus: 'connected',
-            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+            tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
           },
         };
       },
