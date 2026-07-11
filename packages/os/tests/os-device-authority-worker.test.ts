@@ -1,9 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  createMemoryDeviceGrantStore,
-  createOsDeviceAuthorityHandler,
-} from '../cloudflare/os-device-authority/src/index';
+import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
+import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
@@ -203,6 +201,15 @@ const failingGoogleTokenFetch: typeof fetch = async (input) => {
   }
   return new Response(JSON.stringify({ error: 'unexpected_google_fetch' }), { status: 500 });
 };
+
+function successfulWorkspaceRouteSetup() {
+  const routeRegistry = createCapturedRouteRegistry();
+  const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
+  return {
+    workspaceRouteRegistry: routeRegistry.binding,
+    workspaceConnectorProvisioner: connectorProvisioner.provisioner,
+  };
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -637,6 +644,7 @@ describe('os device authority worker', () => {
 
   it('should register home, member, and reconnecting nodes for one account workspace', async () => {
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -1369,6 +1377,7 @@ describe('os device authority worker', () => {
 
   it('should approve a pending OS device when Google OAuth callback succeeds', async () => {
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -1415,6 +1424,7 @@ describe('os device authority worker', () => {
 
   it('should hide the device code box when terminal-return pages are rendered', async () => {
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -1469,6 +1479,7 @@ describe('os device authority worker', () => {
     });
 
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
@@ -1570,6 +1581,7 @@ describe('os device authority worker', () => {
   it('serves hardened GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => currentMs,
