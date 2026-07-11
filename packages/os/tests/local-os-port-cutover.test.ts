@@ -179,7 +179,7 @@ describe('prelaunch local OS port cutover', () => {
       ['scripts/start-brain-daemon.sh', 'PORT:-46321'],
       ['scripts/start-brain.sh', 'PORT:-46321'],
       ['scripts/workspace-watchdog.sh', 'PORT:-46321'],
-      ['scripts/install-system-daemons.sh', 'http://127.0.0.1:46321/health'],
+      ['scripts/install-system-daemons.sh', '${PORT:-46321}'],
       ['scripts/bootstrap.sh', 'http://127.0.0.1:46321'],
       ['scripts/lib/workspace-state.js', "process.env.PORT || '46321'"],
       [
