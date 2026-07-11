@@ -1,0 +1,68 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/trace-site/virtualize-perpetual-trace-history",
+  "base": "origin/stream/trace-site",
+  "headSha": "68c25f78ca93ce99bebbe4a73e7af6fbe3699f12",
+  "changeHash": "f672cec69c0c13d249f48d7118b852d4e2c76534575bc653d32a033de27d657a",
+  "changedFiles": [
+    "packages/workspace/bun.lock",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/trace-site-inspector/browser.ts",
+    "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+    "packages/workspace/scripts/trace-site-inspector/inspector.css",
+    "packages/workspace/scripts/trace-site-inspector/preview.ts",
+    "packages/workspace/scripts/trace-site-inspector/trace-list.ts",
+    "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/tests/trace-site-inspector.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T05:44:12.598Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/trace-site/virtualize-perpetual-trace-history.json",
+        ".task/trace-site/virtualize-perpetual-trace-history/current.json",
+        ".task/trace-site/virtualize-perpetual-trace-history/evidence-log.json",
+        ".task/trace-site/virtualize-perpetual-trace-history/read-log.json",
+        ".task/trace-site/virtualize-perpetual-trace-history/session.json",
+        ".task/trace-site/virtualize-perpetual-trace-history/verify.json",
+        ".task/trace-site/virtualize-perpetual-trace-history/workpad.md",
+        "packages/workspace/bun.lock",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/trace-site-inspector/browser.ts",
+        "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+        "packages/workspace/scripts/trace-site-inspector/inspector.css",
+        "packages/workspace/scripts/trace-site-inspector/preview.ts",
+        "packages/workspace/scripts/trace-site-inspector/trace-list.ts",
+        "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

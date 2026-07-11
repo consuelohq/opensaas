@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/trace-site/polish-internal-trace-inspector-preview/workpad.md",
+    ".task/trace-site/virtualize-perpetual-trace-history/workpad.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/trace-site-inspector/browser.ts",
+    "packages/workspace/scripts/trace-site-inspector/inspector.css",
+    "packages/workspace/scripts/trace-site-inspector/model.ts"
+  ],
+  "updatedAt": "2026-07-11T05:39:39.777Z"
+}

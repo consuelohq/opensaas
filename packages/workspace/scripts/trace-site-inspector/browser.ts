@@ -9,11 +9,13 @@ import {
   totalTokens,
   type TraceRecord,
 } from './model';
+import { installTraceVirtualList } from './virtual-list-browser';
 
 type PreviewTab = 'summary' | 'input' | 'output' | 'error' | 'metadata' | 'raw';
 
 type TraceWindow = Window & {
   __traceRowsByTraceId?: Map<string, TraceRecord>;
+  __traceSelectedKey?: string;
 };
 
 const tabs: Array<{ id: PreviewTab; label: string }> = [
@@ -78,10 +80,18 @@ function boundedPretty(value: unknown): string {
 }
 
 function selectedKey(): string {
+  const target = window as TraceWindow;
+  if (Object.hasOwn(target, '__traceSelectedKey'))
+    return target.__traceSelectedKey ?? '';
   const node = document.querySelector<HTMLElement>(
     '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
   );
-  return node?.dataset.traceKey ?? '';
+  const key =
+    node?.dataset.traceKey ??
+    new URLSearchParams(location.hash.slice(1)).get('trace') ??
+    '';
+  target.__traceSelectedKey = key;
+  return key;
 }
 
 function traceMap(): Map<string, TraceRecord> {
@@ -374,7 +384,12 @@ function render(force = false): void {
   if (rendering) return;
   const inspector = document.querySelector<HTMLElement>('[data-inspector]');
   const row = selectedRow();
-  if (!inspector || !row) return;
+  if (!inspector) return;
+  if (!row) {
+    inspector.replaceChildren();
+    delete inspector.dataset.tiSignature;
+    return;
+  }
   const key = stableTraceKey(row);
   const active = storedTab(key, row);
   const signature = [
@@ -472,19 +487,26 @@ const observer = new MutationObserver((mutations) => {
     mutations.some(
       (mutation) =>
         mutation.target instanceof Element &&
-        mutation.target.closest('[data-inspector] .tiInspector'),
+        mutation.target.closest(
+          '[data-inspector] .tiInspector, [data-trace-virtual-content]',
+        ),
     )
   )
     return;
   scheduleRender();
 });
-observer.observe(document.documentElement, {
+const observerRoot =
+  document.querySelector<HTMLElement>('.trxShell, #tbmLiveTraceModal') ??
+  document.documentElement;
+observer.observe(observerRoot, {
   childList: true,
   subtree: true,
   attributes: true,
   attributeFilter: ['class', 'aria-selected'],
 });
 
+installTraceVirtualList();
+document.addEventListener('trace:selection-change', () => render(true));
 window.addEventListener('resize', scheduleRender);
 window.setInterval(scheduleRender, 2_000);
 scheduleRender();

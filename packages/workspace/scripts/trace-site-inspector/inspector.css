@@ -1,4 +1,45 @@
-/* Internal Trace Burn Intelligence inspector overlay v24. */
+/* Internal Trace Burn Intelligence inspector overlay v29. */
+
+[data-trace-virtual-list] {
+  position: relative;
+  overflow: auto;
+  overscroll-behavior: contain;
+  contain: layout paint style;
+}
+
+[data-trace-virtual-content] {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+[data-trace-virtual-content] > .trxRow {
+  position: absolute !important;
+  inset: 0 0 auto !important;
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+}
+
+.trxFooter[data-trace-virtual-footer] > span:not(:first-of-type),
+.trxFooter[data-trace-virtual-footer] > [data-prev-page],
+.trxFooter[data-trace-virtual-footer] > [data-next-page] {
+  display: none !important;
+}
+
+.trxFooter[data-trace-virtual-footer]::after {
+  content: 'virtual window';
+  color: var(--trace-muted, #9f9583);
+  font:
+    700 10px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .cmdkMenuLaunch,
 #tbmLiveTraceModal .lfMenuButton {
   display: none !important;
@@ -30,6 +71,7 @@
   --ti-amber: #c6a15b;
   --ti-green: #99ad7b;
   --ti-red: #d06d52;
+
   display: grid;
   grid-template-columns: minmax(286px, 34%) minmax(0, 1fr);
   width: 100%;
