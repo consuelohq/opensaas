@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".task/security/migrate-production-mcp-connector-origin-waf-class/workpad.md",
+    "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts"
+  ],
+  "updatedAt": "2026-07-11T20:45:50.681Z"
+}
