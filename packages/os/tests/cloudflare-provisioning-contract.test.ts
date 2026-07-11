@@ -417,7 +417,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       workspaceId: 'workspace_123',
       workspaceSlug: 'kokayi',
       workspaceHostname: 'kokayi.consuelohq.com',
-      osTunnelHostname: 'connector-123.os-origin.consuelohq.com',
+      osTunnelHostname: 'c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
       provider: 'cloudflare',
       owner: 'consuelo-os-cloud',
       cloudflare: {
@@ -498,8 +498,10 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     for (const expression of [allowRule.expression, blockRule.expression]) {
       expect(expression).toContain('ends_with(http.host, ".consuelohq.com")');
       expect(expression).toContain(
-        'not ends_with(http.host, ".os-origin.consuelohq.com")',
+        'not (http.host matches r"^c-[0-9a-f]{32}\\.consuelohq\\.com$")',
       );
+      expect(expression).not.toContain('starts_with(http.host, "c-")');
+      expect(expression).not.toContain('wildcard "c-*');
       expect(expression).toContain('starts_with(http.request.uri.path, "/mcp")');
       expect(expression).toContain('or http.host in {\n    "os.consuelohq.com"\n  }');
       expect(expression).toContain('"workspace.consuelohq.com"');
@@ -1456,7 +1458,9 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
     expect(calls.some((call) => /railway/i.test(call.operation))).toBe(false);
     expect(result.workspaceHostname).toBe('kokayi.consuelohq.com');
-    expect(result.osTunnelHostname).toBe('connector-123.os-origin.consuelohq.com');
+    expect(result.osTunnelHostname).toBe(
+      'c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
+    );
     expect(result.connectorBootstrap).toMatchObject({
       connectorId: 'connector_123',
       tunnelId: 'tunnel_123',
@@ -1536,7 +1540,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       config: {
         ingress: [
           {
-            hostname: 'connector-macbook-air.os-origin.consuelohq.com',
+            hostname: 'c-242bbe85b163ac3c32c7d9d6ce269707.consuelohq.com',
             service: 'http://127.0.0.1:46321',
           },
           { service: 'http_status:404' },
@@ -1551,7 +1555,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
     expect(calls[7]?.body).toMatchObject({
       type: 'CNAME',
-      name: 'connector-macbook-air.os-origin.consuelohq.com',
+      name: 'c-242bbe85b163ac3c32c7d9d6ce269707.consuelohq.com',
       content: 'tunnel_123.cfargotunnel.com',
       proxied: true,
     });
