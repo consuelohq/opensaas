@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { GatewaySecurityConfig } from '../scripts/lib/security-gateway';
@@ -31,6 +34,24 @@ afterEach(() => {
 });
 
 describe('local OS server review findings', () => {
+  it('installs package-local OS dependencies before CI contract tests', () => {
+    const workflow = readFileSync(
+      resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
+      'utf8',
+    );
+    const installStep = [
+      '      - name: Install OS dependencies',
+      "        if: needs.consuelo-changes.outputs.os_contracts == 'true'",
+      '        working-directory: packages/os',
+      '        run: bun install --frozen-lockfile',
+    ].join('\n');
+
+    expect(workflow).toContain(installStep);
+    expect(workflow.indexOf(installStep)).toBeLessThan(
+      workflow.indexOf('      - name: Run OS contract tests'),
+    );
+  });
+
   it('preserves the default port when both port variables are unset', () => {
     delete process.env.CONSUELO_OS_PORT;
     delete process.env.PORT;
