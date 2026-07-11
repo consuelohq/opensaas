@@ -11,7 +11,7 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 ---
 
 <section class="home-hero site-section" id={sectionId} data-section="hero">
-	<div class="home-hero__inner site-container site-container--wide">
+	<div class="home-hero__inner site-container">
 		<div class="home-hero__content">
 			<p class="home-hero__eyebrow site-eyebrow" aria-label="Open source and MIT licensed">
 				<span>OPEN SOURCE</span>
@@ -22,30 +22,13 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 			<h1
 				class="home-hero__title"
 				data-pretext-title={heroTitleText}
-				data-pretext-lines="3"
 				aria-label="YOUR WORKSPACE, CONNECTED TO EVERY AGENT."
-			>
-				<span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true"
-					>YOUR WORKSPACE,</span
-				>
-				<span class="home-hero__title-line home-hero__title-line--desktop" aria-hidden="true"
-					>CONNECTED TO EVERY AGENT.</span
-				>
-				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
-					>YOUR WORKSPACE,</span
-				>
-				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
-					>CONNECTED TO</span
-				>
-				<span class="home-hero__title-line home-hero__title-line--mobile" aria-hidden="true"
-					>EVERY AGENT.</span
-				>
-			</h1>
+			></h1>
 
-			<div class="home-hero__actions" aria-label="Use Consuelo OS Cloud">
-				<p class="home-hero__action-label site-eyebrow">USE CONSUELO OS CLOUD</p>
+			<div class="home-hero__actions" aria-label="Consuelo OS Cloud">
+				<p class="home-hero__action-label site-eyebrow">consuelo os cloud</p>
 				<a class="home-hero__portal site-button site-button--secondary" href={osPortalHref}>
-					<span>SIGN IN TO DEPLOY</span>
+					<span>deploy now</span>
 					<svg class="home-hero__portal-arrow" viewBox="0 0 24 24" aria-hidden="true">
 						<path d="M5 12h14M13 6l6 6-6 6" />
 					</svg>
@@ -158,37 +141,42 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 </script>
 
 <script>
-	import { prepare, layout } from '@chenglou/pretext'
-	import type { PreparedText } from '@chenglou/pretext'
+	import { layoutWithLines, prepareWithSegments } from '@chenglou/pretext'
 
 	const title = document.querySelector('[data-pretext-title]')
 
 	if (title instanceof HTMLElement) {
-		let prepared: PreparedText | undefined
-		let preparedFont = ''
-
-		const measureTitle = () => {
+		const renderTitle = () => {
 			const style = window.getComputedStyle(title)
 			const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
-			const text = title.dataset.pretextTitle ?? title.textContent ?? ''
+			const text = title.dataset.pretextTitle ?? ''
+			const logicalLines = text.split('\n').filter((line) => line.length > 0)
+			const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize)
+			const lineWidth = title.clientWidth
 
-			if (!prepared || preparedFont !== font) {
-				prepared = prepare(text, font, { whiteSpace: 'pre-wrap' })
-				preparedFont = font
+			title.replaceChildren()
+
+			let totalHeight = 0
+			for (const lineText of logicalLines) {
+				const prepared = prepareWithSegments(lineText, font)
+				const result = layoutWithLines(prepared, lineWidth, lineHeight)
+				const lineElement = document.createElement('span')
+				lineElement.className = 'home-hero__title-line'
+				lineElement.setAttribute('aria-hidden', 'true')
+				lineElement.textContent = result.lines[0]?.text ?? lineText
+				title.append(lineElement)
+				totalHeight += result.height
 			}
 
-			const lineHeight = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize)
-			const result = layout(prepared, title.clientWidth, lineHeight)
-
-			title.dataset.pretextLines = String(result.lineCount)
-			title.style.setProperty('--home-hero-title-height', `${result.height}px`)
+			title.dataset.pretextLines = String(logicalLines.length)
+			title.style.setProperty('--home-hero-title-height', `${totalHeight}px`)
 		}
 
-		const scheduleMeasure = () => window.requestAnimationFrame(measureTitle)
+		const scheduleRender = () => window.requestAnimationFrame(renderTitle)
 
-		window.addEventListener('resize', scheduleMeasure, { passive: true })
-		document.fonts?.ready.then(scheduleMeasure).catch(() => measureTitle())
-		scheduleMeasure()
+		window.addEventListener('resize', scheduleRender, { passive: true })
+		document.fonts?.ready.then(scheduleRender).catch(() => renderTitle())
+		scheduleRender()
 	}
 </script>
 
@@ -197,6 +185,7 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 		min-height: calc(100svh - var(--site-space-8));
 		display: grid;
 		align-items: center;
+		justify-items: center;
 		background: var(--site-color-paper);
 		color: var(--site-color-on-brand);
 		font-family: var(--site-font-body);
@@ -205,25 +194,27 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 		--home-hero-control-shadow: var(--site-shadow-control);
 		padding-block: clamp(4.5rem, 7.2vw, 6.6rem) var(--site-space-7);
 		overflow: clip;
+		text-align: center;
 	}
 
 	.home-hero__inner {
 		display: grid;
-		gap: clamp(var(--site-space-4), 1.25vw, var(--site-space-5));
-		align-items: center;
+		width: 100%;
+		justify-items: center;
 	}
 
 	.home-hero__content {
 		display: grid;
 		gap: clamp(1.35rem, 1.35vw, 2rem);
-		max-width: 36rem;
-		position: relative;
-		z-index: 1;
+		width: min(100%, 46rem);
+		justify-items: center;
+		text-align: center;
 	}
 
 	.home-hero__eyebrow {
 		color: var(--site-color-on-brand);
 		display: flex;
+		justify-content: center;
 		gap: clamp(var(--site-space-2), 1.25vw, var(--site-space-3));
 		align-items: center;
 		font-size: clamp(0.62rem, 0.9vw, 0.76rem);
@@ -239,14 +230,14 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 
 	.home-hero__title {
 		margin: 0;
+		width: min(100%, 13.5em);
 		color: var(--site-color-on-brand);
 		font-family: var(--site-font-display);
-		font-size: clamp(3.2rem, 5.35vw, 5.65rem);
+		font-size: clamp(3rem, 5.1vw, 5.35rem);
 		font-weight: 300;
 		letter-spacing: 0;
-		line-height: 0.86;
+		line-height: 0.9;
 		text-transform: uppercase;
-		text-wrap: balance;
 	}
 
 	.home-hero__title-line {
@@ -254,46 +245,38 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 		white-space: nowrap;
 	}
 
-	.home-hero__title-line--mobile {
-		display: none;
-	}
-
-	.home-hero__title em {
-		color: currentColor;
-		font-family: var(--site-font-display);
-		font-style: normal;
-		font-weight: 300;
-		letter-spacing: 0;
-	}
-
 	.home-hero__actions {
 		display: grid;
 		gap: 0.58rem;
 		width: fit-content;
+		justify-items: center;
 	}
 
 	.home-hero__action-label,
 	.home-hero__install-label {
-		color: var(--site-color-muted-on-brand);
+		color: var(--site-color-on-brand);
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: lowercase;
 	}
 
 	.home-hero__portal {
 		width: fit-content;
-		min-height: 2.45rem;
+		min-height: 2.65rem;
 		justify-content: center;
-		justify-self: start;
 		gap: var(--site-space-2);
 		border: 1px solid var(--home-hero-control-line);
 		border-radius: calc(var(--site-radius-sm) * 0.25);
 		background: var(--home-hero-control-bg);
-		color: var(--site-color-ink);
+		color: var(--site-color-secondary);
 		box-shadow: var(--home-hero-control-shadow);
 		font-family: var(--site-font-mono);
-		font-size: clamp(0.78rem, 0.95vw, 0.88rem);
-		font-weight: 400;
-		letter-spacing: 0;
+		font-size: clamp(0.82rem, 0.95vw, 0.92rem);
+		font-weight: 700;
+		letter-spacing: 0.04em;
 		line-height: 1;
-		padding: 0.72rem 1.15rem;
+		padding: 0.78rem 1.28rem;
+		text-transform: lowercase;
 	}
 
 	.home-hero__portal-arrow {
@@ -309,10 +292,12 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 	.home-hero__install-wrap {
 		display: grid;
 		gap: 0.62rem;
-		width: min(100%, 30rem);
+		width: min(100%, 34rem);
+		justify-items: center;
 	}
 
 	.home-hero__install {
+		width: 100%;
 		overflow: hidden;
 		padding: 0;
 		border: 1px solid var(--home-hero-control-line);
@@ -323,6 +308,7 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 
 	.home-hero__tabs {
 		display: flex;
+		justify-content: center;
 		gap: clamp(1.35rem, 2.2vw, 2rem);
 		overflow-x: auto;
 		overflow-y: hidden;
@@ -340,7 +326,7 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 		border-bottom: 1px solid transparent;
 		background: transparent;
 		color: var(--site-color-muted);
-		font: 400 clamp(0.78rem, 0.95vw, 0.88rem) / 1 var(--site-font-mono);
+		font: 600 clamp(0.78rem, 0.95vw, 0.88rem) / 1 var(--site-font-mono);
 		letter-spacing: 0;
 		padding: 0 0 0.72rem;
 		white-space: nowrap;
@@ -392,7 +378,7 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 	.home-hero__value {
 		min-width: 0;
 		color: var(--site-color-ink);
-		font: 400 var(--home-hero-value-size, 0.82rem) / 1.28 var(--site-font-mono);
+		font: 600 var(--home-hero-value-size, 0.82rem) / 1.28 var(--site-font-mono);
 		overflow: visible;
 		overflow-wrap: anywhere;
 		text-overflow: clip;
@@ -449,17 +435,9 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 			padding-block: clamp(5.5rem, 10vw, 7.5rem) var(--site-space-7);
 		}
 
-		.home-hero__inner {
-			grid-template-columns: minmax(0, 1fr);
-			align-items: start;
-		}
-
-		.home-hero__content {
-			max-width: min(100%, 42rem);
-		}
-
 		.home-hero__title {
-			font-size: clamp(3.05rem, 7.4vw, 5.35rem);
+			font-size: clamp(2.85rem, 7vw, 4.85rem);
+			width: min(100%, 12.5em);
 		}
 	}
 
@@ -478,16 +456,10 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 		}
 
 		.home-hero__title {
-			font-size: clamp(2.8rem, 9.2vw, 4.45rem);
-			letter-spacing: 0;
-			line-height: 0.86;
+			font-size: clamp(2.65rem, 9vw, 4.2rem);
+			width: min(100%, 11.5em);
 		}
 
-		.home-hero__title-line {
-			white-space: normal;
-		}
-
-		.home-hero__actions,
 		.home-hero__install-wrap {
 			width: 100%;
 		}
@@ -521,21 +493,8 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 		}
 
 		.home-hero__title {
-			font-size: clamp(2.84rem, 12.25vw, 3.95rem);
-			letter-spacing: 0;
-			line-height: 0.84;
-		}
-
-		.home-hero__title-line--desktop {
-			display: none;
-		}
-
-		.home-hero__title-line--mobile {
-			display: block;
-		}
-
-		.home-hero__title-line {
-			white-space: nowrap;
+			font-size: clamp(2.45rem, 11.5vw, 3.55rem);
+			width: min(100%, 10.5em);
 		}
 
 		.home-hero__tabs {
@@ -558,7 +517,7 @@ const heroTitleText = 'YOUR WORKSPACE,\nCONNECTED TO\nEVERY AGENT.'
 			min-height: 2.58rem;
 			gap: 0.7rem;
 			padding: 0.78rem 1.22rem;
-			font-size: clamp(0.78rem, 3vw, 0.9rem);
+			font-size: clamp(0.82rem, 3vw, 0.92rem);
 		}
 
 		.home-hero__portal-arrow {
