@@ -1,0 +1,184 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/trace-site/repair-trace-tree-selection-and-remove-detail-flash",
+  "base": "origin/stream/trace-site",
+  "headSha": "e9ba8886517ddf28c5bed97f7e58eaa95aac1cd8",
+  "changeHash": "245667b8b2171a438419207315addcd64c91dc1808c36c085d4a3dc8e6b28c78",
+  "changedFiles": [
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
+    "packages/workspace/scripts/trace-site-inspector/browser.ts",
+    "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+    "packages/workspace/scripts/trace-site-inspector/inspector.css",
+    "packages/workspace/scripts/trace-site-inspector/model.ts",
+    "packages/workspace/scripts/trace-site-inspector/preview.ts",
+    "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/tests/trace-site-inspector.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T18:25:35.397Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/trace-site/repair-trace-tree-selection-and-remove-detail-flash.json",
+        ".task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/current.json",
+        ".task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/evidence-log.json",
+        ".task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/read-log.json",
+        ".task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/session.json",
+        ".task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/verify.json",
+        ".task/trace-site/repair-trace-tree-selection-and-remove-detail-flash/workpad.md",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
+        "packages/workspace/scripts/trace-site-inspector/browser.ts",
+        "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+        "packages/workspace/scripts/trace-site-inspector/inspector.css",
+        "packages/workspace/scripts/trace-site-inspector/model.ts",
+        "packages/workspace/scripts/trace-site-inspector/preview.ts",
+        "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/office.ts",
+            "packages/workspace/scripts/trace-site-inspector/archive-history.ts",
+            "packages/workspace/scripts/trace-site-inspector/browser.ts",
+            "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+            "packages/workspace/scripts/trace-site-inspector/inspector.css",
+            "packages/workspace/scripts/trace-site-inspector/model.ts",
+            "packages/workspace/scripts/trace-site-inspector/preview.ts",
+            "packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts",
+            "packages/workspace/tests/trace-site-inspector.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "trace gateway history endpoints",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "trace gateway DB resolution",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-gateway-service.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "trace site inspector pagination",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/workspace",
+            "tests/trace-site-inspector.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "trace gateway history endpoints",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 724,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-repair-trace-tree-selection-and-remove-detail-flash/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 41\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:25:25\n\u001b[2m   Duration \u001b[22m 260ms\u001b[2m (transform 109ms, setup 0ms, import 130ms, tests 41ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "trace gateway DB resolution",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-gateway-service.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 804,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-repair-trace-tree-selection-and-remove-detail-flash/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-gateway-service.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:25:26\n\u001b[2m   Duration \u001b[22m 375ms\u001b[2m (transform 154ms, setup 0ms, import 257ms, tests 4ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "trace site inspector pagination",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/workspace",
+            "tests/trace-site-inspector.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 8214,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-repair-trace-tree-selection-and-remove-detail-flash/packages/workspace\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-site-inspector.test.ts \u001b[2m(\u001b[22m\u001b[2m21 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 7138\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should select batch children independently and never paint the obsolete detail layout \u001b[33m 3834\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve interactive inspector behavior when the trace list is virtualized \u001b[33m 538\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should append older history pages while preserving inspector state and terminal behavior \u001b[33m 2593\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m21 passed\u001b[39m\u001b[22m\u001b[90m (21)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:25:26\n\u001b[2m   Duration \u001b[22m 7.88s\u001b[2m (transform 138ms, setup 0ms, import 508ms, tests 7.14s, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

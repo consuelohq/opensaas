@@ -1,3 +1,5 @@
+import { spawnSync } from 'node:child_process';
+
 import { createLocalTraceSitesReadBackend } from '../../../os/scripts/lib/trace-sites-local-read-backend';
 import type {
   TraceSitesGatewayReadBackendAdapter,
@@ -8,6 +10,85 @@ const HISTORY_ROUTE = '/gateway/traces/recent';
 const HISTORY_SITE = 'trace-burn-intelligence';
 const HISTORY_SOURCE_MODE = 'local-networked';
 const MAX_HISTORY_PAGE_SIZE = 250;
+
+type TraceRecord = Record<string, unknown>;
+
+export function enrichTracePayloadWithBatchResults<T>(
+  payload: T,
+  dbPath: string,
+): T {
+  const payloadRecord = asRecord(payload);
+  const sourceRows = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payloadRecord?.rows)
+      ? payloadRecord.rows
+      : Array.isArray(payloadRecord?.traces)
+        ? payloadRecord.traces
+        : [];
+  const rows = sourceRows.filter(isRecord);
+  const traceIds = rows
+    .filter(
+      (row) =>
+        clean(row.name ?? row.traceName ?? row.tool) === 'batch' &&
+        clean(row.traceId ?? row.trace_id),
+    )
+    .map((row) => clean(row.traceId ?? row.trace_id));
+  if (!traceIds.length || !clean(dbPath)) return payload;
+
+  try {
+    const query = `SELECT trace_id, input_json, coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) AS batch_results_json FROM tool_traces WHERE tool='batch' AND trace_id IN (${traceIds.map(sqlQuote).join(',')})`;
+    const result = spawnSync(
+      'sqlite3',
+      ['-cmd', '.timeout 1000', '-json', dbPath, query],
+      { encoding: 'utf8' },
+    );
+    if (result.status !== 0) return payload;
+    const text = result.stdout.trim();
+    if (!text) return payload;
+    const batchRows = JSON.parse(text) as Array<Record<string, unknown>>;
+    const byTrace = new Map<string, TraceRecord[]>();
+    for (const batchRow of batchRows) {
+      try {
+        const input = JSON.parse(clean(batchRow.input_json) || '{}') as {
+          steps?: unknown[];
+        };
+        const steps = Array.isArray(input.steps) ? input.steps : [];
+        const results = JSON.parse(
+          clean(batchRow.batch_results_json) || '[]',
+        ) as unknown[];
+        byTrace.set(
+          clean(batchRow.trace_id),
+          results.map((child, index) => compactBatchResult(child, steps[index])),
+        );
+      } catch {
+        byTrace.set(clean(batchRow.trace_id), []);
+      }
+    }
+
+    const enrichedRows = sourceRows.map((value) => {
+      if (!isRecord(value)) return value;
+      const results = byTrace.get(clean(value.traceId ?? value.trace_id));
+      return results?.length
+        ? {
+            ...value,
+            batchResultsJson: results,
+            batchResultsCount: results.length,
+          }
+        : value;
+    });
+    if (Array.isArray(payload)) return enrichedRows as T;
+    if (!payloadRecord) return payload;
+    if (Array.isArray(payloadRecord.rows)) {
+      return { ...payloadRecord, rows: enrichedRows } as T;
+    }
+    if (Array.isArray(payloadRecord.traces)) {
+      return { ...payloadRecord, traces: enrichedRows } as T;
+    }
+    return payload;
+  } catch {
+    return payload;
+  }
+}
 
 export async function createArchiveTraceHistoryResponse(input: {
   request: Request;
@@ -74,13 +155,17 @@ export async function createArchiveTraceHistoryResponse(input: {
       );
     }
     const page = await backend.readHistoryPage(backendInput);
+    const enriched = enrichTracePayloadWithBatchResults(
+      { rows: page.rows },
+      input.dbPath,
+    );
     return jsonResponse({
       ok: true,
       publicBoundary: 'consuelo-sites-private-archive',
       route: HISTORY_ROUTE,
       data: {
         direction: 'older',
-        rows: page.rows,
+        rows: enriched.rows,
         nextCursor: page.nextCursor,
       },
     });
@@ -125,4 +210,86 @@ function jsonResponse(value: unknown, status = 200): Response {
 
 function clean(value: unknown): string {
   return String(value ?? '').trim();
+}
+
+function compactBatchResult(result: unknown, step: unknown): TraceRecord {
+  const record = asRecord(result) ?? { value: result };
+  const stepRecord = asRecord(step);
+  const data = asRecord(record.data);
+  const output: TraceRecord = {};
+  for (const key of [
+    'apiVersion',
+    'ok',
+    'code',
+    'message',
+    'detail',
+    'now',
+    'traceId',
+    'trace_id',
+    'durationMs',
+    'duration_ms',
+    'totalTokens',
+    'total_tokens',
+    'inputTokens',
+    'input_tokens',
+    'outputTokens',
+    'output_tokens',
+    'exitCode',
+    'exit_code',
+    'tool',
+    'changed',
+    'costLabel',
+  ]) {
+    if (record[key] !== undefined) output[key] = record[key];
+  }
+  if (stepRecord?.tool !== undefined) {
+    output.tool = stepRecord.tool;
+    output.name = stepRecord.tool;
+    output.traceName = stepRecord.tool;
+  }
+  if (stepRecord?.input !== undefined) {
+    output.input = stepRecord.input;
+    output.rawInputJson = compactTraceValue(stepRecord.input, 8_000);
+  }
+  if (stepRecord?.parallel !== undefined) output.parallel = stepRecord.parallel;
+  output.status =
+    record.status ??
+    (record.ok === false ? 'error' : record.ok === true ? 'success' : '');
+  if (record.data !== undefined) {
+    output.data = compactTraceValue(record.data, 12_000);
+    const childOutput =
+      data?.output ?? data?.stdout ?? data?.content ?? data?.text ?? data?.message;
+    if (childOutput !== undefined) {
+      output.output = compactTraceValue(childOutput, 8_000);
+    }
+  }
+  if (typeof record.stderr === 'string' && record.stderr) {
+    output.stderr = record.stderr.slice(0, 4_000);
+  }
+  output.rawResultJson = compactTraceValue(record, 16_000);
+  return output;
+}
+
+function compactTraceValue(value: unknown, limit: number): unknown {
+  if (value === undefined) return undefined;
+  try {
+    const text = JSON.stringify(value);
+    return text.length <= limit
+      ? value
+      : { truncated: true, preview: text.slice(0, limit) };
+  } catch {
+    return String(value).slice(0, limit);
+  }
+}
+
+function sqlQuote(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`;
+}
+
+function asRecord(value: unknown): TraceRecord | null {
+  return isRecord(value) ? value : null;
+}
+
+function isRecord(value: unknown): value is TraceRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

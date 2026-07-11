@@ -1,8 +1,10 @@
 import {
   branchSummary,
+  childTraceRecords,
   clean,
   dedupeTraceRows,
   extractTraceError,
+  isBatchChild,
   isFailure,
   parseMaybeJson,
   stableTraceKey,
@@ -17,6 +19,19 @@ type PreviewTab = 'summary' | 'input' | 'output' | 'error' | 'metadata' | 'raw';
 type TraceWindow = Window & {
   __traceRowsByTraceId?: Map<string, TraceRecord>;
   __traceSelectedKey?: string;
+  __consueloTraceHistoryTransport?: {
+    fetchJson: (url: string) => Promise<unknown>;
+  };
+  __traceVirtualList?: {
+    select: (key: string) => void;
+    replaceRows: (rows: TraceRecord[], nextCursor?: string | null) => void;
+  };
+};
+
+type TraceFeedPayload = {
+  meta?: { nextCursor?: unknown };
+  rows?: TraceRecord[];
+  traces?: TraceRecord[];
 };
 
 const tabs: Array<{ id: PreviewTab; label: string }> = [
@@ -125,7 +140,9 @@ function selectedRow(): TraceRecord | null {
 }
 
 function allRows(): TraceRecord[] {
-  return dedupeTraceRows(traceMap().values());
+  return dedupeTraceRows(traceMap().values()).filter(
+    (row) => !isBatchChild(row),
+  );
 }
 
 function defaultTab(row: TraceRecord): PreviewTab {
@@ -297,7 +314,7 @@ function panel(
     case 'output':
       return payload(
         'Output',
-        row.rawResultJson ?? row.outputObj ?? row.output ?? row.summary,
+        row.output ?? row.outputObj ?? row.rawResultJson ?? row.summary,
       );
     case 'error':
       return errorPanel(row);
@@ -313,18 +330,25 @@ function branchPeers(
   selected: TraceRecord,
 ): string {
   const selectedId = stableTraceKey(selected);
-  return (
-    branch.peers
-      .map((peer) => {
-        const key = stableTraceKey(peer);
-        const status = statusLabel(peer);
-        return `<button class="tiPeer ${key === selectedId ? 'active' : ''}" type="button" data-trace-key="${escapeHtml(key)}">
+  const peerMarkup = (peer: TraceRecord, child = false): string => {
+    const key = stableTraceKey(peer);
+    const status = statusLabel(peer);
+    const depth = Number(peer.__traceDepth ?? 0);
+    return `<button class="tiPeer ${child ? `tiPeerChild depth-${depth}` : ''} ${key === selectedId ? 'active' : ''}" type="button" data-trace-key="${escapeHtml(key)}"${child ? ` style="--depth:${depth}"` : ''}>
       <span class="tiPeerStatus ${status === 'error' ? 'error' : 'success'}">✤</span>
-      <span class="tiPeerMain"><b>${escapeHtml(peer.name ?? peer.traceName ?? 'trace')}</b><small>${escapeHtml(clean(peer.displayTime ?? peer.time ?? peer.startTime).slice(-15) || '—')}</small></span>
+      <span class="tiPeerMain"><b>${escapeHtml(peer.name ?? peer.traceName ?? peer.tool ?? 'trace')}</b><small>${escapeHtml(clean(peer.displayTime ?? peer.time ?? peer.startTime).slice(-15) || (child ? 'batch child' : '—'))}</small></span>
       <span class="tiPeerTokens">${escapeHtml(formatCompact(totalTokens(peer)))} tok</span>
       <span class="tiPeerDuration">${escapeHtml(clean(peer.latency) || formatDuration(peer.durationMs))}</span>
     </button>`;
-      })
+  };
+  return (
+    branch.peers
+      .map((peer) =>
+        [
+          peerMarkup(peer),
+          ...childTraceRecords(peer).map((child) => peerMarkup(child, true)),
+        ].join(''),
+      )
       .join('') ||
     '<div class="tiEmptyCompact">No branch peers in this feed window.</div>'
   );
@@ -334,7 +358,6 @@ function inspectorMarkup(row: TraceRecord): string {
   const key = stableTraceKey(row);
   const branch = branchSummary(allRows(), row);
   const active = storedTab(key, row);
-  const status = statusLabel(row);
   return `<div class="tiInspector ${wrapped ? 'is-wrapped' : ''} ${mobileMenuOpen ? 'mobile-menu-open' : ''}" data-ti-trace-key="${escapeHtml(key)}" data-ti-active-tab="${active}">
     <header class="tiMobileBar">
       <button type="button" class="tiMobileBack" data-ti-back data-drawer-handle>Back</button>
@@ -342,17 +365,6 @@ function inspectorMarkup(row: TraceRecord): string {
       <button type="button" class="tiMobileMenu" data-ti-menu>${mobileMenuOpen ? 'Preview' : 'Menu'}</button>
     </header>
     <aside class="tiSidebar" aria-label="Trace and branch context">
-      <section class="tiTraceCard">
-        <div class="tiEyebrow">Trace</div>
-        <div class="tiTraceTitle"><span class="tiStatus ${status === 'error' ? 'error' : 'success'}">✤</span><h2>${escapeHtml(row.name ?? row.traceName ?? 'trace')}</h2></div>
-        <p>${escapeHtml(rowSummary(row))}</p>
-        <div class="tiTraceMetrics">
-          <span>${escapeHtml(clean(row.code) || 'OK')}</span>
-          <span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span>
-          <span>${escapeHtml(formatCompact(totalTokens(row)))} tok</span>
-        </div>
-        <code>${escapeHtml(row.traceId ?? row.trace ?? key)}</code>
-      </section>
       <section class="tiBranchCard">
         <header>
           <div><div class="tiEyebrow">Branch</div><h3 title="${escapeHtml(branch.branch)}">${escapeHtml(branch.branch)}</h3></div>
@@ -370,7 +382,7 @@ function inspectorMarkup(row: TraceRecord): string {
     </aside>
     <main class="tiPreview" aria-label="Trace preview">
       <header class="tiPreviewHeader">
-        <div><div class="tiEyebrow">Preview</div><h2>${escapeHtml(row.name ?? row.traceName ?? 'trace')}</h2></div>
+        <div><div class="tiEyebrow">Preview</div><h2>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</h2><div class="tiPreviewMeta"><span>${escapeHtml(statusLabel(row))}${clean(row.code) ? ` · ${escapeHtml(row.code)}` : ''}</span><span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span><span>${escapeHtml(formatCompact(totalTokens(row)))} tok</span><code>${escapeHtml(row.traceId ?? row.trace ?? key)}</code></div></div>
         <div class="tiPreviewActions"><button type="button" data-ti-wrap>${wrapped ? 'No wrap' : 'Wrap'}</button></div>
       </header>
       <nav class="tiTabs" aria-label="Trace preview sections">
@@ -431,8 +443,40 @@ function scheduleRender(): void {
   });
 }
 
+async function refreshLiveRows(): Promise<void> {
+  try {
+    const transport = (window as TraceWindow).__consueloTraceHistoryTransport;
+    if (!transport) return;
+    const payload = (await transport.fetchJson(
+      '/trace-burn-intelligence/live-traces.json',
+    )) as TraceFeedPayload | TraceRecord[];
+    const rows = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload.rows)
+        ? payload.rows
+        : Array.isArray(payload.traces)
+          ? payload.traces
+          : [];
+    if (!rows.length) return;
+    const nextCursor = Array.isArray(payload)
+      ? undefined
+      : clean(payload.meta?.nextCursor) || null;
+    (window as TraceWindow).__traceVirtualList?.replaceRows(rows, nextCursor);
+    render(true);
+  } catch {
+    // The static seed remains a complete offline fallback.
+  }
+}
+
 document.addEventListener('click', async (event) => {
   const target = event.target as HTMLElement;
+  const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
+  if (peer?.dataset.traceKey) {
+    event.preventDefault();
+    event.stopPropagation();
+    (window as TraceWindow).__traceVirtualList?.select(peer.dataset.traceKey);
+    return;
+  }
   const tab = target.closest<HTMLElement>('[data-ti-tab]');
   if (tab) {
     event.preventDefault();
@@ -479,6 +523,9 @@ document.addEventListener('click', async (event) => {
   }
   if (target.closest('[data-ti-back]')) {
     mobileMenuOpen = false;
+    const shell = document.querySelector<HTMLElement>('.trxShell');
+    shell?.classList.remove('detail-open');
+    shell?.classList.add('closed');
   }
 });
 
@@ -508,6 +555,7 @@ observer.observe(observerRoot, {
 
 installTracePaginationTransport();
 installTraceVirtualList();
+void refreshLiveRows();
 document.addEventListener('trace:selection-change', () => render(true));
 window.addEventListener('resize', scheduleRender);
 window.setInterval(scheduleRender, 2_000);

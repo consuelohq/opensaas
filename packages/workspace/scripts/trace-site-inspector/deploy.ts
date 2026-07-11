@@ -16,7 +16,9 @@ import { fileURLToPath } from 'node:url';
 export const INSPECTOR_VERSION = 'v29';
 export const INSPECTOR_CSS_HREF = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.css`;
 export const INSPECTOR_SCRIPT_SRC = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.js`;
-export const TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT = `<script id="consuelo-trace-history-transport">(()=>{const route='/gateway/traces/recent';const normalizeError=error=>error instanceof Error?error:new Error('Trace history request failed.');window.__consueloTraceHistoryTransport={fetchJson(url){if(typeof url!=='string'||!url.startsWith(route+'?'))return Promise.reject(new Error('Trace history route is not allowed.'));return fetch(url,{credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>({response,payload}))).then(({response,payload})=>{if(!response.ok){const message=payload&&payload.error&&typeof payload.error.message==='string'?payload.error.message:'Trace history request failed.';throw new Error(message)}return payload},error=>{throw normalizeError(error)})}}})()</script>`;
+export const TRACE_INSPECTOR_BOOTSTRAP_MARKUP = `<div class="tiInspector tiInspectorBoot is-wrapped" aria-busy="true"><header class="tiMobileBar"><button type="button" class="tiMobileBack" data-ti-back data-drawer-handle>Back</button><span>Trace detail</span><button type="button" class="tiMobileMenu" data-ti-menu>Menu</button></header><aside class="tiSidebar" aria-label="Trace and branch context"><section class="tiBranchCard"><header><div><div class="tiEyebrow">Branch</div><h3>Loading branch...</h3></div><span class="tiBranchCalls">...</span></header><div class="tiBranchTotals"></div><div class="tiPeerList" aria-label="Branch calls"></div></section></aside><main class="tiPreview" aria-label="Trace preview"><header class="tiPreviewHeader"><div><div class="tiEyebrow">Preview</div><h2>Loading trace...</h2></div></header><nav class="tiTabs" aria-label="Trace preview sections"></nav><div class="tiPanel"></div></main></div>`;
+export const TRACE_INSPECTOR_BOOTSTRAP_SCRIPT = `<script id="consuelo-trace-inspector-bootstrap">(()=>{const mount=document.querySelector('[data-inspector]');if(!mount||mount.querySelector('.tiInspector'))return;mount.innerHTML=${JSON.stringify(TRACE_INSPECTOR_BOOTSTRAP_MARKUP)};mount.dataset.traceInspectorBootstrapped=''})()</script>`;
+export const TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT = `<script id="consuelo-trace-history-transport">(()=>{const historyRoute='/gateway/traces/recent';const liveRoute='/trace-burn-intelligence/live-traces.json';const normalizeError=error=>error instanceof Error?error:new Error('Trace data request failed.');window.__consueloTraceHistoryTransport={fetchJson(url){const allowed=typeof url==='string'&&(url===liveRoute||url.startsWith(historyRoute+'?'));if(!allowed)return Promise.reject(new Error('Trace data route is not allowed.'));return fetch(url,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>({response,payload}))).then(({response,payload})=>{if(!response.ok){const message=payload&&payload.error&&typeof payload.error.message==='string'?payload.error.message:'Trace data request failed.';throw new Error(message)}return payload},error=>{throw normalizeError(error)})}}})()</script>`;
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultArchiveRoot = resolve(
@@ -25,7 +27,11 @@ const defaultArchiveRoot = resolve(
 );
 
 export function patchTraceInspectorHtml(html: string): string {
-  const withoutOldCss = html.replace(
+  const withFinalStructure = replaceInspectorMountContents(
+    html,
+    TRACE_INSPECTOR_BOOTSTRAP_MARKUP,
+  );
+  const withoutOldCss = withFinalStructure.replace(
     /<link[^>]+href=["'][^"']*trace-inspector-v\d+\.css["'][^>]*>\s*/g,
     '',
   );
@@ -37,18 +43,45 @@ export function patchTraceInspectorHtml(html: string): string {
     /<script[^>]*id=["']consuelo-trace-history-transport["'][^>]*>[\s\S]*?<\/script>\s*/gi,
     '',
   );
+  const withoutOldBootstrap = withoutOldTransport.replace(
+    /<script[^>]*id=["']consuelo-trace-inspector-bootstrap["'][^>]*>[\s\S]*?<\/script>\s*/gi,
+    '',
+  );
   const cssTag = `<link rel="stylesheet" href="${INSPECTOR_CSS_HREF}">`;
   const scriptTag = `<script type="module" src="${INSPECTOR_SCRIPT_SRC}"></script>`;
-  const withCss = withoutOldTransport.includes(INSPECTOR_CSS_HREF)
-    ? withoutOldTransport
-    : withoutOldTransport.replace('</head>', `${cssTag}</head>`);
-  const withTransport = withCss.replace(
+  const withCss = withoutOldBootstrap.includes(INSPECTOR_CSS_HREF)
+    ? withoutOldBootstrap
+    : withoutOldBootstrap.replace('</head>', `${cssTag}</head>`);
+  const withBootstrap = withCss.replace(
+    '</body>',
+    `${TRACE_INSPECTOR_BOOTSTRAP_SCRIPT}</body>`,
+  );
+  const withTransport = withBootstrap.replace(
     '</body>',
     `${TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT}</body>`,
   );
   return withTransport.includes(INSPECTOR_SCRIPT_SRC)
     ? withTransport
     : withTransport.replace('</body>', `${scriptTag}</body>`);
+}
+
+function replaceInspectorMountContents(html: string, markup: string): string {
+  const opening = /<([a-zA-Z][\w:-]*)([^>]*\bdata-inspector\b[^>]*)>/i.exec(html);
+  if (!opening || opening.index === undefined) return html;
+  const tag = opening[1];
+  if (!tag) return html;
+  const contentStart = opening.index + opening[0].length;
+  const tags = new RegExp(`<\\/?${tag}\\b[^>]*>`, 'gi');
+  tags.lastIndex = contentStart;
+  let depth = 1;
+  for (let match = tags.exec(html); match; match = tags.exec(html)) {
+    const token = match[0];
+    if (token.startsWith('</')) depth -= 1;
+    else if (!token.endsWith('/>')) depth += 1;
+    if (depth !== 0) continue;
+    return `${html.slice(0, contentStart)}${markup}${html.slice(match.index)}`;
+  }
+  return html;
 }
 
 export async function deployTraceInspector(

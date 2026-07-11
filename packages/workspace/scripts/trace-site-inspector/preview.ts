@@ -449,6 +449,9 @@ export function standaloneTracePreviewHtml(): string {
       const shell = document.querySelector('.trxShell');
       const inspector = document.querySelector('[data-inspector]');
       const select = (key) => {
+        window.__traceSelectedKey = key;
+        shell.classList.remove('closed');
+        shell.classList.add('detail-open');
         for (const button of document.querySelectorAll('.trxRow')) {
           const active = button.dataset.traceKey === key;
           button.classList.toggle('selected', active);
@@ -462,9 +465,7 @@ export function standaloneTracePreviewHtml(): string {
         if (row) select(row.dataset.traceKey || '');
         if (event.target.closest('[data-ti-back]')) {
           shell.classList.remove('detail-open');
-          for (const button of document.querySelectorAll('.trxRow')) button.classList.remove('selected');
-          if (inspector) inspector.innerHTML = '';
-          history.replaceState(null, '', location.pathname);
+          shell.classList.add('closed');
         }
       });
       select('demo-record-005');
