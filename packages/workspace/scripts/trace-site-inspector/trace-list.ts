@@ -48,12 +48,16 @@ export function retainTraceWindow(
   if (!selectedKey || window.some((row) => stableTraceKey(row) === selectedKey))
     return window;
 
-  const selected = rows.find((row) => stableTraceKey(row) === selectedKey);
-  if (!selected) return window;
+  const selectedIndex = rows.findIndex(
+    (row) => stableTraceKey(row) === selectedKey,
+  );
+  if (selectedIndex < 0) return window;
 
-  return direction === 'append'
-    ? [selected, ...window.slice(1)]
-    : [...window.slice(0, -1), selected];
+  const start =
+    direction === 'append'
+      ? Math.min(selectedIndex, rows.length - limit)
+      : Math.max(0, selectedIndex - limit + 1);
+  return rows.slice(start, start + limit);
 }
 
 export function shouldPrefetchTracePage(state: TracePrefetchState): boolean {
