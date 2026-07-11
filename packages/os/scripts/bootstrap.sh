@@ -1175,7 +1175,7 @@ run_onboarding() { # run_onboarding_json
 
 
   if [ "$DRY_RUN" -eq 1 ]; then
-    if [ -n "$BUN_BIN" ]; then
+    if [ -n "$BUN_BIN" ] && [ -f "$os_dir/scripts/install.ts" ]; then
       "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --dry-run --yes --json --mode "${OS_MODE:-local}"
       ONBOARDING_STATUS="dry_run"
     else
