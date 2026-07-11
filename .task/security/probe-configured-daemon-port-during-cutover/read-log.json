@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/security/probe-configured-daemon-port-during-cutover/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/tests/installer-runtime-dependencies.test.ts",
+    "packages/os/tests/local-os-port-cutover.test.ts"
+  ],
+  "updatedAt": "2026-07-11T18:45:03.870Z"
+}

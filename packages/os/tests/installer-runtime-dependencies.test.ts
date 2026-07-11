@@ -75,6 +75,13 @@ function readBootstrap(): string {
   return readFileSync(join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'), 'utf8');
 }
 
+function readDaemonInstaller(): string {
+  return readFileSync(
+    join(PACKAGE_ROOT, 'scripts', 'install-system-daemons.sh'),
+    'utf8',
+  );
+}
+
 function extractShellFunction(source: string, name: string): string {
   const lines = source.split('\n');
   const start = lines.findIndex((line) => line === `${name}() {`);
@@ -120,6 +127,29 @@ function installerEnv(overrides: Record<string, string>): NodeJS.ProcessEnv {
   return { ...env, ...overrides };
 }
 
+function resolveCutoverLocalHealthUrl(
+  envFile: string,
+  overrides: Record<string, string> = {},
+): SpawnSyncReturns<string> {
+  const installer = readDaemonInstaller();
+  const script = [
+    extractShellFunction(installer, 'load_env_file'),
+    extractShellFunction(installer, 'resolve_cutover_local_port'),
+    extractShellFunction(installer, 'resolve_cutover_local_health_url'),
+    'resolve_cutover_local_health_url "$ENV_FILE"',
+  ].join('\n');
+  const env = installerEnv({});
+  delete env.CONSUELO_OS_PORT;
+  delete env.PORT;
+  delete env.WORKSPACE_DAEMON_PORT;
+  delete env.WORKSPACE_CUTOVER_LOCAL_HEALTH_URL;
+
+  return spawnSync('/bin/bash', ['-c', script], {
+    encoding: 'utf8',
+    env: { ...env, ENV_FILE: envFile, ...overrides },
+  });
+}
+
 function writeCloudflaredPlist(filePath: string, label: string): void {
   writeFileSync(
     filePath,
@@ -150,6 +180,34 @@ afterEach(() => {
 });
 
 describe('public installer runtime dependencies', () => {
+  it('should probe the configured daemon port during cutover', () => {
+    const home = createTempHome('consuelo-os-installer-runtime-cutover-port-');
+    const envFile = join(home, '.env');
+    writeFileSync(envFile, 'CONSUELO_OS_PORT=47001\n');
+
+    const configured = resolveCutoverLocalHealthUrl(envFile, { PORT: '47002' });
+    expect(configured.status).toBe(0);
+    expect(configured.stdout.trim()).toBe('http://127.0.0.1:47001/health');
+
+    const daemonOverride = resolveCutoverLocalHealthUrl(envFile, {
+      WORKSPACE_DAEMON_PORT: '47003',
+    });
+    expect(daemonOverride.status).toBe(0);
+    expect(daemonOverride.stdout.trim()).toBe('http://127.0.0.1:47003/health');
+
+    const explicitHealthUrl = resolveCutoverLocalHealthUrl(envFile, {
+      WORKSPACE_CUTOVER_LOCAL_HEALTH_URL: 'http://127.0.0.1:48000/health',
+    });
+    expect(explicitHealthUrl.status).toBe(0);
+    expect(explicitHealthUrl.stdout.trim()).toBe(
+      'http://127.0.0.1:48000/health',
+    );
+
+    const defaultPort = resolveCutoverLocalHealthUrl(join(home, 'missing.env'));
+    expect(defaultPort.status).toBe(0);
+    expect(defaultPort.stdout.trim()).toBe('http://127.0.0.1:46321/health');
+  });
+
   it('should use bounded retrying curl when fetching source and runtime network artifacts', () => {
     const bootstrap = readBootstrap();
 
