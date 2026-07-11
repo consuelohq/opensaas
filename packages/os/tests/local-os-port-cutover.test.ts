@@ -51,6 +51,8 @@ describe('prelaunch local OS port cutover', () => {
   });
 
   it('should generate install state and gateway configuration for 46321 by default', () => {
+    delete process.env.CONSUELO_OS_PORT;
+    delete process.env.PORT;
     const home = mkdtempSync(join(tmpdir(), 'consuelo-port-cutover-'));
     temporaryHomes.push(home);
 
@@ -74,6 +76,94 @@ describe('prelaunch local OS port cutover', () => {
     expect(caddy).toContain('reverse_proxy 127.0.0.1:46321');
     expect(caddy).not.toContain('127.0.0.1:8960');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:46321/mcp');
+  });
+
+  it('should migrate persisted legacy port to 46321 when reprovisioning without explicit override', () => {
+    delete process.env.CONSUELO_OS_PORT;
+    delete process.env.PORT;
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-port-migration-'));
+    temporaryHomes.push(home);
+    const workspaceBootstrap = {
+      workspaceId: 'workspace_port_migration',
+      workspaceSlug: 'port-migration',
+      workspaceHost: 'port-migration.consuelohq.com',
+      connectorId: 'connector_port_migration',
+      connectorTransport: 'cloudflare-tunnel' as const,
+      cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+    };
+
+    provisionLocalOs({ home, mode: 'local', port: 8_960, workspaceBootstrap });
+    provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
+
+    const config = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { port: number };
+    const caddy = readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');
+    const chatgptMcp = JSON.parse(
+      readFileSync(join(home, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'),
+    ) as { localUrl: string };
+    const cloudflaredPlist = readFileSync(
+      join(home, 'node', 'security', 'generated', 'com.consuelo.os.cloudflared.connector-port-migration.plist'),
+      'utf8',
+    );
+
+    expect(config.port).toBe(46_321);
+    expect(caddy).toContain('reverse_proxy 127.0.0.1:46321');
+    expect(caddy).not.toContain('127.0.0.1:8960');
+    expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:46321/mcp');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:46321');
+    expect(cloudflaredPlist).not.toContain('http://127.0.0.1:8960');
+  });
+
+  it('should preserve a persisted custom port when reprovisioning without explicit override', () => {
+    delete process.env.CONSUELO_OS_PORT;
+    delete process.env.PORT;
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-custom-port-preservation-'));
+    temporaryHomes.push(home);
+    const workspaceBootstrap = {
+      workspaceId: 'workspace_custom_port',
+      workspaceSlug: 'custom-port',
+      workspaceHost: 'custom-port.consuelohq.com',
+      connectorId: 'connector_custom_port',
+      connectorTransport: 'cloudflare-tunnel' as const,
+      cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+    };
+
+    provisionLocalOs({ home, mode: 'local', port: 47_001, workspaceBootstrap });
+    provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
+
+    const config = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { port: number };
+    const caddy = readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');
+    const chatgptMcp = JSON.parse(
+      readFileSync(join(home, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'),
+    ) as { localUrl: string };
+    const cloudflaredPlist = readFileSync(
+      join(home, 'node', 'security', 'generated', 'com.consuelo.os.cloudflared.connector-custom-port.plist'),
+      'utf8',
+    );
+
+    expect(config.port).toBe(47_001);
+    expect(caddy).toContain('reverse_proxy 127.0.0.1:47001');
+    expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:47001/mcp');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:47001');
+  });
+
+  it('should honor an explicit port when reprovisioning persisted legacy state', () => {
+    delete process.env.CONSUELO_OS_PORT;
+    delete process.env.PORT;
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-explicit-port-override-'));
+    temporaryHomes.push(home);
+
+    provisionLocalOs({ home, mode: 'local', port: 8_960 });
+    provisionLocalOs({ home, mode: 'local', port: 47_002 });
+
+    const config = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { port: number };
+    const caddy = readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');
+    const chatgptMcp = JSON.parse(
+      readFileSync(join(home, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'),
+    ) as { localUrl: string };
+
+    expect(config.port).toBe(47_002);
+    expect(caddy).toContain('reverse_proxy 127.0.0.1:47002');
+    expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:47002/mcp');
   });
 
   it('should declare 46321 across every active default-port surface', () => {
@@ -108,6 +198,8 @@ describe('prelaunch local OS port cutover', () => {
       ['SCRIPTS.md', '127.0.0.1:46321'],
       ['docs/runtime-surfaces.md', 'default local port is `46321`'],
       ['docs/installer-runtime-release-checklist.md', '127.0.0.1:46321'],
+      ['../documentation/src/content/docs/os/getting-started/install.mdx', '127.0.0.1:46321/health'],
+      ['../documentation/src/content/docs/os/getting-started/connect-agents.mdx', '127.0.0.1:46321/mcp'],
     ];
 
     for (const [path, expected] of contracts) {
