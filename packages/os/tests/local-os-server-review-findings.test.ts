@@ -56,7 +56,7 @@ describe('local OS server review findings', () => {
     delete process.env.CONSUELO_OS_PORT;
     delete process.env.PORT;
 
-    expect(loadLocalOsServerConfig().port).toBe(8960);
+    expect(loadLocalOsServerConfig().port).toBe(46321);
   });
 
   it.each(['', '   ', 'not-a-port', '1.5', '0', '-1', '65536'])(
@@ -209,7 +209,7 @@ describe('local OS server review findings', () => {
       '../scripts/server/app.ts?review-mcp-execution-log'
     );
     const response = await createLocalOsApp().fetch(new Request(
-      'http://127.0.0.1:8960/mcp',
+      'http://127.0.0.1:46321/mcp',
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

@@ -325,8 +325,8 @@ describe('Consuelo OS public gateway security contract', () => {
       },
     });
     expect(readFileSync(generatedAuthPath, 'utf8')).not.toContain('MCP_BEARER_TOKEN');
-    expect(readFileSync(generatedCaddyPath, 'utf8')).toContain('127.0.0.1:8960');
-    expect(readFileSync(generatedCaddyPath, 'utf8')).not.toContain('0.0.0.0:8960');
+    expect(readFileSync(generatedCaddyPath, 'utf8')).toContain('127.0.0.1:46321');
+    expect(readFileSync(generatedCaddyPath, 'utf8')).not.toContain('0.0.0.0:46321');
     expect(existsSync(join(tempHome, 'source'))).toBe(false);
   });
 

@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/security/prelaunch-local-port-cutover/workpad.md",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/bun-product-server-contract.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+    "packages/os/tests/os-device-authority-release-contract.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-11T07:03:48.783Z"
+}
