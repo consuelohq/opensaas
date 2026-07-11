@@ -34,7 +34,7 @@ export function createCallRoutes(): Hono {
     const preflightDenied = authPreflight(request);
     if (preflightDenied) return preflightDenied;
 
-    let input;
+    let input: ReturnType<typeof parseCallInput>;
     try {
       input = parseCallInput(body);
     } catch (error: unknown) {

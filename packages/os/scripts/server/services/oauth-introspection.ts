@@ -23,6 +23,7 @@ export async function authorizeConsueloOAuthMcpRequest(input: {
   try {
     response = await fetch(endpoint, {
       method: 'POST',
+      signal: AbortSignal.timeout(5_000),
       headers: {
         accept: 'application/json',
         'content-type': 'application/x-www-form-urlencoded',

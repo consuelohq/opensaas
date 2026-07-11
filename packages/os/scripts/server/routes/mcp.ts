@@ -14,8 +14,8 @@ import {
   admitDecodedMcpBody,
   admitRawMcpBody,
 } from '../middleware/dangerous-material';
-import { jsonResponse } from '../middleware/errors';
-import { internalError } from '../middleware/errors';
+import { internalError, jsonResponse } from '../middleware/errors';
+import { logLocalOsServerError } from '../logger';
 import { executeLocalOsCall } from '../services/call-service';
 
 const MCP_PATH = '/mcp';
@@ -74,7 +74,16 @@ export function createMcpRoutes(): Hono {
         executeCall: async (input) => {
           try {
             return await executeLocalOsCall(input);
-          } catch {
+          } catch (error: unknown) {
+            logLocalOsServerError(
+              'local_os.mcp_tool_execution_failed',
+              error,
+              {
+                code: 'OS_EXECUTION_FAILED',
+                route: MCP_PATH,
+                toolName: input.name,
+              },
+            );
             return {
               ok: false,
               name: input.name,
