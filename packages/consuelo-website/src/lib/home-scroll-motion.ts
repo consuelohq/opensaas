@@ -15,28 +15,6 @@ export const bootHomeScrollMotion = (): void => {
 
   const cleanups: (() => void)[] = [];
 
-  const heroDiagram = getElement('[data-motion="hero-diagram"]');
-  if (heroDiagram) {
-    const heroContext = gsap.context(() => {
-      gsap.fromTo(
-        heroDiagram,
-        { y: 0 },
-        {
-          y: 48,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '[data-section="hero"]',
-            start: 'top top',
-            end: 'bottom top',
-            scrub: true,
-          },
-        },
-      );
-    });
-
-    cleanups.push(() => heroContext.revert());
-  }
-
   const section = getElement('[data-motion-section="feature-preview"]');
   if (section) {
     const featureContext = gsap.context(() => {

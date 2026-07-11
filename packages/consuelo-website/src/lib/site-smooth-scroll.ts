@@ -22,6 +22,12 @@ export const bootSiteSmoothScroll = (): (() => void) | null => {
     return null;
   }
 
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  window.scrollTo(0, 0);
+
   const lenis = new Lenis({
     lerp: 0.09,
     smoothWheel: true,
@@ -77,7 +83,29 @@ export const bootSiteSmoothScroll = (): (() => void) | null => {
 
   activeHandle = { disconnect };
 
-  window.addEventListener('pagehide', disconnect, { once: true });
+  const resetScrollPosition = () => {
+    window.scrollTo(0, 0);
+    lenis.scrollTo(0, { immediate: true });
+  };
 
-  return disconnect;
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (event.persisted) {
+      return;
+    }
+
+    resetScrollPosition();
+  };
+
+  window.addEventListener('pageshow', handlePageShow);
+
+  const disconnectWithListeners = () => {
+    window.removeEventListener('pageshow', handlePageShow);
+    disconnect();
+  };
+
+  activeHandle = { disconnect: disconnectWithListeners };
+
+  window.addEventListener('pagehide', disconnectWithListeners, { once: true });
+
+  return disconnectWithListeners;
 };
