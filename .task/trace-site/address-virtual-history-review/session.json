@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_01e4d79bc23c",
+  "tmuxSession": "opensaas-trace-site-address-virtual-history-review-01e4d79b",
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/address-virtual-history-review",
+  "branch": "task/trace-site/address-virtual-history-review",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-address-virtual-history-review",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-address-virtual-history-review",
+  "prNumber": 1413,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1413",
+  "createdAt": "2026-07-11T05:48:22.216Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-address-virtual-history-review/.task/trace-site/address-virtual-history-review/session.json"
+}

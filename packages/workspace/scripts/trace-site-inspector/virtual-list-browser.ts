@@ -411,12 +411,27 @@ function flattenTraceItems(rows: TraceRecord[]): VirtualTraceItem[] {
   return items;
 }
 
+const childOperationsCache = new WeakMap<
+  TraceRecord,
+  { source: unknown; operations: ChildOperation[] }
+>();
+
 function childOperations(row: TraceRecord): ChildOperation[] {
+  const cached = childOperationsCache.get(row);
+  if (cached && cached.source === row.batchResultsJson)
+    return cached.operations;
+
   const parsed = parseMaybeJson(row.batchResultsJson);
   const source = Array.isArray(parsed)
     ? parsed
     : (asRecord(parsed)?.children ?? asRecord(parsed)?.results);
-  if (!Array.isArray(source)) return [];
+  if (!Array.isArray(source)) {
+    childOperationsCache.set(row, {
+      source: row.batchResultsJson,
+      operations: [],
+    });
+    return [];
+  }
 
   const result: ChildOperation[] = [];
   const walk = (value: unknown, depth: number, parentPath: string) => {
@@ -437,6 +452,10 @@ function childOperations(row: TraceRecord): ChildOperation[] {
       children.forEach((child) => walk(child, depth + 1, operation.path));
   };
   source.forEach((child) => walk(child, 1, ''));
+  childOperationsCache.set(row, {
+    source: row.batchResultsJson,
+    operations: result,
+  });
   return result;
 }
 
@@ -640,7 +659,8 @@ function traceWindow(): TraceWindow {
 
 function currentSelectedKey(): string {
   const target = traceWindow();
-  if (target.__traceSelectedKey) return target.__traceSelectedKey;
+  if (Object.hasOwn(target, '__traceSelectedKey'))
+    return target.__traceSelectedKey ?? '';
   const selected = document.querySelector<HTMLElement>(
     '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
   );
@@ -756,7 +776,10 @@ export function installTraceVirtualList(): () => void {
   };
 
   const observer = new MutationObserver(scheduleSync);
-  observer.observe(document.documentElement, {
+  const observerRoot =
+    document.querySelector<HTMLElement>('.trxShell, #tbmLiveTraceModal') ??
+    document.documentElement;
+  observer.observe(observerRoot, {
     childList: true,
     subtree: true,
   });

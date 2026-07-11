@@ -71,6 +71,7 @@
   --ti-amber: #c6a15b;
   --ti-green: #99ad7b;
   --ti-red: #d06d52;
+
   display: grid;
   grid-template-columns: minmax(286px, 34%) minmax(0, 1fr);
   width: 100%;

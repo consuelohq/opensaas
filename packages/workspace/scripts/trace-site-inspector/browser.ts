@@ -81,7 +81,8 @@ function boundedPretty(value: unknown): string {
 
 function selectedKey(): string {
   const target = window as TraceWindow;
-  if (target.__traceSelectedKey) return target.__traceSelectedKey;
+  if (Object.hasOwn(target, '__traceSelectedKey'))
+    return target.__traceSelectedKey ?? '';
   const node = document.querySelector<HTMLElement>(
     '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
   );
@@ -383,7 +384,12 @@ function render(force = false): void {
   if (rendering) return;
   const inspector = document.querySelector<HTMLElement>('[data-inspector]');
   const row = selectedRow();
-  if (!inspector || !row) return;
+  if (!inspector) return;
+  if (!row) {
+    inspector.replaceChildren();
+    delete inspector.dataset.tiSignature;
+    return;
+  }
   const key = stableTraceKey(row);
   const active = storedTab(key, row);
   const signature = [
@@ -489,7 +495,10 @@ const observer = new MutationObserver((mutations) => {
     return;
   scheduleRender();
 });
-observer.observe(document.documentElement, {
+const observerRoot =
+  document.querySelector<HTMLElement>('.trxShell, #tbmLiveTraceModal') ??
+  document.documentElement;
+observer.observe(observerRoot, {
   childList: true,
   subtree: true,
   attributes: true,
