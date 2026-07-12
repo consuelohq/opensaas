@@ -77,6 +77,24 @@ appendFileSync(process.env.FAKE_AGENT_BROWSER_LOG!, JSON.stringify(process.argv.
     ]);
   });
 
+  it('should preserve JSON mode when listing network requests', () => {
+    const { bin, log } = fakeAgentBrowser(`#!/usr/bin/env bun
+import { appendFileSync } from 'node:fs';
+appendFileSync(process.env.FAKE_AGENT_BROWSER_LOG!, JSON.stringify(process.argv.slice(2)));
+process.stdout.write(JSON.stringify({ requests: [] }));
+`);
+    const result = spawnSync(bunExecutable, [browserScript, 'network', 'requests', '--json'], {
+      encoding: 'utf8',
+      env: cliEnvironment(bin, log),
+    });
+
+    expect(result.status, JSON.stringify({ stdout: result.stdout, stderr: result.stderr, error: String(result.error || '') })).toBe(0);
+    expect(JSON.parse(readFileSync(log, 'utf8'))).toEqual([
+      '--profile', '/tmp/agent-browser-profile', '--json', 'network', 'requests',
+    ]);
+    expect(JSON.parse(result.stdout)).toEqual({ requests: [] });
+  });
+
   it('should report failed command output once with an exit-code fallback', () => {
     const { bin, log } = fakeAgentBrowser(`#!/usr/bin/env bun
 import { appendFileSync } from 'node:fs';
@@ -93,6 +111,23 @@ process.exit(2);
     expect(result.stdout.match(/partial output/g)).toHaveLength(1);
     expect(result.stdout).toContain('error: exit code 2');
     expect(result.stdout).not.toContain('error: partial output');
+  });
+
+  it('should not report a screenshot path when capture fails', () => {
+    const { bin, log } = fakeAgentBrowser(`#!/usr/bin/env bun
+import { appendFileSync } from 'node:fs';
+appendFileSync(process.env.FAKE_AGENT_BROWSER_LOG!, JSON.stringify(process.argv.slice(2)));
+process.stderr.write('no active browser session');
+process.exit(2);
+`);
+    const result = spawnSync(bunExecutable, [browserScript, 'screenshot', 'failed-capture'], {
+      encoding: 'utf8',
+      env: cliEnvironment(bin, log),
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('error: no active browser session');
+    expect(result.stdout).not.toContain('screenshot:');
   });
 
   it('should snapshot updated elements after typing text', () => {
