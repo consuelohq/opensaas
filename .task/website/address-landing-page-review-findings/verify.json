@@ -1,0 +1,63 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/address-landing-page-review-findings",
+  "base": "origin/stream/website",
+  "headSha": "5fdb4b6bc46566d5564d8c1268f8f4a0c05add04",
+  "changeHash": "dc1201389727ba2dff483aaffbed451874f3456645258d4b9863477052fe82c6",
+  "changedFiles": [
+    "packages/consuelo-website/src/components/home/FeatureMedia.astro",
+    "packages/consuelo-website/src/components/home/HomeFaq.astro",
+    "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/components/site/SiteHeader.astro",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-07-11T20:37:43.418Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/address-landing-page-review-findings.json",
+        ".task/website/address-landing-page-review-findings/current.json",
+        ".task/website/address-landing-page-review-findings/evidence-log.json",
+        ".task/website/address-landing-page-review-findings/read-log.json",
+        ".task/website/address-landing-page-review-findings/session.json",
+        ".task/website/address-landing-page-review-findings/workpad.md",
+        "packages/consuelo-website/src/components/home/FeatureMedia.astro",
+        "packages/consuelo-website/src/components/home/HomeFaq.astro",
+        "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/src/components/site/SiteHeader.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

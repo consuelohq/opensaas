@@ -195,6 +195,7 @@ describe('Consuelo website structure', () => {
 
   test('should expose auth and the released installer when rendering the hero', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
+    const content = readSource('src/data/home-content.ts');
 
     expect(hero).toContain('YOUR WORKSPACE, CONNECTED TO EVERY AGENT.');
     expect(hero).toContain('Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.');
@@ -202,8 +203,15 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('MIT LICENSE');
     expect(hero).toContain('SIGN IN');
     expect(hero).toContain('DOWNLOAD LOCALLY');
-    expect(hero).toContain('curl -fsSL https://install.consuelohq.com/os | bash');
+    expect(content).toContain("export const INSTALL_COMMAND = 'curl -fsSL https://install.consuelohq.com/os | bash'");
+    expect(content).toContain('value: INSTALL_COMMAND');
+    expect(hero).toContain("import { INSTALL_COMMAND } from '../../data/home-content'");
+    expect(hero).toContain('<span data-copy-label>DOWNLOAD LOCALLY</span>');
     expect(hero).toContain('data-copy-install');
+    expect(hero).toContain('if (!navigator.clipboard)');
+    expect(hero).toContain('await navigator.clipboard.writeText(INSTALL_COMMAND)');
+    expect(hero).toContain('catch');
+    expect(hero).toContain("label.textContent = 'COPIED'");
     expect(hero).toContain('prefers-reduced-motion: reduce');
   });
 
@@ -228,11 +236,21 @@ describe('Consuelo website structure', () => {
 
     expect(panel).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
     expect(panel).toContain('<FeatureMedia');
+    expect(panel).toContain('imageSrc={item.assetSrc}');
+    expect(panel).not.toContain("item.assetSrc ?? ''");
     expect(panel).toContain('<HomeFaq');
     expect(media).toContain('aspect-ratio: 475 / 178');
     expect(media).toContain('<video autoplay muted loop playsinline');
+    expect(media).toContain('class="feature-media__poster"');
+    expect(media).toContain('.feature-media__video');
+    expect(media).toContain('display: none;');
     expect(faq).toContain('<details>');
     expect(faq).toContain('<summary>');
+    expect(faq).toContain('color: var(--site-color-muted);');
+    expect(panel).toContain('color: var(--site-color-muted);');
+    expect(panel).not.toContain('#15156f');
+    expect(faq).not.toContain('#25256f');
+    expect(content).toContain('assetSrc: string;');
     expect(content).toContain("label: 'CONTROL'");
     expect(content).toContain("label: 'OBSERVE'");
     expect(content).toContain("label: 'SWITCH'");
@@ -248,6 +266,8 @@ describe('Consuelo website structure', () => {
     expect(header).toContain('aria-label="Discord"');
     expect(header).toContain('aria-label="GitHub"');
     expect(header).toContain('data-mobile-menu-toggle');
+    expect(header).toContain("menu.querySelectorAll('a')");
+    expect(header).toContain('closeMenu');
     expect(header).not.toContain('PORTAL');
     expect(header).not.toContain('INSTALL');
     expect(header).not.toContain('position: sticky;');

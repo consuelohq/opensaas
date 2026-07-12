@@ -59,10 +59,25 @@ const cloudHref = 'https://os.consuelohq.com';
   const menu = document.querySelector('[data-mobile-menu]');
 
   if (toggle instanceof HTMLButtonElement && menu instanceof HTMLElement) {
+    const closeMenu = () => {
+      toggle.setAttribute('aria-expanded', 'false');
+      menu.hidden = true;
+    };
+
     toggle.addEventListener('click', () => {
       const isOpen = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!isOpen));
-      menu.hidden = isOpen;
+
+      if (isOpen) {
+        closeMenu();
+        return;
+      }
+
+      toggle.setAttribute('aria-expanded', 'true');
+      menu.hidden = false;
+    });
+
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', closeMenu);
     });
   }
 </script>
