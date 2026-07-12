@@ -659,7 +659,7 @@ function baseStyles(): string {
 
 type LauncherConfig = {
   workspace?: { host?: string };
-  agents?: Array<{ name?: string; connected?: boolean }>;
+  agents?: Array<{ name?: string; status?: string }>;
 };
 
 type ChatGptMcpConfig = {
@@ -710,13 +710,13 @@ function launcherMcpUrl(home: string): string {
 function launcherLocalAgents(home: string): LauncherLocalAgent[] {
   const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
   return (config?.agents ?? [])
-    .filter((agent): agent is { name: string; connected: boolean } =>
-      typeof agent.name === 'string' && agent.connected === true,
+    .filter((agent): agent is { name: string; status: 'verified' } =>
+      typeof agent.name === 'string' && agent.status === 'verified',
     )
     .map((agent) => ({
       name: agent.name,
       label: agentLabels[agent.name] ?? agent.name,
-      connected: true,
+      status: agent.status,
     }));
 }
 

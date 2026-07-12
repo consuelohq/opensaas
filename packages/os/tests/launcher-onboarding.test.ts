@@ -7,9 +7,9 @@ describe('launcher onboarding', () => {
     const html = renderLauncherOnboarding({
       mcpUrl: 'https://kokayi.consuelohq.com/mcp',
       localAgents: [
-        { name: 'codex', label: 'Codex', connected: true },
-        { name: 'opencode', label: 'OpenCode', connected: true },
-        { name: 'cursor', label: 'Cursor', connected: false },
+        { name: 'codex', label: 'Codex', status: 'verified' },
+        { name: 'opencode', label: 'OpenCode', status: 'verified' },
+        { name: 'cursor', label: 'Cursor', status: 'configured' },
       ],
     });
 

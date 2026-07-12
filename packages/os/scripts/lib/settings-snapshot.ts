@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { getCapabilityHealth } from './capabilities';
-import { detectAgents, loadOsConfig } from './install-state';
+import { detectAgents, loadOsConfig, type AgentConnectionStatus } from './install-state';
 import {
   isManifestItemEnabled,
   manifestOverlayPath,
@@ -19,7 +19,8 @@ export type SettingsConnectionStatus =
   | 'connected'
   | 'not_configured'
   | 'missing_capability'
-  | 'unhealthy';
+  | 'unhealthy'
+  | AgentConnectionStatus;
 
 export type SettingsCloudConnector = {
   id: string;
@@ -34,9 +35,9 @@ export type SettingsLocalAgent = {
   name: string;
   label: string;
   kind: 'local';
-  status: SettingsConnectionStatus;
+  status: AgentConnectionStatus;
   detected: boolean;
-  connected: boolean;
+  message?: string;
 };
 
 export type SettingsRunBook = {
@@ -254,7 +255,7 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
       kind: 'local' as const,
       status: agent.status,
       detected: agent.detected,
-      connected: agent.connected,
+      ...(agent.message ? { message: agent.message } : {}),
     })),
     manifest: {
       totalTools: fullManifest.tools.filter((entry) => entry.kind === 'facade-tool').length,

@@ -20,7 +20,7 @@ type ToolManifestEntry = ReturnType<typeof readFullToolManifest>['tools'][number
 function activeToolManifest(): ReturnType<typeof readFullToolManifest> {
   const home = resolveOverlayHome();
   return fs.existsSync(path.join(home, 'config.json'))
-    ? readEffectiveFullManifest(home)
+    ? readEffectiveFullToolManifest(home)
     : readFullToolManifest();
 }
 
