@@ -32,8 +32,8 @@ function escapeHtml(value: string): string {
 }
 
 function statusClass(status: string): string {
-  if (status === 'connected') return 'status-connected';
-  if (status === 'not_configured') return 'status-muted';
+  if (status === 'connected' || status === 'verified') return 'status-connected';
+  if (status === 'not_configured' || status === 'not_detected' || status === 'detected' || status === 'unsupported') return 'status-muted';
   return 'status-warning';
 }
 
@@ -97,7 +97,7 @@ function renderConnectionsSection(snapshot: SettingsSnapshot): string {
       <td>${escapeHtml(agent.kind)}</td>
       <td>${renderStatusPill(agent.status)}</td>
       <td>${agent.detected ? 'Detected' : 'Not detected'}</td>
-      <td>${agent.connected ? 'Connected' : 'Not connected'}</td>
+      <td>${escapeHtml(agent.message ?? (agent.status === 'verified' ? 'Connection verified.' : 'Connection not verified.'))}</td>
     </tr>`).join('')
     : '<tr><td colspan="5" class="empty">No local agents detected on this machine.</td></tr>';
 
@@ -120,7 +120,7 @@ function renderConnectionsSection(snapshot: SettingsSnapshot): string {
         <h3>Local agents</h3>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Detection</th><th>Connection</th></tr></thead>
+            <thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Detection</th><th>Notes</th></tr></thead>
             <tbody>${localRows}</tbody>
           </table>
         </div>

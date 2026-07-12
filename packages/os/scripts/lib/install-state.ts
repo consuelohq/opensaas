@@ -14,6 +14,15 @@ import {
   writeYamlConfig,
 } from './consuelo-home';
 import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
+import {
+  configureLocalAgents,
+  detectLocalAgents,
+  toLocalAgentConfigRecords,
+  type AgentConnectionStatus,
+  type AgentName,
+  type LocalAgentConfigRecord,
+  type LocalAgentDetection,
+} from './local-agent-connectivity';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { createGatewaySecurityConfig, issueAgentAppToken } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
@@ -21,14 +30,7 @@ import { validateBundledSkills } from './skills';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 
 export type OsMode = 'local' | 'cloud';
-export type AgentName =
-  | 'codex'
-  | 'cursor'
-  | 'claude'
-  | 'opencode'
-  | 'factory'
-  | 'gemini'
-  | 'pi';
+export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
 export type HealthStatus =
   | 'connected'
   | 'not_configured'
@@ -39,23 +41,10 @@ export type HealthStatus =
   | 'permission_denied'
   | 'approval_required'
   | 'validation_failed'
-  | 'execution_failed';
+  | 'execution_failed'
+  | AgentConnectionStatus;
 
-export type AgentDetection = {
-  name: AgentName;
-  label: string;
-  homePath: string;
-  detectionPaths: string[];
-  configPath: string;
-  detected: boolean;
-  connected: boolean;
-  status: HealthStatus;
-};
-
-type AgentDetectionCandidate = Omit<
-  AgentDetection,
-  'detected' | 'connected' | 'status'
->;
+export type AgentDetection = LocalAgentDetection;
 
 export type WorkspaceBootstrap = {
   workspaceId: string;
@@ -101,13 +90,7 @@ export type OsConfig = {
       publicRoutes: string[];
     };
   };
-  agents: Array<{
-    name: AgentName;
-    homePath: string;
-    configPath: string;
-    connected: boolean;
-    connectedAt?: string;
-  }>;
+  agents: LocalAgentConfigRecord[];
   createdAt: string;
   updatedAt: string;
 };
@@ -134,7 +117,7 @@ export type ProvisionAction = {
     | 'seed_tool'
     | 'seed_operator';
   path: string;
-  status: 'planned' | 'created' | 'preserved' | 'skipped';
+  status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped';
   message: string;
 };
 
@@ -827,211 +810,7 @@ export function loadOsConfig(home?: string): OsConfig | null {
 }
 
 export function detectAgents(home?: string): AgentDetection[] {
-  const resolvedHome = resolveOsHome(home);
-  const config = loadOsConfig(resolvedHome);
-  const connected = new Set(
-    (config?.agents ?? [])
-      .filter((agent) => agent.connected)
-      .map((agent) => agent.name),
-  );
-  const candidates = getAgentDetectionCandidates(os.homedir());
-
-  return candidates.map((candidate) => {
-    const detected = candidate.detectionPaths.some((candidatePath) =>
-      fs.existsSync(candidatePath),
-    );
-    const isConnected =
-      connected.has(candidate.name) || fs.existsSync(candidate.configPath);
-    return {
-      ...candidate,
-      detected,
-      connected: isConnected,
-      status: detected
-        ? isConnected
-          ? 'connected'
-          : 'not_configured'
-        : 'missing_capability',
-    };
-  });
-}
-
-export function getAgentDetectionCandidates(
-  userHome: string = os.homedir(),
-): AgentDetectionCandidate[] {
-  return [
-    {
-      name: 'codex',
-      label: 'Codex',
-      homePath: path.join(userHome, '.codex'),
-      detectionPaths: [path.join(userHome, '.codex')],
-      configPath: path.join(userHome, '.codex', 'consuelo-os.json'),
-    },
-    {
-      name: 'cursor',
-      label: 'Cursor',
-      homePath: path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User'),
-      detectionPaths: [
-        path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User'),
-        path.join(userHome, '.cursor'),
-      ],
-      configPath: path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User', 'consuelo-os.json'),
-    },
-    {
-      name: 'claude',
-      label: 'Claude',
-      homePath: path.join(userHome, '.claude'),
-      detectionPaths: [
-        path.join(userHome, '.claude'),
-        path.join(userHome, 'Library', 'Application Support', 'Claude'),
-      ],
-      configPath: path.join(userHome, '.claude', 'consuelo-os.json'),
-    },
-    {
-      name: 'opencode',
-      label: 'OpenCode',
-      homePath: path.join(userHome, '.config', 'opencode'),
-      detectionPaths: [
-        path.join(userHome, '.config', 'opencode'),
-        path.join(userHome, '.opencode'),
-      ],
-      configPath: path.join(
-        userHome,
-        '.config',
-        'opencode',
-        'consuelo-os.json',
-      ),
-    },
-    {
-      name: 'factory',
-      label: 'Factory',
-      homePath: path.join(userHome, '.factory'),
-      detectionPaths: [path.join(userHome, '.factory')],
-      configPath: path.join(userHome, '.factory', 'consuelo-os.json'),
-    },
-    {
-      name: 'gemini',
-      label: 'Gemini',
-      homePath: path.join(userHome, '.gemini'),
-      detectionPaths: [
-        path.join(userHome, '.gemini'),
-        path.join(userHome, '.config', 'gemini'),
-      ],
-      configPath: path.join(userHome, '.gemini', 'consuelo-os.json'),
-    },
-    {
-      name: 'pi',
-      label: 'Pi',
-      homePath: path.join(userHome, 'Library', 'Application Support', 'Pi'),
-      detectionPaths: [
-        path.join(userHome, 'Library', 'Application Support', 'Pi'),
-        path.join(userHome, '.config', 'pi'),
-      ],
-      configPath: path.join(userHome, 'Library', 'Application Support', 'Pi', 'consuelo-os.json'),
-    },
-  ];
-}
-
-function openCodeGlobalConfigPath(): string {
-  return path.join(os.homedir(), '.config', 'opencode', 'opencode.json');
-}
-
-function buildOpenCodeMcpConfig(home: string, existingConfig: JsonObject): JsonObject {
-  const existingMcp = isJsonObject(existingConfig.mcp) ? existingConfig.mcp : {};
-  return {
-    ...existingConfig,
-    $schema: typeof existingConfig.$schema === 'string'
-      ? existingConfig.$schema
-      : 'https://opencode.ai/config.json',
-    mcp: {
-      ...existingMcp,
-      'consuelo-os': {
-        type: 'local',
-        command: ['bun', path.join(home, 'scripts', 'mcp-stdio.ts')],
-        cwd: home,
-        enabled: true,
-        environment: { CONSUELO_HOME: home },
-      },
-    },
-  };
-}
-
-function connectOpenCodeMcp(home: string, dryRun: boolean): ProvisionAction[] {
-  const configPath = openCodeGlobalConfigPath();
-  const existingConfig = readJsonFile<JsonObject>(configPath) ?? {};
-  const backupPath = `${configPath}.bak`;
-  if (!dryRun && fs.existsSync(configPath) && !fs.existsSync(backupPath)) {
-    fs.copyFileSync(configPath, backupPath);
-  }
-  writeJsonFile(configPath, buildOpenCodeMcpConfig(home, existingConfig), dryRun);
-  return [{ type: 'connect_agent', path: configPath, status: dryRun ? 'planned' : 'created', message: 'connected OpenCode MCP server' }];
-}
-
-function connectAgent(
-  home: string,
-  config: OsConfig,
-  agent: AgentDetection,
-  dryRun: boolean,
-): ProvisionAction[] {
-  const actions: ProvisionAction[] = [];
-  const record = {
-    name: agent.name,
-    label: agent.label,
-    osHome: home,
-    portal: {
-      url: `http://127.0.0.1:${config.port}`,
-      steeringUrl: `http://127.0.0.1:${config.port}/get_steering`,
-      callUrl: `http://127.0.0.1:${config.port}/call`,
-    },
-    commands: {
-      start: 'consuelo os start',
-      doctor: 'consuelo os doctor',
-    },
-    connectedAt: nowIso(),
-  };
-
-  if (!agent.detected) {
-    actions.push({
-      type: 'skip_agent',
-      path: agent.homePath,
-      status: 'skipped',
-      message: `${agent.label} was not detected`,
-    });
-    return actions;
-  }
-
-  const backupPath = `${agent.configPath}.bak`;
-  if (
-    !dryRun &&
-    fs.existsSync(agent.configPath) &&
-    !fs.existsSync(backupPath)
-  ) {
-    fs.copyFileSync(agent.configPath, backupPath);
-  }
-  writeJsonFile(agent.configPath, record, dryRun);
-  actions.push({
-    type: 'connect_agent',
-    path: agent.configPath,
-    status: dryRun ? 'planned' : 'created',
-    message: `connected ${agent.label}`,
-  });
-  if (agent.name === 'opencode') {
-    actions.push(...connectOpenCodeMcp(home, dryRun));
-  }
-
-  const existingIndex = config.agents.findIndex(
-    (item) => item.name === agent.name && item.homePath === agent.homePath,
-  );
-  const agentConfig = {
-    name: agent.name,
-    homePath: agent.homePath,
-    configPath: agent.configPath,
-    connected: true,
-    connectedAt: nowIso(),
-  };
-  if (existingIndex >= 0) config.agents[existingIndex] = agentConfig;
-  else config.agents.push(agentConfig);
-
-  return actions;
+  return detectLocalAgents({ home: resolveOsHome(home), userHome: os.homedir() });
 }
 
 function isJsonObject(value: unknown): value is JsonObject {
@@ -1713,12 +1492,25 @@ export function provisionLocalOs(
   actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
   actions.push(...seedBundledTools(home, dryRun));
 
-  const agents = detectAgents(home);
-  const requestedAgents = new Set(options.connectAgents ?? []);
-  for (const agent of agents) {
-    if (requestedAgents.has(agent.name))
-      actions.push(...connectAgent(home, config, agent, dryRun));
-  }
+  const requestedAgentNames = options.connectAgents ?? [];
+  const agentConfiguration = requestedAgentNames.length > 0
+    ? configureLocalAgents({
+        home,
+        userHome: os.homedir(),
+        agentNames: requestedAgentNames,
+        dryRun,
+        persist: false,
+      })
+    : (() => {
+        const agents = detectAgents(home);
+        return {
+          agents,
+          records: toLocalAgentConfigRecords(agents),
+          actions: [],
+        };
+      })();
+  actions.push(...agentConfiguration.actions);
+  config.agents = agentConfiguration.records;
 
   if (!dryRun) {
     config.updatedAt = nowIso();
@@ -1727,7 +1519,13 @@ export function provisionLocalOs(
 
   actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
 
-  return { home, configPath, dbPath, actions, agents: detectAgents(home) };
+  return {
+    home,
+    configPath,
+    dbPath,
+    actions,
+    agents: dryRun ? agentConfiguration.agents : detectAgents(home),
+  };
 }
 
 export async function runDoctor(home?: string): Promise<DoctorResult> {
@@ -1871,11 +1669,13 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     checks.push({
       name: agent.label,
       status: agent.status,
-      message: agent.detected
-        ? agent.connected
-          ? 'agent connection recorded'
-          : 'agent detected, connection pending'
-        : 'agent not detected',
+      message: agent.message ?? (
+        agent.status === 'verified'
+          ? 'agent MCP connection verified'
+          : agent.detected
+            ? 'agent detected, connection not verified'
+            : 'agent not detected'
+      ),
     });
   }
 
@@ -1896,6 +1696,11 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
       check.status === 'connected' ||
       check.status === 'missing_capability' ||
       check.status === 'not_configured' ||
+      check.status === 'not_detected' ||
+      check.status === 'detected' ||
+      check.status === 'configured' ||
+      check.status === 'verified' ||
+      check.status === 'unsupported' ||
       check.status === 'local_only' ||
       check.status === 'cloud_only',
   );

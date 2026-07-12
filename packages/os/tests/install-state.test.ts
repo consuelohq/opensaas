@@ -324,10 +324,12 @@ describe('local OS install state', () => {
       environment: { CONSUELO_HOME: tempHome },
     });
     expect(opencodeConfig.mcp['consuelo-os'].command).toEqual([
-      'bun',
-      join(tempHome, 'scripts', 'mcp-stdio.ts'),
+      join(tempHome, 'bin', 'consuelo-os-mcp'),
     ]);
-    expect(existsSync(join(tempHome, 'scripts', 'mcp-stdio.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'bin', 'consuelo-os-mcp'))).toBe(true);
+    expect(result.agents.find((agent: { name: string; status: string }) => agent.name === 'opencode')).toMatchObject({
+      status: 'configured',
+    });
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -563,8 +565,9 @@ describe('local OS install state', () => {
     expect(config.selectedSkills).not.toContain('office-landing-page');
   });
 
-  it('records detected agent connections without editing unknown config files', () => {
+  it('configures Codex natively without writing a legacy sidecar or claiming verification', () => {
     mkdirSync(join(tempUserHome, '.codex'), { recursive: true });
+    writeFileSync(join(tempUserHome, '.codex', 'config.toml'), 'model = "gpt-5"\n');
 
     const result = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
@@ -572,10 +575,15 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
 
-    const sidecarPath = join(tempUserHome, '.codex', 'consuelo-os.json');
-    expect(existsSync(sidecarPath)).toBe(true);
-    expect(JSON.parse(readFileSync(sidecarPath, 'utf8'))).toMatchObject({ name: 'codex', osHome: tempHome });
-    expect(result.agents.some((agent: { name: string; connected: boolean }) => agent.name === 'codex' && agent.connected)).toBe(true);
+    const configPath = join(tempUserHome, '.codex', 'config.toml');
+    const config = readFileSync(configPath, 'utf8');
+    expect(config).toContain('model = "gpt-5"');
+    expect(config).toContain('[mcp_servers."consuelo-os"]');
+    expect(config).toContain(JSON.stringify(join(tempHome, 'bin', 'consuelo-os-mcp')));
+    expect(existsSync(join(tempUserHome, '.codex', 'consuelo-os.json'))).toBe(false);
+    expect(result.agents.find((agent: { name: string; status: string }) => agent.name === 'codex')).toMatchObject({
+      status: 'configured',
+    });
   });
 
   it('detects common local agent footprints from the registry', () => {
@@ -591,6 +599,21 @@ describe('local OS install state', () => {
       mkdirSync(footprint, { recursive: true });
     }
     writeFileSync(join(tempUserHome, '.gemini', 'consuelo-os.json'), '{}\n');
+    writeFileSync(join(tempHome, 'config.json'), `${JSON.stringify({
+      version: 1,
+      mode: 'local',
+      home: tempHome,
+      port: 8960,
+      artifactStorage: 'local',
+      agents: [{
+        name: 'gemini',
+        homePath: join(tempUserHome, '.gemini'),
+        configPath: join(tempUserHome, '.gemini', 'consuelo-os.json'),
+        connected: true,
+      }],
+      createdAt: '2026-06-01T00:00:00.000Z',
+      updatedAt: '2026-06-01T00:00:00.000Z',
+    }, null, 2)}\n`);
 
     const agents = JSON.parse(runBunEval(`
       const { detectAgents } = await import('./scripts/lib/install-state.ts');
@@ -599,7 +622,6 @@ describe('local OS install state', () => {
         label: agent.label,
         homePath: agent.homePath,
         configPath: agent.configPath,
-        connected: agent.connected,
         status: agent.status,
       }));
       process.stdout.write(JSON.stringify(agents));
@@ -608,7 +630,6 @@ describe('local OS install state', () => {
       label: string;
       homePath: string;
       configPath: string;
-      connected: boolean;
       status: string;
     }>;
 
@@ -623,16 +644,15 @@ describe('local OS install state', () => {
     ]);
     expect(agents.find((agent) => agent.name === 'cursor')).toMatchObject({
       label: 'Cursor',
-      status: 'not_configured',
+      status: 'detected',
     });
     expect(agents.find((agent) => agent.name === 'gemini')).toMatchObject({
-      label: 'Gemini',
-      connected: true,
-      status: 'connected',
+      label: 'Gemini CLI',
+      status: 'detected',
     });
     expect(agents.find((agent) => agent.name === 'pi')).toMatchObject({
       label: 'Pi',
-      status: 'not_configured',
+      status: 'unsupported',
     });
   });
 
