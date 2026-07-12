@@ -253,8 +253,10 @@ function main(argv = process.argv.slice(2)): Promise<void> {
   if (command === 'screenshot' || command === 'ss') {
     return applyPageOptions(opts).then(() => {
       const path = screenshotPath(args[1]);
-      return emitRun(['screenshot', path, ...(opts.full ? ['--full'] : [])])
-        .then(() => out(`screenshot: ${path}`));
+      return run(['screenshot', path, ...(opts.full ? ['--full'] : [])]).then((result) => {
+        emit(result);
+        if (result.exitCode === 0) out(`screenshot: ${path}`);
+      });
     });
   }
   if (command === 'snap' || command === 'snapshot') return emitRun(['snapshot', '-i']);
@@ -280,6 +282,7 @@ function main(argv = process.argv.slice(2)): Promise<void> {
       : ['cookies', action, ...(name ? [name] : []), ...(value ? [value] : [])]);
   }
   if (command === 'network' && args[1] === 'requests') {
+    if (opts.json) return emitRun(['--json', ...args]);
     return run(args).then((result) => {
       const noise = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|map)(\?|$)|^data:|\/webpack|\/hot-update|\/socket\.io|\/ws$|__nextjs|_next\/static|chrome-extension/i;
       const filtered = result.stdout.split('\n').filter((line) => line.trim() && !noise.test(line));
