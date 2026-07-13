@@ -3,13 +3,13 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-
 const {
   createOrResetLocalBranch,
   createWorktree,
   ensureWorktreeClean,
   fetchOrigin,
   getWorktreeForBranch,
+  pruneWorktrees,
   refExists,
   removeWorktree,
   runGit,
@@ -132,14 +132,14 @@ function parseJsonOutput(output) {
 
 function runStreamChecks(worktreePath) {
   const verifyBase = `origin/${DEFAULT_MAIN_BRANCH}`;
-  const command = `bun run verify -- --base ${verifyBase} --no-review --no-stamp --db-warn-only --json`;
+  const command = `bun run verify -- --base ${verifyBase} --debug-skip-review --no-stamp --db-warn-only --json`;
   const result = spawnSync('bun', [
     'run',
     'verify',
     '--',
     '--base',
     verifyBase,
-    '--no-review',
+    '--debug-skip-review',
     '--no-stamp',
     '--db-warn-only',
     '--json',
@@ -219,8 +219,13 @@ async function main() {
   if (!refExists(repoRoot, `refs/remotes/origin/${streamBranch}`)) {
     throw new Error(`origin/${streamBranch} is missing`);
   }
+  pruneWorktrees(repoRoot);
 
-  createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);
+  const existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+
+  if (!existingWorktree) {
+    createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);
+  }
 
   try {
     setBranchUpstream(repoRoot, streamBranch, `origin/${streamBranch}`);
@@ -228,7 +233,6 @@ async function main() {
     // ignore upstream wiring failures on older local setups
   }
 
-  const existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
   const worktreePath = existingWorktree ? existingWorktree.path : createTemporaryStreamWorktree(repoRoot, streamBranch);
   const createdTemporaryWorktree = !existingWorktree;
 

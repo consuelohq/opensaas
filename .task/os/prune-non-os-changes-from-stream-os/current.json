@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/prune-non-os-changes-from-stream-os",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 701,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/701",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/701",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/701/prune-non-os-changes-from-stream-os",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/701",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/701/prune-non-os-changes-from-stream-os",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prune-non-os-changes-from-stream-os",
+  "taskSession": "tsk_c0a5633e66a8",
+  "tmuxSession": "opensaas-os-prune-non-os-changes-from-stream-os-c0a5633e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prune-non-os-changes-from-stream-os/.task/os/prune-non-os-changes-from-stream-os/session.json",
+  "createdAt": "2026-06-02T19:02:15.712Z"
+}

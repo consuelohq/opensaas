@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/fix-os-apply-patch-facade-parity/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts"
+  ],
+  "updatedAt": "2026-06-14T21:08:27.709Z"
+}

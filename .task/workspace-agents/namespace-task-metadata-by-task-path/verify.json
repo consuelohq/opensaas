@@ -1,0 +1,43 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/namespace-task-metadata-by-task-path",
+  "base": "origin/task/workspace-agents/namespace-task-metadata-by-task-path",
+  "headSha": "dccef6af9e8f543069f34c21f1185e69d4381e52",
+  "changeHash": "e082788c8d7024dca927f9cad7762ec754e3b47e7456a321b3add9138b332f33",
+  "changedFiles": [
+    ".gitignore",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/scripts/ai-review.js",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/gh.js",
+    "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/state/explore-state.js",
+    "packages/workspace/scripts/lib/task-meta.js",
+    "packages/workspace/scripts/lib/task-session.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/lib/workspace-state.js",
+    "packages/workspace/scripts/pr-review.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/task-init.js",
+    "packages/workspace/scripts/task-meta-smoke.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "verifiedAt": "2026-05-21T19:24:49.985Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

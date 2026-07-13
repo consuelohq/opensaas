@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/make-trace-watch-tolerate-sqlite-locks",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "9cc819b84a79dfb31f27ac596bf17b9b34cffca5",
+  "changeHash": "cd5b69639596212deeecc76035be7bd56477862755ff9181c266694c4ef4a3a0",
+  "changedFiles": [
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-23T10:13:15.667Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

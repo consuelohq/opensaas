@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome",
+  "base": "origin/task/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome",
+  "headSha": "6498cac740255cb7e254d560f2bd8377c121eca2",
+  "changeHash": "6dfde13bc9b20dce89f096276650f3ba68809b403e944126f0e5fdad18ed6cfc",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-10T07:20:26.064Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome/current.json",
+        ".task/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome/evidence-log.json",
+        ".task/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome/read-log.json",
+        ".task/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome/session.json",
+        ".task/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome/workpad.md",
+        ".task/tasks/diff-cockpit/fix-review-page-commit-popovers-and-hunk-chrome.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

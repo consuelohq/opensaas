@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a051c54274f8",
+  "tmuxSession": "opensaas-os-remove-fs-read-search-task-lock-a051c542",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-fs-read-search-task-lock",
+  "branch": "task/os/remove-fs-read-search-task-lock",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-fs-read-search-task-lock",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-fs-read-search-task-lock",
+  "prNumber": 1108,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1108",
+  "createdAt": "2026-06-17T05:06:04.642Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-fs-read-search-task-lock/.task/os/remove-fs-read-search-task-lock/session.json"
+}

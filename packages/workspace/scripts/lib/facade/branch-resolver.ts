@@ -20,9 +20,9 @@ type TaskMeta = {
 
 export type ResolveTaskBranchOptions = {
   explicitBranch?: string;
+  explicitPrNumber?: number;
   cwd?: string;
   env?: NodeJS.ProcessEnv;
-  pinnedBranch?: string;
   currentTask?: TaskCandidate | null;
   candidates?: TaskCandidate[];
 };
@@ -30,9 +30,37 @@ export type ResolveTaskBranchOptions = {
 export function getAreaFromBranch(branch: string): string | null {
   const match = branch.match(/^task\/([^/]+)\//);
   if (match) return match[1];
-
   const streamMatch = branch.match(/^stream\/([^/]+)$/);
   return streamMatch ? streamMatch[1] : null;
+}
+
+function getSlugFromBranch(branch: string): string | null {
+  const match = branch.match(/^task\/[^/]+\/(.+)$/);
+  return match ? match[1].split('/').filter(Boolean).join('-') : null;
+}
+
+function getTaskCurrentPath(worktreePath: string, branch: string): string | null {
+  const area = getAreaFromBranch(branch);
+  const slug = getSlugFromBranch(branch);
+  if (!area || !slug) return null;
+  return path.join(worktreePath, '.task', area, slug, 'current.json');
+}
+
+function listScopedCurrentPaths(worktreePath: string): string[] {
+  const taskRoot = path.join(worktreePath, '.task');
+  if (!fs.existsSync(taskRoot)) return [];
+  const paths: string[] = [];
+  for (const areaEntry of fs.readdirSync(taskRoot, { withFileTypes: true })) {
+    if (!areaEntry.isDirectory()) continue;
+    if (areaEntry.name === 'tasks' || areaEntry.name === 'reviews') continue;
+    const areaPath = path.join(taskRoot, areaEntry.name);
+    for (const taskEntry of fs.readdirSync(areaPath, { withFileTypes: true })) {
+      if (!taskEntry.isDirectory()) continue;
+      const currentPath = path.join(areaPath, taskEntry.name, 'current.json');
+      if (fs.existsSync(currentPath)) paths.push(currentPath);
+    }
+  }
+  return paths;
 }
 
 export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): BranchResolution {
@@ -40,8 +68,26 @@ export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): Branc
     return { ok: true, branch: options.explicitBranch, source: 'explicit' };
   }
 
-  if (options.pinnedBranch) {
-    return { ok: true, branch: options.pinnedBranch, source: 'pinned' };
+  if (options.explicitPrNumber) {
+    const candidates = options.candidates || findActiveTaskCandidates(options.cwd || process.cwd());
+    const matches = candidates.filter((candidate) => candidate.prNumber === options.explicitPrNumber);
+    if (matches.length === 1) {
+      return { ok: true, branch: matches[0].branch, source: 'explicit-pr', candidates: matches };
+    }
+    if (matches.length > 1) {
+      return {
+        ok: false,
+        code: 'AMBIGUOUS_TASK_SELECTION',
+        message: `multiple active task worktrees found for PR #${options.explicitPrNumber}; pass taskSession or explicit branch/taskWorktree`,
+        candidates: matches,
+      };
+    }
+    return {
+      ok: false,
+      code: 'WORKTREE_NOT_FOUND',
+      message: `no active task worktree found for PR #${options.explicitPrNumber}; run task.start --github or pass explicit branch/taskWorktree`,
+      candidates,
+    };
   }
 
   const envBranch = options.env?.TASK_BRANCH;
@@ -65,7 +111,7 @@ export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): Branc
     return {
       ok: false,
       code: 'AMBIGUOUS_TASK_SELECTION',
-      message: 'multiple active task worktrees found; pass branch or set TASK_BRANCH',
+      message: 'multiple active task worktrees found; pass taskSession or explicit branch/taskWorktree',
       candidates,
     };
   }
@@ -73,7 +119,7 @@ export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): Branc
   return {
     ok: false,
     code: 'WORKTREE_NOT_FOUND',
-    message: 'no active task worktree found; run task:start first or pass branch',
+    message: 'no active task worktree found; run task.start and pass taskSession, or pass explicit branch/taskWorktree',
     candidates: [],
   };
 }
@@ -81,7 +127,6 @@ export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): Branc
 export function getCurrentTask(options: ResolveTaskBranchOptions = {}): TaskCandidate | null {
   const resolution = resolveTaskBranch(options);
   if (!resolution.ok) return null;
-
   return (options.candidates || findActiveTaskCandidates(options.cwd || process.cwd()))
     .find((candidate) => candidate.branch === resolution.branch) || {
       branch: resolution.branch,
@@ -97,12 +142,10 @@ export function findActiveTaskCandidates(cwd: string): TaskCandidate[] {
 
   for (const worktree of worktrees) {
     if (worktree.path === repoRoot) continue;
-    const meta = readTaskMeta(worktree.path);
+    const meta = readTaskMeta(worktree.path, worktree.branch);
     if (!meta) continue;
-
     const branch = meta.taskBranch || meta.branch || worktree.branch;
     if (branch !== worktree.branch) continue;
-
     candidates.push({
       branch,
       area: meta.area || getAreaFromBranch(branch) || 'unknown',
@@ -110,19 +153,16 @@ export function findActiveTaskCandidates(cwd: string): TaskCandidate[] {
       worktree: meta.worktreePath || worktree.path,
     });
   }
-
   return candidates;
 }
 
 function readCurrentTask(cwd: string): TaskCandidate | null {
   const repoRoot = resolveGitRoot(cwd);
-  const metaPath = path.join(repoRoot, '.task', 'current.json');
-  const meta = readJsonFile<TaskMeta>(metaPath);
+  const currentBranch = getCurrentBranch(repoRoot);
+  const meta = readTaskMeta(repoRoot, currentBranch);
   if (!meta) return null;
-
   const branch = meta.taskBranch || meta.branch;
   if (!branch) return null;
-
   const candidates = findActiveTaskCandidates(cwd);
   return candidates.find((candidate) => candidate.branch === branch) || null;
 }
@@ -133,11 +173,9 @@ function listWorktrees(repoRoot: string): WorktreeEntry[] {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'ignore'],
   });
-
   const entries: WorktreeEntry[] = [];
   let currentPath: string | null = null;
   let currentBranch: string | null = null;
-
   for (const line of output.split('\n')) {
     if (line.startsWith('worktree ')) {
       if (currentPath && currentBranch) entries.push({ path: currentPath, branch: currentBranch });
@@ -145,26 +183,45 @@ function listWorktrees(repoRoot: string): WorktreeEntry[] {
       currentBranch = null;
       continue;
     }
-
-    if (line.startsWith('branch ')) {
-      currentBranch = line.slice('branch '.length).replace(/^refs\/heads\//, '');
-    }
+    if (line.startsWith('branch ')) currentBranch = line.slice('branch '.length).replace(/^refs\/heads\//, '');
   }
-
   if (currentPath && currentBranch) entries.push({ path: currentPath, branch: currentBranch });
   return entries;
 }
 
-function readTaskMeta(worktreePath: string): TaskMeta | null {
-  return readJsonFile<TaskMeta>(path.join(worktreePath, '.task', 'current.json'));
+function readTaskMeta(worktreePath: string, expectedBranch?: string | null): TaskMeta | null {
+  const paths = [
+    ...(expectedBranch ? [getTaskCurrentPath(worktreePath, expectedBranch)] : []),
+    ...listScopedCurrentPaths(worktreePath),
+    path.join(worktreePath, '.task', 'current.json'),
+  ].filter((filePath): filePath is string => Boolean(filePath));
+  for (const filePath of Array.from(new Set(paths))) {
+    const meta = readJsonFile<TaskMeta>(filePath);
+    if (!meta) continue;
+    const branch = meta.taskBranch || meta.branch;
+    if (expectedBranch && branch && branch !== expectedBranch) continue;
+    return meta;
+  }
+  return null;
 }
 
 function readJsonFile<TValue>(filePath: string): TValue | null {
   if (!fs.existsSync(filePath)) return null;
-
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8')) as TValue;
-  } catch (error: unknown) {
+  } catch {
+    return null;
+  }
+}
+
+function getCurrentBranch(cwd: string): string | null {
+  try {
+    return execFileSync('git', ['branch', '--show-current'], {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim() || null;
+  } catch {
     return null;
   }
 }

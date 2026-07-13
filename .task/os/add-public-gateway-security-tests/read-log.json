@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/os/add-public-gateway-security-tests/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/scripts/check-syntax.js",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/security-gateway.test.ts",
+    "packages/os/tests/tool-manifest.test.ts"
+  ],
+  "updatedAt": "2026-06-09T20:14:46.136Z"
+}

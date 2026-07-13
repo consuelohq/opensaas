@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e65544e82170",
+  "tmuxSession": "opensaas-os-add-os-sites-page-registry-and-publish-guard-e65544e8",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-sites-page-registry-and-publish-guard",
+  "branch": "task/os/add-os-sites-page-registry-and-publish-guard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-sites-page-registry-and-publish-guard",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-sites-page-registry-and-publish-guard",
+  "prNumber": 861,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/861",
+  "createdAt": "2026-06-09T04:49:59.744Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-sites-page-registry-and-publish-guard/.task/os/add-os-sites-page-registry-and-publish-guard/session.json"
+}

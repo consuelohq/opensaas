@@ -1,0 +1,100 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-unified-os-release-command",
+  "base": "origin/task/os/add-unified-os-release-command",
+  "headSha": "7327a62d13d773eead284a856240ed053d9f0688",
+  "changeHash": "0e60e137dcce8588a3eed04a1d6df098c93ddee0cc8abc6cd27c36f818c6af93",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/os-release-device-auth.ts",
+    "packages/workspace/scripts/os-release.ts"
+  ],
+  "verifiedAt": "2026-06-13T16:16:54.720Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-unified-os-release-command/current.json",
+        ".task/os/add-unified-os-release-command/evidence-log.json",
+        ".task/os/add-unified-os-release-command/read-log.json",
+        ".task/os/add-unified-os-release-command/session.json",
+        ".task/os/add-unified-os-release-command/verify.json",
+        ".task/os/add-unified-os-release-command/workpad.md",
+        ".task/tasks/os/add-unified-os-release-command.json",
+        "package.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/scripts/os-release-device-auth.ts",
+        "packages/workspace/scripts/os-release.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 584,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-unified-os-release-command\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 114\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:16:54\n\u001b[2m   Duration \u001b[22m 265ms\u001b[2m (transform 62ms, setup 0ms, import 68ms, tests 114ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

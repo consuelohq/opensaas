@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/ai-review.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-05-23T21:12:25.406Z"
+}

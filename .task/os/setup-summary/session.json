@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7dbf6b423e0a",
+  "tmuxSession": "opensaas-os-setup-summary-7dbf6b42",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/setup-summary",
+  "branch": "task/os/setup-summary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-setup-summary",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-setup-summary",
+  "prNumber": 717,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/717",
+  "createdAt": "2026-06-03T00:32:19.856Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-setup-summary/.task/os/setup-summary/session.json"
+}

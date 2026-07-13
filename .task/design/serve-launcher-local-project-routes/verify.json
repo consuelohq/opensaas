@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/serve-launcher-local-project-routes",
+  "base": "origin/task/design/serve-launcher-local-project-routes",
+  "headSha": "73b858fd8acf5115337f3955047547d21e2de9b5",
+  "changeHash": "d1670dafe8e7d0acb65d6c15248b53eefc05362fbd1a8c2c2606107a4db02e9e",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-10T06:07:59.817Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/serve-launcher-local-project-routes/current.json",
+        ".task/design/serve-launcher-local-project-routes/evidence-log.json",
+        ".task/design/serve-launcher-local-project-routes/read-log.json",
+        ".task/design/serve-launcher-local-project-routes/session.json",
+        ".task/design/serve-launcher-local-project-routes/workpad.md",
+        ".task/tasks/design/serve-launcher-local-project-routes.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

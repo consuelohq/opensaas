@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+  "events": [
+    {
+      "id": "aa1ece8d-6035-4654-846e-04018083bb50",
+      "occurred_at": "2026-05-29T00:56:45.795Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering"
+      }
+    },
+    {
+      "id": "68936c10-31d9-416b-9a0d-10d2e50c00fb",
+      "occurred_at": "2026-05-29T00:56:57.485Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering"
+      }
+    },
+    {
+      "id": "a09e2258-a8a9-429b-ae97-37869320eca5",
+      "occurred_at": "2026-05-29T00:57:02.195Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering"
+      }
+    },
+    {
+      "id": "fcb7d191-f5e9-4455-ab5d-4443ecf62ead",
+      "occurred_at": "2026-05-29T00:57:06.430Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering"
+      }
+    },
+    {
+      "id": "a6f52aa2-f61b-48b2-b477-e811f3c0ccc7",
+      "occurred_at": "2026-05-29T00:57:25.036Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering"
+      }
+    },
+    {
+      "id": "c9960445-3ab8-4a43-8905-d46143f3de6b",
+      "occurred_at": "2026-05-29T00:57:42.101Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering"
+      }
+    },
+    {
+      "id": "e6a0fe69-5a3e-4fda-a573-df5fd313e388",
+      "occurred_at": "2026-05-29T00:58:01.395Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-workspace-tool-surface-recovery-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-workspace-tool-surface-recovery-steering"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-29T00:58:01.444Z"
+}

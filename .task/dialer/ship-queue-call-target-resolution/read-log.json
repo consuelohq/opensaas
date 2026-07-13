@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/twenty-front/src/modules/dialer/graphql/mutations/startDialerCall.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts"
+  ],
+  "updatedAt": "2026-05-24T00:44:15.987Z"
+}

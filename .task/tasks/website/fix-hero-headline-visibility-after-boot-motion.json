@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-hero-headline-visibility-after-boot-motion",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 325,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/325",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-fix-hero-headline-visibility-after-boot-motion",
+  "createdAt": "2026-05-05T06:54:54.834Z"
+}

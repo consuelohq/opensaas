@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/cloudflare-tdd-contracts",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 968,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/968",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/968",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/968/cloudflare-tdd-contracts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/968",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/968/cloudflare-tdd-contracts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-cloudflare-tdd-contracts",
+  "taskSession": "tsk_f553e10d8c54",
+  "tmuxSession": "opensaas-security-cloudflare-tdd-contracts-f553e10d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-cloudflare-tdd-contracts/.task/security/cloudflare-tdd-contracts/session.json",
+  "createdAt": "2026-06-11T17:49:47.223Z"
+}

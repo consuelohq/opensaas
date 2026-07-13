@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-worker-providers",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 630,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/630",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/630",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/630/add-worker-providers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/630",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/630/add-worker-providers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-worker-providers",
+  "taskSession": "tsk_2b33ec77ae2c",
+  "tmuxSession": "opensaas-workspace-agents-add-worker-providers-2b33ec77",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-worker-providers/.task/workspace-agents/add-worker-providers/session.json",
+  "createdAt": "2026-05-28T23:13:37.416Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bf514b3b491d",
+  "tmuxSession": "opensaas-security-simplify-local-mcp-bearer-access-bf514b3b",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/simplify-local-mcp-bearer-access",
+  "branch": "task/security/simplify-local-mcp-bearer-access",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-simplify-local-mcp-bearer-access",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-simplify-local-mcp-bearer-access",
+  "prNumber": 1201,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1201",
+  "createdAt": "2026-06-24T00:40:20.322Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-simplify-local-mcp-bearer-access/.task/security/simplify-local-mcp-bearer-access/session.json"
+}

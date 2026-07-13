@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/update-mercury-headline-to-managed-telephony",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 341,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/341",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-update-mercury-headline-to-managed-telephony",
+  "createdAt": "2026-05-06T08:01:43.192Z"
+}

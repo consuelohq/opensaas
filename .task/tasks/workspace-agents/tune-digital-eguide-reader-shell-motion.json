@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/tune-digital-eguide-reader-shell-motion",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 376,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/376",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tune-digital-eguide-reader-shell-motion",
+  "taskSession": "tsk_063256806e50",
+  "tmuxSession": "opensaas-workspace-agents-tune-digital-eguide-reader-shell-motion-06325680",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tune-digital-eguide-reader-shell-motion/.task/session.json",
+  "createdAt": "2026-05-12T06:54:47.588Z"
+}

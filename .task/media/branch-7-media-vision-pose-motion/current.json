@@ -1,0 +1,19 @@
+{
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/branch-7-media-vision-pose-motion",
+  "baseBranch": "stream/media",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1204,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1204",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1204",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1204/branch-7-media-vision-pose-motion",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1204",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1204/branch-7-media-vision-pose-motion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-branch-7-media-vision-pose-motion",
+  "taskSession": "tsk_244fa6b99f83",
+  "tmuxSession": "opensaas-media-branch-7-media-vision-pose-motion-244fa6b9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-branch-7-media-vision-pose-motion/.task/media/branch-7-media-vision-pose-motion/session.json",
+  "createdAt": "2026-06-24T01:13:51.115Z"
+}

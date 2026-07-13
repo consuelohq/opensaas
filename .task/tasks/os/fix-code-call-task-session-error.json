@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-code-call-task-session-error",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1025,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1025",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1025",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1025/fix-code-call-task-session-error",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1025",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1025/fix-code-call-task-session-error",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-code-call-task-session-error",
+  "taskSession": "tsk_c9723eb31a5b",
+  "tmuxSession": "opensaas-os-fix-code-call-task-session-error-c9723eb3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-code-call-task-session-error/.task/os/fix-code-call-task-session-error/session.json",
+  "createdAt": "2026-06-13T18:41:08.319Z"
+}

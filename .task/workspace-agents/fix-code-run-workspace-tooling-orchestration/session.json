@@ -1,0 +1,14 @@
+{
+  "taskSession": "tsk_a083e44f6eeb",
+  "tmuxSession": "opensaas-workspace-agents-add-code-run-workspace-namespace-helpers-a083e44f",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
+  "branch": "task/workspace-agents/add-code-run-workspace-namespace-helpers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-code-run-workspace-namespace-helpers",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-code-run-workspace-namespace-helpers",
+  "prNumber": 441,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/441",
+  "createdAt": "2026-05-21T19:03:57.510Z",
+  "tmuxCreated": true
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_726dc49b8659",
+  "tmuxSession": "opensaas-os-fix-os-apply-patch-facade-parity-726dc49b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-apply-patch-facade-parity",
+  "branch": "task/os/fix-os-apply-patch-facade-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-apply-patch-facade-parity",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-apply-patch-facade-parity",
+  "prNumber": 1040,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1040",
+  "createdAt": "2026-06-14T19:08:59.427Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-apply-patch-facade-parity/.task/os/fix-os-apply-patch-facade-parity/session.json"
+}

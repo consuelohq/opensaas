@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 615,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/615",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/615",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/615/inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/615",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/615/inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-inspect-wiki-publishing-architecture-for-cloudflare-sharing",
+  "taskSession": "tsk_a4e84bd65e36",
+  "tmuxSession": "opensaas-workspace-agents-inspect-wiki-publishing-architecture-for-cloudfl-a4e84bd6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-inspect-wiki-publishing-architecture-for-cloudflare-sharing/.task/workspace-agents/inspect-wiki-publishing-architecture-for-cloudflare-sharing/session.json",
+  "createdAt": "2026-05-28T18:18:30.054Z"
+}

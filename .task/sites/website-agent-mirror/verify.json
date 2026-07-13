@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/website-agent-mirror",
+  "base": "origin/task/sites/website-agent-mirror",
+  "headSha": "33b3fede448e350882570a64f3bd8375cd04598c",
+  "changeHash": "759f2a930a54a40a5f0943760c9ee55c1f907706d9555350cd13e8ffc2b4ec81",
+  "changedFiles": [
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-06-28T01:56:46.524Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/website-agent-mirror/current.json",
+        ".task/sites/website-agent-mirror/session.json",
+        ".task/sites/website-agent-mirror/workpad.md",
+        ".task/tasks/sites/website-agent-mirror.json",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

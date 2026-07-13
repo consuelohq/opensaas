@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/complete-onboarding-flow",
+  "base": "origin/main",
+  "headSha": "fe716fcfe19a38c341cce5c864c4ee05e33b459a",
+  "changeHash": "548b3b59dddf888d0f4f5909fd07c131579689c83590e602a54caff66c52f33f",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/install-tty.test.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/onboarding-flow.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T20:25:24.205Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/complete-onboarding-flow/current.json",
+        ".task/os/complete-onboarding-flow/evidence-log.json",
+        ".task/os/complete-onboarding-flow/read-log.json",
+        ".task/os/complete-onboarding-flow/session.json",
+        ".task/os/complete-onboarding-flow/workpad.md",
+        ".task/tasks/os/complete-onboarding-flow.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install-system-daemons.sh",
+        "packages/os/scripts/install-tty.test.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/onboarding-flow.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/add-page-versions-to-design-wiki-publish-archive",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 814,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/814",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/814",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/814/add-page-versions-to-design-wiki-publish-archive",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/814",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/814/add-page-versions-to-design-wiki-publish-archive",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-page-versions-to-design-wiki-publish-archive",
+  "taskSession": "tsk_e8d040798218",
+  "tmuxSession": "opensaas-design-add-page-versions-to-design-wiki-publish-archive-e8d04079",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-add-page-versions-to-design-wiki-publish-archive/.task/design/add-page-versions-to-design-wiki-publish-archive/session.json",
+  "createdAt": "2026-06-06T05:50:30.269Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_352b4c62f9e0",
+  "tmuxSession": "opensaas-workspace-harden-consuelo-reload-port-ownership-352b4c62",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/harden-consuelo-reload-port-ownership",
+  "branch": "task/workspace/harden-consuelo-reload-port-ownership",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-harden-consuelo-reload-port-ownership",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-harden-consuelo-reload-port-ownership",
+  "prNumber": 1104,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1104",
+  "createdAt": "2026-06-17T03:31:57.591Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-harden-consuelo-reload-port-ownership/.task/workspace/harden-consuelo-reload-port-ownership/session.json"
+}

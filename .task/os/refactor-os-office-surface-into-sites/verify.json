@@ -1,0 +1,79 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/refactor-os-office-surface-into-sites",
+  "base": "origin/task/os/refactor-os-office-surface-into-sites",
+  "headSha": "4f0639e9e3c9e1ac0155bc9d0c9a749f372c8dd7",
+  "changeHash": "b3abf6ab0df836b548aff5354bb6294c1e3cb8c8caaebf92c99d49c1b5215e6e",
+  "changedFiles": [
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/office-pages.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/office/SKILL.md",
+    "packages/os/skills/office/skill.json",
+    "packages/os/skills/sites/SKILL.md",
+    "packages/os/skills/sites/skill.json",
+    "packages/os/skills/skills.json",
+    "packages/os/tests/artifacts.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/office-cli.test.ts",
+    "packages/os/tests/sites-cli.test.ts",
+    "packages/os/tests/skills-registry.test.ts"
+  ],
+  "verifiedAt": "2026-06-09T03:29:24.639Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/refactor-os-office-surface-into-sites/current.json",
+        ".task/os/refactor-os-office-surface-into-sites/evidence-log.json",
+        ".task/os/refactor-os-office-surface-into-sites/read-log.json",
+        ".task/os/refactor-os-office-surface-into-sites/session.json",
+        ".task/os/refactor-os-office-surface-into-sites/workpad.md",
+        ".task/tasks/os/refactor-os-office-surface-into-sites.json",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/office-pages.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/skills/office/SKILL.md",
+        "packages/os/skills/office/skill.json",
+        "packages/os/skills/sites/SKILL.md",
+        "packages/os/skills/sites/skill.json",
+        "packages/os/skills/skills.json",
+        "packages/os/tests/artifacts.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/office-cli.test.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

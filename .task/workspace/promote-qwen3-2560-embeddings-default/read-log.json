@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/index/embedding-config.js",
+    "packages/workspace/tests/embedding-config.test.js"
+  ],
+  "updatedAt": "2026-05-28T23:16:25.860Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/trace-errors-operator-report",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 523,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/523",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/523",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/523/trace-errors-operator-report",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/523",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/523/trace-errors-operator-report",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trace-errors-operator-report",
+  "taskSession": "tsk_95893164f23c",
+  "tmuxSession": "opensaas-workspace-agents-trace-errors-operator-report-95893164",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trace-errors-operator-report/.task/workspace-agents/trace-errors-operator-report/session.json",
+  "createdAt": "2026-05-23T09:48:22.885Z"
+}

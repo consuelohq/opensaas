@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/wire-cron-jobs-refresh",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 851,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/851",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/851",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/851/wire-cron-jobs-refresh",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/851",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/851/wire-cron-jobs-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-wire-cron-jobs-refresh",
+  "taskSession": "tsk_8fc6a24f8369",
+  "tmuxSession": "opensaas-diff-cockpit-wire-cron-jobs-refresh-8fc6a24f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-wire-cron-jobs-refresh/.task/diff-cockpit/wire-cron-jobs-refresh/session.json",
+  "createdAt": "2026-06-08T06:39:23.485Z"
+}

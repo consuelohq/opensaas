@@ -1,0 +1,15 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/generate-skills-registry.ts",
+    "packages/os/scripts/lib/skills.ts",
+    "packages/os/skills/consuelo-design-landing-page/skill.json",
+    "packages/os/skills/consuelo-design/skill.json",
+    "packages/os/skills/consuelo-workspace-snapshot/skill.json",
+    "packages/os/skills/daily-revenue-brief/skill.json",
+    "packages/os/skills/skills.json",
+    "packages/os/skills/task/skill.json",
+    "packages/os/tests/install-state.test.ts"
+  ],
+  "updatedAt": "2026-05-28T20:12:38.101Z"
+}

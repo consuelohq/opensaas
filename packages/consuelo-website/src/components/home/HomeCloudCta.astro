@@ -1,0 +1,141 @@
+---
+---
+
+<section class="cloud-cta" aria-labelledby="cloud-cta-title" data-section="cloud">
+  <div class="cloud-cta__copy">
+    <p>FREE PLUS SUPER ULTRA</p>
+    <h2 id="cloud-cta-title">CONSUELO CLOUD</h2>
+    <p class="cloud-cta__description">
+      Keep the same workspace and let Consuelo run the home node for you.
+    </p>
+    <a href="/pricing">VIEW PRICING</a>
+  </div>
+
+  <p class="cloud-cta__wordmark" aria-hidden="true">CONSUELO</p>
+  <img
+    class="cloud-cta__art"
+    src="/images/home/holding-world.svg"
+    alt="Consuelo holding a connected world"
+    width="1200"
+    height="1200"
+    loading="lazy"
+  />
+</section>
+
+<style>
+  .cloud-cta {
+    position: relative;
+    min-height: min(58rem, 92svh);
+    overflow: hidden;
+    background: var(--site-color-brand);
+    color: white;
+    padding: clamp(5rem, 9vw, 8rem) 1rem 0;
+    text-align: center;
+  }
+
+  .cloud-cta__copy {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+  }
+
+  .cloud-cta__copy > p:first-child {
+    margin: 0;
+    font: 650 0.66rem/1 var(--site-font-mono);
+    letter-spacing: 0.18em;
+  }
+
+  .cloud-cta h2 {
+    margin: 0;
+    color: white;
+    font-family: var(--site-font-display);
+    font-size: clamp(3.4rem, 8vw, 7.5rem);
+    font-weight: 430;
+    letter-spacing: 0;
+    line-height: 0.88;
+  }
+
+  .cloud-cta__description {
+    max-width: 34rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .cloud-cta a {
+    border: 1px solid white;
+    background: white;
+    color: var(--site-color-brand);
+    padding: 0.75rem 1.2rem;
+    font: 650 0.7rem/1 var(--site-font-mono);
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+
+  .cloud-cta__wordmark {
+    position: absolute;
+    inset: 47% 0 auto;
+    z-index: 1;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.14);
+    font-family: var(--site-font-display);
+    font-size: clamp(7rem, 24vw, 23rem);
+    line-height: 0.7;
+    transform: translateY(-50%);
+    white-space: nowrap;
+  }
+
+  .cloud-cta__art {
+    position: absolute;
+    z-index: 2;
+    top: 17rem;
+    left: 50%;
+    width: min(46rem, 68vw);
+    max-width: none;
+    filter: brightness(0) invert(1);
+    transform: translateX(-50%) translateY(3rem);
+    opacity: 0;
+    transition: opacity 900ms var(--site-ease-emphasized), transform 900ms var(--site-ease-emphasized);
+  }
+
+  .cloud-cta.is-visible .cloud-cta__art {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 600px) {
+    .cloud-cta {
+      min-height: 44rem;
+    }
+
+    .cloud-cta__art {
+      top: 16rem;
+      width: 120vw;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cloud-cta__art {
+      opacity: 1;
+      transform: translateX(-50%);
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const section = document.querySelector('.cloud-cta');
+  if (section instanceof HTMLElement) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          section.classList.add('is-visible');
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(section);
+  }
+</script>

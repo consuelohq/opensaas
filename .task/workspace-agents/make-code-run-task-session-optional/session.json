@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8c5b5348710b",
+  "tmuxSession": "opensaas-workspace-agents-make-code-run-task-session-optional-8c5b5348",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/make-code-run-task-session-optional",
+  "branch": "task/workspace-agents/make-code-run-task-session-optional",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-code-run-task-session-optional",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-code-run-task-session-optional",
+  "prNumber": 533,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/533",
+  "createdAt": "2026-05-23T11:13:42.335Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-code-run-task-session-optional/.task/workspace-agents/make-code-run-task-session-optional/session.json"
+}

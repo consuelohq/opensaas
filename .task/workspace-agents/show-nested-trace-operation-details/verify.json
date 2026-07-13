@@ -1,0 +1,29 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/show-nested-trace-operation-details",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "77088bc5dc71fe484a0b4a81069ba3ac036571e3",
+  "changeHash": "933303f45fc22ae581ec753a049e06df8a468f0bc336fcf49934496d0df7af99",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/codemode/tools/index.ts",
+    "packages/workspace/scripts/lib/facade/batch.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-24T07:35:43.865Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

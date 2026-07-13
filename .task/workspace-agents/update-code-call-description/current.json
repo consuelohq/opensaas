@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/update-code-call-description",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1126,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1126",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1126",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1126/update-code-call-description",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1126",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1126/update-code-call-description",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-update-code-call-description",
+  "taskSession": "tsk_896bdd1fc7f3",
+  "tmuxSession": "opensaas-workspace-agents-update-code-call-description-896bdd1f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-update-code-call-description/.task/workspace-agents/update-code-call-description/session.json",
+  "createdAt": "2026-06-18T04:00:05.617Z"
+}

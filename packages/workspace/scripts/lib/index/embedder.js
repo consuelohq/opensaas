@@ -3,7 +3,10 @@ const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const { VECTOR_DIMENSIONS } = require('./store');
+const { getEmbeddingConfig } = require('./embedding-config');
+
+const EMBEDDING_CONFIG = getEmbeddingConfig();
+const VECTOR_DIMENSIONS = EMBEDDING_CONFIG.dimensions;
 
 const DEFAULT_MODEL_PATH = path.join(os.homedir(), '.cache', 'qmd', 'models', 'Qwen3-Embedding-4B-Q8_0.gguf');
 const DOCUMENT_INSTRUCTION = 'Instruct: Represent this code for retrieval\nQuery: ';
@@ -11,7 +14,7 @@ const QUERY_INSTRUCTION = 'Instruct: Find code related to this question\nQuery: 
 
 // openrouter embedding API — same qwen3-embedding-4b model as local, zero CPU
 const EMBEDDING_API_URL = 'https://openrouter.ai/api/v1/embeddings';
-const EMBEDDING_API_MODEL = 'qwen/qwen3-embedding-4b';
+const EMBEDDING_API_MODEL = EMBEDDING_CONFIG.apiModel;
 
 let _apiKey = null;
 function getApiKey() {
@@ -47,15 +50,19 @@ function normalizeVector(vector) {
   return normalized;
 }
 
-function truncateVector(vector) {
-  const truncated = new Float32Array(VECTOR_DIMENSIONS);
-  const length = Math.min(vector.length, VECTOR_DIMENSIONS);
-
-  for (let index = 0; index < length; index += 1) {
-    truncated[index] = vector[index];
+function prepareVector(vector) {
+  if (vector.length === VECTOR_DIMENSIONS) return normalizeVector(vector);
+  if (vector.length > VECTOR_DIMENSIONS && EMBEDDING_CONFIG.allowTruncate) {
+    const truncated = new Float32Array(VECTOR_DIMENSIONS);
+    for (let index = 0; index < VECTOR_DIMENSIONS; index += 1) {
+      truncated[index] = vector[index];
+    }
+    return normalizeVector(truncated);
   }
-
-  return normalizeVector(truncated);
+  throw new Error([
+    `embedding dimension mismatch: expected ${VECTOR_DIMENSIONS}, got ${vector.length}`,
+    'Set WORKSPACE_EMBEDDING_DIMENSIONS to match the provider output, or explicitly enable truncation with WORKSPACE_EMBEDDING_TRUNCATE=1 for a benchmark.',
+  ].join(' '));
 }
 
 function getEmbeddingContextCount() {
@@ -134,6 +141,46 @@ async function getEmbeddingContext(modelPath = DEFAULT_MODEL_PATH) {
   return context;
 }
 
+
+async function embedTexts(texts, options = {}) {
+  try {
+    const apiKey = USE_API ? getApiKey() : null;
+    if (apiKey) {
+      return embedTextsApi(texts, apiKey, options);
+    }
+    return Promise.all(texts.map((text) => embedTextLocal(text, options)));
+  } catch (error /* unknown */) {
+    throw new Error(`batch embedding failed: ${getErrorMessage(error)}`);
+  }
+}
+
+async function embedTextsApi(texts, apiKey, options = {}) {
+  try {
+    if (!Array.isArray(texts) || texts.length === 0) return [];
+    const response = await fetch(EMBEDDING_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: EMBEDDING_API_MODEL, input: texts }),
+      signal: AbortSignal.timeout(60000),
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`embedding API failed (${response.status}): ${err}`);
+    }
+    const data = await response.json();
+    const embeddings = data.data || [];
+    if (embeddings.length !== texts.length) {
+      throw new Error(`embedding API returned ${embeddings.length} embeddings for ${texts.length} inputs`);
+    }
+    return embeddings.map((item, index) => {
+      if (!item?.embedding) throw new Error(`embedding API returned no embedding for input ${index}`);
+      return prepareVector(new Float32Array(item.embedding));
+    });
+  } catch (error /* unknown */) {
+    throw new Error(`embedding API batch failed: ${getErrorMessage(error)}`);
+  }
+}
+
 async function embedText(text, options = {}) {
   const apiKey = USE_API ? getApiKey() : null;
   if (apiKey) {
@@ -156,7 +203,7 @@ async function embedTextApi(text, apiKey, options = {}) {
   const data = await response.json();
   const vector = data.data?.[0]?.embedding;
   if (!vector) throw new Error('embedding API returned no embedding');
-  return truncateVector(new Float32Array(vector));
+  return prepareVector(new Float32Array(vector));
 }
 
 async function embedTextLocal(text, options = {}) {
@@ -164,7 +211,7 @@ async function embedTextLocal(text, options = {}) {
     const context = await getEmbeddingContext(options.modelPath || DEFAULT_MODEL_PATH);
     const prefix = options.kind === 'query' ? QUERY_INSTRUCTION : DOCUMENT_INSTRUCTION;
     const embedding = await context.getEmbeddingFor(`${prefix}${text}`);
-    return truncateVector(embedding.vector);
+    return prepareVector(embedding.vector);
   } catch (error /* unknown */) {
     throw new Error(`embedding failed: ${getErrorMessage(error)}`);
   }
@@ -172,5 +219,7 @@ async function embedTextLocal(text, options = {}) {
 
 module.exports = {
   DEFAULT_MODEL_PATH,
+  EMBEDDING_API_MODEL,
   embedText,
+  embedTexts,
 };

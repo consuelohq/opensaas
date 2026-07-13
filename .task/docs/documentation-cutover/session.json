@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1e28de2bd19f",
+  "tmuxSession": "opensaas-docs-documentation-cutover-1e28de2b",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/documentation-cutover",
+  "branch": "task/docs/documentation-cutover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-documentation-cutover",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-documentation-cutover",
+  "prNumber": 1333,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1333",
+  "createdAt": "2026-07-02T00:26:25.859Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-documentation-cutover/.task/docs/documentation-cutover/session.json"
+}

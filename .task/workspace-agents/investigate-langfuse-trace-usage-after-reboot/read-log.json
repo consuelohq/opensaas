@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/workspace/scripts/consuelo-reload.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/logger.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "updatedAt": "2026-05-23T06:50:19.313Z"
+}

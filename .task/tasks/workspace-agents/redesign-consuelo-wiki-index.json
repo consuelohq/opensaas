@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/redesign-consuelo-wiki-index",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 379,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/379",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index",
+  "taskSession": "tsk_53e4b4fac8dc",
+  "tmuxSession": "opensaas-workspace-agents-redesign-consuelo-wiki-index-53e4b4fa",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index/.task/session.json",
+  "createdAt": "2026-05-12T23:03:33.679Z"
+}

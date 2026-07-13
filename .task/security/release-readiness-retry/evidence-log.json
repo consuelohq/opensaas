@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/security/release-readiness-retry",
+  "events": [
+    {
+      "id": "c064e49e-9f16-4961-8ef2-74790513e0be",
+      "occurred_at": "2026-07-10T23:55:40.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/security/release-readiness-retry/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/release-readiness-retry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/release-readiness-retry"
+      }
+    },
+    {
+      "id": "0f72c995-3952-4339-864a-611c1655650e",
+      "occurred_at": "2026-07-11T00:00:34.592Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/security/release-readiness-retry/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/release-readiness-retry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/release-readiness-retry"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-11T00:00:34.648Z"
+}

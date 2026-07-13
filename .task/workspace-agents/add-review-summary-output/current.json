@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-review-summary-output",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 541,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/541",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/541",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/541/add-review-summary-output",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/541",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/541/add-review-summary-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-review-summary-output",
+  "taskSession": "tsk_8bee70592eaf",
+  "tmuxSession": "opensaas-workspace-agents-add-review-summary-output-8bee7059",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-review-summary-output/.task/workspace-agents/add-review-summary-output/session.json",
+  "createdAt": "2026-05-23T21:11:24.901Z"
+}

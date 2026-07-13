@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fd340fd90ac6",
+  "tmuxSession": "opensaas-workspace-agents-add-typed-git-diff-tool-fd340fd9",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-typed-git-diff-tool",
+  "branch": "task/workspace-agents/add-typed-git-diff-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-git-diff-tool",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-git-diff-tool",
+  "prNumber": 449,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/449",
+  "createdAt": "2026-05-22T05:51:47.989Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-git-diff-tool/.task/workspace-agents/add-typed-git-diff-tool/session.json"
+}

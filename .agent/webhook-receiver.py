@@ -43,9 +43,12 @@ OAUTH_CLIENT_ID = _c("LINEAR_OAUTH_CLIENT_ID")
 OAUTH_CLIENT_SECRET = _c("LINEAR_OAUTH_CLIENT_SECRET")
 OAUTH_CALLBACK_URL = _c("LINEAR_OAUTH_CALLBACK_URL")
 TOKEN_FILE = os.path.join(SCRIPT_DIR, ".oauth-token.json")
+CHATGPT_TOKEN_FILE = os.path.join(SCRIPT_DIR, ".chatgpt-token.json")
 OPENCODE_TOKEN_FILE = os.path.join(SCRIPT_DIR, ".opencode-token.json")
-OPENCODE_OAUTH_CLIENT_ID = "9b2b83a4ca6cebc0ce9df6a2ad4ed834"
-OPENCODE_OAUTH_CLIENT_SECRET = "8aeff8f8d4360b80bd8a8bff690fc45f"
+OPENCODE_OAUTH_CLIENT_ID = _c("OPENCODE_OAUTH_CLIENT_ID") or "9b2b83a4ca6cebc0ce9df6a2ad4ed834"
+OPENCODE_OAUTH_CLIENT_SECRET = _c("OPENCODE_OAUTH_CLIENT_SECRET")
+CHATGPT_OAUTH_CLIENT_ID = _c("CHATGPT_OAUTH_CLIENT_ID") or OPENCODE_OAUTH_CLIENT_ID
+CHATGPT_OAUTH_CLIENT_SECRET = _c("CHATGPT_OAUTH_CLIENT_SECRET") or OPENCODE_OAUTH_CLIENT_SECRET
 OPENCODE_OAUTH_REDIRECT = "https://linear.consuelohq.com/oauth/callback"
 KIRO_CLI = "/Users/kokayi/.local/bin/kiro-cli"
 TMUX = "/opt/homebrew/bin/tmux"
@@ -640,24 +643,31 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 if state == "opencode":
                     token_data = self._exchange_code(code, app="opencode")
-                    # fetch user info and enrich
-                    try:
-                        req = urllib.request.Request(
-                            "https://api.linear.app/graphql",
-                            data=json.dumps({"query": "{ viewer { id name } }"}).encode(),
-                            headers={"Authorization": f"Bearer {token_data['access_token']}", "Content-Type": "application/json"},
-                        )
-                        with urllib.request.urlopen(req) as resp:
-                            viewer = json.loads(resp.read()).get("data", {}).get("viewer", {})
-                            token_data["user_id"] = viewer.get("id", "")
-                            token_data["user_name"] = viewer.get("name", "")
-                    except Exception:
-                        pass
-                    token_data["note"] = "opencode bot token (oauth app)"
+                    note = "opencode bot token (oauth app)"
                     dest = OPENCODE_TOKEN_FILE
+                elif state == "chatgpt":
+                    token_data = self._exchange_code(code, app="chatgpt")
+                    note = "chatgpt bot token (oauth app)"
+                    dest = CHATGPT_TOKEN_FILE
                 else:
                     token_data = self._exchange_code(code)
+                    note = "kiro bot token (oauth app)"
                     dest = TOKEN_FILE
+
+                # fetch user info and enrich all oauth token files
+                try:
+                    req = urllib.request.Request(
+                        "https://api.linear.app/graphql",
+                        data=json.dumps({"query": "{ viewer { id name } }"}).encode(),
+                        headers={"Authorization": f"Bearer {token_data['access_token']}", "Content-Type": "application/json"},
+                    )
+                    with urllib.request.urlopen(req) as resp:
+                        viewer = json.loads(resp.read()).get("data", {}).get("viewer", {})
+                        token_data["user_id"] = viewer.get("id", "")
+                        token_data["user_name"] = viewer.get("name", "")
+                except Exception:
+                    pass
+                token_data["note"] = note
                 with open(dest, "w") as f:
                     json.dump(token_data, f, indent=2)
                 print(f"[oauth] {state} token saved to {dest}", flush=True)
@@ -792,6 +802,8 @@ class Handler(BaseHTTPRequestHandler):
     def _exchange_code(self, code, app="kiro"):
         if app == "opencode":
             cid, secret, redir = OPENCODE_OAUTH_CLIENT_ID, OPENCODE_OAUTH_CLIENT_SECRET, OPENCODE_OAUTH_REDIRECT
+        elif app == "chatgpt":
+            cid, secret, redir = CHATGPT_OAUTH_CLIENT_ID, CHATGPT_OAUTH_CLIENT_SECRET, OPENCODE_OAUTH_REDIRECT
         else:
             cid, secret, redir = OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET, OAUTH_CALLBACK_URL
         data = urllib.parse.urlencode({

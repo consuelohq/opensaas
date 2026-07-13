@@ -1,45 +1,44 @@
 ---
-import LaunchFaq from '../components/launch/LaunchFaq.astro';
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import LaunchHero from '../components/launch/LaunchHero.astro';
-import LaunchMercuryPromo from '../components/launch/LaunchMercuryPromo.astro';
-import LaunchOverview from '../components/launch/LaunchOverview.astro';
-import LaunchPrivacy from '../components/launch/LaunchPrivacy.astro';
-import LaunchStats from '../components/launch/LaunchStats.astro';
-import { launchFaqItems, launchPageSections } from '../data/launch-content';
+import HomeCloudCta from '../components/home/HomeCloudCta.astro';
+import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import { homeFaqItems } from '../data/home-content';
+import { homepageSeo } from '../lib/homepage-seo';
 import { getFaqSchema, getSoftwareApplicationSchema } from '../lib/site-seo';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
-
-const description = 'Sales infrastructure for insurance sales teams with a connected crm, dialer, real-time ai coaching, and workflow surfaces that integrate everywhere your team works.';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
 
 const schemaEntries = [
   getSoftwareApplicationSchema({
+    name: 'Consuelo OS',
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'macOS, Linux, Web',
     offers: {
       '@type': 'AggregateOffer',
       lowPrice: '0',
-      highPrice: '20',
+      highPrice: '200',
       priceCurrency: 'USD',
-      offerCount: '2',
+      offerCount: '4',
     },
   }),
-  getFaqSchema(launchFaqItems),
+  getFaqSchema(homeFaqItems),
 ];
 ---
 
-<LaunchLayout
-  title="Consuelo | Sales Infrastructure for Insurance Sales Teams"
-  description={description}
+<MarketingLayout
+  title={homepageSeo.title}
+  description={homepageSeo.description}
   canonicalPath="/"
-  image="/og.png"
+  image={homepageSeo.image}
+  imageAlt={homepageSeo.imageAlt}
+  imageWidth={1200}
+  imageHeight={630}
   schemaEntries={schemaEntries}
 >
-  <LaunchHeader pageSections={launchPageSections} />
-  <LaunchHero sectionId="intro" />
-  <LaunchOverview sectionId="overview" />
-  <LaunchStats sectionId="proof" />
-  <LaunchPrivacy sectionId="privacy" />
-  <LaunchFaq sectionId="faq" items={launchFaqItems} />
-  <LaunchMercuryPromo sectionId="mercury" />
-  <LaunchFooter sectionId="waitlist" />
-</LaunchLayout>
+  <SiteHeader pageSections={[{ id: 'features', label: 'FEATURES' }, { id: 'faq', label: 'FAQ' }]} />
+  <main>
+    <HomeHero sectionId="intro" />
+    <HomeFeaturePreview sectionId="features" />
+    <HomeCloudCta />
+  </main>
+</MarketingLayout>

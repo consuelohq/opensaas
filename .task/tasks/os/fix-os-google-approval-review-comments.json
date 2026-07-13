@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-google-approval-review-comments",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1051,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1051",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1051",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1051/fix-os-google-approval-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1051",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1051/fix-os-google-approval-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-approval-review-comments",
+  "taskSession": "tsk_8c89ec51dbf2",
+  "tmuxSession": "opensaas-os-fix-os-google-approval-review-comments-8c89ec51",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-approval-review-comments/.task/os/fix-os-google-approval-review-comments/session.json",
+  "createdAt": "2026-06-15T00:36:00.389Z"
+}

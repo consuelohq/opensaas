@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/diff-cockpit/clone-graphite-pr-inbox-ux/workpad.md",
+    "AGENTS.md",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "updatedAt": "2026-06-09T22:36:26.720Z"
+}

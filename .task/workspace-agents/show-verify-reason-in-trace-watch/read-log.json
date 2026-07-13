@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/tests/server_call_test.py",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-05-24T08:38:37.893Z"
+}

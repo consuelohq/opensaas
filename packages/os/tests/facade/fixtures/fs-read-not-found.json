@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "code": "COMMAND_FAILED",
+  "message": "error: missing.txt not found"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/remove-invalid-queue-target-sql-column",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 561,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/561",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/561",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/561/remove-invalid-queue-target-sql-column",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/561",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/561/remove-invalid-queue-target-sql-column",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-remove-invalid-queue-target-sql-column",
+  "taskSession": "tsk_4e7aef086298",
+  "tmuxSession": "opensaas-dialer-remove-invalid-queue-target-sql-column-4e7aef08",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-remove-invalid-queue-target-sql-column/.task/dialer/remove-invalid-queue-target-sql-column/session.json",
+  "createdAt": "2026-05-24T03:37:15.634Z"
+}

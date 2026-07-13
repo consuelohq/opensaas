@@ -1,0 +1,24 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/add-pagefind-search-to-design-wiki",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "1e33b6e9b7339c37c197a16728f87844b3679441",
+  "changeHash": "b2639e79a0c233f3886e9d29a989376c55b593c8ec7d54527adbf88c428f1ef4",
+  "changedFiles": [
+    "packages/consuelo-design/README.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/consuelo-design.ts"
+  ],
+  "verifiedAt": "2026-05-23T04:59:45.227Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e6133cf936fe",
+  "tmuxSession": "opensaas-media-add-media-svg-conversion-tool-e6133cf9",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/add-media-svg-conversion-tool",
+  "branch": "task/media/add-media-svg-conversion-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-add-media-svg-conversion-tool",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-add-media-svg-conversion-tool",
+  "prNumber": 1220,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1220",
+  "createdAt": "2026-06-27T18:51:44.590Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-add-media-svg-conversion-tool/.task/media/add-media-svg-conversion-tool/session.json"
+}

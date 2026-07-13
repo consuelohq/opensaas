@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5730f79cb892",
+  "tmuxSession": "opensaas-general-make-phone-action-primary-on-number-hover-5730f79c",
+  "area": "general",
+  "stream": "stream/general",
+  "taskBranch": "task/general/make-phone-action-primary-on-number-hover",
+  "branch": "task/general/make-phone-action-primary-on-number-hover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-make-phone-action-primary-on-number-hover",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-make-phone-action-primary-on-number-hover",
+  "prNumber": 598,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/598",
+  "createdAt": "2026-05-25T23:26:58.408Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-make-phone-action-primary-on-number-hover/.task/general/make-phone-action-primary-on-number-hover/session.json"
+}

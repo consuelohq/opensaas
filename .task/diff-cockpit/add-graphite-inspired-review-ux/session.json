@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4e8e095aabdd",
+  "tmuxSession": "opensaas-diff-cockpit-add-graphite-inspired-review-ux-4e8e095a",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-graphite-inspired-review-ux",
+  "branch": "task/diff-cockpit/add-graphite-inspired-review-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-graphite-inspired-review-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-graphite-inspired-review-ux",
+  "prNumber": 735,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/735",
+  "createdAt": "2026-06-03T08:01:31.477Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-graphite-inspired-review-ux/.task/diff-cockpit/add-graphite-inspired-review-ux/session.json"
+}

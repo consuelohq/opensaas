@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/workspace-agents/investigate-explore-bad-relevance-for-issue-queries/workpad.md",
+    "packages/workspace/decision.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/explore.js",
+    "packages/workspace/scripts/lib/index/embedder.js",
+    "packages/workspace/scripts/lib/index/indexer.js",
+    "packages/workspace/scripts/lib/index/store.js",
+    "packages/workspace/scripts/lib/search/ranker.js",
+    "packages/workspace/scripts/lib/search/retriever.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/tests/chunker.test.js",
+    "packages/workspace/tests/context-trace.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-05-26T18:24:07.119Z"
+}

@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/repair-sites-routes",
+  "base": "origin/task/design/repair-sites-routes",
+  "headSha": "a2f99d41f33b2be2b89971b80b95c09d9d71ad9c",
+  "changeHash": "2a31447cb34fe3aabcba5ad737968698af4becdbdfd1dec0932b0b67846bb724",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-10T04:41:39.766Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/repair-sites-routes/current.json",
+        ".task/design/repair-sites-routes/evidence-log.json",
+        ".task/design/repair-sites-routes/read-log.json",
+        ".task/design/repair-sites-routes/verify.json",
+        ".task/design/repair-sites-routes/workpad.md",
+        ".task/tasks/design/repair-sites-routes.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_171c1f5d4e2d",
+  "tmuxSession": "opensaas-workspace-agents-debug-git-diff-working-tree-output-171c1f5d",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/debug-git-diff-working-tree-output",
+  "branch": "task/workspace-agents/debug-git-diff-working-tree-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-debug-git-diff-working-tree-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-debug-git-diff-working-tree-output",
+  "prNumber": 475,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/475",
+  "createdAt": "2026-05-23T03:03:34.704Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-debug-git-diff-working-tree-output/.task/workspace-agents/debug-git-diff-working-tree-output/session.json"
+}

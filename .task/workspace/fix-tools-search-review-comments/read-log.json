@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/tests/tools-search-v2.test.ts"
+  ],
+  "updatedAt": "2026-05-31T20:04:28.369Z"
+}

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/expand-stream-os-review-packet",
+  "events": [
+    {
+      "id": "0dda767f-a22c-4b32-ad57-aca60ef0ef6d",
+      "occurred_at": "2026-06-02T00:42:42.596Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/expand-stream-os-review-packet/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/expand-stream-os-review-packet",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/expand-stream-os-review-packet"
+      }
+    },
+    {
+      "id": "559a4ee6-a50d-4204-b510-d931ac677845",
+      "occurred_at": "2026-06-02T00:46:15.891Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/docs/review/stream-os-pr-362-review-packet.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/expand-stream-os-review-packet",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/expand-stream-os-review-packet"
+      }
+    },
+    {
+      "id": "9d52463a-5017-4ecf-9c5d-55c4c377e7b5",
+      "occurred_at": "2026-06-02T00:46:28.329Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/docs/review/stream-os-pr-362-review-packet.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/expand-stream-os-review-packet",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/expand-stream-os-review-packet"
+      }
+    },
+    {
+      "id": "e5afcef9-2d69-4b45-8afa-56908c3c805b",
+      "occurred_at": "2026-06-02T00:47:26.202Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/os-local-testing-readiness/coderabbit-packet.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/expand-stream-os-review-packet",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/expand-stream-os-review-packet"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-02T00:47:26.264Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_474b10c6f667",
+  "tmuxSession": "opensaas-os-fix-installer-dependency-ux-and-hook-materializa-474b10c6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-installer-dependency-ux-and-hook-materialization",
+  "branch": "task/os/fix-installer-dependency-ux-and-hook-materialization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-installer-dependency-ux-and-hook-materialization",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-installer-dependency-ux-and-hook-materialization",
+  "prNumber": 984,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/984",
+  "createdAt": "2026-06-12T19:45:45.448Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-installer-dependency-ux-and-hook-materialization/.task/os/fix-installer-dependency-ux-and-hook-materialization/session.json"
+}

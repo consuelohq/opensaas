@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_db04b637b7d0",
+  "tmuxSession": "opensaas-os-add-os-artifact-version-rollback-table-db04b637",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-artifact-version-rollback-table",
+  "branch": "task/os/add-os-artifact-version-rollback-table",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-artifact-version-rollback-table",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-artifact-version-rollback-table",
+  "prNumber": 945,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/945",
+  "createdAt": "2026-06-11T02:32:44.717Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-artifact-version-rollback-table/.task/os/add-os-artifact-version-rollback-table/session.json"
+}

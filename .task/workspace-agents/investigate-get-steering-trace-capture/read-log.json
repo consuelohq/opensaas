@@ -1,0 +1,20 @@
+{
+  "files": [
+    ".task/workspace-agents/investigate-get-steering-trace-capture/workpad.md",
+    "CODING-STANDARDS.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/runtime-state.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/server.py",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/server_call_test.py",
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py",
+    "scripts/operator/trace-analytics.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-06-07T17:07:26.305Z"
+}

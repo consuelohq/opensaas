@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/refine-reader-nav-nesting-tap-zones",
+  "base": "origin/stream/design",
+  "headSha": "4a00d89ac8e86736ec04c8a85743e2496412a2db",
+  "changeHash": "fa393f4a2a86f6f9b2290a1e09be03c5103352a32e0153458afa233a18952d77",
+  "changedFiles": [
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md"
+  ],
+  "verifiedAt": "2026-06-07T16:25:18.150Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/refine-reader-nav-nesting-tap-zones/current.json",
+        ".task/design/refine-reader-nav-nesting-tap-zones/evidence-log.json",
+        ".task/design/refine-reader-nav-nesting-tap-zones/read-log.json",
+        ".task/design/refine-reader-nav-nesting-tap-zones/session.json",
+        ".task/design/refine-reader-nav-nesting-tap-zones/verify.json",
+        ".task/design/refine-reader-nav-nesting-tap-zones/workpad.md",
+        ".task/tasks/design/refine-reader-nav-nesting-tap-zones.json",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/consuelo-design/templates/digital-eguides/reader-shell.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

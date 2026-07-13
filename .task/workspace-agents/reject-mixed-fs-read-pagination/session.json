@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_57bcf5c183bd",
+  "tmuxSession": "opensaas-workspace-agents-reject-mixed-fs-read-pagination-57bcf5c1",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/reject-mixed-fs-read-pagination",
+  "branch": "task/workspace-agents/reject-mixed-fs-read-pagination",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reject-mixed-fs-read-pagination",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reject-mixed-fs-read-pagination",
+  "prNumber": 1079,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1079",
+  "createdAt": "2026-06-16T07:24:38.448Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reject-mixed-fs-read-pagination/.task/workspace-agents/reject-mixed-fs-read-pagination/session.json"
+}

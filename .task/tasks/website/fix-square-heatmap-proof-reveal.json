@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-square-heatmap-proof-reveal",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 331,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/331",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-fix-square-heatmap-proof-reveal",
+  "createdAt": "2026-05-05T23:41:33.638Z"
+}

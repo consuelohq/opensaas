@@ -1,0 +1,24 @@
+{
+  "name": "office",
+  "title": "Office",
+  "description": "Top-level orchestration skill for Office artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and Office verification.",
+  "trigger": "Invoke when the user asks for Office artifact work, Office publishing, website/spec/demo generation, or design workflow orchestration.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/office/SKILL.md"
+  },
+  "script": "scripts/design/office.ts",
+  "permission": "draft",
+  "requiresApproval": false,
+  "status": "active",
+  "artifactTypes": [
+    "draft",
+    "design-artifact",
+    "work-order"
+  ],
+  "capabilities": [
+    "office",
+    "local-artifacts"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "files": [
+    "packages/consuelo-core/registry/skills.json",
+    "packages/os/STEERING.md",
+    "packages/os/package.json",
+    "packages/os/scripts/design/consuelo-design.ts",
+    "packages/os/scripts/design/office-landing-page.ts",
+    "packages/os/scripts/design/office.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/office-landing-page/skill.json",
+    "packages/os/skills/skills.json",
+    "packages/os/tests/consuelo-design-landing-page.test.ts",
+    "packages/os/tests/consuelo-design.test.ts",
+    "packages/os/tests/office-landing-page.test.ts",
+    "packages/os/tests/office-skill.test.ts",
+    "packages/os/tests/skills-registry.test.ts",
+    "packages/twenty-shared/src/constants/DocumentationPaths.ts",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-16T08:42:26.179Z"
+}

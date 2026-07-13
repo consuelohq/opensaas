@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/generate-raw-os-source-docs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 764,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/764",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/764",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/764/generate-raw-os-source-docs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/764",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/764/generate-raw-os-source-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-generate-raw-os-source-docs",
+  "taskSession": "tsk_69ff5e2caf80",
+  "tmuxSession": "opensaas-os-generate-raw-os-source-docs-69ff5e2c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-generate-raw-os-source-docs/.task/os/generate-raw-os-source-docs/session.json",
+  "createdAt": "2026-06-05T03:10:42.982Z"
+}

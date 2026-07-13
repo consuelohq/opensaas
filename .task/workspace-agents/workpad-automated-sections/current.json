@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/workpad-automated-sections",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 484,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/484",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/484",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/484/workpad-automated-sections",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/484",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/484/workpad-automated-sections",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-automated-sections",
+  "taskSession": "tsk_60300cec5aed",
+  "tmuxSession": "opensaas-workspace-agents-workpad-automated-sections-60300cec",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-workpad-automated-sections/.task/workspace-agents/workpad-automated-sections/session.json",
+  "createdAt": "2026-05-23T05:04:35.869Z"
+}

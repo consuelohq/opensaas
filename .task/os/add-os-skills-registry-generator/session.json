@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7391e2f613c1",
+  "tmuxSession": "opensaas-os-add-os-skills-registry-generator-7391e2f6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-skills-registry-generator",
+  "branch": "task/os/add-os-skills-registry-generator",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-skills-registry-generator",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-skills-registry-generator",
+  "prNumber": 619,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/619",
+  "createdAt": "2026-05-28T20:07:59.725Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-skills-registry-generator/.task/os/add-os-skills-registry-generator/session.json"
+}

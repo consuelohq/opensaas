@@ -1,0 +1,913 @@
+{
+  "query": "code.call taskSession facade branchMode none taskSession validation source owner tests generated surfaces",
+  "budget": 8,
+  "results": [
+    {
+      "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+      "score": 0.935,
+      "belief_prior": 0.7175,
+      "symbol": null,
+      "chunk_type": "block",
+      "file_outline": "createState isRecord normalizeInput firstArgumentAsInput recordChangedPath compactOperation blockedToolResult createCallTool setNestedTool createManifestTool buildToolRegistry",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/code-run.ts",
+          "type": "imports",
+          "symbol": "./lib/codemode/tools/index"
+        },
+        {
+          "path": "packages/workspace/scripts/code-run.ts",
+          "type": "imported_by",
+          "symbol": "./lib/codemode/tools/index"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/codemode/types.ts",
+          "type": "imports",
+          "symbol": "../types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imports",
+          "symbol": "../../facade/errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "../../facade/types"
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/codemode/tools"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/codemode/types.ts",
+          "type": "imported_by",
+          "symbol": "../types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/types"
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/codemode/tools"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4392,
+      "chunk_count": 15,
+      "last_modified": 1781041341,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.904,
+      "reason": "hybrid match: block index.ts",
+      "preview": "const blockedNestedTools = new Set(['code.run', 'code.call']);",
+      "graph_connections": [
+        "packages/workspace/scripts/code-run.ts",
+        "packages/workspace/scripts/lib/codemode/types.ts",
+        "packages/workspace/scripts/lib/facade/errors.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/types.ts",
+        "packages/workspace/tests/codemode.test.ts"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 16,
+        "end": 17
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/codemode/tools/index.ts:block:anonymous:16-17",
+        "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+        "kind": "block",
+        "name": null,
+        "symbol_path": null,
+        "node_type": "block",
+        "parent_name": null,
+        "lines": {
+          "start": 16,
+          "end": 17
+        },
+        "content_hash": "2de3b875142450a7170822eca57c0acb29661c7473cccf227d896ddfd52f9e2b",
+        "preview": "const blockedNestedTools = new Set(['code.run', 'code.call']);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 1,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.4,
+        "graphRelevance": 0.4,
+        "hardAnchorCoverage": 1,
+        "hasHardAnchors": true,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.08333333333333333,
+        "nameMatch": 1,
+        "rawScore": 0.9349500000000003,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 1,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0.16666666666666666,
+        "weightedEdges": 12
+      }
+    },
+    {
+      "path": "packages/workspace/TOOLS.md",
+      "score": 0.5857,
+      "belief_prior": 0.5429,
+      "symbol": "workspace.code.call",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 158504,
+      "chunk_count": 542,
+      "last_modified": 1781043113,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.9142,
+      "reason": "hybrid match: block workspace.code.call",
+      "preview": "### workspace.code.call run short language-specific code through staged Python, Bun, or Bash backends | Field | Value |",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 56,
+        "end": 67
+      },
+      "target": {
+        "key": "packages/workspace/TOOLS.md:block:workspace.code.call:56-67",
+        "path": "packages/workspace/TOOLS.md",
+        "kind": "block",
+        "name": "workspace.code.call",
+        "symbol_path": "workspace.code.call",
+        "node_type": "markdown_heading",
+        "parent_name": null,
+        "lines": {
+          "start": 56,
+          "end": 67
+        },
+        "content_hash": "d4f6635da2b9cc4332cb4632f2ee1626f79c078e757475015e6cc0f042150825",
+        "preview": "### workspace.code.call run short language-specific code through staged Python, Bun, or Bash backends | Field | Value |"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 1,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 1,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": true,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.08333333333333333,
+        "nameMatch": 0,
+        "rawScore": 0.5857125000000001,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 1,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0.16666666666666666,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/workspace/SCRIPTS.md",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": "diff_cockpit — open the live PR review cockpit",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 76847,
+      "chunk_count": 89,
+      "last_modified": 1781367432,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.92,
+      "reason": "semantic match (hard-anchor-missing): block diff_cockpit — open the live PR review cockpit",
+      "preview": "### diff_cockpit — open the live PR review cockpit Operator launcher for the Cloudflare-hosted live PR review cockpit. The script opens a canonical `diffs.consuelohq.com` URL in Arc and does not generate a static tmp review page. The first ",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 43,
+        "end": 65
+      },
+      "target": {
+        "key": "packages/workspace/SCRIPTS.md:block:diff_cockpit — open the live PR review cockpit:43-65",
+        "path": "packages/workspace/SCRIPTS.md",
+        "kind": "block",
+        "name": "diff_cockpit — open the live PR review cockpit",
+        "symbol_path": "diff_cockpit — open the live PR review cockpit",
+        "node_type": "markdown_heading",
+        "parent_name": null,
+        "lines": {
+          "start": 43,
+          "end": 65
+        },
+        "content_hash": "c7c384752b3cdce42cb3f734c19d575d019dd83b10a3b14394de0fb9ad123968",
+        "preview": "### diff_cockpit — open the live PR review cockpit Operator launcher for the Cloudflare-hosted live PR review cockpit. The script opens a canonical `diffs.consuelohq.com` URL in Arc and does not generate a static tmp review page. The first "
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0,
+        "nameMatch": 0,
+        "rawScore": 0.42,
+        "recency": 1,
+        "semanticOnly": true,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/os/SCRIPTS.md",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": "PR reference selectors",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 60735,
+      "chunk_count": 76,
+      "last_modified": 1781168865,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.92,
+      "reason": "semantic match (hard-anchor-missing): block PR reference selectors",
+      "preview": "### PR reference selectors Task tooling accepts forgiving PR references anywhere `--pr` is documented. `--github` is an explicit alias for URL-shaped values. Supported refs include bare numbers, `#686`, `PR #686`, GitHub pull URLs, `diffs.c",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 560,
+        "end": 571
+      },
+      "target": {
+        "key": "packages/os/SCRIPTS.md:block:PR reference selectors:560-571",
+        "path": "packages/os/SCRIPTS.md",
+        "kind": "block",
+        "name": "PR reference selectors",
+        "symbol_path": "PR reference selectors",
+        "node_type": "markdown_heading",
+        "parent_name": null,
+        "lines": {
+          "start": 560,
+          "end": 571
+        },
+        "content_hash": "f5c2873c0121b6855b935685c98bbc9fa0f1f89aab0ab228d4cf79ebc2f327ce",
+        "preview": "### PR reference selectors Task tooling accepts forgiving PR references anywhere `--pr` is documented. `--github` is an explicit alias for URL-shaped values. Supported refs include bare numbers, `#686`, `PR #686`, GitHub pull URLs, `diffs.c"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0,
+        "nameMatch": 0,
+        "rawScore": 0.42,
+        "recency": 0.8,
+        "semanticOnly": true,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/os/manifests/workflow-bundles.json",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": "workflows part 5",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 69484,
+      "chunk_count": 32,
+      "last_modified": 1781213156,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.92,
+      "reason": "semantic match (hard-anchor-missing): block workflows part 5",
+      "preview": "\"changed\": true, \"dryRun\": true },",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 728,
+        "end": 750
+      },
+      "target": {
+        "key": "packages/os/manifests/workflow-bundles.json:block:workflows part 5:728-750",
+        "path": "packages/os/manifests/workflow-bundles.json",
+        "kind": "block",
+        "name": "workflows part 5",
+        "symbol_path": "workflows part 5",
+        "node_type": "json_property",
+        "parent_name": null,
+        "lines": {
+          "start": 728,
+          "end": 750
+        },
+        "content_hash": "ddbd6a91e94ae3e4c04445df874c610421287f327011e96d9adf2a1490d17763",
+        "preview": "\"changed\": true, \"dryRun\": true },"
+      },
+      "retrieval_types": [
+        "semantic"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.8174304442861873,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0,
+        "nameMatch": 0,
+        "rawScore": 0.42,
+        "recency": 0.8,
+        "semanticOnly": true,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/os/tooling/dev-tool-manifest.json",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": null,
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 146053,
+      "chunk_count": 43,
+      "last_modified": 1781213156,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.92,
+      "reason": "semantic match (hard-anchor-missing): block dev-tool-manifest.json",
+      "preview": "} ] },",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 5101,
+        "end": 5250
+      },
+      "target": {
+        "key": "packages/os/tooling/dev-tool-manifest.json:block:anonymous:5101-5250",
+        "path": "packages/os/tooling/dev-tool-manifest.json",
+        "kind": "block",
+        "name": null,
+        "symbol_path": null,
+        "node_type": "json",
+        "parent_name": null,
+        "lines": {
+          "start": 5101,
+          "end": 5250
+        },
+        "content_hash": "e839ee83cd85aebc466d6d92f76b21e4ac9b6c219936887d356c50cd0064d5d3",
+        "preview": "} ] },"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0,
+        "nameMatch": 0,
+        "rawScore": 0.42,
+        "recency": 0.8,
+        "semanticOnly": true,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": "executeInternalTool",
+      "chunk_type": "function",
+      "file_outline": "getToolManifestEntry defaultRunner executeTool part 1 executeTool part 1 executeTool part 2 isRecord asArray previewText compactFacadeFinding sanitizeRecoveryInput isRepoStateBound taskSessionRequiredReason buildTaskSessionRequiredRecovery summarizeFacadeFindings compactReviewData compactVerifyData compactFacadeData maybeSyncWorkpadValidation normalizeInput executeInternalTool executeInternalTool resolveTaskSessionInput getWorktreeRoot isTaskSessionMetadata addSessionCandidates findTaskSessionMetadata resolveBranchIfNeeded buildCommandPlan appendArgument getTimeoutMs runWithRetry parseStdout findJsonStart elapsedMs formatCommand formatCommandForLog formatFacadeCommand formatFacadeCommandForLog truncateCommandForLog stripCommandEcho resolveGitRoot resolveWorkspaceCommandCwd resolveControllerRoot logResult",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/lib/code-call/runtime.ts",
+          "type": "imported_by",
+          "symbol": "../code-call/runtime"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/code-call/types.ts",
+          "type": "imported_by",
+          "symbol": "../code-call/types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+          "type": "imports",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imported_by",
+          "symbol": "./branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imports",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imported_by",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/code-call/runtime.ts",
+          "type": "imports",
+          "symbol": "../code-call/runtime"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/code-call/types.ts",
+          "type": "imports",
+          "symbol": "../code-call/types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/batch.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "imports",
+          "symbol": "./branch-resolver"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "imported_by",
+          "symbol": "./executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imports",
+          "symbol": "./errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "imports",
+          "symbol": "./logger"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imports",
+          "symbol": "./schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/worker/runtime.ts",
+          "type": "imports",
+          "symbol": "../worker/runtime"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-runner.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/worker.ts",
+          "type": "imported_by",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imported_by",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imports",
+          "symbol": "../../../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/logger.ts",
+          "type": "imported_by",
+          "symbol": "./logger"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/schemas.ts",
+          "type": "imported_by",
+          "symbol": "./schemas"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/worker/runtime.ts",
+          "type": "imported_by",
+          "symbol": "../worker/runtime"
+        },
+        {
+          "path": "packages/workspace/scripts/tool-runner.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/worker.ts",
+          "type": "imports",
+          "symbol": "./lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tests/facade/facade.test.ts",
+          "type": "imports",
+          "symbol": "../../scripts/lib/facade/executor"
+        },
+        {
+          "path": "packages/workspace/tooling/tool-manifest.json",
+          "type": "imported_by",
+          "symbol": "../../../tooling/tool-manifest.json"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 38071,
+      "chunk_count": 52,
+      "last_modified": 1781043125,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.656,
+      "reason": "semantic match (hard-anchor-missing): function executeInternalTool",
+      "preview": "async function executeInternalTool<TData>( entry: ToolManifestEntry, input: ToolInput,",
+      "graph_connections": [
+        "packages/workspace/scripts/lib/code-call/runtime.ts",
+        "packages/workspace/scripts/lib/code-call/types.ts",
+        "packages/workspace/scripts/lib/codemode/tools/index.ts",
+        "packages/workspace/scripts/lib/facade/batch.ts",
+        "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+        "packages/workspace/scripts/lib/facade/client.ts",
+        "packages/workspace/scripts/lib/facade/errors.ts",
+        "packages/workspace/scripts/lib/facade/logger.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 577,
+        "end": 688
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/facade/executor.ts:function:executeInternalTool:577-688",
+        "path": "packages/workspace/scripts/lib/facade/executor.ts",
+        "kind": "function",
+        "name": "executeInternalTool",
+        "symbol_path": "executeInternalTool",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 577,
+          "end": 688
+        },
+        "content_hash": "2caba7476b9073b144f213a17b9ce83a897c388c881caccd301ab878f50b73e2",
+        "preview": "async function executeInternalTool<TData>( entry: ToolManifestEntry, input: ToolInput,"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 1,
+        "graphRelevance": 1,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.06666666666666667,
+        "nameMatch": 1,
+        "rawScore": 0.42,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.25,
+        "weightedEdges": 30.900000000000002
+      }
+    },
+    {
+      "path": "packages/workspace/tooling/tool-manifest.json",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": null,
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/generate-docs.ts",
+          "type": "imports",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/generate-types.ts",
+          "type": "imports",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "../../../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/generate-docs.ts",
+          "type": "imported_by",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/generate-types.ts",
+          "type": "imported_by",
+          "symbol": "../tooling/tool-manifest.json"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "../../../tooling/tool-manifest.json"
+        }
+      ],
+      "is_implementation": false,
+      "file_size": 140072,
+      "chunk_count": 43,
+      "last_modified": 1781043134,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.196,
+      "reason": "semantic match (hard-anchor-missing): block tool-manifest.json",
+      "preview": "\"arguments\": [] }, \"exampleInput\": {},",
+      "graph_connections": [
+        "packages/workspace/scripts/generate-docs.ts",
+        "packages/workspace/scripts/generate-types.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 901,
+        "end": 1050
+      },
+      "target": {
+        "key": "packages/workspace/tooling/tool-manifest.json:block:anonymous:901-1050",
+        "path": "packages/workspace/tooling/tool-manifest.json",
+        "kind": "block",
+        "name": null,
+        "symbol_path": null,
+        "node_type": "json",
+        "parent_name": null,
+        "lines": {
+          "start": 901,
+          "end": 1050
+        },
+        "content_hash": "c03bbbd6a83b4c0a25910fc3e58c3e8a07db4cda4a766992977100e767ad4e94",
+        "preview": "\"arguments\": [] }, \"exampleInput\": {},"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.2,
+        "graphRelevance": 0.04000000000000001,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0,
+        "nameMatch": 0,
+        "rawScore": 0.42,
+        "recency": 0.8,
+        "semanticOnly": true,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0,
+        "weightedEdges": 6
+      }
+    }
+  ],
+  "source_routes": [
+    {
+      "type": "workspace.tool-docs",
+      "identifier": "code.call",
+      "reason": "query contains a tool-like dotted name; inspect tool manifest and docs alongside code retrieval",
+      "preferred_paths": [
+        "packages/workspace/tooling/tool-manifest.json",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/SCRIPTS.md"
+      ]
+    }
+  ],
+  "index_stats": {
+    "total_files": 15507,
+    "total_chunks": 76543,
+    "last_indexed": "2026-06-13T16:19:00.145Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/workspace/scripts/lib/codemode/tools/index.ts": {
+      "prior": 0.7175,
+      "posterior": 0.7175,
+      "observations": []
+    },
+    "packages/workspace/TOOLS.md": {
+      "prior": 0.5429,
+      "posterior": 0.5429,
+      "observations": []
+    },
+    "packages/workspace/SCRIPTS.md": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    },
+    "packages/os/SCRIPTS.md": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    },
+    "packages/os/manifests/workflow-bundles.json": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    },
+    "packages/os/tooling/dev-tool-manifest.json": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/facade/executor.ts": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    },
+    "packages/workspace/tooling/tool-manifest.json": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/os/fix-code-call-task-session-error",
+  "mode": "exploring",
+  "worktree_id": "task/os/fix-code-call-task-session-error",
+  "updated_at": "2026-06-13T18:41:39.651Z"
+}

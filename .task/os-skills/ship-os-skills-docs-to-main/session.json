@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_acddaae3d397",
+  "tmuxSession": "opensaas-os-skills-ship-os-skills-docs-to-main-acddaae3",
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/ship-os-skills-docs-to-main",
+  "branch": "task/os-skills/ship-os-skills-docs-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-ship-os-skills-docs-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-ship-os-skills-docs-to-main",
+  "prNumber": 803,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/803",
+  "createdAt": "2026-06-05T09:10:53.543Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-ship-os-skills-docs-to-main/.task/os-skills/ship-os-skills-docs-to-main/session.json"
+}

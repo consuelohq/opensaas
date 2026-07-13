@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_95c191616231",
+  "tmuxSession": "opensaas-release-fix-installer-copy-and-launcher-links-95c19161",
+  "area": "release",
+  "stream": "stream/release",
+  "taskBranch": "task/release/fix-installer-copy-and-launcher-links",
+  "branch": "task/release/fix-installer-copy-and-launcher-links",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-installer-copy-and-launcher-links",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-installer-copy-and-launcher-links",
+  "prNumber": 1286,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1286",
+  "createdAt": "2026-06-30T15:23:21.158Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-installer-copy-and-launcher-links/.task/release/fix-installer-copy-and-launcher-links/session.json"
+}

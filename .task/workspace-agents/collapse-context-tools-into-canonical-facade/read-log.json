@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/scripts/lib/fs/read.ts",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/tests/tool-manifest.test.ts"
+  ],
+  "updatedAt": "2026-06-18T01:39:11.016Z"
+}

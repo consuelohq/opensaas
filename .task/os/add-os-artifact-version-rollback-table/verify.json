@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-os-artifact-version-rollback-table",
+  "base": "origin/task/os/add-os-artifact-version-rollback-table",
+  "headSha": "24996ffebe65c439ded33f1f6e44790493ffdf22",
+  "changeHash": "a252e58cc2348fbdfdee34dfb8c64462c91e3caaccad637d1d79d091ad3d8ac7",
+  "changedFiles": [
+    "packages/os/package.json",
+    "packages/os/scripts/artifacts.ts",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/tests/artifacts.test.ts"
+  ],
+  "verifiedAt": "2026-06-11T02:56:46.033Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-os-artifact-version-rollback-table/current.json",
+        ".task/os/add-os-artifact-version-rollback-table/evidence-log.json",
+        ".task/os/add-os-artifact-version-rollback-table/read-log.json",
+        ".task/os/add-os-artifact-version-rollback-table/session.json",
+        ".task/os/add-os-artifact-version-rollback-table/workpad.md",
+        ".task/tasks/os/add-os-artifact-version-rollback-table.json",
+        "packages/os/package.json",
+        "packages/os/scripts/artifacts.ts",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/lib/types.ts",
+        "packages/os/tests/artifacts.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

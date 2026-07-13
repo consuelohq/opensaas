@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_632e809f59d1",
+  "tmuxSession": "opensaas-os-wire-hosted-installer-device-login-632e809f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-hosted-installer-device-login",
+  "branch": "task/os/wire-hosted-installer-device-login",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-hosted-installer-device-login",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-hosted-installer-device-login",
+  "prNumber": 995,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/995",
+  "createdAt": "2026-06-13T05:54:25.867Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-hosted-installer-device-login/.task/os/wire-hosted-installer-device-login/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_25302d388295",
+  "tmuxSession": "opensaas-workspace-agents-show-all-nested-trace-operations-with-child-toke-25302d38",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+  "branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-all-nested-trace-operations-with-child-tokens",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-all-nested-trace-operations-with-child-tokens",
+  "prNumber": 580,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/580",
+  "createdAt": "2026-05-24T07:18:30.019Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-show-all-nested-trace-operations-with-child-tokens/.task/workspace-agents/show-all-nested-trace-operations-with-child-tokens/session.json"
+}

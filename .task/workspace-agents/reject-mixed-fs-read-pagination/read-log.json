@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-06-16T07:28:06.999Z"
+}

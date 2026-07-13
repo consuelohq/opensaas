@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/install-tty.test.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/cli-ui.ts",
+    "packages/os/scripts/onboarding-flow.test.ts"
+  ],
+  "updatedAt": "2026-06-03T21:02:21.726Z"
+}

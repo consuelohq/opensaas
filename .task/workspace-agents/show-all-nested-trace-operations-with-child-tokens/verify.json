@@ -1,0 +1,29 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/show-all-nested-trace-operations-with-child-tokens",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "dfb923b6a528b0ca68ffdff7d9ac83e0f6efed24",
+  "changeHash": "16abcef9ee3eb7968e30bcd664978d5e723ed3972687a2a5157c91ea2fbefe73",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/codemode/tools/index.ts",
+    "packages/workspace/scripts/lib/facade/batch.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-24T07:24:56.411Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

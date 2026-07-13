@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+    "packages/twenty-front/src/modules/dialer/types/queue.ts",
+    "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+    "packages/twenty-server/src/engine/metadata-modules/flat-field-metadata/__mocks__/person-flat-fields.mock.ts"
+  ],
+  "updatedAt": "2026-05-24T02:34:50.322Z"
+}

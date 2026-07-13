@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/workspace-agents/add-workspace-tool-search/workpad.md",
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/generate-types.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/tool-runner.ts",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-05-30T19:52:46.349Z"
+}

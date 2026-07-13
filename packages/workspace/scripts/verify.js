@@ -31,9 +31,9 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)');
-  writeStdout('  --no-review           skip bun run review and only run verify guardrails');
-  writeStdout('  --no-db               skip db/migration/graphql guardrails');
-  writeStdout('  --db-warn-only        report db guard errors as warnings');
+  writeStdout('  --debug-skip-review   debug only: skip review; never writes publish-valid stamp');
+  writeStdout('  --debug-skip-db       debug only: skip db guardrails; never writes publish-valid stamp');
+  writeStdout('  --db-warn-only        debug only: report db guard errors as warnings; never publish-valid');
   writeStdout('  --no-stamp            do not write .task/verify.json');
   writeStdout('  --review-arg <value>  pass one extra argument to bun run review; repeatable');
   writeStdout('  --json                output structured json');
@@ -60,18 +60,33 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
+    const knownFlags = [
+      '--base',
+      '--db-warn-only',
+      '--debug-skip-db',
+      '--debug-skip-review',
+      '--help',
+      '--json',
+      '--no-stamp',
+      '--quiet',
+      '--review-arg',
+    ];
+    if (!knownFlags.includes(flag)) {
+      throw new Error(`unknown flag: ${flag}`);
+    }
     const isBooleanFlag = [
       '--db-warn-only',
       '--help',
       '--json',
-      '--no-db',
-      '--no-review',
+      '--debug-skip-db',
+      '--debug-skip-review',
       '--no-stamp',
       '--quiet',
     ].includes(flag);
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
-    if (!isBooleanFlag && (!value || value.startsWith('--'))) {
+    const allowsFlagLikeValue = flag === '--review-arg';
+    if (!isBooleanFlag && (!value || (!allowsFlagLikeValue && value.startsWith('--')))) {
       throw new Error(`missing value for ${flag}`);
     }
 
@@ -86,10 +101,10 @@ function parseArgs(argv) {
       case '--review-arg':
         args.reviewArgs.push(value);
         break;
-      case '--no-review':
+      case '--debug-skip-review':
         args.review = false;
         break;
-      case '--no-db':
+      case '--debug-skip-db':
         args.db = false;
         break;
       case '--db-warn-only':
@@ -218,6 +233,38 @@ function readChangedFiles(repoRoot, base) {
   return [...files].filter((file) => !file.startsWith('.task/')).sort();
 }
 
+const REVIEW_STDERR_LIMIT = 4000;
+
+function compactText(text, limit = REVIEW_STDERR_LIMIT) {
+  const value = String(text || '');
+  return {
+    text: value.length > limit ? `${value.slice(0, limit)}\n... truncated ${value.length - limit} chars` : value,
+    chars: value.length,
+    truncated: value.length > limit,
+  };
+}
+
+function countFindings(value) {
+  if (Array.isArray(value)) return value.length;
+  if (value && typeof value.total === 'number') return value.total;
+  return 0;
+}
+
+function countFailedTests(value) {
+  if (!Array.isArray(value)) return 0;
+  return value.filter((testResult) => !testResult.passed).length;
+}
+
+function countReviewIssues(data) {
+  if (!data) return 1;
+  if (data.summary && typeof data.summary.blockingIssues === 'number') {
+    return data.summary.blockingIssues;
+  }
+  return countFindings(data.yours)
+    + countFindings(data.preExisting)
+    + countFailedTests(data.testResults);
+}
+
 function parseReviewJson(stdout) {
   const start = stdout.indexOf('{');
   const end = stdout.lastIndexOf('}');
@@ -245,7 +292,7 @@ function runReview(repoRoot, base, args) {
     };
   }
 
-  const reviewArgs = ['run', 'review', '--', '--base', base, '--json', '--quiet', ...args.reviewArgs];
+  const reviewArgs = ['run', 'review', '--', '--base', base, '--summary-json', '--quiet', ...args.reviewArgs];
   const result = spawnSync('bun', reviewArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
@@ -253,11 +300,7 @@ function runReview(repoRoot, base, args) {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   const data = parseReviewJson(result.stdout || '');
-  const reviewIssueCount = data
-    ? (data.yours || []).length
-      + (data.preExisting || []).length
-      + (data.testResults || []).filter((testResult) => !testResult.passed).length
-    : 1;
+  const reviewIssueCount = countReviewIssues(data);
 
   return {
     skipped: false,
@@ -269,6 +312,29 @@ function runReview(repoRoot, base, args) {
   };
 }
 
+
+function runTestSelection(repoRoot, base) {
+  const result = spawnSync('bun', ['packages/workspace/scripts/test-selection.js', 'check', '--base', base, '--run', '--json'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 1024 * 1024 * 8,
+  });
+  let data = null;
+  try {
+    data = JSON.parse(result.stdout || '{}');
+  } catch {
+    data = { passed: false, error: 'failed to parse test-selection JSON', stdout: result.stdout || '' };
+  }
+  return {
+    skipped: false,
+    passed: result.status === 0 && data.passed === true,
+    status: result.status,
+    data,
+    stderr: result.stderr || '',
+  };
+}
+
 function createDbResult(files, args) {
   if (!args.db) {
     return {
@@ -277,6 +343,7 @@ function createDbResult(files, args) {
       risks: [],
       groupedRisks: {},
       findings: [],
+      warnOnly: false,
     };
   }
 
@@ -288,6 +355,96 @@ function createDbResult(files, args) {
     risks: analysis.risks,
     groupedRisks: analysis.groupedRisks,
     findings: analysis.findings,
+    warnOnly: args.dbWarnOnly,
+  };
+}
+
+
+function reviewChecks(review) {
+  const data = review && review.data;
+  return Array.isArray(data && data.checksRun) ? data.checksRun : [];
+}
+
+function reviewTestSummary(review) {
+  const data = review && review.data;
+  return data && data.testSummary ? data.testSummary : null;
+}
+
+function createBecause(result) {
+  const checks = reviewChecks(result.review);
+  const testSummary = reviewTestSummary(result.review);
+  const totalSuites = Number((testSummary && testSummary.totalSuites) || 0);
+  const passedSuites = Number((testSummary && testSummary.passedSuites) || 0);
+  const failedSuites = Number((testSummary && testSummary.failedSuites) || 0);
+  const lines = [];
+
+  if (result.review.skipped) {
+    lines.push('review was skipped; this is partial and not publish-valid');
+  } else {
+    lines.push(`review ran${checks.length ? ` ${checks.join(', ')}` : ''} and ${result.review.passed ? 'passed' : 'failed'}`);
+  }
+
+  if (testSummary) {
+    if (totalSuites === 0) {
+      lines.push('tests selected 0 suites because no affected test suite was reported by review for these changed files');
+    } else {
+      lines.push(`tests selected ${totalSuites} suite${totalSuites === 1 ? '' : 's'}; ${passedSuites} passed and ${failedSuites} failed`);
+    }
+  } else {
+    lines.push('tests had no summary because review did not return test selection data');
+  }
+
+  if (result.testSelection) {
+    const selection = result.testSelection.data || {};
+    const suiteCount = Array.isArray(selection.selectedSuites) ? selection.selectedSuites.length : 0;
+    const matched = Array.isArray(selection.matchedRules) ? selection.matchedRules.map((rule) => rule.id).join(', ') : '';
+    if (suiteCount > 0) {
+      lines.push(`registry selected ${suiteCount} suite${suiteCount === 1 ? '' : 's'}${matched ? ` from ${matched}` : ''} and ${result.testSelection.passed ? 'passed' : 'failed'}`);
+    } else if (selection.zeroSuiteReason) {
+      lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
+    } else {
+      lines.push('registry selected 0 suites and gave no reason');
+    }
+  }
+
+  if (result.db.skipped) {
+    lines.push('db guard was skipped; this is partial and not publish-valid');
+  } else {
+    lines.push(`db guard ran and ${result.db.passed ? 'passed' : 'failed'} with ${result.db.risks.length} risk${result.db.risks.length === 1 ? '' : 's'} and ${result.db.findings.length} finding${result.db.findings.length === 1 ? '' : 's'}`);
+  }
+
+  lines.push(result.publishValid
+    ? `stamp is publish-valid${result.stampPath ? ` and written to ${path.relative(result.repoRoot, result.stampPath)}` : ''}`
+    : 'stamp is not publish-valid because the full gate did not pass');
+
+  return {
+    lines,
+    review: {
+      ran: !result.review.skipped,
+      passed: result.review.passed,
+      checksRun: checks,
+    },
+    tests: {
+      summaryAvailable: Boolean(testSummary),
+      totalSuites,
+      passedSuites,
+      failedSuites,
+      zeroSuiteReason: testSummary && totalSuites === 0
+        ? 'no affected test suite was reported by review for these changed files'
+        : null,
+    },
+    db: {
+      ran: !result.db.skipped,
+      passed: result.db.passed,
+      risks: result.db.risks.length,
+      findings: result.db.findings.length,
+      warnOnly: result.db.warnOnly,
+    },
+    stamp: {
+      publishValid: result.publishValid,
+      written: Boolean(result.stampPath),
+      path: result.stampPath ? path.relative(result.repoRoot, result.stampPath) : null,
+    },
   };
 }
 
@@ -301,6 +458,11 @@ function printHumanResult(result) {
   writeStdout(`changed files: ${result.files.length}`);
   writeStdout(`review: ${result.review.skipped ? 'skipped' : result.review.passed ? 'pass' : 'fail'}`);
   writeStdout(`db guard: ${result.db.skipped ? 'skipped' : result.db.passed ? 'pass' : 'fail'}`);
+
+  writeStdout('because:');
+  for (const line of result.because.lines) {
+    writeStdout(`  - ${line}`);
+  }
 
   for (const risk of result.db.risks) {
     writeStdout(`  ${risk.category}: ${risk.file}`);
@@ -320,6 +482,19 @@ function printHumanResult(result) {
   }
 }
 
+function getVerifyRoot() {
+  const taskWorktree = process.env.TASK_WORKTREE;
+  if (taskWorktree) {
+    try {
+      return resolveGitRoot(taskWorktree);
+    } catch (error) {
+      throw new Error(`task worktree not found or not a git repository: ${taskWorktree}`);
+    }
+  }
+
+  return resolveGitRoot(process.cwd());
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -328,44 +503,55 @@ async function main() {
     return;
   }
 
-  const repoRoot = resolveGitRoot(process.cwd());
+  const repoRoot = getVerifyRoot();
   process.chdir(repoRoot);
 
   const branch = getCurrentBranch(repoRoot);
-  const taskMeta = findTaskMeta(repoRoot);
+  const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
   const base = detectBase(repoRoot, args, branch, taskMeta);
   const files = readChangedFiles(repoRoot, base);
   const headSha = getRefSha(repoRoot, 'HEAD');
   const review = runReview(repoRoot, base, args);
+  const testSelection = runTestSelection(repoRoot, base);
   const db = createDbResult(files, args);
-  const passed = review.passed && db.passed;
+  const passed = review.passed && testSelection.passed && db.passed;
+  const mode = review.skipped || db.skipped || args.dbWarnOnly ? 'partial' : 'full';
+  const publishValid = passed && mode === 'full';
   const verificationState = computeVerificationState(repoRoot, branch);
   let stampPath = null;
+  const stamp = {
+    result: passed ? 'pass' : 'fail',
+    publishValid,
+    mode,
+    branch,
+    base,
+    headSha,
+    changeHash: verificationState.changeHash,
+    changedFiles: files,
+    verifiedAt: new Date().toISOString(),
+    review: {
+      skipped: review.skipped,
+      passed: review.passed,
+      status: review.status,
+    },
+    testSelection: {
+      skipped: testSelection.skipped,
+      passed: testSelection.passed,
+      status: testSelection.status,
+      data: testSelection.data,
+    },
+    db: {
+      skipped: db.skipped,
+      passed: db.passed,
+      warnOnly: db.warnOnly,
+      risks: db.risks,
+      findings: db.findings,
+    },
+    commandVersion: 2,
+  };
 
-  if (passed && args.stamp && taskMeta) {
-    const stamp = {
-      result: 'pass',
-      branch,
-      base,
-      headSha,
-      changeHash: verificationState.changeHash,
-      changedFiles: files,
-      verifiedAt: new Date().toISOString(),
-      review: {
-        skipped: review.skipped,
-        passed: review.passed,
-      },
-      db: {
-        skipped: db.skipped,
-        passed: db.passed,
-        risks: db.risks,
-        findings: db.findings,
-      },
-      commandVersion: 1,
-    };
-
-    writeVerifyStamp(repoRoot, stamp);
-    stampPath = path.join(repoRoot, '.task', 'verify.json');
+  if (publishValid && args.stamp && taskMeta) {
+    stampPath = writeVerifyStamp(repoRoot, stamp);
   }
 
   const result = {
@@ -376,10 +562,15 @@ async function main() {
     headSha,
     files,
     review,
+    testSelection,
     db,
     passed,
+    publishValid,
+    mode,
+    stamp,
     stampPath,
   };
+  result.because = createBecause(result);
 
   if (args.json) {
     writeStdout(JSON.stringify({
@@ -387,15 +578,34 @@ async function main() {
       base: result.base,
       headSha: result.headSha,
       files: result.files,
+      mode: result.mode,
+      publishValid: result.publishValid,
+      because: result.because,
       review: {
         skipped: result.review.skipped,
         passed: result.review.passed,
         status: result.review.status,
         data: result.review.data,
-        stderr: result.review.stderr,
+        stderr: compactText(result.review.stderr).text,
+        stderrChars: compactText(result.review.stderr).chars,
+        stderrTruncated: compactText(result.review.stderr).truncated,
+      },
+      testSelection: {
+        skipped: result.testSelection.skipped,
+        passed: result.testSelection.passed,
+        status: result.testSelection.status,
+        data: result.testSelection.data,
+        stderr: compactText(result.testSelection.stderr).text,
+        stderrChars: compactText(result.testSelection.stderr).chars,
+        stderrTruncated: compactText(result.testSelection.stderr).truncated,
       },
       db: result.db,
       passed: result.passed,
+      stamp: {
+        written: Boolean(result.stampPath),
+        path: result.stampPath,
+        publishValid: result.publishValid,
+      },
       stampPath: result.stampPath,
     }, null, 2));
   } else {

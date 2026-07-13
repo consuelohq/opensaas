@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/align-tools-search-code-call-routing",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1133,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1133",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1133",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1133/align-tools-search-code-call-routing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1133",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1133/align-tools-search-code-call-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-align-tools-search-code-call-routing",
+  "taskSession": "tsk_b9baff19f60b",
+  "tmuxSession": "opensaas-workspace-agents-align-tools-search-code-call-routing-b9baff19",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-align-tools-search-code-call-routing/.task/workspace-agents/align-tools-search-code-call-routing/session.json",
+  "createdAt": "2026-06-18T05:46:30.117Z"
+}

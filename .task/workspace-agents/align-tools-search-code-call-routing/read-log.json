@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/tools-search.ts",
+    "packages/workspace/scripts/tools-search.ts"
+  ],
+  "updatedAt": "2026-06-18T05:56:01.215Z"
+}

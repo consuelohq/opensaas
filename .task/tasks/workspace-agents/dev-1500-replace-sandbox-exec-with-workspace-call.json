@@ -1,0 +1,18 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 320,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/320",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-call",
+  "createdAt": "2026-05-06T04:45:55.861Z",
+  "taskPrNumber": 336,
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/336",
+  "taskPrMergedAt": "2026-05-06T05:27:57Z",
+  "streamPrNumber": 320,
+  "streamPrUrl": "https://github.com/consuelohq/opensaas/pull/320",
+  "reviewBaseBranch": "main"
+}

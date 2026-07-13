@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/add-graphite-inspired-review-ux",
+  "base": "origin/task/diff-cockpit/add-graphite-inspired-review-ux",
+  "headSha": "1cfbb143e828054eb74c5a1326c71f1fba5983d7",
+  "changeHash": "323fb639b8d413bd595a8bd5677af2fcf5a2c083e5414b7f36929be5cc8b5f62",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T08:32:02.877Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/add-graphite-inspired-review-ux/current.json",
+        ".task/diff-cockpit/add-graphite-inspired-review-ux/evidence-log.json",
+        ".task/diff-cockpit/add-graphite-inspired-review-ux/read-log.json",
+        ".task/diff-cockpit/add-graphite-inspired-review-ux/session.json",
+        ".task/diff-cockpit/add-graphite-inspired-review-ux/verify.json",
+        ".task/diff-cockpit/add-graphite-inspired-review-ux/workpad.md",
+        ".task/diff-cockpit/rework-home-screen/current.json",
+        ".task/diff-cockpit/rework-home-screen/evidence-log.json",
+        ".task/diff-cockpit/rework-home-screen/read-log.json",
+        ".task/diff-cockpit/rework-home-screen/session.json",
+        ".task/diff-cockpit/rework-home-screen/verify.json",
+        ".task/diff-cockpit/rework-home-screen/workpad.md",
+        ".task/tasks/diff-cockpit/add-graphite-inspired-review-ux.json",
+        ".task/tasks/diff-cockpit/rework-home-screen.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

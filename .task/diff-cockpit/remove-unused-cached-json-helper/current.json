@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/remove-unused-cached-json-helper",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 1165,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1165",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1165",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1165/remove-unused-cached-json-helper",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1165",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1165/remove-unused-cached-json-helper",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-remove-unused-cached-json-helper",
+  "taskSession": "tsk_a15727873c55",
+  "tmuxSession": "opensaas-diff-cockpit-remove-unused-cached-json-helper-a1572787",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-remove-unused-cached-json-helper/.task/diff-cockpit/remove-unused-cached-json-helper/session.json",
+  "createdAt": "2026-06-20T22:27:52.754Z"
+}

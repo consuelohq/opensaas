@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/bootstrap-stream-agent-docs",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 306,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/306",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-bootstrap-stream-agent-docs",
+  "createdAt": "2026-05-04T07:10:16.307Z"
+}

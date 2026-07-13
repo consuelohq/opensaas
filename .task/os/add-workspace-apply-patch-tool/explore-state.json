@@ -1,0 +1,934 @@
+{
+  "query": "workspace fs.patch implementation schemas tool manifest tests apply patch",
+  "budget": 8,
+  "results": [
+    {
+      "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+      "score": 0.9596,
+      "belief_prior": 0.7298,
+      "symbol": "recordChangedPath",
+      "chunk_type": "function",
+      "file_outline": "createState isRecord normalizeInput firstArgumentAsInput recordChangedPath compactOperation blockedToolResult createCallTool setNestedTool createManifestTool buildToolRegistry",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/code-run.ts",
+          "type": "imports",
+          "symbol": "./lib/codemode/tools/index"
+        },
+        {
+          "path": "packages/workspace/scripts/code-run.ts",
+          "type": "imported_by",
+          "symbol": "./lib/codemode/tools/index"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/codemode/types.ts",
+          "type": "imports",
+          "symbol": "../types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imports",
+          "symbol": "../../facade/errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imports",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imports",
+          "symbol": "../../facade/types"
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/codemode/tools"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/codemode/types.ts",
+          "type": "imported_by",
+          "symbol": "../types"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/errors.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/errors"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/executor.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/executor"
+        },
+        {
+          "path": "packages/workspace/scripts/lib/facade/types.ts",
+          "type": "imported_by",
+          "symbol": "../../facade/types"
+        },
+        {
+          "path": "packages/workspace/tests/codemode.test.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/codemode/tools"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4392,
+      "chunk_count": 15,
+      "last_modified": 1781041341,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.8646,
+      "reason": "hybrid match: function recordChangedPath",
+      "preview": "function recordChangedPath(toolName: string, input: ToolInput, state: CodeRunRegistryState): void { if (!toolName.startsWith('fs.')) return; if (!['fs.write', 'fs.patch', 'fs.trash'].includes(toolName)) return;",
+      "graph_connections": [
+        "packages/workspace/scripts/code-run.ts",
+        "packages/workspace/scripts/lib/codemode/types.ts",
+        "packages/workspace/scripts/lib/facade/errors.ts",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/types.ts",
+        "packages/workspace/tests/codemode.test.ts"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 35,
+        "end": 39
+      },
+      "target": {
+        "key": "packages/workspace/scripts/lib/codemode/tools/index.ts:function:recordChangedPath:35-39",
+        "path": "packages/workspace/scripts/lib/codemode/tools/index.ts",
+        "kind": "function",
+        "name": "recordChangedPath",
+        "symbol_path": "recordChangedPath",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 35,
+          "end": 39
+        },
+        "content_hash": "f2d76ea48ddb06ff4b132a58f1536f2f0b3e3b0022024fb592d8240b6baa7905",
+        "preview": "function recordChangedPath(toolName: string, input: ToolInput, state: CodeRunRegistryState): void { if (!toolName.startsWith('fs.')) return; if (!['fs.write', 'fs.patch', 'fs.trash'].includes(toolName)) return;"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 1,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.4,
+        "graphRelevance": 0.4,
+        "hardAnchorCoverage": 1,
+        "hasHardAnchors": true,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.10714285714285714,
+        "nameMatch": 1,
+        "rawScore": 0.9595928571428574,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 1,
+        "structuralScore": 1,
+        "tokenCoverage": 0.42857142857142855,
+        "weightedEdges": 12
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher.tsx",
+      "score": 0.7904,
+      "belief_prior": 0.6452,
+      "symbol": "CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher",
+      "chunk_type": "function",
+      "file_outline": "CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/AddToNavigationDragHandle.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFolders.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/AddToNavigationDragHandle.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFolders.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItems.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItems.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberOrphanNavigationMenuItems.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/IconWithBackground.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationItemDropTarget.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuEditModeBar.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemBackButton.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemDragProvider.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemDroppable.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemFolderContent.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemFolderContentDispatcher.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemFolderNavigationDrawerItemDropdown.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemFolders.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemIcon.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemIconContainer.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemSkeletonLoader.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemFolderDragClone.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemsDispatcher.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemsFolder.tsx",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 354,
+      "chunk_count": 3,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.2773,
+      "reason": "hybrid match: function CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher",
+      "preview": "export const CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher = () => { return <CurrentWorkspaceMemberNavigationMenuItemFolders />; };",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/navigation-menu-item/components/AddToNavigationDragHandle.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFolders.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItems.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberOrphanNavigationMenuItems.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/IconWithBackground.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationItemDropTarget.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuEditModeBar.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/NavigationMenuItemBackButton.tsx"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 4,
+        "end": 6
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher.tsx:function:CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher:4-6",
+        "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher.tsx",
+        "kind": "function",
+        "name": "CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher",
+        "symbol_path": "CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 4,
+          "end": 6
+        },
+        "content_hash": "505eb929eadcbb19446c8d416e6c58dc0a6c1d9c2c809afbf34d51282f1bd7e7",
+        "preview": "export const CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher = () => { return <CurrentWorkspaceMemberNavigationMenuItemFolders />; };"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.2399999999999999,
+        "graphRelevance": 0.2399999999999999,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.2857142857142857,
+        "nameMatch": 1,
+        "rawScore": 0.7903500000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2857142857142857,
+        "weightedEdges": 7.1999999999999975
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemsDispatcher.tsx",
+      "score": 0.7778,
+      "belief_prior": 0.6389,
+      "symbol": "WorkspaceNavigationMenuItemsDispatcher",
+      "chunk_type": "function",
+      "file_outline": "WorkspaceNavigationMenuItemsDispatcher",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/AddToNavigationDragHandle.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFolders.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher.tsx",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 278,
+      "chunk_count": 3,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.9389,
+      "reason": "hybrid match: function WorkspaceNavigationMenuItemsDispatcher",
+      "preview": "export const WorkspaceNavigationMenuItemsDispatcher = () => { return <WorkspaceNavigationMenuItems />; };",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/navigation-menu-item/components/AddToNavigationDragHandle.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFolders.tsx",
+        "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher.tsx"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 4,
+        "end": 6
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemsDispatcher.tsx:function:WorkspaceNavigationMenuItemsDispatcher:4-6",
+        "path": "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemsDispatcher.tsx",
+        "kind": "function",
+        "name": "WorkspaceNavigationMenuItemsDispatcher",
+        "symbol_path": "WorkspaceNavigationMenuItemsDispatcher",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 4,
+          "end": 6
+        },
+        "content_hash": "6a7ff072c47fb914027d8c4c12f4c4ff367638d41a54c1e87e2a217680eb8b3e",
+        "preview": "export const WorkspaceNavigationMenuItemsDispatcher = () => { return <WorkspaceNavigationMenuItems />; };"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.2857142857142857,
+        "nameMatch": 1,
+        "rawScore": 0.7777500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.2857142857142857,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/os/tests/task-hook-dispatcher.test.ts",
+      "score": 0.6689,
+      "belief_prior": 0.5844,
+      "symbol": "describe: OS hook dispatcher",
+      "chunk_type": "test",
+      "file_outline": null,
+      "typed_edges": [
+        {
+          "path": "packages/os/hooks/dispatcher.js",
+          "type": "imported_by",
+          "symbol": "../hooks/dispatcher.js"
+        },
+        {
+          "path": "packages/os/hooks/dispatcher.js",
+          "type": "imports",
+          "symbol": "../hooks/dispatcher.js"
+        },
+        {
+          "path": "packages/os/tests/artifact-render.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/bootstrap-source.test.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": false,
+      "file_size": 4638,
+      "chunk_count": 4,
+      "last_modified": 1781203237,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.7455,
+      "reason": "hybrid match: test describe: OS hook dispatcher",
+      "preview": "describe('OS hook dispatcher', () => { test('dispatches task workflow events using the current manifest without hard-coded action output', () => { const result = dispatchHookEvent({",
+      "graph_connections": [
+        "packages/os/hooks/dispatcher.js",
+        "packages/os/tests/artifact-render.test.ts",
+        "packages/os/tests/artifacts.test.ts",
+        "packages/os/tests/bootstrap-source.test.ts"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 17,
+        "end": 131
+      },
+      "target": {
+        "key": "packages/os/tests/task-hook-dispatcher.test.ts:test:describe: OS hook dispatcher:17-131",
+        "path": "packages/os/tests/task-hook-dispatcher.test.ts",
+        "kind": "test",
+        "name": "describe: OS hook dispatcher",
+        "symbol_path": "describe: OS hook dispatcher",
+        "node_type": "call_expression",
+        "parent_name": null,
+        "lines": {
+          "start": 17,
+          "end": 131
+        },
+        "content_hash": "a7e8f2815d6e8f60ae8ac4ac2ed8b64dd49b5f95072cc49dd041342b9e60bf4d",
+        "preview": "describe('OS hook dispatcher', () => { test('dispatches task workflow events using the current manifest without hard-coded action output', () => { const result = dispatchHookEvent({"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.09666666666666665,
+        "graphRelevance": 0.09666666666666665,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.20714285714285713,
+        "nameMatch": 1,
+        "rawScore": 0.6688928571428572,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.85,
+        "tokenCoverage": 0.42857142857142855,
+        "weightedEdges": 2.8999999999999995
+      }
+    },
+    {
+      "path": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/universal-flat-entity-deleted-created-updated-matrix-dispatcher.util.spec.ts",
+      "score": 0.6525,
+      "belief_prior": 0.5762,
+      "symbol": "describe: flatEntityDeletedCreatedUpdatedMatrixDispatcher part 1",
+      "chunk_type": "test",
+      "file_outline": null,
+      "typed_edges": [
+        {
+          "path": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/add-universal-flat-entity-to-universal-flat-entity-and-related-entity-maps-through-mutation-or-throw.util.spec.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/compare-two-universal-flat-entity.util.spec.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/delete-universal-flat-entity-from-universal-flat-entity-and-related-entity-maps-through-mutation-or-throw.util.spec.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/universal-flat-entity-deleted-created-updated-matrix-dispatcher.util.ts",
+          "type": "tests",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/testing/EachTestingContextFilter.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/testing"
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/types"
+        },
+        {
+          "path": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/universal-flat-entity-deleted-created-updated-matrix-dispatcher.util.ts",
+          "type": "tested_by",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/testing/EachTestingContextFilter.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/testing"
+        },
+        {
+          "path": "packages/twenty-shared/src/types/AddressFieldsType.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/types"
+        }
+      ],
+      "is_implementation": false,
+      "file_size": 8852,
+      "chunk_count": 5,
+      "last_modified": null,
+      "has_test": true,
+      "package": "twenty-server",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 2.0342,
+      "reason": "hybrid match: test describe: flatEntityDeletedCreatedUpdatedMatrixDispatcher part 1",
+      "preview": "describe('flatEntityDeletedCreatedUpdatedMatrixDispatcher', () => { const testCases = [ {",
+      "graph_connections": [
+        "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/add-universal-flat-entity-to-universal-flat-entity-and-related-entity-maps-through-mutation-or-throw.util.spec.ts",
+        "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/compare-two-universal-flat-entity.util.spec.ts",
+        "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/delete-universal-flat-entity-from-universal-flat-entity-and-related-entity-maps-through-mutation-or-throw.util.spec.ts",
+        "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/universal-flat-entity-deleted-created-updated-matrix-dispatcher.util.ts",
+        "packages/twenty-shared/src/testing/EachTestingContextFilter.ts",
+        "packages/twenty-shared/src/types/AddressFieldsType.ts"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 17,
+        "end": 126
+      },
+      "target": {
+        "key": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/universal-flat-entity-deleted-created-updated-matrix-dispatcher.util.spec.ts:test:describe: flatEntityDeletedCreatedUpdatedMatrixDispatcher part 1:17-126",
+        "path": "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/universal-flat-entity-deleted-created-updated-matrix-dispatcher.util.spec.ts",
+        "kind": "test",
+        "name": "describe: flatEntityDeletedCreatedUpdatedMatrixDispatcher part 1",
+        "symbol_path": "describe: flatEntityDeletedCreatedUpdatedMatrixDispatcher part 1",
+        "node_type": "call_expression",
+        "parent_name": null,
+        "lines": {
+          "start": 17,
+          "end": 126
+        },
+        "content_hash": "422a8016d18b7db3fe1e911a1ee30a60f92f11472ec13cf5f7d508e5a33edce6",
+        "preview": "describe('flatEntityDeletedCreatedUpdatedMatrixDispatcher', () => { const testCases = [ {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.26333333333333336,
+        "graphRelevance": 0.26333333333333336,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.22142857142857142,
+        "nameMatch": 1,
+        "rawScore": 0.6524642857142857,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.85,
+        "tokenCoverage": 0.42857142857142855,
+        "weightedEdges": 7.9
+      }
+    },
+    {
+      "path": "packages/workspace/TOOLS.md",
+      "score": 0.6152,
+      "belief_prior": 0.5576,
+      "symbol": "workspace.fs.patch",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 158504,
+      "chunk_count": 542,
+      "last_modified": 1781043113,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.8848,
+      "reason": "hybrid match: block workspace.fs.patch",
+      "preview": "### workspace.fs.patch replace a line range in a task worktree file | Field | Value |",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 2371,
+        "end": 2382
+      },
+      "target": {
+        "key": "packages/workspace/TOOLS.md:block:workspace.fs.patch:2371-2382",
+        "path": "packages/workspace/TOOLS.md",
+        "kind": "block",
+        "name": "workspace.fs.patch",
+        "symbol_path": "workspace.fs.patch",
+        "node_type": "markdown_heading",
+        "parent_name": null,
+        "lines": {
+          "start": 2371,
+          "end": 2382
+        },
+        "content_hash": "b256465f2f8898a9a6a4b59053570b30e786fb38c9167969d75f9479683c2b0b",
+        "preview": "### workspace.fs.patch replace a line range in a task worktree file | Field | Value |"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 1,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 1,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": true,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.19285714285714284,
+        "nameMatch": 1,
+        "rawScore": 0.6151767857142857,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 1,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0.2857142857142857,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/os/manifests/core.manifest.json",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": "tools part 7",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 92160,
+      "chunk_count": 45,
+      "last_modified": 1781213156,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.92,
+      "reason": "semantic match (hard-anchor-missing): block tools part 7",
+      "preview": "\"flag\": \"--reindex\", \"kind\": \"boolean\" }",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 901,
+        "end": 1044
+      },
+      "target": {
+        "key": "packages/os/manifests/core.manifest.json:block:tools part 7:901-1044",
+        "path": "packages/os/manifests/core.manifest.json",
+        "kind": "block",
+        "name": "tools part 7",
+        "symbol_path": "tools part 7",
+        "node_type": "json_property",
+        "parent_name": null,
+        "lines": {
+          "start": 901,
+          "end": 1044
+        },
+        "content_hash": "ec71e4038b29932b768f061eee77e77adf6800381a4328fdc4841ed025a0f5f3",
+        "preview": "\"flag\": \"--reindex\", \"kind\": \"boolean\" }"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.049999999999999996,
+        "nameMatch": 1,
+        "rawScore": 0.42,
+        "recency": 0.8,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0.14285714285714285,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/twenty-server/patches/README.md",
+      "score": 0.42,
+      "belief_prior": 0.46,
+      "symbol": "How to patch a dependency",
+      "chunk_type": "block",
+      "file_outline": null,
+      "typed_edges": [],
+      "is_implementation": false,
+      "file_size": 916,
+      "chunk_count": 5,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-server",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.92,
+      "reason": "semantic match (hard-anchor-missing): block How to patch a dependency",
+      "preview": "# How to patch a dependency `yarn patch-commit -s` does not work in our monorepo. Use the workflow below instead.",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 1,
+        "end": 4
+      },
+      "target": {
+        "key": "packages/twenty-server/patches/README.md:block:How to patch a dependency:1-4",
+        "path": "packages/twenty-server/patches/README.md",
+        "kind": "block",
+        "name": "How to patch a dependency",
+        "symbol_path": "How to patch a dependency",
+        "node_type": "markdown_heading",
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 4
+        },
+        "content_hash": "c90c906848223a6f2bba423546b4c8f54955944e1a03853e44e480d10246f960",
+        "preview": "# How to patch a dependency `yarn patch-commit -s` does not work in our monorepo. Use the workflow below instead."
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": "hard-anchor-missing",
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": true,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.12142857142857143,
+        "nameMatch": 1,
+        "rawScore": 0.42,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.35,
+        "tokenCoverage": 0.14285714285714285,
+        "weightedEdges": 0
+      }
+    }
+  ],
+  "source_routes": [
+    {
+      "type": "workspace.tool-docs",
+      "identifier": "fs.patch",
+      "reason": "query contains a tool-like dotted name; inspect tool manifest and docs alongside code retrieval",
+      "preferred_paths": [
+        "packages/workspace/tooling/tool-manifest.json",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/SCRIPTS.md"
+      ]
+    }
+  ],
+  "index_stats": {
+    "total_files": 15507,
+    "total_chunks": 76543,
+    "last_indexed": "2026-06-13T16:19:00.145Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/workspace/scripts/lib/codemode/tools/index.ts": {
+      "prior": 0.7298,
+      "posterior": 0.7298,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher.tsx": {
+      "prior": 0.6452,
+      "posterior": 0.6452,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItemsDispatcher.tsx": {
+      "prior": 0.6389,
+      "posterior": 0.6389,
+      "observations": []
+    },
+    "packages/os/tests/task-hook-dispatcher.test.ts": {
+      "prior": 0.5844,
+      "posterior": 0.5844,
+      "observations": []
+    },
+    "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils/__tests__/universal-flat-entity-deleted-created-updated-matrix-dispatcher.util.spec.ts": {
+      "prior": 0.5762,
+      "posterior": 0.5762,
+      "observations": []
+    },
+    "packages/workspace/TOOLS.md": {
+      "prior": 0.5576,
+      "posterior": 0.5576,
+      "observations": []
+    },
+    "packages/os/manifests/core.manifest.json": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    },
+    "packages/twenty-server/patches/README.md": {
+      "prior": 0.46,
+      "posterior": 0.46,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/os/add-workspace-apply-patch-tool",
+  "mode": "exploring",
+  "worktree_id": "task/os/add-workspace-apply-patch-tool",
+  "updated_at": "2026-06-14T03:52:26.520Z"
+}

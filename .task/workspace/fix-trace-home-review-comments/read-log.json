@@ -1,0 +1,16 @@
+{
+  "files": [
+    "package.json",
+    "packages/workspace/scripts/trace-home/cli.ts",
+    "packages/workspace/scripts/trace-home/command-quality.ts",
+    "packages/workspace/scripts/trace-home/db.ts",
+    "packages/workspace/scripts/trace-home/model.ts",
+    "packages/workspace/scripts/trace-home/tui/app.ts",
+    "packages/workspace/scripts/trace-home/tui/keymap.ts",
+    "packages/workspace/scripts/trace-home/tui/state.ts",
+    "packages/workspace/scripts/trace-home/types.ts",
+    "packages/workspace/tests/trace-home.test.ts",
+    "scripts/operator/trace-home.ts"
+  ],
+  "updatedAt": "2026-06-02T06:55:43.187Z"
+}

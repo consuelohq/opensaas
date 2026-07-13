@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6cae42083c43",
+  "tmuxSession": "opensaas-security-write-cloudflare-edge-router-registry-tests-6cae4208",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/write-cloudflare-edge-router-registry-tests",
+  "branch": "task/security/write-cloudflare-edge-router-registry-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-write-cloudflare-edge-router-registry-tests",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-write-cloudflare-edge-router-registry-tests",
+  "prNumber": 948,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/948",
+  "createdAt": "2026-06-11T04:27:16.416Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-write-cloudflare-edge-router-registry-tests/.task/security/write-cloudflare-edge-router-registry-tests/session.json"
+}

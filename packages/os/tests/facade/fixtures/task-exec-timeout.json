@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "code": "TIMEOUT",
+  "message": "command timed out after 300000ms"
+}

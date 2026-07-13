@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/support-workspace-site-snapshot-publishing",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1030,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1030",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1030",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1030/support-workspace-site-snapshot-publishing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1030",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1030/support-workspace-site-snapshot-publishing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-support-workspace-site-snapshot-publishing",
+  "taskSession": "tsk_68c8ff703604",
+  "tmuxSession": "opensaas-sites-support-workspace-site-snapshot-publishing-68c8ff70",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-support-workspace-site-snapshot-publishing/.task/sites/support-workspace-site-snapshot-publishing/session.json",
+  "createdAt": "2026-06-14T01:11:08.618Z"
+}

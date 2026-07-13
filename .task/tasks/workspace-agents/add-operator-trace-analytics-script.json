@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-operator-trace-analytics-script",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 514,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/514",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/514",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/514/add-operator-trace-analytics-script",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/514",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/514/add-operator-trace-analytics-script",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-operator-trace-analytics-script",
+  "taskSession": "tsk_e69b12671d57",
+  "tmuxSession": "opensaas-workspace-agents-add-operator-trace-analytics-script-e69b1267",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-operator-trace-analytics-script/.task/workspace-agents/add-operator-trace-analytics-script/session.json",
+  "createdAt": "2026-05-23T08:51:13.788Z"
+}

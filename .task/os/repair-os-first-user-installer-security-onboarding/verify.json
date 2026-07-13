@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/repair-os-first-user-installer-security-onboarding",
+  "base": "origin/stream/os",
+  "headSha": "a4d52a7fe1538d1543722878d535d56e2fb65c00",
+  "changeHash": "1ca07f4eaea287a228196ff309ea5e08ccf0d10d27d9577ccda0fe81639c3079",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/onboarding-flow.test.ts"
+  ],
+  "verifiedAt": "2026-06-12T20:08:33.149Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/repair-os-first-user-installer-security-onboarding/current.json",
+        ".task/os/repair-os-first-user-installer-security-onboarding/evidence-log.json",
+        ".task/os/repair-os-first-user-installer-security-onboarding/read-log.json",
+        ".task/os/repair-os-first-user-installer-security-onboarding/session.json",
+        ".task/os/repair-os-first-user-installer-security-onboarding/workpad.md",
+        ".task/tasks/os/repair-os-first-user-installer-security-onboarding.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/generate-system-daemons.sh",
+        "packages/os/scripts/install-system-daemons.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/onboarding-flow.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/refine-reader-nav-nesting-tap-zones",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 835,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/835",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/835",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/835/refine-reader-nav-nesting-tap-zones",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/835",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/835/refine-reader-nav-nesting-tap-zones",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-refine-reader-nav-nesting-tap-zones",
+  "taskSession": "tsk_59523c81ed15",
+  "tmuxSession": "opensaas-design-refine-reader-nav-nesting-tap-zones-59523c81",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-refine-reader-nav-nesting-tap-zones/.task/design/refine-reader-nav-nesting-tap-zones/session.json",
+  "createdAt": "2026-06-07T15:53:12.009Z"
+}

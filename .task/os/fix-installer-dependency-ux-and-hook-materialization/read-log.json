@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/os/fix-installer-dependency-ux-and-hook-materialization/workpad.md",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/doctor.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/tool-manifest.test.ts"
+  ],
+  "updatedAt": "2026-06-12T20:04:10.654Z"
+}

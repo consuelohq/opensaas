@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/os-skills/add-task-session-selector-and-verify-reports/verify.json",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/task-meta.js",
+    "packages/os/scripts/lib/task-selection.js",
+    "packages/os/scripts/lib/task-session.js",
+    "packages/os/scripts/lib/verification.js",
+    "packages/os/scripts/task-push.js",
+    "packages/os/scripts/verify.js",
+    "packages/os/tests/task-session.test.js",
+    "packages/os/tests/verification.test.js",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/workspace/scripts/lib/verification.js"
+  ],
+  "updatedAt": "2026-06-05T08:46:48.995Z"
+}

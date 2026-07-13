@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cb2daaaf2637",
+  "tmuxSession": "opensaas-os-amend-media-source-capture-tests-cb2daaaf",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/amend-media-source-capture-tests",
+  "branch": "task/os/amend-media-source-capture-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-amend-media-source-capture-tests",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-amend-media-source-capture-tests",
+  "prNumber": 1194,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1194",
+  "createdAt": "2026-06-23T18:19:42.419Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-amend-media-source-capture-tests/.task/os/amend-media-source-capture-tests/session.json"
+}

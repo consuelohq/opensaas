@@ -1,10 +1,11 @@
 #!/usr/bin/env bun
 
-// task-init.js — write or fix .task/current.json for an existing worktree
+// task-init.js — write or fix task metadata for an existing worktree
 // use when metadata is stale or missing. does NOT create branches or worktrees.
 
 const fs = require('fs');
 const path = require('path');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { execSync } = require('child_process');
 
 const { writeTaskMeta, readTaskMeta } = require('./lib/task-meta');
@@ -13,7 +14,7 @@ function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
 function printHelp() {
-  writeStdout('task:init — write or fix .task/current.json for an existing worktree');
+  writeStdout('task:init — write or fix task metadata for an existing worktree');
   writeStdout('');
   writeStdout('usage:');
   writeStdout('  bun run task:init -- --area dialer --branch task/dialer/fix-thing --pr 173');
@@ -24,7 +25,8 @@ function printHelp() {
   writeStdout('  --branch <name>        task branch (e.g. task/dialer/fix-thing)');
   writeStdout('');
   writeStdout('optional:');
-  writeStdout('  --pr <number>          PR number');
+  writeStdout('  --pr <number-or-url>  PR number or supported PR URL');
+  writeStdout('  --github <url>       GitHub, Graphite, or diffs PR URL');
   writeStdout('  --worktree <path>      worktree path (default: detect from git worktree list)');
   writeStdout('  --stream <branch>      stream branch (default: stream/<area>)');
   writeStdout('  --json                 json output');
@@ -43,7 +45,8 @@ function parseArgs(argv) {
     switch (flag) {
       case '--area': args.area = val; break;
       case '--branch': args.branch = val; break;
-      case '--pr': args.pr = parseInt(val, 10); break;
+      case '--pr':
+      case '--github': args.pr = resolvePrRefNumber(val); break;
       case '--worktree': args.worktree = val; break;
       case '--stream': args.stream = val; break;
       default: throw new Error(`unknown flag: ${flag}`);
@@ -110,13 +113,13 @@ function main() {
   // verify
   const verify = readTaskMeta(worktreePath);
   if (!verify || verify.taskBranch !== args.branch) {
-    throw new Error('failed to write .task/current.json — check disk permissions');
+    throw new Error('failed to write task metadata — check disk permissions');
   }
 
   if (args.json) {
     writeStdout(JSON.stringify(meta, null, 2));
   } else {
-    writeStdout(`wrote .task/current.json in ${worktreePath}`);
+    writeStdout(`wrote task metadata in ${worktreePath}`);
     writeStdout(`  area: ${meta.area}`);
     writeStdout(`  branch: ${meta.taskBranch}`);
     writeStdout(`  stream: ${meta.stream}`);

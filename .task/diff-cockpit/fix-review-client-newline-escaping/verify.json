@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/fix-review-client-newline-escaping",
+  "base": "origin/task/diff-cockpit/fix-review-client-newline-escaping",
+  "headSha": "d08e4b99b806c177fcd4cda6254f754085685d06",
+  "changeHash": "311ff2422217475e1f1ef1b7d1ad278f915d4bd87b763efd62fe6ea30d9ff131",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-03T06:57:25.619Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/fix-review-client-newline-escaping/current.json",
+        ".task/diff-cockpit/fix-review-client-newline-escaping/evidence-log.json",
+        ".task/diff-cockpit/fix-review-client-newline-escaping/read-log.json",
+        ".task/diff-cockpit/fix-review-client-newline-escaping/session.json",
+        ".task/diff-cockpit/fix-review-client-newline-escaping/workpad.md",
+        ".task/tasks/diff-cockpit/fix-review-client-newline-escaping.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

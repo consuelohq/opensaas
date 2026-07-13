@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-device-login-page-approval-flow",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 998,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/998",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/998",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/998/finish-device-login-page-approval-flow",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/998",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/998/finish-device-login-page-approval-flow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-device-login-page-approval-flow",
+  "taskSession": "tsk_1981dd1d4433",
+  "tmuxSession": "opensaas-os-finish-device-login-page-approval-flow-1981dd1d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-device-login-page-approval-flow/.task/os/finish-device-login-page-approval-flow/session.json",
+  "createdAt": "2026-06-13T06:31:49.413Z"
+}

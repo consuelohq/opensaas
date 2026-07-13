@@ -1,0 +1,19 @@
+{
+  "area": "workspace-repair",
+  "stream": "stream/workspace-repair",
+  "taskBranch": "task/workspace-repair/hotfix-research-ingest-on-main",
+  "baseBranch": "stream/workspace-repair",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 830,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/830",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/830",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/830/hotfix-research-ingest-on-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/830",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/830/hotfix-research-ingest-on-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-repair-hotfix-research-ingest-on-main",
+  "taskSession": "tsk_e40517f51c9f",
+  "tmuxSession": "opensaas-workspace-repair-hotfix-research-ingest-on-main-e40517f5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-repair-hotfix-research-ingest-on-main/.task/workspace-repair/hotfix-research-ingest-on-main/session.json",
+  "createdAt": "2026-06-07T09:09:32.810Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4f3647cf9053",
+  "tmuxSession": "opensaas-workspace-agents-avoid-ambient-task-selection-in-code-run-4f3647cf",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/avoid-ambient-task-selection-in-code-run",
+  "branch": "task/workspace-agents/avoid-ambient-task-selection-in-code-run",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-avoid-ambient-task-selection-in-code-run",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-avoid-ambient-task-selection-in-code-run",
+  "prNumber": 543,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/543",
+  "createdAt": "2026-05-23T21:49:44.458Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-avoid-ambient-task-selection-in-code-run/.task/workspace-agents/avoid-ambient-task-selection-in-code-run/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4c161c869e0f",
+  "tmuxSession": "opensaas-diff-cockpit-fix-comments-panel-defaults-4c161c86",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-comments-panel-defaults",
+  "branch": "task/diff-cockpit/fix-comments-panel-defaults",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-comments-panel-defaults",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-comments-panel-defaults",
+  "prNumber": 1044,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1044",
+  "createdAt": "2026-06-14T22:36:53.920Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-comments-panel-defaults/.task/diff-cockpit/fix-comments-panel-defaults/session.json"
+}

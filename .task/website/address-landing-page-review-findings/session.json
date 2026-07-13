@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bd2a3e8a9516",
+  "tmuxSession": "opensaas-website-address-landing-page-review-findings-bd2a3e8a",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/address-landing-page-review-findings",
+  "branch": "task/website/address-landing-page-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-address-landing-page-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-address-landing-page-review-findings",
+  "prNumber": 1424,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1424",
+  "createdAt": "2026-07-11T20:31:42.172Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-address-landing-page-review-findings/.task/website/address-landing-page-review-findings/session.json"
+}

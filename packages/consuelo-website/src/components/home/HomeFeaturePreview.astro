@@ -1,0 +1,236 @@
+---
+import { homeFeaturePreviewItems } from '../../data/home-content';
+import FeatureMedia from './FeatureMedia.astro';
+import HomeFaq from './HomeFaq.astro';
+import PreviewNotice from './PreviewNotice.astro';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'features' } = Astro.props as Props;
+---
+
+<section class="product-panel" id={sectionId} data-section="features">
+  <div class="product-panel__paper">
+    <div class="product-panel__preview">
+      <img
+        class="product-panel__preview-art"
+        src="/images/home/consuelo-transition.svg"
+        alt=""
+        width="1600"
+        height="520"
+        aria-hidden="true"
+      />
+      <PreviewNotice />
+    </div>
+
+    <div class="product-panel__identity">
+      <img src="/images/home/consuelo-mark.svg" alt="" width="58" height="58" />
+      <p>CONSUELO OS</p>
+      <a href="https://os.consuelohq.com">MEMBER? SIGN IN</a>
+    </div>
+
+    <div class="product-panel__features">
+      <h2>FEATURES</h2>
+
+      <div class="product-panel__grid">
+        {
+          homeFeaturePreviewItems.map((item) => (
+            <article class="product-panel__item">
+              <p class="product-panel__index">
+                <span class="product-panel__index-number">#{item.number}</span>{' '}
+                <span class="product-panel__index-label">{item.label}</span>
+              </p>
+              <h3>
+                {item.title.split('\n').map((line) => <span>{line}</span>)}
+              </h3>
+              <FeatureMedia imageSrc={item.assetSrc} imageAlt={item.imageAlt} />
+              <p class="product-panel__description">{item.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <HomeFaq />
+  </div>
+</section>
+
+<style>
+  .product-panel {
+    position: relative;
+    z-index: 3;
+    background: var(--site-color-brand);
+    margin-top: var(--site-sticky-sliver);
+    padding: var(--site-sticky-sliver) var(--site-frame-inset) var(--site-frame-inset);
+  }
+
+  .product-panel__paper {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .product-panel__preview {
+    position: relative;
+    isolation: isolate;
+    height: clamp(11rem, 24vw, 22rem);
+    overflow: hidden;
+    background: var(--site-color-brand);
+    border: clamp(0.45rem, 1.1vw, 0.85rem) solid white;
+    border-bottom-width: 0;
+  }
+
+  .product-panel__preview::after {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 242, 0.06), rgba(0, 0, 242, 0.32));
+    content: '';
+    pointer-events: none;
+  }
+
+  .product-panel__preview-art {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.96;
+    pointer-events: none;
+  }
+
+  .product-panel__preview :global(.preview-notice) {
+    position: relative;
+    z-index: 2;
+  }
+
+  .product-panel__identity {
+    display: grid;
+    justify-items: center;
+    gap: 0.7rem;
+    padding: clamp(2.75rem, 6vw, 5rem) 1rem clamp(2.5rem, 5vw, 4.5rem);
+    text-align: center;
+  }
+
+  .product-panel__identity img {
+    width: 3.6rem;
+    height: 3.6rem;
+    border: 1px solid var(--site-color-brand);
+    object-fit: contain;
+  }
+
+  .product-panel__identity p {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    line-height: 1;
+  }
+
+  .product-panel__identity a {
+    border: 1px solid var(--site-color-brand);
+    padding: 0.28rem 0.55rem;
+    font: 650 0.62rem/1 var(--site-font-mono);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+
+  .product-panel__features {
+    padding: 0 clamp(1rem, 4.7vw, 5rem);
+  }
+
+  .product-panel__features > h2 {
+    margin: clamp(2.5rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5.5rem);
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(6rem, 15vw, 14rem);
+    font-weight: 430;
+    letter-spacing: 0;
+    line-height: 0.72;
+    text-align: center;
+  }
+
+  .product-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(4.5rem, 8vw, 8rem) clamp(1.5rem, 3.5vw, 3.75rem);
+  }
+
+  .product-panel__item {
+    min-width: 0;
+  }
+
+  .product-panel__index {
+    margin: 0 0 1rem;
+    font: 620 0.63rem/1 var(--site-font-mono);
+    letter-spacing: 0.15em;
+  }
+
+  .product-panel__index-label {
+    color: var(--site-color-art-muted);
+  }
+
+  .product-panel__item h3 {
+    min-height: 2.05em;
+    margin: 0 0 1rem;
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(1.65rem, 2.5vw, 2.75rem);
+    font-weight: 440;
+    letter-spacing: 0;
+    line-height: 0.88;
+  }
+
+  .product-panel__item h3 span {
+    display: block;
+  }
+
+  .product-panel__description {
+    margin: 1rem 0 0;
+    color: var(--site-color-brand);
+    font: 590 0.68rem/1.55 var(--site-font-mono);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 860px) {
+    .product-panel__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 580px) {
+    .product-panel__preview {
+      height: 10.5rem;
+    }
+
+    .product-panel__identity {
+      padding: 2.4rem 1rem 3rem;
+    }
+
+    .product-panel__features {
+      padding-inline: 1.25rem;
+    }
+
+    .product-panel__features > h2 {
+      margin: 2rem 0 3rem;
+      font-size: clamp(3.25rem, 15vw, 4rem);
+      line-height: 0.8;
+    }
+
+    .product-panel__grid {
+      grid-template-columns: 1fr;
+      gap: 3.5rem;
+    }
+
+    .product-panel__item h3 {
+      min-height: 0;
+      font-size: 1.9rem;
+    }
+
+    .product-panel__description {
+      font-size: 0.6rem;
+    }
+  }
+</style>

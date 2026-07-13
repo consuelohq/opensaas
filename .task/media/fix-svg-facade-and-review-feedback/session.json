@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0aa86b97e0e8",
+  "tmuxSession": "opensaas-media-fix-svg-facade-and-review-feedback-0aa86b97",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/fix-svg-facade-and-review-feedback",
+  "branch": "task/media/fix-svg-facade-and-review-feedback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-fix-svg-facade-and-review-feedback",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-fix-svg-facade-and-review-feedback",
+  "prNumber": 1223,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1223",
+  "createdAt": "2026-06-27T19:57:14.017Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-fix-svg-facade-and-review-feedback/.task/media/fix-svg-facade-and-review-feedback/session.json"
+}

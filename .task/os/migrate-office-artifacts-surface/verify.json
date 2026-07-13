@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/migrate-office-artifacts-surface",
+  "base": "HEAD",
+  "headSha": "074e55f667e5aff5dc630cabc8cdb318bc7f1622",
+  "changeHash": "db6cfaffacfead96f380f320fbb6e8a4c2d4cff0ddd98f134e88285538fbf3ba",
+  "changedFiles": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/office-pages.ts",
+    "packages/os/tests/install-state.test.ts"
+  ],
+  "verifiedAt": "2026-06-05T04:03:59.589Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/migrate-office-artifacts-surface/evidence-log.json",
+        ".task/os/migrate-office-artifacts-surface/read-log.json",
+        ".task/os/migrate-office-artifacts-surface/workpad.md",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/office-pages.ts",
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

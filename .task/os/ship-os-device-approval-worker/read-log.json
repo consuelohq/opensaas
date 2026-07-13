@@ -1,0 +1,12 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json"
+  ],
+  "updatedAt": "2026-06-13T12:09:11.114Z"
+}

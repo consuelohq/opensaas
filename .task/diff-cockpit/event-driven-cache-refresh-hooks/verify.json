@@ -1,0 +1,103 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/event-driven-cache-refresh-hooks",
+  "base": "origin/task/diff-cockpit/event-driven-cache-refresh-hooks",
+  "headSha": "3928023d729e05c817ae9d9228697663cb3ec43f",
+  "changeHash": "9fe893be2383cae283bf71fd62529271c3a62db397f71f953e46914c472f7b81",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/workspace/hooks/README.md",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+    "packages/workspace/scripts/diff_cockpit.ts",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "verifiedAt": "2026-06-05T00:31:59.360Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/current.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/evidence-log.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/read-log.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/session.json",
+        ".task/diff-cockpit/event-driven-cache-refresh-hooks/workpad.md",
+        ".task/tasks/diff-cockpit/event-driven-cache-refresh-hooks.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "packages/workspace/hooks/README.md",
+        "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+        "packages/workspace/scripts/diff_cockpit.ts",
+        "packages/workspace/scripts/task-push.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-push.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 550,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-event-driven-cache-refresh-hooks\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 236\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:31:58\n\u001b[2m   Duration \u001b[22m 331ms\u001b[2m (transform 10ms, setup 0ms, import 17ms, tests 236ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

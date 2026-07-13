@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "workflows": [
+    {
+      "id": "task",
+      "aliases": [
+        "repo",
+        "code"
+      ],
+      "roles": [
+        "stream.context",
+        "task.start",
+        "workpad.write",
+        "decision.research",
+        "test.run",
+        "diff.inspect",
+        "validation.review",
+        "validation.verify",
+        "task.push",
+        "task.pr",
+        "task.finish",
+        "tool.search"
+      ],
+      "subscriptions": [
+        {
+          "event": "workflow.intent.task.detected",
+          "workflow": "task"
+        },
+        {
+          "event": "tool.preInvoke",
+          "workflow": "task",
+          "tool": "stream.context"
+        },
+        {
+          "event": "tool.postInvoke",
+          "workflow": "task",
+          "tool": "stream.context"
+        },
+        {
+          "event": "tool.preInvoke",
+          "workflow": "task",
+          "tool": "task.start"
+        },
+        {
+          "event": "tool.postInvoke",
+          "workflow": "task",
+          "tool": "task.start"
+        },
+        {
+          "event": "workflow.stage.ready",
+          "workflow": "task",
+          "stage": "validation"
+        },
+        {
+          "event": "tool.preInvoke",
+          "workflow": "task",
+          "tool": "task.push"
+        },
+        {
+          "event": "tool.postInvoke",
+          "workflow": "task",
+          "tool": "task.pr"
+        },
+        {
+          "event": "workflow.stage.ready",
+          "workflow": "task",
+          "stage": "task-finish"
+        }
+      ]
+    },
+    {
+      "id": "office",
+      "aliases": [
+        "design",
+        "sites"
+      ],
+      "roles": [
+        "office.publish",
+        "office.refresh",
+        "office.run",
+        "office.designSystem.get",
+        "office.skills.list",
+        "office.designSystems.list",
+        "office.upstreamStatus",
+        "office.railwayCheck",
+        "office.check",
+        "office.generate.website",
+        "office.generate.demo",
+        "office.generate.imageBrief",
+        "office.generate.digitalEguide",
+        "office.generate.email",
+        "office.generate.motionFrame",
+        "office.render.hyperframes",
+        "office.ui.background",
+        "office.ui.stop",
+        "office.ui.status",
+        "office.ui.logs",
+        "office.openDesign.build"
+      ],
+      "categories": [
+        "consuelo design"
+      ],
+      "subscriptions": [
+        {
+          "event": "workflow.intent.office.detected",
+          "workflow": "office"
+        },
+        {
+          "event": "artifact.postRender",
+          "workflow": "office"
+        },
+        {
+          "event": "artifact.prePublish",
+          "workflow": "office"
+        },
+        {
+          "event": "artifact.postPublish",
+          "workflow": "office"
+        }
+      ]
+    }
+  ]
+}

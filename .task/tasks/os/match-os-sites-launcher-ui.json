@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/match-os-sites-launcher-ui",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1172,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1172",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1172",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1172/match-os-sites-launcher-ui",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1172",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1172/match-os-sites-launcher-ui",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-match-os-sites-launcher-ui",
+  "taskSession": "tsk_72f93dee932c",
+  "tmuxSession": "opensaas-os-match-os-sites-launcher-ui-72f93dee",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-match-os-sites-launcher-ui/.task/os/match-os-sites-launcher-ui/session.json",
+  "createdAt": "2026-06-22T21:20:44.608Z"
+}

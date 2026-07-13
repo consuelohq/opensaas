@@ -1,0 +1,63 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace/fix-trace-home-review-comments",
+  "base": "origin/task/workspace/fix-trace-home-review-comments",
+  "headSha": "6bf51f51a5df4155d6e2dffc5c6db3fa56138165",
+  "changeHash": "90b6a36d864a43fc953925ddf37403a82e4e30b04c9b43ea3bb466c6d3e1ac30",
+  "changedFiles": [
+    "packages/workspace/scripts/trace-home/cli.ts",
+    "packages/workspace/scripts/trace-home/command-quality.ts",
+    "packages/workspace/scripts/trace-home/db.ts",
+    "packages/workspace/scripts/trace-home/model.ts",
+    "packages/workspace/scripts/trace-home/tui/app.ts",
+    "packages/workspace/scripts/trace-home/tui/state.ts",
+    "packages/workspace/tests/trace-home.test.ts"
+  ],
+  "verifiedAt": "2026-06-02T06:56:59.057Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace/fix-trace-home-review-comments.json",
+        ".task/workspace/fix-trace-home-review-comments/current.json",
+        ".task/workspace/fix-trace-home-review-comments/evidence-log.json",
+        ".task/workspace/fix-trace-home-review-comments/read-log.json",
+        ".task/workspace/fix-trace-home-review-comments/session.json",
+        ".task/workspace/fix-trace-home-review-comments/workpad.md",
+        "packages/workspace/scripts/trace-home/cli.ts",
+        "packages/workspace/scripts/trace-home/command-quality.ts",
+        "packages/workspace/scripts/trace-home/db.ts",
+        "packages/workspace/scripts/trace-home/model.ts",
+        "packages/workspace/scripts/trace-home/tui/app.ts",
+        "packages/workspace/scripts/trace-home/tui/state.ts",
+        "packages/workspace/tests/trace-home.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

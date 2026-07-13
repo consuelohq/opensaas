@@ -1,0 +1,190 @@
+[
+  {
+    "name": "get_raw_steering",
+    "title": "Raw OS Steering",
+    "description": "Returns dev/operator OS steering with the canonical full tool manifest through the normal OS call path.",
+    "permission": "guidance",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "implementation": {
+      "script": "scripts/os.ts#getRawSteering"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "steering"
+      ]
+    }
+  },
+  {
+    "name": "daily-revenue-brief",
+    "title": "Daily Revenue Brief",
+    "description": "Scaffold skill that proves get_steering -> call -> Bun skill -> optional GraphQL proof query -> structured result.",
+    "permission": "read",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "requiredEnv": [
+      "CONSUELO_GRAPHQL_URL",
+      "CONSUELO_INTERNAL_GRAPHQL_API_KEY"
+    ],
+    "requiredIntegrations": [
+      "consuelo-graphql"
+    ],
+    "implementation": {
+      "script": "scripts/revenue/daily-revenue-brief.ts"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "summary",
+        "workspaceStatus",
+        "graphqlStatus",
+        "nextSteps"
+      ]
+    }
+  },
+  {
+    "name": "consuelo-workspace-snapshot",
+    "title": "Consuelo Workspace Snapshot",
+    "description": "Reads a structured, read-only snapshot of Consuelo workspace objects, including Files and Attachments, through the configured Consuelo GraphQL/API facade.",
+    "permission": "read",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "requiredEnv": [
+      "CONSUELO_GRAPHQL_URL",
+      "CONSUELO_INTERNAL_GRAPHQL_API_KEY"
+    ],
+    "requiredIntegrations": [
+      "workspace-graphql",
+      "consuelo-app"
+    ],
+    "implementation": {
+      "script": "scripts/workspace/consuelo-workspace-snapshot.ts"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "summary",
+        "status",
+        "snapshot",
+        "objectRefs",
+        "nextActions"
+      ]
+    }
+  },
+  {
+    "name": "office",
+    "title": "Office",
+    "description": "Top-level orchestration skill for Office artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",
+    "permission": "draft",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "requiredIntegrations": [
+      "office"
+    ],
+    "implementation": {
+      "script": "scripts/design/office.ts"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "subskill": {
+          "type": "string"
+        },
+        "includeReferences": {
+          "type": "boolean"
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "summary",
+        "skill",
+        "subskills",
+        "references",
+        "nextActions"
+      ]
+    }
+  },
+  {
+    "name": "office-landing-page",
+    "title": "Office Landing Page (compatibility alias)",
+    "description": "Deprecated compatibility alias for the landing-page subskill under the top-level office skill. Prefer office with subskill=landing-page for new design work.",
+    "permission": "draft",
+    "requiresApproval": false,
+    "writesRecords": false,
+    "externalSideEffects": false,
+    "requiredIntegrations": [
+      "office"
+    ],
+    "implementation": {
+      "script": "scripts/design/office-landing-page.ts"
+    },
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifactTitle": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "campaign": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sourceContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "publish": {
+          "type": "boolean"
+        },
+        "replaceCustomerFacingPage": {
+          "type": "boolean"
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "summary",
+        "workflow",
+        "designSystem",
+        "primaryDesignSkill",
+        "nextActions"
+      ]
+    },
+    "deprecated": true,
+    "supersededBy": "office#landing-page"
+  }
+]

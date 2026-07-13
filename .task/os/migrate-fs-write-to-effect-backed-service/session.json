@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c6e9f96be1c6",
+  "tmuxSession": "opensaas-os-migrate-fs-write-to-effect-backed-service-c6e9f96b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/migrate-fs-write-to-effect-backed-service",
+  "branch": "task/os/migrate-fs-write-to-effect-backed-service",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-fs-write-to-effect-backed-service",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-fs-write-to-effect-backed-service",
+  "prNumber": 1089,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1089",
+  "createdAt": "2026-06-16T20:08:12.577Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-fs-write-to-effect-backed-service/.task/os/migrate-fs-write-to-effect-backed-service/session.json"
+}

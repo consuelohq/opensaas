@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/compact-background-service-install-output",
+  "base": "origin/main",
+  "headSha": "f70523bab9a0c1aeaeadad18d57595a49faade9e",
+  "changeHash": "6502ca40b1edbb2aad0150633c2c6906994b697241a0e9ae4aecb1230da84d44",
+  "changedFiles": [
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/compact-daemon-output.test.ts",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/install.ts"
+  ],
+  "verifiedAt": "2026-06-03T21:07:00.380Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/compact-background-service-install-output/current.json",
+        ".task/os/compact-background-service-install-output/evidence-log.json",
+        ".task/os/compact-background-service-install-output/read-log.json",
+        ".task/os/compact-background-service-install-output/session.json",
+        ".task/os/compact-background-service-install-output/workpad.md",
+        ".task/tasks/os/compact-background-service-install-output.json",
+        "packages/os/package.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/compact-daemon-output.test.ts",
+        "packages/os/scripts/install-system-daemons.sh",
+        "packages/os/scripts/install.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

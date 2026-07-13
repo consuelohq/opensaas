@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/task-a-os-semantic-search-storage-portability",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 953,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/953",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/953",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/953/task-a-os-semantic-search-storage-portability",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/953",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/953/task-a-os-semantic-search-storage-portability",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-a-os-semantic-search-storage-portability",
+  "taskSession": "tsk_5b559b6c58e4",
+  "tmuxSession": "opensaas-os-task-a-os-semantic-search-storage-portability-5b559b6c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-a-os-semantic-search-storage-portability/.task/os/task-a-os-semantic-search-storage-portability/session.json",
+  "createdAt": "2026-06-11T05:39:38.338Z"
+}

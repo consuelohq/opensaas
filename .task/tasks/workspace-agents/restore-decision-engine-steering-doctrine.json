@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/restore-decision-engine-steering-doctrine",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 624,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/624",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/624",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/624/restore-decision-engine-steering-doctrine",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/624",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/624/restore-decision-engine-steering-doctrine",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restore-decision-engine-steering-doctrine",
+  "taskSession": "tsk_2c96ab2070ab",
+  "tmuxSession": "opensaas-workspace-agents-restore-decision-engine-steering-doctrine-2c96ab20",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restore-decision-engine-steering-doctrine/.task/workspace-agents/restore-decision-engine-steering-doctrine/session.json",
+  "createdAt": "2026-05-28T21:20:23.827Z"
+}

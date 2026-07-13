@@ -1,0 +1,19 @@
+{
+  "area": "os-manifest",
+  "stream": "stream/os-manifest",
+  "taskBranch": "task/os-manifest/build-os-manifest-registry-and-core-manifest",
+  "baseBranch": "stream/os-manifest",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 718,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/718",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/718",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/718/build-os-manifest-registry-and-core-manifest",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/718",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/718/build-os-manifest-registry-and-core-manifest",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-build-os-manifest-registry-and-core-manifest",
+  "taskSession": "tsk_c16c960f97b7",
+  "tmuxSession": "opensaas-os-manifest-build-os-manifest-registry-and-core-manifest-c16c960f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-build-os-manifest-registry-and-core-manifest/.task/os-manifest/build-os-manifest-registry-and-core-manifest/session.json",
+  "createdAt": "2026-06-03T01:54:06.039Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/harden-verify-publish-gate",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 563,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/563",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/563",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/563/harden-verify-publish-gate",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/563",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/563/harden-verify-publish-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-verify-publish-gate",
+  "taskSession": "tsk_3113ff25866e",
+  "tmuxSession": "opensaas-workspace-agents-harden-verify-publish-gate-3113ff25",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-verify-publish-gate/.task/workspace-agents/harden-verify-publish-gate/session.json",
+  "createdAt": "2026-05-24T04:52:59.398Z"
+}

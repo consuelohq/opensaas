@@ -1,0 +1,72 @@
+---
+title: Scripts
+description: Executable implementation behind Consuelo OS skills.
+---
+
+# Scripts
+
+Scripts are the executable implementation behind skills.
+
+A script does focused work. A skill defines the workflow around that work.
+
+## Why scripts exist
+
+Agents need a stable product surface. Builders need executable code. Scripts let OS keep both clean.
+
+```text
+agent sees skill
+builder maintains script
+OS connects them through the portal
+```
+
+This keeps users from thinking about file paths, command flags, runtime details, or implementation-specific helper tools.
+
+## Script responsibilities
+
+A script should:
+
+- accept structured input
+- read context through approved OS services
+- return structured output
+- create artifacts through the artifact layer
+- respect capability checks
+- report safe errors
+- include trace metadata when OS provides it
+
+A script should not bypass artifact tracking, approval guardrails, or execution logging for important work.
+
+## Script runtime
+
+The product runtime target is Bun and TypeScript.
+
+Local OS should be able to install, run, and update scripts without requiring Docker. Hosted OS should run through the regular OpenSaaS deployment path first.
+
+## Script output
+
+Scripts should return data OS can record.
+
+Output | Purpose
+--- | ---
+`status` | Whether the script completed, paused, or failed.
+`summary` | Human-readable result.
+`artifacts` | Artifact records created or updated.
+`sourceRefs` | Structured records used.
+`approval` | Human decision request when needed.
+`error` | Safe error code and message.
+
+## Local scripts
+
+Local scripts may write temporary files while working, but durable outputs should become artifacts.
+
+Temporary output belongs in the OS temp or cache area. Durable output belongs in the artifact layer.
+
+## Builder guidance
+
+When adding a script, also define or update the skill contract, required capabilities, result shape, artifact behavior, approval behavior, local validation command, and failure examples.
+
+## Related
+
+- [Skills](/os/concepts/skills)
+- [Files and artifacts](/os/concepts/files-and-artifacts)
+- [Observability](/os/concepts/observability)
+- [Local and cloud](/os/concepts/local-and-cloud)

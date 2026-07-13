@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d18c17ffa419",
+  "tmuxSession": "opensaas-workspace-agents-add-pagefind-search-to-design-wiki-d18c17ff",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-pagefind-search-to-design-wiki",
+  "branch": "task/workspace-agents/add-pagefind-search-to-design-wiki",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-pagefind-search-to-design-wiki",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-pagefind-search-to-design-wiki",
+  "prNumber": 482,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/482",
+  "createdAt": "2026-05-23T04:52:36.553Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-pagefind-search-to-design-wiki/.task/workspace-agents/add-pagefind-search-to-design-wiki/session.json"
+}

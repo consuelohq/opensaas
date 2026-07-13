@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_77d8192e8170",
+  "tmuxSession": "opensaas-sites-remove-legacy-os-steering-file-from-stream-77d8192e",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/remove-legacy-os-steering-file-from-stream",
+  "branch": "task/sites/remove-legacy-os-steering-file-from-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-legacy-os-steering-file-from-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-legacy-os-steering-file-from-stream",
+  "prNumber": 1087,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1087",
+  "createdAt": "2026-06-16T17:42:58.213Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-legacy-os-steering-file-from-stream/.task/sites/remove-legacy-os-steering-file-from-stream/session.json"
+}

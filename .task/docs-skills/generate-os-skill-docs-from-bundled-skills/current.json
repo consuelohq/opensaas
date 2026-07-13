@@ -1,0 +1,19 @@
+{
+  "area": "docs-skills",
+  "stream": "stream/docs-skills",
+  "taskBranch": "task/docs-skills/generate-os-skill-docs-from-bundled-skills",
+  "baseBranch": "stream/docs-skills",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 755,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/755",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/755",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/755/generate-os-skill-docs-from-bundled-skills",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/755",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/755/generate-os-skill-docs-from-bundled-skills",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-skills-generate-os-skill-docs-from-bundled-skills",
+  "taskSession": "tsk_7a311ed40b7b",
+  "tmuxSession": "opensaas-docs-skills-generate-os-skill-docs-from-bundled-skills-7a311ed4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-skills-generate-os-skill-docs-from-bundled-skills/.task/docs-skills/generate-os-skill-docs-from-bundled-skills/session.json",
+  "createdAt": "2026-06-04T19:30:51.676Z"
+}

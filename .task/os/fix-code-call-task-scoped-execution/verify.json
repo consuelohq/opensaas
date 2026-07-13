@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-code-call-task-scoped-execution",
+  "base": "origin/stream/os",
+  "headSha": "657d69cea3a6f1071fd5951b42ab40b9f9bb00cb",
+  "changeHash": "4d123c8aa7bfb70b12a487005f2763c66149b5d05e20c36ffa384625b5903c73",
+  "changedFiles": [
+    "packages/os/scripts/lib/code-call/runtime.ts",
+    "packages/os/tests/code-call.test.ts"
+  ],
+  "verifiedAt": "2026-06-16T22:21:12.887Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-code-call-task-scoped-execution/current.json",
+        ".task/os/fix-code-call-task-scoped-execution/evidence-log.json",
+        ".task/os/fix-code-call-task-scoped-execution/read-log.json",
+        ".task/os/fix-code-call-task-scoped-execution/session.json",
+        ".task/os/fix-code-call-task-scoped-execution/workpad.md",
+        ".task/tasks/os/fix-code-call-task-scoped-execution.json",
+        "packages/os/scripts/lib/code-call/runtime.ts",
+        "packages/os/tests/code-call.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

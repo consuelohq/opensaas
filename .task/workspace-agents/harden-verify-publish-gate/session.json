@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3113ff25866e",
+  "tmuxSession": "opensaas-workspace-agents-harden-verify-publish-gate-3113ff25",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/harden-verify-publish-gate",
+  "branch": "task/workspace-agents/harden-verify-publish-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-verify-publish-gate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-verify-publish-gate",
+  "prNumber": 563,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/563",
+  "createdAt": "2026-05-24T04:52:59.394Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-harden-verify-publish-gate/.task/workspace-agents/harden-verify-publish-gate/session.json"
+}

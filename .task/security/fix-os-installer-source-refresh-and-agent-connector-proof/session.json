@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_068d2dabd161",
+  "tmuxSession": "opensaas-security-fix-os-installer-source-refresh-and-agent-connec-068d2dab",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-installer-source-refresh-and-agent-connector-proof",
+  "branch": "task/security/fix-os-installer-source-refresh-and-agent-connector-proof",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-installer-source-refresh-and-agent-connector-proof",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-installer-source-refresh-and-agent-connector-proof",
+  "prNumber": 1187,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1187",
+  "createdAt": "2026-06-23T04:48:21.904Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-installer-source-refresh-and-agent-connector-proof/.task/security/fix-os-installer-source-refresh-and-agent-connector-proof/session.json"
+}

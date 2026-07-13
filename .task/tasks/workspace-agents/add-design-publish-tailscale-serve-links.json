@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-design-publish-tailscale-serve-links",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 373,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/373",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-design-publish-tailscale-serve-links",
+  "taskSession": "tsk_3fa4de0080e9",
+  "tmuxSession": "opensaas-workspace-agents-add-design-publish-tailscale-serve-links-3fa4de00",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-design-publish-tailscale-serve-links/.task/session.json",
+  "createdAt": "2026-05-11T23:53:51.170Z"
+}

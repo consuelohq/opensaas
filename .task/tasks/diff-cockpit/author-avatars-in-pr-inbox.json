@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/author-avatars-in-pr-inbox",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 986,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/986",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/986",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/986/author-avatars-in-pr-inbox",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/986",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/986/author-avatars-in-pr-inbox",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-author-avatars-in-pr-inbox",
+  "taskSession": "tsk_3c2dcdcf6af8",
+  "tmuxSession": "opensaas-diff-cockpit-author-avatars-in-pr-inbox-3c2dcdcf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-author-avatars-in-pr-inbox/.task/diff-cockpit/author-avatars-in-pr-inbox/session.json",
+  "createdAt": "2026-06-12T20:07:12.555Z"
+}

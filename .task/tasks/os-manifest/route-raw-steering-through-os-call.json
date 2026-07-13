@@ -1,0 +1,19 @@
+{
+  "area": "os-manifest",
+  "stream": "stream/os-manifest",
+  "taskBranch": "task/os-manifest/route-raw-steering-through-os-call",
+  "baseBranch": "stream/os-manifest",
+  "sourceBranch": "stream/os-manifest",
+  "startFrom": "stream",
+  "prNumber": 721,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/721",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/721",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/721/route-raw-steering-through-os-call",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/721",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/721/route-raw-steering-through-os-call",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-route-raw-steering-through-os-call",
+  "taskSession": "tsk_56683a4f0865",
+  "tmuxSession": "opensaas-os-manifest-route-raw-steering-through-os-call-56683a4f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-route-raw-steering-through-os-call/.task/os-manifest/route-raw-steering-through-os-call/session.json",
+  "createdAt": "2026-06-03T03:37:14.170Z"
+}

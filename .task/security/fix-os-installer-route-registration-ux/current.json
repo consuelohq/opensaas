@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-installer-route-registration-ux",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1183,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1183",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1183",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1183/fix-os-installer-route-registration-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1183",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1183/fix-os-installer-route-registration-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-installer-route-registration-ux",
+  "taskSession": "tsk_e59738224d5d",
+  "tmuxSession": "opensaas-security-fix-os-installer-route-registration-ux-e5973822",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-installer-route-registration-ux/.task/security/fix-os-installer-route-registration-ux/session.json",
+  "createdAt": "2026-06-23T04:12:52.939Z"
+}

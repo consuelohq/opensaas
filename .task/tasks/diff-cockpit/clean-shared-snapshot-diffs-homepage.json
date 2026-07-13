@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/clean-shared-snapshot-diffs-homepage",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 1163,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1163",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1163",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1163/clean-shared-snapshot-diffs-homepage",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1163",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1163/clean-shared-snapshot-diffs-homepage",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clean-shared-snapshot-diffs-homepage",
+  "taskSession": "tsk_6f927d21e436",
+  "tmuxSession": "opensaas-diff-cockpit-clean-shared-snapshot-diffs-homepage-6f927d21",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-clean-shared-snapshot-diffs-homepage/.task/diff-cockpit/clean-shared-snapshot-diffs-homepage/session.json",
+  "createdAt": "2026-06-20T22:07:16.702Z"
+}

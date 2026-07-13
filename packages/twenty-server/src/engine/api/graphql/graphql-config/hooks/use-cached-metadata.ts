@@ -1,7 +1,6 @@
 import { createHash } from 'crypto';
 
 import { type Plugin } from 'graphql-yoga';
-import { isDefined } from 'twenty-shared/utils';
 
 import { InternalServerError } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
 import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
@@ -10,15 +9,104 @@ type CustomRequest = {
   workspace?: WorkspaceEntity & { metadataVersion?: string };
   locale?: string;
   userWorkspaceId?: string;
-  body?: { query?: string };
+  body?: { operationName?: string; query?: string };
+};
+
+type GraphQLYogaServerContext = {
+  req?: CustomRequest;
+};
+
+type GraphQLYogaRequestHookPayload = {
+  endResponse: (response: Response) => void;
+  serverContext: GraphQLYogaServerContext;
+};
+
+type GraphQLYogaResponseHookPayload = {
+  response: Response;
+  serverContext: GraphQLYogaServerContext;
+};
+
+type GraphQLResponseBody = {
+  errors?: unknown;
+  [key: string]: unknown;
+};
+
+type MetadataCacheAction = 'get' | 'set';
+
+export type MetadataCacheFailure = {
+  action: MetadataCacheAction;
+  operationName: string;
+  reason: 'error' | 'timeout';
+  message?: string;
 };
 
 export type CacheMetadataPluginConfig = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cacheGetter: (key: string) => any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cacheSetter: (key: string, value: any) => void;
+  cacheGetter: (
+    key: string,
+  ) => Promise<unknown | undefined> | unknown | undefined;
+  cacheSetter: (key: string, value: unknown) => Promise<void> | void;
+  onCacheFailure?: (failure: MetadataCacheFailure) => void;
   operationsToCache: string[];
+};
+
+const METADATA_CACHE_TIMEOUT_MS = 250;
+
+const isDefined = <T>(value: T | null | undefined): value is T =>
+  value !== null && value !== undefined;
+
+const getErrorMessage = (err: unknown) =>
+  err instanceof Error ? err.message : 'unknown error';
+
+const runCacheOperation = async <T>({
+  action,
+  onCacheFailure,
+  operation,
+  operationName,
+}: {
+  action: MetadataCacheAction;
+  onCacheFailure?: (failure: MetadataCacheFailure) => void;
+  operation: () => Promise<T> | T;
+  operationName: string;
+}): Promise<T | undefined> => {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  let didTimeout = false;
+
+  const timeoutPromise = new Promise<undefined>((resolve) => {
+    timeout = setTimeout(() => {
+      didTimeout = true;
+      resolve(undefined);
+    }, METADATA_CACHE_TIMEOUT_MS);
+  });
+
+  try {
+    const result = await Promise.race([
+      Promise.resolve(operation()),
+      timeoutPromise,
+    ]);
+
+    if (didTimeout) {
+      onCacheFailure?.({
+        action,
+        operationName,
+        reason: 'timeout',
+      });
+    }
+
+    return result;
+  } catch (err: unknown) {
+    onCacheFailure?.({
+      action,
+      message: getErrorMessage(err),
+      operationName,
+      reason: 'error',
+    });
+
+    return undefined;
+  } finally {
+    if (isDefined(timeout)) {
+      clearTimeout(timeout);
+    }
+  }
 };
 
 export function useCachedMetadata(config: CacheMetadataPluginConfig): Plugin {
@@ -41,7 +129,7 @@ export function useCachedMetadata(config: CacheMetadataPluginConfig): Plugin {
       .update(request.body?.query ?? '')
       .digest('hex');
 
-    // For FindAllCoreViews, use user-specific cache key since visibility filtering is user-dependent
+    // For FindAllCoreViews, use user-specific cache key since visibility filtering is user-dependent.
     if (operationName === 'FindAllCoreViews') {
       return `graphql:operations:${operationName}:${workspace.id}:${workspaceMetadataVersion}:${request.userWorkspaceId}:${queryHash}`;
     }
@@ -49,65 +137,109 @@ export function useCachedMetadata(config: CacheMetadataPluginConfig): Plugin {
     return `graphql:operations:${operationName}:${workspace.id}:${workspaceMetadataVersion}:${locale}:${queryHash}`;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getOperationName = (serverContext: any) =>
-    serverContext?.req?.body?.operationName;
+  const getOperationName = (serverContext: GraphQLYogaServerContext) =>
+    serverContext.req?.body?.operationName;
+
+  const shouldCacheOperation = (
+    operationName: string | undefined,
+  ): operationName is string =>
+    isDefined(operationName) &&
+    config.operationsToCache.includes(operationName);
 
   return {
-    // HACK: graphql-yoga Plugin hook types don't expose serverContext — safe destructure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onRequest: async ({ endResponse, serverContext }: any) => {
-      const request = serverContext.req as CustomRequest;
+    onRequest: async (hookPayload: unknown) => {
+      const { endResponse, serverContext } =
+        hookPayload as GraphQLYogaRequestHookPayload;
+      const request = serverContext.req;
 
-      if (!request.workspace?.id) {
+      if (!request?.workspace?.id) {
         return;
       }
 
-      if (!config.operationsToCache.includes(getOperationName(serverContext))) {
+      const operationName = getOperationName(serverContext);
+
+      if (!shouldCacheOperation(operationName)) {
         return;
       }
 
       const cacheKey = computeCacheKey({
-        operationName: getOperationName(serverContext),
+        operationName,
         request,
       });
-      const cachedResponse = await config.cacheGetter(cacheKey);
+      let cachedResponse: unknown | undefined;
 
-      if (cachedResponse) {
+      try {
+        cachedResponse = await runCacheOperation({
+          action: 'get',
+          onCacheFailure: config.onCacheFailure,
+          operation: () => config.cacheGetter(cacheKey),
+          operationName,
+        });
+      } catch {
+        return;
+      }
+
+      if (isDefined(cachedResponse)) {
         const earlyResponse = Response.json(cachedResponse);
 
-        return endResponse(earlyResponse);
+        endResponse(earlyResponse);
       }
     },
-    // HACK: graphql-yoga Plugin hook types don't expose serverContext — safe destructure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onResponse: async ({ response, serverContext }: any) => {
-      const request = serverContext.req as CustomRequest;
+    onResponse: async (hookPayload: unknown) => {
+      const { response, serverContext } =
+        hookPayload as GraphQLYogaResponseHookPayload;
+      const request = serverContext.req;
 
-      if (!request.workspace?.id) {
+      if (!request?.workspace?.id) {
         return;
       }
 
-      if (!config.operationsToCache.includes(getOperationName(serverContext))) {
+      const operationName = getOperationName(serverContext);
+
+      if (!shouldCacheOperation(operationName)) {
         return;
       }
 
       const cacheKey = computeCacheKey({
-        operationName: getOperationName(serverContext),
+        operationName,
         request,
       });
 
-      const cachedResponse = await config.cacheGetter(cacheKey);
+      let cachedResponse: unknown | undefined;
 
-      if (!cachedResponse) {
-        const responseBody = await response.json();
-
-        if (responseBody.errors) {
-          return;
-        }
-
-        config.cacheSetter(cacheKey, responseBody);
+      try {
+        cachedResponse = await runCacheOperation({
+          action: 'get',
+          onCacheFailure: config.onCacheFailure,
+          operation: () => config.cacheGetter(cacheKey),
+          operationName,
+        });
+      } catch {
+        return;
       }
+
+      if (isDefined(cachedResponse)) {
+        return;
+      }
+
+      let responseBody: GraphQLResponseBody;
+
+      try {
+        responseBody = (await response.clone().json()) as GraphQLResponseBody;
+      } catch {
+        return;
+      }
+
+      if (responseBody.errors) {
+        return;
+      }
+
+      void runCacheOperation({
+        action: 'set',
+        onCacheFailure: config.onCacheFailure,
+        operation: () => config.cacheSetter(cacheKey, responseBody),
+        operationName,
+      });
     },
   };
 }

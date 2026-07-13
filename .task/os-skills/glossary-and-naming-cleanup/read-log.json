@@ -1,0 +1,14 @@
+{
+  "files": [
+    "packages/consuelo-docs/navigation/base-structure.json",
+    "packages/consuelo-docs/os/concepts/files-and-artifacts.mdx",
+    "packages/consuelo-docs/os/concepts/integrations-and-capabilities.mdx",
+    "packages/consuelo-docs/os/concepts/portal.mdx",
+    "packages/consuelo-docs/os/glossary.mdx",
+    "packages/consuelo-docs/os/how-it-works.mdx",
+    "packages/consuelo-docs/os/overview.mdx",
+    "packages/consuelo-docs/package.json",
+    "packages/os/skills/task/SKILL.md"
+  ],
+  "updatedAt": "2026-06-05T07:57:08.893Z"
+}

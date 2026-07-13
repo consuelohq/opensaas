@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f8f304a2adec",
+  "tmuxSession": "opensaas-os-bound-os-github-response-packets-f8f304a2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/bound-os-github-response-packets",
+  "branch": "task/os/bound-os-github-response-packets",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bound-os-github-response-packets",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bound-os-github-response-packets",
+  "prNumber": 1042,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1042",
+  "createdAt": "2026-06-14T21:07:27.893Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bound-os-github-response-packets/.task/os/bound-os-github-response-packets/session.json"
+}

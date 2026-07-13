@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/align-sidebar-shortcut-hints",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 591,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/591",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/591",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/591/align-sidebar-shortcut-hints",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/591",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/591/align-sidebar-shortcut-hints",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-align-sidebar-shortcut-hints",
+  "taskSession": "tsk_f975b94471fa",
+  "tmuxSession": "opensaas-dialer-align-sidebar-shortcut-hints-f975b944",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-align-sidebar-shortcut-hints/.task/dialer/align-sidebar-shortcut-hints/session.json",
+  "createdAt": "2026-05-25T15:27:19.311Z"
+}

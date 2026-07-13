@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9b6bec5a6e32",
+  "tmuxSession": "opensaas-workspace-agents-preserve-complete-code-call-stdout-json-9b6bec5a",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+  "branch": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preserve-complete-code-call-stdout-json",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preserve-complete-code-call-stdout-json",
+  "prNumber": 1131,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1131",
+  "createdAt": "2026-06-18T05:34:47.141Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preserve-complete-code-call-stdout-json/.task/workspace-agents/preserve-complete-code-call-stdout-json/session.json"
+}

@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/render-trace-watch-time-in-eastern",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "2b8795e32fdf8998b22e379ab7da6737219eecd4",
+  "changeHash": "48e2369c8f0bf2c8dac11b40d9224d6844c36b1a35748eb62675e106f0ee4bdb",
+  "changedFiles": [
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-23T10:35:24.685Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

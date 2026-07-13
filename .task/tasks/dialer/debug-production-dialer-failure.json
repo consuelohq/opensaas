@@ -1,0 +1,15 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/debug-production-dialer-failure",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 354,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/354",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-debug-production-dialer-failure",
+  "taskSession": "tsk_736b7b64e27f",
+  "tmuxSession": "opensaas-dialer-debug-production-dialer-failure-736b7b64",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-debug-production-dialer-failure/.task/session.json",
+  "createdAt": "2026-05-09T15:13:15.736Z"
+}

@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/trace-analytics-formatting",
+  "base": "origin/main",
+  "headSha": "e488d022ed728ae53aabf1165b7b8e5f4fa6ed8e",
+  "changeHash": "398c654724e3cafecd8846ef47a1f82d409b3cff06857987c910ab75a7e1caf2",
+  "changedFiles": [
+    "scripts/operator/trace-analytics.ts"
+  ],
+  "verifiedAt": "2026-05-23T09:33:10.710Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

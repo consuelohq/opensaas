@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-linear-facade-commands",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 312,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/312",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-add-linear-facade-commands",
+  "createdAt": "2026-05-04T19:15:36.870Z"
+}

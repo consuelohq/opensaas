@@ -1,0 +1,237 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/address-stream-review-feedback",
+  "base": "stream/workspace-agents",
+  "headSha": "1fa6a5ed6e418ed8f366a9963e74b3da731595c2",
+  "changeHash": "8f15d2c1a3cfc7ee99ba08f7f74ca1314e6c83c01869d298abb28d22d834a74d",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/scripts/lib/worker/runtime.ts",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/task-workpad.test.js",
+    "packages/workspace/tooling/tool-manifest.json",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-05-31T18:06:02.013Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/add-workspace-tool-search.json",
+        ".task/tasks/workspace-agents/address-stream-review-feedback.json",
+        ".task/tasks/workspace-agents/explore-tdd-workpad-automation.json",
+        ".task/tasks/workspace-agents/remove-worker-trace-temp-helper-files.json",
+        ".task/tasks/workspace-agents/tighten-tools-search-ranking.json",
+        ".task/tasks/workspace-agents/unify-worker-events-into-trace-db.json",
+        ".task/workspace-agents/add-workspace-tool-search/current.json",
+        ".task/workspace-agents/add-workspace-tool-search/evidence-log.json",
+        ".task/workspace-agents/add-workspace-tool-search/read-log.json",
+        ".task/workspace-agents/add-workspace-tool-search/session.json",
+        ".task/workspace-agents/add-workspace-tool-search/verify.json",
+        ".task/workspace-agents/add-workspace-tool-search/workpad.md",
+        ".task/workspace-agents/address-stream-review-feedback/current.json",
+        ".task/workspace-agents/address-stream-review-feedback/evidence-log.json",
+        ".task/workspace-agents/address-stream-review-feedback/read-log.json",
+        ".task/workspace-agents/address-stream-review-feedback/session.json",
+        ".task/workspace-agents/address-stream-review-feedback/workpad.md",
+        ".task/workspace-agents/explore-tdd-workpad-automation/current.json",
+        ".task/workspace-agents/explore-tdd-workpad-automation/evidence-log.json",
+        ".task/workspace-agents/explore-tdd-workpad-automation/read-log.json",
+        ".task/workspace-agents/explore-tdd-workpad-automation/session.json",
+        ".task/workspace-agents/explore-tdd-workpad-automation/verify.json",
+        ".task/workspace-agents/explore-tdd-workpad-automation/workpad.md",
+        ".task/workspace-agents/remove-worker-trace-temp-helper-files/current.json",
+        ".task/workspace-agents/remove-worker-trace-temp-helper-files/session.json",
+        ".task/workspace-agents/remove-worker-trace-temp-helper-files/workpad.md",
+        ".task/workspace-agents/tighten-tools-search-ranking/current.json",
+        ".task/workspace-agents/tighten-tools-search-ranking/evidence-log.json",
+        ".task/workspace-agents/tighten-tools-search-ranking/read-log.json",
+        ".task/workspace-agents/tighten-tools-search-ranking/session.json",
+        ".task/workspace-agents/tighten-tools-search-ranking/verify.json",
+        ".task/workspace-agents/tighten-tools-search-ranking/workpad.md",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/current.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/evidence-log.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/read-log.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/session.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/verify.json",
+        ".task/workspace-agents/unify-worker-events-into-trace-db/workpad.md",
+        "package.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/lib/facade/executor.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/task-workpad.js",
+        "packages/workspace/scripts/lib/worker/runtime.ts",
+        "packages/workspace/scripts/task-fs.js",
+        "packages/workspace/scripts/tools-search.ts",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/tests/facade/facade.test.ts",
+        "packages/workspace/tests/task-workpad.test.js",
+        "packages/workspace/tooling/tool-manifest.json",
+        "scripts/operator/trace-watch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/executor.ts",
+            "packages/workspace/scripts/lib/facade/schemas.ts",
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-watch",
+          "critical": true,
+          "reason": "Trace renderer changes must compile.",
+          "matchedFiles": [
+            "scripts/operator/trace-watch.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md",
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 149,
+          "outputTail": "]\n(pass) typed facade executor > validates input for mac.list [0.07ms]\n{\"level\":\"error\",\"tool\":\"mac.process\",\"command\":\"workspace mac.process\",\"implementationCommand\":\"workspace mac.process\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-05-31T18:06:01.343Z\"}\n(pass) typed facade executor > validates input for mac.process [0.29ms]\n{\"level\":\"error\",\"tool\":\"mac.port\",\"command\":\"workspace mac.port\",\"implementationCommand\":\"workspace mac.port\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-05-31T18:06:01.343Z\"}\n(pass) typed facade executor > validates input for mac.port [0.23ms]\n{\"level\":\"error\",\"tool\":\"code.run\",\"command\":\"workspace code.run\",\"implementationCommand\":\"workspace code.run\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-05-31T18:06:01.343Z\"}\n(pass) typed facade executor > validates input for code.run [0.33ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-05-31T18:06:01.343Z\"}\n(pass) typed facade executor > validates input for tools.search [0.29ms]\n(pass) typed facade executor > validates input for generate.docs\n(pass) typed facade executor > validates input for generate.types\n{\"level\":\"error\",\"tool\":\"design.publish\",\"command\":\"workspace design.publish\",\"implementationCommand\":\"workspace consuelo-design publish\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-05-31T18:06:01.344Z\"}\n(pass) typed facade executor > validates input for design.publish [0.36ms]\n(pass) typed facade executor > validates input for design.refresh [0.09ms]\n(pass) typed facade executor > validates input for consueloDesign.run [0.07ms]\n(pass) typed facade executor > validates input for consueloDesign.getDesignSystem [0.03ms]\n(pass) typed facade executor > validates input for consueloDesign.listSkills\n(pass) typed facade executor > validates input for consueloDesign.listDesignSystems\n(pass) typed facade executor > validates input for consueloDesign.upstreamStatus\n(pass) typed facade executor > validates input for consueloDesign.railwayCheck\n(pass) typed facade executor > validates input for consueloDesign.check\n(pass) typed facade executor > validates input for consueloDesign.generateWebsite [0.11ms]\n(pass) typed facade executor > validates input for consueloDesign.generateDemo\n(pass) typed facade executor > validates input for consueloDesign.generateImageBrief\n(pass) typed facade executor > validates input for consueloDesign.generateDigitalEguide [0.11ms]\n(pass) typed facade executor > validates input for consueloDesign.generateEmail\n(pass) typed facade executor > validates input for consueloDesign.generateMotionFrame\n(pass) typed facade executor > validates input for consueloDesign.renderHyperframes\n(pass) typed facade executor > validates input for consueloDesign.uiBg\n(pass) typed facade executor > validates input for consueloDesign.uiStop\n(pass) typed facade executor > validates input for consueloDesign.uiStatus\n(pass) typed facade executor > validates input for consueloDesign.uiLogs\n(pass) typed facade executor > validates input for consueloDesign.odBuild\n\n 128 pass\n 430 filtered out\n 0 fail\n 58 expect() calls\nRan 128 tests across 1 file. [142.00ms]\n"
+        },
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 18,
+          "outputTail": "Bundled 1 module in 13ms\n\n  trace-watch-test-selection.js  22.93 KB  (entry point)\n\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 456,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-stream-review-feedback\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 94\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:06:01\n\u001b[2m   Duration \u001b[22m 224ms\u001b[2m (transform 58ms, setup 0ms, import 63ms, tests 94ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,283 @@
+---
+import { INSTALL_COMMAND } from '../../data/home-content';
+import PixelArrow from '../icons/PixelArrow.astro';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'intro' } = Astro.props as Props;
+---
+
+<section class="os-hero" id={sectionId} data-section="hero">
+  <img
+    class="os-hero__art"
+    src="/images/home/consuelo-atmosphere.svg"
+    alt=""
+    width="1200"
+    height="900"
+    aria-hidden="true"
+  />
+
+  <div class="os-hero__content">
+    <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
+    <h1>
+      <span data-hero-line>YOUR WORKSPACE,</span>
+      <span data-hero-line>CONNECTED TO</span>
+      <span data-hero-line>EVERY AGENT</span>
+    </h1>
+    <p class="os-hero__subtitle">
+      Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
+    </p>
+
+    <div class="os-hero__actions">
+      <a class="os-hero__button" href="https://os.consuelohq.com">
+        <span>SIGN IN</span>
+        <PixelArrow />
+      </a>
+    </div>
+
+    <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
+      <code>{INSTALL_COMMAND}</code>
+      <span data-copy-label>COPY</span>
+    </button>
+  </div>
+</section>
+
+<script define:vars={{ INSTALL_COMMAND }}>
+  const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
+    (label) => label instanceof HTMLElement,
+  );
+  const defaultLabels = new Map(labels.map((label) => [label, label.textContent ?? '']));
+
+  document.querySelectorAll('[data-copy-install]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!navigator.clipboard) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(INSTALL_COMMAND);
+      } catch {
+        return;
+      }
+
+      labels.forEach((label) => {
+        label.textContent = 'COPIED';
+      });
+      window.setTimeout(() => {
+        labels.forEach((label) => {
+          label.textContent = defaultLabels.get(label) ?? '';
+        });
+      }, 1500);
+    });
+  });
+</script>
+
+<style>
+  .os-hero {
+    position: relative;
+    display: grid;
+    min-height: calc(100svh - clamp(4.5rem, 8vw, 6.5rem));
+    place-items: center;
+    overflow: hidden;
+    background: var(--site-color-brand);
+    color: white;
+    padding: clamp(7rem, 12vw, 10rem) 1rem clamp(4rem, 8vw, 6rem);
+    text-align: center;
+  }
+
+  .os-hero__content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: min(100%, 78rem);
+    justify-items: center;
+    gap: clamp(1rem, 1.7vw, 1.5rem);
+  }
+
+  .os-hero__eyebrow {
+    margin: 0;
+    font: 650 0.66rem/1 var(--site-font-mono);
+    letter-spacing: 0.2em;
+  }
+
+  .os-hero h1 {
+    max-width: none;
+    margin: 0;
+    color: white;
+    font-family: var(--site-font-display);
+    font-size: clamp(4.25rem, 5.5vw, 6.5rem);
+    font-weight: 430;
+    letter-spacing: 0;
+    line-height: 0.9;
+    text-wrap: balance;
+  }
+
+  .os-hero h1 > span:first-child {
+    display: block;
+  }
+
+  .os-hero h1 > span:nth-child(2)::after {
+    content: ' ';
+  }
+
+  .os-hero__subtitle {
+    max-width: 42rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: clamp(0.9rem, 1.25vw, 1.05rem);
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+
+  .os-hero__actions {
+    display: grid;
+    width: min(100%, 31rem);
+    gap: 0.55rem;
+    margin-top: 0.35rem;
+  }
+
+  .os-hero__button,
+  .os-hero__command {
+    border: 1px solid white;
+    border-radius: 0;
+    font-family: var(--site-font-mono);
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+  }
+
+  .os-hero__button {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    background: white;
+    color: var(--site-color-brand);
+    text-decoration: none;
+    transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  }
+
+  .os-hero__button :global(svg) {
+    width: 1.1rem;
+    height: auto;
+  }
+
+  .os-hero__button--quiet {
+    background: transparent;
+    color: white;
+  }
+
+  .os-hero__button:hover,
+  .os-hero__button:focus-visible {
+    background: var(--site-color-soft-white);
+  }
+
+  .os-hero__button--quiet:hover,
+  .os-hero__button--quiet:focus-visible {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .os-hero__command {
+    display: flex;
+    width: min(100%, 31rem);
+    min-height: 2.8rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    overflow: hidden;
+    background: rgba(0, 0, 242, 0.76);
+    color: white;
+    padding: 0.7rem 0.9rem;
+    text-align: left;
+  }
+
+  .os-hero__command code {
+    min-width: 0;
+    overflow: hidden;
+    font: inherit;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .os-hero__command span {
+    flex: 0 0 auto;
+    font-size: 0.62rem;
+  }
+
+  .os-hero__art {
+    position: absolute;
+    z-index: 1;
+    inset: 0 auto auto 50%;
+    width: max(100%, 90rem);
+    height: 100%;
+    max-width: none;
+    opacity: 0.96;
+    object-fit: cover;
+    object-position: 50% 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .os-hero::after {
+    position: absolute;
+    z-index: 1;
+    inset: 20% 0 8%;
+    background: radial-gradient(circle at 50% 49%, rgba(0, 0, 242, 0.64), transparent 53%);
+    content: '';
+    pointer-events: none;
+  }
+
+  @media (max-width: 720px) {
+    .os-hero {
+      min-height: calc(100svh - 4rem);
+      padding: 4.65rem 0.9rem 1.75rem;
+    }
+
+    .os-hero h1 {
+      font-size: clamp(2rem, 9.2vw, 2.35rem);
+      line-height: 0.92;
+    }
+
+    .os-hero h1 > span {
+      display: block;
+    }
+
+    .os-hero h1 > span:nth-child(2)::after {
+      content: none;
+    }
+
+    .os-hero__subtitle {
+      max-width: 22rem;
+      font-size: 0.82rem;
+    }
+
+    .os-hero__command {
+      min-height: 2.55rem;
+      font-size: 0.6rem;
+    }
+
+    .os-hero__art {
+      inset: 0 auto auto 50%;
+      width: auto;
+      min-width: 68rem;
+      height: 100%;
+      object-position: 50% 58%;
+    }
+
+    .os-hero::after {
+      inset: 20% -25% 9%;
+      background: radial-gradient(circle at 50% 50%, rgba(0, 0, 242, 0.72), transparent 58%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .os-hero__button {
+      transition: none;
+    }
+  }
+</style>

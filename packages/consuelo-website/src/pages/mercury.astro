@@ -1,10 +1,11 @@
 ---
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import { mercuryFaqItems, siteLinks } from '../data/launch-content';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import { mercuryFaqItems } from '../data/mercury-content';
+import { siteLinks } from '../data/site-links';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
 
-const description = 'Mercury is the hosted Consuelo plan. Twilio calling, AI models, and hosting — tested and configured. Start with $20 pay as you go.';
+const description = 'Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.';
 
 const icons = [
   { src: '/icons/twilio.svg', alt: 'Twilio' },
@@ -28,15 +29,15 @@ const steps = [
 ];
 ---
 
-<LaunchLayout title="Mercury" description={description} canonicalPath="/mercury">
-  <LaunchHeader />
+<MarketingLayout title="Mercury" description={description} canonicalPath="/mercury">
+  <SiteHeader />
 
   <!-- hero -->
   <section class="launch-section">
     <div class="launch-content launch-content--wide mercury-hero">
       <h1 class="mercury-hero__logo launch-mono">Mercury</h1>
-      <h2 class="mercury-hero__subtitle">Hosted calling and AI, ready to go.</h2>
-      <p class="launch-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.,</p>
+      <h2 class="mercury-hero__subtitle">Managed telephony and AI without the setup work.</h2>
+      <p class="launch-copy">Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.</p>
       <div class="mercury-hero__icons">
         {icons.map((icon) => (
           <img src={icon.src} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" />
@@ -103,8 +104,8 @@ const steps = [
     </div>
   </section>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <style>
   .mercury-hero {

@@ -29,13 +29,13 @@ runs:
         restore-keys: v4-${{ steps.globals.outputs.CACHE_KEY_PREFIX }}-
         path: ${{ steps.globals.outputs.PATH_TO_CACHE }}
     - name: Install Dependencies
-      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' && steps.cache-node-modules.outputs.cache-matched-key == '' }}
+      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       shell: ${{ steps.globals.outputs.ACTION_SHELL }}
       run: |
         yarn config set enableHardenedMode true
         yarn --immutable --check-cache
     - name: Save cache
-      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' && steps.cache-node-modules.outputs.cache-matched-key == '' }}
+      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v4
       with:
         key: ${{ steps.cache-node-modules.outputs.cache-primary-key }}

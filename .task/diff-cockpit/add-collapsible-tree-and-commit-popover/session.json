@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7f2a16b7ed4f",
+  "tmuxSession": "opensaas-diff-cockpit-add-collapsible-tree-and-commit-popover-7f2a16b7",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/add-collapsible-tree-and-commit-popover",
+  "branch": "task/diff-cockpit/add-collapsible-tree-and-commit-popover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-collapsible-tree-and-commit-popover",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-collapsible-tree-and-commit-popover",
+  "prNumber": 741,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/741",
+  "createdAt": "2026-06-03T09:02:45.862Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-collapsible-tree-and-commit-popover/.task/diff-cockpit/add-collapsible-tree-and-commit-popover/session.json"
+}

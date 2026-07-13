@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_10ae1d9347dc",
+  "tmuxSession": "opensaas-ci-investigate-flaky-danger-js-github-api-fetch-fai-10ae1d93",
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/investigate-flaky-danger-js-github-api-fetch-failures",
+  "branch": "task/ci/investigate-flaky-danger-js-github-api-fetch-failures",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-investigate-flaky-danger-js-github-api-fetch-failures",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-investigate-flaky-danger-js-github-api-fetch-failures",
+  "prNumber": 1224,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1224",
+  "createdAt": "2026-06-27T20:20:17.740Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-investigate-flaky-danger-js-github-api-fetch-failures/.task/ci/investigate-flaky-danger-js-github-api-fetch-failures/session.json"
+}

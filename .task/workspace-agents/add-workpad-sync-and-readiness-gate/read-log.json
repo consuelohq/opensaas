@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/task-workpad.test.ts"
+  ],
+  "updatedAt": "2026-05-23T04:20:24.270Z"
+}

@@ -123,12 +123,14 @@ describe("blog refresh contract", () => {
   });
 
   test("uses device fonts and a comfortable mobile reading measure", async () => {
-    const [blogCss, globalCss, tailwindConfig, launchLayout] =
+    const [blogCss, globalCss, tokensCss, tailwindConfig, marketingLayout, packageJson] =
       await Promise.all([
         readSiteFile("src/styles/blog.css"),
         readSiteFile("src/styles/global.css"),
+        readSiteFile("src/styles/tokens.css"),
         readSiteFile("tailwind.config.mjs"),
-        readSiteFile("src/layouts/LaunchLayout.astro"),
+        readSiteFile("src/layouts/MarketingLayout.astro"),
+        readSiteFile("package.json"),
       ]);
 
     expect(blogCss).toContain("--system-font:");
@@ -145,9 +147,14 @@ describe("blog refresh contract", () => {
     expect(tailwindConfig).toContain(
       'headings: [...defaultTheme.fontFamily.sans]',
     );
-    expect(launchLayout).toContain("--launch-font:");
-    expect(launchLayout).toContain("font-family: var(--launch-font)");
-    expect(launchLayout).not.toContain("Geist Mono");
+    expect(tokensCss).not.toContain("@fontsource");
+    expect(tokensCss).not.toContain("@font-face");
+    expect(tokensCss).toContain("--site-font-display: system-ui");
+    expect(tokensCss).toContain("--site-font-body: system-ui");
+    expect(tokensCss).toContain("--site-font-mono: ui-monospace");
+    expect(marketingLayout).toContain("font-family: var(--site-font-body)");
+    expect(marketingLayout).not.toContain("Geist Mono");
+    expect(packageJson).not.toContain("@fontsource-variable");
     expect(existsSync(join(siteRoot, "public/fonts/GeistMono-Variable.woff2"))).toBe(false);
     expect(existsSync(join(siteRoot, "public/fonts/GeistSans-Variable.woff2"))).toBe(false);
   });

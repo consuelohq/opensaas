@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1c7afdf063ca",
+  "tmuxSession": "opensaas-diff-cockpit-fix-mobile-table-rows-1c7afdf0",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/fix-mobile-table-rows",
+  "branch": "task/diff-cockpit/fix-mobile-table-rows",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-mobile-table-rows",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-mobile-table-rows",
+  "prNumber": 915,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/915",
+  "createdAt": "2026-06-10T02:36:22.343Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-fix-mobile-table-rows/.task/diff-cockpit/fix-mobile-table-rows/session.json"
+}

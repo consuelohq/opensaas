@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/svg-draw-proof-motion-only",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 327,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/327",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-svg-draw-proof-motion-only",
+  "createdAt": "2026-05-05T22:20:00.411Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/align-os-skills-discovery-and-naming",
+  "baseBranch": "stream/os-skills",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 716,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/716",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/716",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/716/align-os-skills-discovery-and-naming",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/716",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/716/align-os-skills-discovery-and-naming",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-align-os-skills-discovery-and-naming",
+  "taskSession": "tsk_c9a801df0371",
+  "tmuxSession": "opensaas-os-skills-align-os-skills-discovery-and-naming-c9a801df",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-align-os-skills-discovery-and-naming/.task/os-skills/align-os-skills-discovery-and-naming/session.json",
+  "createdAt": "2026-06-03T00:28:24.624Z"
+}

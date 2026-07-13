@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/add-page-versions-to-design-wiki-publish-archive",
+  "base": "origin/stream/design",
+  "headSha": "dd10920e80e86610b143fb971fe066ca9a79e0a3",
+  "changeHash": "79084674f1a5fb029d283aa417c88ae42229bc2927bc7a781e7ba60421957842",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-06T06:02:22.262Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/add-page-versions-to-design-wiki-publish-archive/current.json",
+        ".task/design/add-page-versions-to-design-wiki-publish-archive/evidence-log.json",
+        ".task/design/add-page-versions-to-design-wiki-publish-archive/read-log.json",
+        ".task/design/add-page-versions-to-design-wiki-publish-archive/session.json",
+        ".task/design/add-page-versions-to-design-wiki-publish-archive/workpad.md",
+        ".task/tasks/design/add-page-versions-to-design-wiki-publish-archive.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

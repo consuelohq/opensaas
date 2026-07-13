@@ -1,12 +1,15 @@
 export type ErrorCode =
   | 'OK'
   | 'VALIDATION_ERROR'
+  | 'CODE_CALL_VALIDATION_ERROR'
   | 'AMBIGUOUS_TASK_SELECTION'
   | 'WORKTREE_NOT_FOUND'
   | 'COMMAND_FAILED'
   | 'TIMEOUT'
   | 'PARSE_ERROR'
   | 'NOT_FOUND'
+  | 'TASK_SESSION_NOT_FOUND'
+  | 'TASK_SESSION_REQUIRED'
   | 'DRY_RUN';
 
 export type ToolCapabilities = {
@@ -27,10 +30,15 @@ export type ToolResult<TData = unknown> = {
   durationMs: number;
   traceId: string;
   requestId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  detail?: string;
+  changed?: boolean;
   apiVersion: '1.0.0';
 };
 
-export type CommandArgumentKind = 'value' | 'boolean' | 'array' | 'record' | 'commandArray';
+export type CommandArgumentKind = 'value' | 'boolean' | 'array' | 'record' | 'commandArray' | 'readFileArray';
 
 export type CommandArgument = {
   source: string;
@@ -65,6 +73,7 @@ export type ToolManifestEntry = {
   outputSchema: string;
   command: ToolCommand;
   exampleInput: Record<string, unknown>;
+  sessionRequired?: boolean;
 };
 
 export type ToolInput = Record<string, unknown>;
@@ -99,7 +108,6 @@ export type BranchResolver = (input: {
   explicitBranch?: string;
   cwd: string;
   env: NodeJS.ProcessEnv;
-  pinnedBranch?: string;
   currentTask?: TaskCandidate | null;
   candidates?: TaskCandidate[];
 }) => BranchResolution;
@@ -111,10 +119,8 @@ export type ExecuteToolOptions = {
   env?: NodeJS.ProcessEnv;
   runner?: ToolRunner;
   branchResolver?: BranchResolver;
-  pinnedBranch?: string;
   currentTask?: TaskCandidate | null;
   candidates?: TaskCandidate[];
-  setPinnedBranch?: (branch: string) => void;
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
@@ -131,3 +137,4 @@ export type BatchResult = ToolResult<{
   results: ToolResult<unknown>[];
   completed: number;
 }>;
+

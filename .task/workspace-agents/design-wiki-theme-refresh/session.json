@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_aaeae35b74b3",
+  "tmuxSession": "opensaas-workspace-agents-design-wiki-theme-refresh-aaeae35b",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/design-wiki-theme-refresh",
+  "branch": "task/workspace-agents/design-wiki-theme-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-design-wiki-theme-refresh",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-design-wiki-theme-refresh",
+  "prNumber": 635,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/635",
+  "createdAt": "2026-05-29T00:01:45.926Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-design-wiki-theme-refresh/.task/workspace-agents/design-wiki-theme-refresh/session.json"
+}

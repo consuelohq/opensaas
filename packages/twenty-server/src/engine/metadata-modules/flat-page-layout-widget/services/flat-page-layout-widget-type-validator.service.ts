@@ -60,6 +60,11 @@ export class FlatPageLayoutWidgetTypeValidatorService {
       STANDALONE_RICH_TEXT:
         validateStandaloneRichTextFlatPageLayoutWidgetForCreation,
       FRONT_COMPONENT: validateFrontComponentFlatPageLayoutWidgetForCreation,
+      FILE_PREVIEW: rejectWidgetType(
+        WidgetType.FILE_PREVIEW,
+        'Widget type FILE_PREVIEW is not supported yet.',
+        msg`Widget type FILE_PREVIEW is not supported yet.`,
+      ),
       TIMELINE: validateSimpleRecordPageWidgetForCreation(
         WidgetConfigurationType.TIMELINE,
       ),
@@ -110,6 +115,11 @@ export class FlatPageLayoutWidgetTypeValidatorService {
       STANDALONE_RICH_TEXT:
         validateStandaloneRichTextFlatPageLayoutWidgetForUpdate,
       FRONT_COMPONENT: validateFrontComponentFlatPageLayoutWidgetForUpdate,
+      FILE_PREVIEW: rejectWidgetType(
+        WidgetType.FILE_PREVIEW,
+        'Widget type FILE_PREVIEW is not supported yet.',
+        msg`Widget type FILE_PREVIEW is not supported yet.`,
+      ),
       TIMELINE: rejectWidgetType(
         WidgetType.TIMELINE,
         'Widget type TIMELINE is not supported yet.',

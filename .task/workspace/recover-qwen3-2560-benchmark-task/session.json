@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0ce13ba96f69",
+  "tmuxSession": "opensaas-workspace-recover-qwen3-2560-benchmark-task-0ce13ba9",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/recover-qwen3-2560-benchmark-task",
+  "branch": "task/workspace/recover-qwen3-2560-benchmark-task",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-recover-qwen3-2560-benchmark-task",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-recover-qwen3-2560-benchmark-task",
+  "prNumber": 627,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/627",
+  "createdAt": "2026-05-28T22:35:20.365Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-recover-qwen3-2560-benchmark-task/.task/workspace/recover-qwen3-2560-benchmark-task/session.json"
+}

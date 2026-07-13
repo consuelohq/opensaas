@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/guide-stale-fs-patch-calls",
+  "base": "origin/stream/os",
+  "headSha": "7e2be373ca79b6b6eaedc0b29e3efa915193d0bc",
+  "changeHash": "9a35e2bc77cb9714ee2e9dbdc1b4a63cf42d0773b1deaa9229c79f181d250c9c",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/tests/facade/facade.test.ts"
+  ],
+  "verifiedAt": "2026-06-16T07:59:27.070Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/guide-stale-fs-patch-calls/current.json",
+        ".task/os/guide-stale-fs-patch-calls/evidence-log.json",
+        ".task/os/guide-stale-fs-patch-calls/read-log.json",
+        ".task/os/guide-stale-fs-patch-calls/session.json",
+        ".task/os/guide-stale-fs-patch-calls/workpad.md",
+        ".task/tasks/os/guide-stale-fs-patch-calls.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

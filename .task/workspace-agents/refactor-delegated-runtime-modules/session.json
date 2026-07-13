@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_20f867bfc94c",
+  "tmuxSession": "opensaas-workspace-agents-refactor-delegated-runtime-modules-20f867bf",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/refactor-delegated-runtime-modules",
+  "branch": "task/workspace-agents/refactor-delegated-runtime-modules",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-refactor-delegated-runtime-modules",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-refactor-delegated-runtime-modules",
+  "prNumber": 643,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/643",
+  "createdAt": "2026-05-29T02:48:45.378Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-refactor-delegated-runtime-modules/.task/workspace-agents/refactor-delegated-runtime-modules/session.json"
+}

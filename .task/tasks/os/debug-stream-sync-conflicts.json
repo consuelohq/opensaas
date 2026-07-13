@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/debug-stream-sync-conflicts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 768,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/768",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/768",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/768/debug-stream-sync-conflicts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/768",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/768/debug-stream-sync-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-debug-stream-sync-conflicts",
+  "taskSession": "tsk_9c0d1dbcd6a0",
+  "tmuxSession": "opensaas-os-debug-stream-sync-conflicts-9c0d1dbc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-debug-stream-sync-conflicts/.task/os/debug-stream-sync-conflicts/session.json",
+  "createdAt": "2026-06-05T03:52:47.095Z"
+}

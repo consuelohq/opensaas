@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c88bf74ea5df",
+  "tmuxSession": "opensaas-workspace-restore-design-archive-server-publish-c88bf74e",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/restore-design-archive-server-publish",
+  "branch": "task/workspace/restore-design-archive-server-publish",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-restore-design-archive-server-publish",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-restore-design-archive-server-publish",
+  "prNumber": 493,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/493",
+  "createdAt": "2026-05-23T06:05:25.288Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-restore-design-archive-server-publish/.task/workspace/restore-design-archive-server-publish/session.json"
+}

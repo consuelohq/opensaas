@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/trace-analytics-report",
+  "base": "origin/main",
+  "headSha": "ca24cc2aca5da650692c9a0f77c52f7a02464de4",
+  "changeHash": "a93af6d38879f69b5d5f6ba1912555dcaf506a6fa0a2e26493dd2741b4b8b1a6",
+  "changedFiles": [
+    "scripts/operator/trace-analytics.ts"
+  ],
+  "verifiedAt": "2026-05-23T09:09:38.361Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

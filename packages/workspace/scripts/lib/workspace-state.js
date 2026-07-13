@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { spawnSync } = require('child_process');
-const { getTaskMetaBranchMismatch } = require('./task-meta');
+const { findTaskMeta, getTaskMetaBranchMismatch } = require('./task-meta');
 
 const DEFAULT_SERVICE = 'opensaas';
 const WORKSPACE_SCRIPTS_DIR = path.join('packages', 'workspace', 'scripts');
@@ -89,9 +89,16 @@ function getChangedFiles(cwd = process.cwd()) {
   if (!result.ok || !result.stdout) return [];
 
   return result.stdout.split('\n').filter(Boolean).map((line) => {
-    const status = line.slice(0, 2).trim() || 'modified';
-    const filePath = line.slice(3);
-    return { status, path: filePath };
+    if (line.length >= 3 && line[2] === ' ') {
+      const status = line.slice(0, 2).trim() || 'modified';
+      const filePath = line.slice(3);
+      return { status, path: filePath };
+    }
+
+    const separatorIndex = line.indexOf(' ');
+    const statusText = separatorIndex === -1 ? line : line.slice(0, separatorIndex);
+    const filePath = separatorIndex === -1 ? '' : line.slice(separatorIndex + 1);
+    return { status: statusText.trim() || 'modified', path: filePath };
   });
 }
 
@@ -163,33 +170,7 @@ function listWorkspaceScriptFiles(repoRoot) {
 }
 
 function findTaskMetaRecord(startDirectory = process.cwd(), options = {}) {
-  let directory = path.resolve(startDirectory);
-
-  while (true) {
-    const currentPath = path.join(directory, '.task', 'current.json');
-    if (fs.existsSync(currentPath)) {
-      const data = readJsonFile(currentPath);
-      const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
-      const record = { path: currentPath, dir: directory, data, stale: Boolean(mismatch), mismatch };
-      if (mismatch && !options.includeStale) return null;
-      return record;
-    }
-
-    const legacyPath = path.join(directory, '.task-meta.json');
-    if (fs.existsSync(legacyPath)) {
-      const data = readJsonFile(legacyPath);
-      const mismatch = getTaskMetaBranchMismatch(data, options.currentBranch);
-      const record = { path: legacyPath, dir: directory, data, stale: Boolean(mismatch), mismatch };
-      if (mismatch && !options.includeStale) return null;
-      return record;
-    }
-
-    const parent = path.dirname(directory);
-    if (parent === directory) break;
-    directory = parent;
-  }
-
-  return null;
+  return findTaskMeta(startDirectory, options);
 }
 
 function parseTaskBranch(branch) {

@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/consuelo-docs/docs.json",
+    "packages/consuelo-docs/os/agent-context/scripts.mdx",
+    "packages/consuelo-docs/os/agent-context/steering.mdx",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/scripts/generate-docs.ts"
+  ],
+  "updatedAt": "2026-06-05T07:20:22.188Z"
+}

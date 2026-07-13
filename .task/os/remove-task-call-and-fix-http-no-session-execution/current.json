@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-task-call-and-fix-http-no-session-execution",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1063,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1063",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1063",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1063/remove-task-call-and-fix-http-no-session-execution",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1063",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1063/remove-task-call-and-fix-http-no-session-execution",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-task-call-and-fix-http-no-session-execution",
+  "taskSession": "tsk_e9a97f4c5254",
+  "tmuxSession": "opensaas-os-remove-task-call-and-fix-http-no-session-executi-e9a97f4c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-task-call-and-fix-http-no-session-execution/.task/os/remove-task-call-and-fix-http-no-session-execution/session.json",
+  "createdAt": "2026-06-15T07:25:08.252Z"
+}

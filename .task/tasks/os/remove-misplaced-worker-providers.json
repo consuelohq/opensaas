@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-misplaced-worker-providers",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 632,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/632",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/632",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/632/remove-misplaced-worker-providers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/632",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/632/remove-misplaced-worker-providers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-worker-providers",
+  "taskSession": "tsk_2ffd49939e7f",
+  "tmuxSession": "opensaas-os-remove-misplaced-worker-providers-2ffd4993",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-misplaced-worker-providers/.task/os/remove-misplaced-worker-providers/session.json",
+  "createdAt": "2026-05-28T23:19:58.628Z"
+}

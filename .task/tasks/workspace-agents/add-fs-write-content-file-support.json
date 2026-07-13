@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-fs-write-content-file-support",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 395,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/395",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-fs-write-content-file-support",
+  "taskSession": "tsk_13366abeb013",
+  "tmuxSession": "opensaas-workspace-agents-add-fs-write-content-file-support-13366abe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-fs-write-content-file-support/.task/session.json",
+  "createdAt": "2026-05-13T09:20:12.605Z"
+}

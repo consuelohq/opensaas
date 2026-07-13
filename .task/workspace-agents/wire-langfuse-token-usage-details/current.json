@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/wire-langfuse-token-usage-details",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 465,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/465",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/465",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/465/wire-langfuse-token-usage-details",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/465",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/465/wire-langfuse-token-usage-details",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-wire-langfuse-token-usage-details",
+  "taskSession": "tsk_6547a6e3257f",
+  "tmuxSession": "opensaas-workspace-agents-wire-langfuse-token-usage-details-6547a6e3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-wire-langfuse-token-usage-details/.task/workspace-agents/wire-langfuse-token-usage-details/session.json",
+  "createdAt": "2026-05-22T08:33:33.579Z"
+}

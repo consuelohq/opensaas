@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-script-parity-audit-tests",
+  "base": "origin/stream/os",
+  "headSha": "8bc4f6d580e82cf9ab18ae7837f7f31c6f404290",
+  "changeHash": "f250f34828ab3cb483a3894ab451b2f4b78117712fd86f0aac769bd7a8c9ef9e",
+  "changedFiles": [
+    "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/os/tooling/script-parity-classifications.json"
+  ],
+  "verifiedAt": "2026-06-13T05:25:12.329Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-script-parity-audit-tests/current.json",
+        ".task/os/add-script-parity-audit-tests/evidence-log.json",
+        ".task/os/add-script-parity-audit-tests/read-log.json",
+        ".task/os/add-script-parity-audit-tests/session.json",
+        ".task/os/add-script-parity-audit-tests/workpad.md",
+        ".task/tasks/os/add-script-parity-audit-tests.json",
+        "packages/os/tests/audit/script-parity-audit.test.ts",
+        "packages/os/tooling/script-parity-classifications.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

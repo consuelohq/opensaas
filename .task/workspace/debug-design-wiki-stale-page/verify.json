@@ -1,0 +1,25 @@
+{
+  "result": "pass",
+  "branch": "task/workspace/debug-design-wiki-stale-page",
+  "base": "origin/stream/workspace",
+  "headSha": "afbbe98d90bb922d6385f6c26b47c7d6e48496e7",
+  "changeHash": "085a39cbebc51e957e213b25af09d4d3830cff160c6f62a85965de8de50f12b0",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T04:55:03.991Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

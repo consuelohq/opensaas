@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/address-cloudflare-edge-provisioning-nits",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 956,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/956",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/956",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/956/address-cloudflare-edge-provisioning-nits",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/956",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/956/address-cloudflare-edge-provisioning-nits",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-cloudflare-edge-provisioning-nits",
+  "taskSession": "tsk_f734baf93e26",
+  "tmuxSession": "opensaas-security-address-cloudflare-edge-provisioning-nits-f734baf9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-cloudflare-edge-provisioning-nits/.task/security/address-cloudflare-edge-provisioning-nits/session.json",
+  "createdAt": "2026-06-11T06:46:48.229Z"
+}

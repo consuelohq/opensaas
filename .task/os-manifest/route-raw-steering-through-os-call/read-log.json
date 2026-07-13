@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/os-manifest/route-raw-steering-through-os-call/workpad.md",
+    "packages/os/README.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/local-guardrails.ts",
+    "packages/os/scripts/lib/manifest.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/server.py",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-06-03T03:49:02.720Z"
+}

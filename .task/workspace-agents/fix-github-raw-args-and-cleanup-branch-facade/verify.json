@@ -1,0 +1,28 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/fix-github-raw-args-and-cleanup-branch-facade",
+  "base": "origin/main",
+  "headSha": "a2632ed3fb0f59a9c502230fabe480b4ddb78fbb",
+  "changeHash": "810b1bfc4bc9ba8a7dd123818002547cfe4744e3152793696867c13b6b2a0715",
+  "changedFiles": [
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/task-cleanup.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T22:40:59.790Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

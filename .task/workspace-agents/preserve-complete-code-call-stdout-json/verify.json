@@ -1,0 +1,95 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "c2c0a68abac557383631e60717d26b2a69134884",
+  "changeHash": "9fbfa264bf730a4b6637b3ab898cc8ce582227f1fdd9fd0b21f1595f6d3f6510",
+  "changedFiles": [
+    "packages/workspace/tests/trace-watch.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-06-18T05:40:00.365Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/preserve-complete-code-call-stdout-json.json",
+        ".task/workspace-agents/preserve-complete-code-call-stdout-json/current.json",
+        ".task/workspace-agents/preserve-complete-code-call-stdout-json/evidence-log.json",
+        ".task/workspace-agents/preserve-complete-code-call-stdout-json/read-log.json",
+        ".task/workspace-agents/preserve-complete-code-call-stdout-json/session.json",
+        ".task/workspace-agents/preserve-complete-code-call-stdout-json/workpad.md",
+        "packages/workspace/tests/trace-watch.test.ts",
+        "scripts/operator/trace-watch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "trace-watch",
+          "critical": true,
+          "reason": "Trace renderer changes must compile.",
+          "matchedFiles": [
+            "scripts/operator/trace-watch.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 12,
+          "outputTail": "Bundled 1 module in 8ms\n\n  trace-watch-test-selection.js  34.36 KB  (entry point)\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

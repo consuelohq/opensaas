@@ -5,6 +5,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 const { resolveGitRoot } = require('./lib/paths');
 const { markFileRead } = require('./lib/state/evidence-log');
+const { appendActivity, syncFilesChanged, syncFilesRead } = require('./lib/task-workpad');
 const { findActiveTaskResult, parseTaskSelectorPrefix } = require('./lib/task-selection');
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
@@ -23,6 +24,15 @@ function getReadTargets(fsArgs) {
   return targets;
 }
 
+function getMutationTarget(fsArgs) {
+  const action = fsArgs[0];
+  if (!['write', 'patch', 'trash'].includes(action)) return null;
+  for (const argument of fsArgs.slice(1)) {
+    if (!argument.startsWith('--')) return { action, filePath: argument };
+  }
+  return { action, filePath: null };
+}
+
 function showHelp() {
   writeStdout('task:fs — file operations inside the active task worktree');
   writeStdout('');
@@ -38,12 +48,13 @@ function showHelp() {
   writeStdout('options:');
   writeStdout('  --area <name>        select task by area');
   writeStdout('  --branch <branch>    select exact task branch');
-  writeStdout('  --pr <number>        select task by pr number');
+  writeStdout('  --pr <number-or-url> select task by pr number or supported PR URL');
+  writeStdout('  --github <url>       select task by GitHub, Graphite, or diffs PR URL');
   writeStdout('  --help               show this help');
   writeStdout('');
   writeStdout('examples:');
   writeStdout('  bun run task:fs -- --branch task/workspace-agents/tighten-exact-task-command-selection read packages/workspace/SCRIPTS.md');
-  writeStdout('  bun run task:fs -- --pr 210 search "task:exec" packages/workspace/scripts');
+  writeStdout('  bun run task:fs -- --pr 210 search "code.call" packages/workspace/scripts');
 }
 
 function main() {
@@ -95,9 +106,9 @@ function main() {
     stdio: 'inherit',
     env: { ...process.env, TASK_WORKTREE: task.worktreePath },
   });
-
   if (result.status === 0) {
-    for (const filePath of getReadTargets(fsArgs)) {
+    const readTargets = getReadTargets(fsArgs);
+    for (const filePath of readTargets) {
       try {
         markFileRead(task.worktreePath, filePath, {
           source: 'task:fs',
@@ -105,6 +116,25 @@ function main() {
         });
       } catch {
         writeStderr(`warning: read evidence not recorded for ${filePath}`);
+      }
+    }
+
+    if (readTargets.length > 0) {
+      try {
+        syncFilesRead(task.worktreePath, task.meta, readTargets);
+      } catch {
+        writeStderr('warning: workpad files-read evidence not recorded');
+      }
+    }
+
+    const mutation = getMutationTarget(fsArgs);
+    if (mutation && mutation.filePath) {
+      try {
+        const deleted = mutation.action === 'trash';
+        syncFilesChanged(task.worktreePath, task.meta, [{ path: mutation.filePath, deleted }]);
+        appendActivity(task.worktreePath, task.meta, { action: `fs.${mutation.action}`, filePath: mutation.filePath });
+      } catch {
+        writeStderr(`warning: workpad activity not recorded for ${mutation.filePath}`);
       }
     }
   }

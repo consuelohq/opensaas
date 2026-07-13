@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/fix-tools-search-review-comments",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "stream/workspace",
+  "startFrom": "stream",
+  "prNumber": 675,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/675",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/675",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/675/fix-tools-search-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/675",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/675/fix-tools-search-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-tools-search-review-comments",
+  "taskSession": "tsk_da1661f7f1b6",
+  "tmuxSession": "opensaas-workspace-fix-tools-search-review-comments-da1661f7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-fix-tools-search-review-comments/.task/workspace/fix-tools-search-review-comments/session.json",
+  "createdAt": "2026-05-31T19:52:17.830Z"
+}

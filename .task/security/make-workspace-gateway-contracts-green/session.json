@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4a7bc8a7c37b",
+  "tmuxSession": "opensaas-security-make-workspace-gateway-contracts-green-4a7bc8a7",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/make-workspace-gateway-contracts-green",
+  "branch": "task/security/make-workspace-gateway-contracts-green",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-workspace-gateway-contracts-green",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-workspace-gateway-contracts-green",
+  "prNumber": 976,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/976",
+  "createdAt": "2026-06-11T19:26:09.714Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-workspace-gateway-contracts-green/.task/security/make-workspace-gateway-contracts-green/session.json"
+}

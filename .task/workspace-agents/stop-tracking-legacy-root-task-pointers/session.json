@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_25b2b0c989a2",
+  "tmuxSession": "opensaas-workspace-agents-stop-tracking-legacy-root-task-pointers-25b2b0c9",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/stop-tracking-legacy-root-task-pointers",
+  "branch": "task/workspace-agents/stop-tracking-legacy-root-task-pointers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-stop-tracking-legacy-root-task-pointers",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-stop-tracking-legacy-root-task-pointers",
+  "prNumber": 452,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/452",
+  "createdAt": "2026-05-22T07:03:19.422Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-stop-tracking-legacy-root-task-pointers/.task/workspace-agents/stop-tracking-legacy-root-task-pointers/session.json"
+}

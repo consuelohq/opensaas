@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/align-mercury-homepage-promo-copy",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 339,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/339",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-align-mercury-homepage-promo-copy",
+  "createdAt": "2026-05-06T07:09:55.485Z"
+}

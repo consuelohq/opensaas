@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a0879e217337",
+  "tmuxSession": "opensaas-workspace-agents-investigate-workspace-server-restart-behavior-a0879e21",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/investigate-workspace-server-restart-behavior",
+  "branch": "task/workspace-agents/investigate-workspace-server-restart-behavior",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-workspace-server-restart-behavior",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-workspace-server-restart-behavior",
+  "prNumber": 474,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/474",
+  "createdAt": "2026-05-23T02:56:49.374Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-workspace-server-restart-behavior/.task/workspace-agents/investigate-workspace-server-restart-behavior/session.json"
+}

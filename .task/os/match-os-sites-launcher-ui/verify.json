@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/match-os-sites-launcher-ui",
+  "base": "stream/os",
+  "headSha": "be13ffcfa7355e9bdfed7523270a4effd5d43953",
+  "changeHash": "1012c26bff7b84c09d9bbc6401caa0a6bd91f22975e96cff9f5953d53f9f6697",
+  "changedFiles": [
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "verifiedAt": "2026-06-22T21:27:58.272Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/match-os-sites-launcher-ui/current.json",
+        ".task/os/match-os-sites-launcher-ui/session.json",
+        ".task/os/match-os-sites-launcher-ui/workpad.md",
+        ".task/tasks/os/match-os-sites-launcher-ui.json",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/tests/sites-cli.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

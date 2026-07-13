@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-operator-prompt-surface",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 897,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/897",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/897",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/897/add-operator-prompt-surface",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/897",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/897/add-operator-prompt-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-operator-prompt-surface",
+  "taskSession": "tsk_778dc6b3fac7",
+  "tmuxSession": "opensaas-os-add-operator-prompt-surface-778dc6b3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-operator-prompt-surface/.task/os/add-operator-prompt-surface/session.json",
+  "createdAt": "2026-06-09T23:21:16.128Z"
+}

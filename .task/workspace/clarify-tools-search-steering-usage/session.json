@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c23d0ddbb9c7",
+  "tmuxSession": "opensaas-workspace-clarify-tools-search-steering-usage-c23d0ddb",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/clarify-tools-search-steering-usage",
+  "branch": "task/workspace/clarify-tools-search-steering-usage",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-clarify-tools-search-steering-usage",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-clarify-tools-search-steering-usage",
+  "prNumber": 680,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/680",
+  "createdAt": "2026-06-01T23:40:41.278Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-clarify-tools-search-steering-usage/.task/workspace/clarify-tools-search-steering-usage/session.json"
+}

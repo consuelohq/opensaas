@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_be4a4abbebc5",
+  "tmuxSession": "opensaas-diff-cockpit-polish-pull-request-inbox-be4a4abb",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/polish-pull-request-inbox",
+  "branch": "task/diff-cockpit/polish-pull-request-inbox",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-pull-request-inbox",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-pull-request-inbox",
+  "prNumber": 737,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/737",
+  "createdAt": "2026-06-03T08:24:32.753Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-polish-pull-request-inbox/.task/diff-cockpit/polish-pull-request-inbox/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_27644351a8e4",
+  "tmuxSession": "opensaas-os-wire-task-workflow-hook-dispatcher-27644351",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-task-workflow-hook-dispatcher",
+  "branch": "task/os/wire-task-workflow-hook-dispatcher",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-task-workflow-hook-dispatcher",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-task-workflow-hook-dispatcher",
+  "prNumber": 971,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/971",
+  "createdAt": "2026-06-11T18:33:43.253Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-task-workflow-hook-dispatcher/.task/os/wire-task-workflow-hook-dispatcher/session.json"
+}

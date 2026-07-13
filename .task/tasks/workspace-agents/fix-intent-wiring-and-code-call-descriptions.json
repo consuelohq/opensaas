@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-intent-wiring-and-code-call-descriptions",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1127,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1127",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1127",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1127/fix-intent-wiring-and-code-call-descriptions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1127",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1127/fix-intent-wiring-and-code-call-descriptions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-intent-wiring-and-code-call-descriptions",
+  "taskSession": "tsk_749a44a6bfcb",
+  "tmuxSession": "opensaas-workspace-agents-fix-intent-wiring-and-code-call-descriptions-749a44a6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-intent-wiring-and-code-call-descriptions/.task/workspace-agents/fix-intent-wiring-and-code-call-descriptions/session.json",
+  "createdAt": "2026-06-18T04:09:34.306Z"
+}

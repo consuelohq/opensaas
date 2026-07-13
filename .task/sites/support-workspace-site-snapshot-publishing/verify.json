@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/support-workspace-site-snapshot-publishing",
+  "base": "origin/task/sites/support-workspace-site-snapshot-publishing",
+  "headSha": "e5c5c1901284f01785ab8fcc4dddba44531696af",
+  "changeHash": "9c27419bcdb09e5416949a03518f2a2c9d5eb60544a721adfac9eade69438e42",
+  "changedFiles": [
+    "packages/os/cloudflare/workspace-edge/migrations/0002_site_snapshot_route_targets.sql",
+    "packages/os/tests/workspace-site-snapshot-publishing.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T01:14:40.427Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/support-workspace-site-snapshot-publishing/current.json",
+        ".task/sites/support-workspace-site-snapshot-publishing/evidence-log.json",
+        ".task/sites/support-workspace-site-snapshot-publishing/read-log.json",
+        ".task/sites/support-workspace-site-snapshot-publishing/session.json",
+        ".task/sites/support-workspace-site-snapshot-publishing/workpad.md",
+        ".task/tasks/sites/support-workspace-site-snapshot-publishing.json",
+        "packages/os/cloudflare/workspace-edge/migrations/0002_site_snapshot_route_targets.sql",
+        "packages/os/tests/workspace-site-snapshot-publishing.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "migration",
+        "file": "packages/os/cloudflare/workspace-edge/migrations/0002_site_snapshot_route_targets.sql",
+        "severity": "warning",
+        "message": "migration file changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

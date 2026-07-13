@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/amend-media-source-capture-tests",
+  "events": [
+    {
+      "id": "c0740144-a9f1-490f-a650-bd1e41295fe1",
+      "occurred_at": "2026-06-23T18:20:03.978Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/media/00-manifest-taxonomy.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/amend-media-source-capture-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/amend-media-source-capture-tests"
+      }
+    },
+    {
+      "id": "80ac4747-c3d1-40fe-a685-a3937fa4efeb",
+      "occurred_at": "2026-06-23T18:20:14.237Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/media/helpers.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/amend-media-source-capture-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/amend-media-source-capture-tests"
+      }
+    },
+    {
+      "id": "282e5d22-af66-4dbd-b3e7-a5fa952369be",
+      "occurred_at": "2026-06-23T18:24:43.718Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/media/01-package-boundaries.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/amend-media-source-capture-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/amend-media-source-capture-tests"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-23T18:24:43.817Z"
+}

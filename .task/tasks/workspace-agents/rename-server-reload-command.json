@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-server-reload-command",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 495,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/495",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/495",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/495/rename-server-reload-command",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/495",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/495/rename-server-reload-command",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-server-reload-command",
+  "taskSession": "tsk_9f0c4fabfbf8",
+  "tmuxSession": "opensaas-workspace-agents-rename-server-reload-command-9f0c4fab",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-server-reload-command/.task/workspace-agents/rename-server-reload-command/session.json",
+  "createdAt": "2026-05-23T06:17:29.750Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f975b94471fa",
+  "tmuxSession": "opensaas-dialer-align-sidebar-shortcut-hints-f975b944",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/align-sidebar-shortcut-hints",
+  "branch": "task/dialer/align-sidebar-shortcut-hints",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-align-sidebar-shortcut-hints",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-align-sidebar-shortcut-hints",
+  "prNumber": 591,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/591",
+  "createdAt": "2026-05-25T15:27:19.309Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-align-sidebar-shortcut-hints/.task/dialer/align-sidebar-shortcut-hints/session.json"
+}

@@ -64,7 +64,7 @@ export class WorkspaceAgnosticTokenService {
           JwtTokenTypeEnum.WORKSPACE_AGNOSTIC,
           user.id,
         ),
-        expiresIn: ms(expiresIn),
+        expiresIn,
       }),
       expiresAt,
     };

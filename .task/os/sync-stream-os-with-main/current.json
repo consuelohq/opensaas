@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-stream-os-with-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1171,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1171",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1171",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1171/sync-stream-os-with-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1171",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1171/sync-stream-os-with-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-stream-os-with-main",
+  "taskSession": "tsk_eeda86f01e80",
+  "tmuxSession": "opensaas-os-sync-stream-os-with-main-eeda86f0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-stream-os-with-main/.task/os/sync-stream-os-with-main/session.json",
+  "createdAt": "2026-06-22T20:49:17.040Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/provision-workspace-edge-staging",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 980,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/980",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/980",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/980/provision-workspace-edge-staging",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/980",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/980/provision-workspace-edge-staging",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-workspace-edge-staging",
+  "taskSession": "tsk_1ac6cfe20b52",
+  "tmuxSession": "opensaas-security-provision-workspace-edge-staging-1ac6cfe2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-workspace-edge-staging/.task/security/provision-workspace-edge-staging/session.json",
+  "createdAt": "2026-06-12T16:00:45.147Z"
+}

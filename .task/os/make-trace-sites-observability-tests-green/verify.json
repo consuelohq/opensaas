@@ -1,0 +1,74 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/make-trace-sites-observability-tests-green",
+  "base": "origin/main",
+  "headSha": "9788d8687925022021862fc292e32f21ec91c9df",
+  "changeHash": "5d10a46ab3681e7783535796f2312c6bff4399dcd4c47710e2e2db50005e92cc",
+  "changedFiles": [
+    "packages/os/scripts/lib/trace-sites-browser-client.ts",
+    "packages/os/scripts/lib/trace-sites-gateway-live-stream.ts",
+    "packages/os/scripts/lib/trace-sites-live-smoke.ts",
+    "packages/os/scripts/lib/trace-sites-reporting.ts",
+    "packages/os/scripts/lib/trace-store.ts",
+    "packages/os/tests/trace-sites-browser-client.test.ts",
+    "packages/os/tests/trace-sites-gateway-live-stream.test.ts",
+    "packages/os/tests/trace-sites-live-smoke-script.test.ts",
+    "packages/os/tests/trace-sites-reporting.test.ts",
+    "packages/os/tests/trace-sites-runtime-boundary.test.ts",
+    "packages/os/tooling/script-parity-classifications.json",
+    "packages/os/vitest.config.ts"
+  ],
+  "verifiedAt": "2026-06-17T04:03:04.052Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/make-trace-sites-observability-tests-green/current.json",
+        ".task/os/make-trace-sites-observability-tests-green/evidence-log.json",
+        ".task/os/make-trace-sites-observability-tests-green/read-log.json",
+        ".task/os/make-trace-sites-observability-tests-green/session.json",
+        ".task/os/make-trace-sites-observability-tests-green/verify.json",
+        ".task/os/make-trace-sites-observability-tests-green/workpad.md",
+        ".task/tasks/os/make-trace-sites-observability-tests-green.json",
+        "packages/os/scripts/lib/trace-sites-browser-client.ts",
+        "packages/os/scripts/lib/trace-sites-gateway-live-stream.ts",
+        "packages/os/scripts/lib/trace-sites-live-smoke.ts",
+        "packages/os/scripts/lib/trace-sites-reporting.ts",
+        "packages/os/scripts/lib/trace-store.ts",
+        "packages/os/tests/trace-sites-browser-client.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-stream.test.ts",
+        "packages/os/tests/trace-sites-live-smoke-script.test.ts",
+        "packages/os/tests/trace-sites-reporting.test.ts",
+        "packages/os/tests/trace-sites-runtime-boundary.test.ts",
+        "packages/os/tooling/script-parity-classifications.json",
+        "packages/os/vitest.config.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
