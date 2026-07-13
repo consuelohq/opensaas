@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_255af7bb3c30",
+  "tmuxSession": "opensaas-consuelo-website-align-os-header-and-pricing-plan-artwork-255af7bb",
+  "area": "consuelo-website",
+  "stream": "stream/consuelo-website",
+  "taskBranch": "task/consuelo-website/align-os-header-and-pricing-plan-artwork",
+  "branch": "task/consuelo-website/align-os-header-and-pricing-plan-artwork",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-align-os-header-and-pricing-plan-artwork",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-align-os-header-and-pricing-plan-artwork",
+  "prNumber": 1444,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1444",
+  "createdAt": "2026-07-13T03:14:39.311Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-align-os-header-and-pricing-plan-artwork/.task/consuelo-website/align-os-header-and-pricing-plan-artwork/session.json"
+}

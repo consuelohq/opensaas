@@ -11,15 +11,13 @@ export type PricingAccountLink = {
 	href: string
 }
 
-export type PricingArtworkMotif = 'switch' | 'secure' | 'observe'
-
 export type PricingPlan = {
 	name: string
 	price: string
 	subtitle: string
 	badge?: string
 	imageLabel: string
-	motif: PricingArtworkMotif
+	imageSrc: string
 	bullets: string[]
 	highlight?: boolean
 }
@@ -41,7 +39,7 @@ export const pricingPlans: PricingPlan[] = [
 		price: '$0',
 		subtitle: 'LOCAL',
 		imageLabel: 'NO LOCK-IN',
-		motif: 'switch',
+		imageSrc: '/images/home/trace.svg',
 		bullets: ['ALL CORE FEATURES', 'LOCAL WORKSPACE', 'BRING YOUR OWN AGENT', '$0 MONTHLY CREDITS']
 	},
 	{
@@ -50,7 +48,7 @@ export const pricingPlans: PricingPlan[] = [
 		subtitle: 'PER MONTH',
 		badge: '10% BONUS',
 		imageLabel: 'STAYS LOCKED',
-		motif: 'secure',
+		imageSrc: '/images/home/remember.svg',
 		bullets: [
 			'$22 MONTHLY CREDITS',
 			'$10 ROLLOVER CAP',
@@ -65,7 +63,7 @@ export const pricingPlans: PricingPlan[] = [
 		subtitle: 'PER MONTH',
 		badge: '10% BONUS',
 		imageLabel: 'READ RECEIPTS',
-		motif: 'observe',
+		imageSrc: '/images/home/switch.svg',
 		bullets: [
 			'$110 MONTHLY CREDITS',
 			'$50 ROLLOVER CAP',
@@ -79,7 +77,7 @@ export const pricingPlans: PricingPlan[] = [
 		subtitle: 'PER MONTH',
 		badge: '10% BONUS',
 		imageLabel: 'READ RECEIPTS',
-		motif: 'observe',
+		imageSrc: '/images/home/workflow.svg',
 		bullets: [
 			'$220 MONTHLY CREDITS',
 			'$100 ROLLOVER CAP',

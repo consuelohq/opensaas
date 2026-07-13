@@ -34,15 +34,16 @@ const description = pricingHero.subtitle
 								<p class="pricing-plan__subtitle">{plan.subtitle}</p>
 							</header>
 
-							<figure
-								class="pricing-plan__image"
-								data-motif={plan.motif}
-								aria-label={plan.imageLabel}
-							>
-								<span class="pricing-plan__image-label">{plan.imageLabel}</span>
-								<span class="pricing-plan__orbit pricing-plan__orbit--one" aria-hidden="true" />
-								<span class="pricing-plan__orbit pricing-plan__orbit--two" aria-hidden="true" />
-								<span class="pricing-plan__mark" aria-hidden="true" />
+							<figure class="pricing-plan__image">
+								<img
+									class="pricing-plan__art"
+									src={plan.imageSrc}
+									alt={plan.imageLabel}
+									width="1200"
+									height="900"
+									loading="lazy"
+									decoding="async"
+								/>
 							</figure>
 
 							<ul class="pricing-plan__bullets">
@@ -61,7 +62,7 @@ const description = pricingHero.subtitle
 <style>
 	.pricing-page {
 		min-height: calc(100vh - 9.15rem);
-		padding: clamp(2rem, 5vw, 4.5rem) var(--site-frame-inset) clamp(2.5rem, 7vw, 5.5rem);
+		padding: clamp(7.5rem, 11vw, 10rem) var(--site-frame-inset) clamp(2.5rem, 7vw, 5.5rem);
 		background: var(--site-color-paper);
 		color: var(--site-color-on-brand);
 	}
@@ -207,151 +208,17 @@ const description = pricingHero.subtitle
 	}
 
 	.pricing-plan__image {
-		position: relative;
-		display: grid;
-		place-items: center;
-		aspect-ratio: 1.28;
+		aspect-ratio: 4 / 3;
 		margin: 0;
 		overflow: hidden;
-		border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
-		background:
-			linear-gradient(
-				90deg,
-				color-mix(in srgb, currentColor 14%, transparent) 1px,
-				transparent 1px
-			),
-			linear-gradient(0deg, color-mix(in srgb, currentColor 14%, transparent) 1px, transparent 1px),
-			color-mix(in srgb, currentColor 8%, transparent);
-		background-size: 1.1rem 1.1rem;
-	}
-
-	.pricing-plan--highlight .pricing-plan__image {
-		border-color: color-mix(in srgb, var(--site-color-on-brand) 38%, transparent);
-		background:
-			linear-gradient(
-				90deg,
-				color-mix(in srgb, var(--site-color-on-brand) 24%, transparent) 1px,
-				transparent 1px
-			),
-			linear-gradient(
-				0deg,
-				color-mix(in srgb, var(--site-color-on-brand) 24%, transparent) 1px,
-				transparent 1px
-			),
-			color-mix(in srgb, var(--site-color-on-brand) 12%, transparent);
-		background-size: 1.1rem 1.1rem;
-	}
-
-	.pricing-plan__image::before,
-	.pricing-plan__image::after {
-		content: '';
-		position: absolute;
-		inset: auto;
-		border-radius: 999px;
-		pointer-events: none;
-	}
-
-	.pricing-plan__image::before {
-		width: 80%;
-		height: 80%;
-		border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
-		transform: rotate(-18deg);
-	}
-
-	.pricing-plan__image::after {
-		width: 55%;
-		height: 55%;
-		background: radial-gradient(circle, currentColor 0 6%, transparent 7% 100%);
-		opacity: 0.32;
-	}
-
-	.pricing-plan__image[data-motif='secure']::before {
-		width: 42%;
-		height: 54%;
-		border-radius: 0.2rem;
-		border-width: 2px;
-		transform: translateY(8%) rotate(0deg);
-	}
-
-	.pricing-plan__image[data-motif='secure']::after {
-		width: 30%;
-		height: 30%;
-		border: 2px solid currentColor;
-		border-bottom: 0;
-		border-radius: 999px 999px 0 0;
-		background: transparent;
-		transform: translateY(-52%);
-		opacity: 0.45;
-	}
-
-	.pricing-plan__image[data-motif='observe']::before {
-		width: 70%;
-		height: 38%;
-		border-radius: 50%;
-		transform: rotate(0deg);
-	}
-
-	.pricing-plan__image[data-motif='observe']::after {
-		width: 25%;
-		height: 25%;
-		border: 1px solid currentColor;
-		background: currentColor;
-		opacity: 0.18;
-	}
-
-	.pricing-plan__image-label {
-		position: relative;
-		z-index: 3;
-		display: inline-flex;
-		max-width: 80%;
-		justify-content: center;
-		border: 1px solid currentColor;
 		background: var(--site-color-surface);
-		color: var(--site-color-ink);
-		padding: 0.28rem 0.48rem;
-		font-family: var(--site-font-mono);
-		font-size: clamp(0.7rem, 0.9vw, 0.82rem);
-		font-weight: 700;
-		letter-spacing: 0.12em;
-		line-height: 1.12;
-		text-align: center;
-		text-transform: uppercase;
 	}
 
-	.pricing-plan--highlight .pricing-plan__image-label {
-		background: var(--site-color-paper);
-		color: var(--site-color-on-brand);
-	}
-
-	.pricing-plan__orbit {
-		position: absolute;
-		border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-		border-radius: 999px;
-		pointer-events: none;
-	}
-
-	.pricing-plan__orbit--one {
-		width: 120%;
-		height: 32%;
-		transform: rotate(24deg);
-	}
-
-	.pricing-plan__orbit--two {
-		width: 112%;
-		height: 28%;
-		transform: rotate(-24deg);
-	}
-
-	.pricing-plan__mark {
-		position: absolute;
-		bottom: 12%;
-		left: 50%;
-		width: 0.58rem;
-		height: 0.58rem;
-		border-radius: 999px;
-		background: currentColor;
-		transform: translateX(-50%);
-		opacity: 0.42;
+	.pricing-plan__art {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 
 	.pricing-plan__bullets {
@@ -402,8 +269,5 @@ const description = pricingHero.subtitle
 			grid-template-columns: 1fr;
 		}
 
-		.pricing-plan__image {
-			aspect-ratio: 1.55;
-		}
 	}
 </style>

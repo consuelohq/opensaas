@@ -155,6 +155,14 @@ describe('Consuelo website structure', () => {
       'READ RECEIPTS',
       'READ RECEIPTS',
     ]);
+    expect(pricingContent.pricingPlans.map((plan) => plan.imageSrc)).toEqual([
+      '/images/home/trace.svg',
+      '/images/home/remember.svg',
+      '/images/home/switch.svg',
+      '/images/home/workflow.svg',
+    ]);
+    expect(pricingRoute).toContain('class="pricing-plan__art"');
+    expect(pricingRoute).toContain('padding: clamp(7.5rem');
     expect(pricingContent.pricingPlans.map((plan) => plan.price)).toEqual(['$0', '$20', '$100', '$200']);
     expect(pricingContent.pricingPlans.filter((plan) => plan.highlight).map((plan) => plan.name)).toEqual([
       'Plus',
@@ -267,6 +275,8 @@ describe('Consuelo website structure', () => {
     const header = readSource('src/components/site/SiteHeader.astro');
 
     expect(header).toContain('CONSUELO');
+    expect(header).toContain('.os-header__wordmark span:last-child');
+    expect(header).toContain('justify-self: center;');
     expect(header).toContain('DOCS');
     expect(header).toContain('PRICING');
     expect(header).toContain('CLOUD');
