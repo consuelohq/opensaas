@@ -882,22 +882,22 @@
       }
     },
     {
-      "name": "browser.login",
+      "name": "browser.headed",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "utilities",
-      "description": "run a saved browser auth login profile",
+      "description": "open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent",
       "core": false,
       "definition": {
-        "name": "browser.login",
+        "name": "browser.headed",
         "methodPath": [
           "browser",
-          "login"
+          "headed"
         ],
-        "description": "run a saved browser auth login profile",
+        "description": "open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent",
         "category": "utilities",
-        "underlying": "workspace browser.login",
+        "underlying": "workspace browser.headed",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -905,28 +905,27 @@
           "safeToRetry": false
         },
         "defaultTimeout": 300000,
-        "inputSchema": "BrowserLoginInput",
+        "inputSchema": "BrowserHeadedInput",
         "outputSchema": "RawOutput",
         "command": {
           "script": "browser",
-          "subcommand": "login",
+          "subcommand": "headed",
           "branchMode": "none",
           "arguments": [
             {
-              "source": "name",
+              "source": "url",
               "kind": "value",
               "required": true
             },
             {
-              "source": "headed",
-              "flag": "--headed",
-              "kind": "boolean"
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value"
             }
           ]
         },
         "exampleInput": {
-          "name": "consuelo",
-          "headed": true,
+          "url": "https://dash.cloudflare.com",
           "dryRun": true
         },
         "sessionRequired": false
@@ -1106,60 +1105,9 @@
         },
         "exampleInput": {
           "args": [
-            "auth",
+            "tab",
             "list"
           ],
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "browser.reauth",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "utilities",
-      "description": "restart the browser daemon and run a saved auth login profile",
-      "core": false,
-      "definition": {
-        "name": "browser.reauth",
-        "methodPath": [
-          "browser",
-          "reauth"
-        ],
-        "description": "restart the browser daemon and run a saved auth login profile",
-        "category": "utilities",
-        "underlying": "workspace browser.reauth",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "BrowserLoginInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "browser",
-          "subcommand": "reauth",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "name",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "headed",
-              "flag": "--headed",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "name": "consuelo",
-          "headed": true,
           "dryRun": true
         },
         "sessionRequired": false
@@ -1184,7 +1132,7 @@
         "underlying": "workspace browser.screenshot",
         "capabilities": {
           "readOnly": false,
-          "mutating": true,
+          "mutating": false,
           "deterministic": false,
           "safeToRetry": false
         },
@@ -1263,10 +1211,10 @@
         "category": "utilities",
         "underlying": "workspace browser.snap",
         "capabilities": {
-          "readOnly": false,
-          "mutating": true,
+          "readOnly": true,
+          "mutating": false,
           "deterministic": false,
-          "safeToRetry": false
+          "safeToRetry": true
         },
         "defaultTimeout": 300000,
         "inputSchema": "EmptyInput",
@@ -1274,6 +1222,44 @@
         "command": {
           "script": "browser",
           "subcommand": "snap",
+          "branchMode": "none",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "browser.status",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "utilities",
+      "description": "report safe browser daemon and page status without authentication values",
+      "core": false,
+      "definition": {
+        "name": "browser.status",
+        "methodPath": [
+          "browser",
+          "status"
+        ],
+        "description": "report safe browser daemon and page status without authentication values",
+        "category": "utilities",
+        "underlying": "workspace browser.status",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "browser",
+          "subcommand": "status",
           "branchMode": "none",
           "arguments": []
         },
@@ -3241,14 +3227,14 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "github",
-      "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+      "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
       "core": true,
       "definition": {
         "name": "github",
         "methodPath": [
           "github"
         ],
-        "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+        "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
         "category": "github",
         "underlying": "workspace github",
         "capabilities": {
@@ -3364,9 +3350,8 @@
           ]
         },
         "exampleInput": {
-          "operation": "pr.view",
-          "pr": 436,
-          "preset": "review"
+          "operation": "pr.reviews",
+          "pr": 436
         },
         "sessionRequired": false
       }
@@ -6643,14 +6628,14 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "review",
-      "description": "fetch review comments for a PR",
+      "description": "legacy wrapper for GitHub PR review feedback; prefer OS github with operation pr.reviews for normalized actionable review comments",
       "core": false,
       "definition": {
         "name": "prReview",
         "methodPath": [
           "prReview"
         ],
-        "description": "fetch review comments for a PR",
+        "description": "legacy wrapper for GitHub PR review feedback; prefer OS github with operation pr.reviews for normalized actionable review comments",
         "category": "review",
         "underlying": "workspace prReview",
         "capabilities": {
@@ -6679,8 +6664,7 @@
           ]
         },
         "exampleInput": {
-          "pr": 225,
-          "stdout": true
+          "pr": 225
         },
         "sessionRequired": false
       }
@@ -7491,6 +7475,55 @@
       }
     },
     {
+      "name": "stream.cleanup",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "stream",
+      "description": "preview or remove safe local stream refs that are fully backed by origin",
+      "core": false,
+      "definition": {
+        "name": "stream.cleanup",
+        "methodPath": [
+          "stream",
+          "cleanup"
+        ],
+        "description": "preview or remove safe local stream refs that are fully backed by origin",
+        "category": "stream",
+        "underlying": "workspace stream.cleanup",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "StreamCleanupInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "stream:cleanup",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "apply",
+              "flag": "--apply",
+              "kind": "boolean"
+            },
+            {
+              "source": "keep",
+              "flag": "--keep",
+              "kind": "array"
+            }
+          ]
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "stream.context",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -7642,6 +7675,56 @@
           "dryRun": true
         },
         "sessionRequired": false
+      }
+    },
+    {
+      "name": "subagent",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "subagent",
+      "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+      "core": false,
+      "definition": {
+        "name": "subagent",
+        "methodPath": [
+          "subagent"
+        ],
+        "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+        "category": "subagent",
+        "underlying": "workspace subagent",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "SubagentInput",
+        "outputSchema": "SubagentOutput",
+        "command": {
+          "script": "internal",
+          "internal": "subagent",
+          "arguments": []
+        },
+        "exampleInput": {
+          "provider": "grok",
+          "bundle": "media",
+          "policy": "read",
+          "instructionPath": "/tmp/ko-social.md",
+          "outputFormat": "json"
+        },
+        "sessionRequired": false,
+        "keywords": [
+          "subagent",
+          "delegate",
+          "model",
+          "agent",
+          "grok",
+          "codex",
+          "opencode",
+          "pi"
+        ]
       }
     },
     {
@@ -7910,78 +7993,6 @@
           "dryRun": true
         },
         "sessionRequired": false
-      }
-    },
-    {
-      "name": "task.intent",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "workflow",
-      "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
-      "core": true,
-      "definition": {
-        "name": "task.intent",
-        "methodPath": [
-          "task",
-          "intent"
-        ],
-        "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
-        "category": "workflow",
-        "underlying": "os task.intent",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "sessionRequired": false,
-        "inputSchema": "WorkflowIntentInput",
-        "outputSchema": "WorkflowIntentOutput",
-        "workflowRole": "intent.start",
-        "command": {
-          "script": "task-intent",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "action",
-              "kind": "value"
-            },
-            {
-              "source": "workflow",
-              "flag": "--workflow",
-              "kind": "value"
-            },
-            {
-              "source": "taskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
-            {
-              "source": "area",
-              "flag": "--area",
-              "kind": "value"
-            },
-            {
-              "source": "title",
-              "flag": "--title",
-              "kind": "value"
-            },
-            {
-              "source": "eventFile",
-              "flag": "--event-json",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "action": "start",
-          "workflow": "task",
-          "area": "os",
-          "title": "example task-intent flow"
-        }
       }
     },
     {
@@ -8273,17 +8284,17 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "task lifecycle",
-      "description": "create a task branch, worktree, and draft PR",
-      "core": false,
+      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      "core": true,
       "definition": {
         "name": "task.start",
         "methodPath": [
           "task",
           "start"
         ],
-        "description": "create a task branch, worktree, and draft PR",
+        "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
         "category": "task lifecycle",
-        "underlying": "workspace task.start",
+        "underlying": "os task.start",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -8308,6 +8319,11 @@
               "kind": "value"
             },
             {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
               "source": "bodyFile",
               "flag": "--body-file",
               "kind": "value"
@@ -8316,6 +8332,11 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
+            },
+            {
+              "source": "createStream",
+              "flag": "--create-stream",
+              "kind": "boolean"
             },
             {
               "source": "pr",
@@ -8333,7 +8354,8 @@
         "exampleInput": {
           "stream": "stream/workspace-agents",
           "title": "example task",
-          "dryRun": true
+          "dryRun": true,
+          "workflow": "task"
         },
         "sessionRequired": false,
         "workflowRole": "task.start"
@@ -8676,47 +8698,6 @@
         "exampleInput": {
           "buildOnly": true,
           "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "worker.call",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "worker",
-      "description": "delegate a bounded instruction file to a configured local worker provider",
-      "core": false,
-      "definition": {
-        "name": "worker.call",
-        "methodPath": [
-          "worker",
-          "call"
-        ],
-        "description": "delegate a bounded instruction file to a configured local worker provider",
-        "category": "worker",
-        "underlying": "workspace worker.call",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "WorkerCallInput",
-        "outputSchema": "WorkerCallOutput",
-        "command": {
-          "script": "internal",
-          "internal": "worker.call",
-          "arguments": []
-        },
-        "exampleInput": {
-          "provider": "cdx",
-          "mode": "work",
-          "policy": "edit",
-          "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
-          "workspaceOnly": "preferred"
         },
         "sessionRequired": false
       }

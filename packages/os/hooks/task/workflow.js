@@ -149,7 +149,7 @@ function handlePreTaskStart(event, resolver) {
       },
     ],
     notes: [
-      'This hook is advisory only; it must not block task.start because prior stream.context calls are not tracked before task intent starts.',
+      'This hook is advisory only; it must not block task.start because prior stream.context calls are not tracked before task.start creates the task session.',
       'Use startFrom exactly as "main" or "stream". Do not pass a branch name to startFrom.',
       'Use stream only to override the target stream branch when the default stream/<area> is wrong.',
     ],
@@ -363,7 +363,7 @@ process.stdout.write(JSON.stringify({ ok: true, path, section: 'discovery' }, nu
   const bunScannerCode = `const fs = await import('node:fs');
 const path = await import('node:path');
 const root = ${JSON.stringify(root)};
-const needles = ['task.intent', 'task-intent', 'intent.start', 'workflowRole', 'batch', 'code.call'];
+const needles = ['task.start', 'TaskStartInput', '--workflow', 'workflowRole', 'batch', 'code.call'];
 const skip = new Set(['node_modules', '.git', 'dist', 'build', '.next', '.turbo', 'coverage', '.cache']);
 const results = [];
 let scanned = 0;
@@ -387,7 +387,7 @@ process.stdout.write(JSON.stringify({ ok: true, label: 'Bun structured repo scan
   const pythonTargetedCode = `from pathlib import Path
 import json
 files = [Path(${JSON.stringify(`${root}/hooks/task/workflow.js`)}), Path(${JSON.stringify(`${root}/tests/workflow-intent.test.ts`)}), Path(${JSON.stringify(`${root}/manifests/manifest.config.json`)})]
-terms = ['task.intent', 'task-intent', 'intent.start', 'batch', 'code.call']
+terms = ['task.start', 'TaskStartInput', '--workflow', 'batch', 'code.call']
 report = []
 for file in files:
     if not file.exists():
@@ -407,7 +407,7 @@ paths = [Path(${JSON.stringify(`${root}/manifests/core${area === 'os' ? '.manife
 report = []
 for path in paths:
     text = path.read_text(errors='ignore') if path.exists() else ''
-    report.append({'file': str(path), 'exists': path.exists(), 'has_task_intent': 'task.intent' in text or 'intent:' in text})
+    report.append({'file': str(path), 'exists': path.exists(), 'has_task_start': 'task.start' in text or 'start:' in text, 'has_public_task_intent': 'task.intent' in text})
 print(json.dumps({'ok': True, 'label': 'Python local diagnostic', 'report': report}, indent=2))`;
   const exactReproductionCode = `const proc = Bun.spawnSync({ cmd: ['bun', 'run', 'explore', '--', ${JSON.stringify(query)}, '--budget', '8', '--json'], stdout: 'pipe', stderr: 'pipe' });
 const stdout = new TextDecoder().decode(proc.stdout);

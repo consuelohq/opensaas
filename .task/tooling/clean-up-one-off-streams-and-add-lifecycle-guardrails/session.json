@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_857bcd906886",
+  "tmuxSession": "opensaas-tooling-clean-up-one-off-streams-and-add-lifecycle-guard-857bcd90",
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails",
+  "branch": "task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-clean-up-one-off-streams-and-add-lifecycle-guardrails",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-clean-up-one-off-streams-and-add-lifecycle-guardrails",
+  "prNumber": 1390,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1390",
+  "createdAt": "2026-07-10T23:32:58.897Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-clean-up-one-off-streams-and-add-lifecycle-guardrails/.task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/session.json"
+}

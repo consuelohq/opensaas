@@ -1,0 +1,62 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/remove-legacy-os-brain-launchers",
+  "base": "origin/main",
+  "headSha": "4dc94f5907b066b443043153ff43e67de80ceeba",
+  "changeHash": "9bacd619841dc8ba8576cddd4bea1d6edca8ff656c39421a27f4197887a6c959",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/consuelo-reload.js",
+    "packages/os/scripts/start-brain-daemon.sh",
+    "packages/os/scripts/start-brain.sh",
+    "packages/os/tests/bun-product-server-contract.test.ts",
+    "packages/os/tooling/script-parity-classifications.json"
+  ],
+  "verifiedAt": "2026-07-11T04:14:49.945Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/remove-legacy-os-brain-launchers/current.json",
+        ".task/os/remove-legacy-os-brain-launchers/evidence-log.json",
+        ".task/os/remove-legacy-os-brain-launchers/read-log.json",
+        ".task/os/remove-legacy-os-brain-launchers/session.json",
+        ".task/os/remove-legacy-os-brain-launchers/verify.json",
+        ".task/os/remove-legacy-os-brain-launchers/workpad.md",
+        ".task/tasks/os/remove-legacy-os-brain-launchers.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/os/scripts/start-brain-daemon.sh",
+        "packages/os/scripts/start-brain.sh",
+        "packages/os/tests/bun-product-server-contract.test.ts",
+        "packages/os/tooling/script-parity-classifications.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

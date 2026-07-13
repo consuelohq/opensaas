@@ -951,7 +951,7 @@
       "tests": [
         {
           "name": "create-twenty-app test",
-          "command": ["npx", "nx", "test", "create-twenty-app"]
+          "command": ["npx", "nx", "test", "create-twenty-app", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -964,7 +964,7 @@
       "tests": [
         {
           "name": "fireflies test",
-          "command": ["npx", "nx", "test", "fireflies"]
+          "command": ["npx", "nx", "test", "fireflies", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -996,7 +996,7 @@
       "tests": [
         {
           "name": "twenty-e2e-testing test",
-          "command": ["npx", "nx", "test", "twenty-e2e-testing"]
+          "command": ["npx", "nx", "test", "twenty-e2e-testing", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1009,7 +1009,7 @@
       "tests": [
         {
           "name": "twenty-eslint-rules test",
-          "command": ["npx", "nx", "test", "twenty-eslint-rules"]
+          "command": ["npx", "nx", "test", "twenty-eslint-rules", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1022,7 +1022,7 @@
       "tests": [
         {
           "name": "twenty-front test",
-          "command": ["npx", "nx", "test", "twenty-front"]
+          "command": ["npx", "nx", "test", "twenty-front", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1035,7 +1035,7 @@
       "tests": [
         {
           "name": "twenty-sdk test",
-          "command": ["npx", "nx", "test", "twenty-sdk"]
+          "command": ["npx", "nx", "test", "twenty-sdk", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1048,7 +1048,7 @@
       "tests": [
         {
           "name": "twenty-server test",
-          "command": ["npx", "nx", "test", "twenty-server"]
+          "command": ["npx", "nx", "test", "twenty-server", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1061,7 +1061,7 @@
       "tests": [
         {
           "name": "twenty-shared test",
-          "command": ["npx", "nx", "test", "twenty-shared"]
+          "command": ["npx", "nx", "test", "twenty-shared", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1074,7 +1074,7 @@
       "tests": [
         {
           "name": "twenty-ui test",
-          "command": ["npx", "nx", "test", "twenty-ui"]
+          "command": ["npx", "nx", "test", "twenty-ui", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1087,7 +1087,7 @@
       "tests": [
         {
           "name": "twenty-zapier test",
-          "command": ["npx", "nx", "test", "twenty-zapier"]
+          "command": ["npx", "nx", "test", "twenty-zapier", "--coverage=false"]
         }
       ],
       "critical": false,

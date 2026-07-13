@@ -8,6 +8,7 @@ type ToolMatch = {
   scoreParts?: Record<string, number | boolean | string>;
   capabilities?: { readOnly?: boolean; mutating?: boolean };
   why?: string[];
+  description?: string;
 };
 
 type ToolSearchPayload = {
@@ -78,6 +79,14 @@ describe('tools.search v2 intent resolution', () => {
     expect(resultNames).toContain('task.pr');
   });
 
+  it('routes PR review comment feedback to the GitHub facade', () => {
+    const payload = runSearch('CodeRabbit Codex PR review comments', ['--limit', '5', '--no-docs']);
+    expect(payload.recommended).toBe('github');
+    expect(names(payload)[0]).toBe('github');
+    const legacy = payload.matches.find((match) => match.name === 'prReview');
+    if (legacy) expect(legacy.description).toContain('legacy wrapper');
+  });
+
   it('keeps exact tool names as the strongest signal', () => {
     const payload = runSearch('fs.apply_patch', ['--limit', '5']);
     expect(payload.recommended).toBe('fs.apply_patch');
@@ -120,6 +129,7 @@ describe('tools.search v2 intent resolution', () => {
       ['merge git task branch conflict', 'task.merge'],
       ['finish completed task branch', 'task.finish'],
       ['stream sync branch', 'stream.sync'],
+      ['clean up local stream branches', 'stream.cleanup'],
     ];
 
     for (const [query, expected] of expectations) {

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 520" fill="none">
+  <defs>
+    <pattern id="transition-dots" width="14" height="14" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="2" fill="#fff"/>
+    </pattern>
+    <radialGradient id="transition-halo">
+      <stop stop-color="#fff" stop-opacity=".24"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="transition-glow" x="-30%" y="-60%" width="160%" height="220%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <ellipse cx="800" cy="278" rx="430" ry="230" fill="url(#transition-halo)"/>
+  <path d="M-30 313c121-83 245-76 343 18 70-62 158-60 240 9 32 27 60 61 82 102H-30V313Z" fill="url(#transition-dots)" opacity=".15"/>
+  <path d="M1007 345c75-77 165-91 264-42 98-82 207-72 302 30 29 31 50 68 64 109h-675c5-37 20-70 45-97Z" fill="url(#transition-dots)" opacity=".14"/>
+  <g stroke="#fff" opacity=".2">
+    <path d="M90 250C330 95 558 116 748 241"/>
+    <path d="M1510 250C1270 95 1042 116 852 241"/>
+    <path d="M185 404C400 275 583 275 760 318"/>
+    <path d="M1415 404C1200 275 1017 275 840 318"/>
+    <ellipse cx="800" cy="270" rx="242" ry="128"/>
+    <ellipse cx="800" cy="270" rx="352" ry="190" transform="rotate(-7 800 270)"/>
+  </g>
+  <g fill="#fff">
+    <rect x="765" y="235" width="70" height="70" rx="12" opacity=".18"/>
+    <path d="M788 253h24v8h8v24h-8v8h-24v-8h-8v-24h8v-8Zm4 12v16h16v-16h-16Z" opacity=".72"/>
+  </g>
+  <g fill="#fff" opacity=".54">
+    <rect x="78" y="239" width="20" height="20" rx="3"/>
+    <rect x="176" y="393" width="14" height="14" rx="2"/>
+    <rect x="1502" y="239" width="20" height="20" rx="3"/>
+    <rect x="1408" y="393" width="14" height="14" rx="2"/>
+  </g>
+  <g fill="#fff" font-family="monospace" font-size="15" letter-spacing="5" opacity=".13">
+    <text x="62" y="82">TOOLS / MEMORY / WORKFLOW</text>
+    <text x="1190" y="82">ROUTE TO ANY AGENT</text>
+    <text x="690" y="475">CONSUELO WORKSPACE</text>
+  </g>
+  <ellipse cx="800" cy="418" rx="310" ry="44" fill="#fff" opacity=".12" filter="url(#transition-glow)"/>
+</svg>

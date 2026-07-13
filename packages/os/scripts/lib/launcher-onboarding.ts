@@ -1,7 +1,7 @@
 export type LauncherLocalAgent = {
   name: string;
   label: string;
-  connected: boolean;
+  status: 'not_detected' | 'detected' | 'configured' | 'approval_required' | 'verified' | 'failed' | 'unsupported';
 };
 
 export type LauncherOnboardingOptions = {
@@ -32,7 +32,7 @@ function escapeHtml(value: string): string {
 }
 
 function connectedAgentItems(localAgents: LauncherLocalAgent[]): string {
-  const connectedAgents = localAgents.filter((agent) => agent.connected);
+  const connectedAgents = localAgents.filter((agent) => agent.status === 'verified');
   if (connectedAgents.length === 0) {
     return '<p class="muted">No local agents connected to workspace yet.</p>';
   }
@@ -48,7 +48,7 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
 
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
   const localAgents = options.localAgents ?? [];
-  const connectedLocalAgentCount = localAgents.filter((agent) => agent.connected).length;
+  const connectedLocalAgentCount = localAgents.filter((agent) => agent.status === 'verified').length;
   const localAgentNoun = connectedLocalAgentCount === 1 ? 'agent' : 'agents';
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
 
@@ -153,6 +153,10 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         <section class="section">
           <h2 class="section-title">Connect to your cloud agents</h2>
           <p class="muted">ChatGPT is ready now.</p>
+        </section>
+        <section class="section">
+          <h2 class="section-title">Settings</h2>
+          ${navLinks([{ label: 'Configuration', href: '/settings' }])}
         </section>
         <section class="section">
           <h2 class="section-title">Sites</h2>

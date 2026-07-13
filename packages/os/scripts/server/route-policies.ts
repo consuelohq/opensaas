@@ -4,6 +4,8 @@ export const LOCAL_OS_ROUTE_POLICIES = [
   { method: 'GET', path: '/gateway/traces/summary', trust: 'signed' },
   { method: 'GET', path: '/gateway/traces/aggregates', trust: 'signed' },
   { method: 'GET', path: '/gateway/traces/events', trust: 'signed' },
+  { method: 'GET', path: '/gateway/settings/snapshot', trust: 'signed' },
+  { method: 'POST', path: '/gateway/settings/overlay', trust: 'signed' },
   { method: 'ANY', path: '/mcp', trust: 'signed-or-oauth' },
   { method: 'GET', path: '/get_steering', trust: 'signed' },
   { method: 'POST', path: '/get_steering', trust: 'signed' },

@@ -21,7 +21,12 @@ export type WorkspaceRouteD1RouteTarget =
     }
   | {
       kind: 'consuelo-gateway-service';
-      serviceName: 'trace-sites-read-layer' | 'trace-sites-live-endpoints' | (string & {});
+      serviceName:
+        | 'trace-sites-read-layer'
+        | 'trace-sites-live-endpoints'
+        | 'settings-sites-read-endpoints'
+        | 'settings-sites-write-endpoints'
+        | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
     };

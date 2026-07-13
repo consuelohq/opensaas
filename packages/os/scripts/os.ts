@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 import {
   findManifestEntry,
   getPackageRoot,
-  readCoreToolManifest,
+  readEffectiveCoreManifest,
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
@@ -35,6 +35,7 @@ import {
 } from './lib/sites';
 import type { SitePageKind } from './lib/sites';
 import { loadOsConfig } from './lib/install-state';
+import { runSettingsOverlayCommand } from './lib/settings-overlay-command';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -533,7 +534,7 @@ export function getSteering(): string {
     '# raw core tool manifest',
     '',
     '```json',
-    safeJson(readCoreToolManifest()),
+    safeJson(readEffectiveCoreManifest(runtimePaths.home)),
     '```',
   );
   return sections.join('\n');
@@ -1140,6 +1141,19 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command === 'settings') {
+    try {
+      const result = runSettingsOverlayCommand(args);
+      if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}\n`);
+      else writeStdout(`${result.message}\n`);
+      if (!result.ok) process.exitCode = 1;
+    } catch (error: unknown) {
+      writeStderr(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command === 'sites' || command === 'office') {
     try {
       const result = command === 'office'
@@ -1181,6 +1195,8 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|office|uncategorized] [--base-version <id>] [--force-publish] [--json]',
       '  bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>] [--json]',
       '  bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>] [--ttl-minutes 45] [--json]',
+      '  bun ./scripts/os.ts settings status [--json]',
+      '  bun ./scripts/os.ts settings disable-tool|enable-tool|disable-skill|enable-skill|disable-workflow|enable-workflow <name> [--json]',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),

@@ -25,6 +25,32 @@ describe('Bun product server contract', () => {
     expect(daemon).toContain('exec "$bun_bin" "$root_dir/scripts/server/main.ts"');
     expect(daemon).not.toMatch(/\bpython(?:3)?\b|server\.py/);
 
+    const reload = source('scripts/consuelo-reload.js');
+    expect(reload).toContain("'start-consuelo-daemon.sh'");
+    expect(reload).not.toMatch(/start-brain(?:-daemon)?\.sh/);
+
+    for (const path of [
+      'scripts/start-brain.sh',
+      'scripts/start-brain-daemon.sh',
+    ]) {
+      expect(existsSync(resolve(osRoot, path)), path).toBe(false);
+    }
+
+    const parity = JSON.parse(source('tooling/script-parity-classifications.json')) as {
+      scripts: Record<string, unknown>;
+    };
+    expect(parity.scripts['scripts/start-brain.sh']).toMatchObject({
+      status: 'deprecated-intentional',
+    });
+    expect(parity.scripts['scripts/start-brain-daemon.sh']).toMatchObject({
+      status: 'deprecated-intentional',
+    });
+
+    const scriptsDoc = source('SCRIPTS.md');
+    expect(scriptsDoc).toContain('### consuelo-reload');
+    expect(scriptsDoc).toContain('direct fallback launches `scripts/start-consuelo-daemon.sh`');
+    expect(scriptsDoc).not.toMatch(/scripts\/start-brain(?:-daemon)?\.sh/);
+
     const setup = source('setup.sh');
     expect(setup).toContain('bun "$root_dir/scripts/install.ts"');
     expect(setup).not.toMatch(/\bpython(?:3)?\b|server\.py/);

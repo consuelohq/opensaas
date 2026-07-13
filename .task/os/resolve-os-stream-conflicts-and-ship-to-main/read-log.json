@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os/resolve-os-stream-conflicts-and-ship-to-main/workpad.md",
+    "packages/os/scripts/lib/local-agent-connectivity.ts",
+    "packages/os/tests/local-agent-connectivity.test.ts",
+    "packages/os/tests/local-os-port-cutover.test.ts"
+  ],
+  "updatedAt": "2026-07-13T00:24:20.405Z"
+}

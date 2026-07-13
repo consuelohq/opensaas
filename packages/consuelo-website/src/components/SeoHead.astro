@@ -15,12 +15,19 @@ type Props = {
   canonicalPath?: string;
   canonicalUrl?: string;
   image?: string;
+  imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   type?: 'website' | 'article';
   robots?: string;
   author?: string;
   publishDate?: Date;
   modifiedDate?: Date | null;
   schemaEntries?: StructuredData[];
+  themeColorLight?: string;
+  themeColorDark?: string;
+  colorScheme?: "light" | "dark" | "light dark";
+  appleStatusBarStyle?: "default" | "black" | "black-translucent";
 };
 
 const {
@@ -29,17 +36,25 @@ const {
   canonicalPath = Astro.url.pathname,
   canonicalUrl: canonicalUrlProp,
   image = siteMetadata.defaultOgImage,
+  imageAlt,
+  imageWidth,
+  imageHeight,
   type = 'website',
   robots = siteMetadata.robots,
   author,
   publishDate,
   modifiedDate,
   schemaEntries = [],
+  themeColorLight = siteMetadata.themeColorLight,
+  themeColorDark = siteMetadata.themeColorDark,
+  colorScheme = "light",
+  appleStatusBarStyle = "default",
 } = Astro.props;
 
 const fullTitle = formatTitle(title, siteMetadata.defaultTitle);
 const canonicalUrl = canonicalUrlProp ?? resolveCanonicalUrl(canonicalPath);
 const imageUrl = resolveImageUrl(image);
+const resolvedImageAlt = imageAlt ?? fullTitle;
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [getOrganizationSchema(), getWebsiteSchema(), ...schemaEntries],
@@ -57,7 +72,8 @@ const structuredData = {
 <meta name="application-name" content={siteMetadata.siteName} />
 <meta name="author" content={author ?? siteMetadata.siteName} />
 <meta name="robots" content={robots} />
-<meta name="color-scheme" content="light" />
+<meta name="color-scheme" content={colorScheme} />
+<meta name="apple-mobile-web-app-status-bar-style" content={appleStatusBarStyle} />
 <link rel="canonical" href={canonicalUrl} />
 <meta property="og:type" content={type} />
 <meta property="og:locale" content="en_US" />
@@ -66,14 +82,18 @@ const structuredData = {
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:image" content={imageUrl} />
+<meta property="og:image:alt" content={resolvedImageAlt} />
+{imageWidth && <meta property="og:image:width" content={String(imageWidth)} />}
+{imageHeight && <meta property="og:image:height" content={String(imageHeight)} />}
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content={siteMetadata.twitterHandle} />
 <meta name="twitter:creator" content={siteMetadata.twitterHandle} />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={imageUrl} />
-<meta name="theme-color" media="(prefers-color-scheme: light)" content={siteMetadata.themeColorLight} />
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content={siteMetadata.themeColorDark} />
+<meta name="twitter:image:alt" content={resolvedImageAlt} />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content={themeColorLight} />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content={themeColorDark} />
 {type === 'article' && publishDate && <meta property="article:published_time" content={publishDate.toISOString()} />}
 {type === 'article' && modifiedDate && <meta property="article:modified_time" content={modifiedDate.toISOString()} />}
 {type === 'article' && author && <meta property="article:author" content={author} />}
