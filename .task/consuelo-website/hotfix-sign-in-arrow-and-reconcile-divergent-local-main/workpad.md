@@ -1,29 +1,25 @@
 
-## Diagnosis
+## Implementation and validation
 
-- Local main is clean but diverged: 1 commit ahead and 6 commits behind origin/main.
-- The local-only commit is c53c3aa41c (`feat(website): hermes-style bayer-dithered cloud hero`).
-- Origin/main already contains the desired dithered hero/background and feature-strip work through later merged commits.
-- The meaningful remaining visual delta is the SIGN IN arrow: local main uses a compact 6x9 inline rect-based arrow; origin/main uses the larger 20x16 PixelArrow component shown in production.
-- Hotfix scope is therefore limited to HomeHero arrow markup/sizing plus focused regression expectations. No hero atmosphere, feature preview, navigation, pricing, or font changes are included.
+- Replaced the production 20x16 PixelArrow component in HomeHero with the approved local-main 6x9 rect-based inline arrow.
+- Scoped CSS sizes the arrow at 8x12 CSS pixels with crisp edge rendering; the sign-in URL and all hero/background behavior are unchanged.
+- Updated homepage regression contracts to reject PixelArrow and require the compact inline SVG.
+- Focused verification: 23 tests passed with 345 assertions across homepage responsive, mobile layout, and website structure suites.
+- Astro check/build completed with 0 errors and generated 22 routes.
+- Local browser verification passed on 1440x900 desktop and iPhone 16 Pro: correct 6x9 viewBox, 8 rects, 8x12 rendered arrow, correct OS URL, and zero horizontal overflow.
+- Review and publish-valid verify passed with no issues attributable to this change.
 
-## TDD evidence
+## Follow-up
 
-- Red: `bun test tests/homepage-responsive.test.mjs` failed because origin/main still rendered PixelArrow.
-- Green: focused homepage and website-structure tests pass after restoring the compact inline arrow.
-
-- 2026-07-13 17:49:14 apply-patch: `packages/consuelo-website/src/components/home/HomeHero.astro`
-- 2026-07-13 17:49:14 apply-patch: `packages/consuelo-website/tests/homepage-responsive.test.mjs`
-- 2026-07-13 17:49:14 apply-patch: `packages/consuelo-website/tests/website-structure.test.js`
+- After the hotfix reaches main, preserve local commit c53c3aa41c on a backup branch and realign the local main worktree to origin/main. This removes the pull divergence without losing the historical local commit.
 
 ## workspace-owned: validation evidence
 
-- 2026-07-13 17:51:52 `review.run`: passed — OK
-- 2026-07-13 17:52:05 `verify`: passed — OK
+- 2026-07-13 17:57:00 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/current.json`, `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/session.json`, `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/workpad.md`, `.task/tasks/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main.json`, `packages/consuelo-website/src/components/home/HomeHero.astro`, `packages/consuelo-website/tests/homepage-responsive.test.mjs`, `packages/consuelo-website/tests/website-structure.test.js`
+- changed files: `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/current.json`, `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/evidence-log.json`, `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/read-log.json`, `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/session.json`, `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/verify.json`, `.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/workpad.md`, `.task/tasks/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main.json`, `packages/consuelo-website/src/components/home/HomeHero.astro`, `packages/consuelo-website/tests/homepage-responsive.test.mjs`, `packages/consuelo-website/tests/website-structure.test.js`
 - matched rules: none
 - selected suites: none
 - run results: none

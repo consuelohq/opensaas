@@ -4,14 +4,14 @@
   "mode": "full",
   "branch": "task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main",
   "base": "origin/main",
-  "headSha": "b5f03f0e4de07414211aadbcf8809e31b7d8b5c3",
-  "changeHash": "446e2573c166d10267c0be6c6dbdd49929b0252107777e01cb79ed1f676f4a4b",
+  "headSha": "a1c5f010bd3ab322b218d2c3d095b85e9e540559",
+  "changeHash": "46bc7f24647c9825d9a9c74b119d10985bf04be94e499547c94f98665c1aee91",
   "changedFiles": [
     "packages/consuelo-website/src/components/home/HomeHero.astro",
     "packages/consuelo-website/tests/homepage-responsive.test.mjs",
     "packages/consuelo-website/tests/website-structure.test.js"
   ],
-  "verifiedAt": "2026-07-13T17:52:05.017Z",
+  "verifiedAt": "2026-07-13T17:57:00.567Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -26,7 +26,10 @@
       "passed": true,
       "changedFiles": [
         ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/current.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/evidence-log.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/read-log.json",
         ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/session.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/verify.json",
         ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/workpad.md",
         ".task/tasks/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main.json",
         "packages/consuelo-website/src/components/home/HomeHero.astro",
