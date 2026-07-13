@@ -1,0 +1,63 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card",
+  "base": "HEAD",
+  "headSha": "1af27c2337aebf7523c44e41cd8fe90a8f08718a",
+  "changeHash": "ba3d53324d0db8c51ca8a282d046b1a4d26160bed171957b437a07eb2f2845a7",
+  "changedFiles": [
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/public/og.png",
+    "packages/consuelo-website/scripts/generate-social-card.ts",
+    "packages/consuelo-website/src/components/SeoHead.astro",
+    "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+    "packages/consuelo-website/src/lib/homepage-seo.ts",
+    "packages/consuelo-website/src/pages/index.astro",
+    "packages/consuelo-website/tests/social-card.test.mjs"
+  ],
+  "verifiedAt": "2026-07-13T00:14:33.663Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card/current.json",
+        ".task/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card/session.json",
+        ".task/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card/workpad.md",
+        ".task/tasks/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card.json",
+        "packages/consuelo-website/package.json",
+        "packages/consuelo-website/public/og.png",
+        "packages/consuelo-website/scripts/generate-social-card.ts",
+        "packages/consuelo-website/src/components/SeoHead.astro",
+        "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+        "packages/consuelo-website/src/lib/homepage-seo.ts",
+        "packages/consuelo-website/src/pages/index.astro",
+        "packages/consuelo-website/tests/social-card.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

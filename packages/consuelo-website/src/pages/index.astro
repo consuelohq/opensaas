@@ -2,10 +2,9 @@
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import HomeHero from '../components/home/HomeHero.astro';
+import { homepageSeo } from '../lib/homepage-seo';
 import { getSoftwareApplicationSchema } from '../lib/site-seo';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
-
-const description = 'Give every agent workspace superpowers with Consuelo OS, the open workspace layer for agents, teams, and tools.';
 
 const schemaEntries = [
   getSoftwareApplicationSchema({
@@ -21,10 +20,13 @@ const schemaEntries = [
 ---
 
 <MarketingLayout
-  title="Consuelo | Workspace superpowers for every agent"
-  description={description}
+  title={homepageSeo.title}
+  description={homepageSeo.description}
   canonicalPath="/"
-  image="/og.png"
+  image={homepageSeo.image}
+  imageAlt={homepageSeo.imageAlt}
+  imageWidth={1200}
+  imageHeight={630}
   schemaEntries={schemaEntries}
 >
   <SiteHeader pageSections={[]} />
