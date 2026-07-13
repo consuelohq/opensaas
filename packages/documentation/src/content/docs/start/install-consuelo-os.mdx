@@ -1,0 +1,115 @@
+---
+title: Install Consuelo OS
+description: Install the local Consuelo OS runtime on a supported Mac and verify it is ready.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/bootstrap.sh
+    tests:
+      - packages/os/tests/bootstrap-source.test.ts
+      - packages/os/tests/installer-runtime-dependencies.test.ts
+    runtime: Hosted bootstrap dry-run completed against a clean temporary home on 2026-07-13.
+  - source: packages/os/scripts/install.ts
+    tests:
+      - packages/os/tests/installer-onboarding-ui.test.ts
+      - packages/os/scripts/onboarding-flow.test.ts
+    runtime: Non-interactive local install completed in a temporary Consuelo home on 2026-07-13.
+---
+
+import Note from '../../../components/mintlify/Note.astro';
+import Warning from '../../../components/mintlify/Warning.astro';
+
+The installer sets up the local runtime and then walks you through workspace authorization, skills, agents, and the background service.
+
+## Requirements
+
+The self-service local installer currently supports:
+
+- macOS;
+- Apple silicon and Intel Macs;
+- an internet connection;
+- a real Terminal session for interactive setup.
+
+The installer expects standard macOS utilities such as `curl`, `tar`, `mktemp`, `launchctl`, `plutil`, `lsof`, and `script`. It installs or reuses Bun and `cloudflared`. Portless is optional; without it, Consuelo OS uses `http://127.0.0.1:46321` locally.
+
+<Warning>
+  The public local bootstrap stops on Linux and Windows. Do not treat an installation that bypasses this check as supported.
+</Warning>
+
+## Run the installer
+
+Open Terminal and run:
+
+```bash
+curl -fsSL https://install.consuelohq.com/os | bash
+```
+
+The interactive flow asks you to:
+
+1. choose **local** or **cloud**;
+2. allow required dependency setup;
+3. approve the device and select or create a workspace;
+4. choose bundled skills;
+5. choose from detected local agents;
+6. install the local background service.
+
+For the self-service path, choose **local**. Choosing **cloud** opens the Consuelo contact page and exits before local source or dependencies are installed.
+
+## Where it installs
+
+New installations use:
+
+```text
+~/.consuelo
+```
+
+Set `CONSUELO_HOME` before installation to use another location. If an older installation already exists at `~/.consuelo/os`, the bootstrap can continue using that legacy home instead of silently creating a second installation.
+
+The hosted bootstrap downloads a temporary copy of the current OS source, installs its package dependencies, and materializes the runnable product into the Consuelo home. The temporary source checkout is not the workspace itself.
+
+## Background service
+
+The background service keeps the local OS available after the terminal closes. Interactive setup recommends installing it. A non-interactive install only creates LaunchAgents when `--install-daemons` is passed.
+
+To run the hosted installer non-interactively with the service enabled:
+
+```bash
+curl -fsSL https://install.consuelohq.com/os | bash -s -- --yes --install-daemons
+```
+
+Skipping the service does not remove the OS files. It only skips user LaunchAgent setup.
+
+## Verify the installation
+
+Run the same doctor command printed by the installer:
+
+```bash
+CONSUELO_HOME="$HOME/.consuelo" bun run --cwd "$HOME/.consuelo" doctor
+```
+
+A healthy installation should find the runtime files, local database, steering, skills, tools, and server entrypoints. Agent-specific connection status is covered in [Connect your first agent](/start/connect-your-first-agent/).
+
+## Run it again safely
+
+The hosted installer refreshes its temporary source by default. Provisioning preserves existing configuration and user-owned steering, skills, and tools instead of replacing them blindly.
+
+Use a dry run to inspect the plan without installing Bun, downloading source, or creating LaunchAgents:
+
+```bash
+curl -fsSL https://install.consuelohq.com/os | bash -s -- \
+  --dry-run --yes --json --mode local --skip-daemons
+```
+
+<Note>
+  A dry run reports planned work. It does not create a usable workspace.
+</Note>
+
+## Common installation failures
+
+| Message | What it means | What to do |
+| --- | --- | --- |
+| `local bootstrap currently supports macOS` | The public local installer was run on an unsupported operating system. | Use a supported Mac or [contact Consuelo](https://consuelohq.com/contact/) about Cloud. |
+| `interactive setup needs a real terminal` | Input is not attached to a TTY. | Run the command directly in Terminal, or use the documented non-interactive command. |
+| A required macOS utility is missing | The Mac environment is incomplete. | Restore the named system utility before retrying. |
+| A checksum fails | A downloaded runtime binary did not match its published SHA-256 value. | Stop and retry later; do not bypass the integrity check. |
+| Device login cannot be reached | The installer cannot complete managed authorization. | It can continue with a local workspace; public workspace access may remain unavailable until authorization succeeds. |

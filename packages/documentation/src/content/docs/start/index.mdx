@@ -2,6 +2,56 @@
 title: Start
 description: Install Consuelo OS, create a workspace, and connect your first agent.
 status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/bootstrap.sh
+    tests:
+      - packages/os/tests/bootstrap-source.test.ts
+      - packages/os/scripts/onboarding-flow.test.ts
+    runtime: Public installer dry-run and local provisioning contract verified on 2026-07-13.
+  - source: packages/os/scripts/lib/install-state.ts
+    tests:
+      - packages/os/tests/install-state.test.ts
+    runtime: Fresh temporary Consuelo home provisioned and inspected on 2026-07-13.
 ---
 
-Begin here when you are setting up Consuelo OS for the first time.
+import Card from '../../../components/mintlify/Card.astro';
+import CardGroup from '../../../components/mintlify/CardGroup.astro';
+import Note from '../../../components/mintlify/Note.astro';
+
+Consuelo OS gives every agent the same workspace: the same tools, files, steering, and record of what happened. Start with a local installation, give the workspace a name, then connect one agent over MCP.
+
+<Note>
+  Consuelo OS is in preview. The self-service local installer currently supports macOS. [Consuelo Cloud](/start/local-and-consuelo-cloud/) is provisioned with the Consuelo team.
+</Note>
+
+## Get to a working connection
+
+<CardGroup cols={3}>
+  <Card title="1. Install Consuelo OS" href="/start/install-consuelo-os/">
+    Set up the local runtime, selected skills, security files, and optional background service.
+  </Card>
+  <Card title="2. Create a workspace" href="/start/create-a-workspace/">
+    Approve this Mac in your browser, then select or name the workspace it belongs to.
+  </Card>
+  <Card title="3. Connect an agent" href="/start/connect-your-first-agent/">
+    Let the installer configure a detected local agent and verify its MCP connection.
+  </Card>
+</CardGroup>
+
+## What the installer creates
+
+A normal local installation creates a Consuelo home at `~/.consuelo` containing:
+
+- workspace and node configuration;
+- a local SQLite database under `node/db/`;
+- the selected skills and installed tool registry;
+- steering files, scripts, logs, runs, artifacts, and Sites;
+- generated security configuration;
+- an MCP command that supported local agents can run.
+
+Existing configuration and user-owned steering, skills, and tools are preserved when the installer runs again.
+
+## Before going deeper
+
+Read [Core concepts](/start/core-concepts/) for the difference between a workspace, node, agent, tool, skill, and artifact. Read [Local and Consuelo Cloud](/start/local-and-consuelo-cloud/) before deciding where the home node should run.

@@ -25,10 +25,19 @@ export const docsSections = [
   { label: 'Reference', slug: 'reference', description: 'Look up exact CLI, configuration, MCP, manifest, and error contracts.' },
 ] as const;
 
+const startItems = [
+  { label: 'Overview', slug: 'start' },
+  { label: 'Install Consuelo OS', slug: 'start/install-consuelo-os' },
+  { label: 'Create a workspace', slug: 'start/create-a-workspace' },
+  { label: 'Connect your first agent', slug: 'start/connect-your-first-agent' },
+  { label: 'Local and Consuelo Cloud', slug: 'start/local-and-consuelo-cloud' },
+  { label: 'Core concepts', slug: 'start/core-concepts' },
+];
+
 export const docsSidebar = docsSections.map(({ label, slug }) => ({
   label,
   collapsed: true,
-  items: [{ label: 'Overview', slug }],
+  items: slug === 'start' ? startItems : [{ label: 'Overview', slug }],
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));
