@@ -1,0 +1,41 @@
+---
+title: Connectors
+description: Understand which external services Consuelo OS can use today and how access is supplied.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/integrations.md
+    tests:
+      - packages/os/tests/settings-site.test.ts
+      - packages/os/tests/settings-site.test.ts
+    runtime: The current capability list, cloud placeholders, GitHub facade, and Slack webhook adapter were inspected and exercised where focused tests exist on 2026-07-13.
+---
+A service connector is **not the same thing as connecting an agent**. Agents call OS. Connectors supply a credential or managed grant that lets an OS tool reach another service.
+
+## Current connection levels
+
+| Connector | Current path | Boundary |
+| --- | --- | --- |
+| [GitHub](/connect/connectors/github/) | Available through the `workspace.github` tool | Requires GitHub authentication on the runtime |
+| [Slack](/connect/connectors/slack/) | Available for outbound webhook posts | Not a full Slack read/write OAuth connector |
+| [Google Drive](/connect/connectors/google-drive/) | Assisted capability | No self-service Drive grant in the installer |
+| [Gmail](/connect/connectors/gmail/) | Assisted capability | No self-service mailbox grant in the installer |
+| [Google Calendar](/connect/connectors/google-calendar/) | Assisted capability | No self-service Calendar grant in the installer |
+
+The Google sign-in used to approve a Consuelo workspace requests only identity scopes. It is not a Drive, Gmail, or Calendar grant.
+
+## Before a tool can use a service
+
+A usable connector needs all of the following:
+
+1. a supported tool or skill;
+2. a credential or grant supplied outside the model prompt;
+3. permission for that tool to run;
+4. a successful runtime check;
+5. an approval when the action is sensitive or mutating.
+
+Never paste a token into steering, a skill, or a conversation. Credentials belong in the runtime environment or a managed secret path.
+
+## Verify capability, not just configuration
+
+A variable being present proves only configuration. Verify with the narrowest safe operation: list repository metadata, inspect a Drive file, search a mailbox, read a calendar range, or post to a test Slack destination.

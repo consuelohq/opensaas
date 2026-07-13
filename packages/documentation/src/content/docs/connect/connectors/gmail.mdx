@@ -1,0 +1,44 @@
+---
+title: Gmail
+description: Understand the current Gmail support boundary in Consuelo OS.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/docs/env-capability-matrix.md
+    tests:
+      - packages/os/tests/os-device-authority-worker.test.ts
+      - packages/os/tests/settings-site.test.ts
+    runtime: The environment capability matrix and workspace identity OAuth scopes were inspected on 2026-07-13; no self-service Gmail grant is implemented.
+---
+Gmail is a planned service capability, but it is **not currently self-service** in the public OS installer.
+
+## What is available now
+
+The Consuelo team can provision a managed workspace path when a supported tool or skill and an appropriate service grant exist. Availability depends on the workspace and use case; the installer does not currently show a Gmail connection screen.
+
+The Google approval used during workspace creation requests `openid email profile`. That proves identity only. It does not authorize access to mailbox messages.
+
+## Do not improvise a connection
+
+- Do not paste OAuth tokens into a chat, steering file, or skill.
+- Do not assume a Google login during installation connected Gmail.
+- Do not document generic Google API environment variables as a shipped connector contract; the current capability matrix records Google APIs as optional rather than wired.
+
+## Request access
+
+Contact the Consuelo team with:
+
+1. the workspace name;
+2. the specific read or write job;
+3. the smallest required data scope;
+4. whether human approval is required before mutations.
+
+The team will confirm whether a supported managed path exists. Until then, agents should report the capability as unavailable instead of silently falling back to browser automation.
+
+## Verify a managed connection
+
+Use a narrow read-only request against known test data. For example, request one known item or a small date range. Then confirm the returned workspace, account, and scope before enabling a mutating workflow.
+
+## Revoke
+
+Revoke the managed grant through the account owner and ask the Consuelo team to remove the workspace-side capability. Removing an agent connection does not revoke a service credential.
