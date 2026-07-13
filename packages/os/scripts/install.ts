@@ -43,6 +43,7 @@ import {
   type InstallDiagnostics,
   type InstallDiagnosticStatus,
 } from './lib/install-diagnostics';
+import { resolveLocalOsPortOverride } from './server/env';
 type ArtifactMode = 'local';
 type SkillName = string;
 type InstallerProgressStep =
@@ -112,9 +113,16 @@ export const INSTALLER_PROGRESS_STEPS: InstallerProgressStep[] = [
   'health',
 ];
 
+type InstallerDiagnosticStep =
+  | InstallerProgressStep
+  | 'process_lifecycle'
+  | 'dependencies'
+  | 'device_login'
+  | 'workspace_selection';
+
 function recordInstallerStep(
   diagnostics: InstallDiagnostics,
-  step: InstallerProgressStep | 'dependencies',
+  step: InstallerDiagnosticStep,
   status: InstallDiagnosticStatus,
   data?: Record<string, unknown>,
 ): void {
@@ -129,6 +137,52 @@ function recordPromptDecision(
   diagnostics.recordPromptDecision(name, value);
 }
 
+function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+type InstallerDiagnosticsLifecycleTarget = {
+  once: (event: string, handler: (...args: unknown[]) => void) => unknown;
+};
+
+type InstallerDiagnosticsLifecycleOptions = {
+  kill?: (pid: number, signal: NodeJS.Signals) => unknown;
+  pid?: number;
+};
+
+let installerDiagnosticsLifecycleHooksRegistered = false;
+
+export function registerInstallerDiagnosticsLifecycleHooks(
+  diagnostics: InstallDiagnostics,
+  lifecycleTarget: InstallerDiagnosticsLifecycleTarget = process,
+  options: InstallerDiagnosticsLifecycleOptions = {},
+): void {
+  const isProcessTarget = lifecycleTarget === process;
+  if (!diagnostics.enabled || (isProcessTarget && installerDiagnosticsLifecycleHooksRegistered)) return;
+  if (isProcessTarget) installerDiagnosticsLifecycleHooksRegistered = true;
+
+  const kill = options.kill ?? ((pid: number, signal: NodeJS.Signals) => process.kill(pid, signal));
+  const processId = options.pid ?? process.pid;
+
+  lifecycleTarget.once('beforeExit', (exitCode) => {
+    recordInstallerStep(diagnostics, 'process_lifecycle', 'beforeExit', { exitCode });
+  });
+  lifecycleTarget.once('exit', (exitCode) => {
+    recordInstallerStep(diagnostics, 'process_lifecycle', 'exit', { exitCode });
+  });
+  lifecycleTarget.once('uncaughtExceptionMonitor', (error) => {
+    recordInstallerStep(diagnostics, 'process_lifecycle', 'uncaughtException', {
+      error: formatUnknownError(error),
+    });
+  });
+
+  for (const signal of ['SIGHUP', 'SIGINT', 'SIGTERM'] as const) {
+    lifecycleTarget.once(signal, () => {
+      recordInstallerStep(diagnostics, 'process_lifecycle', 'signal', { signal });
+      kill(processId, signal);
+    });
+  }
+}
 export function createInstallerProgressSteps(
   activeStep: InstallerProgressStep | null,
 ): OsBannerStep[] {
@@ -377,20 +431,20 @@ function summarizeActions(result: ReturnType<typeof provisionLocalOs>): string {
 }
 
 
-type PendingWorkspaceSelection = {
+export type PendingWorkspaceSelection = {
   deviceCode: string;
   intervalSeconds: number;
   deviceKeyPair: WorkspaceDeviceKeyPair;
 };
 
-type DeviceLoginAttemptResult = {
+export type DeviceLoginAttemptResult = {
   status: 'approved' | 'fallback' | 'skipped' | 'workspace_required';
   verificationUrl?: string;
   workspaceBootstrap?: WorkspaceBootstrap;
   workspaceSelection?: PendingWorkspaceSelection;
 };
 
-type ResolvedWorkspaceIdentity = {
+export type ResolvedWorkspaceIdentity = {
   workspaceName: string;
   workspaceSlug: string;
   workspaceHost: string;
@@ -462,6 +516,15 @@ function createInstallPlatformProvisioningPayload(input: {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+async function withRuntimeHold<T>(operation: () => Promise<T>): Promise<T> {
+  const hold = setInterval(() => undefined, 1000);
+  try {
+    return await operation();
+  } finally {
+    clearInterval(hold);
+  }
+}
+
 async function openDeviceVerificationUrl(url: string): Promise<boolean> {
   if (process.platform !== 'darwin') return false;
 
@@ -531,52 +594,196 @@ async function printDeviceLoginPrompt(input: {
       'Consuelo OS',
     );
   } catch (error: unknown) {
-    const reason = error instanceof Error ? error.message : String(error);
+    const reason = formatUnknownError(error);
 
     info(`authorize Consuelo OS in your browser: ${sanitizedVerificationUrl}`);
     info(`device login prompt fell back to plain URL: ${reason}`);
   }
 }
 
-async function attemptWorkspaceDeviceLogin(input: {
-  dryRun: boolean;
-  home: string;
-}): Promise<DeviceLoginAttemptResult> {
-  if (input.dryRun) return { status: 'skipped' };
+type DeviceLoginDependencies = {
+  readLocalNodeIdentity: typeof readLocalNodeIdentity;
+  requestWorkspaceDeviceCode: typeof requestWorkspaceDeviceCode;
+  pollWorkspaceDeviceAccessToken: typeof pollWorkspaceDeviceAccessToken;
+  printDeviceLoginPrompt: typeof printDeviceLoginPrompt;
+  openDeviceVerificationUrl: typeof openDeviceVerificationUrl;
+  sleep: (ms: number) => Promise<void>;
+  withRuntimeHold: typeof withRuntimeHold;
+};
+
+const DEFAULT_DEVICE_LOGIN_DEPENDENCIES: DeviceLoginDependencies = {
+  readLocalNodeIdentity,
+  requestWorkspaceDeviceCode,
+  pollWorkspaceDeviceAccessToken,
+  printDeviceLoginPrompt,
+  openDeviceVerificationUrl,
+  sleep,
+  withRuntimeHold,
+};
+
+type WorkspaceDeviceSelectionDependencies = {
+  selectWorkspaceForDeviceLogin: typeof selectWorkspaceForDeviceLogin;
+  withRuntimeHold: typeof withRuntimeHold;
+};
+
+const DEFAULT_WORKSPACE_DEVICE_SELECTION_DEPENDENCIES: WorkspaceDeviceSelectionDependencies = {
+  selectWorkspaceForDeviceLogin,
+  withRuntimeHold,
+};
+
+export async function completeWorkspaceDeviceSelection(
+  input: {
+    diagnostics: InstallDiagnostics;
+    selection: PendingWorkspaceSelection;
+    workspaceName: string;
+    workspaceSlug: string;
+    workspaceHost: string;
+  },
+  dependencies: WorkspaceDeviceSelectionDependencies = DEFAULT_WORKSPACE_DEVICE_SELECTION_DEPENDENCIES,
+): Promise<ResolvedWorkspaceIdentity> {
+  const { diagnostics, selection, workspaceName, workspaceSlug, workspaceHost } = input;
+
+  recordInstallerStep(diagnostics, 'workspace_selection', 'start', {
+    workspaceHost,
+    workspaceSlug,
+  });
+
+  let selected: Awaited<ReturnType<typeof selectWorkspaceForDeviceLogin>>;
+  let failureRecorded = false;
+  try {
+    recordInstallerStep(diagnostics, 'workspace_selection', 'request', {
+      workspaceHost,
+      workspaceSlug,
+    });
+    selected = await dependencies.withRuntimeHold(async () => {
+      try {
+        return await dependencies.selectWorkspaceForDeviceLogin({
+          clientId: DEVICE_LOGIN_CLIENT_ID,
+          deviceCode: selection.deviceCode,
+          intervalSeconds: selection.intervalSeconds,
+          deviceKeyPair: selection.deviceKeyPair,
+          workspaceName,
+          workspaceSlug,
+          workspaceHost,
+        });
+      } catch (error: unknown) {
+        failureRecorded = true;
+        const message = formatUnknownError(error);
+        diagnostics.recordHttp('device.workspace_selection', 0, 'exception');
+        recordInstallerStep(diagnostics, 'workspace_selection', 'failed', { error: message });
+        throw error;
+      }
+    });
+  } catch (error: unknown) {
+    if (failureRecorded) throw error;
+    const message = formatUnknownError(error);
+    diagnostics.recordHttp('device.workspace_selection', 0, 'exception');
+    recordInstallerStep(diagnostics, 'workspace_selection', 'failed', { error: message });
+    throw error;
+  }
+
+  const selectedStatusCode = selected.status === 'approved' ? 200 : 400;
+  diagnostics.recordHttp('device.workspace_selection', selectedStatusCode, selected.status);
+
+  if (selected.status === 'approved') {
+    recordInstallerStep(diagnostics, 'workspace_selection', 'complete', {
+      workspaceHost: selected.workspaceHost,
+      workspaceSlug: selected.workspaceSlug,
+      nodeStatus: selected.nodeStatus,
+      nodeRole: selected.nodeRole,
+    });
+    return {
+      workspaceName,
+      workspaceSlug: selected.workspaceSlug,
+      workspaceHost: selected.workspaceHost,
+      workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(selected),
+    };
+  }
+
+  const failureDetails: Record<string, unknown> = { status: selected.status };
+  if ('message' in selected) failureDetails.message = selected.message;
+  if ('errorCode' in selected) failureDetails.errorCode = selected.errorCode;
+  recordInstallerStep(diagnostics, 'workspace_selection', 'failed', failureDetails);
+  throw new Error(
+    'message' in selected && selected.message
+      ? `workspace selection failed: ${selected.status}: ${selected.message}`
+      : `workspace selection failed: ${selected.status}`,
+  );
+}
+
+export async function attemptWorkspaceDeviceLogin(
+  input: {
+    dryRun: boolean;
+    home: string;
+    diagnostics: InstallDiagnostics;
+  },
+  dependencies: DeviceLoginDependencies = DEFAULT_DEVICE_LOGIN_DEPENDENCIES,
+): Promise<DeviceLoginAttemptResult> {
+  recordInstallerStep(input.diagnostics, 'device_login', 'start');
+  if (input.dryRun) {
+    recordInstallerStep(input.diagnostics, 'device_login', 'skipped', { status: 'skipped' });
+    return { status: 'skipped' };
+  }
 
   try {
-    const localNodeIdentity = readLocalNodeIdentity(input.home);
-    const liveDeviceCode = await requestWorkspaceDeviceCode({
+    const localNodeIdentity = dependencies.readLocalNodeIdentity(input.home);
+    const liveDeviceCode = await dependencies.requestWorkspaceDeviceCode({
       clientId: DEVICE_LOGIN_CLIENT_ID,
       scope: DEVICE_LOGIN_SCOPE,
       nodeId: localNodeIdentity?.nodeId,
       nodeName: localNodeIdentity?.nodeName,
     });
     if (liveDeviceCode.status !== 'started') {
+      input.diagnostics.recordHttp('device.code', 503, liveDeviceCode.status);
+      recordInstallerStep(input.diagnostics, 'device_login', 'complete', { status: 'fallback' });
       info('Device login unavailable; continuing with local workspace bootstrap.');
       return { status: 'fallback' };
     }
+    input.diagnostics.recordHttp('device.code', 200, liveDeviceCode.status);
 
     const session = liveDeviceCode.session;
-    await printDeviceLoginPrompt({
+    await dependencies.printDeviceLoginPrompt({
       userCode: session.userCode,
       verificationUrl: session.verificationUriComplete,
     });
-    await openDeviceVerificationUrl(session.verificationUriComplete);
+    recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed', { displayed: true });
+    const browserOpened = await dependencies.openDeviceVerificationUrl(session.verificationUriComplete);
+    recordInstallerStep(input.diagnostics, 'device_login', 'browser_open', { opened: browserOpened });
 
     const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
     let intervalSeconds = session.intervalSeconds;
 
     while (Date.now() < deadlineMs) {
-      await sleep(Math.min(intervalSeconds, 5) * 1000);
-      const pollResult = await pollWorkspaceDeviceAccessToken({
-        clientId: DEVICE_LOGIN_CLIENT_ID,
-        deviceCode: liveDeviceCode.session.deviceCode,
-        intervalSeconds,
-        deviceKeyPair: liveDeviceCode.deviceKeyPair,
+      recordInstallerStep(input.diagnostics, 'device_login', 'poll_wait', { intervalSeconds });
+      const pollResult = await dependencies.withRuntimeHold(async () => {
+        try {
+          await dependencies.sleep(Math.min(intervalSeconds, 5) * 1000);
+          recordInstallerStep(input.diagnostics, 'device_login', 'poll_request', { intervalSeconds });
+          return await dependencies.pollWorkspaceDeviceAccessToken({
+            clientId: DEVICE_LOGIN_CLIENT_ID,
+            deviceCode: liveDeviceCode.session.deviceCode,
+            intervalSeconds,
+            deviceKeyPair: liveDeviceCode.deviceKeyPair,
+          });
+        } catch (error: unknown) {
+          recordInstallerStep(input.diagnostics, 'device_login', 'poll_failed', {
+            error: formatUnknownError(error),
+          });
+          throw error;
+        }
       });
 
+      const pollDetails: Record<string, unknown> = {
+        status: pollResult.status,
+        intervalSeconds: 'intervalSeconds' in pollResult ? pollResult.intervalSeconds : intervalSeconds,
+      };
+      if ('message' in pollResult) pollDetails.message = pollResult.message;
+      if ('errorCode' in pollResult) pollDetails.errorCode = pollResult.errorCode;
+      recordInstallerStep(input.diagnostics, 'device_login', 'poll_result', pollDetails);
+
       if (pollResult.status === 'approved') {
+        input.diagnostics.recordHttp('device.poll', 200, pollResult.status);
+        recordInstallerStep(input.diagnostics, 'device_login', 'complete', { status: pollResult.status });
         info('Consuelo OS authorization approved.');
         return {
           status: 'approved',
@@ -586,6 +793,10 @@ async function attemptWorkspaceDeviceLogin(input: {
       }
 
       if (pollResult.status === 'workspace_required') {
+        input.diagnostics.recordHttp('device.poll', 400, pollResult.status);
+        const details: Record<string, unknown> = { status: pollResult.status };
+        if ('message' in pollResult) details.message = pollResult.message;
+        recordInstallerStep(input.diagnostics, 'device_login', 'complete', details);
         info('Consuelo OS authorization approved. Workspace name required to finish setup.');
         return {
           status: 'workspace_required',
@@ -599,17 +810,26 @@ async function attemptWorkspaceDeviceLogin(input: {
       }
 
       if (pollResult.status === 'pending' || pollResult.status === 'slow_down') {
+        input.diagnostics.recordHttp('device.poll', 400, pollResult.status);
         intervalSeconds = pollResult.intervalSeconds;
         continue;
       }
 
+      input.diagnostics.recordHttp('device.poll', 400, pollResult.status);
+      const details: Record<string, unknown> = { status: 'fallback', pollStatus: pollResult.status };
+      if ('message' in pollResult) details.message = pollResult.message;
+      if ('errorCode' in pollResult) details.errorCode = pollResult.errorCode;
+      recordInstallerStep(input.diagnostics, 'device_login', 'complete', details);
       info('Device login unavailable; continuing with local workspace bootstrap.');
       return { status: 'fallback', verificationUrl: session.verificationUriComplete };
     }
 
+    recordInstallerStep(input.diagnostics, 'device_login', 'complete', { status: 'fallback', reason: 'timeout' });
     info('Device login was not approved before timeout; continuing with local workspace bootstrap.');
     return { status: 'fallback', verificationUrl: session.verificationUriComplete };
-  } catch {
+  } catch (error: unknown) {
+    const message = formatUnknownError(error);
+    recordInstallerStep(input.diagnostics, 'device_login', 'failed', { error: message });
     info('Device login unavailable; continuing with local workspace bootstrap.');
     return { status: 'fallback' };
   }
@@ -640,7 +860,7 @@ async function resolveWorkspaceIdentity(input: {
         normalizeWorkspaceName(value);
         return undefined;
       } catch (error: unknown) {
-        return error instanceof Error ? error.message : String(error);
+        return formatUnknownError(error);
       }
     },
   });
@@ -661,26 +881,13 @@ async function resolveWorkspaceIdentity(input: {
     throw new Error('device login requested workspace selection without a device session');
   }
 
-  const selected = await selectWorkspaceForDeviceLogin({
-    clientId: DEVICE_LOGIN_CLIENT_ID,
-    deviceCode: selection.deviceCode,
-    intervalSeconds: selection.intervalSeconds,
-    deviceKeyPair: selection.deviceKeyPair,
+  return completeWorkspaceDeviceSelection({
+    diagnostics: input.diagnostics,
+    selection,
     workspaceName,
     workspaceSlug,
     workspaceHost,
   });
-
-  if (selected.status === 'approved') {
-    return {
-      workspaceName,
-      workspaceSlug: selected.workspaceSlug,
-      workspaceHost: selected.workspaceHost,
-      workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(selected),
-    };
-  }
-
-  throw new Error(`workspace selection failed: ${selected.status}`);
 }
 async function promptOptions(
   options: InstallOptions,
@@ -724,6 +931,7 @@ async function promptOptions(
     const deviceLogin = await attemptWorkspaceDeviceLogin({
       dryRun: options.dryRun,
       home,
+      diagnostics,
     });
     const workspaceIdentity = await resolveWorkspaceIdentity({
       options,
@@ -834,6 +1042,7 @@ async function main(): Promise<void> {
       home: resolveOsHome(parsedOptions.home),
       argv: process.argv.slice(2),
     });
+    registerInstallerDiagnosticsLifecycleHooks(diagnostics);
     recordInstallerStep(diagnostics, 'dependencies', 'complete');
     if (parsedOptions.checkTty) {
       printTtyDiagnostics();
@@ -853,6 +1062,7 @@ async function main(): Promise<void> {
     const result = provisionLocalOs({
       home: options.home,
       mode: options.mode ?? 'local',
+      port: resolveLocalOsPortOverride(),
       dryRun: options.dryRun,
       connectAgents: options.connectAgents,
       selectedSkills: options.selectedSkills,
@@ -920,7 +1130,7 @@ async function main(): Promise<void> {
       }
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = formatUnknownError(error);
     diagnostics?.finish({ status: 'error', error: message });
     throw new Error(`install failed: ${message}`);
   }

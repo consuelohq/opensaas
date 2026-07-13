@@ -1,38 +1,52 @@
+@import '@fontsource-variable/bodoni-moda';
+@import '@fontsource-variable/inter';
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/GeistMono-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
-  --site-color-paper: #FAF7F2;
-  --site-color-ink: #1C1A17;
-  --site-color-surface: #FFFAF3;
+  color-scheme: light;
+
+  --site-color-brand: #0000F2;
+  --site-color-paper: #0000F2;
+  --site-color-on-brand: #FFFFFF;
+  --site-color-ink: #0000F2;
+  --site-color-surface: #FFFFFF;
   --site-color-surface-raised: #FFFFFF;
   --site-color-control: #FFFFFF;
-  --site-color-control-panel: #FBF7F0;
-  --site-color-muted: #8A817A;
-  --site-color-accent: #C0512F;
-  --site-color-accent-ink: #FFFAF3;
-  --site-color-secondary: #2F5B4F;
-  --site-color-line: rgba(28, 26, 23, 0.14);
-  --site-color-line-strong: rgba(28, 26, 23, 0.28);
-  --site-color-soft: rgba(28, 26, 23, 0.045);
-  --site-color-panel: rgba(28, 26, 23, 0.035);
-  --site-color-panel-strong: rgba(28, 26, 23, 0.07);
-  --site-color-dropdown-bg: #FBF7EF;
-  --site-color-success: #2F8F52;
-  --site-color-shimmer-stop-1: rgba(28, 26, 23, 0.18);
-  --site-color-shimmer-stop-2: rgba(28, 26, 23, 0.4);
-  --site-color-shimmer-stop-3: rgba(28, 26, 23, 0.82);
-  --site-color-dark-paper: #0F0F0D;
-  --site-color-dark-ink: #F7EFE7;
-  --site-color-dark-surface: #191814;
-  --site-color-dark-surface-raised: #221F1A;
-  --site-color-dark-control: #191814;
-  --site-color-dark-control-panel: #221F1A;
-  --site-color-dark-muted: #C3B4A7;
-  --site-color-dark-accent: #E06B3E;
-  --site-color-dark-accent-ink: #211915;
-  --site-color-dark-secondary: #A5B8A7;
+  --site-color-control-panel: #FFFFFF;
+  --site-color-muted: #4646A8;
+  --site-color-muted-on-brand: rgba(255, 255, 255, 0.76);
+  --site-color-accent: #0000F2;
+  --site-color-accent-ink: #FFFFFF;
+  --site-color-secondary: #0000C8;
+  --site-color-line: rgba(0, 0, 242, 0.22);
+  --site-color-line-strong: rgba(0, 0, 242, 0.42);
+  --site-color-soft: rgba(0, 0, 242, 0.08);
+  --site-color-panel: rgba(0, 0, 242, 0.05);
+  --site-color-panel-strong: rgba(0, 0, 242, 0.12);
+  --site-color-dropdown-bg: #FFFFFF;
+  --site-color-success: #18794E;
+  --site-color-shimmer-stop-1: rgba(0, 0, 242, 0.18);
+  --site-color-shimmer-stop-2: rgba(0, 0, 242, 0.42);
+  --site-color-shimmer-stop-3: rgba(0, 0, 242, 0.82);
+  --site-color-soft-white: #F5F5F5;
+
+  --site-frame-inset: clamp(0.5rem, 3.7vw, 3.35rem);
+  --site-panel-pad: clamp(1rem, 3.1vw, 3rem);
+  --site-sticky-sliver: clamp(0.5rem, 1vw, 0.8rem);
+  --site-color-art-bg: rgba(0, 0, 242, 0.08);
+  --site-color-art-ink: #0000F2;
+  --site-color-art-accent: #0000F2;
+  --site-color-art-muted: #7272D8;
 
   --launch-bg: var(--site-color-paper);
-  --launch-fg: var(--site-color-ink);
-  --launch-muted: var(--site-color-muted);
+  --launch-fg: var(--site-color-on-brand);
+  --launch-muted: var(--site-color-muted-on-brand);
   --launch-soft: var(--site-color-soft);
   --launch-line: var(--site-color-line);
   --launch-panel: var(--site-color-panel);
@@ -45,9 +59,9 @@
   --launch-success: var(--site-color-success);
   --launch-mono-font: var(--site-font-mono);
 
-  --site-font-display: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;
-  --site-font-body: var(--site-font-display);
-  --site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;
+  --site-font-display: 'Bodoni Moda Variable', 'Bodoni Moda', 'Times New Roman', serif;
+  --site-font-body: 'Inter Variable', Inter, Arial, sans-serif;
+  --site-font-mono: 'Geist Mono', 'SFMono-Regular', Consolas, monospace;
 
   --site-text-xs: 0.75rem;
   --site-text-sm: 0.875rem;
@@ -58,11 +72,11 @@
   --site-text-3xl: 3.5rem;
   --site-text-4xl: 5rem;
 
-  --site-leading-tight: 1.08;
-  --site-leading-display: 1.16;
-  --site-leading-body: 1.6;
-  --site-tracking-display: -0.04em;
-  --site-tracking-tight: -0.02em;
+  --site-leading-tight: 1.02;
+  --site-leading-display: 1;
+  --site-leading-body: 1.55;
+  --site-tracking-display: 0;
+  --site-tracking-tight: 0;
 
   --site-space-1: 0.25rem;
   --site-space-2: 0.5rem;
@@ -72,26 +86,26 @@
   --site-space-6: 2rem;
   --site-space-7: 3rem;
   --site-space-8: 5rem;
-  --site-space-section: clamp(3rem, 7vw, 5rem);
+  --site-space-section: clamp(4rem, 8vw, 8rem);
 
   --site-container-max: 75rem;
   --site-container-wide: 82rem;
-  --site-gutter: clamp(1.25rem, 4.8vw, 3rem);
+  --site-gutter: clamp(1rem, 4.8vw, 3rem);
 
-  --site-radius-sm: 0.5rem;
-  --site-radius-md: 0.75rem;
-  --site-radius-card: 1rem;
+  --site-radius-sm: 0.25rem;
+  --site-radius-md: 0.375rem;
+  --site-radius-card: 0.5rem;
   --site-radius-pill: 999px;
 
   --site-shadow-border: 0 0 0 1px var(--site-color-line);
-  --site-shadow-control: 0 0 0 1px rgba(28, 26, 23, 0.16), 0 7px 18px rgba(28, 26, 23, 0.08);
-  --site-shadow-raised: 0 0 0 1px rgba(28, 26, 23, 0.08), 0 18px 52px rgba(28, 26, 23, 0.10);
-  --site-shadow-hover: 0 0 0 1px rgba(28, 26, 23, 0.12), 0 22px 64px rgba(28, 26, 23, 0.14);
-  --site-shadow-dropdown: 0 18px 45px rgba(28, 26, 23, 0.12);
+  --site-shadow-control: 0 0 0 1px rgba(0, 0, 242, 0.2), 0 7px 18px rgba(0, 0, 242, 0.08);
+  --site-shadow-raised: 0 0 0 1px rgba(0, 0, 242, 0.12), 0 18px 52px rgba(0, 0, 242, 0.1);
+  --site-shadow-hover: 0 0 0 1px rgba(0, 0, 242, 0.18), 0 22px 64px rgba(0, 0, 242, 0.14);
+  --site-shadow-dropdown: 0 18px 45px rgba(0, 0, 242, 0.16);
 
   --site-motion-fast: 140ms;
   --site-motion-medium: 220ms;
-  --site-motion-slow: 420ms;
+  --site-motion-slow: 520ms;
   --site-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --site-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -102,38 +116,9 @@
 
 @media (max-width: 760px) {
   :root {
+    --site-frame-inset: 0.5rem;
     --site-text-3xl: 2.5rem;
     --site-text-4xl: 3.5rem;
-    --site-space-section: 3rem;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --site-color-paper: var(--site-color-dark-paper);
-    --site-color-ink: var(--site-color-dark-ink);
-    --site-color-surface: var(--site-color-dark-surface);
-    --site-color-surface-raised: var(--site-color-dark-surface-raised);
-    --site-color-control: var(--site-color-dark-control);
-    --site-color-control-panel: var(--site-color-dark-control-panel);
-    --site-color-muted: var(--site-color-dark-muted);
-    --site-color-accent: var(--site-color-dark-accent);
-    --site-color-accent-ink: var(--site-color-dark-accent-ink);
-    --site-color-secondary: var(--site-color-dark-secondary);
-    --site-color-line: rgba(255, 247, 235, 0.14);
-    --site-color-line-strong: rgba(255, 247, 235, 0.28);
-    --site-color-soft: rgba(255, 247, 235, 0.05);
-    --site-color-panel: rgba(255, 247, 235, 0.055);
-    --site-color-panel-strong: rgba(255, 247, 235, 0.095);
-    --site-color-dropdown-bg: var(--site-color-dark-surface);
-    --site-color-success: #82E8A4;
-    --site-color-shimmer-stop-1: rgba(255, 247, 235, 0.22);
-    --site-color-shimmer-stop-2: rgba(255, 247, 235, 0.52);
-    --site-color-shimmer-stop-3: rgba(255, 247, 235, 0.88);
-    --site-shadow-control: 0 0 0 1px rgba(255, 247, 235, 0.16), 0 7px 18px rgba(0, 0, 0, 0.22);
-    --site-shadow-raised: 0 0 0 1px rgba(255, 247, 235, 0.1), 0 18px 52px rgba(0, 0, 0, 0.32);
-    --site-shadow-hover: 0 0 0 1px rgba(255, 247, 235, 0.16), 0 22px 64px rgba(0, 0, 0, 0.42);
-    --site-shadow-dropdown: 0 12px 30px rgba(0, 0, 0, 0.45);
+    --site-space-section: 4rem;
   }
 }

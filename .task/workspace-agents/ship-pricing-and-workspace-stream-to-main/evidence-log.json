@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/ship-pricing-and-workspace-stream-to-main",
+  "events": [
+    {
+      "id": "5f54ac10-6976-4621-a7c4-38c408f9bcfb",
+      "occurred_at": "2026-07-12T23:58:26.978Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/ship-pricing-and-workspace-stream-to-main/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/ship-pricing-and-workspace-stream-to-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/ship-pricing-and-workspace-stream-to-main"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-12T23:58:27.060Z"
+}

@@ -86,6 +86,70 @@ export type HomeMercuryHighlight = {
   text: string;
 };
 
+export type FeatureArtworkMotif =
+  | 'connect'
+  | 'remember'
+  | 'multiplayer'
+  | 'observe'
+  | 'secure'
+  | 'switch';
+
+export type HomeFeaturePreviewItem = {
+  number: number;
+  label: string;
+  title: string;
+  body: string;
+  motif: FeatureArtworkMotif;
+  imageAlt: string;
+  assetSrc: string;
+};
+
+export type HomePlatformCardCtaIcon = 'terminal' | 'sign-in' | 'cloud';
+
+export type HomePlatformCard = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  imageSrc: string;
+  imageAlt: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaIcon: HomePlatformCardCtaIcon;
+};
+
+export const homePlatformCards: HomePlatformCard[] = [
+  {
+    id: 'macos',
+    eyebrow: 'macOS 12+',
+    title: 'Mac OS',
+    imageSrc: '/images/platforms/macos-art.svg',
+    imageAlt: 'Consuelo terminal install on macOS',
+    ctaLabel: 'Install via terminal',
+    ctaHref: '#install',
+    ctaIcon: 'terminal',
+  },
+  {
+    id: 'chat-native',
+    eyebrow: 'Chat native',
+    title: 'ChatGPT / Claude',
+    imageSrc: '/images/platforms/chat-native-art.svg',
+    imageAlt: 'Connect ChatGPT and Claude to Consuelo',
+    ctaLabel: 'Sign in to connect',
+    ctaHref: 'https://os.consuelohq.com',
+    ctaIcon: 'sign-in',
+  },
+  {
+    id: 'cloud-workspace',
+    eyebrow: 'Always on',
+    title: 'Cloud Workspace',
+    imageSrc: '/images/platforms/cloud-workspace-art.svg',
+    imageAlt: 'Deploy Consuelo to the cloud',
+    ctaLabel: 'Deploy to Consuelo Cloud',
+    ctaHref: 'https://os.consuelohq.com',
+    ctaIcon: 'cloud',
+  },
+];
+
 export type HomeFooterSignup = {
   eyebrow: string;
   title: string;
@@ -106,12 +170,14 @@ export const homeHero: HomeHeroContent = {
         'Bring calls, GTM data, files, analytics, and agents into one workspace built to help your team decide what to do next.',
 };
 
+export const INSTALL_COMMAND = 'curl -fsSL https://install.consuelohq.com/os | bash';
+
 export const homeTabs: HomeTab[] = [
   {
     id: 'terminal',
     label: 'macOS / Linux',
     kind: 'command',
-    value: 'curl -fsSL https://os.consuelohq.com/install.sh | bash',
+    value: INSTALL_COMMAND,
     imageSrc: '/images/gifs/demo-light.gif',
     darkImageSrc: '/images/gifs/demo-dark.gif',
     imageAlt: 'Consuelo terminal install preview',
@@ -219,44 +285,40 @@ export const homeFaq: HomeFaqContent = {
 
 export const homeFaqItems: HomeFaqItem[] = [
   {
-    question: 'What is Consuelo?',
-    answer: 'Consuelo is open-source sales infrastructure that gives your team and your AI agents one shared system for CRM data, calling, workflow execution, and go-to-market context.',
+    question: 'What is Consuelo OS?',
+    answer: 'Consuelo OS is an open workspace layer that gives different AI agents the same tools, memory, workflows, and access to the machines where your work lives.',
   },
   {
-    question: 'Who is it for?',
-    answer: 'It is built for revenue teams, operators, and AI-native companies that need reps and agents working from the same system instead of spreading execution across disconnected tools.',
+    question: 'Which agents can I connect?',
+    answer: 'Connect ChatGPT, Codex, Claude, Cursor, and local agent runtimes. The workspace stays consistent even as the agent you use changes.',
   },
   {
-    question: 'Is the CRM free?',
-    answer: 'Yes. The CRM can stay free while teams decide whether they want to self-host everything or move onto Mercury for hosted calling and AI usage.',
+    question: 'What stays in my workspace?',
+    answer: 'Your shared configuration, project context, routing rules, traces, and approved tools stay attached to the workspace instead of one chat or one model.',
   },
   {
-    question: 'What is Mercury?',
-    answer: 'Mercury is the hosted plan for teams that do not want to manage dialing infrastructure, legal and compliance overhead, spam risk, or AI agent setup on day one.',
+    question: 'Can I run Consuelo locally?',
+    answer: 'Yes. Install Consuelo OS on macOS or Linux and keep the home node on hardware you control.',
   },
   {
-    question: 'Do I need to buy the whole system at once?',
-    answer: 'No. Consuelo is built as one connected system, but teams can start with the part that solves the problem in front of them right now. You can adopt CRM, calling, AI coaching, workflow automation, or hosted infrastructure in stages while all of the context keeps compounding in the same place.',
+    question: 'What is Consuelo Cloud?',
+    answer: 'Consuelo Cloud runs the home node for you while preserving the same workspace model, agent connections, and security boundaries.',
   },
   {
-    question: 'Can I self-host?',
-    answer: 'Yes. Self-hosting stays first-class. You can run the open platform yourself, bring your own providers, and keep full control over the stack.',
+    question: 'Can I use multiple computers?',
+    answer: 'Yes. One workspace can register multiple nodes so agents can reach the right computer or cloud runner without duplicating the whole workspace.',
   },
   {
-    question: 'Does it work with GoHighLevel?',
-    answer: 'Yes. Consuelo supports an embedded GoHighLevel experience, and native sync. <a href="https://marketplace.gohighlevel.com" class="launch-inline-link">View our marketplace listing here</a>.',
+    question: 'Is Consuelo open source?',
+    answer: 'Yes. Consuelo OS is open source under the MIT License, and local operation remains a first-class path.',
   },
   {
-    question: 'How do CLI and assistant workflows fit in?',
-    answer: 'The CLI gives assistants and terminal workflows access to the same platform your team uses, so browser work, embeds, bots, and agent tooling can all operate on shared revenue context instead of separate stacks.',
+    question: 'How is access secured?',
+    answer: 'You choose which tools, files, nodes, and routes an agent can reach. Everything else remains unavailable by default.',
   },
   {
-    question: 'Why does one shared system matter for AI agents?',
-    answer: 'Agents are only useful when they can work from real context. Consuelo gives them one place to read customer data, workflow state, calling activity, and operational history, so they can do useful GTM work instead of guessing from fragments.',
-  },
-  {
-    question: 'What about privacy and control?',
-    answer: 'The core platform stays open-source and deployment stays flexible. Use Mercury when convenience matters more, or self-host when ownership matters more.',
+    question: 'What does it cost?',
+    answer: 'You can run Consuelo OS locally for free. Paid Consuelo Cloud plans add managed infrastructure and capacity; see the pricing page for current plans.',
   },
 ];
 
@@ -271,6 +333,63 @@ export const homeMercuryPromo: HomeMercuryPromoContent = {
 };
 
 export const homeMercuryHighlights: HomeMercuryHighlight[] = [];
+
+export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
+  {
+    number: 1,
+    label: 'CONNECT',
+    title: 'SAME\nTOOLS',
+    body: 'Build your tools once. Use them from ChatGPT, Codex, Claude, Cursor, and whatever comes next.',
+    motif: 'connect',
+    imageAlt: 'Sacred table with signals converging on one center',
+    assetSrc: '/images/home/connect.svg',
+  },
+  {
+    number: 2,
+    label: 'REMEMBER',
+    title: 'SHARED\nMEMORY',
+    body: 'The memory stays with your workspace, not one chat or one agent. Pick up where the work left off.',
+    motif: 'remember',
+    imageAlt: 'Inner memory chamber with glowing alcoves',
+    assetSrc: '/images/home/remember.svg',
+  },
+  {
+    number: 3,
+    label: 'CONTROL',
+    title: 'YOUR\nWORKFLOW',
+    body: 'Define how work gets done once. Every agent starts, checks, and ships work the same way.',
+    motif: 'multiplayer',
+    imageAlt: 'Shared workflow room with a single path through the work',
+    assetSrc: '/images/home/workflow.svg',
+  },
+  {
+    number: 4,
+    label: 'OBSERVE',
+    title: 'FULL\nTRACE',
+    body: 'Every action leaves a trace. See what ran, what changed, and why.',
+    motif: 'observe',
+    imageAlt: 'Hand reaching toward visible traces of work',
+    assetSrc: '/images/home/trace.svg',
+  },
+  {
+    number: 5,
+    label: 'SECURE',
+    title: 'YOUR\nRULES',
+    body: 'Choose which tools, files, and machines each agent can reach. Everything else stays closed.',
+    motif: 'secure',
+    imageAlt: 'Lift-off scene with guarded threshold',
+    assetSrc: '/images/home/rules.svg',
+  },
+  {
+    number: 6,
+    label: 'SWITCH',
+    title: 'NO\nLOCK-IN',
+    body: 'Use the best agent for the job. Your workspace stays put.',
+    motif: 'switch',
+    imageAlt: 'Many portals returning to the same palace',
+    assetSrc: '/images/home/switch.svg',
+  },
+];
 
 export const homeFooterSignup: HomeFooterSignup = {
   eyebrow: 'Be the first to know when we release new products',

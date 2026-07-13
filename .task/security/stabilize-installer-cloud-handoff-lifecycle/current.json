@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/stabilize-installer-cloud-handoff-lifecycle",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1374,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1374",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1374",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1374/stabilize-installer-cloud-handoff-lifecycle",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1374",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1374/stabilize-installer-cloud-handoff-lifecycle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-stabilize-installer-cloud-handoff-lifecycle",
+  "taskSession": "tsk_e6ba6255d489",
+  "tmuxSession": "opensaas-security-stabilize-installer-cloud-handoff-lifecycle-e6ba6255",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-stabilize-installer-cloud-handoff-lifecycle/.task/security/stabilize-installer-cloud-handoff-lifecycle/session.json",
+  "createdAt": "2026-07-08T16:22:47.020Z"
+}

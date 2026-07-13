@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/security/legacy-ci-cleanup",
+  "events": [
+    {
+      "id": "6846e8a6-d660-40d3-96dc-554f4d3f80ff",
+      "occurred_at": "2026-07-10T22:55:07.522Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/ci-front.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/legacy-ci-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/legacy-ci-cleanup"
+      }
+    },
+    {
+      "id": "6c2140fa-4337-4707-8456-ad8087415e2d",
+      "occurred_at": "2026-07-10T22:55:55.626Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/code-call/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/legacy-ci-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/legacy-ci-cleanup"
+      }
+    },
+    {
+      "id": "1b0e917c-5702-4f59-9d60-4599700e3ced",
+      "occurred_at": "2026-07-10T22:56:03.209Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/code-call/process.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/legacy-ci-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/legacy-ci-cleanup"
+      }
+    },
+    {
+      "id": "c8c1cbba-edbb-4320-b1ad-cf6e8729fc7d",
+      "occurred_at": "2026-07-10T22:56:19.900Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/legacy-ci-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/legacy-ci-cleanup"
+      }
+    },
+    {
+      "id": "9a5c57e5-a3d7-4183-9810-081c702c6507",
+      "occurred_at": "2026-07-10T22:56:29.643Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/legacy-ci-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/legacy-ci-cleanup"
+      }
+    },
+    {
+      "id": "1659fca3-fa94-4d35-aa17-708b5028e581",
+      "occurred_at": "2026-07-10T22:56:34.761Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/fs.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/legacy-ci-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/legacy-ci-cleanup"
+      }
+    },
+    {
+      "id": "371bf13c-0fd8-424c-8371-8b289f5f86d1",
+      "occurred_at": "2026-07-10T22:56:46.774Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/legacy-ci-cleanup",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/legacy-ci-cleanup"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-10T22:56:46.836Z"
+}

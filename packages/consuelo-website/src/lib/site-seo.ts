@@ -10,16 +10,16 @@ export type FaqItem = {
 export const siteMetadata = {
   siteUrl: 'https://consuelohq.com',
   siteName: 'Consuelo',
-  defaultTitle: 'Consuelo | Sales Infrastructure for Insurance Sales Teams',
+  defaultTitle: 'Consuelo OS | Your workspace, connected to every agent',
   defaultDescription:
-    'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. Composable and built to integrate everywhere your team works.',
+    'Connect ChatGPT, Codex, Claude, and the agents that come next to the same tools, memory, workflows, and machines.',
   blogTitle: 'Consuelo Blog',
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',
   defaultOgImage: '/og.png',
   robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
-  themeColorLight: '#FAF7F2',
-  themeColorDark: '#0F0F0D',
+  themeColorLight: '#0000F2',
+  themeColorDark: '#0000F2',
   twitterHandle: '@consuelohq',
   docsUrl: 'https://docs.consuelohq.com',
   appUrl: 'https://app.consuelohq.com',
@@ -53,7 +53,7 @@ export const getOrganizationSchema = (): StructuredData => ({
   '@id': `${siteMetadata.siteUrl}/#organization`,
   name: siteMetadata.siteName,
   url: siteMetadata.siteUrl,
-  logo: resolveImageUrl('/logo.svg'),
+  logo: resolveImageUrl('/images/home/consuelo-mark.svg'),
   sameAs: [siteMetadata.githubUrl, siteMetadata.docsUrl],
   description: siteMetadata.defaultDescription,
 });
@@ -72,9 +72,9 @@ export const getSoftwareApplicationSchema = (
 ): StructuredData => ({
   '@type': 'SoftwareApplication',
   '@id': `${siteMetadata.siteUrl}/#application`,
-  name: siteMetadata.siteName,
-  applicationCategory: 'BusinessApplication',
-  operatingSystem: 'Web',
+  name: 'Consuelo OS',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'macOS, Linux, Web',
   url: siteMetadata.siteUrl,
   description: siteMetadata.defaultDescription,
   author: { '@id': `${siteMetadata.siteUrl}/#organization` },

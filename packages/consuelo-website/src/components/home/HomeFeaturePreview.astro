@@ -1,0 +1,208 @@
+---
+import { homeFeaturePreviewItems } from '../../data/home-content';
+import FeatureMedia from './FeatureMedia.astro';
+import HomeFaq from './HomeFaq.astro';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'features' } = Astro.props as Props;
+---
+
+<section class="product-panel" id={sectionId} data-section="features">
+  <div class="product-panel__paper">
+    <div class="product-panel__preview" aria-hidden="true">
+      <img src="/images/home/integrations-blue.svg" alt="" width="760" height="420" />
+    </div>
+
+    <div class="product-panel__identity">
+      <img src="/images/home/consuelo-mark.svg" alt="" width="58" height="58" />
+      <p>CONSUELO OS</p>
+      <a href="https://os.consuelohq.com">MEMBER? SIGN IN</a>
+    </div>
+
+    <div class="product-panel__features">
+      <div class="product-panel__topline">
+        <span>FEATURE</span>
+        <span>PREVIEW</span>
+      </div>
+      <h2>FEATURES</h2>
+
+      <div class="product-panel__grid">
+        {
+          homeFeaturePreviewItems.map((item) => (
+            <article class="product-panel__item">
+              <p class="product-panel__index">#{item.number} {item.label}</p>
+              <h3>
+                {item.title.split('\n').map((line) => <span>{line}</span>)}
+              </h3>
+              <FeatureMedia imageSrc={item.assetSrc} imageAlt={item.imageAlt} />
+              <p class="product-panel__description">{item.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <HomeFaq />
+  </div>
+</section>
+
+<style>
+  .product-panel {
+    position: relative;
+    z-index: 3;
+    background: var(--site-color-brand);
+    padding: 0 var(--site-frame-inset) var(--site-frame-inset);
+  }
+
+  .product-panel__paper {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .product-panel__preview {
+    position: relative;
+    height: clamp(10rem, 24vw, 22rem);
+    overflow: hidden;
+    background: var(--site-color-brand);
+    border: clamp(0.45rem, 1.1vw, 0.85rem) solid white;
+    border-bottom-width: 0;
+  }
+
+  .product-panel__preview img {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: min(72rem, 94%);
+    max-width: none;
+    transform: translate(-50%, -48%);
+  }
+
+  .product-panel__identity {
+    display: grid;
+    justify-items: center;
+    gap: 0.7rem;
+    padding: clamp(2.75rem, 6vw, 5rem) 1rem clamp(2.5rem, 5vw, 4.5rem);
+    text-align: center;
+  }
+
+  .product-panel__identity img {
+    width: 3.6rem;
+    height: 3.6rem;
+    border: 1px solid var(--site-color-brand);
+    object-fit: contain;
+  }
+
+  .product-panel__identity p {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    line-height: 1;
+  }
+
+  .product-panel__identity a {
+    border: 1px solid var(--site-color-brand);
+    padding: 0.28rem 0.55rem;
+    font: 650 0.62rem/1 var(--site-font-mono);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+
+  .product-panel__features {
+    padding: 0 var(--site-panel-pad);
+  }
+
+  .product-panel__topline {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.7rem;
+    border-bottom: 1px solid var(--site-color-line);
+    font: 600 0.62rem/2 var(--site-font-mono);
+    letter-spacing: 0.16em;
+  }
+
+  .product-panel__features > h2 {
+    margin: clamp(2.5rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5.5rem);
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(6rem, 15vw, 14rem);
+    font-weight: 430;
+    letter-spacing: 0;
+    line-height: 0.72;
+    text-align: center;
+  }
+
+  .product-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(3rem, 6vw, 6rem) clamp(1.25rem, 2.7vw, 2.5rem);
+  }
+
+  .product-panel__item {
+    min-width: 0;
+  }
+
+  .product-panel__index {
+    margin: 0 0 1rem;
+    font: 620 0.63rem/1 var(--site-font-mono);
+    letter-spacing: 0.15em;
+  }
+
+  .product-panel__item h3 {
+    min-height: 2.05em;
+    margin: 0 0 1rem;
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(1.65rem, 2.5vw, 2.75rem);
+    font-weight: 440;
+    letter-spacing: 0;
+    line-height: 0.88;
+  }
+
+  .product-panel__item h3 span {
+    display: block;
+  }
+
+  .product-panel__description {
+    margin: 1rem 0 0;
+    color: var(--site-color-muted);
+    font: 590 0.68rem/1.55 var(--site-font-mono);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 860px) {
+    .product-panel__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 580px) {
+    .product-panel__preview {
+      height: 10.5rem;
+    }
+
+    .product-panel__preview img {
+      width: 145%;
+    }
+
+    .product-panel__features > h2 {
+      font-size: clamp(4rem, 18vw, 5.25rem);
+    }
+
+    .product-panel__grid {
+      grid-template-columns: 1fr;
+      gap: 3.5rem;
+    }
+
+    .product-panel__item h3 {
+      min-height: 0;
+      font-size: 2.25rem;
+    }
+
+    .product-panel__description {
+      font-size: 0.64rem;
+    }
+  }
+</style>
