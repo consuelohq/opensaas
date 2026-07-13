@@ -170,7 +170,8 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   .os-hero__button:hover,
   .os-hero__button:focus-visible {
-    background: var(--site-color-soft-white);
+    background: transparent;
+    color: white;
   }
 
   .os-hero__button--quiet:hover,
@@ -205,6 +206,12 @@ const { sectionId = 'intro' } = Astro.props as Props;
   .os-hero__command span {
     flex: 0 0 auto;
     font-size: 0.62rem;
+  }
+
+  .os-hero__command:hover,
+  .os-hero__command:focus-visible {
+    background: white;
+    color: var(--site-color-brand);
   }
 
   .os-hero__atmosphere {

@@ -34,8 +34,8 @@ export const renderHomepageSocialCard = async () => {
         '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2',
       ),
     ]);
-    const brand = readToken(tokens, '--site-color-brand');
     const onBrand = readToken(tokens, '--site-color-on-brand');
+    const cardBackground = '#000000';
     const bodoniData = bodoniFont.toString('base64');
     const interData = interFont.toString('base64');
     const browser = await chromium.launch();
@@ -67,7 +67,7 @@ export const renderHomepageSocialCard = async () => {
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
-                background: ${brand};
+                background: ${cardBackground};
                 color: ${onBrand};
                 padding: 70px 78px 66px;
                 font-family: 'Card Inter', sans-serif;

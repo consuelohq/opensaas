@@ -7,7 +7,7 @@ The public OS homepage uses a blue editorial system inspired by the pacing and f
 - Primary blue: `#0000F2`
 - Paper: `#FFFFFF`
 - Soft white: `#F5F5F5`
-- Display and body: visitor device system UI stack
+- Display: locally bundled Bodoni Moda variable; body: locally bundled Inter variable
 - Technical labels and code: native device monospace stack
 
 The page should feel precise, sparse, and product-focused. Blue establishes the outer field; white panels carry dense product proof.
