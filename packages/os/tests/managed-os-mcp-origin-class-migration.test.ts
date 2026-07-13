@@ -4,8 +4,14 @@ import { migrateManagedOsMcpConnectorOriginClass } from '../scripts/lib/managed-
 
 const oldFragment =
   'not ends_with(http.host, ".os-origin.consuelohq.com")';
-const newFragment =
+const retiredRegexFragment =
   'not (http.host matches r"^c-[0-9a-f]{32}\\.consuelohq\\.com$")';
+const newFragment = `not (${[
+  'starts_with(http.host, "c-")',
+  'ends_with(http.host, ".consuelohq.com")',
+  'len(http.host) eq 49',
+  'len(remove_bytes(substring(http.host, 2, 34), "0123456789abcdef")) eq 0',
+].join('\nand ')})`;
 
 const createRules = (fragment = oldFragment) => [
   {
@@ -140,6 +146,38 @@ describe('managed OS MCP connector-origin WAF migration', () => {
     });
     expect(patches[1]?.body).toMatchObject({ action: 'block' });
     expect(requests.at(-1)?.method).toBe('GET');
+  });
+
+  it('migrates the retired regex classifier to the plan-compatible exact class', async () => {
+    let rules = createRules(retiredRegexFragment);
+    const methods: string[] = [];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const method = init?.method ?? 'GET';
+      methods.push(method);
+      if (method === 'GET') return response(createRuleset(rules));
+
+      const ruleId = String(input).split('/').at(-1);
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      rules = rules.map((rule) =>
+        rule.id === ruleId ? { ...rule, ...body } : rule,
+      );
+      return response(createRuleset(rules));
+    };
+
+    const result = await migrateManagedOsMcpConnectorOriginClass({
+      apiToken: 'secret',
+      zoneId: 'zone-id',
+      baseDomain: 'consuelohq.com',
+      fetchImpl,
+    });
+
+    expect(result.status).toBe('migrated');
+    expect(methods).toEqual(['GET', 'PATCH', 'PATCH', 'GET']);
+    for (const rule of rules) {
+      expect(rule.expression).toContain(newFragment);
+      expect(rule.expression).not.toContain(retiredRegexFragment);
+      expect(rule.expression).not.toContain('http.host matches');
+    }
   });
 
   it('adopts legacy rule refs by exact managed description and action', async () => {
