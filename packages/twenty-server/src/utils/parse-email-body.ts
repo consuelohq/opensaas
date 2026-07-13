@@ -1,4 +1,4 @@
-import { type JSONContent } from 'twenty-emails';
+import { type JSONContent } from 'src/engine/core-modules/email/templates';
 
 export const parseEmailBody = (body: string): JSONContent | string => {
   try {
