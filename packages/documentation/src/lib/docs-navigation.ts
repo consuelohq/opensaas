@@ -101,6 +101,18 @@ const sitesItems: SidebarItem[] = [
   { label: 'Troubleshooting', slug: 'sites/troubleshooting' },
 ];
 
+const secureItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'secure' },
+  { label: 'Security model', slug: 'secure/security-model' },
+  { label: 'Access and permissions', slug: 'secure/access-and-permissions' },
+  { label: 'Credentials', slug: 'secure/credentials' },
+  { label: 'Approvals', slug: 'secure/approvals' },
+  { label: 'Nodes and network access', slug: 'secure/nodes-and-network-access' },
+  { label: 'Tailscale', slug: 'secure/tailscale' },
+  { label: 'Hosted MCP ingress', slug: 'secure/hosted-mcp-ingress' },
+  { label: 'Security reference', slug: 'secure/security-reference' },
+];
+
 const observeItems: SidebarItem[] = [
   { label: 'Overview', slug: 'observe' },
   { label: 'Runs', slug: 'observe/runs' },
@@ -144,7 +156,9 @@ export const docsSidebar = docsSections.map(({ label, slug }) => ({
             ? sitesItems
             : slug === 'observe'
               ? observeItems
-              : [{ label: 'Overview', slug }],
+              : slug === 'secure'
+                ? secureItems
+                : [{ label: 'Overview', slug }],
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));

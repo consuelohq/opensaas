@@ -1,0 +1,80 @@
+---
+title: Security model
+description: Follow the current trust boundaries from an agent or browser to a Consuelo OS home node.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/workspace-cloudflare-edge-router.ts
+    tests:
+      - packages/os/tests/cloudflare-edge-router.test.ts
+      - packages/os/tests/workspace-edge-sites-gateway-integration.test.ts
+    runtime: Route resolution, reserved hosts, static snapshots, signed live routes, and failure responses were exercised by focused tests on 2026-07-13.
+  - source: packages/os/scripts/lib/security-gateway.ts
+    tests:
+      - packages/os/tests/security-gateway.test.ts
+    runtime: Local request verification, scope checks, Caddy generation, and replay rejection were exercised by focused contracts on 2026-07-13.
+---
+
+Consuelo OS protects a workspace by giving each layer one authority. The edge decides whether a hostname and path exist. The connector carries an approved route inward. The local OS decides whether the caller and scope may use a tool. Approval handles high-impact actions.
+
+## Trust boundaries
+
+| Boundary | What it trusts | What it does not grant |
+| --- | --- | --- |
+| Agent or browser | Its own user session and local configuration | Workspace membership or tool permission by itself |
+| Consuelo identity service | A completed account or device approval | Permission for every workspace or action |
+| Workspace edge | Registered hostname, path, route state, and route auth mode | Direct authority over local tools |
+| Outbound connector | A provisioned route and signed edge request | Arbitrary access to the machine |
+| Local gateway | Generated workspace identity, caller credential, request proof, and scopes | Automatic approval for sensitive work |
+| Tool policy | Manifest permission, required scope, and approval rule | Network or account identity |
+
+A **trust boundary** is where one kind of proof stops and another begins. Do not collapse these layers into “the request had a token.”
+
+## Static Sites and live OS are different
+
+A public static Sites snapshot is an immutable published object served from managed edge storage after route policy is resolved. It does not query the local database or execute a tool.
+
+A live OS route reaches the home node through an authenticated or signed route. It can read current workspace state or call tools, so it requires stronger proof and local authorization.
+
+```text
+public static Sites snapshot
+  route policy → immutable edge object
+
+live OS request
+  identity → route policy → signed connector → local authorization
+```
+
+Publishing a page does not expose the live OS. Conversely, making the home node available does not make every Site public.
+
+## Fail closed
+
+Current protected paths **fail closed** when required state is missing or inconsistent. Examples include:
+
+- unknown, reserved, or revoked workspace hostnames;
+- a path that is not registered for that workspace;
+- an offline connector;
+- missing edge-signing configuration;
+- stale timestamps, replayed nonces, or a changed request body;
+- workspace, subject, device, connector, connection, caller, or app mismatch;
+- a missing tool scope or unknown tool classification.
+
+Failure responses are intentionally bounded. Public callers receive a safe error and request identifier rather than local paths, connector origins, or credential material.
+
+## Defense in depth
+
+Cloudflare routing and platform rules reduce unwanted traffic before it reaches a workspace. OAuth or signed request proof authenticates a caller. Scope checks authorize the requested route or tool. Approval handles actions that should not execute automatically.
+
+No one layer replaces the others.
+
+## Verify the right layer
+
+When access fails, classify the boundary before changing configuration:
+
+1. **Identity:** did the user or device complete the intended approval?
+2. **Workspace:** is the caller bound to the requested workspace?
+3. **Route:** is the hostname and path active?
+4. **Transport:** is the connector online and is the request freshly signed?
+5. **Authorization:** does the credential grant the required scope?
+6. **Approval:** does the action still need a human decision?
+
+Use [Security reference](/secure/security-reference/) for the current machine-readable failure codes.
