@@ -13,6 +13,26 @@ const DEFAULT_BRANCH = 'main';
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
+function hasCloudflareApiToken(env = process.env) {
+  return Boolean(env.CLOUDFLARE_API_TOKEN && env.CLOUDFLARE_API_TOKEN.trim());
+}
+
+function isCiDeploy(env = process.env) {
+  return env.CI === 'true' || env.GITHUB_ACTIONS === 'true';
+}
+
+function ensureDeployAuth(env = process.env) {
+  if (hasCloudflareApiToken(env)) return;
+
+  if (isCiDeploy(env)) {
+    writeStderr('CLOUDFLARE_API_TOKEN is required in CI to deploy consuelo-website to Cloudflare Pages.');
+    writeStderr('Set the GitHub Actions secret CLOUDFLARE_API_TOKEN, CLOUDFLARE_PAGES_API_TOKEN, or CF_API_TOKEN.');
+    process.exit(1);
+  }
+
+  writeStderr('CLOUDFLARE_API_TOKEN is not set; using existing Wrangler auth if available.');
+}
+
 function run(cmd, opts = {}) {
   writeStderr(`> ${cmd}`);
   return execSync(cmd, {
@@ -82,10 +102,7 @@ function main() {
   }
 
   // deploy
-  if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_API_TOKEN.trim()) {
-    writeStderr('CLOUDFLARE_API_TOKEN is required to deploy consuelo-website to Cloudflare Pages.');
-    process.exit(1);
-  }
+  ensureDeployAuth();
 
   writeStderr(`deploying to cloudflare pages (branch: ${branch})...`);
   try {

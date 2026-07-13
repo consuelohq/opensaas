@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8f70494b6afe",
+  "tmuxSession": "opensaas-security-fix-os-google-oauth-redirect-uri-mismatch-8f70494b",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-google-oauth-redirect-uri-mismatch",
+  "branch": "task/security/fix-os-google-oauth-redirect-uri-mismatch",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-google-oauth-redirect-uri-mismatch",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-google-oauth-redirect-uri-mismatch",
+  "prNumber": 1303,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1303",
+  "createdAt": "2026-06-30T23:36:17.439Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-google-oauth-redirect-uri-mismatch/.task/security/fix-os-google-oauth-redirect-uri-mismatch/session.json"
+}

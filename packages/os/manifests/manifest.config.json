@@ -26,11 +26,10 @@
     "includeNames": [
       "batch",
       "code.call",
-      "code.run",
       "context",
       "explore",
       "github",
-      "task.intent",
+      "task.start",
       "review.run",
       "tools.search",
       "tmp"

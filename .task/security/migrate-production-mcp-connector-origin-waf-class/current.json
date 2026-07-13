@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/migrate-production-mcp-connector-origin-waf-class",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1425,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1425",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1425",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1425/migrate-production-mcp-connector-origin-waf-class",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1425",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1425/migrate-production-mcp-connector-origin-waf-class",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-migrate-production-mcp-connector-origin-waf-class",
+  "taskSession": "tsk_69ccaa01136f",
+  "tmuxSession": "opensaas-security-migrate-production-mcp-connector-origin-waf-clas-69ccaa01",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-migrate-production-mcp-connector-origin-waf-class/.task/security/migrate-production-mcp-connector-origin-waf-class/session.json",
+  "createdAt": "2026-07-11T20:37:28.853Z"
+}

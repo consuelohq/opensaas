@@ -46,7 +46,7 @@ function runSql(db: string, sql: string): TraceHomeLoadResult {
   if (!text) return { rows: [] };
   try {
     return { rows: JSON.parse(text) as TraceHomeRow[] };
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     return { rows: [], transientError: `failed to parse sqlite JSON output: ${compactError(message)}` };
   }

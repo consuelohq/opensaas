@@ -1,17 +1,409 @@
 ---
-const mercuryUrl = '/mercury';
+import SiteHeader from '../components/site/SiteHeader.astro'
+import { pricingAccountLink, pricingHero, pricingPlans } from '../data/pricing-content'
+import MarketingLayout from '../layouts/MarketingLayout.astro'
+
+const description = pricingHero.subtitle
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="refresh" content={`0;url=${mercuryUrl}`} />
-    <meta name="robots" content="noindex,nofollow" />
-    <link rel="canonical" href={new URL(mercuryUrl, Astro.url).toString()} />
-    <title>Redirecting to Mercury</title>
-  </head>
-  <body style="font-family: system-ui, sans-serif; background: #141010; color: #fff; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 24px;">
-    <p>redirecting to mercury. <a href={mercuryUrl} style="color: inherit;">continue manually</a>.</p>
-  </body>
-</html>
+<MarketingLayout title="Pricing" description={description} canonicalPath="/pricing" image="/og.png">
+	<SiteHeader pageSections={[]} />
+
+	<main class="pricing-page" aria-labelledby="pricing-heading">
+		<section class="pricing-page__hero" aria-describedby="pricing-subtitle">
+			<h1 id="pricing-heading" class="pricing-page__title">{pricingHero.title}</h1>
+			<p id="pricing-subtitle" class="pricing-page__subtitle">{pricingHero.subtitle}</p>
+		</section>
+
+		<section class="pricing-page__panel" aria-label="Consuelo pricing plans">
+			<div class="pricing-page__account" aria-label="Already have an account?">
+				<span>{pricingAccountLink.prompt}</span>
+				<a href={pricingAccountLink.href}>{pricingAccountLink.label}</a>
+			</div>
+
+			<div class="pricing-page__cards">
+				{
+					pricingPlans.map((plan) => (
+						<article class:list={['pricing-plan', { 'pricing-plan--highlight': plan.highlight }]}>
+							<header class="pricing-plan__header">
+								<div class="pricing-plan__label-row">
+									<p class="pricing-plan__label">{plan.name}</p>
+									{plan.badge ? <p class="pricing-plan__badge">{plan.badge}</p> : null}
+								</div>
+								<p class="pricing-plan__price">{plan.price}</p>
+								<p class="pricing-plan__subtitle">{plan.subtitle}</p>
+							</header>
+
+							<figure
+								class="pricing-plan__image"
+								data-motif={plan.motif}
+								aria-label={plan.imageLabel}
+							>
+								<span class="pricing-plan__image-label">{plan.imageLabel}</span>
+								<span class="pricing-plan__orbit pricing-plan__orbit--one" aria-hidden="true" />
+								<span class="pricing-plan__orbit pricing-plan__orbit--two" aria-hidden="true" />
+								<span class="pricing-plan__mark" aria-hidden="true" />
+							</figure>
+
+							<ul class="pricing-plan__bullets">
+								{plan.bullets.map((bullet) => (
+									<li>{bullet}</li>
+								))}
+							</ul>
+						</article>
+					))
+				}
+			</div>
+		</section>
+	</main>
+</MarketingLayout>
+
+<style>
+	.pricing-page {
+		min-height: calc(100vh - 9.15rem);
+		padding: clamp(2rem, 5vw, 4.5rem) var(--site-frame-inset) clamp(2.5rem, 7vw, 5.5rem);
+		background: var(--site-color-paper);
+		color: var(--site-color-on-brand);
+	}
+
+	.pricing-page__hero {
+		display: grid;
+		justify-items: center;
+		gap: 0.45rem;
+		margin: 0 auto clamp(3rem, 7vw, 5rem);
+		text-align: center;
+	}
+
+	.pricing-page__title {
+		margin: 0;
+		color: var(--site-color-on-brand);
+		font-family: var(--site-font-display);
+		font-size: clamp(4rem, 10vw, 7.2rem);
+		font-weight: 400;
+		line-height: 0.88;
+		letter-spacing: -0.075em;
+		text-transform: uppercase;
+	}
+
+	.pricing-page__subtitle {
+		margin: 0;
+		max-width: 38rem;
+		color: var(--site-color-muted-on-brand);
+		font-family: var(--site-font-body);
+		font-size: clamp(1.05rem, 1.9vw, 1.42rem);
+		font-weight: 400;
+		line-height: 1.32;
+		text-wrap: balance;
+	}
+
+	.pricing-page__panel {
+		width: min(100%, 76rem);
+		margin: 0 auto;
+		background: var(--site-color-surface);
+		color: var(--site-color-ink);
+		padding: clamp(1rem, 2.25vw, 2rem) clamp(1rem, 2.5vw, 2.25rem) clamp(1.4rem, 3vw, 2.45rem);
+	}
+
+	.pricing-page__account {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.55rem;
+		min-height: 1.75rem;
+		margin-bottom: clamp(1rem, 2vw, 1.55rem);
+		color: var(--site-color-muted);
+		font-family: var(--site-font-body);
+		font-size: clamp(0.78rem, 0.9vw, 0.9rem);
+	}
+
+	.pricing-page__account a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--site-color-ink);
+		color: var(--site-color-ink);
+		padding: 0.28rem 0.58rem;
+		font-family: var(--site-font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		line-height: 1;
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	.pricing-page__cards {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: clamp(0.5rem, 1vw, 0.85rem);
+	}
+
+	.pricing-plan {
+		display: grid;
+		grid-template-rows: auto auto 1fr;
+		align-content: start;
+		gap: clamp(1rem, 1.8vw, 1.35rem);
+		min-height: 100%;
+		background: color-mix(in srgb, var(--site-color-paper) 8%, var(--site-color-surface));
+		color: var(--site-color-ink);
+		padding: clamp(0.75rem, 1.4vw, 1.05rem);
+	}
+
+	.pricing-plan--highlight {
+		background: var(--site-color-paper);
+		color: var(--site-color-on-brand);
+	}
+
+	.pricing-plan__header {
+		display: grid;
+		gap: 0.6rem;
+	}
+
+	.pricing-plan__label-row {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.7rem;
+		min-height: 1.15rem;
+	}
+
+	.pricing-plan__label,
+	.pricing-plan__badge,
+	.pricing-plan__subtitle,
+	.pricing-plan__bullets {
+		font-family: var(--site-font-mono);
+		text-transform: uppercase;
+	}
+
+	.pricing-plan__label,
+	.pricing-plan__badge {
+		margin: 0;
+		border: 1px solid currentColor;
+		padding: 0.2rem 0.38rem;
+		font-size: 0.67rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		line-height: 1;
+	}
+
+	.pricing-plan__badge {
+		white-space: nowrap;
+	}
+
+	.pricing-plan__price {
+		margin: 0;
+		font-family: var(--site-font-display);
+		font-size: clamp(2.75rem, 5vw, 4.2rem);
+		font-weight: 400;
+		line-height: 0.88;
+		letter-spacing: -0.09em;
+	}
+
+	.pricing-plan__subtitle {
+		margin: -0.34rem 0 0;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.13em;
+	}
+
+	.pricing-plan__image {
+		position: relative;
+		display: grid;
+		place-items: center;
+		aspect-ratio: 1.28;
+		margin: 0;
+		overflow: hidden;
+		border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+		background:
+			linear-gradient(
+				90deg,
+				color-mix(in srgb, currentColor 14%, transparent) 1px,
+				transparent 1px
+			),
+			linear-gradient(0deg, color-mix(in srgb, currentColor 14%, transparent) 1px, transparent 1px),
+			color-mix(in srgb, currentColor 8%, transparent);
+		background-size: 1.1rem 1.1rem;
+	}
+
+	.pricing-plan--highlight .pricing-plan__image {
+		border-color: color-mix(in srgb, var(--site-color-on-brand) 38%, transparent);
+		background:
+			linear-gradient(
+				90deg,
+				color-mix(in srgb, var(--site-color-on-brand) 24%, transparent) 1px,
+				transparent 1px
+			),
+			linear-gradient(
+				0deg,
+				color-mix(in srgb, var(--site-color-on-brand) 24%, transparent) 1px,
+				transparent 1px
+			),
+			color-mix(in srgb, var(--site-color-on-brand) 12%, transparent);
+		background-size: 1.1rem 1.1rem;
+	}
+
+	.pricing-plan__image::before,
+	.pricing-plan__image::after {
+		content: '';
+		position: absolute;
+		inset: auto;
+		border-radius: 999px;
+		pointer-events: none;
+	}
+
+	.pricing-plan__image::before {
+		width: 80%;
+		height: 80%;
+		border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+		transform: rotate(-18deg);
+	}
+
+	.pricing-plan__image::after {
+		width: 55%;
+		height: 55%;
+		background: radial-gradient(circle, currentColor 0 6%, transparent 7% 100%);
+		opacity: 0.32;
+	}
+
+	.pricing-plan__image[data-motif='secure']::before {
+		width: 42%;
+		height: 54%;
+		border-radius: 0.2rem;
+		border-width: 2px;
+		transform: translateY(8%) rotate(0deg);
+	}
+
+	.pricing-plan__image[data-motif='secure']::after {
+		width: 30%;
+		height: 30%;
+		border: 2px solid currentColor;
+		border-bottom: 0;
+		border-radius: 999px 999px 0 0;
+		background: transparent;
+		transform: translateY(-52%);
+		opacity: 0.45;
+	}
+
+	.pricing-plan__image[data-motif='observe']::before {
+		width: 70%;
+		height: 38%;
+		border-radius: 50%;
+		transform: rotate(0deg);
+	}
+
+	.pricing-plan__image[data-motif='observe']::after {
+		width: 25%;
+		height: 25%;
+		border: 1px solid currentColor;
+		background: currentColor;
+		opacity: 0.18;
+	}
+
+	.pricing-plan__image-label {
+		position: relative;
+		z-index: 3;
+		display: inline-flex;
+		max-width: 80%;
+		justify-content: center;
+		border: 1px solid currentColor;
+		background: var(--site-color-surface);
+		color: var(--site-color-ink);
+		padding: 0.28rem 0.48rem;
+		font-family: var(--site-font-mono);
+		font-size: clamp(0.7rem, 0.9vw, 0.82rem);
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		line-height: 1.12;
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	.pricing-plan--highlight .pricing-plan__image-label {
+		background: var(--site-color-paper);
+		color: var(--site-color-on-brand);
+	}
+
+	.pricing-plan__orbit {
+		position: absolute;
+		border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+		border-radius: 999px;
+		pointer-events: none;
+	}
+
+	.pricing-plan__orbit--one {
+		width: 120%;
+		height: 32%;
+		transform: rotate(24deg);
+	}
+
+	.pricing-plan__orbit--two {
+		width: 112%;
+		height: 28%;
+		transform: rotate(-24deg);
+	}
+
+	.pricing-plan__mark {
+		position: absolute;
+		bottom: 12%;
+		left: 50%;
+		width: 0.58rem;
+		height: 0.58rem;
+		border-radius: 999px;
+		background: currentColor;
+		transform: translateX(-50%);
+		opacity: 0.42;
+	}
+
+	.pricing-plan__bullets {
+		display: grid;
+		gap: 0.55rem;
+		margin: 0;
+		padding: 0 0 0 1.05rem;
+		font-size: clamp(0.68rem, 0.86vw, 0.75rem);
+		font-weight: 700;
+		letter-spacing: 0.09em;
+		line-height: 1.36;
+	}
+
+	.pricing-plan__bullets li::marker {
+		font-size: 0.8em;
+	}
+
+	@media (max-width: 1060px) {
+		.pricing-page__cards {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 640px) {
+		.pricing-page {
+			min-height: auto;
+			padding-inline: var(--site-space-4);
+		}
+
+		.pricing-page__hero {
+			margin-bottom: var(--site-space-6);
+		}
+
+		.pricing-page__panel {
+			padding: var(--site-space-4);
+		}
+
+		.pricing-page__account {
+			align-items: flex-end;
+			justify-content: flex-start;
+			flex-direction: column;
+			gap: 0.5rem;
+			margin-bottom: var(--site-space-4);
+			text-align: left;
+		}
+
+		.pricing-page__cards {
+			grid-template-columns: 1fr;
+		}
+
+		.pricing-plan__image {
+			aspect-ratio: 1.55;
+		}
+	}
+</style>

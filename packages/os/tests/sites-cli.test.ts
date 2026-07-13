@@ -120,6 +120,10 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.officeIndexPath)).toBe(true);
     expect(existsSync(refreshResult.officeDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
+    const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
+    expect(tracesHtml).toContain('<h1>Traces</h1>');
+    expect(tracesHtml).toContain('/gateway/traces/recent');
+    expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
@@ -163,56 +167,74 @@ describe('Sites CLI', () => {
   });
 
 
-  it('renders the Sites launcher with the public Markdown terminal UI and local OS routes', () => {
+  it('renders the first-install launcher onboarding with the local OS connection URL', () => {
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
     for (const marker of [
-      '<title>Consuelo OS Sites</title>',
-      'CONSUELO OS █',
-      'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-      'LOCATION:</span> USA',
-      'STATUS:</span> ONLINE',
-      'OPEN POSITION:',
-      '[Systems Engineer](</span><a href="https://consuelohq.com/contact/"',
-      '>/careers/systems-engineer</a>',
-      'SITES:',
-      '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
-      '>https://app.consuelohq.com/welcome</a>',
-      '[Office](</span><a href="https://sites.consuelohq.com/office"',
-      'data-route-path="/office"',
-      '>https://sites.consuelohq.com/office</a>',
-      '[Tracing](</span><a href="https://sites.consuelohq.com/traces"',
-      'data-route-path="/traces"',
-      '>https://sites.consuelohq.com/traces</a>',
-      '[Diffs](</span><a href="https://sites.consuelohq.com/diffs"',
-      'data-route-path="/diffs"',
-      '>https://sites.consuelohq.com/diffs</a>',
-      '[Documentation](</span><a href="https://docs.consuelohq.com/"',
-      '>https://docs.consuelohq.com/</a>',
-      'WRITING:',
-      '[On Decision Loops](</span><a href="https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/"',
-      '>/writing/on-decision-loops</a>',
-      'font-family: "Geist Mono", "Geist", ui-monospace',
-      'font-weight: 400',
-      'letter-spacing: 0.02em',
-      '@media (max-width: 430px)',
-      'const fallbackSitesOrigin = "https://sites.consuelohq.com";',
-      'const siteHotkeys = {',
-      'resolveWorkspaceHref',
-      '"2": "/office"',
-      '"3": "/traces"',
-      '"4": "/diffs"',
-      '"5": "https://docs.consuelohq.com/"',
-      'window.location.assign(href.startsWith("/") ? resolveWorkspaceHref(href) : href)',
+      '<title>Consuelo OS</title>',
+      '<div class="identity">Consuelo OS</div>',
+      'Welcome to Consuelo OS',
+      'Here is the URL to connect',
+      'to your workspace.',
+      'https://chatgpt.com/apps#settings/Connectors',
+      '<code id="mcp-url">https://os.consuelohq.com/mcp</code>',
+      'aria-label="Copy MCP URL"',
+      'support@consuelohq.com',
+      'Systems Engineer',
+      'Go to market',
+      'Artifacts',
+      'Observability',
+      'Code review',
+      'Guides and Tips',
+      'Documentation',
+      'Decision loops',
+      'Connect to your cloud agents',
+      'Connected to 0 local agents',
+      'No local agents connected to workspace yet.',
+      'navigator.clipboard.writeText(value)',
     ]) {
       expect(html).toContain(marker);
     }
 
-    expect(html.match(/target="_blank"/g)?.length).toBeGreaterThanOrEqual(7);
+    expect(html.match(/target="_blank"/g)?.length).toBe(1);
     expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).not.toContain('Consuelo OS Sites');
+    expect(html).not.toContain('[GTM]');
+    expect(html).not.toContain('[Office]');
+    expect(html).not.toContain('[Tracing]');
+    expect(html).not.toContain('[Diffs]');
+    expect(html).not.toContain('const siteHotkeys = {');
     expect(html).not.toContain('Versioned local Sites pages with current pointers');
     expect(html).not.toContain('<div class="grid">');
+  });
+
+  it('rewrites legacy ChatGPT MCP URLs before rendering the launcher', () => {
+    const configPath = join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json');
+    mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
+    writeFileSync(configPath, JSON.stringify({
+      version: 1,
+      kind: 'consuelo-chatgpt-mcp-connection',
+      auth: 'bearer',
+      url: 'https://legacy-workspace.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+      scopes: ['route:/mcp:read', 'tool:*:read'],
+      createdAt: '2026-06-13T00:00:00.000Z',
+    }, null, 2));
+
+    const refreshResult = runSitesCommand(['refresh', '--json']);
+    const html = readFileSync(refreshResult.indexPath, 'utf8');
+    const migrated = JSON.parse(readFileSync(configPath, 'utf8'));
+
+    expect(html).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
+    expect(html).not.toContain('https://legacy-workspace.consuelohq.com/mcp');
+    expect(migrated).toMatchObject({
+      url: 'https://os.consuelohq.com/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+    });
   });
 
   it('publishes Sites pages with immutable versions and stale base-version protection', () => {

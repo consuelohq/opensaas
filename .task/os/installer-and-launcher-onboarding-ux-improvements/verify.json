@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/installer-and-launcher-onboarding-ux-improvements",
+  "base": "HEAD",
+  "headSha": "6e153c604ce2508f117f9e89e095fe212934f545",
+  "changeHash": "4318255674381438a80a5447aa65db3204cf7b3085e581a7e1e29457b46563f1",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/cli-ui.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/launcher-onboarding.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/installer-onboarding-ui.test.ts",
+    "packages/os/tests/launcher-onboarding.test.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "verifiedAt": "2026-06-30T20:07:08.673Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/installer-and-launcher-onboarding-ux-improvements/current.json",
+        ".task/os/installer-and-launcher-onboarding-ux-improvements/evidence-log.json",
+        ".task/os/installer-and-launcher-onboarding-ux-improvements/read-log.json",
+        ".task/os/installer-and-launcher-onboarding-ux-improvements/session.json",
+        ".task/os/installer-and-launcher-onboarding-ux-improvements/verify.json",
+        ".task/os/installer-and-launcher-onboarding-ux-improvements/workpad.md",
+        ".task/tasks/os/installer-and-launcher-onboarding-ux-improvements.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/cli-ui.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/installer-onboarding-ui.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts",
+        "packages/os/tests/sites-cli.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

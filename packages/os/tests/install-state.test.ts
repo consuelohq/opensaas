@@ -41,7 +41,47 @@ describe('local OS install state', () => {
 
     expect(result.home).toBe(tempHome);
     expect(result.actions.some((action: { status: string }) => action.status === 'planned')).toBe(true);
+    for (const expectedPath of [
+      join('workspaces', 'local-consuelo-os', 'shared'),
+      join('node', 'workspaces', 'local-consuelo-os', 'state'),
+    ]) {
+      expect(result.actions.some(
+        (action: { type: string; path: string; status: string }) =>
+          action.type === 'create_dir' &&
+          action.path.endsWith(expectedPath) &&
+          action.status === 'planned',
+      )).toBe(true);
+    }
     expect(existsSync(join(tempHome, 'config.json'))).toBe(false);
+  });
+
+  it('rewrites existing ChatGPT MCP config to the central endpoint without rotating tokens', () => {
+    mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
+    writeFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), JSON.stringify({
+      version: 1,
+      kind: 'consuelo-chatgpt-mcp-connection',
+      auth: 'bearer',
+      url: 'https://legacy-workspace.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+      scopes: ['route:/mcp:read', 'tool:*:read'],
+      createdAt: '2026-06-13T00:00:00.000Z',
+    }, null, 2));
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    expect(chatgptMcp).toMatchObject({
+      url: 'https://os.consuelohq.com/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+    });
+    expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(join('security', 'generated', 'chatgpt-mcp.json')) && action.status === 'updated')).toBe(true);
   });
 
   it('reports existing generated security assets as existing on reprovision', () => {
@@ -58,10 +98,10 @@ describe('local OS install state', () => {
     `));
 
     for (const expectedPath of [
-      join('security', 'generated'),
-      join('security', 'overrides'),
-      join('security', 'generated', 'auth.json'),
-      join('security', 'generated', 'Caddyfile'),
+      join('node', 'security', 'generated'),
+      join('node', 'security', 'overrides'),
+      join('node', 'security', 'generated', 'auth.json'),
+      join('node', 'caddy', 'Caddyfile'),
     ]) {
       expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(expectedPath) && action.status === 'preserved')).toBe(true);
     }
@@ -91,17 +131,32 @@ describe('local OS install state', () => {
       'steering',
       'bin',
       'tmp',
+      'runtime',
+      'node',
+      join('node', 'keys'),
+      join('node', 'security'),
+      join('node', 'tunnels'),
+      join('node', 'caddy'),
+      join('node', 'db'),
+      'workspaces',
     ]) {
       expect(existsSync(join(tempHome, dir))).toBe(true);
     }
-    for (const file of ['package.json', 'bun.lock', 'config.json', 'consuelo.db']) {
+    for (const file of ['package.json', 'bun.lock', 'config.json', 'consuelo.yaml', join('node', 'node.yaml')]) {
       expect(existsSync(join(tempHome, file))).toBe(true);
     }
+    expect(existsSync(join(tempHome, 'consuelo.db'))).toBe(false);
+    expect(existsSync(join(tempHome, 'node', 'db', 'consuelo.db'))).toBe(true);
+    expect(existsSync(join(tempHome, 'security', 'generated', 'auth.json'))).toBe(false);
+    expect(existsSync(join(tempHome, 'security', 'generated', 'Caddyfile'))).toBe(false);
+    expect(existsSync(join(tempHome, 'node', 'security', 'generated', 'auth.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'caddy', 'Caddyfile'))).toBe(true);
+    expect(existsSync(join(tempHome, 'workspaces', 'local-consuelo-os', 'shared', 'workspace.yaml'))).toBe(true);
     expect(existsSync(join(tempHome, 'source'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'tools'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'skills'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'package.json'))).toBe(false);
-    expect(existsSync(join(tempHome, 'scripts', 'server.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'scripts', 'server', 'main.ts'))).toBe(true);
     expect(existsSync(join(tempHome, 'scripts', 'server.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'))).toBe(true);
@@ -112,12 +167,14 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
-    expect(existsSync(join(tempHome, 'runtime'))).toBe(false);
-    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    const workspaceYaml = readFileSync(join(tempHome, 'workspaces', 'local-consuelo-os', 'shared', 'workspace.yaml'), 'utf8');
+    expect(workspaceYaml).toContain('workspace:');
+    expect(workspaceYaml).toContain('projects:');
+    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
     expect(chatgptMcp).toMatchObject({
       auth: 'bearer',
-      url: 'https://local.consuelohq.com/mcp',
-      localUrl: 'http://127.0.0.1:8960/mcp',
+      url: 'https://os.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
     });
     expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
     expect(chatgptMcp.scopes).toEqual(expect.arrayContaining(['route:/mcp:read', 'tool:*:read']));
@@ -212,6 +269,37 @@ describe('local OS install state', () => {
   });
 
 
+
+  it('writes approved node identity into flattened node config', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({
+        mode: 'local',
+        workspaceBootstrap: {
+          workspaceId: 'workspace_123',
+          workspaceSlug: 'kokayi',
+          workspaceHost: 'kokayi.consuelohq.com',
+          connectorId: 'connector_node_air',
+          connectorTransport: 'websocket-relay',
+          nodeId: 'node-air',
+          nodeName: 'MacBook Air',
+          nodeRole: 'member',
+          nodeStatus: 'created',
+        },
+      });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const nodeYaml = readFileSync(join(tempHome, 'node', 'node.yaml'), 'utf8');
+    const globalYaml = readFileSync(join(tempHome, 'consuelo.yaml'), 'utf8');
+    expect(nodeYaml).toContain('id: node-air');
+    expect(nodeYaml).toContain('name: MacBook Air');
+    expect(nodeYaml).toContain('role: member');
+    expect(globalYaml).toContain('activeNode: node-air');
+    expect(nodeYaml).not.toContain('connector_node_air');
+    expect(globalYaml).not.toContain('connector_node_air');
+  });
+
   it('writes an OpenCode MCP config that exposes Consuelo OS tools', () => {
     mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
     writeFileSync(
@@ -288,11 +376,26 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
 
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
-    expect(sitesIndex).toContain('Sites');
-    expect(sitesIndex).toContain('Office');
-    expect(sitesIndex).toContain('Tracing');
-    expect(sitesIndex).toContain('Diffs');
+    expect(sitesIndex).toContain('<title>Consuelo OS</title>');
+    expect(sitesIndex).toContain('Welcome to Consuelo OS');
+    expect(sitesIndex).toContain('Here is the URL to connect');
+    expect(sitesIndex).toContain('to your workspace.');
+    expect(sitesIndex).toContain('https://chatgpt.com/apps#settings/Connectors');
+    expect(sitesIndex).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
+    expect(sitesIndex).toContain('support@consuelohq.com');
+    expect(sitesIndex).toContain('Systems Engineer');
+    expect(sitesIndex).toContain('Go to market');
+    expect(sitesIndex).toContain('Artifacts');
+    expect(sitesIndex).toContain('Observability');
+    expect(sitesIndex).toContain('Code review');
+    expect(sitesIndex).toContain('Documentation');
+    expect(sitesIndex).toContain('Decision loops');
+    expect(sitesIndex).toContain('Connect to your cloud agents');
+    expect(sitesIndex).toContain('Connected to 0 local agents');
+    expect(sitesIndex).toContain('No local agents connected to workspace yet.');
+    expect(sitesIndex).not.toContain('Consuelo OS Sites');
     expect(sitesIndex).not.toContain('GitHub Workflows');
+    expect(sitesIndex).not.toContain('[GTM]');
 
     const officeSitePage = readFileSync(officeSiteIndexPath, 'utf8');
     expect(officeSitePage).toContain('Office');
@@ -473,6 +576,64 @@ describe('local OS install state', () => {
     expect(existsSync(sidecarPath)).toBe(true);
     expect(JSON.parse(readFileSync(sidecarPath, 'utf8'))).toMatchObject({ name: 'codex', osHome: tempHome });
     expect(result.agents.some((agent: { name: string; connected: boolean }) => agent.name === 'codex' && agent.connected)).toBe(true);
+  });
+
+  it('detects common local agent footprints from the registry', () => {
+    for (const footprint of [
+      join(tempUserHome, '.codex'),
+      join(tempUserHome, 'Library', 'Application Support', 'Cursor', 'User'),
+      join(tempUserHome, '.claude'),
+      join(tempUserHome, '.config', 'opencode'),
+      join(tempUserHome, '.factory'),
+      join(tempUserHome, '.gemini'),
+      join(tempUserHome, 'Library', 'Application Support', 'Pi'),
+    ]) {
+      mkdirSync(footprint, { recursive: true });
+    }
+    writeFileSync(join(tempUserHome, '.gemini', 'consuelo-os.json'), '{}\n');
+
+    const agents = JSON.parse(runBunEval(`
+      const { detectAgents } = await import('./scripts/lib/install-state.ts');
+      const agents = detectAgents().filter((agent) => agent.detected).map((agent) => ({
+        name: agent.name,
+        label: agent.label,
+        homePath: agent.homePath,
+        configPath: agent.configPath,
+        connected: agent.connected,
+        status: agent.status,
+      }));
+      process.stdout.write(JSON.stringify(agents));
+    `)) as Array<{
+      name: string;
+      label: string;
+      homePath: string;
+      configPath: string;
+      connected: boolean;
+      status: string;
+    }>;
+
+    expect(agents.map((agent) => agent.name)).toEqual([
+      'codex',
+      'cursor',
+      'claude',
+      'opencode',
+      'factory',
+      'gemini',
+      'pi',
+    ]);
+    expect(agents.find((agent) => agent.name === 'cursor')).toMatchObject({
+      label: 'Cursor',
+      status: 'not_configured',
+    });
+    expect(agents.find((agent) => agent.name === 'gemini')).toMatchObject({
+      label: 'Gemini',
+      connected: true,
+      status: 'connected',
+    });
+    expect(agents.find((agent) => agent.name === 'pi')).toMatchObject({
+      label: 'Pi',
+      status: 'not_configured',
+    });
   });
 
   it('reports intent and task hook runtime modules in doctor checks', () => {

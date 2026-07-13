@@ -3,6 +3,7 @@ import { createPrivateKey, generateKeyPairSync, sign as nodeSign } from 'node:cr
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
+  CONSUELO_DEVICE_WORKSPACE_URL,
   CONSUELO_OAUTH_ACCESS_TOKEN_URL,
   type WorkspaceDeviceAuthorizationPollResult,
   type WorkspaceDeviceAuthorizationSession,
@@ -31,14 +32,17 @@ export type DeviceCodeRequestResult =
 
 export type DeviceAccessTokenPollResult =
   | WorkspaceDeviceAuthorizationPollResult
+  | { status: 'workspace_required'; intervalSeconds: number; message?: string }
   | { status: 'unavailable'; message: string };
 
 export type RequestWorkspaceDeviceCodeInput = {
   clientId: string;
   scope: string[];
-  workspaceName: string;
-  workspaceSlug: string;
-  workspaceHost: string;
+  workspaceName?: string;
+  workspaceSlug?: string;
+  workspaceHost?: string;
+  nodeId?: string;
+  nodeName?: string;
   deviceKeyPair?: WorkspaceDeviceKeyPair;
   fetchImpl?: DeviceLoginFetch;
   now?: string;
@@ -49,6 +53,18 @@ export type PollWorkspaceDeviceAccessTokenInput = {
   deviceCode: string;
   intervalSeconds: number;
   deviceKeyPair?: WorkspaceDeviceKeyPair;
+  devicePublicKeyThumbprint?: string;
+  fetchImpl?: DeviceLoginFetch;
+};
+
+export type SelectWorkspaceForDeviceLoginInput = {
+  clientId: string;
+  deviceCode: string;
+  intervalSeconds?: number;
+  workspaceName: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  deviceKeyPair: WorkspaceDeviceKeyPair;
   devicePublicKeyThumbprint?: string;
   fetchImpl?: DeviceLoginFetch;
 };
@@ -93,6 +109,11 @@ function numberField(record: Record<string, unknown>, key: string, fallback: num
 
 function unavailable(message: string): { status: 'unavailable'; message: string } {
   return { status: 'unavailable', message };
+}
+
+function errorWithMessage(json: Record<string, unknown>, error: string): string {
+  const message = stringField(json, 'message');
+  return message ? `${error}: ${message}` : error;
 }
 
 function expiresAtFromNow(now: string | undefined, expiresInSeconds: number): string {
@@ -146,6 +167,32 @@ export function createDevicePublicKeyProof(input: {
   return b64(nodeSign(null, Buffer.from(input.payload), signingKey));
 }
 
+async function createDeviceProof(input: {
+  clientId: string;
+  deviceCode: string;
+  deviceKeyPair: WorkspaceDeviceKeyPair;
+  devicePublicKeyThumbprint?: string;
+}): Promise<{ payload: string; proof: string }> {
+  try {
+    const thumbprint = input.devicePublicKeyThumbprint ?? await devicePublicKeyThumbprint(input.deviceKeyPair.publicKeyJwk);
+    const payload = devicePublicKeyProofPayload({
+      clientId: input.clientId,
+      deviceCode: input.deviceCode,
+      devicePublicKeyThumbprint: thumbprint,
+    });
+
+    return {
+      payload,
+      proof: createDevicePublicKeyProof({
+        deviceKeyPair: input.deviceKeyPair,
+        payload,
+      }),
+    };
+  } catch (error: unknown) {
+    throw new Error(`device proof failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestInit): Promise<Record<string, unknown>> {
   const response = await fetchImpl(url, init);
   const json = asRecord(await response.json());
@@ -164,12 +211,14 @@ export async function requestWorkspaceDeviceCode(
   const body = new URLSearchParams({
     client_id: input.clientId,
     scope: input.scope.join(' '),
-    workspace_name: input.workspaceName,
-    workspace_slug: input.workspaceSlug,
-    workspace_host: input.workspaceHost,
     device_public_key_jwk: deviceKeyPair.publicKeyJwk,
     device_key_algorithm: deviceKeyPair.algorithm,
   });
+  if (input.workspaceName) body.set('workspace_name', input.workspaceName);
+  if (input.workspaceSlug) body.set('workspace_slug', input.workspaceSlug);
+  if (input.workspaceHost) body.set('workspace_host', input.workspaceHost);
+  if (input.nodeId) body.set('node_id', input.nodeId);
+  if (input.nodeName) body.set('node_name', input.nodeName);
 
   try {
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_DEVICE_CODE_URL, {
@@ -183,7 +232,7 @@ export async function requestWorkspaceDeviceCode(
 
     const error = stringField(json, 'error');
     if (error) {
-      return unavailable(error);
+      return unavailable(errorWithMessage(json, error));
     }
 
     const deviceCode = stringField(json, 'device_code', 'deviceCode');
@@ -214,30 +263,59 @@ export async function requestWorkspaceDeviceCode(
   }
 }
 
+function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDeviceAuthorizationPollResult | undefined {
+  const workspaceId = stringField(json, 'workspace_id', 'workspaceId');
+  const workspaceSlug = stringField(json, 'workspace_slug', 'workspaceSlug');
+  const workspaceHost = stringField(json, 'workspace_host', 'workspaceHost');
+  const connectorId = stringField(json, 'connector_id', 'connectorId');
+  const nodeId = stringField(json, 'node_id', 'nodeId');
+  const nodeName = stringField(json, 'node_name', 'nodeName');
+  const nodeRole = stringField(json, 'node_role', 'nodeRole');
+  const nodeStatus = stringField(json, 'node_status', 'nodeStatus');
+  const connectorBootstrapToken = stringField(json, 'connector_bootstrap_token', 'connectorBootstrapToken');
+  const connectorBootstrapExpiresAt = stringField(json, 'connector_bootstrap_expires_at', 'connectorBootstrapExpiresAt');
+  const cloudflareTunnelToken = stringField(json, 'cloudflare_tunnel_token', 'cloudflareTunnelToken');
+
+  if (!workspaceId || !workspaceSlug || !workspaceHost || !connectorId || !connectorBootstrapToken || !connectorBootstrapExpiresAt) {
+    return undefined;
+  }
+
+  return {
+    status: 'approved',
+    workspaceId,
+    workspaceSlug,
+    workspaceHost,
+    connectorId,
+    ...(nodeId ? { nodeId } : {}),
+    ...(nodeName ? { nodeName } : {}),
+    ...(nodeRole === 'home' || nodeRole === 'member' ? { nodeRole } : {}),
+    ...(nodeStatus === 'created' || nodeStatus === 'reconnected' ? { nodeStatus } : {}),
+    connectorBootstrapToken,
+    connectorBootstrapExpiresAt,
+    ...(cloudflareTunnelToken ? { cloudflareTunnelToken } : {}),
+  };
+}
 export async function pollWorkspaceDeviceAccessToken(
   input: PollWorkspaceDeviceAccessTokenInput,
 ): Promise<DeviceAccessTokenPollResult> {
-  const body = new URLSearchParams({
-    client_id: input.clientId,
-    device_code: input.deviceCode,
-    grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-  });
-
-  if (input.deviceKeyPair) {
-    const thumbprint = input.devicePublicKeyThumbprint ?? await devicePublicKeyThumbprint(input.deviceKeyPair.publicKeyJwk);
-    const proofPayload = devicePublicKeyProofPayload({
-      clientId: input.clientId,
-      deviceCode: input.deviceCode,
-      devicePublicKeyThumbprint: thumbprint,
-    });
-    body.set('device_public_key_proof_payload', proofPayload);
-    body.set('device_public_key_proof', createDevicePublicKeyProof({
-      deviceKeyPair: input.deviceKeyPair,
-      payload: proofPayload,
-    }));
-  }
-
   try {
+    const body = new URLSearchParams({
+      client_id: input.clientId,
+      device_code: input.deviceCode,
+      grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+    });
+
+    if (input.deviceKeyPair) {
+      const proof = await createDeviceProof({
+        clientId: input.clientId,
+        deviceCode: input.deviceCode,
+        deviceKeyPair: input.deviceKeyPair,
+        devicePublicKeyThumbprint: input.devicePublicKeyThumbprint,
+      });
+      body.set('device_public_key_proof_payload', proof.payload);
+      body.set('device_public_key_proof', proof.proof);
+    }
+
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
       method: 'POST',
       headers: {
@@ -254,6 +332,13 @@ export async function pollWorkspaceDeviceAccessToken(
     if (error === 'slow_down') {
       return { status: 'slow_down', intervalSeconds: numberField(json, 'interval', input.intervalSeconds) + 5 };
     }
+    if (error === 'workspace_required') {
+      return {
+        status: 'workspace_required',
+        intervalSeconds: numberField(json, 'interval', input.intervalSeconds),
+        message: stringField(json, 'message'),
+      };
+    }
     if (error === 'access_denied') {
       return { status: 'denied', errorCode: 'DEVICE_CODE_DENIED' };
     }
@@ -261,31 +346,52 @@ export async function pollWorkspaceDeviceAccessToken(
       return { status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' };
     }
     if (error) {
-      return unavailable(error);
+      return unavailable(errorWithMessage(json, error));
     }
 
-    const workspaceId = stringField(json, 'workspace_id', 'workspaceId');
-    const workspaceSlug = stringField(json, 'workspace_slug', 'workspaceSlug');
-    const workspaceHost = stringField(json, 'workspace_host', 'workspaceHost');
-    const connectorId = stringField(json, 'connector_id', 'connectorId');
-    const connectorBootstrapToken = stringField(json, 'connector_bootstrap_token', 'connectorBootstrapToken');
-    const connectorBootstrapExpiresAt = stringField(json, 'connector_bootstrap_expires_at', 'connectorBootstrapExpiresAt');
-    const cloudflareTunnelToken = stringField(json, 'cloudflare_tunnel_token', 'cloudflareTunnelToken');
+    return approvedDeviceGrantFromJson(json) ?? unavailable('approved device response was missing workspace bootstrap fields');
+  } catch (error: unknown) {
+    return unavailable(error instanceof Error ? error.message : String(error));
+  }
+}
+export async function selectWorkspaceForDeviceLogin(
+  input: SelectWorkspaceForDeviceLoginInput,
+): Promise<DeviceAccessTokenPollResult> {
+  try {
+    const proof = await createDeviceProof({
+      clientId: input.clientId,
+      deviceCode: input.deviceCode,
+      deviceKeyPair: input.deviceKeyPair,
+      devicePublicKeyThumbprint: input.devicePublicKeyThumbprint,
+    });
+    const body = new URLSearchParams({
+      client_id: input.clientId,
+      device_code: input.deviceCode,
+      workspace_name: input.workspaceName,
+      workspace_slug: input.workspaceSlug,
+      workspace_host: input.workspaceHost,
+      device_public_key_proof_payload: proof.payload,
+      device_public_key_proof: proof.proof,
+    });
 
-    if (!workspaceId || !workspaceSlug || !workspaceHost || !connectorId || !connectorBootstrapToken || !connectorBootstrapExpiresAt) {
-      return unavailable('approved device response was missing workspace bootstrap fields');
+    const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_DEVICE_WORKSPACE_URL, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    const error = stringField(json, 'error');
+    if (error === 'workspace_required') {
+      return { status: 'workspace_required', intervalSeconds: numberField(json, 'interval', input.intervalSeconds ?? 5), message: stringField(json, 'message') };
     }
+    if (error === 'access_denied') return { status: 'denied', errorCode: 'DEVICE_CODE_DENIED' };
+    if (error === 'expired_token') return { status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' };
+    if (error) return unavailable(errorWithMessage(json, error));
 
-    return {
-      status: 'approved',
-      workspaceId,
-      workspaceSlug,
-      workspaceHost,
-      connectorId,
-      connectorBootstrapToken,
-      connectorBootstrapExpiresAt,
-      ...(cloudflareTunnelToken ? { cloudflareTunnelToken } : {}),
-    };
+    return approvedDeviceGrantFromJson(json) ?? unavailable('approved workspace selection response was missing workspace bootstrap fields');
   } catch (error: unknown) {
     return unavailable(error instanceof Error ? error.message : String(error));
   }

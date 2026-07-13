@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/provision-central-mcp-connector-route-for-installed-nodes",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1378,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1378",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1378",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1378/provision-central-mcp-connector-route-for-installed-nodes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1378",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1378/provision-central-mcp-connector-route-for-installed-nodes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-central-mcp-connector-route-for-installed-nodes",
+  "taskSession": "tsk_67ffab8e5435",
+  "tmuxSession": "opensaas-security-provision-central-mcp-connector-route-for-instal-67ffab8e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-central-mcp-connector-route-for-installed-nodes/.task/security/provision-central-mcp-connector-route-for-installed-nodes/session.json",
+  "createdAt": "2026-07-08T20:26:26.799Z"
+}

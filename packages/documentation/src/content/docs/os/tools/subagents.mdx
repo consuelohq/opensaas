@@ -1,0 +1,309 @@
+---
+title: "Subagents"
+description: "Run another model or harness from Consuelo OS with a tmp instruction file, trace style output, and the right steering bundle for the job."
+---
+
+# Subagents
+
+A subagent is another model or harness you ask to do one bounded job. The main agent stays in charge of the workflow. The subagent gets a tmp instruction file, runs with the provider and bundle you chose, then returns a compact report instead of a transcript dump.
+
+Use this when the work is better with another model, another harness, or a second opinion. Grok may be better for voice. Codex may be better for repo reasoning. OpenCode may catch something from a different code harness. Pi can be useful when you want the run held to the workspace path.
+
+The operator pattern is simple: write a good handoff, run the subagent, read the trace style result, then decide the next move.
+
+## What the tool does
+
+`subagent` reads an instruction file from disk and runs one provider against it. The instruction file is the contract. It should include the task, the context, the limits, and the output shape you want back.
+
+The tool accepts these fields:
+
+| Field | Required | Values | What it means |
+| --- | --- | --- | --- |
+| `provider` | yes | `codex`, `pi`, `opencode`, `grok` | The model or harness that runs the job. |
+| `instructionPath` | yes | file path | A tmp file the subagent should read. |
+| `policy` | no | `read`, `edit` | `read` inspects and reports. `edit` can change files in a task worktree. |
+| `bundle` | no | `core`, `media` | `core` is the default. `media` replaces core for social and voice work. |
+| `model` | no | provider model name | Optional model override for that provider. |
+| `outputFormat` | no | `text`, `json` | Ask for text or JSON output. |
+| `timeoutMs` | no | milliseconds | Provider timeout inside the run. |
+| `workspaceOnly` | no | `preferred`, `strict`, `false` | How hard the run should stay on workspace tools. |
+
+The workspace call still has its own outer `timeout`. Long runs need enough time on both layers.
+
+## Pick a provider
+
+Start by choosing the harness. If the user asks for a subagent but does not name a provider, stop and ask which one they want.
+
+| Provider | Use it for | A good first prompt |
+| --- | --- | --- |
+| `grok` | social posts, X research, voice, brand writing | "Use the media bundle and preserve Ko's wording." |
+| `codex` | implementation review, repo reasoning, code edits | "Read the diff and find risky assumptions." |
+| `opencode` | another engineering pass from a different harness | "Inspect the same files and disagree where useful." |
+| `pi` | strict workspace-only work | "Stay inside workspace tools and return evidence." |
+
+The best subagent runs are narrow. Give the subagent a lane instead of asking it to be generally smart.
+
+## Pick a bundle
+
+`core` is the default bundle. It is for normal repo work, planning, review, and verification.
+
+`media` replaces core. Use it when the job is about X, voice, replies, quote posts, social research, or packaging Ko's raw thoughts into content. Do not use `media` for normal engineering work.
+
+## Pick a policy
+
+`read` is the default policy and should cover most runs. It lets the subagent inspect, analyze, draft, and report without changing files.
+
+`edit` allows file changes in the task worktree. Use it only when the user wants the subagent to make edits. Pass `taskSession` so the edit lands in the current task branch.
+
+## Write the handoff file first
+
+Do not paste the whole task into the `subagent` call. Write a tmp instruction file and pass the returned path as `instructionPath`.
+
+```ts
+const handoff = await workspace.call({
+  tool: "tmp",
+  input: {
+    action: "write",
+    name: "subagent-review",
+    ext: "md",
+    content: `# Task
+Review the current docs change for unclear examples.
+
+# Context
+The page should teach users how to run one subagent, when to use media, and how to run multiple read-only subagents.
+
+# Boundaries
+Read-only. Do not edit files. Do not create a PR.
+
+# Output
+Return JSON with files read, tools called, issues found, and suggested edits.
+`,
+  },
+  timeout: 120,
+})
+```
+
+Use the path returned by `tmp` in the next call. The examples below use `<tmp path>` as a placeholder.
+
+## Run one read-only subagent
+
+A read-only run is the safest default. Use it for review, research, drafting, and second opinions.
+
+```ts
+await workspace.call({
+  tool: "subagent",
+  input: {
+    provider: "codex",
+    policy: "read",
+    instructionPath: "<tmp path>",
+    outputFormat: "json",
+  },
+  timeout: 900,
+})
+```
+
+The result should be compact. Look for the trace id, provider, status, files read, files edited, tools called, and summary. If you need the raw transcript, use the returned log path. The normal operator flow should not need it.
+
+## Use Grok for media work
+
+Use `grok` with `bundle: "media"` when the job is social or voice work. This is useful when the main agent is good at technical orchestration but another model has a better feel for prose.
+
+```ts
+await workspace.call({
+  tool: "subagent",
+  input: {
+    provider: "grok",
+    bundle: "media",
+    policy: "read",
+    instructionPath: "<tmp path>",
+    outputFormat: "json",
+  },
+  timeout: 900,
+})
+```
+
+For media runs, put the raw user ask and the thread context in the handoff file. Do not over-interpret the request before Grok sees it. The point is to let the media agent do the voice work, then let the main agent decide what to show or ship.
+
+A good media handoff usually includes:
+
+- the pasted tweet or thread
+- Ko's rough thought in his own words
+- the goal, such as reply, quote post, standalone post, or idea scan
+- voice constraints
+- output shape
+
+## Let a subagent edit files
+
+Use `policy: "edit"` inside an active task when you want the subagent to change files.
+
+```ts
+await workspace.call({
+  tool: "subagent",
+  taskSession,
+  input: {
+    provider: "codex",
+    policy: "edit",
+    instructionPath: "<tmp path>",
+    outputFormat: "json",
+  },
+  timeout: 1200,
+})
+```
+
+After an edit run, inspect the diff and validate normally.
+
+```ts
+await workspace.call({
+  tool: "git.diff",
+  taskSession,
+  input: {
+    stat: true,
+    files: true,
+    hunks: true,
+    maxBytes: 20000,
+  },
+  timeout: 120,
+})
+```
+
+The subagent can make the edit. The operator still owns review, validation, push, and PR flow.
+
+## Run multiple subagents
+
+Multiple subagents are best for independent reads. Give each run a different lens and compare the reports.
+
+First create separate instruction files. For example:
+
+```md
+# security pass
+Review the current diff for auth mistakes, secret exposure, unsafe command execution, and missing guardrails. Read-only. Return compact JSON.
+```
+
+```md
+# docs pass
+Review the current diff for unclear examples, missing prerequisites, and places where a user would get stuck. Read-only. Return compact JSON.
+```
+
+Then run both with `batch`:
+
+```ts
+await workspace.call({
+  tool: "batch",
+  taskSession,
+  input: {
+    steps: [
+      {
+        tool: "subagent",
+        parallel: true,
+        input: {
+          provider: "codex",
+          policy: "read",
+          instructionPath: "<security tmp path>",
+          outputFormat: "json",
+        },
+      },
+      {
+        tool: "subagent",
+        parallel: true,
+        input: {
+          provider: "opencode",
+          policy: "read",
+          instructionPath: "<docs tmp path>",
+          outputFormat: "json",
+        },
+      },
+    ],
+  },
+  timeout: 1200,
+})
+```
+
+Use parallel runs for reading, critique, and exploration. Do not run two edit-capable subagents against the same task branch at the same time. If two agents need to edit, give them separate branches or run them one after another.
+
+## Compare subagent reports
+
+When the runs finish, the operator should compare evidence, not vibes.
+
+Check:
+
+- which files each subagent read
+- which tools each subagent called
+- where they agreed
+- where they disagreed
+- whether either report found a concrete file, failing check, or missing example
+- whether the suggested next step is small enough to run now
+
+If two agents disagree, that is useful. Use the disagreement as the next investigation target.
+
+## Patterns worth trying
+
+### Competing reads
+
+Give the same question to two providers with `policy: "read"`. Ask both for evidence and disagreements. This works well for architecture questions, tricky diffs, and unclear bugs.
+
+### Specialist passes
+
+Give each subagent a narrow job: security, docs, tests, migration risk, product behavior, social voice, or performance. Narrow prompts produce better reports than one giant prompt.
+
+### One editor, one reviewer
+
+Run one edit subagent to make a bounded change. Then run a read-only subagent to review the diff. The operator validates after both finish.
+
+### Media drafting
+
+Use `grok` plus `media` for replies, quote posts, and X scans. Send raw context. Ask for JSON with a recommended draft, alternates, and notes. Keep the main agent out of the prose until the draft comes back.
+
+### Provider bakeoff
+
+Ask two providers the same read-only question and compare the output quality. Use this when choosing a default harness for a new class of task.
+
+### Long running review
+
+For large review tasks, increase both `timeout` and `timeoutMs`. Ask for a compact result and a log path. Let the provider work, then read the summary first.
+
+## What a good result looks like
+
+A useful result should look more like the trace feed than a chat transcript.
+
+```json
+{
+  "traceId": "trc_abc123",
+  "provider": "codex",
+  "bundle": "core",
+  "status": "completed",
+  "filesRead": ["packages/documentation/src/content/docs/os/tools/subagents.mdx"],
+  "filesEdited": [],
+  "toolsCalled": ["fs.read", "git.diff"],
+  "summary": "reviewed the subagent docs page and found two example paths that should use tmp output placeholders"
+}
+```
+
+If the summary is vague, rerun with a better output contract. Ask for files read, files edited, tools called, risks, and next action.
+
+## Common mistakes
+
+| Mistake | Why it hurts | Better move |
+| --- | --- | --- |
+| Passing a giant inline prompt to `subagent` | The handoff becomes hard to inspect and reuse. | Write a tmp file and pass `instructionPath`. |
+| Using `media` for code review | The steering is optimized for voice, not repo work. | Use `core` or omit `bundle`. |
+| Running parallel edit agents on one branch | They can fight over the same files. | Use read-only parallel runs or separate branches. |
+| Asking for a transcript | The main chat gets noisy. | Ask for compact JSON plus log paths. |
+| Letting the subagent decide shipping | The operator loses the review boundary. | Inspect, validate, then push from the main task flow. |
+
+## Troubleshooting
+
+| Problem | Likely cause | Fix |
+| --- | --- | --- |
+| `instructionPath` fails | The path is wrong or not readable from the runner. | Use the path returned by `tmp`. |
+| The run times out | The provider is still working or the timeout is too short. | Raise the outer `timeout` and inner `timeoutMs`. |
+| Output is too long | The prompt asked for a transcript or broad analysis. | Ask for compact JSON with trace id, files, tools, and summary. |
+| Media output sounds generic | The run used `core` or the handoff lacked real voice context. | Use `bundle: "media"` and include raw thread context or voice samples. |
+| Edit run is rejected | `policy: "edit"` needs task context. | Pass `taskSession` and keep the edit scoped to the task worktree. |
+
+## Related
+
+- [Tools overview](/os/tools/overview/)
+- [Browser tools](/os/tools/browser-tools/)
+- [Skills](/os/concepts/skills/)
+- [Scripts](/os/concepts/scripts/)
+- [Observability](/os/concepts/observability/)

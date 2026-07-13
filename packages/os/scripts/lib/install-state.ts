@@ -4,6 +4,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  createDefaultGlobalYamlConfig,
+  createDefaultNodeYamlConfig,
+  createDefaultWorkspaceYamlConfig,
+  loadNodeYamlConfig,
+  resolveConsueloHome,
+  resolveConsueloHomeLayout,
+  writeYamlConfig,
+} from './consuelo-home';
+import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { createGatewaySecurityConfig, issueAgentAppToken } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
@@ -11,7 +21,14 @@ import { validateBundledSkills } from './skills';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 
 export type OsMode = 'local' | 'cloud';
-export type AgentName = 'codex' | 'claude' | 'opencode' | 'factory';
+export type AgentName =
+  | 'codex'
+  | 'cursor'
+  | 'claude'
+  | 'opencode'
+  | 'factory'
+  | 'gemini'
+  | 'pi';
 export type HealthStatus =
   | 'connected'
   | 'not_configured'
@@ -28,11 +45,17 @@ export type AgentDetection = {
   name: AgentName;
   label: string;
   homePath: string;
+  detectionPaths: string[];
   configPath: string;
   detected: boolean;
   connected: boolean;
   status: HealthStatus;
 };
+
+type AgentDetectionCandidate = Omit<
+  AgentDetection,
+  'detected' | 'connected' | 'status'
+>;
 
 export type WorkspaceBootstrap = {
   workspaceId: string;
@@ -40,6 +63,10 @@ export type WorkspaceBootstrap = {
   workspaceHost: string;
   connectorId: string;
   connectorTransport: 'cloudflare-tunnel' | 'websocket-relay';
+  nodeId?: string;
+  nodeName?: string;
+  nodeRole?: 'home' | 'member';
+  nodeStatus?: 'created' | 'reconnected';
   connectorBootstrapToken?: string;
   cloudflareTunnelToken?: string;
 };
@@ -146,17 +173,34 @@ const REQUIRED_DIRS = [
   'logs',
   'runs',
   'cache',
-  'security',
   'steering',
   'bin',
   'tmp',
+  'runtime',
+  'runtime/releases',
+  'runtime/current',
+  'node',
+  'node/keys',
+  'node/security',
+  'node/security/generated',
+  'node/security/overrides',
+  'node/tunnels',
+  'node/caddy',
+  'node/db',
+  'node/logs',
+  'node/runs',
+  'node/cache',
+  'node/tmp',
+  'node/workspaces',
+  'workspaces',
 ] as const;
 
 const REQUIRED_GENERATED_SECURITY_FILES = [
-  'security/generated/auth.json',
-  'security/generated/Caddyfile',
+  'node/security/generated/auth.json',
+  'node/caddy/Caddyfile',
 ] as const;
-const DEFAULT_PORT = 8960;
+const LEGACY_DEFAULT_PORT = 8960;
+const DEFAULT_PORT = 46321;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
@@ -240,16 +284,29 @@ type ToolInstallMetadata = {
   updatedAt: string;
 };
 
-function expandHome(value: string): string {
-  if (value === '~') return os.homedir();
-  if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
-  return value;
+export function resolveOsHome(home?: string): string {
+  return resolveConsueloHome(home);
 }
 
-export function resolveOsHome(home?: string): string {
-  return path.resolve(
-    expandHome(home ?? process.env.CONSUELO_HOME ?? '~/.consuelo/os'),
-  );
+export type LocalNodeIdentity = {
+  nodeId: string;
+  nodeName: string;
+  nodeRole?: 'home' | 'member';
+};
+
+export function readLocalNodeIdentity(home?: string): LocalNodeIdentity | undefined {
+  const layout = resolveConsueloHomeLayout(resolveOsHome(home));
+  if (!fs.existsSync(layout.nodeConfigPath)) return undefined;
+  try {
+    const config = loadNodeYamlConfig(layout.nodeConfigPath);
+    return {
+      nodeId: config.node.id,
+      nodeName: config.node.name,
+      ...(config.node.role ? { nodeRole: config.node.role } : {}),
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 function nowIso(): string {
@@ -271,6 +328,39 @@ function writeJsonFile(
 function readJsonFile<T>(filePath: string): T | null {
   if (!fs.existsSync(filePath)) return null;
   return JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
+}
+
+function addFileAction(input: {
+  actions: ProvisionAction[];
+  path: string;
+  exists: boolean;
+  dryRun: boolean;
+  message: string;
+}): void {
+  input.actions.push({
+    type: 'create_file',
+    path: input.path,
+    status: input.exists ? 'preserved' : input.dryRun ? 'planned' : 'created',
+    message: input.message,
+  });
+}
+
+function writeYamlConfigIfMissing(input: {
+  actions: ProvisionAction[];
+  path: string;
+  value: unknown;
+  dryRun: boolean;
+  message: string;
+}): void {
+  const exists = fs.existsSync(input.path);
+  addFileAction({
+    actions: input.actions,
+    path: input.path,
+    exists,
+    dryRun: input.dryRun,
+    message: input.message,
+  });
+  if (!exists) writeYamlConfig(input.path, input.value, input.dryRun);
 }
 
 function samePath(left: string, right: string): boolean {
@@ -594,11 +684,27 @@ function materializeChatGptMcpConnection(input: {
     return [{ type: 'create_file', path: targetPath, status: 'planned', message: 'ChatGPT MCP connection planned' }];
   }
   const existing = readJsonFile<JsonObject>(targetPath);
+  const localUrl = `http://127.0.0.1:${input.port}/mcp`;
   if (
     typeof existing?.bearerToken === 'string' &&
     typeof existing?.tokenId === 'string' &&
     typeof existing?.url === 'string'
   ) {
+    const existingScopes = Array.isArray(existing.scopes) ? existing.scopes : scopes;
+    if (
+      existing.url !== CHATGPT_MCP_URL ||
+      existing.localUrl !== localUrl ||
+      !Array.isArray(existing.scopes)
+    ) {
+      writeJsonFile(targetPath, {
+        ...existing,
+        url: CHATGPT_MCP_URL,
+        localUrl,
+        scopes: existingScopes,
+        updatedAt: nowIso(),
+      }, false);
+      return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection metadata updated' }];
+    }
     return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
   }
   const token = issueAgentAppToken({
@@ -619,7 +725,7 @@ function materializeChatGptMcpConnection(input: {
     version: 1,
     kind: 'consuelo-chatgpt-mcp-connection',
     auth: 'bearer',
-    url: `https://${input.config.workspaceHost}/mcp`,
+    url: CHATGPT_MCP_URL,
     localUrl: `http://127.0.0.1:${input.port}/mcp`,
     tokenId: token.tokenId,
     bearerToken: token.bearerToken,
@@ -630,7 +736,8 @@ function materializeChatGptMcpConnection(input: {
 }
 
 function materializeWorkspaceConnectorBootstrap(input: {
-  home: string;
+  nodeHome: string;
+  runtimeHome: string;
   port: number;
   dryRun: boolean;
   workspaceBootstrap: WorkspaceBootstrap;
@@ -642,13 +749,13 @@ function materializeWorkspaceConnectorBootstrap(input: {
   }
 
   const plan = planWorkspaceConnectorTransport({
-    home: input.home,
+    home: input.nodeHome,
     connectorId: input.workspaceBootstrap.connectorId,
     workspaceHost: input.workspaceBootstrap.workspaceHost,
     localPort: input.port,
     transport: 'cloudflare-tunnel',
     cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
-    cloudflaredBin: process.env.CLOUDFLARED_BIN ?? path.join(input.home, 'bin', 'cloudflared'),
+    cloudflaredBin: process.env.CLOUDFLARED_BIN ?? path.join(input.runtimeHome, 'bin', 'cloudflared'),
   });
 
   if (plan.tokenPath) {
@@ -670,13 +777,13 @@ function materializeWorkspaceConnectorBootstrap(input: {
 
   if (plan.launchd) {
     const legacyPlistPath = path.join(
-      input.home,
+      input.nodeHome,
       'security',
       'generated',
       'com.consuelo.os.cloudflared.plist',
     );
     const plistPath = path.join(
-      input.home,
+      input.nodeHome,
       'security',
       'generated',
       `${plan.launchd.label}.plist`,
@@ -698,7 +805,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
     }
   }
 
-  const smokePath = path.join(input.home, 'bin', 'smoke-gateway-auth');
+  const smokePath = path.join(input.runtimeHome, 'bin', 'smoke-gateway-auth');
   actions.push({
     type: 'create_file',
     path: smokePath,
@@ -710,7 +817,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
     fs.writeFileSync(
       smokePath,
       renderGatewayAuthSmokeScript({
-        home: input.home,
+        home: input.runtimeHome,
         workspaceHost: input.workspaceBootstrap.workspaceHost,
       }),
       { mode: 0o755 },
@@ -734,49 +841,12 @@ export function detectAgents(home?: string): AgentDetection[] {
       .filter((agent) => agent.connected)
       .map((agent) => agent.name),
   );
-  const userHome = os.homedir();
-  const candidates: Array<
-    Omit<AgentDetection, 'detected' | 'connected' | 'status'>
-  > = [
-    {
-      name: 'codex',
-      label: 'Codex',
-      homePath: path.join(userHome, '.codex'),
-      configPath: path.join(userHome, '.codex', 'consuelo-os.json'),
-    },
-    {
-      name: 'claude',
-      label: 'Claude',
-      homePath: path.join(userHome, '.claude'),
-      configPath: path.join(userHome, '.claude', 'consuelo-os.json'),
-    },
-    {
-      name: 'opencode',
-      label: 'OpenCode',
-      homePath: path.join(userHome, '.opencode'),
-      configPath: path.join(userHome, '.opencode', 'consuelo-os.json'),
-    },
-    {
-      name: 'opencode',
-      label: 'OpenCode config',
-      homePath: path.join(userHome, '.config', 'opencode'),
-      configPath: path.join(
-        userHome,
-        '.config',
-        'opencode',
-        'consuelo-os.json',
-      ),
-    },
-    {
-      name: 'factory',
-      label: 'Factory',
-      homePath: path.join(userHome, '.factory'),
-      configPath: path.join(userHome, '.factory', 'consuelo-os.json'),
-    },
-  ];
+  const candidates = getAgentDetectionCandidates(os.homedir());
 
   return candidates.map((candidate) => {
-    const detected = fs.existsSync(candidate.homePath);
+    const detected = candidate.detectionPaths.some((candidatePath) =>
+      fs.existsSync(candidatePath),
+    );
     const isConnected =
       connected.has(candidate.name) || fs.existsSync(candidate.configPath);
     return {
@@ -790,6 +860,82 @@ export function detectAgents(home?: string): AgentDetection[] {
         : 'missing_capability',
     };
   });
+}
+
+export function getAgentDetectionCandidates(
+  userHome: string = os.homedir(),
+): AgentDetectionCandidate[] {
+  return [
+    {
+      name: 'codex',
+      label: 'Codex',
+      homePath: path.join(userHome, '.codex'),
+      detectionPaths: [path.join(userHome, '.codex')],
+      configPath: path.join(userHome, '.codex', 'consuelo-os.json'),
+    },
+    {
+      name: 'cursor',
+      label: 'Cursor',
+      homePath: path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User'),
+      detectionPaths: [
+        path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User'),
+        path.join(userHome, '.cursor'),
+      ],
+      configPath: path.join(userHome, 'Library', 'Application Support', 'Cursor', 'User', 'consuelo-os.json'),
+    },
+    {
+      name: 'claude',
+      label: 'Claude',
+      homePath: path.join(userHome, '.claude'),
+      detectionPaths: [
+        path.join(userHome, '.claude'),
+        path.join(userHome, 'Library', 'Application Support', 'Claude'),
+      ],
+      configPath: path.join(userHome, '.claude', 'consuelo-os.json'),
+    },
+    {
+      name: 'opencode',
+      label: 'OpenCode',
+      homePath: path.join(userHome, '.config', 'opencode'),
+      detectionPaths: [
+        path.join(userHome, '.config', 'opencode'),
+        path.join(userHome, '.opencode'),
+      ],
+      configPath: path.join(
+        userHome,
+        '.config',
+        'opencode',
+        'consuelo-os.json',
+      ),
+    },
+    {
+      name: 'factory',
+      label: 'Factory',
+      homePath: path.join(userHome, '.factory'),
+      detectionPaths: [path.join(userHome, '.factory')],
+      configPath: path.join(userHome, '.factory', 'consuelo-os.json'),
+    },
+    {
+      name: 'gemini',
+      label: 'Gemini',
+      homePath: path.join(userHome, '.gemini'),
+      detectionPaths: [
+        path.join(userHome, '.gemini'),
+        path.join(userHome, '.config', 'gemini'),
+      ],
+      configPath: path.join(userHome, '.gemini', 'consuelo-os.json'),
+    },
+    {
+      name: 'pi',
+      label: 'Pi',
+      homePath: path.join(userHome, 'Library', 'Application Support', 'Pi'),
+      detectionPaths: [
+        path.join(userHome, 'Library', 'Application Support', 'Pi'),
+        path.join(userHome, '.config', 'pi'),
+      ],
+      configPath: path.join(userHome, 'Library', 'Application Support', 'Pi', 'consuelo-os.json'),
+    },
+  ];
 }
 
 function openCodeGlobalConfigPath(): string {
@@ -1344,8 +1490,9 @@ export function provisionLocalOs(
   options: ProvisionOptions = {},
 ): ProvisionResult {
   const home = resolveOsHome(options.home);
+  const layout = resolveConsueloHomeLayout(home);
   const configPath = path.join(home, 'config.json');
-  const dbPath = path.join(home, 'consuelo.db');
+  const dbPath = layout.nodeDbPath;
   const dryRun = Boolean(options.dryRun);
   const actions: ProvisionAction[] = [];
 
@@ -1390,6 +1537,75 @@ export function provisionLocalOs(
     writeJsonFile(configPath, config, dryRun);
   }
 
+  const gatewayPort = options.port ??
+    (config.port === LEGACY_DEFAULT_PORT ? DEFAULT_PORT : config.port ?? DEFAULT_PORT);
+  const workspaceBootstrap = options.workspaceBootstrap;
+  const workspaceIdentity = workspaceBootstrap
+    ? {
+        workspaceId: workspaceBootstrap.workspaceId,
+        workspaceSlug: workspaceBootstrap.workspaceSlug,
+        workspaceHost: workspaceBootstrap.workspaceHost,
+      }
+    : {
+        workspaceId: 'local-consuelo-os',
+        workspaceSlug: 'local',
+        workspaceHost: 'local.consuelohq.com',
+      };
+  const nodeId = workspaceBootstrap?.nodeId ?? workspaceBootstrap?.connectorId ?? 'local';
+  const nodeName = workspaceBootstrap?.nodeName ?? (os.hostname() || 'local');
+  const nodeRole = workspaceBootstrap?.nodeRole ?? 'home';
+
+  for (const dir of [
+    layout.workspaceSharedDir(workspaceIdentity.workspaceId),
+    layout.nodeWorkspaceStateDir(workspaceIdentity.workspaceId),
+  ]) {
+    const exists = fs.existsSync(dir);
+    actions.push({
+      type: 'create_dir',
+      path: dir,
+      status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: exists ? 'directory exists' : 'directory created',
+    });
+    if (!dryRun) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+
+  writeYamlConfigIfMissing({
+    actions,
+    path: layout.globalConfigPath,
+    value: createDefaultGlobalYamlConfig({
+      workspaceId: workspaceIdentity.workspaceId,
+      nodeId,
+    }),
+    dryRun,
+    message: 'global Consuelo config written',
+  });
+  writeYamlConfigIfMissing({
+    actions,
+    path: layout.nodeConfigPath,
+    value: createDefaultNodeYamlConfig({
+      nodeId,
+      nodeName,
+      nodeRole,
+      workspaceId: workspaceIdentity.workspaceId,
+    }),
+    dryRun,
+    message: 'local node config written',
+  });
+  writeYamlConfigIfMissing({
+    actions,
+    path: layout.workspaceConfigPath(workspaceIdentity.workspaceId),
+    value: createDefaultWorkspaceYamlConfig({
+      workspaceId: workspaceIdentity.workspaceId,
+      workspaceName: workspaceIdentity.workspaceSlug,
+      workspaceSlug: workspaceIdentity.workspaceSlug,
+      workspaceHost: workspaceIdentity.workspaceHost,
+    }),
+    dryRun,
+    message: 'sync-safe workspace config written',
+  });
+
   if (fs.existsSync(dbPath)) {
     actions.push({
       type: 'preserve_file',
@@ -1409,29 +1625,15 @@ export function provisionLocalOs(
     }
   }
 
-  const generatedSecurityDir = path.join(home, 'security', 'generated');
-  const securityOverridesDir = path.join(home, 'security', 'overrides');
-  const generatedAuthPath = path.join(home, 'security', 'generated', 'auth.json');
-  const generatedCaddyfilePath = path.join(home, 'security', 'generated', 'Caddyfile');
+  const generatedSecurityDir = layout.nodeSecurityGeneratedDir;
+  const securityOverridesDir = layout.nodeSecurityOverridesDir;
+  const generatedAuthPath = path.join(layout.nodeSecurityGeneratedDir, 'auth.json');
+  const generatedCaddyfilePath = layout.nodeCaddyfilePath;
   const generatedSecurityDirExists = fs.existsSync(generatedSecurityDir);
   const securityOverridesDirExists = fs.existsSync(securityOverridesDir);
   const generatedAuthPathExists = fs.existsSync(generatedAuthPath);
   const generatedCaddyfilePathExists = fs.existsSync(generatedCaddyfilePath);
   const securityStatus = (exists: boolean): ProvisionAction['status'] => exists ? 'preserved' : dryRun ? 'planned' : 'created';
-
-  const gatewayPort = options.port ?? config.port ?? DEFAULT_PORT;
-  const workspaceBootstrap = options.workspaceBootstrap;
-  const workspaceIdentity = workspaceBootstrap
-    ? {
-        workspaceId: workspaceBootstrap.workspaceId,
-        workspaceSlug: workspaceBootstrap.workspaceSlug,
-        workspaceHost: workspaceBootstrap.workspaceHost,
-      }
-    : {
-        workspaceId: 'local-consuelo-os',
-        workspaceSlug: 'local',
-        workspaceHost: 'local.consuelohq.com',
-      };
 
   config.port = gatewayPort;
   config.workspace = {
@@ -1449,14 +1651,14 @@ export function provisionLocalOs(
 
   if (!dryRun) {
     const gatewayConfig = createGatewaySecurityConfig({
-      home,
+      home: layout.nodeDir,
       workspaceId: workspaceIdentity.workspaceId,
       workspaceSlug: workspaceIdentity.workspaceSlug,
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
     });
     actions.push(...materializeChatGptMcpConnection({
-      home,
+      home: layout.nodeDir,
       config: gatewayConfig,
       port: gatewayPort,
       dryRun,
@@ -1502,14 +1704,14 @@ export function provisionLocalOs(
   if (workspaceBootstrap?.cloudflareTunnelToken) {
     actions.push(
       ...materializeWorkspaceConnectorBootstrap({
-        home,
+        nodeHome: layout.nodeDir,
+        runtimeHome: home,
         port: gatewayPort,
         dryRun,
         workspaceBootstrap,
       }),
     );
   }
-  actions.push(...materializeSites({ home, dbPath, dryRun, workspaceHost: workspaceIdentity.workspaceHost }).actions);
   config.selectedSkills = migrateSelectedSkillNames(
     options.selectedSkills ??
     config.selectedSkills ??
@@ -1531,15 +1733,20 @@ export function provisionLocalOs(
     writeJsonFile(configPath, config, false);
   }
 
+  actions.push(...materializeSites({ home, dbPath, dryRun }).actions);
+
   return { home, configPath, dbPath, actions, agents: detectAgents(home) };
 }
 
 export async function runDoctor(home?: string): Promise<DoctorResult> {
   const resolvedHome = resolveOsHome(home);
   const checks: DoctorCheck[] = [];
+  const layout = resolveConsueloHomeLayout(resolvedHome);
   const requiredPaths = [
     resolvedHome,
     path.join(resolvedHome, 'config.json'),
+    layout.globalConfigPath,
+    layout.nodeConfigPath,
     ...REQUIRED_DIRS.map((entry) => path.join(resolvedHome, entry)),
   ];
 
@@ -1604,7 +1811,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
   }
   try {
     const { Database } = await import('bun:sqlite');
-    const db = new Database(path.join(resolvedHome, 'consuelo.db'));
+    const db = new Database(layout.nodeDbPath);
     db.close();
     checks.push({
       name: 'sqlite',

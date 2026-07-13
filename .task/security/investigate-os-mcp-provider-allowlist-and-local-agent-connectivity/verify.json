@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity",
+  "base": "origin/stream/security",
+  "headSha": "6eebc32d39e61d940e374c3f741d3931915597a4",
+  "changeHash": "6544177b0ef1a226f924434a6ca78ceefd217f134d21be54dd8157b703a68bec",
+  "changedFiles": [
+    "packages/os/scripts/lib/platform-cloudflare-provisioning.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts"
+  ],
+  "verifiedAt": "2026-07-01T06:16:59.316Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity/current.json",
+        ".task/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity/session.json",
+        ".task/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity/verify.json",
+        ".task/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity/workpad.md",
+        ".task/tasks/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity.json",
+        "packages/os/scripts/lib/platform-cloudflare-provisioning.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

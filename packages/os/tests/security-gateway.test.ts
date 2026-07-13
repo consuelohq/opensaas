@@ -249,7 +249,7 @@ async function loadGatewayModule(): Promise<GatewayModule> {
 
 function serverRequestEval(path: string, init: { method?: string; headers?: Record<string, string>; body?: string } = {}): string {
   return `
-    const { handleRequest } = await import('./scripts/server.ts');
+    const { handleRequest } = await import('./scripts/server/app.ts');
     const response = await handleRequest(new Request('http://127.0.0.1:8850${path}', {
       method: ${JSON.stringify(init.method ?? 'GET')},
       headers: ${JSON.stringify(init.headers ?? {})},
@@ -299,13 +299,15 @@ describe('Consuelo OS public gateway security contract', () => {
       process.stdout.write(JSON.stringify(result));
     `);
 
-    const generatedAuthPath = join(tempHome, 'security', 'generated', 'auth.json');
-    const generatedCaddyPath = join(tempHome, 'security', 'generated', 'Caddyfile');
-    const overridesPath = join(tempHome, 'security', 'overrides');
+    const generatedAuthPath = join(tempHome, 'node', 'security', 'generated', 'auth.json');
+    const generatedCaddyPath = join(tempHome, 'node', 'caddy', 'Caddyfile');
+    const overridesPath = join(tempHome, 'node', 'security', 'overrides');
     const configPath = join(tempHome, 'config.json');
 
-    expect(existsSync(join(tempHome, 'security'))).toBe(true);
-    expect(existsSync(join(tempHome, 'security', 'generated'))).toBe(true);
+    expect(existsSync(join(tempHome, 'security'))).toBe(false);
+    expect(existsSync(join(tempHome, 'node', 'security'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'security', 'generated'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'caddy'))).toBe(true);
     expect(existsSync(overridesPath)).toBe(true);
     expect(existsSync(generatedAuthPath)).toBe(true);
     expect(existsSync(generatedCaddyPath)).toBe(true);
@@ -323,8 +325,8 @@ describe('Consuelo OS public gateway security contract', () => {
       },
     });
     expect(readFileSync(generatedAuthPath, 'utf8')).not.toContain('MCP_BEARER_TOKEN');
-    expect(readFileSync(generatedCaddyPath, 'utf8')).toContain('127.0.0.1:8960');
-    expect(readFileSync(generatedCaddyPath, 'utf8')).not.toContain('0.0.0.0:8960');
+    expect(readFileSync(generatedCaddyPath, 'utf8')).toContain('127.0.0.1:46321');
+    expect(readFileSync(generatedCaddyPath, 'utf8')).not.toContain('0.0.0.0:46321');
     expect(existsSync(join(tempHome, 'source'))).toBe(false);
   });
 
@@ -930,7 +932,7 @@ describe('Consuelo OS public gateway security contract', () => {
         timestamp: new Date().toISOString(),
         nonce: 'server-call-signed-nonce',
       });
-      const { handleRequest } = await import('./scripts/server.ts');
+      const { handleRequest } = await import('./scripts/server/app.ts');
       async function request(init) {
         const response = await handleRequest(new Request('http://127.0.0.1:8850/call', {
           method: 'POST',
@@ -1167,7 +1169,7 @@ describe('Consuelo OS public gateway security contract', () => {
       process.stdout.write(JSON.stringify(result));
     `);
 
-    const caddyfile = readFileSync(join(tempHome, 'security', 'generated', 'Caddyfile'), 'utf8');
+    const caddyfile = readFileSync(join(tempHome, 'node', 'caddy', 'Caddyfile'), 'utf8');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8999');
     expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8850');
   });
@@ -1212,7 +1214,7 @@ describe('Consuelo OS public gateway security contract', () => {
       delete process.env.CONSUELO_OS_AUTH_CONFIG;
       process.env.CONSUELO_HOME = home;
       process.env.CONSUELO_OS_HOME = home;
-      const { handleRequest } = await import('./scripts/server.ts');
+      const { handleRequest } = await import('./scripts/server/app.ts');
       const response = await handleRequest(new Request('http://127.0.0.1:8850/call', {
         method: 'POST',
         headers: signed.headers,
@@ -1245,16 +1247,16 @@ describe('Consuelo OS public gateway security contract', () => {
       const { provisionLocalOs, runDoctor } = await import('./scripts/lib/install-state.ts');
       const home = process.env.CONSUELO_OS_HOME;
       provisionLocalOs({ mode: 'local' });
-      rmSync(join(home, 'security', 'generated', 'auth.json'), { force: true });
-      rmSync(join(home, 'security', 'generated', 'Caddyfile'), { force: true });
+      rmSync(join(home, 'node', 'security', 'generated', 'auth.json'), { force: true });
+      rmSync(join(home, 'node', 'caddy', 'Caddyfile'), { force: true });
       const result = await runDoctor(home);
-      const checks = result.checks.filter((check) => check.message.includes('security/generated'));
+      const checks = result.checks.filter((check) => check.message.includes('node/security') || check.message.includes('node/caddy'));
       process.stdout.write(JSON.stringify({ ok: result.ok, checks }));
     `);
 
     expect(result).toMatchObject({ ok: false });
-    expect(JSON.stringify(result)).toContain('security/generated/auth.json');
-    expect(JSON.stringify(result)).toContain('security/generated/Caddyfile');
+    expect(JSON.stringify(result)).toContain('node/security/generated/auth.json');
+    expect(JSON.stringify(result)).toContain('node/caddy/Caddyfile');
     expect(JSON.stringify(result)).toContain('unhealthy');
   });
 

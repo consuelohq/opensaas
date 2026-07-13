@@ -1,0 +1,65 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration",
+  "base": "origin/main",
+  "headSha": "f376718f9d6506e5c885e9e2526a648ea4b8291b",
+  "changeHash": "8d499b6c9ac966844040c556241085038a1333a4dff523c246c7f3873e212226",
+  "changedFiles": [
+    "packages/documentation/astro.config.mjs",
+    "packages/documentation/src/content/docs/os/concepts/configuration.mdx",
+    "packages/documentation/src/content/docs/os/concepts/local-and-cloud.mdx",
+    "packages/documentation/src/content/docs/os/concepts/mcp-ingress-security.mdx",
+    "packages/documentation/src/content/docs/os/concepts/portal.mdx",
+    "packages/documentation/src/content/docs/os/getting-started/connect-agents.mdx",
+    "packages/documentation/src/content/docs/os/getting-started/install.mdx",
+    "packages/documentation/src/content/docs/os/getting-started/workspace-launcher.mdx",
+    "packages/documentation/src/content/docs/os/overview.mdx"
+  ],
+  "verifiedAt": "2026-07-02T19:55:10.397Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration/current.json",
+        ".task/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration/session.json",
+        ".task/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration/workpad.md",
+        ".task/tasks/docs/document-consuelo-os-install-launcher-mcp-security-and-configuration.json",
+        "packages/documentation/astro.config.mjs",
+        "packages/documentation/src/content/docs/os/concepts/configuration.mdx",
+        "packages/documentation/src/content/docs/os/concepts/local-and-cloud.mdx",
+        "packages/documentation/src/content/docs/os/concepts/mcp-ingress-security.mdx",
+        "packages/documentation/src/content/docs/os/concepts/portal.mdx",
+        "packages/documentation/src/content/docs/os/getting-started/connect-agents.mdx",
+        "packages/documentation/src/content/docs/os/getting-started/install.mdx",
+        "packages/documentation/src/content/docs/os/getting-started/workspace-launcher.mdx",
+        "packages/documentation/src/content/docs/os/overview.mdx"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

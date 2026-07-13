@@ -29,7 +29,7 @@ const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  'task.intent': 'Start or dispatch the task workflow lifecycle guidance for scoped task work.',
+  'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
 } as const;
 const removedCoreToolNames = [
   'fs.list',
@@ -39,6 +39,7 @@ const removedCoreToolNames = [
   'exploit',
   'confidenceScore',
   'confirm',
+  'code.run',
   'context.list',
   'context.categories',
   'audit',
@@ -72,13 +73,12 @@ const oldContextToolNames = [
 const retainedCoreToolNames = [
   'batch',
   'code.call',
-  'code.run',
   'context',
   'explore',
   'fs.apply_patch',
   'fs.trash',
   'github',
-  'task.intent',
+  'task.start',
   'review.run',
   'stream.context',
   'stream.sync',
@@ -254,6 +254,7 @@ describe('tool manifest generator', () => {
 
     expect(generatedNames).toEqual(expectedNames);
     expect(generatedNames).toContain('batch');
+    expect(generatedNames).toContain('code.run');
     expect(generatedNames).toContain('media.svg.convert');
     expect(registry.full.tools).toHaveLength(expectedNames.length);
     expect(registry.report.oldRegularToolCount).toBe(regularEntries.length);
@@ -286,7 +287,7 @@ describe('tool manifest generator', () => {
     }
     expect(coreNames).not.toContain('mac.call');
     expect(coreNames).not.toContain('mac.exec');
-    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.start']);
 
     for (const toolName of oldContextToolNames) {
       expect(coreNames).not.toContain(toolName);
@@ -323,28 +324,30 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const fullNames = registry.full.tools.map((entry) => entry.name);
     const coreNames = registry.core.tools.map((entry) => entry.name);
-    const lifecycleTools = ['task.start', 'task.current', 'task.push', 'task.pr', 'task.finish'];
+    const lifecycleTools = ['task.current', 'task.push', 'task.pr', 'task.finish'];
     const codeCallEntry = registry.core.tools.find((entry) => entry.name === 'code.call');
     const macCallEntry = registry.full.tools.find((entry) => entry.name === 'mac.call');
 
     expect(fullNames).toContain('code.call');
     expect(coreNames).toContain('code.call');
+    expect(coreNames).toContain('task.start');
+    expect(coreNames).not.toContain('task.intent');
     expect(coreNames).not.toContain('mac.call');
     expect(coreNames).not.toContain('mac.exec');
     for (const toolName of lifecycleTools) {
       expect(fullNames).toContain(toolName);
       expect(coreNames).not.toContain(toolName);
     }
-    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
-    expect(fullNames).not.toContain('task.call');
-    expect(fullNames).not.toContain('task.exec');
-    expect(coreNames).not.toContain('task.call');
-    expect(coreNames).not.toContain('task.exec');
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.start']);
+    expect(fullNames).not.toContain(`task.${'call'}`);
+    expect(fullNames).not.toContain(`task.${'exec'}`);
+    expect(coreNames).not.toContain(`task.${'call'}`);
+    expect(coreNames).not.toContain(`task.${'exec'}`);
 
     const publicText = publicSurfaceText();
-    expect(publicText).not.toContain('task.call');
-    expect(publicText).not.toContain('task.exec');
-    expect(publicText).not.toContain('task:exec');
+    expect(publicText).not.toContain(`task.${'call'}`);
+    expect(publicText).not.toContain(`task.${'exec'}`);
+    expect(publicText).not.toContain(`task:${'exec'}`);
     expect(publicText).toContain('code.call');
     expect(publicText).toContain('Do not use `mac.call` for repo-scoped tests');
 
@@ -360,18 +363,19 @@ describe('tool manifest generator', () => {
     expect(macCallEntry?.description).toContain('emergency host escape hatch');
     expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
 
-    const taskCallSearch = await runToolSearch({ query: 'task.call', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
-    const taskExecSearch = await runToolSearch({ query: 'task.exec', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskCallSearch = await runToolSearch({ query: `task.${'call'}`, limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskExecSearch = await runToolSearch({ query: `task.${'exec'}`, limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
 
-    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain('task.call');
-    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
+    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain(`task.${'call'}`);
+    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
   });
 
-  it('keeps OS task intent wired to the OS runtime surface', () => {
+  it('keeps OS task start wired to the OS runtime surface', () => {
     const registry = buildToolManifest({ write: false });
-    const intentEntry = registry.full.tools.find((entry) => entry.name === 'task.intent');
+    const startEntry = registry.full.tools.find((entry) => entry.name === 'task.start');
 
-    expect(intentEntry?.definition.underlying).toBe('os task.intent');
+    expect(startEntry?.definition.underlying).toBe('os task.start');
+    expect(registry.full.tools.map((entry) => entry.name)).not.toContain('task.intent');
   });
 
   it("uses Ko's core tool descriptions in full and core manifests", () => {

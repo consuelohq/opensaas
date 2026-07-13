@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/weekly-changelog-structure",
+  "base": "origin/main",
+  "headSha": "59a203330c182ad291152efa802a70b3944dd2f1",
+  "changeHash": "2bc53aa7059ccb0e36ed10433fd4868c822f46961d64a0bf89abfdafc5336a7d",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/changelog.astro",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-06-30T21:36:39.166Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/weekly-changelog-structure/current.json",
+        ".task/sites/weekly-changelog-structure/session.json",
+        ".task/sites/weekly-changelog-structure/workpad.md",
+        ".task/tasks/sites/weekly-changelog-structure.json",
+        "packages/consuelo-website/src/pages/changelog.astro",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

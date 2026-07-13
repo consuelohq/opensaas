@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/release-workflow",
+  "base": "origin/stream/security",
+  "headSha": "9365a6ba470c54ae371943c74a6a921b9aabecb7",
+  "changeHash": "a314389602580fa976e263e8b6be85136ce6a85f2d9d665572b69e3f8578136b",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    ".github/workflows/consuelo-website-deploy.yaml",
+    "packages/workspace/tests/website-deploy.test.js"
+  ],
+  "verifiedAt": "2026-07-10T22:52:56.543Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".github/workflows/consuelo-website-deploy.yaml",
+        ".task/security/release-workflow/current.json",
+        ".task/security/release-workflow/evidence-log.json",
+        ".task/security/release-workflow/read-log.json",
+        ".task/security/release-workflow/session.json",
+        ".task/security/release-workflow/workpad.md",
+        ".task/tasks/security/release-workflow.json",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -90,8 +90,13 @@ export type WorkspaceCloudflareEdgeRouterInput = {
   siteSnapshots?: WorkspaceSitesSnapshotStore;
   workspaceBaseDomains?: string[];
   reservedHostnames?: string[];
+  now?: () => number;
+  createNonce?: () => string;
 };
 
+const EDGE_SIGNATURE_TIMESTAMP_HEADER = 'x-consuelo-edge-timestamp';
+const EDGE_SIGNATURE_NONCE_HEADER = 'x-consuelo-edge-nonce';
+const EDGE_SIGNATURE_MAX_AGE_MS = 5 * 60 * 1000;
 const PLATFORM_SAFETY_MESSAGE = 'This workspace is protected by Consuelo platform safety.';
 const PLATFORM_SAFETY_HELP_URL = 'https://os.consuelohq.com/help/workspace-access';
 
@@ -114,7 +119,6 @@ const DEFAULT_RESERVED_HOSTNAMES = [
   'linear.consuelohq.com',
   'api.consuelohq.com',
   'www.consuelohq.com',
-  'sites.consuelohq.com',
 ];
 
 const normalizeHostname = (host: string): string => host.trim().toLowerCase().replace(/\.$/, '');
@@ -255,12 +259,16 @@ const signEdgeRequest = (input: {
   pathWithSearch: string;
   workspaceId: string;
   surface: string;
+  timestamp: string;
+  nonce: string;
 }): string => {
   const canonical = [
     input.method.toUpperCase(),
     input.pathWithSearch,
     input.workspaceId,
     input.surface,
+    input.timestamp,
+    input.nonce,
   ].join('\n');
 
   return `sha256=${createHmac('sha256', input.secret)
@@ -278,10 +286,17 @@ const isSignedInternalEdgeRequest = (input: {
   request: Request;
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>;
   internalSigningSecret: string;
+  nowMs: number;
 }): boolean => {
   const inboundUrl = new URL(input.request.url);
   const signature = input.request.headers.get('x-consuelo-edge-signature')?.trim();
-  if (!signature) return false;
+  const timestamp = input.request.headers.get(EDGE_SIGNATURE_TIMESTAMP_HEADER)?.trim();
+  const nonce = input.request.headers.get(EDGE_SIGNATURE_NONCE_HEADER)?.trim();
+  if (!signature || !timestamp || !nonce) return false;
+  if (nonce.length < 8 || nonce.length > 128) return false;
+  const timestampMs = Number(timestamp);
+  if (!Number.isFinite(timestampMs)) return false;
+  if (Math.abs(input.nowMs - timestampMs) > EDGE_SIGNATURE_MAX_AGE_MS) return false;
 
   const expectedSignature = signEdgeRequest({
     secret: input.internalSigningSecret,
@@ -289,6 +304,8 @@ const isSignedInternalEdgeRequest = (input: {
     pathWithSearch: `${inboundUrl.pathname}${inboundUrl.search}`,
     workspaceId: input.resolution.workspaceId,
     surface: input.resolution.surface,
+    timestamp,
+    nonce,
   });
 
   return signatureMatches(signature, expectedSignature);
@@ -299,6 +316,8 @@ const buildProxyRequest = (input: {
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>;
   upstreamUrl: string;
   internalSigningSecret: string;
+  timestamp: string;
+  nonce: string;
 }): Request => {
   const inboundUrl = new URL(input.request.url);
   const headers = new Headers(input.request.headers);
@@ -307,6 +326,8 @@ const buildProxyRequest = (input: {
   headers.delete('x-consuelo-route');
   headers.delete('x-consuelo-surface');
   headers.delete('x-consuelo-edge-signature');
+  headers.delete(EDGE_SIGNATURE_TIMESTAMP_HEADER);
+  headers.delete(EDGE_SIGNATURE_NONCE_HEADER);
   headers.delete('x-consuelo-connector-id');
 
   headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
@@ -318,6 +339,9 @@ const buildProxyRequest = (input: {
     headers.set('x-consuelo-connector-id', input.resolution.target.connectorId);
   }
 
+  headers.set(EDGE_SIGNATURE_TIMESTAMP_HEADER, input.timestamp);
+  headers.set(EDGE_SIGNATURE_NONCE_HEADER, input.nonce);
+
   headers.set(
     'x-consuelo-edge-signature',
     signEdgeRequest({
@@ -326,6 +350,8 @@ const buildProxyRequest = (input: {
       pathWithSearch: `${inboundUrl.pathname}${inboundUrl.search}`,
       workspaceId: input.resolution.workspaceId,
       surface: input.resolution.surface,
+      timestamp: input.timestamp,
+      nonce: input.nonce,
     }),
   );
 
@@ -550,6 +576,9 @@ const isOAuthProtectedResourceMetadataRequest = (pathname: string): boolean =>
   pathname === '/.well-known/oauth-protected-resource' ||
   pathname === '/.well-known/oauth-protected-resource/mcp';
 
+const isOAuthAuthorizationServerMetadataRequest = (pathname: string): boolean =>
+  pathname === '/.well-known/oauth-authorization-server';
+
 const createOAuthProtectedResourceMetadataResponse = (input: {
   hostname: string;
 }): Response =>
@@ -569,10 +598,35 @@ const createOAuthProtectedResourceMetadataResponse = (input: {
     },
   );
 
+const createOAuthAuthorizationServerMetadataResponse = (): Response =>
+  Response.json(
+    {
+      issuer: OAUTH_AUTHORIZATION_SERVER,
+      authorization_endpoint: `${OAUTH_AUTHORIZATION_SERVER}/oauth/authorize`,
+      token_endpoint: `${OAUTH_AUTHORIZATION_SERVER}/oauth/token`,
+      introspection_endpoint: `${OAUTH_AUTHORIZATION_SERVER}/oauth/introspect`,
+      response_types_supported: ['code'],
+      grant_types_supported: ['authorization_code'],
+      code_challenge_methods_supported: ['S256'],
+      token_endpoint_auth_methods_supported: ['none'],
+      client_id_metadata_document_supported: true,
+      scopes_supported: MCP_OAUTH_SCOPES,
+    },
+    {
+      status: 200,
+      headers: {
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      },
+    },
+  );
+
 export const createWorkspaceCloudflareEdgeRouter = (
   input: WorkspaceCloudflareEdgeRouterInput,
 ): WorkspaceCloudflareEdgeRouter => {
   const fetchUpstream = input.fetchUpstream ?? globalThis.fetch;
+  const now = input.now ?? Date.now;
+  const createNonce = input.createNonce ?? randomUUID;
   return {
     async fetch(request: Request): Promise<Response> {
       try {
@@ -607,6 +661,28 @@ export const createWorkspaceCloudflareEdgeRouter = (
           return createOAuthProtectedResourceMetadataResponse({
             hostname: inboundUrl.hostname,
           });
+        }
+        if (isOAuthAuthorizationServerMetadataRequest(inboundUrl.pathname)) {
+          const mcpResolution = await input.registry.resolve({
+            host: inboundUrl.hostname,
+            path: '/mcp',
+            method: 'POST',
+          });
+          if (!mcpResolution.allowed) {
+            return createSafeErrorResponse({
+              status: mcpResolution.status,
+              code: mcpResolution.errorCode,
+              request,
+            });
+          }
+          if (mcpResolution.target.kind !== 'os-connector') {
+            return createSafeErrorResponse({
+              status: 404,
+              code: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+              request,
+            });
+          }
+          return createOAuthAuthorizationServerMetadataResponse();
         }
         const resolution = await input.registry.resolve({
           host: inboundUrl.hostname,
@@ -655,6 +731,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
                 request,
                 resolution,
                 internalSigningSecret,
+                nowMs: now(),
               }))
           ) {
             return createSafeErrorResponse({
@@ -708,6 +785,8 @@ export const createWorkspaceCloudflareEdgeRouter = (
           resolution,
           upstreamUrl,
           internalSigningSecret,
+          timestamp: String(now()),
+          nonce: createNonce(),
         });
 
         return await fetchUpstream(proxyRequest);

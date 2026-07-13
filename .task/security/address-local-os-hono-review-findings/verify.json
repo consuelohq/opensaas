@@ -1,0 +1,65 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/address-local-os-hono-review-findings",
+  "base": "origin/stream/security",
+  "headSha": "cf73c82ed099d1842dc56006c7874462360b95b9",
+  "changeHash": "f987835cc9262582f41d224cf47c17047a47717ed07d7aaea641d2aa7eb3b06e",
+  "changedFiles": [
+    "packages/os/scripts/server/env.ts",
+    "packages/os/scripts/server/logger.ts",
+    "packages/os/scripts/server/middleware/errors.ts",
+    "packages/os/scripts/server/routes/call.ts",
+    "packages/os/scripts/server/routes/mcp.ts",
+    "packages/os/scripts/server/services/oauth-introspection.ts",
+    "packages/os/scripts/server/services/os-runtime.ts",
+    "packages/os/tests/local-os-server-review-findings.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T04:33:35.660Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/address-local-os-hono-review-findings/current.json",
+        ".task/security/address-local-os-hono-review-findings/evidence-log.json",
+        ".task/security/address-local-os-hono-review-findings/read-log.json",
+        ".task/security/address-local-os-hono-review-findings/session.json",
+        ".task/security/address-local-os-hono-review-findings/workpad.md",
+        ".task/tasks/security/address-local-os-hono-review-findings.json",
+        "packages/os/scripts/server/env.ts",
+        "packages/os/scripts/server/logger.ts",
+        "packages/os/scripts/server/middleware/errors.ts",
+        "packages/os/scripts/server/routes/call.ts",
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/server/services/oauth-introspection.ts",
+        "packages/os/scripts/server/services/os-runtime.ts",
+        "packages/os/tests/local-os-server-review-findings.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

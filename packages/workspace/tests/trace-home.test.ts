@@ -2,7 +2,6 @@ import { mkdtempSync, mkdirSync, rmSync, utimesSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
-import { classifyTaskCallCommand, classifyTaskExecCommand } from '../scripts/trace-home/command-quality';
 import { parseArgs } from '../scripts/trace-home/cli';
 import { resolveTraceDb } from '../scripts/trace-home/db';
 import { buildTraceHomeModel, formatTime } from '../scripts/trace-home/model';
@@ -87,18 +86,18 @@ const fixtureRows: TraceHomeRow[] = [
   }),
   row({
     rownum: 2,
-    record_id: 'task-exec-good',
+    record_id: 'code-call-good',
     trace_id: 'trc_good',
-    tool: 'task.exec',
+    tool: 'code.call',
     duration_ms: 140,
     total_tokens: 3400,
     resolved_input_json: JSON.stringify({ command: ['bun', 'test', 'packages/workspace/tests/trace-home.test.ts'] }),
   }),
   row({
     rownum: 3,
-    record_id: 'task-call-suspect',
+    record_id: 'code-call-suspect',
     trace_id: 'trc_suspect',
-    tool: 'task.call',
+    tool: 'code.call',
     status: 'failed',
     code: 'COMMAND_FAILED',
     exit_code: 1,
@@ -110,9 +109,9 @@ const fixtureRows: TraceHomeRow[] = [
   }),
   row({
     rownum: 4,
-    record_id: 'task-exec-bad',
+    record_id: 'code-call-bad',
     trace_id: 'trc_bad',
-    tool: 'task.exec',
+    tool: 'code.call',
     duration_ms: 900,
     total_tokens: 1200,
     resolved_input_json: JSON.stringify({ command: ['bash', '-lc', `${broad} .task/tmp`] }),
@@ -145,7 +144,7 @@ describe('trace home', () => {
     expect(model.visibleRows).toHaveLength(5);
     expect(model.rows[0].children).toHaveLength(2);
     expect(model.rows[4].children.map((child) => child.tool)).toEqual(['fs.read', 'fs.search', 'git.diff']);
-    expect(model.rawShell).toMatchObject({ total: 3, good: 1, suspect: 1, bad: 1 });
+    expect(model.rawShell).toMatchObject({ total: 0, good: 0, suspect: 0, bad: 0 });
     expect(model.topTools[0].tool).toBe('code.run');
     expect(model.inspect?.tabs).toContain('JSON');
   });
@@ -189,18 +188,6 @@ describe('trace home', () => {
     expect(stripWrapperInternals(wrapper)).not.toContain('execFileSync');
     expect(model.rawJson).not.toContain('execFileSync');
     expect(model.selected?.message).toContain('github raw failed');
-  });
-
-  test('command classification covers task.call and task.exec', () => {
-    expect(classifyTaskCallCommand(['bun', 'test']).quality).toBe('good');
-    expect(classifyTaskExecCommand(['bash', '-lc', "sed -n '1,20p' packages/workspace/index.ts"]).quality).toBe('suspect');
-    expect(classifyTaskExecCommand(['bash', '-lc', `${broad} .task/tmp`]).quality).toBe('bad');
-  });
-
-  test('command classification marks direct file inspection as suspect', () => {
-    expect(classifyTaskCallCommand(['rg', 'trace:home', 'packages/workspace']).quality).toBe('suspect');
-    expect(classifyTaskExecCommand(['git', 'status']).quality).toBe('suspect');
-    expect(classifyTaskExecCommand(['git', 'show', 'HEAD:packages/workspace/package.json']).replacement).toBe("fs.read({ path: 'packages/workspace/package.json' })");
   });
 
   test('trace db resolution derives latest trace database from trace root', () => {

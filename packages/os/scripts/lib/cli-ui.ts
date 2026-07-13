@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
 import { intro, outro, log as clackLog } from '@clack/prompts';
 
-type OsBannerStep =
+export type OsBannerStep =
   | string
   | {
       label: string;
@@ -27,7 +27,7 @@ const stepText = (step: OsBannerStep): string => {
   return chalk.white(label);
 };
 
-export function printOsBanner(steps?: OsBannerStep[]): void {
+export function createOsBannerLines(steps?: OsBannerStep[]): string[] {
   const lines: string[] = [];
   lines.push('');
   lines.push(chalk.bold.white('CONSUELO OS'));
@@ -40,7 +40,11 @@ export function printOsBanner(steps?: OsBannerStep[]): void {
     }
   }
   lines.push(chalk.dim('|'));
-  process.stdout.write(`${lines.join('\n')}\n`);
+  return lines;
+}
+
+export function printOsBanner(steps?: OsBannerStep[]): void {
+  process.stdout.write(`${createOsBannerLines(steps).join('\n')}\n`);
 }
 
 export function startIntro(): void {

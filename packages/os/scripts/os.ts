@@ -1141,14 +1141,19 @@ async function main(): Promise<void> {
   }
 
   if (command === 'sites' || command === 'office') {
-    const result = command === 'office'
-      ? await runOfficeCommand(args)
-      : await runSitesCommand(args);
-    if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}
+    try {
+      const result = command === 'office'
+        ? await runOfficeCommand(args)
+        : await runSitesCommand(args);
+      if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}
 `);
-    else writeStdout(`${renderSitesCommandResult(result)}
+      else writeStdout(`${renderSitesCommandResult(result)}
 `);
-    if (!result.ok) process.exitCode = 1;
+      if (!result.ok) process.exitCode = 1;
+    } catch (error: unknown) {
+      writeStderr(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
     return;
   }
 

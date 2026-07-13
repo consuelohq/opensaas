@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-trace-sse-live-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1327,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1327",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1327",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1327/wire-trace-sse-live-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1327",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1327/wire-trace-sse-live-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-trace-sse-live-stream",
+  "taskSession": "tsk_1a304c83ce11",
+  "tmuxSession": "opensaas-os-wire-trace-sse-live-stream-1a304c83",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-trace-sse-live-stream/.task/os/wire-trace-sse-live-stream/session.json",
+  "createdAt": "2026-07-01T20:02:05.382Z"
+}

@@ -20,13 +20,12 @@ jobs:
     with:
       files: |
         package.json
-        packages/consuelo-docs/**
-        eslint.config.mjs
+        packages/documentation/**
 
-  docs-lint:
+  docs-check:
     needs: changed-files-check
     if: needs.changed-files-check.outputs.any_changed == 'true'
-    timeout-minutes: 10
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
@@ -39,15 +38,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
 
-      - name: Docs / Lint English MDX files
-        run: npx eslint "packages/consuelo-docs/{developers,user-guide,twenty-ui,getting-started,snippets,os}/**/*.mdx" "packages/consuelo-docs/l/*/os/**/*.mdx" --max-warnings 0
+      - name: Install documentation dependencies
+        working-directory: packages/documentation
+        run: bun install --frozen-lockfile
 
-      - name: Docs / Check generated OS skill docs
-        run: yarn docs:check-os-skill-docs
-
-      - name: Docs / Validate OS navigation routes
-        run: yarn docs:validate-os-docs
-
+      - name: Docs / validate, test translation, and build
+        run: bun run docs:check

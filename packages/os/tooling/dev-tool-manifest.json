@@ -432,9 +432,9 @@
       "task",
       "start"
     ],
-    "description": "create a task branch, worktree, and draft PR",
+    "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
     "category": "task lifecycle",
-    "underlying": "workspace task.start",
+    "underlying": "os task.start",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -456,6 +456,11 @@
         {
           "source": "title",
           "flag": "--title",
+          "kind": "value"
+        },
+        {
+          "source": "workflow",
+          "flag": "--workflow",
           "kind": "value"
         },
         {
@@ -484,7 +489,8 @@
     "exampleInput": {
       "stream": "stream/workspace-agents",
       "title": "example task",
-      "dryRun": true
+      "dryRun": true,
+      "workflow": "task"
     },
     "sessionRequired": false,
     "workflowRole": "task.start"
@@ -960,14 +966,13 @@
     "sessionRequired": false
   },
   {
-    "name": "worker.call",
+    "name": "subagent",
     "methodPath": [
-      "worker",
-      "call"
+      "subagent"
     ],
-    "description": "delegate a bounded instruction file to a configured local worker provider",
-    "category": "worker",
-    "underlying": "workspace worker.call",
+    "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+    "category": "subagent",
+    "underlying": "workspace subagent",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -975,21 +980,31 @@
       "safeToRetry": false
     },
     "defaultTimeout": 300000,
-    "inputSchema": "WorkerCallInput",
-    "outputSchema": "WorkerCallOutput",
+    "inputSchema": "SubagentInput",
+    "outputSchema": "SubagentOutput",
     "command": {
       "script": "internal",
-      "internal": "worker.call",
+      "internal": "subagent",
       "arguments": []
     },
     "exampleInput": {
-      "provider": "cdx",
-      "mode": "work",
-      "policy": "edit",
-      "instructionPath": ".task/workspace-agents/example/worker-instructions.md",
-      "workspaceOnly": "preferred"
+      "provider": "grok",
+      "bundle": "media",
+      "policy": "read",
+      "instructionPath": "/tmp/ko-social.md",
+      "outputFormat": "json"
     },
-    "sessionRequired": false
+    "sessionRequired": false,
+    "keywords": [
+      "subagent",
+      "delegate",
+      "model",
+      "agent",
+      "grok",
+      "codex",
+      "opencode",
+      "pi"
+    ]
   },
   {
     "name": "taskMeta.smoke",
@@ -4961,7 +4976,7 @@
       "deterministic": false,
       "safeToRetry": false
     },
-    "defaultTimeout": 300000,
+    "defaultTimeout": 180000,
     "inputSchema": "CodeCallInput",
     "outputSchema": "CodeCallOutput",
     "command": {
@@ -6061,68 +6076,5 @@
       "design",
       "sites"
     ]
-  },
-  {
-    "name": "task.intent",
-    "methodPath": [
-      "task",
-      "intent"
-    ],
-    "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
-    "category": "workflow",
-    "underlying": "os task.intent",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 120000,
-    "sessionRequired": false,
-    "inputSchema": "WorkflowIntentInput",
-    "outputSchema": "WorkflowIntentOutput",
-    "workflowRole": "intent.start",
-    "command": {
-      "script": "task-intent",
-      "branchMode": "none",
-      "jsonFlag": "--json",
-      "arguments": [
-        {
-          "source": "action",
-          "kind": "value"
-        },
-        {
-          "source": "workflow",
-          "flag": "--workflow",
-          "kind": "value"
-        },
-        {
-          "source": "taskSession",
-          "flag": "--task-session",
-          "kind": "value"
-        },
-        {
-          "source": "area",
-          "flag": "--area",
-          "kind": "value"
-        },
-        {
-          "source": "title",
-          "flag": "--title",
-          "kind": "value"
-        },
-        {
-          "source": "eventFile",
-          "flag": "--event-json",
-          "kind": "value"
-        }
-      ]
-    },
-    "exampleInput": {
-      "action": "start",
-      "workflow": "task",
-      "area": "os",
-      "title": "example task-intent flow"
-    }
   }
 ]

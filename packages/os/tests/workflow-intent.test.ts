@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { createWorkflowIntentRuntime } from '../hooks/intent.js';
+import { getInputSchema } from '../scripts/lib/facade/schemas';
 
 type ManifestToolDefinition = {
   name: string;
@@ -86,7 +87,49 @@ describe('OS workflow intent bundles', () => {
     expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
   });
 
-  test('should return advisory task-start guidance when starting task intent', () => {
+  test('should bind the task workflow bundle and post-start guidance to the real task session', () => {
+    const runtime = createWorkflowIntentRuntime({
+      manifest: readManifest(),
+      bundles: readBundles(),
+    });
+    const taskResult = {
+      taskSession: 'tsk_real_task',
+      area: 'os',
+      branch: 'task/os/intent-architecture',
+      worktreePath: '/tmp/intent-architecture',
+    };
+
+    const result = runtime.start({
+      workflow: 'task',
+      taskSession: taskResult.taskSession,
+      area: taskResult.area,
+      title: 'intent architecture',
+      branch: taskResult.branch,
+      worktreePath: taskResult.worktreePath,
+      taskResult,
+    });
+
+    expect(result.workflow).toBe('task');
+    expect(result.taskSession).toBe('tsk_real_task');
+    expect(result.manifestBundle.tools.map((tool) => tool.name)).toEqual(expect.arrayContaining(['task.start']));
+    expect(result.hookEvent).toEqual(expect.objectContaining({
+      event: 'tool.postInvoke',
+      tool: 'task.start',
+      taskSession: 'tsk_real_task',
+      result: expect.objectContaining(taskResult),
+    }));
+    expect(result.hookResult).toEqual(expect.objectContaining({
+      workflow: 'task',
+      stage: 'post-task-start-guidance',
+      contextInjection: expect.objectContaining({
+        taskSession: 'tsk_real_task',
+        worktreePath: '/tmp/intent-architecture',
+      }),
+    }));
+    expect(result.hookResult?.suggestedNextAction.tool).toBe('batch');
+  });
+
+  test('should use a branch-shaped task handle when task intent has not started a task yet', () => {
     const runtime = createWorkflowIntentRuntime({
       manifest: readManifest(),
       bundles: readBundles(),
@@ -94,47 +137,50 @@ describe('OS workflow intent bundles', () => {
 
     const result = runtime.start({
       workflow: 'task',
-      taskSession: 'tsk_intent_task',
       area: 'os',
       title: 'intent architecture',
     });
 
-    expect(result.workflow).toBe('task');
-    expect(result.taskSession).toBe('tsk_intent_task');
-    expect(result.manifestBundle.tools.map((tool) => tool.name)).toEqual(expect.arrayContaining(['task.start']));
-    expect(result.hookResult).toEqual(
-      expect.objectContaining({
-        workflow: 'task',
-        stage: 'task-start-guidance',
-        advisory: expect.objectContaining({ suggestedNextTool: 'stream.context' }),
-      }),
-    );
-    expect(result.hookResult?.blockedAction).toBeUndefined();
-    expect(result.hookResult?.requiredNextAction).toBeUndefined();
-    expect(JSON.stringify(result.hookResult)).toContain('startFrom');
-    expect(JSON.stringify(result.hookResult)).toContain('main');
-    expect(JSON.stringify(result.hookResult)).toContain('stream');
-    expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'tsk_intent_task' }));
+    expect(result.taskSession).toBe('task/os/intent-architecture');
+    expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'task/os/intent-architecture' }));
   });
 
-  test('should expose task.intent when reading the full and core manifests', () => {
-    const intentEntry = readManifest().find((tool) => tool.workflowRole === 'intent.start');
-    const coreIntentEntry = readCoreManifest().tools.find((tool) => tool.definition.workflowRole === 'intent.start');
+  test('should expose task.start as the sole public task workflow entrypoint', () => {
+    const full = readManifest();
+    const core = readCoreManifest().tools;
+    const startEntry = full.find((tool) => tool.name === 'task.start');
+    const coreStartEntry = core.find((tool) => tool.name === 'task.start');
 
-    expect(intentEntry).toEqual(expect.objectContaining({
-      name: 'task.intent',
-      methodPath: ['task', 'intent'],
-      command: expect.objectContaining({ script: 'task-intent' }),
+    expect(full.map((tool) => tool.name)).not.toContain('task.intent');
+    expect(core.map((tool) => tool.name)).not.toContain('task.intent');
+    expect(startEntry).toEqual(expect.objectContaining({
+      name: 'task.start',
+      methodPath: ['task', 'start'],
+      description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      workflowRole: 'task.start',
+      command: expect.objectContaining({ script: 'task:start' }),
     }));
-    expect(coreIntentEntry).toEqual(expect.objectContaining({
-      name: 'task.intent',
+    expect(coreStartEntry).toEqual(expect.objectContaining({
+      name: 'task.start',
       core: true,
       definition: expect.objectContaining({
-        name: 'task.intent',
-        methodPath: ['task', 'intent'],
-        command: expect.objectContaining({ script: 'task-intent' }),
+        name: 'task.start',
+        methodPath: ['task', 'start'],
+        description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
       }),
     }));
+    const commandArguments = (startEntry?.command as { arguments?: Array<{ source?: string; flag?: string }> })?.arguments ?? [];
+    expect(commandArguments).toContainEqual(expect.objectContaining({ source: 'workflow', flag: '--workflow' }));
+  });
+
+  test('should accept workflow selection through the combined task.start input', () => {
+    const parsed = getInputSchema('TaskStartInput').parse({
+      area: 'os',
+      title: 'combined task start',
+      workflow: 'media',
+    });
+
+    expect(parsed.workflow).toBe('media');
   });
 
   test('should resolve office aliases when starting design or sites intent', () => {

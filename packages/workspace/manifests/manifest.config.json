@@ -16,11 +16,10 @@
     "includeNames": [
       "batch",
       "code.call",
-      "code.run",
       "context",
       "explore",
       "github",
-      "task.intent",
+      "task.start",
       "review.run",
       "tools.search",
       "tmp"
@@ -33,8 +32,6 @@
     "excludeNames": [
       "mac.call",
       "mac.exec",
-      "task.call",
-      "task.exec",
       "fs.list",
       "fs.write",
       "gh",

@@ -1,0 +1,19 @@
+{
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/sidebar-dropdown-layout",
+  "baseBranch": "stream/docs",
+  "sourceBranch": "stream/docs",
+  "startFrom": "stream",
+  "prNumber": 1312,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1312",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1312",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1312/sidebar-dropdown-layout",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1312",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1312/sidebar-dropdown-layout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-sidebar-dropdown-layout",
+  "taskSession": "tsk_4bd5e861149f",
+  "tmuxSession": "opensaas-docs-sidebar-dropdown-layout-4bd5e861",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-sidebar-dropdown-layout/.task/docs/sidebar-dropdown-layout/session.json",
+  "createdAt": "2026-07-01T03:52:15.799Z"
+}

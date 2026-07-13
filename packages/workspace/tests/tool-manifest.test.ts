@@ -16,7 +16,7 @@ const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
+  'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
 } as const;
 const removedCoreToolNames = [
   'fs.list',
@@ -26,6 +26,7 @@ const removedCoreToolNames = [
   'exploit',
   'confidenceScore',
   'confirm',
+  'code.run',
   'context.list',
   'context.categories',
   'audit',
@@ -59,13 +60,12 @@ const oldContextToolNames = [
 const retainedCoreToolNames = [
   'batch',
   'code.call',
-  'code.run',
   'context',
   'explore',
   'fs.apply_patch',
   'fs.trash',
   'github',
-  'intent',
+  'task.start',
   'review.run',
   'stream.context',
   'stream.sync',
@@ -158,6 +158,7 @@ describe('workspace tool manifest generator', () => {
     expect(names(registry.full.tools)).toEqual(sourceEntries.map((entry) => String(entry.name)).sort());
     expect(registry.full.tools).toHaveLength(sourceEntries.length);
     expect(names(registry.full.tools)).toContain('batch');
+    expect(names(registry.full.tools)).toContain('code.run');
     expect(names(registry.full.tools)).toContain('context');
     for (const toolName of oldContextToolNames) {
       expect(names(registry.full.tools)).not.toContain(toolName);
@@ -188,7 +189,7 @@ describe('workspace tool manifest generator', () => {
     for (const toolName of removedCoreToolNames) {
       expect(coreNames).not.toContain(toolName);
     }
-    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.start']);
     for (const toolName of oldContextToolNames) {
       expect(coreNames).not.toContain(toolName);
     }

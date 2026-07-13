@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/release-workflow",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1386,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1386",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1386",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1386/release-workflow",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1386",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1386/release-workflow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-workflow",
+  "taskSession": "tsk_529ad2defd72",
+  "tmuxSession": "opensaas-security-release-workflow-529ad2de",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-workflow/.task/security/release-workflow/session.json",
+  "createdAt": "2026-07-10T22:47:14.540Z"
+}

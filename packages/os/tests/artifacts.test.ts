@@ -72,7 +72,7 @@ describe('createWorkspaceArtifact', () => {
 
     const row = JSON.parse(runBunEval(`
       const { Database } = await import('bun:sqlite');
-      const db = new Database('${join(tempHome, 'consuelo.db')}');
+      const db = new Database('${join(tempHome, 'node', 'db', 'consuelo.db')}');
       const row = db.query('SELECT id, workspace_id, created_by_user_id, skill_execution_trace_id, skill_name, title, type, format, storage_mode, storage_key, current_version_id, version_count FROM artifacts WHERE id = ?').get('${descriptor.id}');
       db.close();
       process.stdout.write(JSON.stringify(row));

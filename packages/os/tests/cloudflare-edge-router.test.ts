@@ -296,9 +296,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     );
     expect(upstreamRequests[0].headers.get('x-consuelo-route')).toBe('/dialer');
     expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBeNull();
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
-      'sha256=e9652e5ea05501c2fe16ca735512b3b24cf4c6850cfe9d43cc59b198b5388333',
-    );
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-timestamp') ?? '').toMatch(/^\d+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-nonce') ?? '').toMatch(/^[-A-Za-z0-9_:.]+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature') ?? '').toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 
 
@@ -306,6 +306,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
     const resolvedPaths: string[] = [];
+    const dynamicHost = 'fresh-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
     const router = createWorkspaceCloudflareEdgeRouter({
       registry: {
         async resolve(input) {
@@ -313,7 +314,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
           return {
             allowed: true,
             workspaceId: 'workspace_123',
-            hostname: 'kokayi.consuelohq.com',
+            hostname: dynamicHost,
             route: '/mcp',
             surface: 'os',
             auth: 'required',
@@ -322,7 +323,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
               kind: 'os-connector',
               connectorId: 'connector_123',
               connectorStatus: 'connected',
-              tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+              tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
             },
           };
         },
@@ -330,7 +331,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     });
 
     const response = await router.fetch(
-      new Request('https://kokayi.consuelohq.com/.well-known/oauth-protected-resource'),
+      new Request('https://' + dynamicHost + '/.well-known/oauth-protected-resource'),
     );
     const body = await response.json() as {
       resource: string;
@@ -340,10 +341,58 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('application/json');
-    expect(body.resource).toBe('https://kokayi.consuelohq.com/mcp');
+    expect(body.resource).toBe('https://' + dynamicHost + '/mcp');
     expect(body.authorization_servers).toEqual(['https://os.consuelohq.com']);
     expect(body.scopes_supported).toEqual(expect.arrayContaining(['mcp:read', 'mcp:call', 'tool:*:read']));
     expect(resolvedPaths).toEqual(['/mcp']);
+    expect(JSON.stringify(body)).not.toMatch(/connector-123|tunnel|cst_|cbt_|private[_-]?key|secret|127\.0\.0\.1/i);
+  });
+
+  it('should expose OAuth authorization-server metadata for dynamic workspace MCP hosts', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const dynamicHost = 'oauth-' + crypto.randomUUID().slice(0, 8) + '.consuelohq.com';
+    const resolvedPaths: string[] = [];
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          resolvedPaths.push(input.path);
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: dynamicHost,
+            route: '/mcp',
+            surface: 'os',
+            auth: 'required',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'os-connector',
+              connectorId: 'connector_123',
+              connectorStatus: 'connected',
+              tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
+            },
+          };
+        },
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://' + dynamicHost + '/.well-known/oauth-authorization-server'),
+    );
+    const body = await response.json() as Record<string, unknown>;
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      issuer: 'https://os.consuelohq.com',
+      authorization_endpoint: 'https://os.consuelohq.com/oauth/authorize',
+      token_endpoint: 'https://os.consuelohq.com/oauth/token',
+      introspection_endpoint: 'https://os.consuelohq.com/oauth/introspect',
+      client_id_metadata_document_supported: true,
+      token_endpoint_auth_methods_supported: ['none'],
+      code_challenge_methods_supported: ['S256'],
+    });
+    expect(resolvedPaths).toEqual(['/mcp']);
+    expect(JSON.stringify(body)).not.toMatch(/connector-123|tunnel|cst_|cbt_|private[_-]?key|secret|127\.0\.0\.1/i);
   });
 
   it('should not advertise OAuth protected-resource metadata for hosts without an MCP connector route', async () => {
@@ -389,7 +438,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
             kind: 'os-connector',
             connectorId: 'connector_123',
             connectorStatus: 'connected',
-            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+            tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
           },
         };
       },
@@ -412,7 +461,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(await response.text()).toBe('os ok');
     expect(upstreamRequests).toHaveLength(1);
     expect(upstreamRequests[0].url).toBe(
-      'https://connector-123.os-origin.consuelohq.com/traces/runs/trc_123',
+      'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com/traces/runs/trc_123',
     );
     expect(upstreamRequests[0].headers.get('x-consuelo-workspace-id')).toBe(
       'workspace_123',
@@ -420,9 +469,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBe(
       'connector_123',
     );
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
-      'sha256=be9edfab49ef02523d70ec8d5cfc1597ab3a8fa7ff770d8202aa2902dc4a4bcd',
-    );
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-timestamp') ?? '').toMatch(/^\d+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-nonce') ?? '').toMatch(/^[-A-Za-z0-9_:.]+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature') ?? '').toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 
 
@@ -444,7 +493,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
             kind: 'os-connector',
             connectorId: 'connector_123',
             connectorStatus: 'connected',
-            tunnelOriginUrl: 'https://connector-123.os-origin.consuelohq.com',
+            tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
           },
         };
       },
@@ -549,6 +598,50 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(cacheKeys).toEqual(['https://kokayi.consuelohq.com/']);
   });
 
+
+  it('should serve sites.consuelohq.com as a public site snapshot host', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const r2Reads: string[] = [];
+    const siteR2: WorkspaceSitesEdgeR2Bucket = {
+      async get(key) {
+        r2Reads.push(key);
+        if (key !== 'sites/workspace_testing/launcher/version_sites/index.html') return null;
+        return { text: async () => '<!doctype html><title>Consuelo OS Sites</title>' };
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          return {
+            allowed: true,
+            workspaceId: 'workspace_testing',
+            hostname: input.host,
+            route: '/',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'launcher',
+              versionId: 'version_sites',
+              manifestKey: 'sites/workspace_testing/launcher/version_sites/index.html',
+              contentType: 'text/html; charset=utf-8',
+              cachePolicy: 'static-shell',
+            },
+          };
+        },
+      },
+      siteSnapshots: { r2: siteR2 },
+    });
+
+    const response = await router.fetch(new Request('https://sites.consuelohq.com/'));
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('Consuelo OS Sites');
+    expect(response.headers.get('x-consuelo-site-version')).toBe('version_sites');
+    expect(r2Reads).toEqual(['sites/workspace_testing/launcher/version_sites/index.html']);
+  });
 
   it('should ignore cached site snapshots when the cached version does not match the current D1 target', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
