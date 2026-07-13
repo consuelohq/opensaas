@@ -20,141 +20,7 @@ started: 2026-07-13
 
 ## files changed
 
-- `.github/crowdin-app.yml`
-- `.github/workflows/ci-emails.yaml` (deleted)
-- `.github/workflows/ci-server.yaml`
-- `package.json`
-- `packages/cli/package.json`
-- `packages/consuelo-design/scripts/consuelo-design.ts`
-- `packages/twenty-docker/twenty/Dockerfile`
-- `packages/twenty-docker/twenty/Dockerfile.worker`
-- `packages/twenty-sdk/package.json`
-- `packages/twenty-sdk/vitest.config.ts`
-- `packages/twenty-server/jest-integration.config.ts`
-- `packages/twenty-server/jest.config.mjs`
-- `packages/twenty-server/lingui.config.ts`
-- `packages/twenty-server/package.json`
-- `packages/twenty-server/project.json`
-- `packages/twenty-server/src/engine/core-modules/approved-access-domain/services/approved-access-domain.service.ts`
-- `packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts`
-- `packages/twenty-server/src/engine/core-modules/auth/services/reset-password.service.ts`
-- `packages/twenty-server/src/engine/core-modules/email-verification/services/email-verification.service.ts`
-- `packages/twenty-server/src/engine/core-modules/tool/tools/email-tool/email-composer.service.ts`
-- `packages/twenty-server/src/engine/core-modules/tool/tools/send-email-tool/__tests__/send-email-body-rendering.spec.ts`
-- `packages/twenty-server/src/engine/core-modules/workspace-invitation/services/workspace-invitation.service.ts`
-- `packages/twenty-server/src/engine/workspace-manager/workspace-cleaner/services/cleaner.workspace-service.ts`
-- `packages/twenty-server/src/utils/parse-email-body.ts`
-- `packages/workspace/test-selection.registry.json`
-- `yarn.lock`
-- `packages/cli/bin/consuelo.js`
-- `packages/twenty-sdk/bin/twenty.mjs`
-- `packages/twenty-server/lingui.email-templates.config.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/__tests__/email-templates.spec.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/common-style.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/BaseEmail.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/BaseHead.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/CallToAction.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/Footer.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/HighlightedContainer.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/HighlightedText.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/Link.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/Logo.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/MainText.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/ShadowText.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/SubTitle.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/Title.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/components/WhatIsTwenty.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/constants/DefaultWorkspaceLogo.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/emails/password-reset-link.email.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/emails/password-update-notify.email.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/emails/send-email-verification-link.email.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/emails/send-invite-link.email.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/emails/validate-approved-access-domain.email.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/index.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/aa-ER.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/af-ZA.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/ar-SA.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/ca-ES.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/cs-CZ.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/da-DK.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/de-DE.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/el-GR.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/en.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/es-ES.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/fi-FI.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/fr-FR.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/af-ZA.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/ar-SA.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/ca-ES.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/cs-CZ.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/da-DK.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/de-DE.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/el-GR.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/en.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/es-ES.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/fi-FI.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/fr-FR.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/he-IL.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/hu-HU.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/it-IT.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/ja-JP.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/ko-KR.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/nl-NL.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/no-NO.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/pl-PL.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/pseudo-en.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/pt-BR.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/pt-PT.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/ro-RO.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/ru-RU.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/sr-Cyrl.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/sv-SE.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/tr-TR.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/uk-UA.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/vi-VN.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/zh-CN.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/generated/zh-TW.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/he-IL.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/hu-HU.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/it-IT.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/ja-JP.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/ko-KR.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/nl-NL.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/no-NO.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/pl-PL.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/pseudo-en.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/pt-BR.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/pt-PT.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/ro-RO.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/ru-RU.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/sr-Cyrl.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/sv-SE.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/tr-TR.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/uk-UA.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/vi-VN.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/zh-CN.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/locales/zh-TW.po`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/capitalize.ts`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/email-renderer.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/marks/bold.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/marks/italic.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/marks/link.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/marks/strike.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/marks/underline.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/bullet-list.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/hard-break.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/heading.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/image.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/list-item.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/ordered-list.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/paragraph.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/text.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/nodes/variable-tag.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/renderers/render-mark.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/email-renderer/renderers/render-node.tsx`
-- `packages/twenty-server/src/engine/core-modules/email/templates/utils/i18n.utils.ts`
+- `.github/workflows/ci-test-docker-compose.yaml`
 - `packages/workspace/tests/email-package-removal.test.ts`
 
 
@@ -182,6 +48,7 @@ started: 2026-07-13
 - 2026-07-13 20:46:58 `review.run`: passed — OK
 - 2026-07-13 20:47:39 `verify`: failed — COMMAND_FAILED
 - 2026-07-13 20:54:23 `review.run`: passed — OK
+- 2026-07-13 21:07:52 `review.run`: passed — OK
 
 ## key decisions
 
@@ -239,6 +106,7 @@ bun run task:finish
 
 - `.github/workflows/ci-docker-compose.yaml`
 - `.github/workflows/ci-test-docker-compose.yaml`
+- `.github/workflows/ci-utils.yaml`
 - `packages/cli/bin/consuelo.js`
 - `packages/cli/package.json`
 - `packages/consuelo-design/package.json`
@@ -329,3 +197,6 @@ bun run task:finish
 - 2026-07-13 20:53:27 apply-patch: `.github/workflows/ci-test-docker-compose.yaml`
 
 - 2026-07-13 20:59:04 apply-patch: `packages/workspace/tests/email-package-removal.test.ts`
+
+- 2026-07-13 21:04:25 apply-patch: `packages/workspace/tests/email-package-removal.test.ts`
+- 2026-07-13 21:04:47 apply-patch: `.github/workflows/ci-utils.yaml`

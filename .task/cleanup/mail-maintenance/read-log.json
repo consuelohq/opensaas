@@ -1,6 +1,7 @@
 {
   "files": [
+    ".github/workflows/ci-utils.yaml",
     "packages/workspace/tests/email-package-removal.test.ts"
   ],
-  "updatedAt": "2026-07-13T20:52:48.680Z"
+  "updatedAt": "2026-07-13T21:03:37.945Z"
 }

@@ -120,6 +120,11 @@ describe('twenty-emails package removal', () => {
       '.services.worker.build.dockerfile = "./packages/twenty-docker/twenty/Dockerfile.worker"',
     );
 
+    const utilsWorkflow = readRepoFile('.github/workflows/ci-utils.yaml');
+
+    expect(utilsWorkflow).toContain('  pull_request:');
+    expect(utilsWorkflow).not.toContain('pull_request_target:');
+
     const registry = JSON.parse(
       readRepoFile('packages/workspace/test-selection.registry.json'),
     ) as {
