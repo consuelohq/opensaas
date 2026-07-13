@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_71afa26a1ff7",
+  "tmuxSession": "opensaas-security-preserve-explicit-installer-port-overrides-71afa26a",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/preserve-explicit-installer-port-overrides",
+  "branch": "task/security/preserve-explicit-installer-port-overrides",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-preserve-explicit-installer-port-overrides",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-preserve-explicit-installer-port-overrides",
+  "prNumber": 1419,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1419",
+  "createdAt": "2026-07-11T18:55:37.868Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-preserve-explicit-installer-port-overrides/.task/security/preserve-explicit-installer-port-overrides/session.json"
+}

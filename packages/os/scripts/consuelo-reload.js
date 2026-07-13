@@ -7,7 +7,7 @@ const path = require('path');
 const LABEL = process.env.WORKSPACE_DAEMON_LABEL || 'com.consuelo.system';
 const HOME = process.env.HOME || os.homedir();
 const PLIST = path.join(HOME, 'Library', 'LaunchAgents', `${LABEL}.plist`);
-const PORT = process.env.CONSUELO_OS_PORT || process.env.PORT || process.env.WORKSPACE_DAEMON_PORT || '8960';
+const PORT = process.env.CONSUELO_OS_PORT || process.env.PORT || process.env.WORKSPACE_DAEMON_PORT || '46321';
 const HEALTH = `http://127.0.0.1:${PORT}/health`;
 const OS_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-brain.sh');
@@ -62,7 +62,7 @@ function findServerPid() {
 }
 
 function findServerPids() {
-  return parsePids(run('pgrep', ['-f', 'packages/os/scripts/server.ts|scripts/server.ts']));
+  return parsePids(run('pgrep', ['-f', 'packages/os/scripts/server/main.ts|scripts/server/main.ts']));
 }
 
 function findPortPids() {

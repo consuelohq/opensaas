@@ -38,7 +38,7 @@ load_env_file "$env_file"
 export HOME="${WORKSPACE_DAEMON_HOME:-${HOME:-/Users/$(id -un)}}"
 export USER="${WORKSPACE_DAEMON_USER:-${USER:-$(id -un)}}"
 export PATH="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
-export CONSUELO_OS_PORT="${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-8960}}}"
+export CONSUELO_OS_PORT="${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-46321}}}"
 export PORT="$CONSUELO_OS_PORT"
 export CONSUELO_HOME="${WORKSPACE_DAEMON_CONSUELO_HOME:-${CONSUELO_HOME:-$HOME/.consuelo/os}}"
 
@@ -51,4 +51,4 @@ if [ -z "$bun_bin" ]; then
   exit 1
 fi
 
-exec "$bun_bin" "$root_dir/scripts/server.ts"
+exec "$bun_bin" "$root_dir/scripts/server/main.ts"

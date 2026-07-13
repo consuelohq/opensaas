@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/install-os-dependencies-in-contract-ci",
+  "base": "origin/stream/security",
+  "headSha": "55befd6d957b6bd98d383518b24fddc2ab437ea0",
+  "changeHash": "e11b78705203b2b63f20997937ff8dfa2ded8792fc5ded829b00126c1a5ed9d1",
+  "changedFiles": [
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/os/tests/local-os-server-review-findings.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T04:44:05.289Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/security/install-os-dependencies-in-contract-ci/current.json",
+        ".task/security/install-os-dependencies-in-contract-ci/evidence-log.json",
+        ".task/security/install-os-dependencies-in-contract-ci/read-log.json",
+        ".task/security/install-os-dependencies-in-contract-ci/session.json",
+        ".task/security/install-os-dependencies-in-contract-ci/workpad.md",
+        ".task/tasks/security/install-os-dependencies-in-contract-ci.json",
+        "packages/os/tests/local-os-server-review-findings.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

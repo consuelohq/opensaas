@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/release-readiness-retry",
+  "base": "origin/task/security/release-readiness-retry",
+  "headSha": "2056c51310fe5d3620553a0c470bdf7dbafab109",
+  "changeHash": "f7d8859731251665ebfbc59945d76139e3e42a7a9c47900b2a283d88dcd31a10",
+  "changedFiles": [
+    "packages/os/tests/os-device-authority-release-contract.test.ts",
+    "packages/workspace/scripts/os-release-device-auth.ts"
+  ],
+  "verifiedAt": "2026-07-11T00:01:38.941Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/release-readiness-retry/current.json",
+        ".task/security/release-readiness-retry/evidence-log.json",
+        ".task/security/release-readiness-retry/read-log.json",
+        ".task/security/release-readiness-retry/session.json",
+        ".task/security/release-readiness-retry/verify.json",
+        ".task/security/release-readiness-retry/workpad.md",
+        ".task/tasks/security/release-readiness-retry.json",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/workspace/scripts/os-release-device-auth.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

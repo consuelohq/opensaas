@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/lock-bun-as-the-only-os-product-server",
+  "base": "origin/main",
+  "headSha": "540d73a4c569e3e84bafed651e367ce266d02a44",
+  "changeHash": "b88ebc4b395a5ba2354a5f20d0be3d4696ad88f24af4ff64c81aa90c43e11ad4",
+  "changedFiles": [
+    "packages/os/CONTRIBUTING.md",
+    "packages/os/Dockerfile",
+    "packages/os/README.md",
+    "packages/os/docs/runtime-surfaces.md",
+    "packages/os/requirements.txt",
+    "packages/os/scripts/lib/workspace-state.js",
+    "packages/os/server.py",
+    "packages/os/tests/bun-product-server-contract.test.ts",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/os_server_steering_test.py",
+    "packages/os/tests/server_call_test.py"
+  ],
+  "verifiedAt": "2026-07-11T03:26:46.757Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/lock-bun-as-the-only-os-product-server/current.json",
+        ".task/security/lock-bun-as-the-only-os-product-server/evidence-log.json",
+        ".task/security/lock-bun-as-the-only-os-product-server/read-log.json",
+        ".task/security/lock-bun-as-the-only-os-product-server/session.json",
+        ".task/security/lock-bun-as-the-only-os-product-server/verify.json",
+        ".task/security/lock-bun-as-the-only-os-product-server/workpad.md",
+        ".task/tasks/security/lock-bun-as-the-only-os-product-server.json",
+        "packages/os/CONTRIBUTING.md",
+        "packages/os/Dockerfile",
+        "packages/os/README.md",
+        "packages/os/docs/runtime-surfaces.md",
+        "packages/os/requirements.txt",
+        "packages/os/scripts/lib/workspace-state.js",
+        "packages/os/server.py",
+        "packages/os/tests/bun-product-server-contract.test.ts",
+        "packages/os/tests/os-raw-steering.test.ts",
+        "packages/os/tests/os_server_steering_test.py",
+        "packages/os/tests/server_call_test.py"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
