@@ -128,7 +128,8 @@ describe('Consuelo website structure', () => {
     expect(pricingRoute).toContain('../layouts/MarketingLayout.astro');
     expect(pricingRoute).toContain('../components/site/SiteHeader.astro');
     expect(pricingRoute).toContain('../data/pricing-content');
-    expect(pricingRoute).toContain('CHOOSE A PLAN');
+    expect(pricingRoute).toContain('title="Pricing"');
+    expect(pricingRoute).toContain('{pricingHero.title}');
     expect(pricingRoute).toContain('Already have an account?');
     expect(pricingRoute).toContain('pricing-page__panel');
     expect(pricingRoute).toContain('grid-template-columns: repeat(4, minmax(0, 1fr));');
@@ -162,6 +163,8 @@ describe('Consuelo website structure', () => {
     expect(pricingContent.pricingPlans.every((plan) => plan.bullets.length === 4)).toBe(true);
     expect(siteLinks.pricing).toBe('/pricing');
     expect(siteLinks.pricing).not.toBe(siteLinks.mercury);
+    expect(siteLinks.login).toBe('https://os.consuelohq.com/');
+    expect(pricingContent.pricingAccountLink.href).toBe(siteLinks.login);
 
     expect(navigation.siteHeaderLinks.map((link) => link.href)).not.toContain('/pricing');
     expect(navigation.siteMobileMenuLinks.map((link) => link.href)).not.toContain('/pricing');
@@ -289,7 +292,7 @@ describe('Consuelo website structure', () => {
 
     const { siteLinks, ghlMarketplaceUrl } = await import(pathToFileURL(join(sourceRoot, 'data/site-links.ts')).href);
     expect(siteLinks.app).toBe('https://app.consuelohq.com');
-    expect(siteLinks.login).toBe(siteLinks.app);
+    expect(siteLinks.login).toBe('https://os.consuelohq.com/');
     expect(siteLinks.free).toBe(siteLinks.app);
     expect(siteLinks.docs).toBe('https://docs.consuelohq.com');
     expect(siteLinks.changelog).toBe('/changelog');

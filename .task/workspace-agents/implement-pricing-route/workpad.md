@@ -120,6 +120,20 @@ started: 2026-07-08
 
 ---
 
+## 2026-07-12 branch repair and final delta
+
+- PR #1380 was originally based on an old `main` and inherited unrelated repository history.
+- The pricing route, pricing content, redirects, and base route tests have since landed on current `main` through the website stream.
+- Ko explicitly approved rewriting the PR branch onto the updated `stream/workspace-agents`.
+- The branch was reset to stream commit `a9308b353b` and reduced to the final unshipped pricing delta only:
+  - use `Pricing | Consuelo` as the page title through `MarketingLayout title="Pricing"`;
+  - send public sign-in links to `https://os.consuelohq.com/`;
+  - lock both contracts in the website structure test.
+- Purposeful package and workflow deletions already present on `main` were preserved and are not part of this PR.
+- Focused website structure suite: 18 tests passed, 314 assertions.
+- Actual `astro check && astro build`: 0 errors, 95 pages built, including `/pricing/index.html`. Existing Astro hints remain non-blocking and are unrelated to this delta.
+- An initial build attempt used an invalid Bun `--cwd` placement and did not run the build; a second attempt lacked dependencies in the new worktree; the final build used the existing installed dependency tree through ignored worktree symlinks and passed.
+
 ## publish checklist
 
 ```bash
@@ -138,3 +152,7 @@ bun run task:finish
 - run results: none
 - failed suites: none
 - zero-suite reason: changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional
+
+## workspace-owned: files read
+
+- none yet
