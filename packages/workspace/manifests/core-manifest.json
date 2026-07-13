@@ -454,14 +454,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "github",
-      "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+      "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
       "core": true,
       "definition": {
         "name": "github",
         "methodPath": [
           "github"
         ],
-        "description": "typed GitHub facade with semantic operations and presets; prefer over raw gh",
+        "description": "typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers",
         "category": "github",
         "underlying": "workspace github",
         "capabilities": {
@@ -577,9 +577,8 @@
           ]
         },
         "exampleInput": {
-          "operation": "pr.view",
-          "pr": 436,
-          "preset": "review"
+          "operation": "pr.reviews",
+          "pr": 436
         },
         "sessionRequired": false
       }
@@ -768,52 +767,35 @@
       }
     },
     {
-      "name": "task.intent",
+      "name": "task.start",
       "kind": "facade-tool",
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "workflow",
-      "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+      "category": "task lifecycle",
+      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
       "core": true,
       "definition": {
-        "name": "task.intent",
+        "name": "task.start",
         "methodPath": [
           "task",
-          "intent"
+          "start"
         ],
-        "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
-        "category": "workflow",
-        "underlying": "workspace task.intent",
+        "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        "category": "task lifecycle",
+        "underlying": "workspace task.start",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
           "deterministic": false,
           "safeToRetry": false
         },
-        "defaultTimeout": 120000,
-        "sessionRequired": false,
-        "inputSchema": "WorkflowIntentInput",
+        "defaultTimeout": 60000,
+        "inputSchema": "TaskStartInput",
         "outputSchema": "RawOutput",
-        "workflowRole": "intent.start",
         "command": {
-          "script": "task-intent",
+          "script": "task:start",
           "branchMode": "none",
-          "jsonFlag": "--json",
           "arguments": [
-            {
-              "source": "action",
-              "kind": "value"
-            },
-            {
-              "source": "workflow",
-              "flag": "--workflow",
-              "kind": "value"
-            },
-            {
-              "source": "taskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
             {
               "source": "area",
               "flag": "--area",
@@ -822,21 +804,35 @@
             {
               "source": "title",
               "flag": "--title",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
               "kind": "value"
             },
             {
-              "source": "eventFile",
-              "flag": "--event-json",
+              "source": "bodyFile",
+              "flag": "--body-file",
+              "kind": "value"
+            },
+            {
+              "source": "startFrom",
+              "flag": "--start-from",
               "kind": "value"
             }
-          ]
+          ],
+          "jsonFlag": "--json"
         },
         "exampleInput": {
-          "action": "start",
-          "workflow": "task",
-          "area": "workspace-agents",
-          "title": "example task-intent flow"
-        }
+          "stream": "stream/workspace-agents",
+          "title": "example task",
+          "dryRun": true,
+          "workflow": "task"
+        },
+        "sessionRequired": false,
+        "workflowRole": "task.start"
       }
     },
     {

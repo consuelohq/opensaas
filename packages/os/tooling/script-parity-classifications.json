@@ -42,6 +42,10 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
+    "scripts/ci/check-github-workflows.cjs": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether it should be ported into packages/os or explicitly documented as workspace-only."
+    },
     "scripts/code-call.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
@@ -406,6 +410,10 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/launcher-onboarding.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
     "scripts/lib/local-guardrails.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -415,6 +423,130 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/mcp-gateway.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/artifacts.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/audio.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/compose.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/dependencies.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/dependency-catalog.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/errors.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/export.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/frames.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/fs.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/ingest.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/install-plan.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/overlays.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/probe.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/process.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/qa.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/schema.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/bundle.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/checksums.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/errors.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/fs.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/plan.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/process.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/provenance.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/schema.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/summarize-adapter.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/source-capture/ytdlp.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/sports-science.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/svg.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/timeline.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/vision.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/media/youtube.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
@@ -446,6 +578,10 @@
       "status": "workspace-only-needs-port",
       "reason": "High-risk workspace-only PR reference helper affects review and handoff links; OS parity should wait for explicit GitHub workflow review.",
       "risk": "high"
+    },
+    "scripts/lib/pr-review-collector.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether it should be ported into packages/os or explicitly documented as workspace-only."
     },
     "scripts/lib/redaction.ts": {
       "status": "os-only-intentional",
@@ -491,6 +627,10 @@
       "status": "workspace-only-needs-port",
       "reason": "High-risk workspace-only stream workpad helper affects task memory and stream coordination; OS parity should be reviewed separately.",
       "risk": "high"
+    },
+    "scripts/lib/subagent/runtime.ts": {
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/task-meta.js": {
       "status": "changed-needs-review",
@@ -560,10 +700,6 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
-    "scripts/lib/worker/runtime.ts": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
-    },
     "scripts/lib/workspace-cloudflare-d1-route-registry.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -617,8 +753,12 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/media-svg.py": {
-      "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/media.ts": {
+      "status": "os-only-intentional",
+      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/office.ts": {
       "status": "changed-needs-review",
@@ -738,6 +878,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/subagent.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
     "scripts/task-cleanup.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -759,8 +903,8 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/task-intent.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/task-merge.js": {
       "status": "changed-needs-review",
@@ -895,12 +1039,8 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/website-deploy.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/worker.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/workspace-watchdog.sh": {
       "status": "changed-needs-review",

@@ -50,9 +50,11 @@ bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
 
 Background services stay user-level only. Baseline labels are `com.consuelo.system` and `com.consuelo.watchdog`; `com.consuelo.portless.system` is generated only when portless is configured or discoverable. Plists go in `~/Library/LaunchAgents`; logs go under `~/Library/Logs/Consuelo`.
 
+After LaunchAgent cutover, the installer probes the same local port the daemon resolves from `WORKSPACE_DAEMON_PORT`, the OS `.env` values, and the `46321` default. `WORKSPACE_CUTOVER_LOCAL_HEALTH_URL` remains an explicit repair/testing override.
+
 The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelohq.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
 
-Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:8960` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
+Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:46321` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
 
 ---
 
@@ -588,12 +590,13 @@ bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 
 Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/<number>`, Graphite URLs must contain `/github/pr/<owner>/<repo>/<number>`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
 
-### task:start — create task branch + worktree + PR
+### task:start — start scoped work and return workflow guidance
 
-creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
+Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --area os --title "start scoped work" --workflow task
 bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
@@ -991,15 +994,6 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 
 
 ---
-
-### task-intent — start or dispatch task lifecycle guidance
-
-Runs the task workflow intent script. Use this for advisory lifecycle guidance before `task.start`, or to dispatch task workflow hook events. The user-facing tool name is `task.intent`.
-
-```bash
-bun run task-intent -- start --workflow task --area os --title "example task-intent flow" --json
-bun run task-intent -- dispatch --workflow task --task-session <taskSession> --event-json /tmp/task-event.json --json
-```
 
 ### sentry — inspect Sentry issues, events, and traces
 

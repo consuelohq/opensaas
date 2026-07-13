@@ -182,7 +182,8 @@ const REQUIRED_GENERATED_SECURITY_FILES = [
   'node/security/generated/auth.json',
   'node/caddy/Caddyfile',
 ] as const;
-const DEFAULT_PORT = 8960;
+const LEGACY_DEFAULT_PORT = 8960;
+const DEFAULT_PORT = 46321;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
@@ -666,20 +667,26 @@ function materializeChatGptMcpConnection(input: {
     return [{ type: 'create_file', path: targetPath, status: 'planned', message: 'ChatGPT MCP connection planned' }];
   }
   const existing = readJsonFile<JsonObject>(targetPath);
+  const localUrl = `http://127.0.0.1:${input.port}/mcp`;
   if (
     typeof existing?.bearerToken === 'string' &&
     typeof existing?.tokenId === 'string' &&
     typeof existing?.url === 'string'
   ) {
-    if (existing.url !== CHATGPT_MCP_URL) {
+    const existingScopes = Array.isArray(existing.scopes) ? existing.scopes : scopes;
+    if (
+      existing.url !== CHATGPT_MCP_URL ||
+      existing.localUrl !== localUrl ||
+      !Array.isArray(existing.scopes)
+    ) {
       writeJsonFile(targetPath, {
         ...existing,
         url: CHATGPT_MCP_URL,
-        localUrl: typeof existing.localUrl === 'string' ? existing.localUrl : `http://127.0.0.1:${input.port}/mcp`,
-        scopes: Array.isArray(existing.scopes) ? existing.scopes : scopes,
+        localUrl,
+        scopes: existingScopes,
         updatedAt: nowIso(),
       }, false);
-      return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection URL updated' }];
+      return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection metadata updated' }];
     }
     return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
   }
@@ -1309,7 +1316,8 @@ export function provisionLocalOs(
     writeJsonFile(configPath, config, dryRun);
   }
 
-  const gatewayPort = options.port ?? config.port ?? DEFAULT_PORT;
+  const gatewayPort = options.port ??
+    (config.port === LEGACY_DEFAULT_PORT ? DEFAULT_PORT : config.port ?? DEFAULT_PORT);
   const workspaceBootstrap = options.workspaceBootstrap;
   const workspaceIdentity = workspaceBootstrap
     ? {

@@ -30,8 +30,8 @@ const successfulWorkspaceRouteSetup = {
   workspaceConnectorProvisioner: async () => ({
     connectorId: 'connector-test',
     cloudflareTunnelToken: 'cloudflare-tunnel-token-test',
-    tunnelOriginUrl: 'https://connector-test.os-origin.consuelohq.com',
-    localServiceUrl: 'http://127.0.0.1:8960',
+    tunnelOriginUrl: 'https://c-8258e2e5dbb491df8a8325ff3a69b472.consuelohq.com',
+    localServiceUrl: 'http://127.0.0.1:46321',
   }),
 };
 

@@ -9,6 +9,6 @@ COPY scripts/ scripts/
 COPY skills/ skills/
 COPY tooling/ tooling/
 
-EXPOSE 8960
+EXPOSE 46321
 
-CMD ["bun", "./scripts/server.ts"]
+CMD ["bun", "./scripts/server/main.ts"]

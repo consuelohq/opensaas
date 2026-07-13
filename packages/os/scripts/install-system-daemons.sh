@@ -24,6 +24,7 @@ done
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
+env_file="$root_dir/.env"
 log_prefix="[consuelo-os-launchagent-install]"
 
 daemon_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
@@ -61,9 +62,58 @@ if [ -z "$stage_port" ]; then
   echo "unable to find a free stage port" >&2
   exit 1
 fi
-local_health_url="${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-http://127.0.0.1:8960/health}"
 uid_value="$(id -u "$daemon_user")"
 launch_domain="gui/$uid_value"
+
+load_env_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
+
+  local line key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*) continue ;;
+    esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    if [ "$key" = "$line" ]; then
+      continue
+    fi
+    case "$key" in
+      ''|*[!A-Za-z0-9_]*|[0-9]*) continue ;;
+    esac
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "$file"
+}
+
+resolve_cutover_local_port() {
+  local file="$1"
+  (
+    load_env_file "$file"
+    printf '%s\n' "${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-46321}}}"
+  )
+}
+
+resolve_cutover_local_health_url() {
+  local file="$1"
+  if [ -n "${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-}" ]; then
+    printf '%s\n' "$WORKSPACE_CUTOVER_LOCAL_HEALTH_URL"
+    return 0
+  fi
+
+  local port
+  port="$(resolve_cutover_local_port "$file")"
+  printf 'http://127.0.0.1:%s/health\n' "$port"
+}
+
+local_health_url="$(resolve_cutover_local_health_url "$env_file")"
 
 log() {
   printf '%s %s\n' "$log_prefix" "$*"

@@ -183,7 +183,7 @@ function createAutoRules(tests, projects, packageScripts) {
     rules.push(normalizeRule({
       id: `auto:${project.name}:test`,
       source: [`${project.root}/**`],
-      tests: [{ name: `${project.name} test`, command: ['npx', 'nx', 'test', project.name] }],
+      tests: [{ name: `${project.name} test`, command: ['npx', 'nx', 'test', project.name, '--coverage=false'] }],
       critical: false,
       reason: `Auto-discovered Nx test target for ${project.root}.`,
     }, 'auto'));

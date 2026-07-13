@@ -50,8 +50,8 @@ export function createTraceSitesLiveSmokePlan(input: SmokePlanInput) {
     ] satisfies SmokeStep[],
     productRoutes: [`${productBase}/recent`, `${productBase}/events`],
     forbiddenRoutes: [
-      'http://127.0.0.1:8960/gateway/traces/recent',
-      'http://localhost:8960/gateway/traces/recent',
+      'http://127.0.0.1:46321/gateway/traces/recent',
+      'http://localhost:46321/gateway/traces/recent',
     ],
     browserVisibleOutputShape: {
       ok: true,

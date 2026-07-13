@@ -255,9 +255,9 @@ describe('local agent connectivity', () => {
 
     expect(verification.handshake).toMatchObject({
       protocolVersion: '2024-11-05',
-      toolCount: expect.any(Number),
     });
-    expect(verification.handshake.toolCount).toBeGreaterThan(0);
+    expect(Number.isInteger(verification.handshake?.toolCount)).toBe(true);
+    expect((verification.handshake?.toolCount ?? 0) > 0).toBe(true);
     expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
       status: 'verified',
     });

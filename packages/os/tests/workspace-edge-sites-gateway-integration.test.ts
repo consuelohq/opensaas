@@ -280,7 +280,7 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
           kind: 'os-connector',
           connectorId: 'connector_internal',
           connectorStatus: 'connected',
-          tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
+          tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
         },
       },
     ],
@@ -297,7 +297,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       hostname: 'internal.consuelohq.com',
       baseDomain: 'consuelohq.com',
       connectorId: 'connector_internal',
-      tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
+      tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
     });
 
     const traceRoute = record.routes.find((route) => route.pathPrefix === '/observability');
@@ -618,7 +618,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
 
     const record = seed.createWorkspaceEdgeRouteSeedRecord({
       connectorId: 'connector_internal',
-      tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
+      tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
     });
     const edgeGatewayTargets = record.routes
       .map((route) => route.target)
