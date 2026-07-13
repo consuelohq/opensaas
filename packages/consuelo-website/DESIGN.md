@@ -28,6 +28,17 @@ The first media layer uses the supplied Consuelo illustrations, cropped into pro
 
 Do not ship large animated GIFs. Do not invent additional decorative art when an existing product asset can explain the state.
 
+### Workspace atmosphere
+
+The OS hero and the preview-to-features transition share one original vector atmosphere:
+
+- Halftone clouds represent work distributed across local and managed nodes.
+- Thin orbital routes and square markers describe agent routing through one workspace.
+- Faint technical labels name Consuelo concepts without becoming readable product copy.
+- The hero keeps its center quiet so the headline remains the dominant layer.
+
+These assets stay as editable SVG. Blur is limited to a few static ellipses; repeated texture uses SVG patterns instead of large paths or bitmap noise. Mobile reuses the same source with a controlled crop, avoiding a second download or animated effect.
+
 ## Motion
 
 Motion should clarify hierarchy:

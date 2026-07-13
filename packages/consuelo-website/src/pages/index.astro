@@ -4,11 +4,9 @@ import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
 import HomeHero from '../components/home/HomeHero.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import { homeFaqItems } from '../data/home-content';
+import { homepageSeo } from '../lib/homepage-seo';
 import { getFaqSchema, getSoftwareApplicationSchema } from '../lib/site-seo';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
-
-const description =
-  'Connect ChatGPT, Codex, Claude, and the agents that come next to the same tools, memory, workflows, and machines.';
 
 const schemaEntries = [
   getSoftwareApplicationSchema({
@@ -28,11 +26,11 @@ const schemaEntries = [
 ---
 
 <MarketingLayout
-  title="Consuelo OS | Your workspace, connected to every agent"
-  description={description}
+  title={homepageSeo.title}
+  description={homepageSeo.description}
   canonicalPath="/"
-  image="/consuelo-os-og.png"
-  imageAlt="Consuelo OS — Your workspace, connected to every agent."
+  image={homepageSeo.image}
+  imageAlt={homepageSeo.imageAlt}
   imageWidth={1200}
   imageHeight={630}
   schemaEntries={schemaEntries}

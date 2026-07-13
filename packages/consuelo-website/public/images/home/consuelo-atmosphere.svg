@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <pattern id="dots-small" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.8" fill="#fff"/>
+    </pattern>
+    <pattern id="dots-large" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="3" fill="#fff"/>
+    </pattern>
+    <linearGradient id="haze" x1="800" y1="210" x2="800" y2="970" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".56" stop-color="#fff" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".2"/>
+    </linearGradient>
+    <radialGradient id="halo">
+      <stop stop-color="#fff" stop-opacity=".24"/>
+      <stop offset=".42" stop-color="#fff" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    <filter id="mist" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="800" cy="610" rx="520" ry="420" fill="url(#halo)"/>
+  <path d="M70 330c100-80 190-78 272 5 58-62 135-64 219-6 48 33 86 79 112 138H41c-2-54 8-100 29-137Z" fill="url(#dots-large)" opacity=".12"/>
+  <path d="M1030 278c82-59 167-46 230 31 98-72 203-47 286 74 17 25 29 52 37 82h-592c2-75 15-137 39-187Z" fill="url(#dots-small)" opacity=".15"/>
+  <path d="M-70 696c154-111 312-96 431 29 89-96 204-102 312-19 69 53 117 122 145 207H-70V696Z" fill="url(#dots-small)" opacity=".14"/>
+  <path d="M879 764c87-90 187-105 300-46 112-102 247-94 354 36 50 60 83 134 99 220H804c4-82 29-152 75-210Z" fill="url(#dots-large)" opacity=".14"/>
+
+  <g stroke="#fff" stroke-width="1.5" opacity=".16">
+    <path d="M168 548C374 426 511 400 697 492"/>
+    <path d="M1432 534C1241 417 1065 410 903 492"/>
+    <path d="M251 780C447 619 600 609 744 666"/>
+    <path d="M1351 788C1175 632 1010 616 856 666"/>
+    <ellipse cx="800" cy="574" rx="342" ry="196"/>
+    <ellipse cx="800" cy="574" rx="466" ry="282" transform="rotate(-8 800 574)"/>
+  </g>
+
+  <g fill="#fff">
+    <rect x="770" y="540" width="60" height="60" rx="10" opacity=".2"/>
+    <rect x="786" y="556" width="28" height="28" rx="4" opacity=".72"/>
+    <circle cx="800" cy="570" r="142" stroke="#fff" stroke-width="2" opacity=".13"/>
+    <circle cx="800" cy="570" r="218" stroke="#fff" stroke-width="1" stroke-dasharray="2 16" opacity=".2"/>
+  </g>
+
+  <g fill="#fff" opacity=".55">
+    <rect x="158" y="529" width="20" height="20" rx="3"/>
+    <rect x="240" y="759" width="14" height="14" rx="2"/>
+    <rect x="1419" y="515" width="20" height="20" rx="3"/>
+    <rect x="1342" y="771" width="14" height="14" rx="2"/>
+    <rect x="691" y="481" width="16" height="16" rx="3"/>
+    <rect x="895" y="481" width="16" height="16" rx="3"/>
+  </g>
+
+  <g fill="#fff" font-family="monospace" font-size="18" letter-spacing="5" opacity=".13">
+    <text x="70" y="190">WORKSPACE / 01</text>
+    <text x="1190" y="204">NODE://HOME</text>
+    <text x="88" y="608">TOOLS ONLINE</text>
+    <text x="1260" y="612">MEMORY ROUTE</text>
+    <text x="672" y="886">EVERY AGENT</text>
+  </g>
+
+  <g opacity=".12" filter="url(#soft-glow)" fill="#fff">
+    <ellipse cx="262" cy="418" rx="180" ry="55"/>
+    <ellipse cx="1329" cy="402" rx="210" ry="62"/>
+    <ellipse cx="797" cy="894" rx="340" ry="68"/>
+  </g>
+  <path d="M0 770c215 28 335 95 471 94 129-1 218-70 329-70 142 0 210 91 357 89 135-2 269-79 443-99v216H0V770Z" fill="url(#haze)" filter="url(#mist)"/>
+  <path d="M0 936c196-21 332-9 482 20 119 23 231 20 342-2 158-31 321-43 488-7 107 23 203 26 288 10v43H0v-64Z" fill="url(#dots-small)" opacity=".15"/>
+</svg>

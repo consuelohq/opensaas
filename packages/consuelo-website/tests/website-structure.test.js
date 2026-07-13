@@ -60,7 +60,6 @@ describe('Consuelo website structure', () => {
       'src/pages/index.astro': [
         '../layouts/MarketingLayout.astro',
         '../components/site/SiteHeader.astro',
-        '../components/site/SiteFooter.astro',
         '../components/home/HomeHero.astro',
       ],
       'src/pages/404.astro': [
@@ -187,12 +186,14 @@ describe('Consuelo website structure', () => {
 
     expect(homepage).toContain("../layouts/MarketingLayout.astro");
     expect(homepage).toContain("../components/site/SiteHeader.astro");
-    expect(homepage).toContain("../components/site/SiteFooter.astro");
+    expect(homepage).not.toContain("../components/site/SiteFooter.astro");
     expect(homepage).toContain("../components/home/HomeHero.astro");
     expect(homepage).toContain("../components/home/HomeFeaturePreview.astro");
     expect(homepage).toContain("../components/home/HomeCloudCta.astro");
     expect(homepage).toContain('getFaqSchema(homeFaqItems)');
-    expect(homepage).toContain('Consuelo OS | Your workspace, connected to every agent');
+    expect(homepage).toContain("import { homepageSeo } from '../lib/homepage-seo'");
+    expect(homepage).toContain('title={homepageSeo.title}');
+    expect(homepage).toContain('image={homepageSeo.image}');
     expect(homepage).not.toContain('HomePlatformCards');
   });
 
@@ -200,16 +201,19 @@ describe('Consuelo website structure', () => {
     const hero = readSource('src/components/home/HomeHero.astro');
     const content = readSource('src/data/home-content.ts');
 
-    expect(hero).toContain('YOUR WORKSPACE, CONNECTED TO EVERY AGENT.');
+    expect(hero).toContain('<span data-hero-line>YOUR WORKSPACE,</span>');
+    expect(hero).toContain('<span data-hero-line>CONNECTED TO</span>');
+    expect(hero).toContain('<span data-hero-line>EVERY AGENT</span>');
     expect(hero).toContain('Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.');
     expect(hero).toContain('OPEN SOURCE');
     expect(hero).toContain('MIT LICENSE');
     expect(hero).toContain('SIGN IN');
-    expect(hero).toContain('DOWNLOAD LOCALLY');
+    expect(hero).not.toContain('DOWNLOAD LOCALLY');
     expect(content).toContain("export const INSTALL_COMMAND = 'curl -fsSL https://install.consuelohq.com/os | bash'");
     expect(content).toContain('value: INSTALL_COMMAND');
     expect(hero).toContain("import { INSTALL_COMMAND } from '../../data/home-content'");
-    expect(hero).toContain('<span data-copy-label>DOWNLOAD LOCALLY</span>');
+    expect(hero).toContain('<span data-copy-label>COPY</span>');
+    expect(hero).toContain('<PixelArrow />');
     expect(hero).toContain('data-copy-install');
     expect(hero).toContain('if (!navigator.clipboard)');
     expect(hero).toContain('await navigator.clipboard.writeText(INSTALL_COMMAND)');
@@ -247,10 +251,10 @@ describe('Consuelo website structure', () => {
     expect(media).toContain('class="feature-media__poster"');
     expect(media).toContain('.feature-media__video');
     expect(media).toContain('display: none;');
-    expect(faq).toContain('<details>');
+    expect(faq).toContain('<details data-home-faq-item>');
     expect(faq).toContain('<summary>');
     expect(faq).toContain('color: var(--site-color-muted);');
-    expect(panel).toContain('color: var(--site-color-muted);');
+    expect(panel).toContain('color: var(--site-color-art-muted);');
     expect(panel).not.toContain('#15156f');
     expect(faq).not.toContain('#25256f');
     expect(content).toContain('assetSrc: string;');

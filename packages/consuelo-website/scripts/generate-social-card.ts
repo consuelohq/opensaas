@@ -129,7 +129,7 @@ export const renderHomepageSocialCard = async () => {
 };
 
 export const writeHomepageSocialCard = async (
-  outputPath = join(packageRoot, 'public/consuelo-os-og.png'),
+  outputPath = join(packageRoot, 'public/consuelo-os-og-20260713.png'),
 ) => {
   try {
     const image = await renderHomepageSocialCard();
