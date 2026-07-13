@@ -4,6 +4,16 @@ import { normalizeMdxToMarkdown, pagePathToMarkdownHref, sourcePathToMarkdownSlu
 import { selectSectionSidebar } from '../src/lib/docs-navigation';
 import type { DocsSidebarEntry } from '../src/lib/docs-navigation';
 
+describe('standalone documentation package', () => {
+  test('declares the browser regression runtime', () => {
+    const packageJson = JSON.parse(
+      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+    ) as { devDependencies?: Record<string, string> };
+
+    expect(packageJson.devDependencies?.playwright).toBe('^1.56.1');
+  });
+});
+
 describe('normalized Markdown pages', () => {
   test('removes runtime-only MDX while preserving readable content and code', () => {
     const source = `---
