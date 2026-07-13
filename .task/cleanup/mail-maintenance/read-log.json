@@ -1,7 +1,14 @@
 {
   "files": [
     ".github/workflows/ci-utils.yaml",
+    "packages/eslint-rules/package.json",
+    "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/expected-manifest.ts",
+    "packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts",
+    "packages/twenty-server/eslint.config.mjs",
+    "packages/twenty-server/lingui.email-templates.config.ts",
+    "packages/twenty-shared/project.json",
+    "packages/twenty-ui/eslint.config.mjs",
     "packages/workspace/tests/email-package-removal.test.ts"
   ],
-  "updatedAt": "2026-07-13T21:03:37.945Z"
+  "updatedAt": "2026-07-13T21:35:04.791Z"
 }

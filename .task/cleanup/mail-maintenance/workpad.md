@@ -20,13 +20,15 @@ started: 2026-07-13
 
 ## files changed
 
-- `.github/workflows/ci-test-docker-compose.yaml`
+- `.github/workflows/ci-emails.yaml` (deleted)
+- `.github/workflows/ci-utils.yaml`
+- `packages/twenty-server/src/engine/core-modules/email/templates/__tests__/email-templates.spec.ts`
 - `packages/workspace/tests/email-package-removal.test.ts`
-
 
 ## workspace-owned: files changed
 
 - `.github/workflows/ci-emails.yaml` (deleted)
+- `.github/workflows/ci-utils.yaml`
 - `packages/twenty-server/src/engine/core-modules/email/templates/__tests__/email-templates.spec.ts`
 - `packages/workspace/tests/email-package-removal.test.ts`
 
@@ -40,6 +42,8 @@ started: 2026-07-13
 - 2026-07-13 20:40:27 fs.write: `.task/cleanup/mail-maintenance/workpad.md`
 - 2026-07-13 20:46:34 fs.write: `.task/cleanup/mail-maintenance/workpad.md`
 - 2026-07-13 20:47:57 fs.write: `.task/cleanup/mail-maintenance/workpad.md`
+- 2026-07-13 21:31:45 fs.write: `.task/cleanup/mail-maintenance/workpad.md`
+- 2026-07-13 21:38:58 fs.write: `.task/cleanup/mail-maintenance/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -49,6 +53,11 @@ started: 2026-07-13
 - 2026-07-13 20:47:39 `verify`: failed — COMMAND_FAILED
 - 2026-07-13 20:54:23 `review.run`: passed — OK
 - 2026-07-13 21:07:52 `review.run`: passed — OK
+- 2026-07-13 21:32:29 `review.run`: passed — OK
+- 2026-07-13 21:33:18 `review.run`: passed — OK
+- 2026-07-13 21:36:44 `review.run`: passed — OK
+- 2026-07-13 21:37:21 `review.run`: passed — OK
+- 2026-07-13 21:39:58 `review.run`: passed — OK
 
 ## key decisions
 
@@ -107,21 +116,34 @@ bun run task:finish
 - `.github/workflows/ci-docker-compose.yaml`
 - `.github/workflows/ci-test-docker-compose.yaml`
 - `.github/workflows/ci-utils.yaml`
+- `eslint.config.mjs`
 - `packages/cli/bin/consuelo.js`
 - `packages/cli/package.json`
 - `packages/consuelo-design/package.json`
 - `packages/consuelo-design/scripts/consuelo-design.ts`
+- `packages/eslint-rules/package.json`
+- `packages/eslint-rules/project.json`
 - `packages/twenty-docker/docker-compose.yml`
 - `packages/twenty-docker/twenty/Dockerfile.worker`
 - `packages/twenty-docker/twenty/docker-compose.yml`
+- `packages/twenty-front/eslint.config.mjs`
 - `packages/twenty-sdk/bin/twenty.mjs`
 - `packages/twenty-sdk/package.json`
 - `packages/twenty-sdk/project.json`
+- `packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/expected-manifest.ts`
+- `packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/tests/manifest.tests.ts`
 - `packages/twenty-sdk/vitest.config.ts`
 - `packages/twenty-sdk/vitest.integration.config.ts`
 - `packages/twenty-sdk/vitest.unit.config.ts`
+- `packages/twenty-server/eslint.config.mjs`
+- `packages/twenty-server/lingui.email-templates.config.ts`
+- `packages/twenty-server/src/engine/core-modules/approved-access-domain/services/approved-access-domain.service.ts`
 - `packages/twenty-server/src/engine/core-modules/email/templates/__tests__/email-templates.spec.ts`
+- `packages/twenty-server/src/engine/core-modules/email/templates/utils/i18n.utils.ts`
 - `packages/twenty-server/src/engine/core-modules/tool/tools/send-email-tool/__tests__/send-email-body-rendering.spec.ts`
+- `packages/twenty-shared/eslint.config.mjs`
+- `packages/twenty-shared/project.json`
+- `packages/twenty-ui/eslint.config.mjs`
 - `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/email-package-removal.test.ts`
 
@@ -200,3 +222,28 @@ bun run task:finish
 
 - 2026-07-13 21:04:25 apply-patch: `packages/workspace/tests/email-package-removal.test.ts`
 - 2026-07-13 21:04:47 apply-patch: `.github/workflows/ci-utils.yaml`
+
+- 2026-07-13 21:19:05 apply-patch: `packages/twenty-sdk/src/cli/__tests__/apps/rich-app/__integration__/app-dev/expected-manifest.ts`
+
+- 2026-07-13 21:23:26 apply-patch: `packages/workspace/tests/email-package-removal.test.ts`
+## stale ESLint path and SDK fixture recovery
+
+- CI exposed a second intentionally removed workspace path: live ESLint rules are under `packages/eslint-rules`, while root workspaces, Nx metadata, package configs, Docker, and test-selection metadata still referenced nonexistent `packages/twenty-eslint-rules`.
+- Added a red/green repository contract for every owning path, removed the stale root workspace entry, and repointed all consumers to `packages/eslint-rules` without renaming the Nx project.
+- `twenty-server` and `twenty-front` lint now start and load the custom rules correctly. They continue to fail on broad pre-existing module-boundary and formatting findings unrelated to this cleanup; the former missing-plugin startup failure is resolved.
+- The custom rules Jest target now starts from the real package path. Its remaining failures are pre-existing ESLint 9 RuleTester/type compatibility issues (`recommended` metadata and legacy `parser` config format).
+- Updated the stale Twenty SDK integration favicon checksum to the generated value. Full SDK integration passes: 3 files, 10 tests.
+- Hardened immutable Yarn completed successfully after the ESLint workspace cleanup; Yarn's link step only toggled an existing bin source mode locally, which was restored before publishing.
+
+- 2026-07-13 21:31:45 append: `.task/cleanup/mail-maintenance/workpad.md`
+
+- 2026-07-13 21:35:21 apply-patch: `packages/twenty-server/eslint.config.mjs`
+- 2026-07-13 21:35:22 apply-patch: `packages/twenty-server/lingui.email-templates.config.ts`
+
+## scope correction before final push
+
+- The stale `packages/twenty-eslint-rules` path was investigated because CI exposed it after the email cleanup. A local migration to `packages/eslint-rules` proved that the missing-plugin failure is only the first layer of unrelated repository-wide ESLint and RuleTester debt.
+- That unpushed migration was reverted before finalization. It is not part of this task's final diff and should be handled as a dedicated cleanup task rather than mixed into the `twenty-emails` package removal.
+- The retained follow-up is the SDK integration fixture checksum update, which directly repairs the CI failure observed on this task and passes the full SDK integration suite.
+
+- 2026-07-13 21:38:58 append: `.task/cleanup/mail-maintenance/workpad.md`
