@@ -101,6 +101,16 @@ const sitesItems: SidebarItem[] = [
   { label: 'Troubleshooting', slug: 'sites/troubleshooting' },
 ];
 
+const observeItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'observe' },
+  { label: 'Runs', slug: 'observe/runs' },
+  { label: 'Traces', slug: 'observe/traces' },
+  { label: 'Tool calls', slug: 'observe/tool-calls' },
+  { label: 'Artifacts', slug: 'observe/artifacts' },
+  { label: 'Logs', slug: 'observe/logs' },
+  { label: 'Debugging failures', slug: 'observe/debugging-failures' },
+];
+
 export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
   { label: 'Connect', slug: 'connect', description: 'Connect agents, services, and nodes to the same workspace.' },
@@ -132,7 +142,9 @@ export const docsSidebar = docsSections.map(({ label, slug }) => ({
           ? buildItems
           : slug === 'sites'
             ? sitesItems
-            : [{ label: 'Overview', slug }],
+            : slug === 'observe'
+              ? observeItems
+              : [{ label: 'Overview', slug }],
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));

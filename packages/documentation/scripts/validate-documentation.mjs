@@ -52,6 +52,12 @@ const selectedSlugs = [
   'sites/domains',
   'sites/troubleshooting',
   'observe/index',
+  'observe/runs',
+  'observe/traces',
+  'observe/tool-calls',
+  'observe/artifacts',
+  'observe/logs',
+  'observe/debugging-failures',
   'secure/index',
   'reference/index',
   'user-guide/user-stories-use-cases',
@@ -62,7 +68,6 @@ const selectedSlugs = [
   'user-guide/getting-started/how-tos/configure-your-workspace',
   'os/glossary',
   'os/concepts/data-model-and-graphql',
-  'os/concepts/observability',
   'os/tools/subagents',
   'developers/introduction',
   'developers/agent/overview',
@@ -107,6 +112,7 @@ const removedSlugs = [
   'tools/media/getting-started',
   'developers/agent/tool-system',
   'tools/sites/overview',
+  'os/concepts/observability',
 ];
 
 const adapterNames = [
@@ -153,7 +159,7 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
-for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:browser', 'test:boundary']) {
+for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:browser', 'test:boundary']) {
   assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
 }
 assert(existsSync('bun.lock'), 'bun.lock must exist');
