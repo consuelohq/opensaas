@@ -2,6 +2,13 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const selectedSlugs = [
+  'start/index',
+  'connect/index',
+  'build/index',
+  'sites/index',
+  'observe/index',
+  'secure/index',
+  'reference/index',
   'user-guide/user-stories-use-cases',
   'user-guide/introduction',
   'user-guide/getting-started/capabilities/what-is-consuelo',
@@ -98,6 +105,9 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
+for (const script of ['test:foundation', 'test:browser', 'test:boundary']) {
+  assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
+}
 assert(existsSync('bun.lock'), 'bun.lock must exist');
 
 const rootPackageJson = JSON.parse(read('../../package.json'));
@@ -168,14 +178,25 @@ assert(
   config.includes('RuntimeLanguageSelect.astro'),
   'Starlight LanguageSelect must use runtime translation selector',
 );
+const navigation = read('src/lib/docs-navigation.ts');
 for (const required of [
-  'user-guide/user-stories-use-cases',
-  'tools/sites/overview',
-  'tools/office',
-  'os/overview',
-  'developers/introduction',
+  'Start',
+  'Connect',
+  'Build with OS',
+  'Sites',
+  'Observe',
+  'Secure',
+  'Reference',
 ]) {
-  assert(config.includes(required), `sidebar missing ${required}`);
+  assert(navigation.includes(`label: '${required}'`), `navigation missing ${required}`);
+}
+for (const required of [
+  'docsSidebar',
+  'customCss',
+  'PageTitle',
+  'Sidebar',
+]) {
+  assert(config.includes(required), `Starlight config missing ${required}`);
 }
 assert(
   !config.includes('Example Guide'),
@@ -196,6 +217,29 @@ assert(
   !existsSync('src/content/docs/reference/example.md'),
   'starter reference must be removed',
 );
+for (const file of [
+  'AUTHORING.md',
+  'src/components/PageTitle.astro',
+  'src/components/Sidebar.astro',
+  'src/lib/docs-navigation.ts',
+  'src/lib/markdown-pages.ts',
+  'src/pages/[...slug].md.ts',
+  'src/styles/docs.css',
+]) {
+  assert(existsSync(file), `missing documentation foundation file ${file}`);
+}
+const pageTitle = read('src/components/PageTitle.astro');
+for (const action of ['Copy page', 'View as Markdown', 'Open in ChatGPT', 'Open in Claude']) {
+  assert(pageTitle.includes(action), `page actions missing ${action}`);
+}
+assert(!pageTitle.includes('Ask AI'), 'Ask AI action must not be added');
+const docsCss = read('src/styles/docs.css');
+assert(docsCss.includes('--sl-content-width: 44rem'), 'docs reading lane must remain 44rem');
+assert(docsCss.includes('max-width: 65ch'), 'docs prose measure must remain 65ch');
+const authoring = read('AUTHORING.md');
+for (const status of ['shipped', 'preview', 'planned', 'unresolved', 'deprecated']) {
+  assert(authoring.includes(status), `authoring contract missing ${status} status`);
+}
 
 const readme = read('README.md');
 for (const phrase of [
@@ -246,8 +290,9 @@ for (const path of allFiles) {
 
 const slugs = new Set();
 for (const path of allFiles) {
-  const slug = path.slice(docsRoot.length + 1).replace(/\.(md|mdx)$/, '');
-  slugs.add(slug === 'index' ? '' : slug);
+  const sourceSlug = path.slice(docsRoot.length + 1).replace(/\.(md|mdx)$/, '');
+  const slug = sourceSlug === 'index' ? '' : sourceSlug.replace(/\/index$/, '');
+  slugs.add(slug);
 }
 
 const routeExists = (ref) => {

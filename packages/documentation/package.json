@@ -9,7 +9,10 @@
     "preview": "astro preview",
     "astro": "astro",
     "validate": "bun scripts/validate-documentation.mjs",
-    "test:translation": "bun scripts/test-translation.mjs"
+    "test:translation": "bun scripts/test-translation.mjs",
+    "test:foundation": "bun test tests/foundation.test.ts",
+    "test:boundary": "bun scripts/check-package-boundary.mjs",
+    "test:browser": "bun scripts/test-foundation-browser.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.0",
