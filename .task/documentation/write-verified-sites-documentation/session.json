@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4c00efa642e7",
+  "tmuxSession": "opensaas-documentation-write-verified-sites-documentation-4c00efa6",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-sites-documentation",
+  "branch": "task/documentation/write-verified-sites-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-sites-documentation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-sites-documentation",
+  "prNumber": 1462,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1462",
+  "createdAt": "2026-07-13T18:38:29.205Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-sites-documentation/.task/documentation/write-verified-sites-documentation/session.json"
+}

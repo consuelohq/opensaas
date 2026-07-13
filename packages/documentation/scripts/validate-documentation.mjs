@@ -45,6 +45,12 @@ const selectedSlugs = [
   'build/files-and-artifacts',
   'build/approvals',
   'sites/index',
+  'sites/create-a-site',
+  'sites/pages-and-content',
+  'sites/preview-locally',
+  'sites/publish',
+  'sites/domains',
+  'sites/troubleshooting',
   'observe/index',
   'secure/index',
   'reference/index',
@@ -57,7 +63,6 @@ const selectedSlugs = [
   'os/glossary',
   'os/concepts/data-model-and-graphql',
   'os/concepts/observability',
-  'tools/sites/overview',
   'os/tools/subagents',
   'developers/introduction',
   'developers/agent/overview',
@@ -101,6 +106,7 @@ const removedSlugs = [
   'tools/office',
   'tools/media/getting-started',
   'developers/agent/tool-system',
+  'tools/sites/overview',
 ];
 
 const adapterNames = [
@@ -147,7 +153,7 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
-for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:browser', 'test:boundary']) {
+for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:browser', 'test:boundary']) {
   assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
 }
 assert(existsSync('bun.lock'), 'bun.lock must exist');

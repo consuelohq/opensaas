@@ -17,7 +17,9 @@
     "test:connect": "bun test tests/connect.test.ts",
     "test:connect-browser": "bun scripts/test-connect-browser.mjs",
     "test:build": "bun test tests/build.test.ts",
-    "test:build-browser": "bun scripts/test-build-browser.mjs"
+    "test:build-browser": "bun scripts/test-build-browser.mjs",
+    "test:sites": "bun test tests/sites.test.ts",
+    "test:sites-browser": "bun scripts/test-sites-browser.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.0",
