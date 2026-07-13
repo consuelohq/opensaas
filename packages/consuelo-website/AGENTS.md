@@ -7,7 +7,7 @@ marketing site for consuelo. astro 5 + tailwind v4 + react 19 islands.
 - **framework:** astro 5.x (static output, `bun` package manager)
 - **styling:** tailwind v4 (css-first config via `@theme` in global.css, no tailwind.config.js)
 - **components:** react 19 for interactive islands (cookie banner, etc.), astro for everything else
-- **fonts:** geist sans + geist mono (variable, from `public/fonts/`)
+- **fonts:** visitor device system UI stack; native monospace stack for code
 - **design system:** geist (https://vercel.com/geist/introduction) — use its patterns/components where possible
 - **analytics:** posthog (loaded only after cookie consent)
 

@@ -13,7 +13,7 @@ export const siteMetadata = {
   defaultTitle: 'Consuelo | Sales Infrastructure for Insurance Sales Teams',
   defaultDescription:
     'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. Composable and built to integrate everywhere your team works.',
-  blogTitle: 'Consuelo Blog',
+  blogTitle: 'The Consuelo Blog',
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',
   defaultOgImage: '/og.png',
