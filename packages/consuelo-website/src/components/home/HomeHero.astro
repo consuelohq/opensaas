@@ -10,14 +10,12 @@ const { sectionId = 'intro' } = Astro.props as Props;
 ---
 
 <section class="os-hero" id={sectionId} data-section="hero">
-  <img
-    class="os-hero__art"
-    src="/images/home/consuelo-atmosphere.svg"
-    alt=""
-    width="1200"
-    height="900"
-    aria-hidden="true"
-  />
+  <div class="os-hero__atmosphere" aria-hidden="true">
+    <img class="os-hero__cloud os-hero__cloud--1" src="/images/home/dither/cloud-1.png" alt="" width="900" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--2" src="/images/home/dither/cloud-2.png" alt="" width="1020" height="390" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--3" src="/images/home/dither/cloud-3.png" alt="" width="800" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--4" src="/images/home/dither/cloud-4.png" alt="" width="950" height="400" loading="eager" />
+  </div>
 
   <div class="os-hero__content">
     <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
@@ -209,18 +207,45 @@ const { sectionId = 'intro' } = Astro.props as Props;
     font-size: 0.62rem;
   }
 
-  .os-hero__art {
+  .os-hero__atmosphere {
     position: absolute;
+    inset: 0;
     z-index: 1;
-    inset: 0 auto auto 50%;
-    width: max(100%, 90rem);
-    height: 100%;
-    max-width: none;
-    opacity: 0.96;
-    object-fit: cover;
-    object-position: 50% 50%;
-    transform: translateX(-50%);
+    overflow: hidden;
     pointer-events: none;
+    /* Dots fade to flat brand blue before the features seam. */
+    mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  }
+
+  .os-hero__cloud {
+    position: absolute;
+    max-width: none;
+    image-rendering: pixelated;
+  }
+
+  .os-hero__cloud--1 {
+    top: 5%;
+    left: -10%;
+    opacity: 0.42;
+  }
+
+  .os-hero__cloud--2 {
+    bottom: 22%;
+    left: -12%;
+    opacity: 0.45;
+  }
+
+  .os-hero__cloud--3 {
+    top: 2%;
+    right: -16%;
+    opacity: 0.34;
+  }
+
+  .os-hero__cloud--4 {
+    bottom: 8%;
+    right: -14%;
+    opacity: 0.4;
   }
 
   .os-hero::after {
@@ -261,18 +286,30 @@ const { sectionId = 'intro' } = Astro.props as Props;
       font-size: 0.6rem;
     }
 
-    .os-hero__art {
-      inset: 0 auto auto 50%;
-      width: auto;
-      min-width: 68rem;
-      height: 100%;
-      object-position: 50% 58%;
+    .os-hero__cloud--1 {
+      top: 4%;
+      left: -30%;
+      width: 480px;
+      height: 240px;
     }
 
     .os-hero::after {
       inset: 20% -25% 9%;
       background: radial-gradient(circle at 50% 50%, rgba(0, 0, 242, 0.72), transparent 58%);
     }
+
+    .os-hero__cloud--3 {
+      top: 10%;
+      right: -34%;
+      width: 400px;
+      height: 225px;
+    }
+
+    .os-hero__cloud--2,
+    .os-hero__cloud--4 {
+      display: none;
+    }
+
   }
 
   @media (prefers-reduced-motion: reduce) {

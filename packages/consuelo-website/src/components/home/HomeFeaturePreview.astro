@@ -16,10 +16,11 @@ const { sectionId = 'features' } = Astro.props as Props;
     <div class="product-panel__preview">
       <img
         class="product-panel__preview-art"
-        src="/images/home/consuelo-transition.svg"
+        src="/images/home/dither/cloud-2.png"
         alt=""
-        width="1600"
-        height="520"
+        width="1020"
+        height="390"
+        loading="lazy"
         aria-hidden="true"
       />
       <PreviewNotice />
@@ -93,11 +94,11 @@ const { sectionId = 'features' } = Astro.props as Props;
   .product-panel__preview-art {
     position: absolute;
     z-index: 0;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.96;
+    right: -6%;
+    bottom: -18%;
+    max-width: none;
+    image-rendering: pixelated;
+    opacity: 0.35;
     pointer-events: none;
   }
 
