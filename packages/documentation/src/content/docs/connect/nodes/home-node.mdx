@@ -1,0 +1,44 @@
+---
+title: Home node
+description: Understand the first local computer registered for a managed Consuelo workspace.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/cloudflare/os-device-authority/src/app.ts
+    tests:
+      - packages/os/tests/os-device-authority-worker.test.ts
+      - packages/os/tests/oauth-device-http-client.test.ts
+    runtime: The first-node home assignment and later member-node assignment were verified with the device-authority worker tests on 2026-07-13.
+---
+The first approved computer in a managed workspace becomes its `home` node. “Home” is an enrollment role; it does not mean every request is permanently pinned to that machine or that the computer is a cloud server.
+
+## What the home node provides
+
+- a stable node identity for the workspace;
+- the local OS runtime and tools;
+- local state, artifacts, and files permitted by policy;
+- a connector route for managed HTTPS MCP access;
+- the baseline workspace membership used when later computers join.
+
+## Create it
+
+Run the normal installer on the first supported Mac and complete browser authorization. The authorization response supplies the workspace, node, and connector bootstrap information. The installer writes local configuration only after the managed result is approved.
+
+## Verify
+
+Inspect the install result for:
+
+```text
+nodeRole: home
+nodeStatus: created
+```
+
+Then verify the local health endpoint or doctor command, a local agent MCP handshake, and—when enabled—a harmless call through the workspace HTTPS MCP URL.
+
+## Keep it available
+
+ChatGPT and other remote paths need an active route to a runtime. Keep the background service and connector transport running when the home node is expected to answer remote calls.
+
+## Replace or retire it
+
+Do not clone its Consuelo home onto another machine. Install the second computer as its own node, verify it, then use the managed support path to change workspace routing or retire the original node. A self-service role-transfer control is not documented in the current installer.

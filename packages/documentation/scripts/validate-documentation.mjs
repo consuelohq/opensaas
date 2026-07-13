@@ -9,6 +9,24 @@ const selectedSlugs = [
   'start/local-and-consuelo-cloud',
   'start/core-concepts',
   'connect/index',
+  'connect/agents/chatgpt',
+  'connect/agents/codex',
+  'connect/agents/claude-code',
+  'connect/agents/cursor',
+  'connect/agents/opencode',
+  'connect/agents/gemini',
+  'connect/agents/other-agents',
+  'connect/connectors/index',
+  'connect/connectors/github',
+  'connect/connectors/google-drive',
+  'connect/connectors/gmail',
+  'connect/connectors/google-calendar',
+  'connect/connectors/slack',
+  'connect/connectors/additional-connectors',
+  'connect/nodes/how-nodes-work',
+  'connect/nodes/home-node',
+  'connect/nodes/local-nodes',
+  'connect/nodes/cloud-nodes',
   'build/index',
   'sites/index',
   'observe/index',
@@ -28,7 +46,6 @@ const selectedSlugs = [
   'os/concepts/approvals',
   'os/concepts/data-model-and-graphql',
   'os/concepts/context-and-memory',
-  'os/concepts/integrations-and-capabilities',
   'os/concepts/observability',
   'tools/overview',
   'tools/sites/overview',
@@ -41,7 +58,6 @@ const selectedSlugs = [
   'developers/agent/overview',
   'developers/agent/tool-system',
   'developers/agent/crm-tools',
-  'developers/agent/integrations',
   'developers/api/overview',
   'developers/api/auth',
   'developers/api/graphql',
@@ -67,6 +83,8 @@ const removedSlugs = [
   'os/tools/decision-engine',
   'os/tools/tool-manifest',
   'os/tools/scripts',
+  'developers/agent/integrations',
+  'os/concepts/integrations-and-capabilities',
 ];
 
 const adapterNames = [
@@ -113,7 +131,7 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
-for (const script of ['test:foundation', 'test:start', 'test:browser', 'test:boundary']) {
+for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:browser', 'test:boundary']) {
   assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
 }
 assert(existsSync('bun.lock'), 'bun.lock must exist');

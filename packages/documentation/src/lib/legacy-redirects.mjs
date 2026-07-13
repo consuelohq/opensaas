@@ -1,5 +1,7 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/developers/agent/integrations': '/connect/connectors/',
+  '/os/concepts/integrations-and-capabilities': '/connect/connectors/',
   '/os/overview': '/start/',
   '/os/how-it-works': '/start/core-concepts/',
   '/os/getting-started/install': '/start/install-consuelo-os/',
@@ -108,8 +110,8 @@ export const legacyRedirects = {
     '/user-guide/getting-started/capabilities/implementation-services',
   '/user-guide/billing/overview':
     '/user-guide/getting-started/capabilities/implementation-services',
-  '/user-guide/calendar-emails/capabilities/calendar': '/tools/office',
-  '/user-guide/calendar-emails/capabilities/mailbox': '/tools/office',
+  '/user-guide/calendar-emails/capabilities/calendar': '/connect/connectors/google-calendar/',
+  '/user-guide/calendar-emails/capabilities/mailbox': '/connect/connectors/gmail/',
   '/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo':
     '/tools/office',
   '/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo':
@@ -121,7 +123,7 @@ export const legacyRedirects = {
   '/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records':
     '/tools/office',
   '/user-guide/calendar-emails/how-tos/limit-emails-imported': '/tools/office',
-  '/user-guide/calendar-emails/overview': '/tools/office',
+  '/user-guide/calendar-emails/overview': '/connect/connectors/',
   '/user-guide/dashboards/capabilities/chart-settings': '/tools/sites/overview',
   '/user-guide/dashboards/capabilities/dashboards': '/tools/sites/overview',
   '/user-guide/dashboards/capabilities/widgets': '/tools/sites/overview',
@@ -201,7 +203,7 @@ export const legacyRedirects = {
   '/user-guide/graphql-api/overview': '/developers/api/graphql',
   '/user-guide/guides-tutorials/overview': '/start/',
   '/user-guide/highlevel/overview': '/tools/sites/overview',
-  '/user-guide/integrations/overview': '/developers/agent/integrations',
+  '/user-guide/integrations/overview': '/connect/connectors/',
   '/user-guide/permissions-access/capabilities/permissions':
     '/user-guide/getting-started/how-tos/configure-your-workspace',
   '/user-guide/permissions-access/capabilities/sso-configuration':

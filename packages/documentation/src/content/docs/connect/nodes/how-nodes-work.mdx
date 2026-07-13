@@ -1,0 +1,43 @@
+---
+title: How nodes work
+description: Understand how computers join a Consuelo workspace and which one executes local work.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/install-state.ts
+    tests:
+      - packages/os/tests/os-device-authority-worker.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: Home/member assignment, created/reconnected status, local node YAML, and connector identity were verified by focused tests on 2026-07-13.
+---
+A node is a computer running a Consuelo OS runtime for a workspace. Agents connect to the workspace; the active node executes local tools, reads local files allowed by policy, and stores local runtime state.
+
+## Roles
+
+The managed authorization service assigns one of two current roles:
+
+- `home`: the first approved node for a workspace;
+- `member`: a later approved computer joining that workspace.
+
+A reconnecting computer keeps its node identity when the same account, workspace, and local identity can be matched.
+
+## Enrollment states
+
+- `created`: a new node record was issued;
+- `reconnected`: an existing node identity was reused.
+
+These are enrollment results, not health states. A created node can still be offline, and a reconnected node still needs a working local runtime and connector transport.
+
+## Local state
+
+OS writes node identity and workspace membership under the Consuelo home. The default node configuration includes the node ID, display name, role, local runtime capability, platform, and workspace state path.
+
+Do not copy node configuration between Macs. Each node should complete authorization and receive its own identity.
+
+## Agent and connector relationships
+
+- Local agents on a node call its `consuelo-os-mcp` command.
+- ChatGPT calls the workspace HTTPS MCP route, which is resolved to an approved connected node.
+- Service connectors belong to the workspace/runtime capability layer; they are not node identities.
+
+Continue with [Home node](/connect/nodes/home-node/) or [Local nodes](/connect/nodes/local-nodes/).

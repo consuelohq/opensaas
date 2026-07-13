@@ -15,6 +15,47 @@ export type DocsSidebarEntry =
       [key: string]: unknown;
     };
 
+type SidebarItem =
+  | { label: string; slug: string }
+  | { label: string; items: SidebarItem[] };
+
+const connectItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'connect' },
+  {
+    label: 'Agents',
+    items: [
+      { label: 'ChatGPT', slug: 'connect/agents/chatgpt' },
+      { label: 'Codex', slug: 'connect/agents/codex' },
+      { label: 'Claude Code', slug: 'connect/agents/claude-code' },
+      { label: 'Cursor', slug: 'connect/agents/cursor' },
+      { label: 'OpenCode', slug: 'connect/agents/opencode' },
+      { label: 'Gemini', slug: 'connect/agents/gemini' },
+      { label: 'Other agents', slug: 'connect/agents/other-agents' },
+    ],
+  },
+  {
+    label: 'Connectors',
+    items: [
+      { label: 'Overview', slug: 'connect/connectors' },
+      { label: 'GitHub', slug: 'connect/connectors/github' },
+      { label: 'Google Drive', slug: 'connect/connectors/google-drive' },
+      { label: 'Gmail', slug: 'connect/connectors/gmail' },
+      { label: 'Google Calendar', slug: 'connect/connectors/google-calendar' },
+      { label: 'Slack', slug: 'connect/connectors/slack' },
+      { label: 'Additional connectors', slug: 'connect/connectors/additional-connectors' },
+    ],
+  },
+  {
+    label: 'Nodes',
+    items: [
+      { label: 'How nodes work', slug: 'connect/nodes/how-nodes-work' },
+      { label: 'Home node', slug: 'connect/nodes/home-node' },
+      { label: 'Local nodes', slug: 'connect/nodes/local-nodes' },
+      { label: 'Cloud nodes', slug: 'connect/nodes/cloud-nodes' },
+    ],
+  },
+];
+
 export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
   { label: 'Connect', slug: 'connect', description: 'Connect agents, services, and nodes to the same workspace.' },
@@ -37,7 +78,12 @@ const startItems = [
 export const docsSidebar = docsSections.map(({ label, slug }) => ({
   label,
   collapsed: true,
-  items: slug === 'start' ? startItems : [{ label: 'Overview', slug }],
+  items:
+    slug === 'start'
+      ? startItems
+      : slug === 'connect'
+        ? connectItems
+        : [{ label: 'Overview', slug }],
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));

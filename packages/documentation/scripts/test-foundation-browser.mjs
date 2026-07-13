@@ -32,7 +32,7 @@ try {
 
   await page.goto(origin, { waitUntil: 'networkidle' });
   if ((await page.locator('main h1#_top').count()) !== 1) throw new Error('Homepage must render one page title');
-  const globalGroups = page.locator('#starlight__sidebar details');
+  const globalGroups = page.locator('#starlight__sidebar ul.top-level > li > details');
   const globalCount = await globalGroups.count();
   if (globalCount !== 7) throw new Error(`Expected 7 global sidebar groups, found ${globalCount}`);
   for (let index = 0; index < globalCount; index += 1) {

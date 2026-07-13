@@ -1,0 +1,46 @@
+---
+title: Slack
+description: Configure the current outbound Slack webhook tool and understand its limits.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/tools/slack.py
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The Slack adapter was inspected on 2026-07-13; it sends a JSON text payload to a configured webhook and returns a structured error when absent.
+---
+The current Slack capability is a small **outbound** webhook tool. It can post text to the destination represented by the webhook. It is not a Slack OAuth app and cannot read channels, search messages, list users, or choose an arbitrary destination at runtime.
+
+## Configure
+
+Provide the webhook only to the OS runtime environment:
+
+```text
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+```
+
+Do not commit the value or put it in a prompt. The tool reads `SLACK_WEBHOOK_URL` when it runs.
+
+## Verify
+
+Use a dedicated test webhook and post a harmless message. A successful call returns:
+
+```json
+{"posted": true}
+```
+
+When the variable is absent, the tool returns an error stating that `SLACK_WEBHOOK_URL` is not set.
+
+## Current limits
+
+- The `channel` argument does not turn a webhook into a multi-channel credential; the webhook's Slack configuration controls delivery.
+- There is no inbound event subscription.
+- There is no Slack history or search tool in the current OS manifest.
+- Rotating or revoking the webhook happens in Slack, not by disconnecting an agent.
+
+## Troubleshooting
+
+- Confirm the runtime process received the variable, not just your interactive shell.
+- Replace a revoked or expired webhook in the runtime secret source.
+- Check Slack's webhook response when the tool reports an HTTP failure.
+- Use a workspace-specific test destination before enabling automated posts.
