@@ -2,6 +2,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  root: __dirname,
   plugins: [
     tsconfigPaths({
       root: __dirname,
@@ -20,6 +21,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/.git/**',
       '**/__e2e__/**',
+      '**/__integration__/**',
     ],
     coverage: {
       provider: 'v8',

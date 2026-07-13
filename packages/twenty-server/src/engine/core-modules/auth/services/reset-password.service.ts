@@ -7,7 +7,7 @@ import { msg } from '@lingui/core/macro';
 import { render } from '@react-email/render';
 import { addMilliseconds, differenceInMilliseconds } from 'date-fns';
 import ms from 'ms';
-import { PasswordResetLinkEmail } from 'twenty-emails';
+import { PasswordResetLinkEmail } from 'src/engine/core-modules/email/templates';
 import { type APP_LOCALES } from 'twenty-shared/translations';
 import { AppPath } from 'twenty-shared/types';
 import {

@@ -11995,14 +11995,6 @@
       "lint": false
     },
     {
-      "name": "twenty-emails",
-      "root": "packages/twenty-emails",
-      "file": "packages/twenty-emails/project.json",
-      "testTargets": [],
-      "typecheck": true,
-      "lint": true
-    },
-    {
       "name": "twenty-eslint-rules",
       "root": "packages/twenty-eslint-rules",
       "file": "packages/twenty-eslint-rules/project.json",

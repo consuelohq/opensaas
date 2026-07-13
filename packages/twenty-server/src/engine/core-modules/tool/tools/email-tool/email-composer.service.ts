@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { render, toPlainText } from '@react-email/render';
 import DOMPurify from 'dompurify';
-import { reactMarkupFromJSON } from 'twenty-emails';
+import { reactMarkupFromJSON } from 'src/engine/core-modules/email/templates';
 import {
   extractFolderPathFilenameAndTypeOrThrow,
   isDefined,
