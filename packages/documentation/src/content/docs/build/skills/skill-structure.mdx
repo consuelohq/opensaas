@@ -1,0 +1,58 @@
+---
+title: Skill structure
+description: Understand the files and metadata that make a skill discoverable and safe to load.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/skills/skill-creator/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The supported skill metadata fields and registry invariants were verified from the creator guide and focused tests on 2026-07-13.
+  - source: packages/os/scripts/lib/skills.ts
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: Permission and approval alignment checks were inspected in current validation code.
+---
+
+A skill directory separates guidance, metadata, and executable implementation.
+
+```text
+my-skill/
+  SKILL.md          # agent-facing guidance
+  skill.json        # discovery and policy metadata
+  references/       # optional supporting material
+  scripts/          # optional executable implementation
+  subskills/        # optional focused presets or additive rules
+```
+
+## `SKILL.md`
+
+This is the default entrypoint. It should explain the trigger, workflow, tools, approval gates, verification, and reporting contract. A custom entrypoint is allowed only when `skill.json` names it.
+
+## `skill.json`
+
+Current compact metadata can include:
+
+- `name`, `title`, `description`, and `trigger`;
+- `entrypoint` and `load`;
+- `permission` and `requiresApproval`;
+- `status`;
+- `capabilities` and `tools`;
+- `subskills`;
+- `visibility`, `distribution`, and `audience` where needed.
+
+The generated registry intentionally does not embed the full Markdown body.
+
+## Scripts
+
+A `script` field or `scripts/` directory points to executable implementation. Scripts should accept structured input, return structured output, fail non-zero or with an error code, and avoid hidden global state.
+
+The script's side effects must agree with the skill's permission and approval declarations.
+
+## Supporting files
+
+Keep references narrow and load them only when needed. Subskills should add focused rules or presets rather than duplicate the entire base skill.
+
+## Validation failures
+
+A skill is invalid when its entrypoint or load path is missing, its metadata cannot be parsed, a named tool does not exist, or its permission and approval settings disagree with the runtime manifest.

@@ -1,0 +1,51 @@
+---
+title: Project steering
+description: Keep repository-specific instructions close to the project without confusing them with OS-wide steering.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: AGENTS.md
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+    runtime: The repository instruction contract and current OS steering assembly were compared on 2026-07-13.
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+    runtime: Focused tests confirm get_steering loads the OS home steering directory, not arbitrary project files.
+---
+
+Project steering is guidance that belongs to one repository or work area: build commands, architecture, coding standards, deployment facts, and local conventions.
+
+## Current behavior
+
+Consuelo OS does **not** automatically merge arbitrary project files into `get_steering`. The OS bootstrap loads the workspace files under `~/.consuelo/steering`.
+
+Project-aware agents should then read the instruction files in the repository they are working in. Common names include:
+
+```text
+AGENTS.md
+CODING-STANDARDS.md
+README.md
+<package>/AGENTS.md
+```
+
+Use the project's actual convention rather than assuming every repository has all of these files.
+
+## What belongs in project guidance
+
+Good project guidance covers facts that are true for that codebase:
+
+- package boundaries and ownership;
+- required tests and build commands;
+- architecture and deployment constraints;
+- formatting and naming conventions;
+- known runtime gotchas;
+- where task-specific records live.
+
+Temporary acceptance criteria and progress belong in the task's workpad, not in permanent steering.
+
+## Precedence
+
+System and workspace policy remain in force. Project instructions can narrow how work is performed inside that project, but they cannot loosen an OS permission, security rule, or approval boundary.
+
+When instructions disagree, stop and resolve the conflict rather than choosing the most convenient file.
