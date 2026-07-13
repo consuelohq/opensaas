@@ -1,0 +1,55 @@
+---
+title: Tailscale
+description: Use a private Tailnet for private workspace access and durable internal publishing without confusing it with public ingress.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/skills/office/SKILL.md
+    tests:
+      - packages/os/tests/office-skill.test.ts
+    runtime: Current Office publishing guidance and durable private-route workflow were inspected on 2026-07-13.
+  - source: packages/os/TOOLS.md
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The generated design.publish tool contract was verified to describe private Tailscale Serve publishing on 2026-07-13.
+---
+
+Tailscale gives approved devices a private network path. In Consuelo today it is useful for internal Sites and Office artifacts, and services that should remain inside a **private Tailnet**.
+
+It is **not the default public MCP ingress**. Public Consuelo workspace routes currently use the managed Cloudflare edge, OAuth or workspace authentication, signed connector requests, and local authorization.
+
+## When to use Tailscale
+
+Use a Tailnet path when:
+
+- a page or service should be reachable only by approved Tailnet members;
+- a local artifact needs a stable private URL;
+- an operator needs to inspect a node without opening a public listener;
+- the user explicitly wants private network publishing.
+
+Use the managed workspace route when a supported cloud agent needs the public HTTPS MCP entrypoint or a Site is intentionally public.
+
+## Tailnet identity is one layer
+
+Tailnet membership controls network reachability. The application should still enforce its own identity, workspace, route, and tool authorization where the service is sensitive.
+
+Do not treat “connected to Tailscale” as a blanket admin grant. Use Tailscale ACLs or grants to limit which users and devices can reach the serving node and port.
+
+## Private publishing
+
+Consuelo's design and Office workflows can publish through Tailscale Serve. That keeps the route on the Tailnet while giving it a stable HTTPS address. The durable source and publish metadata should remain with the artifact so the route can be reproduced and audited.
+
+Do not turn a private Tailnet route into a public publishing path merely to make sharing easier. That changes the trust boundary and should be an explicit product decision.
+
+## Keep the paths distinct
+
+| Path | Intended audience | Primary boundary |
+| --- | --- | --- |
+| Local loopback | Processes on one node | Operating-system user and local gateway auth |
+| Tailscale Serve | Approved Tailnet members | Tailnet policy plus application auth |
+| Managed workspace hostname | Approved public or cloud clients | Cloudflare route policy, OAuth/session, signed connector, local auth |
+| Public Sites snapshot | Anyone for an intentional public route | Published immutable snapshot and route policy |
+
+## Troubleshooting
+
+If a private route fails, check Tailscale status, the serving node, Serve configuration, ACLs, and the application health separately. Do not switch to a public route merely to avoid fixing private network policy.

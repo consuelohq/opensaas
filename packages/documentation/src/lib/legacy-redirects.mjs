@@ -1,5 +1,6 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/os/concepts/mcp-ingress-security': '/secure/hosted-mcp-ingress/',
   '/os/concepts/observability': '/observe/',
   '/tools/sites/overview': '/sites/',
   '/os/concepts/portal': '/build/tools/how-tools-work/',
@@ -218,14 +219,10 @@ export const legacyRedirects = {
   '/user-guide/guides-tutorials/overview': '/start/',
   '/user-guide/highlevel/overview': '/',
   '/user-guide/integrations/overview': '/connect/connectors/',
-  '/user-guide/permissions-access/capabilities/permissions':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
-  '/user-guide/permissions-access/capabilities/sso-configuration':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
-  '/user-guide/permissions-access/how-tos/permissions-faq':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
-  '/user-guide/permissions-access/overview':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
+  '/user-guide/permissions-access/capabilities/permissions': '/secure/access-and-permissions/',
+  '/user-guide/permissions-access/capabilities/sso-configuration': '/secure/access-and-permissions/',
+  '/user-guide/permissions-access/how-tos/permissions-faq': '/secure/access-and-permissions/',
+  '/user-guide/permissions-access/overview': '/secure/access-and-permissions/',
   '/user-guide/settings/capabilities/domains-settings':
     '/user-guide/getting-started/how-tos/configure-your-workspace',
   '/user-guide/settings/capabilities/experience-settings':
