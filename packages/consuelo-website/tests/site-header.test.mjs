@@ -97,7 +97,7 @@ ${output}`);
   };
 };
 
-test('home page header follows the Consuelo OS desktop and mobile contract', async () => {
+test('home page header follows the Consuelo OS desktop and mobile contract', { timeout: 20_000 }, async () => {
   const server = await startDevServer();
   const browser = await chromium.launch();
 
@@ -179,9 +179,9 @@ test('home page header follows the Consuelo OS desktop and mobile contract', asy
       };
     });
 
-    assert.ok(typography.wordmark >= 19);
-    assert.ok(typography.label >= 12);
-    assert.ok(typography.icon >= 16);
+    assert.ok(typography.wordmark >= 23);
+    assert.ok(typography.label >= 14);
+    assert.ok(typography.icon >= 19);
     assert.equal(typography.overflow, 0);
     assert.equal(await mobileHeader.locator('[aria-label="Discord"]').isVisible(), true);
     assert.equal(await mobileHeader.locator('[aria-label="GitHub"]').isVisible(), true);

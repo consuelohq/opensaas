@@ -71,6 +71,13 @@
     font: 650 0.7rem/1 var(--site-font-mono);
     letter-spacing: 0.1em;
     text-decoration: none;
+    transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  }
+
+  .cloud-cta a:hover,
+  .cloud-cta a:focus-visible {
+    background: transparent;
+    color: white;
   }
 
   .cloud-cta__wordmark {
