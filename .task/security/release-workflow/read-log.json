@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".github/workflows/consuelo-ci.yaml",
+    ".github/workflows/consuelo-production-release.yaml",
+    ".github/workflows/consuelo-website-deploy.yaml",
+    ".task/security/release-workflow/workpad.md",
+    "packages/workspace/scripts/ci/check-github-workflows.cjs",
+    "packages/workspace/scripts/os-release-device-auth.ts",
+    "packages/workspace/tests/website-deploy.test.js"
+  ],
+  "updatedAt": "2026-07-10T22:51:35.623Z"
+}

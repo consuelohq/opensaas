@@ -1,0 +1,36 @@
+---
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'feature-scroll-spacer' } = Astro.props as Props;
+---
+
+<section class="feature-scroll-spacer" id={sectionId} data-section="feature-scroll-spacer" aria-hidden="true">
+  <div class="feature-scroll-spacer__inner site-container">
+    <p class="feature-scroll-spacer__label">Placeholder surface for scroll testing</p>
+  </div>
+</section>
+
+<style>
+  .feature-scroll-spacer {
+    min-height: 120vh;
+    background: var(--site-color-paper);
+    color: var(--site-color-muted-on-brand);
+    padding-block: clamp(4rem, 10vw, 8rem);
+  }
+
+  .feature-scroll-spacer__inner {
+    display: grid;
+    place-items: center;
+    min-height: 80vh;
+  }
+
+  .feature-scroll-spacer__label {
+    margin: 0;
+    font: 500 0.68rem / 1.4 var(--site-font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.45;
+  }
+</style>

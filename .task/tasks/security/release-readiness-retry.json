@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/release-readiness-retry",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1391,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1391",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1391",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1391/release-readiness-retry",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1391",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1391/release-readiness-retry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-readiness-retry",
+  "taskSession": "tsk_092019eb2cf3",
+  "tmuxSession": "opensaas-security-release-readiness-retry-092019eb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-readiness-retry/.task/security/release-readiness-retry/session.json",
+  "createdAt": "2026-07-10T23:55:31.142Z"
+}

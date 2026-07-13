@@ -1,120 +1,99 @@
 ---
-import { homeFaq } from '../../data/home-content';
-import type { HomeFaqItem } from '../../data/home-content';
-
-type Props = {
-  sectionId?: string;
-  title?: string;
-  intro?: string;
-  items: HomeFaqItem[];
-};
-
-const {
-  sectionId,
-  title = homeFaq.title,
-  intro = homeFaq.intro,
-  items,
-} = Astro.props as Props;
+import { homeFaqItems } from '../../data/home-content';
 ---
 
-<section class="launch-section" id={sectionId}>
-  <div class="launch-content launch-content--wide launch-faq">
-    <div class="launch-faq__intro">
-      <p class="launch-eyebrow">{homeFaq.eyebrow}</p>
-      <h2>{title}</h2>
-      {intro && <p class="launch-copy">{intro}</p>}
-    </div>
-
-    <div class="launch-faq__list">
-      {items.map((item) => (
-        <details class="launch-faq__item">
+<section class="home-faq" id="faq" aria-labelledby="home-faq-title" data-section="faq">
+  <h2 id="home-faq-title">FAQ</h2>
+  <div class="home-faq__list">
+    {
+      homeFaqItems.map((item) => (
+        <details>
           <summary>
-            <span class="launch-faq__icon" aria-hidden="true">
-              <span></span>
-              <span></span>
-            </span>
             <span>{item.question}</span>
+            <span class="home-faq__icon" aria-hidden="true">+</span>
           </summary>
-          <p class="launch-copy" set:html={item.answer} />
+          <p>{item.answer}</p>
         </details>
-      ))}
-    </div>
+      ))
+    }
   </div>
 </section>
 
 <style>
-  .launch-faq {
-    display: grid;
-    gap: 1.35rem;
+  .home-faq {
+    padding: clamp(4rem, 9vw, 8rem) var(--site-panel-pad) clamp(5rem, 10vw, 9rem);
   }
 
-  .launch-faq h2 {
-    margin: 0;
-    font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.95rem);
-    letter-spacing: -0.06em;
-    line-height: 1.06;
-    color: var(--launch-muted);
+  .home-faq h2 {
+    margin: 0 0 clamp(1.5rem, 3vw, 3rem);
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(6rem, 16vw, 15rem);
+    font-weight: 430;
+    letter-spacing: 0;
+    line-height: 0.72;
   }
 
-  .launch-faq__intro {
-    display: grid;
-    gap: 0.9rem;
-    max-width: 46rem;
+  .home-faq__list {
+    width: min(100%, 54rem);
+    margin: 0 auto;
   }
 
-  .launch-faq__list {
-    display: grid;
-    gap: 0.2rem;
+  .home-faq details {
+    border-bottom: 1px solid var(--site-color-line-strong);
   }
 
-  .launch-faq__item {
-    padding: 0.05rem 0;
-  }
-
-  .launch-faq__item summary {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.75rem;
+  .home-faq summary {
+    display: flex;
+    min-height: 4.6rem;
     align-items: center;
-    padding: 0.7rem 0;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(1.45rem, 2.45vw, 2.25rem);
+    line-height: 1.05;
     list-style: none;
-    font-size: 0.82rem;
-    color: var(--launch-fg);
   }
 
-  .launch-faq__item summary::-webkit-details-marker {
+  .home-faq summary::-webkit-details-marker {
     display: none;
   }
 
-  .launch-faq__item p {
-    padding: 0 0 0.85rem 1.65rem;
-    max-width: 48rem;
-  }
-
-  .launch-faq__icon {
-    position: relative;
-    width: 0.72rem;
-    height: 0.72rem;
-    color: var(--launch-muted);
+  .home-faq__icon {
     flex: 0 0 auto;
+    font-family: var(--site-font-body);
+    font-size: 1.5rem;
+    font-weight: 300;
+    transition: transform var(--site-motion-medium);
   }
 
-  .launch-faq__icon span {
-    position: absolute;
-    inset: 50% auto auto 50%;
-    width: 0.72rem;
-    height: 1px;
-    background: currentColor;
-    transform: translate(-50%, -50%);
-    transition: transform 180ms ease, opacity 180ms ease;
+  .home-faq details[open] .home-faq__icon {
+    transform: rotate(45deg);
   }
 
-  .launch-faq__icon span:last-child {
-    transform: translate(-50%, -50%) rotate(90deg);
+  .home-faq p {
+    max-width: 43rem;
+    margin: -0.3rem 0 1.5rem;
+    color: var(--site-color-muted);
+    font-size: 0.94rem;
+    line-height: 1.7;
   }
 
-  .launch-faq__item[open] .launch-faq__icon span:last-child {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(90deg) scaleX(0.2);
+  @media (max-width: 600px) {
+    .home-faq h2 {
+      font-size: clamp(5.25rem, 28vw, 8rem);
+    }
+
+    .home-faq summary {
+      min-height: 4.1rem;
+      font-size: 1.35rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-faq__icon {
+      transition: none;
+    }
   }
 </style>

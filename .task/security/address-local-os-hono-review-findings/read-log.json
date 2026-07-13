@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/security/address-local-os-hono-review-findings/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/lib/redaction.ts",
+    "packages/os/scripts/server/services/os-runtime.ts",
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/os/tests/security-gateway.test.ts"
+  ],
+  "updatedAt": "2026-07-11T04:33:09.873Z"
+}

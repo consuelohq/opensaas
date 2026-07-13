@@ -1,8 +1,6 @@
 ## First things first
 
-Read `CODING-STANDARDS.md` before writing code. Those rules are mandatory.
-
-This file contains repo-specific knowledge for the OpenSaaS codebase. It does not replace the task workflow skill or worker-agent engineering standards skill.
+This file contains repo-specific knowledge for the Opensaas GTM site codebase. This is specific to our GTM/Dialer product not our main OS product. for those instructions It does not replace the task workflow skill or worker-agent engineering standards skill.
 
 Use this file for architecture, package conventions, deployment facts, production/internal-instance details, and known repo gotchas.
 
@@ -10,13 +8,13 @@ Use this file for architecture, package conventions, deployment facts, productio
 
 Company: Consuelo  
 Repo: OpenSaaS  
-Purpose: telecommunication infrastructure and Consuelo product development.
+
 
 This repo is built on top of Twenty. Some package names still contain `twenty-*`; those are historical naming artifacts. Treat Consuelo behavior and current repo conventions as the source of truth.
 
 ## Architecture
 
-### Tech stack
+### GTM Site Tech stack 
 
 - Frontend: React 18, TypeScript, Recoil, Emotion, Vite, Astro
 - Backend: NestJS, TypeORM, PostgreSQL, Redis, GraphQL with GraphQL Yoga

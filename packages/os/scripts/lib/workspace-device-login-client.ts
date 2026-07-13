@@ -111,6 +111,11 @@ function unavailable(message: string): { status: 'unavailable'; message: string 
   return { status: 'unavailable', message };
 }
 
+function errorWithMessage(json: Record<string, unknown>, error: string): string {
+  const message = stringField(json, 'message');
+  return message ? `${error}: ${message}` : error;
+}
+
 function expiresAtFromNow(now: string | undefined, expiresInSeconds: number): string {
   const baseMs = now ? Date.parse(now) : Date.now();
   const safeBaseMs = Number.isFinite(baseMs) ? baseMs : Date.now();
@@ -162,6 +167,32 @@ export function createDevicePublicKeyProof(input: {
   return b64(nodeSign(null, Buffer.from(input.payload), signingKey));
 }
 
+async function createDeviceProof(input: {
+  clientId: string;
+  deviceCode: string;
+  deviceKeyPair: WorkspaceDeviceKeyPair;
+  devicePublicKeyThumbprint?: string;
+}): Promise<{ payload: string; proof: string }> {
+  try {
+    const thumbprint = input.devicePublicKeyThumbprint ?? await devicePublicKeyThumbprint(input.deviceKeyPair.publicKeyJwk);
+    const payload = devicePublicKeyProofPayload({
+      clientId: input.clientId,
+      deviceCode: input.deviceCode,
+      devicePublicKeyThumbprint: thumbprint,
+    });
+
+    return {
+      payload,
+      proof: createDevicePublicKeyProof({
+        deviceKeyPair: input.deviceKeyPair,
+        payload,
+      }),
+    };
+  } catch (error: unknown) {
+    throw new Error(`device proof failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestInit): Promise<Record<string, unknown>> {
   const response = await fetchImpl(url, init);
   const json = asRecord(await response.json());
@@ -201,7 +232,7 @@ export async function requestWorkspaceDeviceCode(
 
     const error = stringField(json, 'error');
     if (error) {
-      return unavailable(error);
+      return unavailable(errorWithMessage(json, error));
     }
 
     const deviceCode = stringField(json, 'device_code', 'deviceCode');
@@ -267,27 +298,24 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
 export async function pollWorkspaceDeviceAccessToken(
   input: PollWorkspaceDeviceAccessTokenInput,
 ): Promise<DeviceAccessTokenPollResult> {
-  const body = new URLSearchParams({
-    client_id: input.clientId,
-    device_code: input.deviceCode,
-    grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-  });
-
-  if (input.deviceKeyPair) {
-    const thumbprint = input.devicePublicKeyThumbprint ?? await devicePublicKeyThumbprint(input.deviceKeyPair.publicKeyJwk);
-    const proofPayload = devicePublicKeyProofPayload({
-      clientId: input.clientId,
-      deviceCode: input.deviceCode,
-      devicePublicKeyThumbprint: thumbprint,
-    });
-    body.set('device_public_key_proof_payload', proofPayload);
-    body.set('device_public_key_proof', createDevicePublicKeyProof({
-      deviceKeyPair: input.deviceKeyPair,
-      payload: proofPayload,
-    }));
-  }
-
   try {
+    const body = new URLSearchParams({
+      client_id: input.clientId,
+      device_code: input.deviceCode,
+      grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+    });
+
+    if (input.deviceKeyPair) {
+      const proof = await createDeviceProof({
+        clientId: input.clientId,
+        deviceCode: input.deviceCode,
+        deviceKeyPair: input.deviceKeyPair,
+        devicePublicKeyThumbprint: input.devicePublicKeyThumbprint,
+      });
+      body.set('device_public_key_proof_payload', proof.payload);
+      body.set('device_public_key_proof', proof.proof);
+    }
+
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
       method: 'POST',
       headers: {
@@ -318,7 +346,7 @@ export async function pollWorkspaceDeviceAccessToken(
       return { status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' };
     }
     if (error) {
-      return unavailable(error);
+      return unavailable(errorWithMessage(json, error));
     }
 
     return approvedDeviceGrantFromJson(json) ?? unavailable('approved device response was missing workspace bootstrap fields');
@@ -329,26 +357,23 @@ export async function pollWorkspaceDeviceAccessToken(
 export async function selectWorkspaceForDeviceLogin(
   input: SelectWorkspaceForDeviceLoginInput,
 ): Promise<DeviceAccessTokenPollResult> {
-  const thumbprint = input.devicePublicKeyThumbprint ?? await devicePublicKeyThumbprint(input.deviceKeyPair.publicKeyJwk);
-  const proofPayload = devicePublicKeyProofPayload({
-    clientId: input.clientId,
-    deviceCode: input.deviceCode,
-    devicePublicKeyThumbprint: thumbprint,
-  });
-  const body = new URLSearchParams({
-    client_id: input.clientId,
-    device_code: input.deviceCode,
-    workspace_name: input.workspaceName,
-    workspace_slug: input.workspaceSlug,
-    workspace_host: input.workspaceHost,
-    device_public_key_proof_payload: proofPayload,
-    device_public_key_proof: createDevicePublicKeyProof({
-      deviceKeyPair: input.deviceKeyPair,
-      payload: proofPayload,
-    }),
-  });
-
   try {
+    const proof = await createDeviceProof({
+      clientId: input.clientId,
+      deviceCode: input.deviceCode,
+      deviceKeyPair: input.deviceKeyPair,
+      devicePublicKeyThumbprint: input.devicePublicKeyThumbprint,
+    });
+    const body = new URLSearchParams({
+      client_id: input.clientId,
+      device_code: input.deviceCode,
+      workspace_name: input.workspaceName,
+      workspace_slug: input.workspaceSlug,
+      workspace_host: input.workspaceHost,
+      device_public_key_proof_payload: proof.payload,
+      device_public_key_proof: proof.proof,
+    });
+
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_DEVICE_WORKSPACE_URL, {
       method: 'POST',
       headers: {
@@ -364,7 +389,7 @@ export async function selectWorkspaceForDeviceLogin(
     }
     if (error === 'access_denied') return { status: 'denied', errorCode: 'DEVICE_CODE_DENIED' };
     if (error === 'expired_token') return { status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' };
-    if (error) return unavailable(error);
+    if (error) return unavailable(errorWithMessage(json, error));
 
     return approvedDeviceGrantFromJson(json) ?? unavailable('approved workspace selection response was missing workspace bootstrap fields');
   } catch (error: unknown) {

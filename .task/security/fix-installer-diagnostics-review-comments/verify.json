@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-installer-diagnostics-review-comments",
+  "base": "HEAD",
+  "headSha": "5c53775617e3f256f109a02d2c649b1e0950d791",
+  "changeHash": "17ca76d649812a64ed6e9c773de7e197a8a636705dd89fe5603d815a03361e16",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-diagnostics.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/install-diagnostics.test.ts"
+  ],
+  "verifiedAt": "2026-07-05T03:38:28.140Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-installer-diagnostics-review-comments/current.json",
+        ".task/security/fix-installer-diagnostics-review-comments/session.json",
+        ".task/security/fix-installer-diagnostics-review-comments/workpad.md",
+        ".task/tasks/security/fix-installer-diagnostics-review-comments.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-diagnostics.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/install-diagnostics.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -197,6 +197,11 @@ jobs:
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
         uses: ./.github/actions/yarn-install
 
+      - name: Install OS dependencies
+        if: needs.consuelo-changes.outputs.os_contracts == 'true'
+        working-directory: packages/os
+        run: bun install --frozen-lockfile
+
       - name: Run OS contract tests
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
         working-directory: packages/os

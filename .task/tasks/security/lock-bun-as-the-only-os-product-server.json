@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/lock-bun-as-the-only-os-product-server",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1401,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1401",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1401",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1401/lock-bun-as-the-only-os-product-server",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1401",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1401/lock-bun-as-the-only-os-product-server",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-lock-bun-as-the-only-os-product-server",
+  "taskSession": "tsk_7fad25a2420d",
+  "tmuxSession": "opensaas-security-lock-bun-as-the-only-os-product-server-7fad25a2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-lock-bun-as-the-only-os-product-server/.task/security/lock-bun-as-the-only-os-product-server/session.json",
+  "createdAt": "2026-07-11T03:18:51.049Z"
+}

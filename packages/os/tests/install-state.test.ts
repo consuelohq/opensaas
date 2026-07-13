@@ -62,7 +62,7 @@ describe('local OS install state', () => {
       kind: 'consuelo-chatgpt-mcp-connection',
       auth: 'bearer',
       url: 'https://legacy-workspace.consuelohq.com/mcp',
-      localUrl: 'http://127.0.0.1:8960/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
       tokenId: 'token_existing',
       bearerToken: 'cst_existing',
       scopes: ['route:/mcp:read', 'tool:*:read'],
@@ -156,7 +156,7 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'source', 'tools'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'skills'))).toBe(false);
     expect(existsSync(join(tempHome, 'source', 'package.json'))).toBe(false);
-    expect(existsSync(join(tempHome, 'scripts', 'server.ts'))).toBe(true);
+    expect(existsSync(join(tempHome, 'scripts', 'server', 'main.ts'))).toBe(true);
     expect(existsSync(join(tempHome, 'scripts', 'server.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'))).toBe(true);
@@ -174,7 +174,7 @@ describe('local OS install state', () => {
     expect(chatgptMcp).toMatchObject({
       auth: 'bearer',
       url: 'https://os.consuelohq.com/mcp',
-      localUrl: 'http://127.0.0.1:8960/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
     });
     expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
     expect(chatgptMcp.scopes).toEqual(expect.arrayContaining(['route:/mcp:read', 'tool:*:read']));
