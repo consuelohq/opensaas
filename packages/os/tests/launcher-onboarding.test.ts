@@ -7,9 +7,9 @@ describe('launcher onboarding', () => {
     const html = renderLauncherOnboarding({
       mcpUrl: 'https://kokayi.consuelohq.com/mcp',
       localAgents: [
-        { name: 'codex', label: 'Codex', connected: true },
-        { name: 'opencode', label: 'OpenCode', connected: true },
-        { name: 'cursor', label: 'Cursor', connected: false },
+        { name: 'codex', label: 'Codex', status: 'verified' },
+        { name: 'opencode', label: 'OpenCode', status: 'verified' },
+        { name: 'cursor', label: 'Cursor', status: 'configured' },
       ],
     });
 
@@ -29,6 +29,9 @@ describe('launcher onboarding', () => {
     expect(html).toContain('Systems Engineer');
     expect(html).toContain('href="/careers/systems-engineer"');
     expect(html).toContain('Connect to your cloud agents');
+    expect(html).toContain('Settings');
+    expect(html).toContain('Configuration');
+    expect(html).toContain('href="/settings"');
     expect(html).toContain('Sites');
     expect(html).toContain('Go to market');
     expect(html).toContain('Artifacts');

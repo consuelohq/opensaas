@@ -30,6 +30,8 @@ export type WorkspaceCloudflareEdgeRouteTarget =
       serviceName:
         | 'trace-sites-read-layer'
         | 'trace-sites-live-endpoints'
+        | 'settings-sites-read-endpoints'
+        | 'settings-sites-write-endpoints'
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;

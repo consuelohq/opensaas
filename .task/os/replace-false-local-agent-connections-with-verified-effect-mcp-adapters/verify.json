@@ -1,0 +1,76 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters",
+  "base": "origin/task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters",
+  "headSha": "39d8883dc91d81d5d0d8941b8ff5890b10e4f40b",
+  "changeHash": "6a46ae059c4cf1bc5545d5e9cba9a55fb3a298d8c90bd9b29be0d54eef02a450",
+  "changedFiles": [
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/capabilities.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/launcher-onboarding.ts",
+    "packages/os/scripts/lib/local-agent-connectivity.ts",
+    "packages/os/scripts/lib/mcp-gateway.ts",
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/scripts/lib/settings-snapshot.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/installer-local-agent-connectivity.test.ts",
+    "packages/os/tests/launcher-onboarding.test.ts",
+    "packages/os/tests/local-agent-connectivity.test.ts"
+  ],
+  "verifiedAt": "2026-07-12T17:31:40.032Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/current.json",
+        ".task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/evidence-log.json",
+        ".task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/read-log.json",
+        ".task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/session.json",
+        ".task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/verify.json",
+        ".task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/workpad.md",
+        ".task/tasks/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters.json",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/capabilities.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/scripts/lib/local-agent-connectivity.ts",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/lib/settings-snapshot.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/installer-local-agent-connectivity.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts",
+        "packages/os/tests/local-agent-connectivity.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

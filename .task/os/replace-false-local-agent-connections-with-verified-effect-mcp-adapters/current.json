@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1428,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1428",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1428",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1428/replace-false-local-agent-connections-with-verified-effect-mcp-adapters",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1428",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1428/replace-false-local-agent-connections-with-verified-effect-mcp-adapters",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-replace-false-local-agent-connections-with-verified-effect-mcp-adapters",
+  "taskSession": "tsk_f07fab56d362",
+  "tmuxSession": "opensaas-os-replace-false-local-agent-connections-with-verif-f07fab56",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-replace-false-local-agent-connections-with-verified-effect-mcp-adapters/.task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/session.json",
+  "createdAt": "2026-07-12T17:08:55.763Z"
+}

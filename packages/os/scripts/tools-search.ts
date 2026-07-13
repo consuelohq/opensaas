@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
+import { applyManifestOverlay, readManifestOverlay, resolveOverlayHome } from './lib/manifest-overlay';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 
 const require = createRequire(import.meta.url);
@@ -249,6 +250,17 @@ const INTENT_PACKS: IntentPack[] = [
       { intent: 'merge a pull request', tools: ['task.merge'] },
     ],
     safeDefault: 'task.prs is the safe read-only default for inspecting task PR links.',
+  },
+  {
+    id: 'github-pr-feedback',
+    label: 'fetch pull request feedback comments',
+    terms: ['github', 'pr', 'pull', 'request', 'review', 'reviews', 'comment', 'comments', 'feedback', 'inline', 'actionable', 'bot'],
+    requireAny: ['comments', 'comment', 'feedback', 'inline', 'bot'],
+    boost: { github: 120, 'task.pr': -80, 'task.prs': -20, 'task.merge': -30 },
+    alternatives: [
+      { intent: 'inspect task PR links', tools: ['task.prs'] },
+    ],
+    safeDefault: 'Use github operation pr.reviews for pull request feedback comments.',
   },
   {
     id: 'task-pr-create',
@@ -564,7 +576,10 @@ function readCanonicalManifest(): CanonicalToolManifest {
     throw new Error(`${manifestPath}: expected generated tool manifest with tools array`);
   }
 
-  return parsed as CanonicalToolManifest;
+  const manifest = parsed as CanonicalToolManifest;
+  const home = resolveOverlayHome();
+  if (!fs.existsSync(path.join(home, 'config.json'))) return manifest;
+  return applyManifestOverlay(manifest, readManifestOverlay(home));
 }
 
 function stringField(value: unknown): string | undefined {

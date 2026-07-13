@@ -847,12 +847,12 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/start-brain-daemon.sh": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "status": "deprecated-intentional",
+      "reason": "The OS duplicate was removed in favor of start-consuelo-daemon.sh; the remaining workspace-only launcher stays classified until the separate workspace runtime cleanup."
     },
     "scripts/start-brain.sh": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "status": "deprecated-intentional",
+      "reason": "The OS duplicate was removed in favor of start-consuelo-daemon.sh; the remaining workspace-only launcher stays classified until the separate workspace runtime cleanup."
     },
     "scripts/start-consuelo-daemon.sh": {
       "status": "os-only-intentional",
