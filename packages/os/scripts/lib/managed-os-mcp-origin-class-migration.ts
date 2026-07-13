@@ -1,16 +1,25 @@
 import { createConnectorOriginHostnameRegexSource } from './connector-origin-hostname';
 
-const MANAGED_RULE_REFS = [
-  'consuelo-os-mcp-provider-allow',
-  'consuelo-os-mcp-untrusted-block',
+const MANAGED_RULE_IDENTITIES = [
+  {
+    ref: 'consuelo-os-mcp-provider-allow',
+    description: 'Allow/skip trusted OS MCP provider traffic',
+    action: 'skip',
+  },
+  {
+    ref: 'consuelo-os-mcp-untrusted-block',
+    description: 'Block untrusted OS MCP traffic',
+    action: 'block',
+  },
 ] as const;
 const CUSTOM_RULESET_PHASE = 'http_request_firewall_custom';
 
-type ManagedRuleRef = (typeof MANAGED_RULE_REFS)[number];
+type ManagedRuleIdentity = (typeof MANAGED_RULE_IDENTITIES)[number];
+type ManagedRuleRef = ManagedRuleIdentity['ref'];
 
 type CloudflareRule = {
   id: string;
-  ref: string;
+  ref?: string;
   description?: string;
   action: string;
   action_parameters?: unknown;
@@ -55,9 +64,16 @@ const parseRule = (value: unknown): CloudflareRule => {
   if (typeof enabled !== 'boolean') {
     throw new Error('Cloudflare managed rule is missing enabled');
   }
+  const ref = value.ref;
+  if (
+    ref !== undefined &&
+    (typeof ref !== 'string' || !ref.trim())
+  ) {
+    throw new Error('Cloudflare managed rule has an invalid ref');
+  }
   return {
     id: requiredString(value, 'id', 'Cloudflare managed rule'),
-    ref: requiredString(value, 'ref', 'Cloudflare managed rule'),
+    ...(typeof ref === 'string' ? { ref } : {}),
     action: requiredString(value, 'action', 'Cloudflare managed rule'),
     expression: requiredString(value, 'expression', 'Cloudflare managed rule'),
     enabled,
@@ -128,13 +144,48 @@ const readRuleset = async (input: {
 
 const findManagedRule = (
   rules: CloudflareRule[],
-  ref: ManagedRuleRef,
-): CloudflareRule => {
-  const matches = rules.filter((rule) => rule.ref === ref);
-  if (matches.length !== 1) {
-    throw new Error(`expected exactly one Cloudflare rule with ref ${ref}`);
+  identity: ManagedRuleIdentity,
+): { rule: CloudflareRule; identityChanged: boolean } => {
+  const refMatches = rules.filter((rule) => rule.ref === identity.ref);
+  if (refMatches.length > 1) {
+    throw new Error(
+      `expected at most one Cloudflare rule with ref ${identity.ref}`,
+    );
   }
-  return matches[0]!;
+
+  const descriptionMatches = rules.filter(
+    (rule) => rule.description === identity.description,
+  );
+  const refMatch = refMatches[0];
+  if (refMatch) {
+    const conflictingDescriptionMatches = descriptionMatches.filter(
+      (rule) => rule.id !== refMatch.id,
+    );
+    if (conflictingDescriptionMatches.length > 0) {
+      throw new Error(
+        `conflicting Cloudflare rules identify managed rule ${identity.ref}`,
+      );
+    }
+    if (refMatch.action !== identity.action) {
+      throw new Error(
+        `managed Cloudflare rule ${identity.ref} expected action ${identity.action} but found ${refMatch.action}`,
+      );
+    }
+    return { rule: refMatch, identityChanged: false };
+  }
+
+  if (descriptionMatches.length !== 1) {
+    throw new Error(
+      `expected exactly one Cloudflare rule with ref ${identity.ref} or description ${identity.description}`,
+    );
+  }
+  const descriptionMatch = descriptionMatches[0]!;
+  if (descriptionMatch.action !== identity.action) {
+    throw new Error(
+      `managed Cloudflare rule ${identity.ref} expected action ${identity.action} but found ${descriptionMatch.action}`,
+    );
+  }
+  return { rule: descriptionMatch, identityChanged: true };
 };
 
 const replacementFragments = (baseDomain: string): {
@@ -173,12 +224,13 @@ const patchRule = async (input: {
   zoneId: string;
   rulesetId: string;
   rule: CloudflareRule;
+  canonicalRef: ManagedRuleRef;
   expression: string;
   fetchImpl: typeof fetch;
 }): Promise<void> => {
   try {
     const body = {
-      ref: input.rule.ref,
+      ref: input.canonicalRef,
       ...(input.rule.description !== undefined
         ? { description: input.rule.description }
         : {}),
@@ -201,10 +253,10 @@ const patchRule = async (input: {
         body: JSON.stringify(body),
       },
     );
-    await readCloudflareResult(response, `update managed rule ${input.rule.ref}`);
+    await readCloudflareResult(response, `update managed rule ${input.canonicalRef}`);
   } catch (error: unknown) {
     throw new Error(
-      `managed OS MCP rule ${input.rule.ref} update failed: ${error instanceof Error ? error.message : String(error)}`,
+      `managed OS MCP rule ${input.canonicalRef} update failed: ${error instanceof Error ? error.message : String(error)}`,
       { cause: error },
     );
   }
@@ -227,14 +279,19 @@ export const migrateManagedOsMcpConnectorOriginClass = async (input: {
     const fetchImpl = input.fetchImpl ?? fetch;
     const fragments = replacementFragments(input.baseDomain);
     const ruleset = await readRuleset({ apiBaseUrl, apiToken, zoneId, fetchImpl });
-    const plans = MANAGED_RULE_REFS.map((ref) => {
-      const rule = findManagedRule(ruleset.rules, ref);
+    const plans = MANAGED_RULE_IDENTITIES.map((identity) => {
+      const resolved = findManagedRule(ruleset.rules, identity);
       const migration = migrateExpression({
-        expression: rule.expression,
+        expression: resolved.rule.expression,
         ...fragments,
-        ref,
+        ref: identity.ref,
       });
-      return { ref, rule, ...migration };
+      return {
+        ref: identity.ref,
+        rule: resolved.rule,
+        expression: migration.expression,
+        changed: resolved.identityChanged || migration.changed,
+      };
     });
 
     if (input.dryRun) {
@@ -256,6 +313,7 @@ export const migrateManagedOsMcpConnectorOriginClass = async (input: {
         zoneId,
         rulesetId: ruleset.id,
         rule: plan.rule,
+        canonicalRef: plan.ref,
         expression: plan.expression,
         fetchImpl,
       });
@@ -263,15 +321,20 @@ export const migrateManagedOsMcpConnectorOriginClass = async (input: {
 
     if (plans.some((plan) => plan.changed)) {
       const verified = await readRuleset({ apiBaseUrl, apiToken, zoneId, fetchImpl });
-      for (const ref of MANAGED_RULE_REFS) {
-        const rule = findManagedRule(verified.rules, ref);
+      for (const identity of MANAGED_RULE_IDENTITIES) {
+        const resolved = findManagedRule(verified.rules, identity);
+        if (resolved.identityChanged) {
+          throw new Error(
+            `managed Cloudflare rule ${identity.ref} did not persist the canonical ref`,
+          );
+        }
         const migration = migrateExpression({
-          expression: rule.expression,
+          expression: resolved.rule.expression,
           ...fragments,
-          ref,
+          ref: identity.ref,
         });
         if (migration.changed) {
-          throw new Error(`managed Cloudflare rule ${ref} did not persist the canonical connector-origin class`);
+          throw new Error(`managed Cloudflare rule ${identity.ref} did not persist the canonical connector-origin class`);
         }
       }
     }
