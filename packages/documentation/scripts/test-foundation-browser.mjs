@@ -45,6 +45,30 @@ try {
   if ((await localGroups.count()) !== 1) throw new Error('Section sidebar must show one group');
   if (!(await localGroups.first().evaluate((element) => element.open))) throw new Error('Section sidebar must start expanded');
 
+  const startRoutes = [
+    ['Overview', '/start/'],
+    ['Install Consuelo OS', '/start/install-consuelo-os/'],
+    ['Create a workspace', '/start/create-a-workspace/'],
+    ['Connect your first agent', '/start/connect-your-first-agent/'],
+    ['Local and Consuelo Cloud', '/start/local-and-consuelo-cloud/'],
+    ['Core concepts', '/start/core-concepts/'],
+  ];
+  const sectionNavigation = page.locator('#starlight__sidebar');
+  for (const [label, href] of startRoutes) {
+    const link = sectionNavigation.getByRole('link', { name: label, exact: true });
+    if ((await link.getAttribute('href')) !== href) throw new Error(`${label} is missing from the Start navigation`);
+    const response = await fetch(`${origin}${href}`);
+    if (!response.ok) throw new Error(`${label} returned ${response.status}`);
+    const markdownHref = href === '/start/' ? '/start.md' : `${href.slice(0, -1)}.md`;
+    const markdown = await fetch(`${origin}${markdownHref}`);
+    if (!markdown.ok) throw new Error(`${label} Markdown returned ${markdown.status}`);
+  }
+
+  await page.goto(`${origin}/start/connect-your-first-agent/`, { waitUntil: 'networkidle' });
+  if (!(await page.getByRole('heading', { name: 'Connect your first agent', level: 1 }).isVisible())) throw new Error('First-agent guide did not render');
+  if (!(await page.getByRole('heading', { name: 'What “verified” means', level: 2 }).isVisible())) throw new Error('First-agent verification guidance is missing');
+  await page.goto(`${origin}/start/`, { waitUntil: 'networkidle' });
+
   const markdownResponse = await fetch(`${origin}/start.md`);
   if (!markdownResponse.ok) throw new Error('Markdown endpoint failed');
   const expectedMarkdown = await markdownResponse.text();
