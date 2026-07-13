@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4292a88fdf02",
+  "tmuxSession": "opensaas-blog-refresh-blog-content-performance-and-typography-4292a88f",
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/refresh-blog-content-performance-and-typography",
+  "branch": "task/blog/refresh-blog-content-performance-and-typography",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-blog-refresh-blog-content-performance-and-typography",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-blog-refresh-blog-content-performance-and-typography",
+  "prNumber": 1441,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1441",
+  "createdAt": "2026-07-13T02:52:38.849Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-blog-refresh-blog-content-performance-and-typography/.task/blog/refresh-blog-content-performance-and-typography/session.json"
+}

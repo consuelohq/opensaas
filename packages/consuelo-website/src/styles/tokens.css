@@ -1,13 +1,3 @@
-@import '@fontsource-variable/bodoni-moda';
-@import '@fontsource-variable/inter';
-
-@font-face {
-  font-family: 'Geist Mono';
-  src: url('/fonts/GeistMono-Variable.woff2') format('woff2');
-  font-weight: 100 900;
-  font-display: swap;
-}
-
 :root {
   color-scheme: light;
 
@@ -59,9 +49,9 @@
   --launch-success: var(--site-color-success);
   --launch-mono-font: var(--site-font-mono);
 
-  --site-font-display: 'Bodoni Moda Variable', 'Bodoni Moda', 'Times New Roman', serif;
-  --site-font-body: 'Inter Variable', Inter, Arial, sans-serif;
-  --site-font-mono: 'Geist Mono', 'SFMono-Regular', Consolas, monospace;
+  --site-font-display: 'Bodoni Moda Variable', 'Bodoni Moda', Didot, Georgia, serif;
+  --site-font-body: 'Inter Variable', Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --site-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
   --site-text-xs: 0.75rem;
   --site-text-sm: 0.875rem;

@@ -13,7 +13,7 @@ export const siteMetadata = {
   defaultTitle: 'Consuelo OS | Your workspace, connected to every agent',
   defaultDescription:
     'Connect ChatGPT, Codex, Claude, and the agents that come next to the same tools, memory, workflows, and machines.',
-  blogTitle: 'Consuelo Blog',
+  blogTitle: 'The Consuelo Blog',
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',
   defaultOgImage: '/og.png',
