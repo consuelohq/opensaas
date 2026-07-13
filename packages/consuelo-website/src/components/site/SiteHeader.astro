@@ -132,11 +132,18 @@ const cloudHref = 'https://os.consuelohq.com';
 
   .os-header__wordmark {
     display: grid;
+    justify-items: center;
     font-family: var(--site-font-display);
     font-size: 1.65rem;
     font-weight: 600;
     letter-spacing: 0;
     line-height: 0.82;
+  }
+
+  .os-header__wordmark span:last-child,
+  .os-header__mobile-wordmark span:last-child {
+    justify-self: center;
+    text-align: center;
   }
 
   .os-header__socials {
@@ -191,6 +198,7 @@ const cloudHref = 'https://os.consuelohq.com';
 
     .os-header__mobile-wordmark {
       display: grid;
+      justify-items: center;
       font-family: var(--site-font-display);
       font-size: 1.28rem;
       font-weight: 600;
