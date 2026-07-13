@@ -1,5 +1,6 @@
 ---
 import { INSTALL_COMMAND } from '../../data/home-content';
+import PixelArrow from '../icons/PixelArrow.astro';
 
 type Props = {
   sectionId?: string;
@@ -11,7 +12,7 @@ const { sectionId = 'intro' } = Astro.props as Props;
 <section class="os-hero" id={sectionId} data-section="hero">
   <img
     class="os-hero__art"
-    src="/images/home/connect-transparent.svg"
+    src="/images/home/consuelo-atmosphere.svg"
     alt=""
     width="1200"
     height="900"
@@ -30,7 +31,10 @@ const { sectionId = 'intro' } = Astro.props as Props;
     </p>
 
     <div class="os-hero__actions">
-      <a class="os-hero__button" href="https://os.consuelohq.com">SIGN IN</a>
+      <a class="os-hero__button" href="https://os.consuelohq.com">
+        <span>SIGN IN</span>
+        <PixelArrow />
+      </a>
     </div>
 
     <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
@@ -145,13 +149,20 @@ const { sectionId = 'intro' } = Astro.props as Props;
   }
 
   .os-hero__button {
-    display: grid;
+    display: flex;
     min-height: 2.75rem;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
     background: white;
     color: var(--site-color-brand);
     text-decoration: none;
     transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  }
+
+  .os-hero__button :global(svg) {
+    width: 1.1rem;
+    height: auto;
   }
 
   .os-hero__button--quiet {
@@ -201,13 +212,23 @@ const { sectionId = 'intro' } = Astro.props as Props;
   .os-hero__art {
     position: absolute;
     z-index: 1;
-    bottom: -30%;
-    left: 50%;
-    width: min(92vw, 75rem);
+    inset: 0 auto auto 50%;
+    width: max(100%, 90rem);
+    height: 100%;
     max-width: none;
-    opacity: 0.12;
-    filter: brightness(0) invert(1);
+    opacity: 0.96;
+    object-fit: cover;
+    object-position: 50% 50%;
     transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .os-hero::after {
+    position: absolute;
+    z-index: 1;
+    inset: 20% 0 8%;
+    background: radial-gradient(circle at 50% 49%, rgba(0, 0, 242, 0.64), transparent 53%);
+    content: '';
     pointer-events: none;
   }
 
@@ -241,8 +262,16 @@ const { sectionId = 'intro' } = Astro.props as Props;
     }
 
     .os-hero__art {
-      bottom: -18%;
-      width: 125vw;
+      inset: 0 auto auto 50%;
+      width: auto;
+      min-width: 68rem;
+      height: 100%;
+      object-position: 50% 58%;
+    }
+
+    .os-hero::after {
+      inset: 20% -25% 9%;
+      background: radial-gradient(circle at 50% 50%, rgba(0, 0, 242, 0.72), transparent 58%);
     }
   }
 

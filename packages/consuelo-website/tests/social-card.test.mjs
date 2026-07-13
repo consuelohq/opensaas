@@ -16,7 +16,7 @@ const getPngSize = (image) => ({
 describe('Consuelo homepage social card', () => {
   test('should use the dedicated on-brand Consuelo OS preview', async () => {
     const [committed, generator] = await Promise.all([
-      readFile(join(testDirectory, '../public/consuelo-os-og.png')),
+      readFile(join(testDirectory, '../public/consuelo-os-og-20260713.png')),
       readFile(join(testDirectory, '../scripts/generate-social-card.ts'), 'utf8'),
     ]);
 
@@ -25,7 +25,7 @@ describe('Consuelo homepage social card', () => {
     expect(homepageSeo.socialCardHeadline).toBe(
       'Your workspace, connected to every agent.',
     );
-    expect(homepageSeo.image).toBe('/consuelo-os-og.png');
+    expect(homepageSeo.image).toBe('/consuelo-os-og-20260713.png');
     expect(generator).toContain('YOUR WORKSPACE,');
     expect(generator).toContain('CONNECTED TO');
     expect(generator).toContain('EVERY AGENT.');
