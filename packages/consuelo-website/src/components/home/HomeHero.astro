@@ -20,7 +20,11 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   <div class="os-hero__content">
     <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
-    <h1>YOUR WORKSPACE, CONNECTED TO EVERY AGENT.</h1>
+    <h1>
+      <span data-hero-line>YOUR WORKSPACE,</span>
+      <span data-hero-line>CONNECTED TO</span>
+      <span data-hero-line>EVERY AGENT</span>
+    </h1>
     <p class="os-hero__subtitle">
       Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
     </p>
@@ -83,7 +87,7 @@ const { sectionId = 'intro' } = Astro.props as Props;
     position: relative;
     z-index: 2;
     display: grid;
-    width: min(100%, 58rem);
+    width: min(100%, 78rem);
     justify-items: center;
     gap: clamp(1rem, 1.7vw, 1.5rem);
   }
@@ -95,15 +99,23 @@ const { sectionId = 'intro' } = Astro.props as Props;
   }
 
   .os-hero h1 {
-    max-width: 12.5em;
+    max-width: none;
     margin: 0;
     color: white;
     font-family: var(--site-font-display);
-    font-size: clamp(3.25rem, 6.3vw, 6.6rem);
+    font-size: clamp(4.25rem, 5.5vw, 6.5rem);
     font-weight: 430;
     letter-spacing: 0;
     line-height: 0.9;
     text-wrap: balance;
+  }
+
+  .os-hero h1 > span:first-child {
+    display: block;
+  }
+
+  .os-hero h1 > span:nth-child(2)::after {
+    content: ' ';
   }
 
   .os-hero__subtitle {
@@ -201,21 +213,31 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   @media (max-width: 720px) {
     .os-hero {
-      min-height: 0;
-      padding: 4.75rem 1rem 2.75rem;
+      min-height: calc(100svh - 4rem);
+      padding: 4.65rem 0.9rem 1.75rem;
     }
 
     .os-hero h1 {
-      font-size: clamp(2.35rem, 11.5vw, 3.55rem);
-      line-height: 0.94;
+      font-size: clamp(2rem, 9.2vw, 2.35rem);
+      line-height: 0.92;
+    }
+
+    .os-hero h1 > span {
+      display: block;
+    }
+
+    .os-hero h1 > span:nth-child(2)::after {
+      content: none;
     }
 
     .os-hero__subtitle {
       max-width: 22rem;
+      font-size: 0.82rem;
     }
 
     .os-hero__command {
-      font-size: 0.62rem;
+      min-height: 2.55rem;
+      font-size: 0.6rem;
     }
 
     .os-hero__art {

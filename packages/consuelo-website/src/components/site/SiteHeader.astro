@@ -25,7 +25,7 @@ const cloudHref = 'https://os.consuelohq.com';
           <Icon name="tabler:brand-discord-filled" />
         </a>
         <a href={siteLinks.github} target="_blank" rel="noreferrer" aria-label="GitHub">
-          <Icon name="tabler:brand-github-filled" />
+          <Icon name="tabler:brand-github" />
         </a>
       </div>
     </div>
@@ -35,8 +35,21 @@ const cloudHref = 'https://os.consuelohq.com';
   </nav>
 
   <nav class="os-header__mobile" aria-label="Mobile primary">
-    <a href="/blog">CONSUELO</a>
-    <a class="os-header__mobile-wordmark" href="/" aria-label="Consuelo OS home">CONSUELO OS</a>
+    <a href={cloudHref}>CLOUD</a>
+    <div class="os-header__mobile-identity">
+      <a class="os-header__mobile-wordmark" href="/" aria-label="Consuelo OS home">
+        <span>CONSUELO</span>
+        <span>OS</span>
+      </a>
+      <div class="os-header__socials os-header__mobile-socials" aria-label="Community links">
+        <a href={siteLinks.discord} target="_blank" rel="noreferrer" aria-label="Discord">
+          <Icon name="tabler:brand-discord-filled" />
+        </a>
+        <a href={siteLinks.github} target="_blank" rel="noreferrer" aria-label="GitHub">
+          <Icon name="tabler:brand-github" />
+        </a>
+      </div>
+    </div>
     <button type="button" aria-expanded="false" aria-controls="os-mobile-menu" data-mobile-menu-toggle>
       MENU
     </button>
@@ -45,7 +58,6 @@ const cloudHref = 'https://os.consuelohq.com';
   <div class="os-header__mobile-menu" id="os-mobile-menu" hidden data-mobile-menu>
     <a href={siteLinks.docs}>DOCS</a>
     <a href="/pricing">PRICING</a>
-    <a href={cloudHref}>CLOUD</a>
     {
       pageSections.map((section) => (
         <a href={'#' + section.id}>{section.label}</a>
@@ -89,7 +101,7 @@ const cloudHref = 'https://os.consuelohq.com';
     z-index: var(--site-z-header);
     color: white;
     font-family: var(--site-font-mono);
-    font-size: 0.7rem;
+    font-size: 0.74rem;
     font-weight: 650;
     letter-spacing: 0.08em;
   }
@@ -105,7 +117,7 @@ const cloudHref = 'https://os.consuelohq.com';
     grid-template-columns: 1fr 1fr 1.25fr 1fr 1fr;
     align-items: start;
     gap: 1rem;
-    width: min(100%, 86rem);
+    width: min(100%, 90rem);
     margin: 0 auto;
     padding: clamp(1.8rem, 4vw, 3.5rem) clamp(1.5rem, 4.8vw, 4rem);
     text-align: center;
@@ -121,7 +133,7 @@ const cloudHref = 'https://os.consuelohq.com';
   .os-header__wordmark {
     display: grid;
     font-family: var(--site-font-display);
-    font-size: 1.4rem;
+    font-size: 1.65rem;
     font-weight: 600;
     letter-spacing: 0;
     line-height: 0.82;
@@ -176,10 +188,27 @@ const cloudHref = 'https://os.consuelohq.com';
     }
 
     .os-header__mobile-wordmark {
+      display: grid;
       font-family: var(--site-font-display);
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 600;
       letter-spacing: 0;
+      line-height: 0.82;
+    }
+
+    .os-header__mobile-identity {
+      display: grid;
+      justify-items: center;
+      gap: 0.35rem;
+    }
+
+    .os-header__mobile-socials {
+      gap: 0.5rem;
+    }
+
+    .os-header__mobile-socials a {
+      width: 0.95rem;
+      height: 0.95rem;
     }
 
     .os-header__mobile-menu {

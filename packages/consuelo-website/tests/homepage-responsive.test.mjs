@@ -13,7 +13,8 @@ describe('Consuelo OS homepage presentation', () => {
 
     expect(hero).not.toContain('DOWNLOAD LOCALLY');
     expect(hero).toContain('width: min(100%, 31rem);');
-    expect(hero).toContain('min-height: 0;');
+    expect(hero).toContain('min-height: calc(100svh - 4rem);');
+    expect(hero.match(/data-hero-line/g)).toHaveLength(3);
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {

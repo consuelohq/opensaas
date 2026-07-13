@@ -12,7 +12,12 @@ import { homeFaqItems } from '../../data/home-content';
             <span>{item.question}</span>
             <span class="home-faq__icon" aria-hidden="true">+</span>
           </summary>
-          <p>{item.answer}</p>
+          <p>
+            {item.answer}
+            {item.linkHref && item.linkLabel && (
+              <> <a href={item.linkHref}>{item.linkLabel}</a>.</>
+            )}
+          </p>
         </details>
       ))
     }
@@ -28,7 +33,7 @@ import { homeFaqItems } from '../../data/home-content';
     margin: 0 0 clamp(1.5rem, 3vw, 3rem);
     color: var(--site-color-brand);
     font-family: var(--site-font-display);
-    font-size: clamp(6rem, 16vw, 15rem);
+    font-size: clamp(5rem, 12vw, 11rem);
     font-weight: 430;
     letter-spacing: 0;
     line-height: 0.72;
@@ -36,24 +41,32 @@ import { homeFaqItems } from '../../data/home-content';
   }
 
   .home-faq__list {
-    width: min(100%, 64rem);
+    width: min(100%, 60rem);
     margin: 0 auto;
     border-top: 1px dashed var(--site-color-line-strong);
   }
 
   .home-faq details {
     border-bottom: 1px dashed var(--site-color-line-strong);
+    padding-inline: 0.85rem;
+    transition: background var(--site-motion-fast);
+  }
+
+  .home-faq details:hover,
+  .home-faq details:focus-within,
+  .home-faq details[open] {
+    background: #f1f1f1;
   }
 
   .home-faq summary {
     display: flex;
-    min-height: 5.4rem;
+    min-height: 4.6rem;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     color: var(--site-color-brand);
     font-family: var(--site-font-display);
-    font-size: clamp(1.45rem, 2.45vw, 2.25rem);
+    font-size: clamp(1.2rem, 1.8vw, 1.7rem);
     line-height: 1.05;
     list-style: none;
   }
@@ -82,14 +95,20 @@ import { homeFaqItems } from '../../data/home-content';
     line-height: 1.7;
   }
 
+  .home-faq p a {
+    color: var(--site-color-brand);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
   @media (max-width: 600px) {
     .home-faq h2 {
-      font-size: clamp(5.25rem, 28vw, 8rem);
+      font-size: clamp(4.25rem, 22vw, 6rem);
     }
 
     .home-faq summary {
-      min-height: 4.1rem;
-      font-size: 1.35rem;
+      min-height: 3.8rem;
+      font-size: 1.15rem;
     }
   }
 

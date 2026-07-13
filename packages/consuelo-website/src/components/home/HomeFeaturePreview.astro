@@ -24,17 +24,16 @@ const { sectionId = 'features' } = Astro.props as Props;
     </div>
 
     <div class="product-panel__features">
-      <div class="product-panel__topline">
-        <span>FEATURE</span>
-        <span>PREVIEW</span>
-      </div>
       <h2>FEATURES</h2>
 
       <div class="product-panel__grid">
         {
           homeFeaturePreviewItems.map((item) => (
             <article class="product-panel__item">
-              <p class="product-panel__index">#{item.number} {item.label}</p>
+              <p class="product-panel__index">
+                <span class="product-panel__index-number">#{item.number}</span>{' '}
+                <span class="product-panel__index-label">{item.label}</span>
+              </p>
               <h3>
                 {item.title.split('\n').map((line) => <span>{line}</span>)}
               </h3>
@@ -55,7 +54,8 @@ const { sectionId = 'features' } = Astro.props as Props;
     position: relative;
     z-index: 3;
     background: var(--site-color-brand);
-    padding: 0 var(--site-frame-inset) var(--site-frame-inset);
+    margin-top: var(--site-sticky-sliver);
+    padding: var(--site-sticky-sliver) var(--site-frame-inset) var(--site-frame-inset);
   }
 
   .product-panel__paper {
@@ -129,15 +129,6 @@ const { sectionId = 'features' } = Astro.props as Props;
     padding: 0 clamp(1rem, 4.7vw, 5rem);
   }
 
-  .product-panel__topline {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1.7rem;
-    border-bottom: 1px solid var(--site-color-line);
-    font: 600 0.62rem/2 var(--site-font-mono);
-    letter-spacing: 0.16em;
-  }
-
   .product-panel__features > h2 {
     margin: clamp(2.5rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5.5rem);
     color: var(--site-color-brand);
@@ -165,6 +156,10 @@ const { sectionId = 'features' } = Astro.props as Props;
     letter-spacing: 0.15em;
   }
 
+  .product-panel__index-label {
+    color: var(--site-color-art-muted);
+  }
+
   .product-panel__item h3 {
     min-height: 2.05em;
     margin: 0 0 1rem;
@@ -182,7 +177,7 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .product-panel__description {
     margin: 1rem 0 0;
-    color: var(--site-color-muted);
+    color: var(--site-color-brand);
     font: 590 0.68rem/1.55 var(--site-font-mono);
     letter-spacing: 0.075em;
     text-transform: uppercase;
@@ -196,29 +191,35 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   @media (max-width: 580px) {
     .product-panel__preview {
-      height: 13rem;
+      height: 10.5rem;
     }
 
     .product-panel__identity {
-      padding: 3rem 1rem 4rem;
+      padding: 2.4rem 1rem 3rem;
+    }
+
+    .product-panel__features {
+      padding-inline: 1.25rem;
     }
 
     .product-panel__features > h2 {
-      font-size: clamp(4rem, 18vw, 5.25rem);
+      margin: 2rem 0 3rem;
+      font-size: clamp(3.25rem, 15vw, 4rem);
+      line-height: 0.8;
     }
 
     .product-panel__grid {
       grid-template-columns: 1fr;
-      gap: 4.5rem;
+      gap: 3.5rem;
     }
 
     .product-panel__item h3 {
       min-height: 0;
-      font-size: 2.25rem;
+      font-size: 1.9rem;
     }
 
     .product-panel__description {
-      font-size: 0.64rem;
+      font-size: 0.6rem;
     }
   }
 </style>
