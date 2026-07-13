@@ -1,5 +1,14 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/os/overview': '/start/',
+  '/os/how-it-works': '/start/core-concepts/',
+  '/os/getting-started/install': '/start/install-consuelo-os/',
+  '/os/getting-started/connect-agents': '/start/connect-your-first-agent/',
+  '/os/getting-started/workspace-launcher': '/start/create-a-workspace/',
+  '/os/concepts/local-and-cloud': '/start/local-and-consuelo-cloud/',
+  '/user-guide/introduction': '/start/',
+  '/user-guide/getting-started/capabilities/what-is-consuelo': '/start/',
+  '/user-guide/getting-started/how-tos/create-workspace': '/start/create-a-workspace/',
   '/consuelo-ui/display/app-tooltip': '/developers/introduction',
   '/consuelo-ui/display/checkmark': '/developers/introduction',
   '/consuelo-ui/display/chip': '/developers/introduction',
@@ -179,7 +188,7 @@ export const legacyRedirects = {
   '/user-guide/discord-bot/capabilities/team-collaboration': '/tools/office',
   '/user-guide/discord-bot/getting-started': '/tools/office',
   '/user-guide/discord-bot/overview': '/tools/office',
-  '/user-guide/features/overview': '/user-guide/introduction',
+  '/user-guide/features/overview': '/start/',
   '/user-guide/file-system/capabilities/auto-indexing':
     '/os/concepts/files-and-artifacts',
   '/user-guide/file-system/capabilities/file-categories':
@@ -190,7 +199,7 @@ export const legacyRedirects = {
     '/os/concepts/files-and-artifacts',
   '/user-guide/file-system/overview': '/os/concepts/files-and-artifacts',
   '/user-guide/graphql-api/overview': '/developers/api/graphql',
-  '/user-guide/guides-tutorials/overview': '/user-guide/introduction',
+  '/user-guide/guides-tutorials/overview': '/start/',
   '/user-guide/highlevel/overview': '/tools/sites/overview',
   '/user-guide/integrations/overview': '/developers/agent/integrations',
   '/user-guide/permissions-access/capabilities/permissions':

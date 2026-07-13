@@ -3,6 +3,11 @@ import { join } from 'node:path';
 
 const selectedSlugs = [
   'start/index',
+  'start/install-consuelo-os',
+  'start/create-a-workspace',
+  'start/connect-your-first-agent',
+  'start/local-and-consuelo-cloud',
+  'start/core-concepts',
   'connect/index',
   'build/index',
   'sites/index',
@@ -10,16 +15,11 @@ const selectedSlugs = [
   'secure/index',
   'reference/index',
   'user-guide/user-stories-use-cases',
-  'user-guide/introduction',
-  'user-guide/getting-started/capabilities/what-is-consuelo',
   'user-guide/getting-started/capabilities/implementation-services',
   'user-guide/getting-started/capabilities/glossary',
   'user-guide/getting-started/capabilities/keyboard-shortcuts',
-  'user-guide/getting-started/how-tos/create-workspace',
   'user-guide/getting-started/how-tos/navigate-around-consuelo',
   'user-guide/getting-started/how-tos/configure-your-workspace',
-  'os/overview',
-  'os/how-it-works',
   'os/glossary',
   'os/concepts/portal',
   'os/concepts/skills',
@@ -30,7 +30,6 @@ const selectedSlugs = [
   'os/concepts/context-and-memory',
   'os/concepts/integrations-and-capabilities',
   'os/concepts/observability',
-  'os/concepts/local-and-cloud',
   'tools/overview',
   'tools/sites/overview',
   'tools/office',
@@ -51,6 +50,15 @@ const selectedSlugs = [
 ];
 
 const removedSlugs = [
+  'os/overview',
+  'os/how-it-works',
+  'os/getting-started/install',
+  'os/getting-started/connect-agents',
+  'os/getting-started/workspace-launcher',
+  'os/concepts/local-and-cloud',
+  'user-guide/introduction',
+  'user-guide/getting-started/capabilities/what-is-consuelo',
+  'user-guide/getting-started/how-tos/create-workspace',
   'os/agent-context/steering',
   'os/agent-context/decision',
   'os/agent-context/tools',
@@ -105,7 +113,7 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
-for (const script of ['test:foundation', 'test:browser', 'test:boundary']) {
+for (const script of ['test:foundation', 'test:start', 'test:browser', 'test:boundary']) {
   assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
 }
 assert(existsSync('bun.lock'), 'bun.lock must exist');

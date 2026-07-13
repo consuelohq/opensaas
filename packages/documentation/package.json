@@ -11,6 +11,7 @@
     "validate": "bun scripts/validate-documentation.mjs",
     "test:translation": "bun scripts/test-translation.mjs",
     "test:foundation": "bun test tests/foundation.test.ts",
+    "test:start": "bun test tests/start.test.ts",
     "test:boundary": "bun scripts/check-package-boundary.mjs",
     "test:browser": "bun scripts/test-foundation-browser.mjs"
   },

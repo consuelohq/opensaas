@@ -1,0 +1,120 @@
+---
+title: Core concepts
+description: Learn the small set of concepts behind every Consuelo OS setup.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/README.md
+    tests:
+      - packages/os/tests/install-state.test.ts
+      - packages/os/tests/launcher-onboarding.test.ts
+    runtime: Installed home layout and MCP entrypoints inspected in a fresh temporary home on 2026-07-13.
+  - source: packages/os/scripts/lib/install-state.ts
+    tests:
+      - packages/os/tests/install-workspace-bootstrap-contract.test.ts
+    runtime: Workspace, node, tool, skill, artifact, and trace directories verified on 2026-07-13.
+---
+
+Consuelo OS is easier to understand as one path:
+
+```text
+agent → workspace → home node → tools and skills → files, artifacts, and traces
+```
+
+## Workspace
+
+A **workspace** is the shared boundary for the work. It gives agents a common identity, configuration, tools, steering, and place to leave results.
+
+A workspace is not one chat and is not one agent's private project directory. Multiple agents can connect to the same workspace over time.
+
+## Node
+
+A **node** is a machine running Consuelo OS for a workspace.
+
+The **home node** is the authoritative runtime for that workspace. A local installation makes the current Mac the home node unless managed provisioning says otherwise. Node-specific configuration, credentials, and the SQLite database live under `node/` and are not treated as shared workspace files.
+
+Later sections distinguish home, local, and Cloud nodes in detail.
+
+## Agent
+
+An **agent** is a client such as ChatGPT, Codex, Claude Code, Cursor, OpenCode, or Gemini CLI.
+
+Agents do not each receive a separate copy of the workspace. They connect to Consuelo OS through MCP and receive the tools that the workspace exposes to them.
+
+## Tool
+
+A **tool** is an operation an agent can call. Each installed tool has a name, description, definition, and executable path or facade implementation.
+
+Examples include reading workspace state, opening a browser, searching code, or starting a task. The installed tool registry lives under:
+
+```text
+~/.consuelo/tools/tools.json
+```
+
+Tools describe **what can be called**.
+
+## Skill
+
+A **skill** teaches an agent how and when to carry out a kind of work. A skill can coordinate several tools, scripts, checks, and approval points.
+
+The installer lets you select bundled skills and preserves user-owned local skills. Installed skills live under:
+
+```text
+~/.consuelo/skills/
+```
+
+Skills describe **how to do the work well**.
+
+## Steering
+
+**Steering** is the workspace's durable instruction layer. It defines the rules and decision process agents should load before working.
+
+A fresh installation seeds:
+
+```text
+~/.consuelo/steering/system_prompt.md
+~/.consuelo/steering/decision.md
+```
+
+Rerunning the installer preserves user-owned steering files.
+
+## Run and trace
+
+A **run** is one execution of work. A **trace** records what happened during that execution: the calls made, results returned, changes produced, and relationships between steps.
+
+This is why changing agents does not have to erase the operational record. [Observe](/observe/) owns the detailed model.
+
+## File and artifact
+
+A **file** is workspace material an agent can read or write within its allowed scope.
+
+An **artifact** is a durable output of work with metadata that links it back to the run or trace that produced it. Artifacts are stored locally in the current local installation and can be presented through Sites such as Office.
+
+## Approval
+
+An **approval** is an explicit gate before sensitive work proceeds. A tool being installed does not automatically mean every caller can use it without review.
+
+The exact permission and approval model is documented in [Secure](/secure/).
+
+## Local route and public route
+
+The local gateway defaults to:
+
+```text
+http://127.0.0.1:46321
+```
+
+Supported local coding agents normally use the installed MCP stdio command instead of calling that URL directly. Cloud agents use the approved HTTPS MCP URL shown in the workspace launcher.
+
+## Keep the layers separate
+
+When troubleshooting, ask which layer is failing:
+
+1. **Agent:** did its native MCP config load?
+2. **Connection:** can it complete an MCP handshake?
+3. **Node:** is the home node running and healthy?
+4. **Workspace:** is the expected workspace active?
+5. **Tool or skill:** is the capability installed and permitted?
+6. **Run:** what does the trace show?
+
+That distinction is more useful than treating every failure as “the agent is broken.”
