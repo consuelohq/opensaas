@@ -25,7 +25,6 @@ jobs:
         packages/twenty-server/**
         packages/twenty-front/src/generated/**
         packages/twenty-front/src/generated-metadata/**
-        packages/twenty-emails/**
         packages/twenty-shared/**
   server-setup:
     needs: changed-files-check
@@ -232,7 +231,6 @@ jobs:
       - name: Build dependencies
         run: |
           npx nx build twenty-shared
-          npx nx build twenty-emails
       - name: Server / Create Test DB
         run: |
           PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -c 'CREATE DATABASE "test";'
