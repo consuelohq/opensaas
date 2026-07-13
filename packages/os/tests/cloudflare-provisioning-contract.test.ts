@@ -496,11 +496,14 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
 
     for (const expression of [allowRule.expression, blockRule.expression]) {
+      expect(expression.length).toBeLessThanOrEqual(4096);
       expect(expression).toContain('ends_with(http.host, ".consuelohq.com")');
+      expect(expression).toContain('not (starts_with(http.host, "c-")');
+      expect(expression).toContain('and len(http.host) eq 49');
       expect(expression).toContain(
-        'not (http.host matches r"^c-[0-9a-f]{32}\\.consuelohq\\.com$")',
+        'and len(remove_bytes(substring(http.host, 2, 34), "0123456789abcdef")) eq 0)',
       );
-      expect(expression).not.toContain('starts_with(http.host, "c-")');
+      expect(expression).not.toContain('http.host matches');
       expect(expression).not.toContain('wildcard "c-*');
       expect(expression).toContain('starts_with(http.request.uri.path, "/mcp")');
       expect(expression).toContain('or http.host in {\n    "os.consuelohq.com"\n  }');

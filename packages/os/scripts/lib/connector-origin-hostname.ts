@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 
 const CONNECTOR_ID_PATTERN = /^[a-z0-9](?:[a-z0-9._:-]{0,253}[a-z0-9])?$/;
 const CONNECTOR_ORIGIN_DIGEST_HEX_LENGTH = 32;
+const CONNECTOR_ORIGIN_PREFIX = 'c-';
+const CONNECTOR_ORIGIN_LOWERCASE_HEX_BYTES = '0123456789abcdef';
 const CONNECTOR_ORIGIN_LABEL_PATTERN = /^c-[0-9a-f]{32}$/;
 const DNS_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 const MAX_DNS_HOSTNAME_LENGTH = 253;
@@ -43,6 +45,22 @@ export const createConnectorOriginHostnameRegexSource = (input: {
   return `^c-[0-9a-f]{${CONNECTOR_ORIGIN_DIGEST_HEX_LENGTH}}\\.${escapeRegex(baseDomain)}$`;
 };
 
+export const createConnectorOriginHostnameWafExpression = (input: {
+  baseDomain: string;
+}): string => {
+  const baseDomain = normalizeConnectorOriginBaseDomain(input.baseDomain);
+  const digestStart = CONNECTOR_ORIGIN_PREFIX.length;
+  const digestEnd = digestStart + CONNECTOR_ORIGIN_DIGEST_HEX_LENGTH;
+  const hostnameLength = digestEnd + 1 + baseDomain.length;
+
+  return [
+    `starts_with(http.host, "${CONNECTOR_ORIGIN_PREFIX}")`,
+    `ends_with(http.host, ".${baseDomain}")`,
+    `len(http.host) eq ${hostnameLength}`,
+    `len(remove_bytes(substring(http.host, ${digestStart}, ${digestEnd}), "${CONNECTOR_ORIGIN_LOWERCASE_HEX_BYTES}")) eq 0`,
+  ].join('\nand ');
+};
+
 export const createConnectorOriginHostname = (input: {
   connectorId: string;
   baseDomain: string;
@@ -53,7 +71,7 @@ export const createConnectorOriginHostname = (input: {
     .update(`consuelo:connector-origin:v1\0${connectorId}`)
     .digest('hex')
     .slice(0, CONNECTOR_ORIGIN_DIGEST_HEX_LENGTH);
-  const label = `c-${digest}`;
+  const label = `${CONNECTOR_ORIGIN_PREFIX}${digest}`;
   const hostname = `${label}.${baseDomain}`;
 
   if (

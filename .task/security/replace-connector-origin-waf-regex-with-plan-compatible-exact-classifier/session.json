@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a0078d97bc2a",
+  "tmuxSession": "opensaas-security-replace-connector-origin-waf-regex-with-plan-com-a0078d97",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier",
+  "branch": "task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier",
+  "prNumber": 1463,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1463",
+  "createdAt": "2026-07-13T18:45:41.578Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/.task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/session.json"
+}

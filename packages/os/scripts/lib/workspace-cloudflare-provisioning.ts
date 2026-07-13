@@ -1,6 +1,6 @@
 import {
   createConnectorOriginHostname,
-  createConnectorOriginHostnameRegexSource,
+  createConnectorOriginHostnameWafExpression,
   normalizeConnectorOriginBaseDomain,
 } from './connector-origin-hostname';
 
@@ -630,12 +630,12 @@ const createManagedOsMcpBaseExpression = (input: {
   reservedHostnames: string[];
   managedMcpHostnames: string[];
 }): string => {
-  const connectorOriginHostnameRegex = createConnectorOriginHostnameRegexSource({
+  const connectorOriginHostnameExpression = createConnectorOriginHostnameWafExpression({
     baseDomain: input.baseDomain,
   });
   const workspaceHostnameExpression = [
     `ends_with(http.host, ".${input.baseDomain}")`,
-    `not (http.host matches r"${connectorOriginHostnameRegex}")`,
+    `not (${connectorOriginHostnameExpression})`,
     `not (http.host in {\n${formatHostnameSet(input.reservedHostnames)}\n})`,
   ].join('\nand ');
   const centralHostnameExpression = `http.host in {\n${formatHostnameSet(
