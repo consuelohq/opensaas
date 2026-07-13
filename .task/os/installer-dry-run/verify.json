@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/installer-dry-run",
+  "base": "origin/main",
+  "headSha": "350f223ef2ae4fff5dddf9ad2bcded4286622f09",
+  "changeHash": "2cdfd85d07b8c863f7aa9e0fccf66a4ea2d32f1af504183f1673c9ba70778ba9",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/tests/installer-runtime-dependencies.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T00:35:13.535Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/installer-dry-run/current.json",
+        ".task/os/installer-dry-run/evidence-log.json",
+        ".task/os/installer-dry-run/read-log.json",
+        ".task/os/installer-dry-run/session.json",
+        ".task/os/installer-dry-run/verify.json",
+        ".task/os/installer-dry-run/workpad.md",
+        ".task/tasks/os/installer-dry-run.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/tests/installer-runtime-dependencies.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

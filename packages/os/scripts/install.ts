@@ -32,6 +32,8 @@ import {
   type OsMode,
   type WorkspaceBootstrap,
 } from './lib/install-state';
+import { verifyLocalAgents } from './lib/local-agent-connectivity';
+import { materializeSites } from './lib/sites';
 import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
@@ -969,7 +971,7 @@ async function promptOptions(
 
     recordInstallerStep(diagnostics, 'agents', 'start');
     renderInstallerProgress('agents');
-    const detectedAgents = detectAgents(home).filter((agent) => agent.detected);
+    const detectedAgents = detectAgents(home).filter((agent) => agent.detected && agent.support === 'native');
     let connectAgents: AgentName[] = options.connectAgents;
     if (detectedAgents.length > 0) {
       const selectedAgents = await multiselect({
@@ -983,11 +985,11 @@ async function promptOptions(
       });
       if (isCancel(selectedAgents)) { cancel('setup cancelled.'); process.exit(0); }
       connectAgents = selectedAgents as AgentName[];
-      recordPromptDecision(diagnostics, 'agents.connected', connectAgents);
+      recordPromptDecision(diagnostics, 'agents.selected', connectAgents);
     }
     recordInstallerStep(diagnostics, 'agents', 'complete', {
       detectedCount: detectedAgents.length,
-      connectedCount: connectAgents.length,
+      selectedCount: connectAgents.length,
     });
 
     recordInstallerStep(diagnostics, 'service', 'start');
@@ -1059,7 +1061,7 @@ async function main(): Promise<void> {
               : 'installing local OS...',
           ).start();
     const workspaceBootstrap = maybeCreateWorkspaceBootstrap(options);
-    const result = provisionLocalOs({
+    let result = provisionLocalOs({
       home: options.home,
       mode: options.mode ?? 'local',
       port: resolveLocalOsPortOverride(),
@@ -1069,6 +1071,19 @@ async function main(): Promise<void> {
       artifactStorage: options.artifactMode,
       workspaceBootstrap,
     });
+    if (!options.dryRun && options.connectAgents.length > 0) {
+      const verification = await verifyLocalAgents({
+        home: result.home,
+        agentNames: options.connectAgents,
+      });
+      result = { ...result, agents: verification.agents };
+      materializeSites({ home: result.home, dbPath: result.dbPath, dryRun: false });
+      recordInstallerStep(diagnostics, 'agents', 'verified', {
+        selectedCount: options.connectAgents.length,
+        verifiedCount: verification.agents.filter((agent) => agent.status === 'verified').length,
+        failedCount: verification.agents.filter((agent) => agent.status === 'failed').length,
+      });
+    }
     const platformProvisioning = createInstallPlatformProvisioningPayload({
       dryRun: options.dryRun,
       workspaceBootstrap,
@@ -1099,7 +1114,10 @@ async function main(): Promise<void> {
       });
     }
 
-    recordInstallerStep(diagnostics, 'health', 'complete', { home: result.home });
+    recordInstallerStep(diagnostics, 'health', 'complete', {
+      home: result.home,
+      verifiedAgentCount: result.agents.filter((agent) => agent.status === 'verified').length,
+    });
     diagnostics.finish({
       status: 'ok',
       home: result.home,

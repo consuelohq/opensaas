@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/replace-false-local-agent-connections-with-verified-effect-mcp-adapters/workpad.md",
+    "packages/os/CONTRIBUTING.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/capabilities.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-12T17:31:13.958Z"
+}
