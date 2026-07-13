@@ -69,6 +69,8 @@ export type HomeFaqContent = {
 export type HomeFaqItem = {
   question: string;
   answer: string;
+  linkLabel?: string;
+  linkHref?: string;
 };
 
 export type HomeMercuryPromoContent = {
@@ -289,36 +291,38 @@ export const homeFaqItems: HomeFaqItem[] = [
     answer: 'Consuelo OS is an open workspace layer that gives different AI agents the same tools, memory, workflows, and access to the machines where your work lives.',
   },
   {
+    question: 'What is Consuelo Cloud?',
+    answer: 'Consuelo Cloud runs your home node for you, so the workspace stays available without requiring you to maintain an always-on machine.',
+  },
+  {
     question: 'Which agents can I connect?',
     answer: 'Connect ChatGPT, Codex, Claude, Cursor, and local agent runtimes. The workspace stays consistent even as the agent you use changes.',
   },
   {
-    question: 'What stays in my workspace?',
-    answer: 'Your shared configuration, project context, routing rules, traces, and approved tools stay attached to the workspace instead of one chat or one model.',
+    question: 'What is a workspace?',
+    answer: 'A workspace is the shared boundary for your tools, memory, workflows, policies, and teammates. It keeps the way you work consistent across agents and devices.',
   },
   {
-    question: 'Can I run Consuelo locally?',
-    answer: 'Yes. Install Consuelo OS on macOS or Linux and keep the home node on hardware you control.',
+    question: 'What is a node?',
+    answer: 'A node is a computer or cloud runner registered to your workspace. Start with one home node, then add more machines when agents need to reach work in different places.',
   },
   {
-    question: 'What is Consuelo Cloud?',
-    answer: 'Consuelo Cloud runs the home node for you while preserving the same workspace model, agent connections, and security boundaries.',
+    question: 'What is a tool?',
+    answer: 'A tool is a capability or integration an agent can use. Consuelo includes useful tools out of the box, and you can customize them or add tools that match your stack.',
   },
   {
-    question: 'Can I use multiple computers?',
-    answer: 'Yes. One workspace can register multiple nodes so agents can reach the right computer or cloud runner without duplicating the whole workspace.',
+    question: 'Can I bring my team?',
+    answer: 'Yes. A workspace is designed for teammates to share tools, context, and workflows while keeping permissions and responsibilities clear.',
   },
   {
-    question: 'Is Consuelo open source?',
-    answer: 'Yes. Consuelo OS is open source under the MIT License, and local operation remains a first-class path.',
-  },
-  {
-    question: 'How is access secured?',
-    answer: 'You choose which tools, files, nodes, and routes an agent can reach. Everything else remains unavailable by default.',
+    question: 'Do I have to replace my existing stack?',
+    answer: 'No. Consuelo connects to the tools and integrations you already use, so you can add a shared agent workspace without rebuilding everything at once.',
   },
   {
     question: 'What does it cost?',
-    answer: 'You can run Consuelo OS locally for free. Paid Consuelo Cloud plans add managed infrastructure and capacity; see the pricing page for current plans.',
+    answer: 'You can run Consuelo OS locally for free. Paid Consuelo Cloud plans add managed infrastructure and capacity.',
+    linkLabel: 'View pricing',
+    linkHref: '/pricing',
   },
 ];
 
