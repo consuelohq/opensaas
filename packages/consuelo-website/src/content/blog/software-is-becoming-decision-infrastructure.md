@@ -41,7 +41,6 @@ The next wave of software has a harder job: helping teams decide what to do next
   }
 </style>
 
-## Table of contents
 
 ## Systems of record are becoming systems of decision
 
