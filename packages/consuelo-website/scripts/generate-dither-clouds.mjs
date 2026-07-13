@@ -77,40 +77,45 @@ const BAYER = [
 // cell, then nearest-neighbor upscaled so each surviving cell becomes a crisp
 // square "dot" of dotPx with a transparent gutter around it.
 async function ditherToPng(luminance, width, height, { dotPx, pitchPx }, outPath) {
-  const rgba = Buffer.alloc(width * height * 4, 0);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const threshold = (BAYER[y % 8][x % 8] + 0.5) / 64;
-      if (luminance[y * width + x] > threshold) {
-        const i = (y * width + x) * 4;
-        rgba[i] = 255;
-        rgba[i + 1] = 255;
-        rgba[i + 2] = 255;
-        rgba[i + 3] = 255;
+  try {
+    const rgba = Buffer.alloc(width * height * 4, 0);
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const threshold = (BAYER[y % 8][x % 8] + 0.5) / 64;
+        if (luminance[y * width + x] > threshold) {
+          const i = (y * width + x) * 4;
+          rgba[i] = 255;
+          rgba[i + 1] = 255;
+          rgba[i + 2] = 255;
+          rgba[i + 3] = 255;
+        }
       }
     }
-  }
 
-  // Scale each cell to pitchPx, then trim every dot down to dotPx by
-  // compositing a transparent-gutter grid on top.
-  const scaled = await sharp(rgba, { raw: { width, height, channels: 4 } })
-    .resize(width * pitchPx, height * pitchPx, { kernel: 'nearest' })
-    .raw()
-    .toBuffer();
+    // Scale each cell to pitchPx, then trim every dot down to dotPx by
+    // compositing a transparent-gutter grid on top.
+    const scaled = await sharp(rgba, { raw: { width, height, channels: 4 } })
+      .resize(width * pitchPx, height * pitchPx, { kernel: 'nearest' })
+      .raw()
+      .toBuffer();
 
-  const outW = width * pitchPx;
-  const outH = height * pitchPx;
-  for (let y = 0; y < outH; y += 1) {
-    for (let x = 0; x < outW; x += 1) {
-      if (x % pitchPx >= dotPx || y % pitchPx >= dotPx) {
-        scaled[(y * outW + x) * 4 + 3] = 0;
+    const outW = width * pitchPx;
+    const outH = height * pitchPx;
+    for (let y = 0; y < outH; y += 1) {
+      for (let x = 0; x < outW; x += 1) {
+        if (x % pitchPx >= dotPx || y % pitchPx >= dotPx) {
+          scaled[(y * outW + x) * 4 + 3] = 0;
+        }
       }
     }
-  }
 
-  await sharp(scaled, { raw: { width: outW, height: outH, channels: 4 } })
-    .png({ palette: true, colors: 2 })
-    .toFile(outPath);
+    await sharp(scaled, { raw: { width: outW, height: outH, channels: 4 } })
+      .png({ palette: true, colors: 2 })
+      .toFile(outPath);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Unable to generate ${outPath}: ${message}`);
+  }
 }
 
 // ---------------------------------------------------------------- clouds
@@ -157,7 +162,7 @@ for (const cloud of CLOUDS) {
   const field = cloudLuminance(cloud);
   const out = join(OUT_DIR, `${cloud.name}.png`);
   await ditherToPng(field, cloud.width, cloud.height, cloud, out);
-  console.log(`wrote ${out}`);
+  process.stdout.write(`wrote ${out}\n`);
 }
 
 // Contact sheet on brand blue for quick eyeballing (not committed).
@@ -177,4 +182,4 @@ await sharp({
   .composite(composites)
   .png()
   .toFile(join(HERE, 'preview-sheet.png'));
-console.log(`wrote ${join(HERE, 'preview-sheet.png')} (preview only)`);
+process.stdout.write(`wrote ${join(HERE, 'preview-sheet.png')} (preview only)\n`);
