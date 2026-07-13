@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-ko-social-persona-guide",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1365,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1365",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1365",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1365/add-ko-social-persona-guide",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1365",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1365/add-ko-social-persona-guide",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-ko-social-persona-guide",
+  "taskSession": "tsk_918578b97bf5",
+  "tmuxSession": "opensaas-workspace-agents-add-ko-social-persona-guide-918578b9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-ko-social-persona-guide/.task/workspace-agents/add-ko-social-persona-guide/session.json",
+  "createdAt": "2026-07-04T17:18:09.039Z"
+}

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
+import { createConnectorOriginHostname } from '../scripts/lib/connector-origin-hostname';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
@@ -22,6 +23,10 @@ import {
 
 const origin = 'https://os.consuelohq.com';
 const approvalAssertionSecret = 'test-approval-assertion-secret';
+const centralProxyConnectorOrigin = `https://${createConnectorOriginHostname({
+  connectorId: 'connector_home_mac_mini',
+  baseDomain: 'consuelohq.test',
+})}`;
 
 function b64(bytes: Uint8Array): string {
   let s = '';
@@ -171,8 +176,11 @@ function createCapturedWorkspaceConnectorProvisioner(): CapturedWorkspaceConnect
       return {
         connectorId: input.connectorId,
         cloudflareTunnelToken: `cloudflare_tunnel_token_fixture_${connectorLabel}`,
-        tunnelOriginUrl: `https://${connectorLabel}.os-origin.consuelohq.com`,
-        localServiceUrl: 'http://127.0.0.1:8960',
+        tunnelOriginUrl: `https://${createConnectorOriginHostname({
+          connectorId: input.connectorId,
+          baseDomain: 'consuelohq.com',
+        })}`,
+        localServiceUrl: 'http://127.0.0.1:46321',
       };
     },
   };
@@ -338,7 +346,7 @@ describe('os device authority worker', () => {
             kind: 'os-connector',
             connectorId: 'connector_home_mac_mini',
             connectorStatus: 'connected',
-            tunnelOriginUrl: 'https://connector-origin.consuelohq.test',
+            tunnelOriginUrl: centralProxyConnectorOrigin,
           },
         },
       ],
@@ -346,7 +354,7 @@ describe('os device authority worker', () => {
 
     const fetchImpl: typeof fetch = async (input, init) => {
       const request = input instanceof Request ? input : new Request(input, init);
-      if (request.url.startsWith('https://connector-origin.consuelohq.test/mcp')) {
+      if (request.url.startsWith(`${centralProxyConnectorOrigin}/mcp`)) {
         return new Response(JSON.stringify({
           url: request.url,
           method: request.method,
@@ -416,7 +424,7 @@ describe('os device authority worker', () => {
     };
 
     expect(proxy.status).toBe(200);
-    expect(proxied.url).toBe('https://connector-origin.consuelohq.test/mcp');
+    expect(proxied.url).toBe(`${centralProxyConnectorOrigin}/mcp`);
     expect(proxied.method).toBe('POST');
     expect(proxied.headers['x-consuelo-workspace-id']).toBe('workspace_macbook_air_test');
     expect(proxied.headers['x-consuelo-hostname']).toBe('macbook-air-test.consuelohq.com');
@@ -864,7 +872,9 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements[0]).toContain('connector_macbook_air_test');
     expect(routeRegistry.statements[0]).toContain('/mcp');
     expect(routeRegistry.statements[0]).toContain('os-connector');
-    expect(routeRegistry.statements[0]).toContain('https://connector-macbook-air-test.os-origin.consuelohq.com');
+    expect(routeRegistry.statements[0]).toContain(
+      'https://c-8c2381a636d37000454ca2ea20503a0d.consuelohq.com',
+    );
     expect(routeRegistry.statements[0]).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
 

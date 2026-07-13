@@ -820,7 +820,7 @@ ensure_portless() {
       PORTLESS_BIN=""
       PORTLESS_ENABLED="0"
       PORTLESS_STATUS="skipped"
-      log "portless disabled; Consuelo OS will use http://127.0.0.1:8960"
+      log "portless disabled; Consuelo OS will use http://127.0.0.1:46321"
       return 0
       ;;
   esac
@@ -863,7 +863,7 @@ ensure_portless() {
       if [ ! -x "$PORTLESS_BIN" ]; then
         PORTLESS_BIN=""
         PORTLESS_STATUS="optional_unavailable"
-        log "optional portless install finished without an executable; Consuelo OS will use http://127.0.0.1:8960"
+        log "optional portless install finished without an executable; Consuelo OS will use http://127.0.0.1:46321"
         return 0
       fi
       PORTLESS_ENABLED="1"
@@ -873,12 +873,12 @@ ensure_portless() {
     fi
     PORTLESS_BIN=""
     PORTLESS_STATUS="optional_unavailable"
-    log "optional portless install unavailable; Consuelo OS will use http://127.0.0.1:8960"
+    log "optional portless install unavailable; Consuelo OS will use http://127.0.0.1:46321"
     return 0
   fi
 
   PORTLESS_STATUS="optional_missing"
-  log "portless is not installed; Consuelo OS will use http://127.0.0.1:8960"
+  log "portless is not installed; Consuelo OS will use http://127.0.0.1:46321"
 }
 
 ensure_cloudflared() {

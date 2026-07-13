@@ -648,7 +648,7 @@ export function createGatewaySecurityConfig(input: {
 }): GatewaySecurityConfig {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
-  const upstream = { host: '127.0.0.1', port: input.upstreamPort ?? 8960 };
+  const upstream = { host: '127.0.0.1', port: input.upstreamPort ?? 46321 };
   const publicGateway = createPublicGatewayMetadata({
     workspaceHost: input.workspaceHost,
     upstream,

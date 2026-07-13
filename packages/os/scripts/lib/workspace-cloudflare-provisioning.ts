@@ -1,3 +1,9 @@
+import {
+  createConnectorOriginHostname,
+  createConnectorOriginHostnameRegexSource,
+  normalizeConnectorOriginBaseDomain,
+} from './connector-origin-hostname';
+
 export type WorkspaceCloudflareProvisioningInput = {
   workspaceId: string;
   workspaceSlug: string;
@@ -282,19 +288,7 @@ const TRUSTED_OS_MCP_PROVIDER_IP_SOURCES: Record<
   },
 };
 
-const normalizeBaseDomain = (baseDomain: string): string => {
-  const normalized = baseDomain
-    .trim()
-    .toLowerCase()
-    .replace(/^https?:\/\//, '')
-    .replace(/\/$/, '');
-
-  if (!normalized || normalized.includes('/')) {
-    throw new Error('base domain must be a hostname');
-  }
-
-  return normalized;
-};
+const normalizeBaseDomain = normalizeConnectorOriginBaseDomain;
 
 const normalizeCloudflareListName = (listName: string): string => {
   const normalized = listName.trim().replace(/^\$/, '');
@@ -636,9 +630,12 @@ const createManagedOsMcpBaseExpression = (input: {
   reservedHostnames: string[];
   managedMcpHostnames: string[];
 }): string => {
+  const connectorOriginHostnameRegex = createConnectorOriginHostnameRegexSource({
+    baseDomain: input.baseDomain,
+  });
   const workspaceHostnameExpression = [
     `ends_with(http.host, ".${input.baseDomain}")`,
-    `not ends_with(http.host, ".os-origin.${input.baseDomain}")`,
+    `not (http.host matches r"${connectorOriginHostnameRegex}")`,
     `not (http.host in {\n${formatHostnameSet(input.reservedHostnames)}\n})`,
   ].join('\nand ');
   const centralHostnameExpression = `http.host in {\n${formatHostnameSet(
@@ -1651,7 +1648,10 @@ export const planWorkspaceCloudflareProvisioning = (
   );
   const localServiceUrl = input.localServiceUrl ?? 'http://localhost:3000';
   const workspaceHostname = `${workspaceSlug}.${baseDomain}`;
-  const osTunnelHostname = `${connectorLabel}.os-origin.${baseDomain}`;
+  const osTunnelHostname = createConnectorOriginHostname({
+    connectorId: input.connectorId,
+    baseDomain,
+  });
   const osTarget: WorkspaceCloudflareRouteTarget = {
     kind: 'os-connector',
     connectorId: input.connectorId,

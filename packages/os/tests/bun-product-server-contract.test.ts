@@ -18,11 +18,11 @@ describe('Bun product server contract', () => {
       scripts: Record<string, string>;
     };
 
-    expect(packageJson.scripts['server:run']).toBe('bun ./scripts/server.ts');
-    expect(packageJson.scripts['smoke:server']).toBe('bun ./scripts/server.ts');
+    expect(packageJson.scripts['server:run']).toBe('bun ./scripts/server/main.ts');
+    expect(packageJson.scripts['smoke:server']).toBe('bun ./scripts/server/main.ts');
 
     const daemon = source('scripts/start-consuelo-daemon.sh');
-    expect(daemon).toContain('exec "$bun_bin" "$root_dir/scripts/server.ts"');
+    expect(daemon).toContain('exec "$bun_bin" "$root_dir/scripts/server/main.ts"');
     expect(daemon).not.toMatch(/\bpython(?:3)?\b|server\.py/);
 
     const reload = source('scripts/consuelo-reload.js');
@@ -57,18 +57,18 @@ describe('Bun product server contract', () => {
 
     const manager = source('scripts/server.js');
     expect(manager).toContain(
-      "const SERVER_TS = path.join(WORKSPACE_DIR, 'scripts', 'server.ts');",
+      "const SERVER_TS = path.join(WORKSPACE_DIR, 'scripts', 'server', 'main.ts');",
     );
     expect(manager).toContain("spawn('bun', [SERVER_TS]");
     expect(manager).not.toContain('server.py');
 
-    const server = source('scripts/server.ts');
+    const server = source('scripts/server/main.ts');
     expect(server).toContain('Bun.serve({');
     expect(server).toContain("hostname: '127.0.0.1'");
 
     const workspaceState = source('scripts/lib/workspace-state.js');
     expect(workspaceState).toContain(
-      "process.env.CONSUELO_OS_PORT || process.env.PORT || '8960'",
+      "process.env.CONSUELO_OS_PORT || process.env.PORT || '46321'",
     );
     expect(workspaceState).toContain(
       '`http://127.0.0.1:${port}/health`',
@@ -143,13 +143,13 @@ describe('Bun product server contract', () => {
       );
     }
 
-    expect(readme).toContain('The server listens on `127.0.0.1:8960` by default.');
-    expect(runtimeDocs).toContain('The default local port is `8960`.');
+    expect(readme).toContain('The server listens on `127.0.0.1:46321` by default.');
+    expect(runtimeDocs).toContain('The default local port is `46321`.');
     expect(contributing).toContain('bun run typecheck');
 
     expect(dockerfile).toContain('FROM oven/bun:');
-    expect(dockerfile).toContain('EXPOSE 8960');
-    expect(dockerfile).toContain('CMD ["bun", "./scripts/server.ts"]');
+    expect(dockerfile).toContain('EXPOSE 46321');
+    expect(dockerfile).toContain('CMD ["bun", "./scripts/server/main.ts"]');
     expect(dockerfile).not.toContain('server.py');
   });
 });

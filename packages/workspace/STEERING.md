@@ -556,7 +556,7 @@ task intent workflow
 Bad:
 
 ```text
-task intent workflowRole script intent task-intent task.intent
+task start workflowRole script task-start task.start
 ```
 
 The failure mode is query blending: several competing hypotheses inside one query make retrieval less precise. `explore` does not reason across multiple query meanings in one call.
@@ -1037,7 +1037,7 @@ The workspace app exposes two MCP entry points:
 | `workspace.get_steering()` | Load steering and the core manifest once |
 | `workspace.call({ tool, input, taskSession, timeout })` | Run every workspace operation |
 
-All workspace tools, including `code.call`, `batch`, `tools.search`, `task.intent`, `stream.context`, and lifecycle tools, are invoked through `workspace.call`.
+All workspace tools, including `code.call`, `batch`, `tools.search`, `task.start`, `stream.context`, and lifecycle tools, are invoked through `workspace.call`.
 
 ### Bootstrap rule
 
@@ -1054,9 +1054,9 @@ Do not call `get_steering()` again because:
 - The agent wants the manifest again.
 - A workflow phase says to run `stream.context`, `task.start`, validation, review, or publish.
 
-`get_steering()` loads the operating manual. It does not start task work.
+`get_steering()` loads the operating manual. It does not start task work. For scoped repo work, call the core `task.start` tool directly; run `stream.context` first only when fresh stream context is needed.
 
-Task work starts with the task workflow tools, usually `stream.context`, `task.intent`, `task.start`, or the relevant lifecycle surface.
+Scoped repo work starts with `task.start`. Use `stream.context` first only when fresh stream context is needed, then continue through the relevant lifecycle tools.
 
 ### Direct-call rule
 

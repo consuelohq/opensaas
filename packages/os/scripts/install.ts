@@ -45,6 +45,7 @@ import {
   type InstallDiagnostics,
   type InstallDiagnosticStatus,
 } from './lib/install-diagnostics';
+import { resolveLocalOsPortOverride } from './server/env';
 type ArtifactMode = 'local';
 type SkillName = string;
 type InstallerProgressStep =
@@ -1063,6 +1064,7 @@ async function main(): Promise<void> {
     let result = provisionLocalOs({
       home: options.home,
       mode: options.mode ?? 'local',
+      port: resolveLocalOsPortOverride(),
       dryRun: options.dryRun,
       connectAgents: options.connectAgents,
       selectedSkills: options.selectedSkills,

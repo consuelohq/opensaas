@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_69ccaa01136f",
+  "tmuxSession": "opensaas-security-migrate-production-mcp-connector-origin-waf-clas-69ccaa01",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/migrate-production-mcp-connector-origin-waf-class",
+  "branch": "task/security/migrate-production-mcp-connector-origin-waf-class",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-migrate-production-mcp-connector-origin-waf-class",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-migrate-production-mcp-connector-origin-waf-class",
+  "prNumber": 1425,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1425",
+  "createdAt": "2026-07-11T20:37:28.852Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-migrate-production-mcp-connector-origin-waf-class/.task/security/migrate-production-mcp-connector-origin-waf-class/session.json"
+}

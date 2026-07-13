@@ -11,7 +11,7 @@ export const siteLinks = {
   mercury: '/mercury',
   pricing: '/pricing',
   enterprise: '/contact',
-  login: 'https://app.consuelohq.com',
+  login: 'https://os.consuelohq.com/',
   free: 'https://app.consuelohq.com',
   newsletter: 'mailto:support@consuelohq.com?subject=Consuelo%20newsletter',
   discordDocs: 'https://docs.consuelohq.com/user-guide/discord-bot/overview',

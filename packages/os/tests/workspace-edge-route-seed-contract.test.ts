@@ -192,7 +192,7 @@ contractDescribe('workspace edge route seed contract', () => {
 
     const osSql = seed.createWorkspaceEdgeRouteSeedSql({
       connectorId: '  connector_internal  ',
-      tunnelOriginUrl: '  https://connector-internal.os-origin.consuelohq.com  ',
+      tunnelOriginUrl: '  https://c-97c89262e0970bc466db457d4484f366.consuelohq.com  ',
       localServiceUrl: '  http://127.0.0.1:8787  ',
     });
 
@@ -221,7 +221,7 @@ contractDescribe('workspace edge route seed contract', () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
     const osSql = seed.createWorkspaceEdgeRouteSeedSql({
       connectorId: '   ',
-      tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
+      tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
     });
 
     expect(osSql).not.toMatch(/INSERT OR REPLACE INTO workspace_connectors/i);

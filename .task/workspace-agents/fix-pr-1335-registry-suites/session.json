@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c6df5cbde416",
+  "tmuxSession": "opensaas-workspace-agents-fix-pr-1335-registry-suites-c6df5cbd",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-pr-1335-registry-suites",
+  "branch": "task/workspace-agents/fix-pr-1335-registry-suites",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-pr-1335-registry-suites",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-pr-1335-registry-suites",
+  "prNumber": 1353,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1353",
+  "createdAt": "2026-07-03T10:46:28.884Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-pr-1335-registry-suites/.task/workspace-agents/fix-pr-1335-registry-suites/session.json"
+}

@@ -6,7 +6,7 @@ This checklist gates public OS installer releases that depend on local runtime b
 
 ## Baseline runtime contract
 
-Portless is optional. A clean public install must work without a `portless` binary, without hosted portless artifacts, and without a `com.consuelo.portless.system` LaunchAgent. In that baseline path, Consuelo OS binds the normal local service on `http://127.0.0.1:8960` and records `PORTLESS_ENABLED=0` instead of persisting a stale `PORTLESS_BIN`.
+Portless is optional. A clean public install must work without a `portless` binary, without hosted portless artifacts, and without a `com.consuelo.portless.system` LaunchAgent. In that baseline path, Consuelo OS binds the normal local service on `http://127.0.0.1:46321` and records `PORTLESS_ENABLED=0` instead of persisting a stale `PORTLESS_BIN`.
 
 Required baseline behavior:
 
@@ -58,7 +58,7 @@ Required baseline verification:
 - `~/.consuelo/os/.env` does not contain `PORTLESS_BIN` when portless is absent;
 - `launchctl print` shows the workspace and watchdog LaunchAgents;
 - `launchctl print` does not require `com.consuelo.portless.system` when portless is absent;
-- the local health endpoint responds on `http://127.0.0.1:8960/health`;
+- the local health endpoint responds on `http://127.0.0.1:46321/health`;
 - managed MCP ingress reaches the local service after approved tunnel bootstrap.
 
 Optional portless verification, only when portless is configured or optional install is enabled:

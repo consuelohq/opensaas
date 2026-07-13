@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/ship-pricing-and-workspace-stream-to-main",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1432,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1432",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1432",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1432/ship-pricing-and-workspace-stream-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1432",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1432/ship-pricing-and-workspace-stream-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-ship-pricing-and-workspace-stream-to-main",
+  "taskSession": "tsk_8306671d7ad5",
+  "tmuxSession": "opensaas-workspace-agents-ship-pricing-and-workspace-stream-to-main-8306671d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-ship-pricing-and-workspace-stream-to-main/.task/workspace-agents/ship-pricing-and-workspace-stream-to-main/session.json",
+  "createdAt": "2026-07-12T23:58:07.301Z"
+}

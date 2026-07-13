@@ -1,8 +1,7 @@
 #!/usr/bin/env bun
 
 const { execFileSync } = require('child_process');
-
-const DEFAULT_REPO = 'consuelohq/opensaas';
+const { DEFAULT_REPO, collectPrReview, createPrReviewJson } = require('./lib/pr-review-collector');
 
 const PRESET_FIELDS = {
   summary: ['number', 'title', 'url', 'headRefName', 'baseRefName', 'state'],
@@ -74,7 +73,7 @@ function printHelp() {
   writeStdout('operations:');
   writeStdout('  pr.view       view one PR with preset or fields');
   writeStdout('  pr.checks     show PR checks');
-  writeStdout('  pr.reviews    show PR reviews');
+  writeStdout('  pr.reviews    show normalized actionable PR review feedback');
   writeStdout('  pr.files      show PR files');
   writeStdout('  pr.diff       show PR diff/stat');
   writeStdout('  pr.list       list PRs');
@@ -192,6 +191,49 @@ function compactReview(value) {
     submittedAt: review.submittedAt || review.submitted_at || '',
     body: previewText(review.body || '', BODY_PREVIEW_LIMIT).text,
     bodyChars: String(review.body || '').length,
+  };
+}
+
+function compactReviewComment(value) {
+  const comment = isObject(value) ? value : {};
+  return {
+    id: comment.id || '',
+    file: comment.file || comment.path || '',
+    line: comment.line || comment.original_line || '',
+    author: comment.author || compactUser(comment.user),
+    updatedAt: comment.updatedAt || comment.updated_at || comment.created_at || '',
+    body: previewText(comment.body || '', BODY_PREVIEW_LIMIT).text,
+    bodyChars: String(comment.body || '').length,
+  };
+}
+
+function compactPrReviewsPacket(data) {
+  if (Array.isArray(data)) return compactListPacket(data, compactReview);
+  if (!isObject(data)) return { summary: {}, details: {} };
+  const inlineComments = asArray(data.inlineComments);
+  const issueComments = asArray(data.issueComments);
+  const reviews = asArray(data.reviews);
+  const fileGraph = isObject(data.fileGraph) ? data.fileGraph : {};
+  const files = Object.entries(fileGraph)
+    .map(([path, value]) => ({ path, ...(isObject(value) ? value : {}) }))
+    .sort((a, b) => Number(b.comments || 0) - Number(a.comments || 0));
+  return {
+    summary: {
+      pr: data.pr,
+      counts: data.counts || {},
+      files: { total: files.length, withComments: files.filter((file) => Number(file.comments || 0) > 0).length },
+    },
+    details: {
+      files: sampleArray(files, (file) => ({
+        path: file.path,
+        comments: file.comments || 0,
+        authors: asArray(file.authors),
+        lines: asArray(file.lines),
+      })),
+      inlineComments: sampleArray(inlineComments, compactReviewComment),
+      issueComments: sampleArray(issueComments, compactReviewComment),
+      reviews: sampleArray(reviews, compactReview),
+    },
   };
 }
 
@@ -320,7 +362,7 @@ function compactGithubData(operation, data, stdout) {
   switch (operation) {
     case 'pr.view': return compactPrViewPacket(data);
     case 'pr.checks': return compactListPacket(data, compactCheck, checkSummary(data));
-    case 'pr.reviews': return compactListPacket(data, compactReview);
+    case 'pr.reviews': return compactPrReviewsPacket(data);
     case 'pr.files': {
       const files = isObject(data) && Array.isArray(data.files) ? data.files : data;
       return compactListPacket(files, compactFile);
@@ -401,8 +443,27 @@ function prChecks(args) {
 }
 
 function prReviews(args) {
-  const result = gh(['api', `repos/${args.repo}/pulls/${requirePr(args)}/reviews`], { dryRun: args.dryRun });
-  output(args.operation, args, result);
+  const prNumber = Number(requirePr(args));
+  const command = ['github', 'pr.reviews', String(prNumber), '--repo', args.repo];
+  if (args.dryRun) {
+    output(args.operation, args, {
+      command,
+      stdout: '',
+      data: {
+        repo: args.repo,
+        pr: { number: prNumber },
+        counts: { inlineComments: 0, issueComments: 0, reviews: 0, suppressedNoise: 0 },
+        fileGraph: {},
+        inlineComments: [],
+        issueComments: [],
+        reviews: [],
+      },
+    });
+    return;
+  }
+  const packet = collectPrReview({ prNumber, repo: args.repo, onWarning: (message) => writeStderr(`warning: ${message}`) });
+  const data = createPrReviewJson(packet);
+  output(args.operation, args, { command, stdout: JSON.stringify(data), data });
 }
 
 function prFiles(args) {
