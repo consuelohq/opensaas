@@ -1,6 +1,9 @@
 import { isDeepStrictEqual } from 'node:util';
 
-import { createConnectorOriginHostnameRegexSource } from './connector-origin-hostname';
+import {
+  createConnectorOriginHostnameRegexSource,
+  createConnectorOriginHostnameWafExpression,
+} from './connector-origin-hostname';
 
 const MANAGED_RULE_IDENTITIES = [
   {
@@ -239,31 +242,49 @@ const findManagedRule = (
 };
 
 const replacementFragments = (baseDomain: string): {
-  oldFragment: string;
+  retiredFragments: string[];
   newFragment: string;
 } => ({
-  oldFragment: `not ends_with(http.host, ".os-origin.${baseDomain.trim().toLowerCase()}")`,
-  newFragment: `not (http.host matches r"${createConnectorOriginHostnameRegexSource({ baseDomain })}")`,
+  retiredFragments: [
+    `not ends_with(http.host, ".os-origin.${baseDomain.trim().toLowerCase()}")`,
+    `not (http.host matches r"${createConnectorOriginHostnameRegexSource({ baseDomain })}")`,
+  ],
+  newFragment: `not (${createConnectorOriginHostnameWafExpression({ baseDomain })})`,
 });
 
 const migrateExpression = (input: {
   expression: string;
-  oldFragment: string;
+  retiredFragments: string[];
   newFragment: string;
   ref: ManagedRuleRef;
 }): { expression: string; changed: boolean } => {
-  const oldCount = input.expression.split(input.oldFragment).length - 1;
+  const retiredCounts = input.retiredFragments.map((fragment) => ({
+    fragment,
+    count: input.expression.split(fragment).length - 1,
+  }));
+  const retiredCount = retiredCounts.reduce(
+    (total, candidate) => total + candidate.count,
+    0,
+  );
   const newCount = input.expression.split(input.newFragment).length - 1;
-  if (oldCount === 0 && newCount === 1) {
+  if (retiredCount === 0 && newCount === 1) {
     return { expression: input.expression, changed: false };
   }
-  if (oldCount !== 1 || newCount !== 0) {
+  if (retiredCount !== 1 || newCount !== 0) {
     throw new Error(
       `managed Cloudflare rule ${input.ref} did not contain exactly one retired connector-origin fragment`,
     );
   }
+  const retiredFragment = retiredCounts.find(
+    (candidate) => candidate.count === 1,
+  )?.fragment;
+  if (!retiredFragment) {
+    throw new Error(
+      `managed Cloudflare rule ${input.ref} retired connector-origin fragment was ambiguous`,
+    );
+  }
   return {
-    expression: input.expression.replace(input.oldFragment, input.newFragment),
+    expression: input.expression.replace(retiredFragment, input.newFragment),
     changed: true,
   };
 };
