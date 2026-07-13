@@ -3,14 +3,15 @@
   "publishValid": true,
   "mode": "full",
   "branch": "task/workspace-agents/implement-pricing-route",
-  "base": "origin/task/workspace-agents/implement-pricing-route",
-  "headSha": "3372ab57cde58426d54e5b3e43943259ef2528a5",
-  "changeHash": "a659215029ac53128217a26a5bb9f75a0ca3c3bf7e8f238f43d16a1c18cbc688",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "aa473087299e8ea41eac6cdb0e06fef9a9a9467a",
+  "changeHash": "0f8c7c10c55302840ff61d1aac336e38b2ab9de978326aba17498277c34ab513",
   "changedFiles": [
-    "packages/consuelo-website/public/_redirects",
+    "packages/consuelo-website/src/data/site-links.ts",
+    "packages/consuelo-website/src/pages/pricing.astro",
     "packages/consuelo-website/tests/website-structure.test.js"
   ],
-  "verifiedAt": "2026-07-09T00:29:45.072Z",
+  "verifiedAt": "2026-07-13T00:13:21.140Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -24,8 +25,13 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
+        ".task/tasks/workspace-agents/implement-pricing-route.json",
+        ".task/workspace-agents/implement-pricing-route/current.json",
+        ".task/workspace-agents/implement-pricing-route/evidence-log.json",
+        ".task/workspace-agents/implement-pricing-route/read-log.json",
         ".task/workspace-agents/implement-pricing-route/workpad.md",
-        "packages/consuelo-website/public/_redirects",
+        "packages/consuelo-website/src/data/site-links.ts",
+        "packages/consuelo-website/src/pages/pricing.astro",
         "packages/consuelo-website/tests/website-structure.test.js"
       ],
       "matchedRules": [],

@@ -1,6 +1,6 @@
 Your job is to implement one focused task with high confidence, clear evidence, and targeted blast radius.
 
-This skill does not own the task lifecycle. Use `task.intent` for task start, workspace tool sequencing, publishing, PR promotion, and cleanup.
+This skill does not own the task lifecycle. Use `task.start` for task start, then the typed workspace lifecycle tools for sequencing, publishing, PR promotion, and cleanup.
 
 This skill owns engineering judgment.
 ---
@@ -17,6 +17,163 @@ This skill owns engineering judgment.
 - Do not widen scope silently. Record scope pressure in the workpad.
 
 A good worker agent is not just fast. A good worker agent leaves behind a workspace better than they found it & a task that is easy to review, easy to trust, and easy to recover from.
+
+---
+
+# Tooling principles
+
+Use the workspace tool surface as the source of truth.
+
+Preference order:
+
+1. Use direct typed workspace tools for single known operations and durable transitions.
+2. Use `context.search` and `explore` for discovery and prior context.
+3. Use no-session `code.run` for multi-step read/investigation before a task exists.
+4. Call `task.start` directly at the beginning of scoped repo work. It is a core tool: do not use `tools.search` or exploratory search to find task-start tooling first. The call creates the real task session and returns the workflow bundle plus lifecycle hooks.
+5. Use task-scoped `code.run` for semantic workflows that compose multiple typed tools inside a task.
+6. Use `batch` as the default parallel fanout primitive for dependency-free workspace work. Reach for it whenever several known tool calls can run at the same time: multi-file reads, targeted searches across known areas, status + diff + context gathering, PR/file/review inspection, and independent validation checks. `batch` is not just a checklist helper; it is the preferred way to reduce latency and collect evidence across multiple surfaces when later steps do not depend on earlier results. Do not use `batch` when a step’s inputs must be chosen from a previous step’s output; use `code.run` for that kind of semantic workflow.
+7. Use `git.diff` for structured diff inspection after edits.
+8. Use lifecycle tools directly: `status`, `audit`, `review.run`, `verify`, `task.push`, `task.pr`, `task.prs`, `task.merge`, `task.finish` and `task.cleanup`.
+9. Use `github` for GitHub/PR state and raw GitHub escape hatches with `reason`; use current `gh` only as a temporary fallback.
+10. Use `code.call` for focused command/runtime evidence: tests, builds, typechecks, package scripts, syntax checks, exact CLI reproduction, small diagnostics, or commands with no typed workspace equivalent.
+11. Use local shell-style or host fallback execution only when the workspace tool model cannot express the operation. Record the tooling gap.
+
+
+
+Examples of typed-tool preference:
+
+- Use `status` instead of `code.call git status`.
+- Use `github` for GitHub state instead of ad hoc `gh` shell commands when possible.
+- Use `audit` for workspace scripts/docs/index drift.
+- Use `checkFiles` for JavaScript/TypeScript/Python syntax checks when available.
+- Use `review.run` for workspace review.
+- Use `verify` for the publish safety gate.
+- Use `confirm` for validation evidence when it adds proof.
+- Use `dev` for service-backed local infrastructure and behavior validation.
+
+`code.run` is a semantic composer over the existing typed workspace tools. It is not a separate execution environment and not a guardrail bypass.
+
+Do not wrap a single obvious typed call in `code.run`. Use direct `workspace.call` for one known operation unless `code.run` is adding summarization, branching, or composition value.
+
+Prefer `code.run` when the work is workspace orchestration:
+
+- inspect traces/logs/status and summarize the result
+- search → read → decide
+- read → patch/write → reread
+- inspect manifest/config/docs and return a compact answer
+- coordinate several typed workspace tools in one semantic pass
+- avoid ad hoc `python -c`, `node -e`, heredocs, or long shell strings for file inspection/transformation when typed workspace tools can do it
+
+Use no-session `code.run` before a task exists for read/investigation workflows that compose non-task tools.
+
+Use task-scoped `code.run` after `task.start` when composing task-scoped tools. Pass `taskSession` on the outer workspace call; nested workspace helpers inherit task context.
+
+Use `code.call` as the normal command/runtime runner.
+
+Use `code.call` when the command itself is the evidence:
+
+- run focused tests
+- run package scripts
+- run build/typecheck/lint commands
+- run language/runtime syntax checks
+- reproduce exact CLI behavior
+- execute commands that have no typed workspace equivalent
+- validate process behavior such as exit codes, argv parsing, redirects, or output shape
+- run small non-mutating diagnostics with `mode: "read"`
+
+Use the most specific `code.call` runtime:
+
+| Need | Runtime |
+| --- | --- |
+| Python diagnostics, Python syntax checks, Python scripts | `language: "python"` |
+| Bun/JS/TS diagnostics, package-command orchestration, JSON/result shaping | `language: "bun"` |
+| Shell semantics such as pipes, redirects, env expansion, shell builtins, or short shell smoke checks | `language: "bash"` |
+
+Do not use Bash just to invoke Python or Bun. Use `language: "python"` for Python work and `language: "bun"` for Bun/package orchestration.
+
+
+`code.call` should usually be short, focused, and validation-oriented. If an agent is using command execution repeatedly for reading files, editing files, JSON inspection, workpad updates, or glue logic, switch to `code.run` plus typed workspace tools.
+
+
+---
+
+Explore is a discovery command, not just decision-engine setup.
+
+Use `explore` anywhere you would otherwise start guessing paths or asking “where is this implemented?”
+
+An `explore` query should be short and single-intent. Use one concept, subsystem, symbol, or question per query.
+
+Good:
+
+```text
+task start workflow
+```
+
+Bad:
+
+```text
+task start workflowRole branch worktree lifecycle hook manifest schema
+```
+
+The failure mode is query blending: several competing hypotheses inside one query make retrieval less precise. `explore` does not reason across multiple query meanings in one call.
+
+When multiple query phrasings are plausible, run independent `explore` calls in `batch`:
+
+```ts
+await workspace.call({
+  tool: "batch",
+  input: {
+    steps: [
+      {
+        tool: "explore",
+        input: { query: "task start", limit: 8 },
+        parallel: true,
+      },
+      {
+        tool: "explore",
+        input: { query: "where is task start handled", limit: 8 },
+        parallel: true,
+      },
+    ],
+  },
+  timeout: 300,
+})
+```
+
+Treat `explore` as a prior over where to inspect next. After retrieval narrows the map, use `code.call` in read mode to inspect the likely files, confirm exact symbols, and return a task-shaped evidence packet.
+
+# Decision and evidence principles
+
+Use the decision engine to move from uncertainty to evidence-backed action.
+
+The task workflow skill owns the exact loop. This skill owns the judgment standard:
+
+- `explore` is retrieval, not proof.
+- `decideNext` is the policy layer.
+- `confidenceScore` measures evidence quality, not permission to skip tests.
+- `exploit` means the evidence is concentrated enough to stop wandering and edit.
+- `confirm` means belief meets reality.
+- `audit` checks workspace surface truth: scripts, docs, and index freshness.
+
+Do not edit the first plausible file just because search found it. Read enough context to understand the local pattern and failure mode.
+
+
+Use `code.call` preferably with a batched follow-up, if possible, after the direction is clear.
+
+Confidence comes from:
+- files actually read
+- connected code paths inspected
+- tests or runtime checks run
+- validation output
+- contradictions resolved
+- behavior reproduced or smoked
+
+Confidence does not come from:
+- one semantic search result
+- memory
+- vibes
+- a syntax check alone
+- an API response that does not cover callbacks, queues, locks, jobs, or side effects
 
 ---
 
@@ -193,7 +350,7 @@ Use the workpad at three points:
 
 | Moment | What to do |
 | --- | --- |
-| Start | After `task.intent` or `task.start`, read the workpad and fill in acceptance criteria, plan, and test strategy if applicable |
+| Start | After `task.start`, read the workpad and fill in acceptance criteria, plan, and test strategy if applicable |
 | Middle | Update it when you make a key decision, find a blocker, recover from an error, narrow scope, or learn something future agents need |
 | End | Before push or PR, update status, files changed, validation evidence, risks, and notes for Ko |
 

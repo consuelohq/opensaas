@@ -6,12 +6,7 @@ import MarketingLayout from '../layouts/MarketingLayout.astro'
 const description = pricingHero.subtitle
 ---
 
-<MarketingLayout
-	title="CHOOSE A PLAN"
-	description={description}
-	canonicalPath="/pricing"
-	image="/og.png"
->
+<MarketingLayout title="Pricing" description={description} canonicalPath="/pricing" image="/og.png">
 	<SiteHeader pageSections={[]} />
 
 	<main class="pricing-page" aria-labelledby="pricing-heading">

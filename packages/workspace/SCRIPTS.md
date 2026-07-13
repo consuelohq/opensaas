@@ -98,7 +98,7 @@ Defaults:
 
 ### os:release-device-auth — release the OS device approval authority
 
-Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. The release verifies `/health` and the fail-closed device-public-key requirement after deploy.
+Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. Before any snapshot upload or Worker deploy, the release verifies that the remote Worker has the required server-side `CLOUDFLARE_API_TOKEN` secret. The release then verifies `/health`, including connector-provisioning readiness, and the fail-closed device-public-key requirement after deploy.
 
 ```bash
 bun run os:release-device-auth -- --dry-run
@@ -683,12 +683,13 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ---
 
-### task:start — create task branch + worktree + PR
+### task:start — start scoped work and return workflow guidance
 
-creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
+Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, or sites; the default is `task`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --area workspace-agents --title "start scoped work" --workflow task
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area new-area --title "first task" --create-stream  # explicit new durable stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
@@ -1183,15 +1184,6 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 
 
 ---
-
-### task-intent — start or dispatch task lifecycle guidance
-
-Runs the task workflow intent script. Use this for advisory lifecycle guidance before `task.start`, or to dispatch task workflow hook events. The user-facing tool name is `task.intent`.
-
-```bash
-bun run task-intent -- start --workflow task --area workspace-agents --title "example task-intent flow" --json
-bun run task-intent -- dispatch --workflow task --task-session <taskSession> --event-json /tmp/task-event.json --json
-```
 
 ### tools:search — search typed workspace tools by intent
 

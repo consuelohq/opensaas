@@ -8,6 +8,7 @@ type ToolMatch = {
   scoreParts?: Record<string, number | boolean | string>;
   capabilities?: { readOnly?: boolean; mutating?: boolean };
   why?: string[];
+  description?: string;
 };
 
 type ToolSearchPayload = {
@@ -76,6 +77,14 @@ describe('tools.search v2 intent resolution', () => {
     expect(resultNames[0]).toBe('task.prs');
     expect(payload.matches[0].capabilities?.readOnly).toBe(true);
     expect(resultNames).toContain('task.pr');
+  });
+
+  it('routes PR review comment feedback to the GitHub facade', () => {
+    const payload = runSearch('CodeRabbit Codex PR review comments', ['--limit', '5', '--no-docs']);
+    expect(payload.recommended).toBe('github');
+    expect(names(payload)[0]).toBe('github');
+    const legacy = payload.matches.find((match) => match.name === 'prReview');
+    if (legacy) expect(legacy.description).toContain('legacy wrapper');
   });
 
   it('keeps exact tool names as the strongest signal', () => {
