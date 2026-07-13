@@ -1,0 +1,19 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/refresh-blog-content-performance-and-typography",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 1441,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1441",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1441",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1441/refresh-blog-content-performance-and-typography",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1441",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1441/refresh-blog-content-performance-and-typography",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-blog-refresh-blog-content-performance-and-typography",
+  "taskSession": "tsk_4292a88fdf02",
+  "tmuxSession": "opensaas-blog-refresh-blog-content-performance-and-typography-4292a88f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-blog-refresh-blog-content-performance-and-typography/.task/blog/refresh-blog-content-performance-and-typography/session.json",
+  "createdAt": "2026-07-13T02:52:38.850Z"
+}

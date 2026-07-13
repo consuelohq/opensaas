@@ -126,7 +126,7 @@ export async function onRequestGet(context: EventContext) {
 
     const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Unsubscribed</title></head>
-<body style="background:#0a0a0a;color:#fff;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+<body style="background:#0a0a0a;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
 <div style="text-align:center">
 <h1 style="font-size:24px;font-weight:700">Unsubscribed</h1>
 <p style="color:#888;font-size:15px">You won't receive any more emails from us.</p>
