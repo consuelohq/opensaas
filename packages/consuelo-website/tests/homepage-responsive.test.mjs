@@ -34,4 +34,17 @@ describe('Consuelo OS homepage presentation', () => {
     expect(features).toContain('<PreviewNotice />');
     expect(homepage).not.toContain('SiteFooter');
   });
+
+  test('should use editable local artwork and the pixel sign-in arrow', async () => {
+    const [hero, features, arrow] = await Promise.all([
+      readSource('src/components/home/HomeHero.astro'),
+      readSource('src/components/home/HomeFeaturePreview.astro'),
+      readSource('src/components/icons/PixelArrow.astro'),
+    ]);
+
+    expect(hero).toContain('/images/home/consuelo-atmosphere.svg');
+    expect(features).toContain('/images/home/consuelo-transition.svg');
+    expect(arrow).toContain('currentColor');
+    expect(arrow).not.toMatch(/https?:\/\//);
+  });
 });

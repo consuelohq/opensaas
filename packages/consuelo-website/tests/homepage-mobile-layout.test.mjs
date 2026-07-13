@@ -120,6 +120,24 @@ test('homepage mobile layout and content follow the launch contract', async () =
       await mobileHeader.locator('[aria-label="GitHub"]').isVisible(),
       true,
     );
+    const mobileHeaderTypography = await mobileHeader.evaluate((header) => {
+      const label = header.querySelector(':scope > a');
+      const wordmark = header.querySelector('.os-header__mobile-wordmark');
+      const icon = header.querySelector('[aria-label="GitHub"] svg');
+
+      if (!(label && wordmark && icon)) {
+        throw new Error('Expected mobile header typography and icon');
+      }
+
+      return {
+        label: Number.parseFloat(getComputedStyle(label).fontSize),
+        wordmark: Number.parseFloat(getComputedStyle(wordmark).fontSize),
+        iconWidth: icon.getBoundingClientRect().width,
+      };
+    });
+    assert.ok(mobileHeaderTypography.label >= 12);
+    assert.ok(mobileHeaderTypography.wordmark >= 19);
+    assert.ok(mobileHeaderTypography.iconWidth >= 16);
 
     const heading = page.locator('.os-hero h1');
     assert.equal(
@@ -155,6 +173,15 @@ test('homepage mobile layout and content follow the launch contract', async () =
     assert.ok(viewportContract.heroBottom >= viewportContract.viewportHeight - 110);
     assert.ok(viewportContract.featuresTop < viewportContract.viewportHeight);
     assert.ok(viewportContract.featuresTop > viewportContract.heroBottom);
+    assert.equal(
+      await page.locator('.os-hero__art').getAttribute('src'),
+      '/images/home/consuelo-atmosphere.svg',
+    );
+    assert.equal(await page.locator('.os-hero__button svg').count(), 1);
+    assert.equal(
+      await page.locator('.product-panel__preview-art').getAttribute('src'),
+      '/images/home/consuelo-transition.svg',
+    );
 
     assert.equal(
       await page.locator('.product-panel__topline').count(),
@@ -195,14 +222,14 @@ test('homepage mobile layout and content follow the launch contract', async () =
 
     const expectedQuestions = [
       'What is Consuelo OS?',
-      'What is Consuelo Cloud?',
+      'How does Consuelo Cloud work?',
       'Which agents can I connect?',
-      'What is a workspace?',
-      'What is a node?',
-      'What is a tool?',
+      'What belongs in a workspace?',
+      'How do nodes work?',
+      'How do tools work?',
       'Can I bring my team?',
-      'Do I have to replace my existing stack?',
-      'What does it cost?',
+      'Will Consuelo replace my existing stack?',
+      'How does pricing work?',
     ];
     assert.deepEqual(
       await page.locator('.home-faq summary > span:first-child').allInnerTexts(),
@@ -212,6 +239,19 @@ test('homepage mobile layout and content follow the launch contract', async () =
       await page.locator('.home-faq details').last().locator('a').getAttribute('href'),
       '/pricing',
     );
+    assert.ok(await page.locator('.home-faq__steps, .home-faq__bullets').count() > 0);
+
+    const firstFaq = page.locator('.home-faq details').nth(0);
+    const secondFaq = page.locator('.home-faq details').nth(1);
+    await firstFaq.locator('summary').click();
+    assert.equal(await firstFaq.getAttribute('open'), '');
+    await secondFaq.locator('summary').click();
+    await page.waitForFunction(() => {
+      const openItems = document.querySelectorAll('.home-faq details[open]');
+      return openItems.length === 1 && openItems[0] === document.querySelectorAll('.home-faq details')[1];
+    });
+    assert.equal(await firstFaq.getAttribute('open'), null);
+    assert.equal(await secondFaq.getAttribute('open'), '');
 
     await page.locator('.home-faq details').first().hover();
     await page.waitForTimeout(180);
