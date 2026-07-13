@@ -1,0 +1,43 @@
+---
+title: How steering works
+description: Understand the durable instructions agents load before using workspace tools.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+      - packages/os/tests/os-raw-steering.test.ts
+    runtime: Full steering assembly, trace recording, and repeated-call guards were exercised by focused tests on 2026-07-13.
+---
+
+**Steering** is the durable instruction layer an agent loads before it starts work. It establishes the workspace identity, rules, decision process, and core tool-discovery path.
+
+## Bootstrap once
+
+At the beginning of a conversation, call `get_steering`. The response combines:
+
+- current runtime identity;
+- workspace steering Markdown;
+- tool-discovery guidance;
+- the compact core tool manifest.
+
+The call is recorded as an execution. Repeated calls within a short window return loop guards or rate limits instead of duplicating the full context.
+
+## Load order
+
+Within the local steering directory, OS loads:
+
+1. `system_prompt.md`;
+2. `decision.md`;
+3. any other supported `.md` files in alphabetical order.
+
+The legacy lowercase file `steering.md` is intentionally ignored.
+
+## Refresh deliberately
+
+Read one exact file when only one rule is needed. Use `refresh_steering` only when the workspace instructions have genuinely changed, and include a concrete reason. Refresh calls are also rate limited.
+
+## Steering is not a capability grant
+
+Steering can tell an agent what it should do, but it cannot create a missing tool, widen credentials, or bypass an approval gate. Runtime manifests and security policy remain authoritative for execution.

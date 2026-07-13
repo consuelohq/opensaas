@@ -56,6 +56,41 @@ const connectItems: SidebarItem[] = [
   },
 ];
 
+const buildItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'build' },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'How tools work', slug: 'build/tools/how-tools-work' },
+      { label: 'Workspace', slug: 'build/tools/workspace' },
+      { label: 'Browser', slug: 'build/tools/browser' },
+      { label: 'Office', slug: 'build/tools/office' },
+      { label: 'Media', slug: 'build/tools/media' },
+    ],
+  },
+  {
+    label: 'Skills',
+    items: [
+      { label: 'How skills work', slug: 'build/skills/how-skills-work' },
+      { label: 'Install a skill', slug: 'build/skills/install-a-skill' },
+      { label: 'Create a skill', slug: 'build/skills/create-a-skill' },
+      { label: 'Skill structure', slug: 'build/skills/skill-structure' },
+    ],
+  },
+  {
+    label: 'Steering',
+    items: [
+      { label: 'How steering works', slug: 'build/steering/how-steering-works' },
+      { label: 'Workspace steering', slug: 'build/steering/workspace-steering' },
+      { label: 'Project steering', slug: 'build/steering/project-steering' },
+    ],
+  },
+  { label: 'Workflows', slug: 'build/workflows' },
+  { label: 'Shared memory and context', slug: 'build/shared-memory-and-context' },
+  { label: 'Files and artifacts', slug: 'build/files-and-artifacts' },
+  { label: 'Approvals', slug: 'build/approvals' },
+];
+
 export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
   { label: 'Connect', slug: 'connect', description: 'Connect agents, services, and nodes to the same workspace.' },
@@ -83,7 +118,9 @@ export const docsSidebar = docsSections.map(({ label, slug }) => ({
       ? startItems
       : slug === 'connect'
         ? connectItems
-        : [{ label: 'Overview', slug }],
+        : slug === 'build'
+          ? buildItems
+          : [{ label: 'Overview', slug }],
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));

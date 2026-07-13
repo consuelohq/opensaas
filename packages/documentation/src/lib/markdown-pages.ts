@@ -75,7 +75,8 @@ export function normalizeMdxToMarkdown(source: string): string {
   );
 
   markdown = markdown.replace(/\n{3,}/g, '\n\n').trim();
-  if (title && !/^#\s+/m.test(markdown)) markdown = `# ${title}\n\n${markdown}`.trim();
+  const proseWithoutFences = markdown.replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, '');
+  if (title && !/^#\s+/m.test(proseWithoutFences)) markdown = `# ${title}\n\n${markdown}`.trim();
   return `${markdown}\n`;
 }
 

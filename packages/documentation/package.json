@@ -15,7 +15,9 @@
     "test:boundary": "bun scripts/check-package-boundary.mjs",
     "test:browser": "bun scripts/test-foundation-browser.mjs",
     "test:connect": "bun test tests/connect.test.ts",
-    "test:connect-browser": "bun scripts/test-connect-browser.mjs"
+    "test:connect-browser": "bun scripts/test-connect-browser.mjs",
+    "test:build": "bun test tests/build.test.ts",
+    "test:build-browser": "bun scripts/test-build-browser.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.0",

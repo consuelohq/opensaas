@@ -1,7 +1,49 @@
 ---
 title: Build with OS
-description: Use tools, skills, steering, workflows, memory, files, and approvals.
+description: Use tools, skills, steering, workflows, context, files, artifacts, and approvals together.
 status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/README.md
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: The installed tool registry, selected skills, local steering, and execution records were inspected in current source and focused tests on 2026-07-13.
 ---
 
-Use this section when you are defining what agents can do and how work should run.
+Consuelo OS gives agents a shared way to do work. The pieces are deliberately separate:
+
+| Piece | What it does |
+| --- | --- |
+| **Tool** | Performs one typed operation, such as reading a file or opening a page. |
+| **Skill** | Teaches an agent when and how to combine tools and scripts for a kind of work. |
+| **Script** | Contains executable implementation behind a tool or skill. |
+| **Steering** | Supplies durable workspace rules and decision guidance. |
+| **Workflow** | Selects an ordered bundle of roles and tools for a repeated process. |
+| **Context** | Saves or retrieves durable notes and trace-backed history. |
+| **Artifact** | Stores a versioned output with provenance back to the work that produced it. |
+| **Approval** | Stops sensitive work before execution until an approved path is used. |
+
+## The normal path
+
+```text
+get_steering
+  → discover a tool or load a skill
+  → call typed tools
+  → produce files or artifacts
+  → inspect the trace
+```
+
+Start an agent session with `get_steering`. Use `tools.search` when the needed operation is not already visible, then call the selected tool with typed input. Load a skill when the task needs a proven operating procedure rather than one isolated operation.
+
+## Choose a section
+
+- [Tools](/build/tools/how-tools-work/) explains the callable surface.
+- [Skills](/build/skills/how-skills-work/) explains reusable guidance and capability packages.
+- [Steering](/build/steering/how-steering-works/) explains the instructions loaded before work begins.
+- [Workflows](/build/workflows/) explains ordered, task-specific tool bundles.
+- [Shared memory and context](/build/shared-memory-and-context/) explains what can persist between agents.
+- [Files and artifacts](/build/files-and-artifacts/) explains inputs, outputs, versions, and provenance.
+- [Approvals](/build/approvals/) explains where OS stops before sensitive execution.
+
+Consuelo OS is in preview. These pages describe current verified behavior and call out places where a self-service path does not exist yet.

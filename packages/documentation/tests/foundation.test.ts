@@ -53,6 +53,22 @@ import { call } from '@consuelo/os';
   });
 
 
+  test('adds the frontmatter title when the only H1 is inside a code fence', () => {
+    const source = `---
+title: Create a skill
+---
+
+Use this structure:
+
+\`\`\`md
+# Purpose
+\`\`\`
+`;
+    const markdown = normalizeMdxToMarkdown(source);
+    expect(markdown).toStartWith('# Create a skill\n\n');
+    expect(markdown).toContain('# Purpose');
+  });
+
   test('normalizes every existing docs source without leaking supported MDX adapters', () => {
     const docsRoot = new URL('../src/content/docs/', import.meta.url);
     const files: URL[] = [];
