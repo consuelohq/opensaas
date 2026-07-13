@@ -42,8 +42,9 @@ describe('Consuelo OS homepage presentation', () => {
       readSource('src/components/icons/PixelArrow.astro'),
     ]);
 
-    expect(hero).toContain('/images/home/consuelo-atmosphere.svg');
-    expect(features).toContain('/images/home/consuelo-transition.svg');
+    expect(hero).toContain('/images/home/dither/cloud-1.png');
+    expect(hero).toContain('/images/home/dither/cloud-4.png');
+    expect(features).toContain('/images/home/dither/cloud-2.png');
     expect(arrow).toContain('currentColor');
     expect(arrow).not.toMatch(/https?:\/\//);
   });

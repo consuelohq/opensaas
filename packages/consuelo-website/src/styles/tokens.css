@@ -49,8 +49,8 @@
   --launch-success: var(--site-color-success);
   --launch-mono-font: var(--site-font-mono);
 
-  --site-font-display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --site-font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --site-font-display: 'Bodoni Moda Variable', 'Bodoni Moda', Didot, Georgia, serif;
+  --site-font-body: 'Inter Variable', Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --site-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
   --site-text-xs: 0.75rem;

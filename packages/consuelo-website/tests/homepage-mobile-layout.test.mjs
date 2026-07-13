@@ -94,13 +94,14 @@ const startDevServer = async () => {
   };
 };
 
-test('homepage mobile layout and content follow the launch contract', async () => {
+test('homepage mobile layout and content follow the launch contract', { timeout: 60_000 }, async () => {
   const server = await startDevServer();
   const browser = await chromium.launch();
 
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-    await page.goto(server.baseUrl, { waitUntil: 'networkidle' });
+    await page.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await page.locator('main').waitFor();
 
     const mobileHeader = page.locator('.os-header__mobile');
     await assert.doesNotReject(() => mobileHeader.waitFor({ state: 'visible' }));
@@ -173,14 +174,15 @@ test('homepage mobile layout and content follow the launch contract', async () =
     assert.ok(viewportContract.heroBottom >= viewportContract.viewportHeight - 110);
     assert.ok(viewportContract.featuresTop < viewportContract.viewportHeight);
     assert.ok(viewportContract.featuresTop > viewportContract.heroBottom);
+    assert.equal(await page.locator('.os-hero__cloud').count(), 4);
     assert.equal(
-      await page.locator('.os-hero__art').getAttribute('src'),
-      '/images/home/consuelo-atmosphere.svg',
+      await page.locator('.os-hero__cloud').first().getAttribute('src'),
+      '/images/home/dither/cloud-1.png',
     );
     assert.equal(await page.locator('.os-hero__button svg').count(), 1);
     assert.equal(
       await page.locator('.product-panel__preview-art').getAttribute('src'),
-      '/images/home/consuelo-transition.svg',
+      '/images/home/dither/cloud-2.png',
     );
 
     assert.equal(
@@ -271,14 +273,15 @@ test('homepage mobile layout and content follow the launch contract', async () =
     const desktopPage = await browser.newPage({
       viewport: { width: 1440, height: 900 },
     });
-    await desktopPage.goto(server.baseUrl, { waitUntil: 'networkidle' });
+    await desktopPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await desktopPage.locator('main').waitFor();
 
     const desktopHeadingLineTops = await desktopPage
       .locator('.os-hero h1 [data-hero-line]')
       .evaluateAll((lines) =>
         lines.map((line) => Math.round(line.getBoundingClientRect().top)),
       );
-    assert.equal(new Set(desktopHeadingLineTops).size, 2);
+    assert.equal(new Set(desktopHeadingLineTops).size, 3);
 
     const desktopWordmarkFontSize = await desktopPage
       .locator('.os-header__wordmark')

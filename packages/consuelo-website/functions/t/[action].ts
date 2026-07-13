@@ -17,42 +17,57 @@ interface EventContext {
 const PIXEL_GIF_B64 = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 async function logToSupabase(env: Env, table: string, data: Record<string, unknown>) {
-  await fetch(env.SUPABASE_URL + '/rest/v1/' + table, {
-    method: 'POST',
-    headers: {
-      'apikey': env.SUPABASE_KEY,
-      'Authorization': 'Bearer ' + env.SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal',
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    await fetch(env.SUPABASE_URL + '/rest/v1/' + table, {
+      method: 'POST',
+      headers: {
+        'apikey': env.SUPABASE_KEY,
+        'Authorization': 'Bearer ' + env.SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(data),
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Unable to log ${table} event: ${message}`);
+  }
 }
 
 async function patchSupabase(env: Env, table: string, filter: string, data: Record<string, unknown>) {
-  await fetch(env.SUPABASE_URL + '/rest/v1/' + table + '?' + filter, {
-    method: 'PATCH',
-    headers: {
-      'apikey': env.SUPABASE_KEY,
-      'Authorization': 'Bearer ' + env.SUPABASE_KEY,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    await fetch(env.SUPABASE_URL + '/rest/v1/' + table + '?' + filter, {
+      method: 'PATCH',
+      headers: {
+        'apikey': env.SUPABASE_KEY,
+        'Authorization': 'Bearer ' + env.SUPABASE_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Unable to update ${table}: ${message}`);
+  }
 }
 
 async function logToPosthog(env: Env, event: string, leadId: string, properties: Record<string, unknown>) {
   if (!env.POSTHOG_KEY) return;
-  await fetch('https://us.i.posthog.com/capture/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      api_key: env.POSTHOG_KEY,
-      event,
-      distinct_id: 'lead_' + leadId,
-      properties: { ...properties, source: 'email', lead_id: leadId },
-    }),
-  });
+  try {
+    await fetch('https://us.i.posthog.com/capture/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: env.POSTHOG_KEY,
+        event,
+        distinct_id: 'lead_' + leadId,
+        properties: { ...properties, source: 'email', lead_id: leadId },
+      }),
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Unable to log PostHog event: ${message}`);
+  }
 }
 
 export async function onRequestGet(context: EventContext) {

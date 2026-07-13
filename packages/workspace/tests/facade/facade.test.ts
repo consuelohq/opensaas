@@ -218,7 +218,7 @@ describe('typed facade executor', () => {
 
     const fileSearch = runSearch('file search', 4).matches[0];
     expect(fileSearch.name).toBe('fs.search');
-    expect(fileSearch.usage.workspaceCall).toContain('taskSession');
+    expect(fileSearch.usage.workspaceCall).toContain('fs.search');
 
     const missingPayload = runSearch('no-such-made-up-tool', 4);
     expect(missingPayload.totalMatches).toBe(0);
@@ -1428,7 +1428,7 @@ describe('batch facade tool', () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('batch', {
       steps: [
-        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+        { tool: 'fs.read', input: { path: 'AGENTS.md' } },
       ],
     }, stableOptions(successfulRunner(), plans));
 
@@ -1443,7 +1443,7 @@ describe('batch facade tool', () => {
 
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({
-      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+      steps: [{ tool: 'fs.read', input: { path: 'AGENTS.md' } }],
     }).success).toBe(true);
     expect(schema?.safeParse({ steps: [] }).success).toBe(false);
     expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);

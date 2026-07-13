@@ -149,12 +149,13 @@ describe("blog refresh contract", () => {
     );
     expect(tokensCss).not.toContain("@fontsource");
     expect(tokensCss).not.toContain("@font-face");
-    expect(tokensCss).toContain("--site-font-display: system-ui");
-    expect(tokensCss).toContain("--site-font-body: system-ui");
+    expect(tokensCss).toContain("--site-font-display: 'Bodoni Moda Variable'");
+    expect(tokensCss).toContain("--site-font-body: 'Inter Variable'");
     expect(tokensCss).toContain("--site-font-mono: ui-monospace");
     expect(marketingLayout).toContain("font-family: var(--site-font-body)");
     expect(marketingLayout).not.toContain("Geist Mono");
-    expect(packageJson).not.toContain("@fontsource-variable");
+    expect(packageJson).toContain("@fontsource-variable/bodoni-moda");
+    expect(packageJson).toContain("@fontsource-variable/inter");
     expect(existsSync(join(siteRoot, "public/fonts/GeistMono-Variable.woff2"))).toBe(false);
     expect(existsSync(join(siteRoot, "public/fonts/GeistSans-Variable.woff2"))).toBe(false);
   });
