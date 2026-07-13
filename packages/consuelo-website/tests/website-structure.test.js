@@ -222,16 +222,16 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('prefers-reduced-motion: reduce');
   });
 
-  test('should use the approved Hermes blue and real open font stack when loading marketing tokens', () => {
+  test('should use the approved Hermes blue and visitor device font stack when loading marketing tokens', () => {
     const tokens = readSource('src/styles/tokens.css');
 
-    expect(tokens).toContain("@import '@fontsource-variable/bodoni-moda'");
-    expect(tokens).toContain("@import '@fontsource-variable/inter'");
+    expect(tokens).not.toContain('@fontsource');
+    expect(tokens).not.toContain('@font-face');
     expect(tokens).toContain("--site-color-brand: #0000F2");
     expect(tokens).toContain("--site-color-paper: #0000F2");
-    expect(tokens).toContain("'Bodoni Moda Variable'");
-    expect(tokens).toContain("'Inter Variable'");
-    expect(tokens).toContain("'Geist Mono'");
+    expect(tokens).toContain('--site-font-display: system-ui');
+    expect(tokens).toContain('--site-font-body: system-ui');
+    expect(tokens).toContain('--site-font-mono: ui-monospace');
     expect(tokens).not.toContain('#5379AE');
   });
 
@@ -423,7 +423,7 @@ describe('Consuelo website structure', () => {
     const design = readRepo('packages/consuelo-website/DESIGN.md');
     expect(design).toContain('blue editorial system');
     expect(design).toContain('#0000F2');
-    expect(design).toContain('Bodoni Moda Variable');
+    expect(design).toContain('visitor device system UI stack');
     expect(design).toContain('tokens.css');
     expect(design).toContain('primitives.css');
     expect(design).toContain('Do not invent');
@@ -436,9 +436,9 @@ describe('Consuelo website structure', () => {
     expect(tokens).toContain('--site-space-section');
     expect(tokens).toContain('--site-radius-card');
     expect(tokens).not.toContain('@media (prefers-color-scheme: dark)');
-    expect(tokens).toContain("--site-font-display: 'Bodoni Moda Variable'");
-    expect(tokens).toContain("--site-font-body: 'Inter Variable'");
-    expect(tokens).toContain("--site-font-mono: 'Geist Mono'");
+    expect(tokens).toContain('--site-font-display: system-ui');
+    expect(tokens).toContain('--site-font-body: system-ui');
+    expect(tokens).toContain('--site-font-mono: ui-monospace');
     expect(tokens).not.toContain("'displayFont'");
     expect(tokens).not.toContain("'monoFont'");
 

@@ -160,21 +160,6 @@ const nextPost =
     </div>
   </main>
   <Footer />
-
-<script>
-  // Expand Table of Contents by default
-  function expandToc() {
-    const details = document.querySelectorAll('details');
-    details.forEach(detail => {
-      const summary = detail.querySelector('summary');
-      if (summary && summary.textContent?.trim().toLowerCase() === 'table of contents') {
-        detail.setAttribute('open', '');
-      }
-    });
-  }
-  expandToc();
-  document.addEventListener('astro:after-swap', expandToc);
-</script>
 </Layout>
     
 

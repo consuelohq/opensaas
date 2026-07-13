@@ -3,7 +3,7 @@ author: Kokayi Cobb
 pubDatetime: 2026-05-04T03:22:00Z
 title: Software Is Becoming Decision Infrastructure
 slug: software-is-becoming-decision-infrastructure
-featured: true
+featured: false
 draft: false
 tags:
   - ai

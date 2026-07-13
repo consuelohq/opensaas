@@ -19,6 +19,7 @@ Read these files before visual or structural website work:
 - Framework: Astro static website with Bun package commands.
 - Components: Astro for static surfaces; React islands only for browser state that needs hydration.
 - Styling: CSS-first tokens and primitives for first-party website work.
+- Typography: visitor device system UI stack for page text; native monospace stack for code.
 - Data: editable copy, links, navigation, and FAQ data live in typed modules under `src/data`.
 - Analytics: `MarketingLayout.astro` owns public-site PostHog bootstrapping.
 

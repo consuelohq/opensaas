@@ -4,6 +4,7 @@ import icon from 'astro-icon';
 import sitemap from '@astrojs/sitemap';
 import remarkToc from 'remark-toc';
 import remarkCollapse from 'remark-collapse';
+import remarkOpenToc from './src/plugins/remarkOpenToc.mjs';
 
 export default defineConfig({
   output: 'static',
@@ -16,6 +17,7 @@ export default defineConfig({
         remarkCollapse,
         { test: 'Table of contents', summary: 'Open Table of contents' },
       ],
+      remarkOpenToc,
     ],
   },
 });
