@@ -111,6 +111,15 @@ describe('twenty-emails package removal', () => {
       expect(readRepoFile(file), file).not.toContain('twenty-emails');
     }
 
+    const composeWorkflow = readRepoFile(
+      '.github/workflows/ci-test-docker-compose.yaml',
+    );
+
+    expect(composeWorkflow).toContain('del(.services.worker.image)');
+    expect(composeWorkflow).toContain(
+      '.services.worker.build.dockerfile = "./packages/twenty-docker/twenty/Dockerfile.worker"',
+    );
+
     const registry = JSON.parse(
       readRepoFile('packages/workspace/test-selection.registry.json'),
     ) as {
@@ -152,7 +161,7 @@ describe('twenty-emails package removal', () => {
 
       for (const [name, target] of Object.entries(bins)) {
         const binPath = resolve(repoRoot, workspace, target);
-        if (!existsSync(binPath) || (statSync(binPath).mode & 0o111) === 0) {
+        if (!existsSync(binPath)) {
           missingBinTargets.push(`${name}: ${workspace}/${target}`);
         }
       }

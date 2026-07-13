@@ -1,8 +1,6 @@
 {
   "files": [
-    "packages/twenty-sdk/project.json",
-    "packages/twenty-sdk/vitest.config.ts",
-    "packages/twenty-sdk/vitest.unit.config.ts"
+    "packages/workspace/tests/email-package-removal.test.ts"
   ],
-  "updatedAt": "2026-07-13T20:45:28.707Z"
+  "updatedAt": "2026-07-13T20:52:48.680Z"
 }
