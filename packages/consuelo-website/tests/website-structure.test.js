@@ -219,7 +219,9 @@ describe('Consuelo website structure', () => {
     expect(content).toContain('value: INSTALL_COMMAND');
     expect(hero).toContain("import { INSTALL_COMMAND } from '../../data/home-content'");
     expect(hero).toContain('<span data-copy-label>COPY</span>');
-    expect(hero).toContain('<PixelArrow />');
+    expect(hero).toContain('class="os-hero__button-arrow"');
+    expect(hero).toContain('viewBox="0 0 6 9"');
+    expect(hero).not.toContain('PixelArrow');
     expect(hero).toContain('data-copy-install');
     expect(hero).toContain('if (!navigator.clipboard)');
     expect(hero).toContain('await navigator.clipboard.writeText(INSTALL_COMMAND)');
