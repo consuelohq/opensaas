@@ -2,6 +2,7 @@
 import { homeFeaturePreviewItems } from '../../data/home-content';
 import FeatureMedia from './FeatureMedia.astro';
 import HomeFaq from './HomeFaq.astro';
+import PreviewNotice from './PreviewNotice.astro';
 
 type Props = {
   sectionId?: string;
@@ -12,8 +13,8 @@ const { sectionId = 'features' } = Astro.props as Props;
 
 <section class="product-panel" id={sectionId} data-section="features">
   <div class="product-panel__paper">
-    <div class="product-panel__preview" aria-hidden="true">
-      <img src="/images/home/integrations-blue.svg" alt="" width="760" height="420" />
+    <div class="product-panel__preview">
+      <PreviewNotice />
     </div>
 
     <div class="product-panel__identity">
@@ -64,19 +65,34 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .product-panel__preview {
     position: relative;
-    height: clamp(10rem, 24vw, 22rem);
+    isolation: isolate;
+    height: clamp(11rem, 24vw, 22rem);
     overflow: hidden;
     background: var(--site-color-brand);
     border: clamp(0.45rem, 1.1vw, 0.85rem) solid white;
     border-bottom-width: 0;
   }
 
-  .product-panel__preview img {
+  .product-panel__preview::before,
+  .product-panel__preview::after {
     position: absolute;
-    inset: 50% auto auto 50%;
-    width: min(72rem, 94%);
-    max-width: none;
-    transform: translate(-50%, -48%);
+    z-index: -1;
+    content: '';
+    pointer-events: none;
+  }
+
+  .product-panel__preview::before {
+    inset: 18% 10%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    transform: rotate(-7deg);
+  }
+
+  .product-panel__preview::after {
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.2), transparent 45%),
+      linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.07) 50%, transparent 80%);
   }
 
   .product-panel__identity {
@@ -110,7 +126,7 @@ const { sectionId = 'features' } = Astro.props as Props;
   }
 
   .product-panel__features {
-    padding: 0 var(--site-panel-pad);
+    padding: 0 clamp(1rem, 4.7vw, 5rem);
   }
 
   .product-panel__topline {
@@ -136,7 +152,7 @@ const { sectionId = 'features' } = Astro.props as Props;
   .product-panel__grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(3rem, 6vw, 6rem) clamp(1.25rem, 2.7vw, 2.5rem);
+    gap: clamp(4.5rem, 8vw, 8rem) clamp(1.5rem, 3.5vw, 3.75rem);
   }
 
   .product-panel__item {
@@ -180,11 +196,11 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   @media (max-width: 580px) {
     .product-panel__preview {
-      height: 10.5rem;
+      height: 13rem;
     }
 
-    .product-panel__preview img {
-      width: 145%;
+    .product-panel__identity {
+      padding: 3rem 1rem 4rem;
     }
 
     .product-panel__features > h2 {
@@ -193,7 +209,7 @@ const { sectionId = 'features' } = Astro.props as Props;
 
     .product-panel__grid {
       grid-template-columns: 1fr;
-      gap: 3.5rem;
+      gap: 4.5rem;
     }
 
     .product-panel__item h3 {

@@ -27,9 +27,6 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
     <div class="os-hero__actions">
       <a class="os-hero__button" href="https://os.consuelohq.com">SIGN IN</a>
-      <button class="os-hero__button os-hero__button--quiet" type="button" data-copy-install>
-        <span data-copy-label>DOWNLOAD LOCALLY</span>
-      </button>
     </div>
 
     <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
@@ -120,7 +117,7 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   .os-hero__actions {
     display: grid;
-    width: min(100%, 17rem);
+    width: min(100%, 31rem);
     gap: 0.55rem;
     margin-top: 0.35rem;
   }
@@ -204,13 +201,13 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   @media (max-width: 720px) {
     .os-hero {
-      min-height: calc(100svh - 4.5rem);
-      padding: 6.25rem 1rem 3.5rem;
+      min-height: 0;
+      padding: 4.75rem 1rem 2.75rem;
     }
 
     .os-hero h1 {
-      font-size: clamp(2.9rem, 13vw, 4.5rem);
-      line-height: 0.92;
+      font-size: clamp(2.35rem, 11.5vw, 3.55rem);
+      line-height: 0.94;
     }
 
     .os-hero__subtitle {
@@ -222,8 +219,8 @@ const { sectionId = 'intro' } = Astro.props as Props;
     }
 
     .os-hero__art {
-      bottom: -8%;
-      width: 150vw;
+      bottom: -18%;
+      width: 125vw;
     }
   }
 

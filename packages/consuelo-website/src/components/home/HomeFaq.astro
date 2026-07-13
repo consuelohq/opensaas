@@ -21,7 +21,7 @@ import { homeFaqItems } from '../../data/home-content';
 
 <style>
   .home-faq {
-    padding: clamp(4rem, 9vw, 8rem) var(--site-panel-pad) clamp(5rem, 10vw, 9rem);
+    padding: clamp(6rem, 11vw, 10rem) clamp(1rem, 5vw, 5rem) clamp(7rem, 12vw, 11rem);
   }
 
   .home-faq h2 {
@@ -32,20 +32,22 @@ import { homeFaqItems } from '../../data/home-content';
     font-weight: 430;
     letter-spacing: 0;
     line-height: 0.72;
+    text-align: center;
   }
 
   .home-faq__list {
-    width: min(100%, 54rem);
+    width: min(100%, 64rem);
     margin: 0 auto;
+    border-top: 1px dashed var(--site-color-line-strong);
   }
 
   .home-faq details {
-    border-bottom: 1px solid var(--site-color-line-strong);
+    border-bottom: 1px dashed var(--site-color-line-strong);
   }
 
   .home-faq summary {
     display: flex;
-    min-height: 4.6rem;
+    min-height: 5.4rem;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
