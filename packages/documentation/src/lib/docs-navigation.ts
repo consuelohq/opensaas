@@ -91,6 +91,16 @@ const buildItems: SidebarItem[] = [
   { label: 'Approvals', slug: 'build/approvals' },
 ];
 
+const sitesItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'sites' },
+  { label: 'Create a site', slug: 'sites/create-a-site' },
+  { label: 'Pages and content', slug: 'sites/pages-and-content' },
+  { label: 'Preview locally', slug: 'sites/preview-locally' },
+  { label: 'Publish', slug: 'sites/publish' },
+  { label: 'Domains', slug: 'sites/domains' },
+  { label: 'Troubleshooting', slug: 'sites/troubleshooting' },
+];
+
 export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
   { label: 'Connect', slug: 'connect', description: 'Connect agents, services, and nodes to the same workspace.' },
@@ -120,7 +130,9 @@ export const docsSidebar = docsSections.map(({ label, slug }) => ({
         ? connectItems
         : slug === 'build'
           ? buildItems
-          : [{ label: 'Overview', slug }],
+          : slug === 'sites'
+            ? sitesItems
+            : [{ label: 'Overview', slug }],
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));

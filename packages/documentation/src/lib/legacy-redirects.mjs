@@ -1,5 +1,6 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/tools/sites/overview': '/sites/',
   '/os/concepts/portal': '/build/tools/how-tools-work/',
   '/os/concepts/skills': '/build/skills/how-skills-work/',
   '/os/concepts/scripts': '/build/skills/skill-structure/',
@@ -136,61 +137,61 @@ export const legacyRedirects = {
     '/build/tools/office/',
   '/user-guide/calendar-emails/how-tos/limit-emails-imported': '/build/tools/office/',
   '/user-guide/calendar-emails/overview': '/connect/connectors/',
-  '/user-guide/dashboards/capabilities/chart-settings': '/tools/sites/overview',
-  '/user-guide/dashboards/capabilities/dashboards': '/tools/sites/overview',
-  '/user-guide/dashboards/capabilities/widgets': '/tools/sites/overview',
-  '/user-guide/dashboards/how-tos/dashboards-faq': '/tools/sites/overview',
-  '/user-guide/dashboards/how-tos/widget-faq': '/tools/sites/overview',
-  '/user-guide/dashboards/overview': '/tools/sites/overview',
+  '/user-guide/dashboards/capabilities/chart-settings': '/',
+  '/user-guide/dashboards/capabilities/dashboards': '/',
+  '/user-guide/dashboards/capabilities/widgets': '/',
+  '/user-guide/dashboards/how-tos/dashboards-faq': '/',
+  '/user-guide/dashboards/how-tos/widget-faq': '/',
+  '/user-guide/dashboards/overview': '/',
   '/user-guide/data-migration/capabilities/error-handling':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/field-mapping':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/file-formats':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/import-relations':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/uniqueness-constraints':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/export-your-data':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/fix-import-errors':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-companies-via-csv':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-contacts-via-csv':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-data-via-api':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/migrating-from-other-crms':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/prepare-your-csv-files':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/update-existing-records-via-import':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/upload-csv-programmatically':
-    '/tools/sites/overview',
-  '/user-guide/data-migration/overview': '/tools/sites/overview',
-  '/user-guide/data-model/capabilities/fields': '/tools/sites/overview',
-  '/user-guide/data-model/capabilities/objects': '/tools/sites/overview',
+    '/',
+  '/user-guide/data-migration/overview': '/',
+  '/user-guide/data-model/capabilities/fields': '/',
+  '/user-guide/data-model/capabilities/objects': '/',
   '/user-guide/data-model/capabilities/relation-fields':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-custom-fields':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-custom-objects':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-many-to-many-relations':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-relation-fields':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/customize-your-data-model':
-    '/tools/sites/overview',
-  '/user-guide/data-model/how-tos/data-model-faq': '/tools/sites/overview',
-  '/user-guide/data-model/overview': '/tools/sites/overview',
+    '/',
+  '/user-guide/data-model/how-tos/data-model-faq': '/',
+  '/user-guide/data-model/overview': '/',
   '/user-guide/dialer/hold-mute': '/build/tools/office/',
   '/user-guide/dialer/how-tos/discord-setup': '/build/tools/office/',
   '/user-guide/dialer/making-calls': '/build/tools/office/',
@@ -214,7 +215,7 @@ export const legacyRedirects = {
   '/user-guide/file-system/overview': '/build/files-and-artifacts/',
   '/user-guide/graphql-api/overview': '/developers/api/graphql',
   '/user-guide/guides-tutorials/overview': '/start/',
-  '/user-guide/highlevel/overview': '/tools/sites/overview',
+  '/user-guide/highlevel/overview': '/',
   '/user-guide/integrations/overview': '/connect/connectors/',
   '/user-guide/permissions-access/capabilities/permissions':
     '/user-guide/getting-started/how-tos/configure-your-workspace',
@@ -241,32 +242,32 @@ export const legacyRedirects = {
   '/user-guide/settings/overview':
     '/user-guide/getting-started/how-tos/configure-your-workspace',
   '/user-guide/views-pipelines/capabilities/calendar-view':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/fields-and-columns':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/filters-and-sorting':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/kanban-views':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/table-views':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/view-settings':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/create-a-calendar-view-for-tasks-due':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/restrict-access-to-your-view':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/set-up-a-sales-pipeline':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/show-expected-amount-in-pipeline':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/track-time-in-stage':
-    '/tools/sites/overview',
-  '/user-guide/views-pipelines/overview': '/tools/sites/overview',
+    '/',
+  '/user-guide/views-pipelines/overview': '/',
   '/user-guide/workflows/capabilities/send-emails-from-workflows':
     '/build/workflows/',
   '/user-guide/workflows/capabilities/use-branches-in-workflows':
