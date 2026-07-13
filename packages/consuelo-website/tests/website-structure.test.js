@@ -162,11 +162,9 @@ describe('Consuelo website structure', () => {
       '/images/home/workflow.svg',
     ]);
     expect(pricingRoute).toContain('class="pricing-plan__art"');
-    expect(pricingRoute).toContain('padding: clamp(7.5rem');
+    expect(pricingRoute).toContain('padding: clamp(8.75rem');
     expect(pricingContent.pricingPlans.map((plan) => plan.price)).toEqual(['$0', '$20', '$100', '$200']);
-    expect(pricingContent.pricingPlans.filter((plan) => plan.highlight).map((plan) => plan.name)).toEqual([
-      'Plus',
-    ]);
+    expect(pricingContent.pricingPlans.filter((plan) => plan.highlight).map((plan) => plan.name)).toEqual([]);
     expect(pricingContent.pricingPlans.every((plan) => plan.bullets.length === 4)).toBe(true);
     expect(siteLinks.pricing).toBe('/pricing');
     expect(siteLinks.pricing).not.toBe(siteLinks.mercury);
@@ -221,7 +219,9 @@ describe('Consuelo website structure', () => {
     expect(content).toContain('value: INSTALL_COMMAND');
     expect(hero).toContain("import { INSTALL_COMMAND } from '../../data/home-content'");
     expect(hero).toContain('<span data-copy-label>COPY</span>');
-    expect(hero).toContain('<PixelArrow />');
+    expect(hero).toContain('class="os-hero__button-arrow"');
+    expect(hero).toContain('viewBox="0 0 6 9"');
+    expect(hero).not.toContain('PixelArrow');
     expect(hero).toContain('data-copy-install');
     expect(hero).toContain('if (!navigator.clipboard)');
     expect(hero).toContain('await navigator.clipboard.writeText(INSTALL_COMMAND)');
@@ -230,15 +230,15 @@ describe('Consuelo website structure', () => {
     expect(hero).toContain('prefers-reduced-motion: reduce');
   });
 
-  test('should use the approved Hermes blue and visitor device font stack when loading marketing tokens', () => {
+  test('should use the approved Hermes blue and local brand font stack when loading marketing tokens', () => {
     const tokens = readSource('src/styles/tokens.css');
 
     expect(tokens).not.toContain('@fontsource');
     expect(tokens).not.toContain('@font-face');
     expect(tokens).toContain("--site-color-brand: #0000F2");
     expect(tokens).toContain("--site-color-paper: #0000F2");
-    expect(tokens).toContain('--site-font-display: system-ui');
-    expect(tokens).toContain('--site-font-body: system-ui');
+    expect(tokens).toContain("--site-font-display: 'Bodoni Moda Variable'");
+    expect(tokens).toContain("--site-font-body: 'Inter Variable'");
     expect(tokens).toContain('--site-font-mono: ui-monospace');
     expect(tokens).not.toContain('#5379AE');
   });
@@ -433,7 +433,8 @@ describe('Consuelo website structure', () => {
     const design = readRepo('packages/consuelo-website/DESIGN.md');
     expect(design).toContain('blue editorial system');
     expect(design).toContain('#0000F2');
-    expect(design).toContain('visitor device system UI stack');
+    expect(design).toContain('Bodoni Moda');
+    expect(design).toContain('Inter');
     expect(design).toContain('tokens.css');
     expect(design).toContain('primitives.css');
     expect(design).toContain('Do not invent');
@@ -446,8 +447,8 @@ describe('Consuelo website structure', () => {
     expect(tokens).toContain('--site-space-section');
     expect(tokens).toContain('--site-radius-card');
     expect(tokens).not.toContain('@media (prefers-color-scheme: dark)');
-    expect(tokens).toContain('--site-font-display: system-ui');
-    expect(tokens).toContain('--site-font-body: system-ui');
+    expect(tokens).toContain("--site-font-display: 'Bodoni Moda Variable'");
+    expect(tokens).toContain("--site-font-body: 'Inter Variable'");
     expect(tokens).toContain('--site-font-mono: ui-monospace');
     expect(tokens).not.toContain("'displayFont'");
     expect(tokens).not.toContain("'monoFont'");

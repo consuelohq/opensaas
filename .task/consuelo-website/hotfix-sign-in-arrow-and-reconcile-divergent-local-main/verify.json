@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main",
+  "base": "origin/main",
+  "headSha": "a1c5f010bd3ab322b218d2c3d095b85e9e540559",
+  "changeHash": "46bc7f24647c9825d9a9c74b119d10985bf04be94e499547c94f98665c1aee91",
+  "changedFiles": [
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-07-13T17:57:00.567Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/current.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/evidence-log.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/read-log.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/session.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/verify.json",
+        ".task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/workpad.md",
+        ".task/tasks/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main.json",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

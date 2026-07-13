@@ -678,48 +678,6 @@
     "sessionRequired": false
   },
   {
-    "name": "browser.login",
-    "methodPath": [
-      "browser",
-      "login"
-    ],
-    "description": "run a saved browser auth login profile",
-    "category": "utilities",
-    "underlying": "workspace browser.login",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 300000,
-    "inputSchema": "BrowserLoginInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "browser",
-      "subcommand": "login",
-      "branchMode": "none",
-      "arguments": [
-        {
-          "source": "name",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "headed",
-          "flag": "--headed",
-          "kind": "boolean"
-        }
-      ]
-    },
-    "exampleInput": {
-      "name": "consuelo",
-      "headed": true,
-      "dryRun": true
-    },
-    "sessionRequired": false
-  },
-  {
     "name": "browser.network",
     "methodPath": [
       "browser",
@@ -753,6 +711,47 @@
       "args": [
         "requests"
       ],
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.headed",
+    "methodPath": [
+      "browser",
+      "headed"
+    ],
+    "description": "open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent",
+    "category": "utilities",
+    "underlying": "workspace browser.headed",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserHeadedInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "headed",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "url",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "url": "https://dash.cloudflare.com",
       "dryRun": true
     },
     "sessionRequired": false
@@ -867,51 +866,9 @@
     },
     "exampleInput": {
       "args": [
-        "auth",
+        "tab",
         "list"
       ],
-      "dryRun": true
-    },
-    "sessionRequired": false
-  },
-  {
-    "name": "browser.reauth",
-    "methodPath": [
-      "browser",
-      "reauth"
-    ],
-    "description": "restart the browser daemon and run a saved auth login profile",
-    "category": "utilities",
-    "underlying": "workspace browser.reauth",
-    "capabilities": {
-      "readOnly": false,
-      "mutating": true,
-      "deterministic": false,
-      "safeToRetry": false
-    },
-    "defaultTimeout": 300000,
-    "inputSchema": "BrowserLoginInput",
-    "outputSchema": "RawOutput",
-    "command": {
-      "script": "browser",
-      "subcommand": "reauth",
-      "branchMode": "none",
-      "arguments": [
-        {
-          "source": "name",
-          "kind": "value",
-          "required": true
-        },
-        {
-          "source": "headed",
-          "flag": "--headed",
-          "kind": "boolean"
-        }
-      ]
-    },
-    "exampleInput": {
-      "name": "consuelo",
-      "headed": true,
       "dryRun": true
     },
     "sessionRequired": false
@@ -927,7 +884,7 @@
     "underlying": "workspace browser.screenshot",
     "capabilities": {
       "readOnly": false,
-      "mutating": true,
+      "mutating": false,
       "deterministic": false,
       "safeToRetry": false
     },
@@ -997,10 +954,10 @@
     "category": "utilities",
     "underlying": "workspace browser.snap",
     "capabilities": {
-      "readOnly": false,
-      "mutating": true,
+      "readOnly": true,
+      "mutating": false,
       "deterministic": false,
-      "safeToRetry": false
+      "safeToRetry": true
     },
     "defaultTimeout": 300000,
     "inputSchema": "EmptyInput",
@@ -1008,6 +965,35 @@
     "command": {
       "script": "browser",
       "subcommand": "snap",
+      "branchMode": "none",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.status",
+    "methodPath": [
+      "browser",
+      "status"
+    ],
+    "description": "report safe browser daemon and page status without authentication values",
+    "category": "utilities",
+    "underlying": "workspace browser.status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "status",
       "branchMode": "none",
       "arguments": []
     },
@@ -5117,6 +5103,46 @@
     "sessionRequired": false
   },
   {
+    "name": "stream.cleanup",
+    "methodPath": [
+      "stream",
+      "cleanup"
+    ],
+    "description": "preview or remove safe local stream refs that are fully backed by origin",
+    "category": "stream",
+    "underlying": "workspace stream.cleanup",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "StreamCleanupInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "stream:cleanup",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "apply",
+          "flag": "--apply",
+          "kind": "boolean"
+        },
+        {
+          "source": "keep",
+          "flag": "--keep",
+          "kind": "array"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "stream.sync",
     "methodPath": [
       "stream",
@@ -5707,6 +5733,11 @@
           "source": "startFrom",
           "flag": "--start-from",
           "kind": "value"
+        },
+        {
+          "source": "createStream",
+          "flag": "--create-stream",
+          "kind": "boolean"
         }
       ],
       "jsonFlag": "--json"

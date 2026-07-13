@@ -117,6 +117,7 @@ type IntentPack = {
   label: string;
   terms: string[];
   requireAny?: string[];
+  requireAll?: string[];
   boost: Record<string, number>;
   alternatives?: Array<{ intent: string; tools: string[] }>;
   safeDefault?: string;
@@ -194,6 +195,20 @@ const QUERY_ALIASES: Record<string, string[]> = {
 };
 
 const INTENT_PACKS: IntentPack[] = [
+  {
+    id: 'stream-cleanup',
+    label: 'preview or remove safe local stream branches',
+    terms: ['stream', 'cleanup', 'clean', 'prune', 'delete', 'remove', 'local', 'branch'],
+    requireAll: ['stream'],
+    requireAny: ['cleanup', 'clean', 'prune', 'delete', 'remove'],
+    boost: { 'stream.cleanup': 120, 'stream.list': 18, 'task.cleanup': -55, 'fs.trash': -35 },
+    alternatives: [
+      { intent: 'inspect stream branches', tools: ['stream.list'] },
+      { intent: 'clean up a task branch/worktree', tools: ['task.cleanup'] },
+    ],
+    safeDefault: 'stream.cleanup previews by default; set apply=true only after reviewing the removable and protected lists.',
+    mutatingGuidance: 'stream.cleanup only deletes local stream refs with an origin backup and zero unique local commits.',
+  },
   {
     id: 'task-cleanup',
     label: 'clean up or abandon a task branch/worktree',
@@ -594,6 +609,7 @@ function termSet(query: string): Set<string> {
 function intentMatches(pack: IntentPack, queryTerms: Set<string>): boolean {
   const hasTerm = pack.terms.some((term) => queryTerms.has(term));
   if (!hasTerm) return false;
+  if (pack.requireAll?.length && !pack.requireAll.every((term) => queryTerms.has(term))) return false;
   if (!pack.requireAny?.length) return true;
   return pack.requireAny.some((term) => queryTerms.has(term));
 }

@@ -31,6 +31,7 @@
     "stream:sync": "bun ./scripts/stream-sync.js",
     "stream:context": "bun ./scripts/stream-context.js",
     "stream:list": "bun ./scripts/stream-list.js",
+    "stream:cleanup": "bun ./scripts/stream-cleanup.js",
     "railway:logs": "bun ./scripts/railway-logs.js",
     "wait": "bun ./scripts/wait.js",
     "browser": "bun ./scripts/browser.js",

@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/tooling/address-pr-1389-review-findings-and-merge-to-main",
+  "base": "origin/stream/tooling",
+  "headSha": "c05fcac80a8d2efbc8ee1bb67d284a0467f068bd",
+  "changeHash": "1caa8a0bcc7539bc85a42fc39793683a3d49f02499681d00673bb0659ebdfcd1",
+  "changedFiles": [
+    "packages/os/scripts/lib/browser/cli.ts",
+    "packages/workspace/scripts/lib/browser/cli.ts",
+    "packages/workspace/tests/browser-review-contract.test.ts"
+  ],
+  "verifiedAt": "2026-07-12T23:45:20.948Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/tooling/address-pr-1389-review-findings-and-merge-to-main.json",
+        ".task/tooling/address-pr-1389-review-findings-and-merge-to-main/current.json",
+        ".task/tooling/address-pr-1389-review-findings-and-merge-to-main/evidence-log.json",
+        ".task/tooling/address-pr-1389-review-findings-and-merge-to-main/read-log.json",
+        ".task/tooling/address-pr-1389-review-findings-and-merge-to-main/session.json",
+        ".task/tooling/address-pr-1389-review-findings-and-merge-to-main/workpad.md",
+        "packages/os/scripts/lib/browser/cli.ts",
+        "packages/workspace/scripts/lib/browser/cli.ts",
+        "packages/workspace/tests/browser-review-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

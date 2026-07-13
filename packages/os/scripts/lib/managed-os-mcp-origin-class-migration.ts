@@ -1,31 +1,82 @@
-import { createConnectorOriginHostnameRegexSource } from './connector-origin-hostname';
+import { isDeepStrictEqual } from 'node:util';
 
-const MANAGED_RULE_REFS = [
-  'consuelo-os-mcp-provider-allow',
-  'consuelo-os-mcp-untrusted-block',
+import {
+  createConnectorOriginHostnameRegexSource,
+  createConnectorOriginHostnameWafExpression,
+} from './connector-origin-hostname';
+
+const MANAGED_RULE_IDENTITIES = [
+  {
+    ref: 'consuelo-os-mcp-provider-allow',
+    description: 'Allow/skip trusted OS MCP provider traffic',
+    action: 'skip',
+  },
+  {
+    ref: 'consuelo-os-mcp-untrusted-block',
+    description: 'Block untrusted OS MCP traffic',
+    action: 'block',
+  },
 ] as const;
 const CUSTOM_RULESET_PHASE = 'http_request_firewall_custom';
 
-type ManagedRuleRef = (typeof MANAGED_RULE_REFS)[number];
+type ManagedRuleIdentity = (typeof MANAGED_RULE_IDENTITIES)[number];
+type ManagedRuleRef = ManagedRuleIdentity['ref'];
 
 type CloudflareRule = {
   id: string;
-  ref: string;
+  ref?: string;
   description?: string;
   action: string;
   action_parameters?: unknown;
   enabled: boolean;
+  exposed_credential_check?: unknown;
   expression: string;
+  logging?: unknown;
+  ratelimit?: unknown;
 };
 
 type CloudflareRuleset = {
   id: string;
+  name: string;
+  description?: string;
+  kind: string;
+  phase: string;
   rules: CloudflareRule[];
+};
+
+type CloudflareWritableRule = {
+  id?: string;
+  ref?: string;
+  description?: string;
+  action: string;
+  action_parameters?: unknown;
+  enabled: boolean;
+  exposed_credential_check?: unknown;
+  expression: string;
+  logging?: unknown;
+  ratelimit?: unknown;
+};
+
+type CloudflareRulesetUpdate = {
+  name: string;
+  description?: string;
+  kind: string;
+  phase: string;
+  rules: CloudflareWritableRule[];
 };
 
 type RuleMigration = {
   ref: ManagedRuleRef;
   status: 'updated' | 'unchanged' | 'planned';
+};
+
+type ManagedRulePlan = {
+  ref: ManagedRuleRef;
+  rule: CloudflareRule;
+  expression: string;
+  identityChanged: boolean;
+  expressionChanged: boolean;
+  changed: boolean;
 };
 
 export type ManagedOsMcpOriginClassMigrationResult = {
@@ -55,9 +106,16 @@ const parseRule = (value: unknown): CloudflareRule => {
   if (typeof enabled !== 'boolean') {
     throw new Error('Cloudflare managed rule is missing enabled');
   }
+  const ref = value.ref;
+  if (
+    ref !== undefined &&
+    (typeof ref !== 'string' || !ref.trim())
+  ) {
+    throw new Error('Cloudflare managed rule has an invalid ref');
+  }
   return {
     id: requiredString(value, 'id', 'Cloudflare managed rule'),
-    ref: requiredString(value, 'ref', 'Cloudflare managed rule'),
+    ...(typeof ref === 'string' ? { ref } : {}),
     action: requiredString(value, 'action', 'Cloudflare managed rule'),
     expression: requiredString(value, 'expression', 'Cloudflare managed rule'),
     enabled,
@@ -67,6 +125,11 @@ const parseRule = (value: unknown): CloudflareRule => {
     ...(value.action_parameters !== undefined
       ? { action_parameters: value.action_parameters }
       : {}),
+    ...(value.exposed_credential_check !== undefined
+      ? { exposed_credential_check: value.exposed_credential_check }
+      : {}),
+    ...(value.logging !== undefined ? { logging: value.logging } : {}),
+    ...(value.ratelimit !== undefined ? { ratelimit: value.ratelimit } : {}),
   };
 };
 
@@ -116,6 +179,12 @@ const readRuleset = async (input: {
     }
     return {
       id: requiredString(result, 'id', 'Cloudflare custom ruleset'),
+      name: requiredString(result, 'name', 'Cloudflare custom ruleset'),
+      ...(typeof result.description === 'string'
+        ? { description: result.description }
+        : {}),
+      kind: requiredString(result, 'kind', 'Cloudflare custom ruleset'),
+      phase: requiredString(result, 'phase', 'Cloudflare custom ruleset'),
       rules: result.rules.map(parseRule),
     };
   } catch (error: unknown) {
@@ -128,43 +197,196 @@ const readRuleset = async (input: {
 
 const findManagedRule = (
   rules: CloudflareRule[],
-  ref: ManagedRuleRef,
-): CloudflareRule => {
-  const matches = rules.filter((rule) => rule.ref === ref);
-  if (matches.length !== 1) {
-    throw new Error(`expected exactly one Cloudflare rule with ref ${ref}`);
+  identity: ManagedRuleIdentity,
+): { rule: CloudflareRule; identityChanged: boolean } => {
+  const refMatches = rules.filter((rule) => rule.ref === identity.ref);
+  if (refMatches.length > 1) {
+    throw new Error(
+      `expected at most one Cloudflare rule with ref ${identity.ref}`,
+    );
   }
-  return matches[0]!;
+
+  const descriptionMatches = rules.filter(
+    (rule) => rule.description === identity.description,
+  );
+  const refMatch = refMatches[0];
+  if (refMatch) {
+    const conflictingDescriptionMatches = descriptionMatches.filter(
+      (rule) => rule.id !== refMatch.id,
+    );
+    if (conflictingDescriptionMatches.length > 0) {
+      throw new Error(
+        `conflicting Cloudflare rules identify managed rule ${identity.ref}`,
+      );
+    }
+    if (refMatch.action !== identity.action) {
+      throw new Error(
+        `managed Cloudflare rule ${identity.ref} expected action ${identity.action} but found ${refMatch.action}`,
+      );
+    }
+    return { rule: refMatch, identityChanged: false };
+  }
+
+  if (descriptionMatches.length !== 1) {
+    throw new Error(
+      `expected exactly one Cloudflare rule with ref ${identity.ref} or description ${identity.description}`,
+    );
+  }
+  const descriptionMatch = descriptionMatches[0]!;
+  if (descriptionMatch.action !== identity.action) {
+    throw new Error(
+      `managed Cloudflare rule ${identity.ref} expected action ${identity.action} but found ${descriptionMatch.action}`,
+    );
+  }
+  return { rule: descriptionMatch, identityChanged: true };
 };
 
 const replacementFragments = (baseDomain: string): {
-  oldFragment: string;
+  retiredFragments: string[];
   newFragment: string;
 } => ({
-  oldFragment: `not ends_with(http.host, ".os-origin.${baseDomain.trim().toLowerCase()}")`,
-  newFragment: `not (http.host matches r"${createConnectorOriginHostnameRegexSource({ baseDomain })}")`,
+  retiredFragments: [
+    `not ends_with(http.host, ".os-origin.${baseDomain.trim().toLowerCase()}")`,
+    `not (http.host matches r"${createConnectorOriginHostnameRegexSource({ baseDomain })}")`,
+  ],
+  newFragment: `not (${createConnectorOriginHostnameWafExpression({ baseDomain })})`,
 });
 
 const migrateExpression = (input: {
   expression: string;
-  oldFragment: string;
+  retiredFragments: string[];
   newFragment: string;
   ref: ManagedRuleRef;
 }): { expression: string; changed: boolean } => {
-  const oldCount = input.expression.split(input.oldFragment).length - 1;
+  const retiredCounts = input.retiredFragments.map((fragment) => ({
+    fragment,
+    count: input.expression.split(fragment).length - 1,
+  }));
+  const retiredCount = retiredCounts.reduce(
+    (total, candidate) => total + candidate.count,
+    0,
+  );
   const newCount = input.expression.split(input.newFragment).length - 1;
-  if (oldCount === 0 && newCount === 1) {
+  if (retiredCount === 0 && newCount === 1) {
     return { expression: input.expression, changed: false };
   }
-  if (oldCount !== 1 || newCount !== 0) {
+  if (retiredCount !== 1 || newCount !== 0) {
     throw new Error(
       `managed Cloudflare rule ${input.ref} did not contain exactly one retired connector-origin fragment`,
     );
   }
+  const retiredFragment = retiredCounts.find(
+    (candidate) => candidate.count === 1,
+  )?.fragment;
+  if (!retiredFragment) {
+    throw new Error(
+      `managed Cloudflare rule ${input.ref} retired connector-origin fragment was ambiguous`,
+    );
+  }
   return {
-    expression: input.expression.replace(input.oldFragment, input.newFragment),
+    expression: input.expression.replace(retiredFragment, input.newFragment),
     changed: true,
   };
+};
+
+const createWritableRule = (input: {
+  rule: CloudflareRule;
+  includeId: boolean;
+  ref?: string;
+  expression?: string;
+}): CloudflareWritableRule => {
+  const ref = input.ref ?? input.rule.ref;
+  return {
+    ...(input.includeId ? { id: input.rule.id } : {}),
+    ...(ref !== undefined ? { ref } : {}),
+    ...(input.rule.description !== undefined
+      ? { description: input.rule.description }
+      : {}),
+    action: input.rule.action,
+    ...(input.rule.action_parameters !== undefined
+      ? { action_parameters: input.rule.action_parameters }
+      : {}),
+    enabled: input.rule.enabled,
+    ...(input.rule.exposed_credential_check !== undefined
+      ? { exposed_credential_check: input.rule.exposed_credential_check }
+      : {}),
+    expression: input.expression ?? input.rule.expression,
+    ...(input.rule.logging !== undefined
+      ? { logging: input.rule.logging }
+      : {}),
+    ...(input.rule.ratelimit !== undefined
+      ? { ratelimit: input.rule.ratelimit }
+      : {}),
+  };
+};
+
+const createRulesetUpdate = (
+  ruleset: CloudflareRuleset,
+  plans: ManagedRulePlan[],
+): CloudflareRulesetUpdate => {
+  const planByRuleId = new Map(plans.map((plan) => [plan.rule.id, plan]));
+  return {
+    name: ruleset.name,
+    ...(ruleset.description !== undefined
+      ? { description: ruleset.description }
+      : {}),
+    kind: ruleset.kind,
+    phase: ruleset.phase,
+    rules: ruleset.rules.map((rule) => {
+      const plan = planByRuleId.get(rule.id);
+      if (!plan) return createWritableRule({ rule, includeId: true });
+      return createWritableRule({
+        rule,
+        includeId: !plan.identityChanged,
+        ref: plan.ref,
+        expression: plan.expression,
+      });
+    }),
+  };
+};
+
+const assertRulesetMatchesUpdate = (
+  actual: CloudflareRuleset,
+  expected: CloudflareRulesetUpdate,
+): void => {
+  const metadataMatches =
+    actual.name === expected.name &&
+    actual.description === expected.description &&
+    actual.kind === expected.kind &&
+    actual.phase === expected.phase;
+  if (!metadataMatches || actual.rules.length !== expected.rules.length) {
+    throw new Error(
+      'Cloudflare ruleset did not preserve the ordered writable ruleset projection',
+    );
+  }
+
+  for (let index = 0; index < expected.rules.length; index += 1) {
+    const expectedRule = expected.rules[index]!;
+    const actualRule = actual.rules[index]!;
+    const actualWritable = createWritableRule({
+      rule: actualRule,
+      includeId: true,
+    });
+    if (expectedRule.id !== undefined) {
+      if (!isDeepStrictEqual(actualWritable, expectedRule)) {
+        throw new Error(
+          `Cloudflare ruleset did not preserve the ordered writable ruleset projection at rule ${index}`,
+        );
+      }
+      continue;
+    }
+
+    const { id: actualId, ...actualWithoutId } = actualWritable;
+    if (
+      typeof actualId !== 'string' ||
+      !actualId.trim() ||
+      !isDeepStrictEqual(actualWithoutId, expectedRule)
+    ) {
+      throw new Error(
+        `Cloudflare ruleset did not preserve the ordered writable ruleset projection at replacement rule ${index}`,
+      );
+    }
+  }
 };
 
 const patchRule = async (input: {
@@ -173,22 +395,17 @@ const patchRule = async (input: {
   zoneId: string;
   rulesetId: string;
   rule: CloudflareRule;
+  canonicalRef: ManagedRuleRef;
   expression: string;
   fetchImpl: typeof fetch;
 }): Promise<void> => {
   try {
-    const body = {
-      ref: input.rule.ref,
-      ...(input.rule.description !== undefined
-        ? { description: input.rule.description }
-        : {}),
-      action: input.rule.action,
-      ...(input.rule.action_parameters !== undefined
-        ? { action_parameters: input.rule.action_parameters }
-        : {}),
-      enabled: input.rule.enabled,
+    const body = createWritableRule({
+      rule: input.rule,
+      includeId: false,
+      ref: input.canonicalRef,
       expression: input.expression,
-    };
+    });
     const response = await input.fetchImpl(
       `${input.apiBaseUrl}/zones/${encodeURIComponent(input.zoneId)}/rulesets/${encodeURIComponent(input.rulesetId)}/rules/${encodeURIComponent(input.rule.id)}`,
       {
@@ -201,10 +418,40 @@ const patchRule = async (input: {
         body: JSON.stringify(body),
       },
     );
-    await readCloudflareResult(response, `update managed rule ${input.rule.ref}`);
+    await readCloudflareResult(response, `update managed rule ${input.canonicalRef}`);
   } catch (error: unknown) {
     throw new Error(
-      `managed OS MCP rule ${input.rule.ref} update failed: ${error instanceof Error ? error.message : String(error)}`,
+      `managed OS MCP rule ${input.canonicalRef} update failed: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
+  }
+};
+
+const putRuleset = async (input: {
+  apiBaseUrl: string;
+  apiToken: string;
+  zoneId: string;
+  rulesetId: string;
+  update: CloudflareRulesetUpdate;
+  fetchImpl: typeof fetch;
+}): Promise<void> => {
+  try {
+    const response = await input.fetchImpl(
+      `${input.apiBaseUrl}/zones/${encodeURIComponent(input.zoneId)}/rulesets/${encodeURIComponent(input.rulesetId)}`,
+      {
+        method: 'PUT',
+        headers: {
+          authorization: `Bearer ${input.apiToken}`,
+          'content-type': 'application/json',
+          'user-agent': 'consuelo-os-mcp-origin-class-migration/1.0',
+        },
+        body: JSON.stringify(input.update),
+      },
+    );
+    await readCloudflareResult(response, 'replace managed OS MCP ruleset version');
+  } catch (error: unknown) {
+    throw new Error(
+      `managed OS MCP ruleset replacement failed: ${error instanceof Error ? error.message : String(error)}`,
       { cause: error },
     );
   }
@@ -227,14 +474,21 @@ export const migrateManagedOsMcpConnectorOriginClass = async (input: {
     const fetchImpl = input.fetchImpl ?? fetch;
     const fragments = replacementFragments(input.baseDomain);
     const ruleset = await readRuleset({ apiBaseUrl, apiToken, zoneId, fetchImpl });
-    const plans = MANAGED_RULE_REFS.map((ref) => {
-      const rule = findManagedRule(ruleset.rules, ref);
+    const plans: ManagedRulePlan[] = MANAGED_RULE_IDENTITIES.map((identity) => {
+      const resolved = findManagedRule(ruleset.rules, identity);
       const migration = migrateExpression({
-        expression: rule.expression,
+        expression: resolved.rule.expression,
         ...fragments,
-        ref,
+        ref: identity.ref,
       });
-      return { ref, rule, ...migration };
+      return {
+        ref: identity.ref,
+        rule: resolved.rule,
+        expression: migration.expression,
+        identityChanged: resolved.identityChanged,
+        expressionChanged: migration.changed,
+        changed: resolved.identityChanged || migration.changed,
+      };
     });
 
     if (input.dryRun) {
@@ -248,30 +502,57 @@ export const migrateManagedOsMcpConnectorOriginClass = async (input: {
       };
     }
 
-    for (const plan of plans) {
-      if (!plan.changed) continue;
-      await patchRule({
+    const requiresRulesetReplacement = plans.some(
+      (plan) => plan.identityChanged,
+    );
+    const rulesetUpdate = requiresRulesetReplacement
+      ? createRulesetUpdate(ruleset, plans)
+      : undefined;
+
+    if (rulesetUpdate) {
+      await putRuleset({
         apiBaseUrl,
         apiToken,
         zoneId,
         rulesetId: ruleset.id,
-        rule: plan.rule,
-        expression: plan.expression,
+        update: rulesetUpdate,
         fetchImpl,
       });
+    } else {
+      for (const plan of plans) {
+        if (!plan.expressionChanged) continue;
+        await patchRule({
+          apiBaseUrl,
+          apiToken,
+          zoneId,
+          rulesetId: ruleset.id,
+          rule: plan.rule,
+          canonicalRef: plan.ref,
+          expression: plan.expression,
+          fetchImpl,
+        });
+      }
     }
 
     if (plans.some((plan) => plan.changed)) {
       const verified = await readRuleset({ apiBaseUrl, apiToken, zoneId, fetchImpl });
-      for (const ref of MANAGED_RULE_REFS) {
-        const rule = findManagedRule(verified.rules, ref);
+      if (rulesetUpdate) {
+        assertRulesetMatchesUpdate(verified, rulesetUpdate);
+      }
+      for (const identity of MANAGED_RULE_IDENTITIES) {
+        const resolved = findManagedRule(verified.rules, identity);
+        if (resolved.identityChanged) {
+          throw new Error(
+            `managed Cloudflare rule ${identity.ref} did not persist the canonical ref`,
+          );
+        }
         const migration = migrateExpression({
-          expression: rule.expression,
+          expression: resolved.rule.expression,
           ...fragments,
-          ref,
+          ref: identity.ref,
         });
         if (migration.changed) {
-          throw new Error(`managed Cloudflare rule ${ref} did not persist the canonical connector-origin class`);
+          throw new Error(`managed Cloudflare rule ${identity.ref} did not persist the canonical connector-origin class`);
         }
       }
     }

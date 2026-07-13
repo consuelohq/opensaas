@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/consuelo-website/astro.config.mjs",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/src/components/LinkButton.astro",
+    "packages/consuelo-website/src/components/ShareLinks.astro",
+    "packages/consuelo-website/src/components/site/LanguageSelector.astro",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs"
+  ],
+  "updatedAt": "2026-07-13T17:08:11.205Z"
+}
