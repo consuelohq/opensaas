@@ -17,6 +17,7 @@ const {
   getDefaultTaskBranch,
   normalizeArea,
 } = require('./lib/validation');
+const { resolveRemoteStreamAction } = require('./lib/stream-lifecycle');
 const {
   createBranch,
   createPullRequest,
@@ -59,6 +60,7 @@ function printHelp() {
   writeStdout('options:');
   writeStdout('  --workflow <value>    workflow bundle to return: task|office|design|sites|media (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
+  writeStdout('  --create-stream        explicitly create the remote stream when it does not exist');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
   writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
@@ -85,7 +87,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help';
+    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--create-stream';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -112,6 +114,9 @@ function parseArgs(argv) {
         break;
       case '--start-from':
         args.startFrom = value;
+        break;
+      case '--create-stream':
+        args.createStream = true;
         break;
       case '--branch':
         args.branch = value;
@@ -207,11 +212,16 @@ function resolveSourceBranch(startFrom, stream) {
   return DEFAULT_MAIN_BRANCH;
 }
 
-async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef }) {
+async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef, createStream }) {
   try {
     let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
+    const action = resolveRemoteStreamAction({
+      streamBranch,
+      remoteExists: Boolean(streamRef),
+      createStream: Boolean(createStream),
+    });
 
-    if (streamRef) {
+    if (action === 'reuse') {
       return {
         streamRef,
         created: false,
@@ -314,6 +324,7 @@ async function main() {
       repository: args.repo,
       streamBranch: stream,
       mainRef,
+      createStream: args.createStream,
     });
 
     if (streamDetails.created) {

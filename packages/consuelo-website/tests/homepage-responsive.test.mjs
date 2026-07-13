@@ -35,16 +35,19 @@ describe('Consuelo OS homepage presentation', () => {
     expect(homepage).not.toContain('SiteFooter');
   });
 
-  test('should use editable local artwork and the pixel sign-in arrow', async () => {
-    const [hero, features, arrow] = await Promise.all([
+  test('should use editable local artwork and the compact inline sign-in arrow', async () => {
+    const [hero, features] = await Promise.all([
       readSource('src/components/home/HomeHero.astro'),
       readSource('src/components/home/HomeFeaturePreview.astro'),
-      readSource('src/components/icons/PixelArrow.astro'),
     ]);
 
-    expect(hero).toContain('/images/home/consuelo-atmosphere.svg');
-    expect(features).toContain('/images/home/consuelo-transition.svg');
-    expect(arrow).toContain('currentColor');
-    expect(arrow).not.toMatch(/https?:\/\//);
+    expect(hero).toContain('/images/home/dither/cloud-1.png');
+    expect(hero).toContain('/images/home/dither/cloud-4.png');
+    expect(features).toContain('/images/home/dither/cloud-2.png');
+    expect(hero).toContain('class="os-hero__button-arrow"');
+    expect(hero).toContain('viewBox="0 0 6 9"');
+    expect(hero).toContain('<rect x="4" y="4" width="1" height="1" />');
+    expect(hero).toContain('shape-rendering: crispEdges;');
+    expect(hero).not.toContain('PixelArrow');
   });
 });

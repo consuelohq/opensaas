@@ -15,11 +15,11 @@ export type PricingPlan = {
 	name: string
 	price: string
 	subtitle: string
+	href: string
 	badge?: string
 	imageLabel: string
 	imageSrc: string
 	bullets: string[]
-	highlight?: boolean
 }
 
 export const pricingHero: PricingHeroContent = {
@@ -38,6 +38,7 @@ export const pricingPlans: PricingPlan[] = [
 		name: 'Free',
 		price: '$0',
 		subtitle: 'LOCAL',
+		href: siteLinks.login,
 		imageLabel: 'NO LOCK-IN',
 		imageSrc: '/images/home/trace.svg',
 		bullets: ['ALL CORE FEATURES', 'LOCAL WORKSPACE', 'BRING YOUR OWN AGENT', '$0 MONTHLY CREDITS']
@@ -46,6 +47,7 @@ export const pricingPlans: PricingPlan[] = [
 		name: 'Plus',
 		price: '$20',
 		subtitle: 'PER MONTH',
+		href: siteLinks.login,
 		badge: '10% BONUS',
 		imageLabel: 'STAYS LOCKED',
 		imageSrc: '/images/home/remember.svg',
@@ -54,13 +56,13 @@ export const pricingPlans: PricingPlan[] = [
 			'$10 ROLLOVER CAP',
 			'HOSTED WORKSPACE USAGE',
 			'CLOUD SANDBOXES'
-		],
-		highlight: true
+		]
 	},
 	{
 		name: 'Super',
 		price: '$100',
 		subtitle: 'PER MONTH',
+		href: siteLinks.login,
 		badge: '10% BONUS',
 		imageLabel: 'READ RECEIPTS',
 		imageSrc: '/images/home/switch.svg',
@@ -75,6 +77,7 @@ export const pricingPlans: PricingPlan[] = [
 		name: 'Ultra',
 		price: '$200',
 		subtitle: 'PER MONTH',
+		href: siteLinks.login,
 		badge: '10% BONUS',
 		imageLabel: 'READ RECEIPTS',
 		imageSrc: '/images/home/workflow.svg',

@@ -599,6 +599,7 @@ bun run task:start -- --area dialer --title "normalize phone numbers"
 bun run task:start -- --area os --title "start scoped work" --workflow task
 bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
+bun run task:start -- --area new-area --title "first task" --create-stream  # explicit new durable stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
 ```
@@ -710,6 +711,23 @@ when cleanup removes a task worktree, it reads `.task/session.json` and `.task/c
 ```bash
 bun run stream:list                   # show all streams with status, divergence, warnings
 ```
+
+---
+
+### stream:cleanup — preview or remove safe local stream refs
+
+previews redundant local `stream/*` refs by default. a branch is removable only when `origin/<branch>` exists, the local branch has zero unique commits, and no worktree has it checked out. remote streams and task branches are never deleted.
+
+```bash
+bun run stream:cleanup                         # preview only
+bun run stream:cleanup -- --keep stream/tooling
+bun run stream:cleanup -- --apply              # remove only the reviewed safe local refs
+bun run stream:cleanup -- --json
+```
+
+**stream:cleanup failure modes**
+- local-only, diverged, current, checked-out, or explicitly kept branches are reported as protected
+- an origin fetch failure stops cleanup before classification or mutation
 
 ---
 
@@ -842,30 +860,40 @@ bun run linear -- query "{ viewer { id name } }"
 
 ### browser — test and interact with web pages
 
-opens agent-browser with a persistent local auth profile. set `AGENT_BROWSER_PROFILE` to override the default `~/.agent-browser-ko` path; screenshots default to the system temp directory unless `AGENT_SCREENSHOT_DIR` is set.
+uses one persistent agent-browser home at `~/.agent-browser-ko` (or `AGENT_BROWSER_PROFILE`). logins completed in a headed window remain available to later agents and non-headed browser calls. screenshots default to `/tmp/opensaas-screenshots` unless `AGENT_SCREENSHOT_DIR` is set.
 
 ```bash
-bun run browser -- consuelo                 # open consuelo CRM (internal)
-bun run browser -- app                      # open app.consuelohq.com
-bun run browser -- open https://example.com # open any URL
-bun run browser -- screenshot after-login   # take screenshot
-bun run browser -- snapshot                 # get accessibility tree
-bun run browser -- login consuelo --headed  # run saved login profile visibly
-bun run browser -- reauth consuelo --headed # close daemon, restart profile, login
+bun run browser -- consuelo                         # open consuelo CRM
+bun run browser -- app                              # open app.consuelohq.com
+bun run browser -- open https://example.com         # open and capture evidence
+bun run browser -- headed https://dash.cloudflare.com # visible handoff for login/MFA/CAPTCHA/passkeys
+bun run browser -- status                           # safe daemon/page status
+bun run browser -- screenshot after-login
+bun run browser -- snapshot
+bun run browser -- close                            # explicit reset only
 ```
 
-facade aliases are also registered for agent use:
+facade aliases are registered for agent use:
 
 ```bash
-workspace browser.test '{"url":"https://example.com"}'
-workspace browser.consuelo '{"headed":true}'
-workspace browser.login '{"name":"consuelo","headed":true}'
-workspace browser.reauth '{"name":"consuelo","headed":true}'
+workspace browser.test '{"url":"https://example.com","preset":"mobile","full":true}'
+workspace browser.headed '{"url":"https://dash.cloudflare.com"}'
+workspace browser.status '{}'
+workspace browser.consuelo '{}'
 workspace browser.snap
-workspace browser.screenshot '{"name":"after-login"}'
+workspace browser.screenshot '{"name":"after-login","preset":"tablet","full":true}'
+workspace browser.get '{"target":"title"}'
+workspace browser.find '{"by":"role","value":"button","action":"click","name":"Submit"}'
+workspace browser.wait '{"load":"networkidle"}'
+workspace browser.download '{"ref":"@e1","path":"/tmp/download.bin"}'
+workspace browser.tabs '{"action":"list"}'
+workspace browser.network '{"args":["requests"]}'
+workspace browser.dialog '{"action":"dismiss"}'
+workspace browser.trace '{"action":"start"}'
+workspace browser.clipboard '{"action":"read"}'
 ```
 
-when Google or another provider requires password re-auth, use `browser.reauth` or `bun run browser -- reauth consuelo --headed`. this closes the active daemon first because `agent-browser` ignores new `--profile` flags while a daemon is already running.
+Use `browser.headed` whenever Ko must complete a human-only authentication step. It restarts an incompatible daemon in visible mode, opens the requested URL with the same persistent browser home, and leaves the window running. Continue afterward with `browser.status`, `browser.snap`, `browser.open`, or other typed browser tools. Do not create site-specific auth profiles. Use `browser.raw` only when an upstream agent-browser command has no typed facade alias.
 
 ---
 

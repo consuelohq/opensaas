@@ -30,8 +30,8 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/browser.js": {
-      "status": "changed-needs-review",
-      "reason": "High-risk changed script: browser control affects local agent workflows and must be reviewed before OS/workspace behavior is unified.",
+      "status": "same",
+      "reason": "Byte-identical compatibility entrypoints delegate browser lifecycle and commands to the shared Effect service in both packages.",
       "risk": "high"
     },
     "scripts/check-files.js": {
@@ -1053,6 +1053,30 @@
     "scripts/workspace/consuelo-workspace-snapshot.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/browser/cli.ts": {
+      "status": "same",
+      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
+    },
+    "scripts/lib/browser/config.ts": {
+      "status": "same",
+      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
+    },
+    "scripts/lib/browser/errors.ts": {
+      "status": "same",
+      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
+    },
+    "scripts/lib/browser/process.ts": {
+      "status": "same",
+      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
+    },
+    "scripts/lib/browser/service.ts": {
+      "status": "same",
+      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
+    },
+    "scripts/lib/browser/types.ts": {
+      "status": "same",
+      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
     }
   },
   "highRiskScripts": [

@@ -27,6 +27,21 @@ describe('OS device authority connector provisioning', () => {
       ) {
         return new Response(JSON.stringify({ success: true, result: {} }));
       }
+      if (url.endsWith('/zones/zone_123/workers/routes') && method === 'GET') {
+        return new Response(JSON.stringify({ success: true, result: [] }));
+      }
+      if (url.endsWith('/zones/zone_123/workers/routes') && method === 'POST') {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            result: {
+              id: 'worker_route_123',
+              pattern: 'c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com/*',
+              script: null,
+            },
+          }),
+        );
+      }
       if (url.includes('/zones/zone_123/dns_records?type=CNAME&')) {
         return new Response(JSON.stringify({ success: true, result: [] }));
       }
@@ -81,7 +96,10 @@ describe('OS device authority connector provisioning', () => {
         ],
       },
     });
-    expect(calls[7]?.body).toMatchObject({
+    expect(calls[5]?.body).toEqual({
+      pattern: 'c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com/*',
+    });
+    expect(calls[9]?.body).toMatchObject({
       name: 'c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
       content: 'tunnel_123.cfargotunnel.com',
       proxied: true,

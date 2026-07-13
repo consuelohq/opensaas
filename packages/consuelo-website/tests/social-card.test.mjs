@@ -29,5 +29,7 @@ describe('Consuelo homepage social card', () => {
     expect(generator).toContain('YOUR WORKSPACE,');
     expect(generator).toContain('CONNECTED TO');
     expect(generator).toContain('EVERY AGENT.');
+    expect(generator).toContain("const cardBackground = '#000000';");
+    expect(generator).toContain('background: ${cardBackground};');
   });
 });

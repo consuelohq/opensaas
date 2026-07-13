@@ -840,6 +840,11 @@
                   "kind": "value"
                 },
                 {
+                  "source": "createStream",
+                  "flag": "--create-stream",
+                  "kind": "boolean"
+                },
+                {
                   "source": "pr",
                   "flag": "--pr",
                   "kind": "value"

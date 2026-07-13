@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const testDirectory = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(testDirectory, "..");
@@ -44,82 +44,79 @@ describe("blog refresh contract", () => {
     expect(article).not.toContain("featured: true");
   });
 
-  test("removes the RSS and social promo block while preserving featured support", async () => {
-    const [homepage, footer, constants] = await Promise.all([
+  test("keeps RSS copy and social links in the footer, including Discord", async () => {
+    const [homepage, footer, socials, constants] = await Promise.all([
       readSiteFile("src/pages/blog/index.astro"),
       readSiteFile("src/components/Footer.astro"),
+      readSiteFile("src/components/Socials.astro"),
       readSiteFile("src/constants.ts"),
     ]);
 
     expect(homepage).toContain('<Layout title="The Consuelo Blog"');
     expect(homepage).toContain("The Consuelo Blog");
     expect(homepage).toContain("featuredPosts.length > 0");
+    expect(homepage).not.toContain("Tips, updates, stories");
+    expect(homepage).not.toContain("Social Links:");
 
-    for (const removedText of [
-      "Blog RSS Feed",
-      "RSS Feed",
-      "Tips, updates, stories",
-      "Social Links:",
-      "IconRss",
-      "Socials",
-      "SOCIALS",
-    ]) {
-      expect(homepage).not.toContain(removedText);
-    }
-
-    expect(footer).not.toContain("Socials");
-    expect(constants).not.toContain("SOCIALS");
-    expect(existsSync(join(siteRoot, "src/components/Socials.astro"))).toBe(false);
+    expect(footer).toContain("RSS Feed");
+    expect(footer).toContain("Tips, updates, stories");
+    expect(footer).toContain("Socials");
+    expect(socials).toContain("SOCIALS");
+    expect(constants).toContain("export const SOCIALS");
+    expect(constants).toContain("siteLinks.discord");
+    expect(existsSync(join(siteRoot, "src/components/Socials.astro"))).toBe(true);
   });
 
-  test("uses the requested blog name and OS destination", async () => {
-    const [metadata, header] = await Promise.all([
+  test("uses the requested blog name and navigation destinations", async () => {
+    const [metadata, header, backButton] = await Promise.all([
       readSiteFile("src/lib/site-seo.ts"),
       readSiteFile("src/components/Header.astro"),
+      readSiteFile("src/components/BackButton.astro"),
     ]);
 
     expect(metadata).toContain("blogTitle: 'The Consuelo Blog'");
+    expect(header).toContain('href="/"');
+    expect(header).toContain("OS");
+    expect(header).not.toContain("Tags");
     expect(header).toContain('href="https://os.consuelohq.com"');
-    expect(header).not.toContain('href="https://app.consuelohq.com">Get Started');
+    expect(backButton).toContain("Home");
+    expect(backButton).not.toContain("<span>home</span>");
+    expect(backButton).toContain('id="post-utility-nav"');
   });
 
-  test("opens the generated table of contents in static HTML", async () => {
-    const pluginPath = join(siteRoot, "src/plugins/remarkOpenToc.mjs");
-    const [astroConfig, postLayout] = await Promise.all([
-      readSiteFile("astro.config.mjs"),
+  test("renders a dedicated responsive article table of contents", async () => {
+    const [article, postLayout, toc, astroConfig] = await Promise.all([
+      readSiteFile("src/content/blog/software-is-becoming-decision-infrastructure.md"),
       readSiteFile("src/layouts/PostDetails.astro"),
+      readSiteFile("src/components/ArticleToc.astro"),
+      readSiteFile("astro.config.mjs"),
     ]);
 
-    expect(existsSync(pluginPath)).toBe(true);
-    expect(astroConfig).toContain("remarkOpenToc");
-    expect(postLayout).not.toContain("expandToc");
+    expect(article).not.toContain("## Table of contents");
+    expect(postLayout).toContain("ArticleToc");
+    expect(postLayout).toContain("headings={articleHeadings}");
+    expect(toc).toContain("Table of Contents");
+    expect(toc).toContain("data-article-toc");
+    expect(toc).toContain("IntersectionObserver");
+    expect(toc).toContain("scrollIntoView");
+    expect(toc).toContain("aria-current");
+    expect(astroConfig).not.toContain("remarkOpenToc");
+    expect(astroConfig).not.toContain("remarkCollapse");
+    expect(existsSync(join(siteRoot, "src/plugins/remarkOpenToc.mjs"))).toBe(false);
+  });
 
-    if (!existsSync(pluginPath)) {
-      return;
-    }
+  test("scopes black browser chrome to the blog layout", async () => {
+    const [layout, seoHead] = await Promise.all([
+      readSiteFile("src/layouts/Layout.astro"),
+      readSiteFile("src/components/SeoHead.astro"),
+    ]);
 
-    const { default: remarkOpenToc } = await import(
-      `${pathToFileURL(pluginPath).href}?test=${Date.now()}`
-    );
-    const tree = {
-      type: "root",
-      children: [
-        {
-          type: "paragraph",
-          children: [
-            { type: "html", value: "<details>" },
-            { type: "html", value: "<summary>" },
-            { type: "text", value: "Open Table of contents" },
-            { type: "html", value: "</summary>" },
-          ],
-        },
-      ],
-    };
-
-    remarkOpenToc()(tree);
-
-    expect(tree.children[0].children[0].value).toBe("<details open>");
-    expect(tree.children[0].children[2].value).toBe("Table of contents");
+    expect(layout).toContain('themeColorLight="#000000"');
+    expect(layout).toContain('themeColorDark="#000000"');
+    expect(layout).toContain('colorScheme="dark"');
+    expect(seoHead).toContain("themeColorLight");
+    expect(seoHead).toContain("themeColorDark");
+    expect(seoHead).toContain("colorScheme");
   });
 
   test("uses device fonts and a comfortable mobile reading measure", async () => {
@@ -138,6 +135,9 @@ describe("blog refresh contract", () => {
     expect(blogCss).toMatch(/\.app-layout\s*\{[^}]*padding-inline:\s*clamp\(1\.5rem/s);
     expect(blogCss).toMatch(/#article\s*\{[^}]*max-width:\s*42rem/s);
     expect(blogCss).toMatch(/#article\s*\{[^}]*line-height:\s*1\.75/s);
+    expect(blogCss).toContain(".article-toc__rail");
+    expect(blogCss).toContain("scroll-snap-type: x proximity");
+    expect(blogCss).toContain("@media (min-width: 86rem)");
 
     expect(globalCss).not.toContain("@font-face");
     expect(globalCss).not.toContain("Geist Mono");
@@ -149,12 +149,13 @@ describe("blog refresh contract", () => {
     );
     expect(tokensCss).not.toContain("@fontsource");
     expect(tokensCss).not.toContain("@font-face");
-    expect(tokensCss).toContain("--site-font-display: system-ui");
-    expect(tokensCss).toContain("--site-font-body: system-ui");
+    expect(tokensCss).toContain("--site-font-display: 'Bodoni Moda Variable'");
+    expect(tokensCss).toContain("--site-font-body: 'Inter Variable'");
     expect(tokensCss).toContain("--site-font-mono: ui-monospace");
     expect(marketingLayout).toContain("font-family: var(--site-font-body)");
     expect(marketingLayout).not.toContain("Geist Mono");
-    expect(packageJson).not.toContain("@fontsource-variable");
+    expect(packageJson).toContain("@fontsource-variable/bodoni-moda");
+    expect(packageJson).toContain("@fontsource-variable/inter");
     expect(existsSync(join(siteRoot, "public/fonts/GeistMono-Variable.woff2"))).toBe(false);
     expect(existsSync(join(siteRoot, "public/fonts/GeistSans-Variable.woff2"))).toBe(false);
   });

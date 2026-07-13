@@ -24,6 +24,10 @@ type Props = {
   publishDate?: Date;
   modifiedDate?: Date | null;
   schemaEntries?: StructuredData[];
+  themeColorLight?: string;
+  themeColorDark?: string;
+  colorScheme?: "light" | "dark" | "light dark";
+  appleStatusBarStyle?: "default" | "black" | "black-translucent";
 };
 
 const {
@@ -41,6 +45,10 @@ const {
   publishDate,
   modifiedDate,
   schemaEntries = [],
+  themeColorLight = siteMetadata.themeColorLight,
+  themeColorDark = siteMetadata.themeColorDark,
+  colorScheme = "light",
+  appleStatusBarStyle = "default",
 } = Astro.props;
 
 const fullTitle = formatTitle(title, siteMetadata.defaultTitle);
@@ -64,7 +72,8 @@ const structuredData = {
 <meta name="application-name" content={siteMetadata.siteName} />
 <meta name="author" content={author ?? siteMetadata.siteName} />
 <meta name="robots" content={robots} />
-<meta name="color-scheme" content="light" />
+<meta name="color-scheme" content={colorScheme} />
+<meta name="apple-mobile-web-app-status-bar-style" content={appleStatusBarStyle} />
 <link rel="canonical" href={canonicalUrl} />
 <meta property="og:type" content={type} />
 <meta property="og:locale" content="en_US" />
@@ -83,8 +92,8 @@ const structuredData = {
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={imageUrl} />
 <meta name="twitter:image:alt" content={resolvedImageAlt} />
-<meta name="theme-color" media="(prefers-color-scheme: light)" content={siteMetadata.themeColorLight} />
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content={siteMetadata.themeColorDark} />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content={themeColorLight} />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content={themeColorDark} />
 {type === 'article' && publishDate && <meta property="article:published_time" content={publishDate.toISOString()} />}
 {type === 'article' && modifiedDate && <meta property="article:modified_time" content={modifiedDate.toISOString()} />}
 {type === 'article' && author && <meta property="article:author" content={author} />}
