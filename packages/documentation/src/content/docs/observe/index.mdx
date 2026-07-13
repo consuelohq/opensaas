@@ -1,7 +1,77 @@
 ---
 title: Observe
-description: Inspect runs, traces, tool calls, artifacts, and logs.
+description: Inspect runs, traces, tool calls, artifacts, and logs without confusing the current observability surfaces.
 status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/runtime-state.ts
+    tests:
+      - packages/os/tests/runtime-state.test.ts
+    runtime: Successful and failed OS calls were recorded in an isolated Consuelo home and inspected with the current doctor commands on 2026-07-13.
+  - source: packages/workspace/scripts/context.js
+    tests:
+      - packages/workspace/tests/context-trace.test.js
+      - packages/workspace/tests/trace-home.test.ts
+    runtime: A fixture workspace tool trace was queried by trace ID with raw JSON output on 2026-07-13.
 ---
 
-Use this section to understand what ran, what changed, and why.
+import Note from '../../../components/mintlify/Note.astro';
+
+Observe helps you answer five questions:
+
+1. What ran?
+2. Which calls happened inside it?
+3. Did it succeed or fail?
+4. What durable output did it create?
+5. Where is the evidence needed to debug it?
+
+Consuelo currently has related observability surfaces, not one universal trace database. OS skill executions, workspace tool calls, artifacts, process logs, and hosted Trace Sites each preserve a different part of the story.
+
+## The five records
+
+| Record | What it means | Current place to inspect it |
+| --- | --- | --- |
+| Run | One OS skill execution with status, timestamps, duration, output, and safe error fields. | `doctor:watch`, `doctor:errors`, and `doctor:analytics` against the local OS database. |
+| Trace | An identifier and related records that connect work across a flow. | Search the relevant execution or tool trace store by trace ID; use Trace Sites when its gateway is available. |
+| Tool call | One invocation through the workspace facade, including task and repository context when present. | `bun run context -- trace` or the trace home view. |
+| Artifact | A durable output with storage and version provenance. | `artifacts history`, Office, or the artifact record returned by the run. |
+| Log | Human or machine diagnostic output emitted while a process is running. | Structured stderr, bounded command output, and local node log/run directories where a component writes them. |
+
+A single piece of work can create all five. They are still not interchangeable. A log line is not an artifact; an artifact is not a run; and a trace ID does not guarantee that every subsystem wrote to the same database.
+
+## Start with the symptom
+
+| You need to know | Start here |
+| --- | --- |
+| Whether an OS skill completed | [Runs](/observe/runs/) |
+| How related execution records connect | [Traces](/observe/traces/) |
+| Which workspace tool or repository task failed | [Tool calls](/observe/tool-calls/) |
+| Which file or report a run created | [Artifacts](/observe/artifacts/) |
+| What a process emitted while failing | [Logs](/observe/logs/) |
+| How to work from an error to a cause | [Debugging failures](/observe/debugging-failures/) |
+
+## Quick local checks
+
+Use the installed OS package from your Consuelo home:
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+
+bun run --cwd "$CONSUELO_HOME" doctor:watch -- --once --limit 20
+bun run --cwd "$CONSUELO_HOME" doctor:errors -- --limit 20
+bun run --cwd "$CONSUELO_HOME" doctor:analytics -- --json
+```
+
+Workspace facade traces use a separate trace store and command:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" context -- trace --limit 20 --json
+```
+
+<Note>
+  Keep the trace ID from the original result. It is usually the fastest way to narrow either store without dumping unrelated history.
+</Note>
+
+## Current boundary
+
+Observe documents what the current implementation can prove. It does not claim that every external connector, cloud provider, browser request, and local process participates in a complete distributed trace. Where the hosted trace gateway is unavailable, the UI can be stale, degraded, bridge-required, or unavailable while local execution evidence still exists.

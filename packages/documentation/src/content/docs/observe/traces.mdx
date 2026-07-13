@@ -1,0 +1,71 @@
+---
+title: Traces
+description: Follow trace IDs across current local records and the authenticated Trace Sites gateway.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/server/routes/traces.ts
+    tests:
+      - packages/os/tests/trace-sites-gateway-live-endpoints.test.ts
+      - packages/os/tests/trace-sites-runtime-boundary.test.ts
+    runtime: The current gateway routes and signed workspace read scope were inspected on 2026-07-13.
+  - source: packages/os/scripts/lib/trace-sites-browser-client.ts
+    tests:
+      - packages/os/tests/trace-sites-browser-client.test.ts
+      - packages/os/tests/trace-sites-gateway-read-layer.test.ts
+    runtime: Live, stale, degraded, bridge-required, cached aggregate, and unavailable states were verified through focused contracts.
+---
+
+A trace ID is the thread you follow through related evidence. In the current implementation it can connect a request to an OS run, execution events, a tool call, an artifact version, or an error. Which records exist depends on the surface that handled the work.
+
+## Trace IDs do not erase storage boundaries
+
+Consuelo currently has at least two local trace-shaped stores:
+
+- OS skill executions in `skill_executions` and `execution_events`;
+- workspace facade calls in `tool_traces`.
+
+Search the store that produced the result. The same visible trace ID can be used for correlation when a caller passes it through, but the implementation does not promise that every subsystem copied every record into one database.
+
+## Hosted Trace Sites boundary
+
+The browser client uses the Consuelo gateway. It does not connect directly to a local trace database or local runtime address.
+
+| Route | Current purpose |
+| --- | --- |
+| `/gateway/traces/recent` | Bounded recent-event snapshot and cursor polling fallback. |
+| `/gateway/traces/summary` | Current summary for the selected workspace trace surface. |
+| `/gateway/traces/aggregates` | Materialized or cached aggregate data. |
+| `/gateway/traces/events` | Live event stream after snapshot hydration. |
+
+The server requires signed authorization with workspace trace-read scope before forwarding these routes to the trace gateway service.
+
+## Live and degraded states
+
+The browser trace client can report:
+
+| State | Meaning |
+| --- | --- |
+| `live` | Snapshot loaded and the live event stream is connected. |
+| `stale` | The live stream failed or has not confirmed live state; the client can use cursor polling. |
+| `degraded` | Some current data is available, but the trace service or runner is not fully healthy. |
+| `bridge-required` | Local off-network traces cannot hydrate hosted Sites until a supported bridge is configured. |
+| unavailable | The trace store is unavailable and no usable cached aggregate exists. |
+
+When the trace store is down but aggregate cache data exists, the read layer can return cached aggregates with no recent events. When neither is available, it returns `TRACE_STORE_UNAVAILABLE`.
+
+## Snapshot before deltas
+
+The current live contract loads a snapshot first, then applies append-only redacted deltas ordered by workspace cursor. Events are deduplicated by idempotency key. Server-sent events are the primary live transport; cursor polling is the fallback.
+
+This matters during reconnects: a repeated event should not be counted twice, and an old cursor should not move the client backward.
+
+## Local Sites preview
+
+The generated local Traces page requests `/gateway/traces/recent`. A plain `file:` page cannot serve that route. The HTML can be generated correctly and still show that the gateway is unavailable.
+
+Use [Sites troubleshooting](/sites/troubleshooting/#traces-says-the-gateway-is-unavailable) for that preview boundary. Use [Tool calls](/observe/tool-calls/) or [Runs](/observe/runs/) when you need local evidence without the hosted UI.
+
+## Raw payload access
+
+Trace read policy defaults to summarized or redacted data. A request for raw payload requires explicit permission and still passes through workspace scope, route validation, and bounded window limits. Do not treat the trace UI as a general-purpose secret viewer.

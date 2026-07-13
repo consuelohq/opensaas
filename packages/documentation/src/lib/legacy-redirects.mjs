@@ -1,5 +1,6 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/os/concepts/observability': '/observe/',
   '/tools/sites/overview': '/sites/',
   '/os/concepts/portal': '/build/tools/how-tools-work/',
   '/os/concepts/skills': '/build/skills/how-skills-work/',
