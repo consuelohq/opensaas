@@ -83,6 +83,19 @@ function requireTaskSession(input, event) {
 
 function initialHookEvent(workflow, input, taskSession) {
   if (workflow.id === 'task') {
+    if (input.taskResult) {
+      return {
+        workflow: 'task',
+        event: 'tool.postInvoke',
+        tool: 'task.start',
+        taskSession,
+        result: {
+          ...input.taskResult,
+          taskSession,
+        },
+      };
+    }
+
     return {
       workflow: 'task',
       event: 'tool.preInvoke',

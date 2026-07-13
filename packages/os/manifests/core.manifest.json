@@ -768,52 +768,35 @@
       }
     },
     {
-      "name": "task.intent",
+      "name": "task.start",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "workflow",
-      "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
+      "category": "task lifecycle",
+      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
       "core": true,
       "definition": {
-        "name": "task.intent",
+        "name": "task.start",
         "methodPath": [
           "task",
-          "intent"
+          "start"
         ],
-        "description": "Start or dispatch the task workflow lifecycle guidance for scoped task work.",
-        "category": "workflow",
-        "underlying": "os task.intent",
+        "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        "category": "task lifecycle",
+        "underlying": "os task.start",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
           "deterministic": false,
           "safeToRetry": false
         },
-        "defaultTimeout": 120000,
-        "sessionRequired": false,
-        "inputSchema": "WorkflowIntentInput",
-        "outputSchema": "WorkflowIntentOutput",
-        "workflowRole": "intent.start",
+        "defaultTimeout": 60000,
+        "inputSchema": "TaskStartInput",
+        "outputSchema": "RawOutput",
         "command": {
-          "script": "task-intent",
+          "script": "task:start",
           "branchMode": "none",
-          "jsonFlag": "--json",
           "arguments": [
-            {
-              "source": "action",
-              "kind": "value"
-            },
-            {
-              "source": "workflow",
-              "flag": "--workflow",
-              "kind": "value"
-            },
-            {
-              "source": "taskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
             {
               "source": "area",
               "flag": "--area",
@@ -825,18 +808,41 @@
               "kind": "value"
             },
             {
-              "source": "eventFile",
-              "flag": "--event-json",
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "bodyFile",
+              "flag": "--body-file",
+              "kind": "value"
+            },
+            {
+              "source": "startFrom",
+              "flag": "--start-from",
+              "kind": "value"
+            },
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value"
+            },
+            {
+              "source": "github",
+              "flag": "--github",
               "kind": "value"
             }
-          ]
+          ],
+          "jsonFlag": "--json"
         },
         "exampleInput": {
-          "action": "start",
-          "workflow": "task",
-          "area": "os",
-          "title": "example task-intent flow"
-        }
+          "stream": "stream/workspace-agents",
+          "title": "example task",
+          "dryRun": true,
+          "workflow": "task"
+        },
+        "sessionRequired": false,
+        "workflowRole": "task.start"
       }
     },
     {

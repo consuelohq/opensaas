@@ -590,12 +590,13 @@ bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 
 Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/<number>`, Graphite URLs must contain `/github/pr/<owner>/<repo>/<number>`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
 
-### task:start — create task branch + worktree + PR
+### task:start — start scoped work and return workflow guidance
 
-creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
+Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --area os --title "start scoped work" --workflow task
 bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
@@ -993,15 +994,6 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 
 
 ---
-
-### task-intent — start or dispatch task lifecycle guidance
-
-Runs the task workflow intent script. Use this for advisory lifecycle guidance before `task.start`, or to dispatch task workflow hook events. The user-facing tool name is `task.intent`.
-
-```bash
-bun run task-intent -- start --workflow task --area os --title "example task-intent flow" --json
-bun run task-intent -- dispatch --workflow task --task-session <taskSession> --event-json /tmp/task-event.json --json
-```
 
 ### sentry — inspect Sentry issues, events, and traces
 

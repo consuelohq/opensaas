@@ -43,6 +43,8 @@ describe('test selection registry', () => {
     ]));
     expect(registry.tests.some((test) => test.path === 'packages/workspace/tests/verification.test.js')).toBe(true);
     expect(registry.rules.some((rule) => rule.id === 'workspace-publish-gate')).toBe(true);
+    const autoTwentyShared = registry.rules.find((rule) => rule.id === 'auto:twenty-shared:test');
+    expect(autoTwentyShared?.tests[0]?.command).toEqual(['npx', 'nx', 'test', 'twenty-shared', '--coverage=false']);
   });
 
   it('selects publish-gate tests for verify changes', () => {
