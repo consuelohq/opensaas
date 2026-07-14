@@ -10,6 +10,9 @@ const securePages = [
   ['secure/security-model.mdx', 'Security model'],
   ['secure/access-and-permissions.mdx', 'Access and permissions'],
   ['secure/credentials.mdx', 'Credentials'],
+  ['secure/apple-keychain-and-api-keys.mdx', 'Apple Keychain and API keys'],
+  ['secure/credential-detection.mdx', 'Credential detection'],
+  ['secure/other-secret-managers.mdx', 'Other secret managers'],
   ['secure/approvals.mdx', 'Approvals'],
   ['secure/nodes-and-network-access.mdx', 'Nodes and network access'],
   ['secure/tailscale.mdx', 'Tailscale'],
@@ -24,7 +27,11 @@ describe('Secure documentation contract', () => {
       "label: 'Overview', slug: 'secure'",
       "label: 'Security model', slug: 'secure/security-model'",
       "label: 'Access and permissions', slug: 'secure/access-and-permissions'",
-      "label: 'Credentials', slug: 'secure/credentials'",
+      "label: 'Credentials'",
+      "label: 'Overview', slug: 'secure/credentials'",
+      "label: 'Apple Keychain and API keys', slug: 'secure/apple-keychain-and-api-keys'",
+      "label: 'Credential detection', slug: 'secure/credential-detection'",
+      "label: 'Other secret managers', slug: 'secure/other-secret-managers'",
       "label: 'Approvals', slug: 'secure/approvals'",
       "label: 'Nodes and network access', slug: 'secure/nodes-and-network-access'",
       "label: 'Tailscale', slug: 'secure/tailscale'",
@@ -46,7 +53,7 @@ describe('Secure documentation contract', () => {
     for (const [sourcePath] of securePages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toContain('verifiedAt: 2026-07-13');
+      expect(source).toMatch(/verifiedAt: 2026-07-(13|14)/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');
@@ -97,6 +104,28 @@ describe('Secure documentation contract', () => {
     expect(credentials).toContain('MCP_BEARER_TOKEN');
     expect(credentials).toContain('not accepted');
     expect(credentials).toContain('raw credential');
+  });
+
+  test('documents local API-key handling without exposing or auto-authorizing secrets', () => {
+    const keychain = read('src/content/docs/secure/apple-keychain-and-api-keys.mdx');
+    expect(keychain).toContain('Apple Keychain');
+    expect(keychain).toContain('security add-generic-password');
+    expect(keychain).toContain('security find-generic-password');
+    expect(keychain).toContain('never print');
+    expect(keychain).toContain('local node');
+
+    const detection = read('src/content/docs/secure/credential-detection.mdx');
+    expect(detection).toContain('present');
+    expect(detection).toContain('missing');
+    expect(detection).toContain('does not grant permission');
+    expect(detection).toContain('must not return the API key');
+
+    const managers = read('src/content/docs/secure/other-secret-managers.mdx');
+    expect(managers).toContain('Native Consuelo support: Planned');
+    expect(managers).toContain('1Password');
+    expect(managers).toContain('Bitwarden');
+    expect(managers).toContain('Doppler');
+    expect(managers).toContain('Infisical');
   });
 
   test('documents verified device, node, network, and hosted MCP boundaries', () => {
@@ -154,6 +183,8 @@ describe('Secure documentation contract', () => {
     expect(ledger).toContain('signed');
     expect(ledger).toContain('Tailscale');
     expect(ledger).toContain('MCP_BEARER_TOKEN');
+    expect(ledger).toContain('Apple Keychain');
+    expect(ledger).toContain('Credential detection');
 
     expect(existsSync(packageFile('src/content/docs/os/concepts/mcp-ingress-security.mdx'))).toBe(false);
     const redirects = read('src/lib/legacy-redirects.mjs');

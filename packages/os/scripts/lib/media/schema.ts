@@ -190,6 +190,7 @@ export const MediaScreenshotResultSchema = z.object({
     padding: z.number().int().nonnegative(),
     fit: z.enum(['contain', 'cover']),
     pattern: z.enum(['grid', 'lines', 'none']),
+    dots: z.boolean(),
   }).passthrough(),
   toolVersions: z.record(z.string(), NonEmptyStringSchema),
   deterministic: z.literal(true),

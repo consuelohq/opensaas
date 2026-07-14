@@ -1,0 +1,78 @@
+---
+title: HubSpot
+description: Use HubSpot APIs and CLI today while native HubSpot tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `hubspot` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the official HubSpot APIs and HubSpot CLI.**
+
+Use HubSpot when you need to query and update CRM objects, build private or public apps, and develop or deploy HubSpot CMS assets.
+
+Consuelo plans to provide a focused `hubspot` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up HubSpot for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+Use a private app token for one controlled account or OAuth for an installable app. The HubSpot CLI is useful for app and CMS development; use the REST APIs for CRM record operations.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+Read the authenticated account and one bounded object collection before exposing write operations.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+hubspot.crm.search
+hubspot.crm.get
+hubspot.crm.update
+hubspot.associations.list
+hubspot.apps.deploy
+```
+
+Useful typed inputs:
+
+```text
+portalId
+objectType
+objectId
+properties
+filter
+limit
+dryRun
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+CRM mutations, associations, marketing actions, workflow changes, and app deployments require approval. Keep private app tokens local and scoped.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[HubSpot official documentation](https://developers.hubspot.com/docs/developer-tooling/local-development/hubspot-cli/reference)

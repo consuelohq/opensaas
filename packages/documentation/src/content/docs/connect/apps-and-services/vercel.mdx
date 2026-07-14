@@ -1,0 +1,78 @@
+---
+title: Vercel
+description: Deploy and inspect Vercel projects today while native Vercel tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `vercel` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the official Vercel CLI and REST API.**
+
+Use Vercel when you need to link projects, inspect deployments and logs, manage environment variables and domains, and deploy preview or production builds.
+
+Consuelo plans to provide a focused `vercel` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up Vercel for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+Install the official CLI with `pnpm i -g vercel`, then run `vercel login` for an interactive session. For automation, expose `VERCEL_TOKEN` only to the local process; do not put it in a prompt or command argument.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+Link or select the intended project, then run `vercel list` or `vercel whoami` before any deployment.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+vercel.projects.list
+vercel.deployments.list
+vercel.deploy
+vercel.logs
+vercel.env.list
+vercel.domains.list
+```
+
+Useful typed inputs:
+
+```text
+project
+team
+target
+production
+tokenSource
+follow
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+Preview deploys are still external writes. Production deploys, environment changes, DNS, domains, rollbacks, and deletions require explicit approval.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[Vercel official documentation](https://vercel.com/docs/cli)

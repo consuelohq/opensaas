@@ -22,6 +22,7 @@ export const DEVICE_AUTHORITY_ROUTE_POLICIES = [
   { method: 'GET', path: '/oauth/authorize', trust: 'public' },
   { method: 'GET', path: '/oauth/google/callback', trust: 'public' },
   { method: 'POST', path: '/oauth/token', trust: 'oauth' },
+  { method: 'POST', path: '/oauth/revoke', trust: 'oauth' },
   { method: 'POST', path: '/oauth/introspect', trust: 'internal' },
   { method: 'ANY', path: '/mcp', trust: 'oauth' },
   { method: 'ANY', path: '/mcp/*', trust: 'oauth' },
