@@ -100,6 +100,23 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN');
+  expect(workflow).toContain('name: Sync Consuelo OS connector provisioning secret');
+  expect(workflow).toContain(
+    'Missing GitHub Actions secret CLOUDFLARE_OS_PROVISIONING_API_TOKEN',
+  );
+  expect(workflow).toContain(
+    'wrangler secret put CLOUDFLARE_API_TOKEN --config packages/os/cloudflare/os-device-authority/wrangler.toml',
+  );
+  expect(workflow).toContain(
+    'CLOUDFLARE_OS_PROVISIONING_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}',
+  );
+  const provisioningSecretSyncIndex = workflow.indexOf(
+    'name: Sync Consuelo OS connector provisioning secret',
+  );
+  const osReleaseIndex = workflow.indexOf('name: Release Consuelo OS');
+  expect(provisioningSecretSyncIndex).toBeGreaterThan(-1);
+  expect(osReleaseIndex).toBeGreaterThan(-1);
+  expect(provisioningSecretSyncIndex).toBeLessThan(osReleaseIndex);
   expect(workflow).toContain('CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}');
   expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}');
   expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}');

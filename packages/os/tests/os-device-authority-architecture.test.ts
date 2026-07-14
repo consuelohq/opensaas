@@ -312,14 +312,16 @@ describe('OS device authority architecture', () => {
           'Authorization: Bearer header-secret',
           'Bearer standalone-secret',
           'CLOUDFLARE_API_TOKEN=cloudflare-secret',
+          'workspace Cloudflare provisioning failed: Cloudflare API listCloudflareTunnels failed with status 403 api token=operation-secret',
           'https://example.test/?access_token=query-secret&state=state-secret',
         ].join('\n'),
       ),
     );
 
     expect(message).not.toMatch(
-      /header-secret|standalone-secret|cloudflare-secret|query-secret|state-secret/,
+      /header-secret|standalone-secret|cloudflare-secret|operation-secret|query-secret|state-secret/,
     );
     expect(message).toContain('[redacted]');
+    expect(message).toContain('listCloudflareTunnels failed with status 403');
   });
 });

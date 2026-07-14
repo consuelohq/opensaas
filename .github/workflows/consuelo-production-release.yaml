@@ -118,6 +118,22 @@ jobs:
       - name: Install Wrangler
         run: bun install --global wrangler@4.105.0
 
+      - name: Sync Consuelo OS connector provisioning secret
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_PROVISIONING_API_TOKEN"
+            exit 1
+          fi
+          printf '%s' "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN}" |
+            wrangler secret put CLOUDFLARE_API_TOKEN --config packages/os/cloudflare/os-device-authority/wrangler.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CLOUDFLARE_OS_PROVISIONING_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}
+
       - name: Release Consuelo OS
         run: |
           if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
