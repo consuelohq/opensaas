@@ -1,9 +1,14 @@
 {
   "files": [
     ".task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/session.json",
+    "node_modules/@nestjs/cli/lib/compiler/swc/swc-compiler.js",
+    "nx.json",
     "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/twenty-emails/project.json",
+    "packages/twenty-server/.swcrc",
+    "packages/twenty-server/src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx",
     "packages/workspace/scripts/lib/streams/cli.ts",
     "packages/workspace/tests/stream-service.test.ts"
   ],
-  "updatedAt": "2026-07-14T16:45:04.444Z"
+  "updatedAt": "2026-07-14T17:01:39.687Z"
 }
