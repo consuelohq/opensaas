@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/documentation/write-verified-reference-documentation",
+  "events": [
+    {
+      "id": "4456b4b4-a998-4407-bd74-84c45146cb14",
+      "occurred_at": "2026-07-14T00:01:20.687Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/scripts/validate-documentation.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/documentation/write-verified-reference-documentation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/documentation/write-verified-reference-documentation"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-14T00:01:20.742Z"
+}

@@ -1,0 +1,210 @@
+---
+import { pagePathToMarkdownHref } from '../lib/markdown-pages';
+
+const title = Astro.locals.starlightRoute.entry.data.title;
+const markdownHref = pagePathToMarkdownHref(Astro.url.pathname);
+---
+
+<div class="page-title-row">
+  <h1 id="_top">{title}</h1>
+  <div class="page-actions" data-markdown-href={markdownHref}>
+    <button type="button" class="copy-page" data-page-action="copy">Copy page</button>
+    <details>
+      <summary aria-label="More page actions" title="More page actions">
+        <span aria-hidden="true">⌄</span>
+      </summary>
+      <div class="page-actions-menu" aria-label="Page actions">
+        <a href={markdownHref}>View as Markdown</a>
+        <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" data-page-action="chatgpt">Open in ChatGPT</a>
+        <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer" data-page-action="claude">Open in Claude</a>
+      </div>
+    </details>
+    <span class="action-status" aria-live="polite"></span>
+  </div>
+</div>
+
+<script>
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {}
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.append(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+  }
+
+  document.querySelectorAll('.page-actions').forEach((actions) => {
+    if (!(actions instanceof HTMLElement)) return;
+    const markdownHref = actions.dataset.markdownHref;
+    const details = actions.querySelector('details');
+    const status = actions.querySelector('.action-status');
+
+    const setStatus = (message) => {
+      if (status) status.textContent = message;
+      window.setTimeout(() => {
+        if (status?.textContent === message) status.textContent = '';
+      }, 3000);
+    };
+
+    const copyPage = async () => {
+      if (!markdownHref) throw new Error('Missing Markdown page URL');
+      const response = await fetch(markdownHref);
+      if (!response.ok) throw new Error(`Markdown request failed: ${response.status}`);
+      const markdown = await response.text();
+      await copyText(markdown);
+    };
+
+    actions.addEventListener('click', async (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest('[data-page-action]');
+      if (!(button instanceof HTMLElement)) return;
+      const action = button.dataset.pageAction;
+      try {
+        await copyPage();
+        if (action === 'copy') {
+          setStatus('Page copied');
+        } else if (action === 'chatgpt' || action === 'claude') {
+          setStatus(`Page copied — paste it into ${action === 'chatgpt' ? 'ChatGPT' : 'Claude'}`);
+        }
+        if (details instanceof HTMLDetailsElement) details.open = false;
+      } catch {
+        setStatus('Could not copy this page');
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (details instanceof HTMLDetailsElement && !actions.contains(event.target)) details.open = false;
+    });
+    actions.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && details instanceof HTMLDetailsElement) {
+        details.open = false;
+        details.querySelector('summary')?.focus();
+      }
+    });
+  });
+</script>
+
+<style>
+  @layer starlight.core {
+    .page-title-row {
+      align-items: flex-start;
+      display: flex;
+      gap: 1.5rem;
+      justify-content: space-between;
+    }
+    h1 {
+      color: var(--sl-color-white);
+      font-size: var(--sl-text-h1);
+      font-weight: 600;
+      line-height: 1.12;
+      margin-top: 1rem;
+      max-width: 26ch;
+    }
+    .page-actions {
+      align-items: stretch;
+      display: flex;
+      flex: 0 0 auto;
+      margin-top: 1rem;
+      position: relative;
+    }
+    .copy-page,
+    summary {
+      background: var(--sl-color-bg-nav);
+      border: 1px solid var(--sl-color-hairline-light);
+      color: var(--sl-color-white);
+      min-height: 2.25rem;
+    }
+    .copy-page {
+      border-radius: 0.45rem 0 0 0.45rem;
+      cursor: pointer;
+      font: inherit;
+      font-size: var(--sl-text-sm);
+      font-weight: 600;
+      padding: 0.45rem 0.75rem;
+    }
+    details {
+      position: relative;
+    }
+    summary {
+      align-items: center;
+      border-left: 0;
+      border-radius: 0 0.45rem 0.45rem 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      list-style: none;
+      min-width: 2.25rem;
+    }
+    summary::-webkit-details-marker {
+      display: none;
+    }
+    .copy-page:hover,
+    .copy-page:focus-visible,
+    summary:hover,
+    summary:focus-visible {
+      background: var(--sl-color-gray-6);
+    }
+    details:not([open]) .page-actions-menu {
+      display: none;
+    }
+    details[open] .page-actions-menu {
+      display: grid;
+    }
+    .page-actions-menu {
+      background: var(--sl-color-bg-nav);
+      border: 1px solid var(--sl-color-hairline-light);
+      border-radius: 0.6rem;
+      box-shadow: var(--sl-shadow-md);
+      min-width: 12.5rem;
+      padding: 0.35rem;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 0.4rem);
+      z-index: 20;
+    }
+    .page-actions-menu a,
+    .page-actions-menu button {
+      background: transparent;
+      border: 0;
+      border-radius: 0.35rem;
+      color: var(--sl-color-white);
+      cursor: pointer;
+      font: inherit;
+      font-size: var(--sl-text-sm);
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      text-decoration: none;
+    }
+    .page-actions-menu a:hover,
+    .page-actions-menu a:focus-visible,
+    .page-actions-menu button:hover,
+    .page-actions-menu button:focus-visible {
+      background: var(--sl-color-gray-6);
+    }
+    .action-status {
+      height: 1px;
+      overflow: hidden;
+      position: absolute;
+      width: 1px;
+    }
+    @media (max-width: 35rem) {
+      .page-title-row {
+        display: block;
+      }
+      h1 {
+        max-width: none;
+      }
+      .page-actions {
+        width: max-content;
+      }
+    }
+  }
+</style>

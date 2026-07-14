@@ -1,0 +1,70 @@
+---
+title: How tools work
+description: Understand tool discovery, typed calls, results, and execution boundaries.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/tools-search-v2.test.ts
+    runtime: The current generated manifest and typed facade schemas were inspected on 2026-07-13.
+  - source: packages/os/scripts/lib/facade/executor.ts
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: Focused facade tests verified typed validation, result envelopes, and task-session enforcement.
+---
+
+A **tool** is one operation an agent can call. Every installed tool has a stable name, description, input schema, timeout, and execution policy.
+
+Examples include `fs.read`, `browser.open`, `context`, and `task.start`.
+
+## Start with steering
+
+Agents should call `get_steering` once at the beginning of a conversation. It returns the workspace rules and the core tool surface. Repeated bootstrap calls are guarded; use targeted file reads or `refresh_steering` with a concrete reason instead.
+
+## Find the right tool
+
+Use `tools.search` for a capability that is not already in the core surface. Search by intent rather than guessing a name:
+
+```json
+{
+  "query": "read a file from the active task worktree",
+  "limit": 5,
+  "readOnly": true
+}
+```
+
+The result includes ranked tool names and typed usage guidance from the current manifest.
+
+## Call it with typed input
+
+Tools are called through the OS facade:
+
+```json
+{
+  "tool": "fs.read",
+  "input": {
+    "path": "README.md",
+    "offset": 1,
+    "limit": 120
+  },
+  "taskSession": "tsk_example"
+}
+```
+
+The `taskSession` belongs at the top level when the tool is scoped to an active task. It keeps reads and writes inside the correct isolated worktree.
+
+## Read the result envelope
+
+A tool result reports whether the call succeeded, a machine-readable code, a human message, structured data, and—when recorded—a trace identifier. Invalid input is rejected before the underlying command runs.
+
+Do not parse terminal prose when a typed result exists. Do not bypass a failed facade call with an untracked shell command; correct the input, session, or permission issue first.
+
+## Tools, skills, and scripts
+
+- A **tool** is the operation the agent calls.
+- A **skill** is guidance for doing a larger job well.
+- A **script** is executable implementation behind the surface.
+
+A skill may coordinate several tools and scripts. A script is not automatically a public tool, and loading a skill does not execute its scripts.

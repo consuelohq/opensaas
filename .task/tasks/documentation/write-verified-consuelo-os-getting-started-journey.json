@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-consuelo-os-getting-started-journey",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1449,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1449",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1449",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1449/write-verified-consuelo-os-getting-started-journey",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1449",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1449/write-verified-consuelo-os-getting-started-journey",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-consuelo-os-getting-started-journey",
+  "taskSession": "tsk_2d4f15d308a0",
+  "tmuxSession": "opensaas-documentation-write-verified-consuelo-os-getting-started-journ-2d4f15d3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-consuelo-os-getting-started-journey/.task/documentation/write-verified-consuelo-os-getting-started-journey/session.json",
+  "createdAt": "2026-07-13T05:32:11.334Z"
+}

@@ -1,0 +1,92 @@
+---
+title: Create a workspace
+description: Authorize this Mac, select or name a workspace, and understand the local fallback.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/install.ts
+    tests:
+      - packages/os/scripts/onboarding-flow.test.ts
+      - packages/os/tests/install-workspace-bootstrap-contract.test.ts
+    runtime: Device-login and workspace-selection states exercised through focused contract tests on 2026-07-13.
+  - source: packages/os/scripts/lib/workspace-device-login-client.ts
+    tests:
+      - packages/os/tests/install-workspace-bootstrap-contract.test.ts
+      - packages/os/scripts/onboarding-flow.test.ts
+    runtime: Workspace approval payload and local fallback output inspected on 2026-07-13.
+---
+
+A workspace is the shared boundary that agents connect to. During local setup, the installer first tries to bind this Mac to a managed workspace. If that service is unavailable, it can still finish a local workspace.
+
+## The normal setup flow
+
+### 1. Approve the device in your browser
+
+The installer requests a short-lived device code from `os.consuelohq.com`. On macOS it copies the authorization URL, opens the browser, and shows the same code in the terminal so you can confirm that you are approving the correct request.
+
+Complete the browser approval within five minutes. The terminal waits and polls for the result.
+
+### 2. Select or name the workspace
+
+If your approval already identifies a workspace, setup uses it.
+
+If a workspace still needs to be created, the installer asks for a **workspace name**. It normalizes the name to lowercase letters, numbers, and hyphens. For example:
+
+```text
+Design Team  ->  design-team
+```
+
+The requested public host is then:
+
+```text
+design-team.consuelohq.com
+```
+
+The Consuelo control plane approves the workspace, node, and connector identity before giving the local installer its scoped bootstrap material.
+
+### 3. Save the local workspace and node
+
+The installer writes the approved identity into the Consuelo home. The important files are:
+
+```text
+~/.consuelo/consuelo.yaml
+~/.consuelo/node/node.yaml
+~/.consuelo/workspaces/<workspace-id>/shared/workspace.yaml
+~/.consuelo/config.json
+```
+
+The workspace file contains sync-safe workspace identity. Node-specific state, credentials, and the SQLite database stay under `node/`.
+
+## If browser authorization is unavailable
+
+The installer deliberately falls back instead of blocking the entire local installation. It asks for a workspace name and creates a local workspace with local node state.
+
+This fallback is enough to use the OS on that Mac, but it is not the same as a managed workspace approval:
+
+- platform provisioning is skipped;
+- a managed public workspace route may not be available;
+- a managed connector or tunnel may not be configured;
+- you may need to authorize again before connecting cloud agents.
+
+The terminal prints that it is continuing with a local workspace bootstrap. Do not interpret that message as successful managed authorization.
+
+## Verify the workspace
+
+Run doctor:
+
+```bash
+CONSUELO_HOME="$HOME/.consuelo" bun run --cwd "$HOME/.consuelo" doctor
+```
+
+Then inspect the workspace name—not secrets—in these files:
+
+```bash
+grep -n "workspace\|activeNode" "$HOME/.consuelo/consuelo.yaml"
+grep -n "name\|role\|workspace" "$HOME/.consuelo/node/node.yaml"
+```
+
+A successful interactive installation with an approved workspace opens its workspace launcher last. The launcher contains the MCP URL used by cloud agents.
+
+## What not to edit manually
+
+Do not invent workspace IDs, node IDs, connector IDs, public hosts, or tunnel credentials. Those values are bound together during authorization. Editing one file does not safely reprovision the rest of the system.

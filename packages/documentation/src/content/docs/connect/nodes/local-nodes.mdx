@@ -1,0 +1,49 @@
+---
+title: Local nodes
+description: Add another Mac to a workspace and understand the current connector transports.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/install.ts
+    tests:
+      - packages/os/tests/install-workspace-bootstrap-contract.test.ts
+      - packages/os/tests/cloudflare-connector-transport-contract.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
+    runtime: Member-node enrollment, Cloudflare tunnel bootstrap, websocket-relay fallback, and reconnect behavior were verified by focused tests on 2026-07-13.
+---
+A local node is a supported Mac running its own Consuelo OS installation. The first is normally `home`; later approved computers are `member` nodes.
+
+## Add a computer
+
+1. Run the installer on the additional Mac.
+2. Sign in with the account that can access the existing workspace.
+3. Select that workspace during authorization.
+4. Let the installer create or reconnect the node.
+5. Connect only the local agents needed on that Mac.
+
+A new additional computer should report `nodeRole: member` and `nodeStatus: created`. Repeating authorization for the same local identity can report `reconnected`.
+
+## Connector transport
+
+The current bootstrap selects one of two transport records:
+
+- `cloudflare-tunnel` when a tunnel token is provisioned;
+- `websocket-relay` when that token is not supplied.
+
+The transport record says how the node can be reached by managed services. It does not prove the transport process is healthy. Verify the local runtime and a remote request separately.
+
+## What stays local
+
+Each node has its own OS home, local database, local agent configs, logs, and local artifacts. Workspace identity can be shared, but filesystem state is not automatically mirrored by copying node files.
+
+## Verify
+
+- Run the doctor command on the new Mac.
+- Confirm its node ID differs from other computers.
+- Confirm the expected role and connector transport in Settings.
+- Verify each selected local agent through MCP.
+- When remote access is enabled, make one read-only call through the workspace MCP endpoint.
+
+## Remove a node
+
+Stop its background service and connector transport, revoke or retire its managed node grant, and remove local agent entries from that Mac. Deleting the local OS home alone does not necessarily remove the server-side node record.

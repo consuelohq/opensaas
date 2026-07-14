@@ -1,0 +1,84 @@
+---
+title: Tool calls
+description: Query workspace facade calls by trace, tool, task session, branch, status, or time range.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/workspace/scripts/context.js
+    tests:
+      - packages/workspace/tests/context-trace.test.js
+      - packages/workspace/tests/trace-watch.test.ts
+    runtime: A fixture code.call error was queried by trace ID with raw input, resolved input, result, stderr, branch, worktree, and token fields on 2026-07-13.
+  - source: packages/workspace/scripts/trace-home/db.ts
+    tests:
+      - packages/workspace/tests/trace-home.test.ts
+    runtime: The trace home loader was inspected against both current tool_traces and the supported legacy traces table.
+---
+
+A tool call is one invocation through the workspace facade. These records are useful when the failure is about repository work, a command, a task session, a browser action, or another typed workspace tool rather than an OS skill.
+
+## What `tool_traces` records
+
+The current schema can include:
+
+- visible and MCP trace IDs;
+- source and tool name;
+- `taskSession`, branch, and worktree;
+- status, result code, exit code, and duration;
+- input, resolved input, result JSON, and stderr;
+- input, output, and total token counts when available.
+
+Token fields can be absent. A zero or missing token count is not proof that a call did no work; it means usage was not recorded for that row.
+
+## Query recent tool calls
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" context -- trace --limit 20
+```
+
+Use JSON when another tool will parse the result:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" context -- trace --limit 20 --json
+```
+
+## Narrow the result
+
+```bash
+bun run --cwd "$CONSUELO_HOME" context -- trace --trace-id trc_example --json
+bun run --cwd "$CONSUELO_HOME" context -- trace --tool code.call --status error --json
+bun run --cwd "$CONSUELO_HOME" context -- trace --task-session tsk_example --json
+bun run --cwd "$CONSUELO_HOME" context -- trace --branch task/documentation/example --json
+bun run --cwd "$CONSUELO_HOME" context -- trace --since 2026-07-13T00:00:00Z --until 2026-07-14T00:00:00Z --json
+bun run --cwd "$CONSUELO_HOME" context -- trace --contains COMMAND_FAILED --json
+```
+
+Supported filters include trace ID, tool, status, start and end time, task session, branch, text containment, explicit database path, and result limit.
+
+## Read stored payload fields
+
+Add `--raw` to include parsed input, resolved input, result, and stderr:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" context -- trace --trace-id trc_example --raw --json
+```
+
+Raw here means the stored trace fields are included. It does not bypass filesystem access, database selection, or redaction policy. Use it only when the compact row is not enough, and avoid pasting the result into an unrelated chat or issue.
+
+## Task context matters
+
+`taskSession`, branch, and worktree explain where a mutating repository call was supposed to run. They are often the first fields to inspect when:
+
+- a call changed the wrong checkout;
+- a task-scoped tool says its session is missing;
+- a command succeeded but the expected branch did not move;
+- two parallel tasks appear to have crossed paths.
+
+## Nested calls
+
+The trace home loader can derive child rows for composed `code.run` operations and `batch` results when those details are present in stored result JSON. The parent duration and token count should not be blindly added to every child; inspect the normalized tree before calculating totals.
+
+## Current database selection
+
+The context command resolves the workspace trace database from `--db`, `OPENWORKSPACE_TRACE_DB`, or the platform-specific workspace trace root. This database is separate from `$CONSUELO_HOME/node/db/consuelo.db` used by OS skill executions.

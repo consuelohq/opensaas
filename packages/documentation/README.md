@@ -5,7 +5,7 @@ This package is the Bun-owned Astro/Starlight documentation app for Consuelo. It
 ## Source of truth
 
 - Public docs content lives in `src/content/docs/**/*.mdx`.
-- Sidebar structure lives in `astro.config.mjs` until we introduce a separate typed navigation module.
+- Top-level navigation and section routing live in `src/lib/docs-navigation.ts`; `astro.config.mjs` wires that model into Starlight.
 - English MDX is the editorial source of truth. Do not add committed machine-translated locale trees.
 
 ## Package ownership
@@ -21,6 +21,9 @@ bun install
 bun run dev
 bun run build
 bun run validate
+bun run test:foundation
+bun run test:browser
+bun run test:boundary
 ```
 
 From repo root:
@@ -79,9 +82,9 @@ bun run docs:deploy -- --skip-build
 ## Adding or moving pages
 
 1. Add or edit the MDX page under `src/content/docs`.
-2. Add the page to the Starlight sidebar in `astro.config.mjs`.
+2. Add the page to its section in `src/lib/docs-navigation.ts`.
 3. Run `bun run validate`.
-4. Run `bun run build`.
+4. Run `bun run test:foundation`, `bun run build`, and the relevant browser checks.
 
 Keep routes stable where possible. Legacy public docs routes are preserved through `src/lib/legacy-redirects.mjs`.
 
@@ -125,3 +128,11 @@ Provider credentials must stay server-side. The client selector must never refer
 - Phase 2: this package becomes a working Starlight docs app with curated English content.
 - Phase 3: translation UX and cached runtime translation endpoint.
 - Phase 4: deploy cutover and legacy package deletion are complete when this package is the only active docs app.
+
+## Machine-readable pages
+
+Every documentation route has a normalized Markdown counterpart. `/start/` maps to `/start.md`, and the docs homepage maps to `/index.md`. The PageTitle action menu uses the same endpoint for Copy page and View as Markdown. Keep transformations in `src/lib/markdown-pages.ts` so browser and agent readers receive one canonical representation.
+
+## Evidence and status
+
+Use `AUTHORING.md` for the claim-ledger contract. Office artifacts can direct research, but current code, focused tests, and runtime verification are the evidence for public product claims.
