@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "events": [
+    {
+      "id": "4aed781d-8fe5-47ef-9538-6eb66ed30fb4",
+      "occurred_at": "2026-07-14T16:33:25.815Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    },
+    {
+      "id": "6a31999d-b6e7-4139-9058-69efbc0db6fd",
+      "occurred_at": "2026-07-14T16:34:55.223Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    },
+    {
+      "id": "1205ecf3-a745-44c3-b28b-5dcbf5a15eae",
+      "occurred_at": "2026-07-14T16:35:36.480Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    },
+    {
+      "id": "1e432617-6d16-4918-8f05-ac740b8a491b",
+      "occurred_at": "2026-07-14T16:37:09.375Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    },
+    {
+      "id": "789c1e86-bc8c-4936-bb2e-43d988541802",
+      "occurred_at": "2026-07-14T16:37:15.906Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    },
+    {
+      "id": "ccc096ff-d2db-45f4-aa1f-50a5345f0c69",
+      "occurred_at": "2026-07-14T16:40:41.171Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/stream-service.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    },
+    {
+      "id": "bf542413-dd23-4e2c-b9d4-35d955fadbbf",
+      "occurred_at": "2026-07-14T16:43:01.586Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/tasks/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    },
+    {
+      "id": "d66dedf9-5edb-428e-9f95-c902d4a53802",
+      "occurred_at": "2026-07-14T16:45:04.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/streams/cli.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-14T16:45:04.635Z"
+}

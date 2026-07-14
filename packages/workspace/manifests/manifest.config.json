@@ -53,7 +53,7 @@
       "git.diff",
       "git.status",
       "stream.list",
-      "stream.cleanup",
+      "stream.create",
       "checkFiles",
       "verify"
     ],

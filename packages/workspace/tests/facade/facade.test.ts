@@ -1,7 +1,7 @@
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -12,6 +12,7 @@ import { parseSubagentOutput, parseSubagentTraceEvents } from '../../scripts/lib
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
+const REPO_ROOT = resolve(import.meta.dirname, '../../../..');
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
 
@@ -397,7 +398,7 @@ describe('typed facade executor', () => {
 
   it('writes multiline content through fs write content-file and rejects stale patch command', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
-    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
+    const scriptPath = join(REPO_ROOT, 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
     try {
       writeFileSync(writePayload, 'line one\nline two\n');
@@ -424,7 +425,7 @@ describe('typed facade executor', () => {
 
   it('rejects fs write content-file directories', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
-    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
+    const scriptPath = join(REPO_ROOT, 'packages/workspace/scripts/fs.js');
     try {
       const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
         cwd: tempRoot,
@@ -1241,7 +1242,7 @@ describe('typed facade executor', () => {
   });
 
   it('exposes a subagent Bun script wrapper over subagent', () => {
-    const tempRoot = mkdtempSync(join(process.cwd(), 'tmp-subagent-cli-'));
+    const tempRoot = mkdtempSync(join(REPO_ROOT, 'tmp-subagent-cli-'));
     try {
       const instructionPath = writeInstruction(tempRoot);
       const fakePiPath = writeFakePi(tempRoot);
@@ -1252,7 +1253,7 @@ describe('typed facade executor', () => {
         '--instruction-path', instructionPath,
         '--cwd', tempRoot,
       ], {
-        cwd: process.cwd(),
+        cwd: REPO_ROOT,
         env: { ...process.env, PATH: `${fakePiPath}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
         encoding: 'utf8',
       });

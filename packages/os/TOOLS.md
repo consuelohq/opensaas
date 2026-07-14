@@ -5807,25 +5807,25 @@ await workspace.call({
 
 ## stream
 
-### workspace.stream.cleanup
+### workspace.stream.context
 
-preview or remove safe local stream refs that are fully backed by origin
+show recent stream context
 
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.cleanup({ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace stream.cleanup` |
-| Capability | writes state · mutating · single-shot |
+| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace stream.context` |
+| Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
 
 #### Example call
 
 ```ts
 await workspace.call({
-  "tool": "stream.cleanup",
+  "tool": "stream.context",
   "input": {
-    "dryRun": true
+    "area": "workspace-agents"
   }
 });
 ```
@@ -5866,25 +5866,26 @@ await workspace.call({
 }
 ```
 
-### workspace.stream.context
+### workspace.stream.create
 
-show recent stream context
+create a new stream branch and seed its optional AGENTS.md instructions
 
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace stream.context` |
-| Capability | read-only · non-mutating · safe to retry |
+| Signature | `workspace.stream.create({ area: string; sourceBranch?: string; repo?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace stream.create` |
+| Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
 
 #### Example call
 
 ```ts
 await workspace.call({
-  "tool": "stream.context",
+  "tool": "stream.create",
   "input": {
-    "area": "workspace-agents"
+    "area": "tools",
+    "sourceBranch": "main"
   }
 });
 ```
@@ -6656,7 +6657,7 @@ Call this directly at the beginning of every scoped repo task, before tools.sear
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites" &#124; "media"; description?: string; pr?: string &#124; number; github?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites" &#124; "media"; description?: string; pr?: string &#124; number; github?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os task.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |

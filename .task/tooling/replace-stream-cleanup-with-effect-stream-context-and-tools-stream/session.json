@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_244fcb23d6da",
+  "tmuxSession": "opensaas-tooling-replace-stream-cleanup-with-effect-stream-contex-244fcb23",
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "prNumber": 1478,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1478",
+  "createdAt": "2026-07-14T03:23:50.743Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream/.task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/session.json"
+}

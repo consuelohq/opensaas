@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/session.json",
+    "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/workspace/scripts/lib/streams/cli.ts",
+    "packages/workspace/tests/stream-service.test.ts"
+  ],
+  "updatedAt": "2026-07-14T16:45:04.444Z"
+}

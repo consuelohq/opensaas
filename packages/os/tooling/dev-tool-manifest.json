@@ -474,11 +474,6 @@
           "kind": "value"
         },
         {
-          "source": "createStream",
-          "flag": "--create-stream",
-          "kind": "boolean"
-        },
-        {
           "source": "pr",
           "flag": "--pr",
           "kind": "value"
@@ -1487,14 +1482,14 @@
     "sessionRequired": false
   },
   {
-    "name": "stream.cleanup",
+    "name": "stream.create",
     "methodPath": [
       "stream",
-      "cleanup"
+      "create"
     ],
-    "description": "preview or remove safe local stream refs that are fully backed by origin",
+    "description": "create a new stream branch and seed its optional AGENTS.md instructions",
     "category": "stream",
-    "underlying": "workspace stream.cleanup",
+    "underlying": "workspace stream.create",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -1502,29 +1497,37 @@
       "safeToRetry": false
     },
     "defaultTimeout": 120000,
-    "inputSchema": "StreamCleanupInput",
+    "inputSchema": "StreamCreateInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "stream:cleanup",
+      "script": "stream:create",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
         {
-          "source": "apply",
-          "flag": "--apply",
-          "kind": "boolean"
+          "source": "area",
+          "flag": "--area",
+          "kind": "value",
+          "required": true
         },
         {
-          "source": "keep",
-          "flag": "--keep",
-          "kind": "array"
+          "source": "sourceBranch",
+          "flag": "--from",
+          "kind": "value"
+        },
+        {
+          "source": "repo",
+          "flag": "--repo",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
-      "dryRun": true
+      "area": "tools",
+      "sourceBranch": "main"
     },
-    "sessionRequired": false
+    "sessionRequired": false,
+    "workflowRole": "stream.create"
   },
   {
     "name": "stream.sync",

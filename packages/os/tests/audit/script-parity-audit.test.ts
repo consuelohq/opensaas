@@ -71,7 +71,7 @@ const highRiskScripts = [
   'scripts/explore.js',
   'scripts/generate-docs.ts',
   'scripts/lib/pr-ref.js',
-  'scripts/lib/stream-workpads.js',
+  'scripts/lib/streams/workpads.ts',
   'scripts/diff_cockpit.ts',
   'scripts/os-release-install.ts',
 ];

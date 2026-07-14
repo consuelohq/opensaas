@@ -31,8 +31,7 @@
     },
     "scripts/browser.js": {
       "status": "same",
-      "reason": "Byte-identical compatibility entrypoints delegate browser lifecycle and commands to the shared Effect service in both packages.",
-      "risk": "high"
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/check-files.js": {
       "status": "changed-needs-review",
@@ -95,6 +94,10 @@
       "status": "workspace-only-needs-port",
       "reason": "High-risk workspace-only diff cockpit entrypoint is not part of the OS runtime yet; porting needs focused review of branch and patch semantics.",
       "risk": "high"
+    },
+    "scripts/docs-deploy.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether OS needs an equivalent before changing or removing this script."
     },
     "scripts/doctor-analytics.ts": {
       "status": "os-only-intentional",
@@ -167,8 +170,8 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/github.js": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/install-system-daemons.sh": {
       "status": "changed-needs-review",
@@ -190,9 +193,37 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/browser/cli.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/browser/config.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/browser/errors.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/browser/process.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/browser/service.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/browser/types.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
     "scripts/lib/capabilities.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/chatgpt-mcp-connection.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
     },
     "scripts/lib/cli-ui.ts": {
       "status": "os-only-intentional",
@@ -215,16 +246,16 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/code-call/output.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; review the behavioral differences before syncing either copy."
     },
     "scripts/lib/code-call/policy.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/code-call/process.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; review the behavioral differences before syncing either copy."
     },
     "scripts/lib/code-call/runtime.ts": {
       "status": "same",
@@ -286,6 +317,14 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/lib/connector-origin-hostname.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/lib/consuelo-home.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
     "scripts/lib/consuelo-sites-gateway-policy.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -302,6 +341,10 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/consuelo-sites-settings-adapter.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
     "scripts/lib/consuelo-sites-trace-adapter.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -317,6 +360,10 @@
     "scripts/lib/db-guards.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/device-authority-release-readiness.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
     },
     "scripts/lib/facade/batch.ts": {
       "status": "same",
@@ -342,6 +389,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/lib/facade/process-tree.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
     "scripts/lib/facade/schemas.ts": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -351,8 +402,8 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/fs/read.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; review the behavioral differences before syncing either copy."
     },
     "scripts/lib/fs/search.ts": {
       "status": "same",
@@ -402,6 +453,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/lib/install-diagnostics.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
     "scripts/lib/install-edge-site-publisher.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -414,9 +469,21 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/local-agent-connectivity.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
     "scripts/lib/local-guardrails.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/managed-os-mcp-origin-class-migration.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/lib/manifest-overlay.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
     },
     "scripts/lib/manifest.ts": {
       "status": "os-only-intentional",
@@ -580,8 +647,8 @@
       "risk": "high"
     },
     "scripts/lib/pr-review-collector.js": {
-      "status": "workspace-only-needs-port",
-      "reason": "Present only in packages/workspace; review whether it should be ported into packages/os or explicitly documented as workspace-only."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/redaction.ts": {
       "status": "os-only-intentional",
@@ -607,6 +674,26 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/settings-gateway.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/lib/settings-overlay-command.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/lib/settings-site.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/lib/settings-sites-gateway-endpoints.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/lib/settings-snapshot.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
     "scripts/lib/sites.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -623,10 +710,49 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
-    "scripts/lib/stream-workpads.js": {
-      "status": "workspace-only-needs-port",
-      "reason": "High-risk workspace-only stream workpad helper affects task memory and stream coordination; OS parity should be reviewed separately.",
-      "risk": "high"
+    "scripts/lib/streams/cli.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/context-runtime.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/create-runtime.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/creation.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/errors.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/instructions.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/inventory.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/list-runtime.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/service.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/types.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/streams/workpads.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/subagent/runtime.ts": {
       "status": "changed-needs-review",
@@ -700,6 +826,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/lib/verify-run-state.js": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
     "scripts/lib/workspace-cloudflare-d1-route-registry.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -759,6 +889,10 @@
     "scripts/media.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/migrate-managed-os-mcp-origin-class.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
     },
     "scripts/office.ts": {
       "status": "changed-needs-review",
@@ -838,9 +972,85 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
-    "scripts/server.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    "scripts/server/app.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/env.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/logger.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/main.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/middleware/auth.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/middleware/dangerous-material.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/middleware/errors.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/middleware/fallback.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/route-policies.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/routes/call.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/routes/health.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/routes/mcp.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/routes/settings.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/routes/steering.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/routes/traces.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/services/call-service.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/services/oauth-introspection.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/services/os-runtime.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/services/steering-service.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
+    },
+    "scripts/server/services/trace-gateway.ts": {
+      "status": "os-only-needs-review",
+      "reason": "Present only in packages/os; preserve it until its OS-specific purpose and portability requirements are reviewed."
     },
     "scripts/smoke-workspace-edge.ts": {
       "status": "os-only-intentional",
@@ -867,8 +1077,12 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/stream-context.js": {
-      "status": "changed-needs-review",
-      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/stream-create.js": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/stream-list.js": {
       "status": "same",
@@ -1026,6 +1240,26 @@
       "status": "workspace-only-needs-port",
       "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
+    "scripts/trace-site-inspector/browser.ts": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether OS needs an equivalent before changing or removing this script."
+    },
+    "scripts/trace-site-inspector/deploy.ts": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether OS needs an equivalent before changing or removing this script."
+    },
+    "scripts/trace-site-inspector/inspector.css": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether OS needs an equivalent before changing or removing this script."
+    },
+    "scripts/trace-site-inspector/model.ts": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether OS needs an equivalent before changing or removing this script."
+    },
+    "scripts/trace-site-inspector/preview.ts": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether OS needs an equivalent before changing or removing this script."
+    },
     "scripts/uninstall-system-daemons.sh": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1037,6 +1271,10 @@
     "scripts/wait.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/web-deploy.js": {
+      "status": "workspace-only-needs-port",
+      "reason": "Present only in packages/workspace; review whether OS needs an equivalent before changing or removing this script."
     },
     "scripts/website-deploy.js": {
       "status": "changed-needs-review",
@@ -1053,30 +1291,6 @@
     "scripts/workspace/consuelo-workspace-snapshot.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
-    "scripts/lib/browser/cli.ts": {
-      "status": "same",
-      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
-    },
-    "scripts/lib/browser/config.ts": {
-      "status": "same",
-      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
-    },
-    "scripts/lib/browser/errors.ts": {
-      "status": "same",
-      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
-    },
-    "scripts/lib/browser/process.ts": {
-      "status": "same",
-      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
-    },
-    "scripts/lib/browser/service.ts": {
-      "status": "same",
-      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
-    },
-    "scripts/lib/browser/types.ts": {
-      "status": "same",
-      "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
     }
   },
   "highRiskScripts": [
@@ -1086,9 +1300,9 @@
     "scripts/explore.js",
     "scripts/generate-docs.ts",
     "scripts/lib/pr-ref.js",
-    "scripts/lib/stream-workpads.js",
     "scripts/diff_cockpit.ts",
-    "scripts/os-release-install.ts"
+    "scripts/os-release-install.ts",
+    "scripts/lib/streams/workpads.ts"
   ],
   "hardcodedPortability": {
     "Ko": {

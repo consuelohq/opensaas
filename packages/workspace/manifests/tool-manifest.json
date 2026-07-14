@@ -6065,55 +6065,6 @@
       }
     },
     {
-      "name": "stream.cleanup",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "stream",
-      "description": "preview or remove safe local stream refs that are fully backed by origin",
-      "core": false,
-      "definition": {
-        "name": "stream.cleanup",
-        "methodPath": [
-          "stream",
-          "cleanup"
-        ],
-        "description": "preview or remove safe local stream refs that are fully backed by origin",
-        "category": "stream",
-        "underlying": "workspace stream.cleanup",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "StreamCleanupInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "stream:cleanup",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "apply",
-              "flag": "--apply",
-              "kind": "boolean"
-            },
-            {
-              "source": "keep",
-              "flag": "--keep",
-              "kind": "array"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
       "name": "stream.context",
       "kind": "facade-tool",
       "source": "workspace-tooling",
@@ -6167,6 +6118,63 @@
         },
         "sessionRequired": false,
         "workflowRole": "stream.context"
+      }
+    },
+    {
+      "name": "stream.create",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "stream",
+      "description": "create a new stream branch and seed its optional AGENTS.md instructions",
+      "core": false,
+      "definition": {
+        "name": "stream.create",
+        "methodPath": [
+          "stream",
+          "create"
+        ],
+        "description": "create a new stream branch and seed its optional AGENTS.md instructions",
+        "category": "stream",
+        "underlying": "workspace stream.create",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "StreamCreateInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "stream:create",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "sourceBranch",
+              "flag": "--from",
+              "kind": "value"
+            },
+            {
+              "source": "repo",
+              "flag": "--repo",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "area": "tools",
+          "sourceBranch": "main"
+        },
+        "sessionRequired": false,
+        "workflowRole": "stream.create"
       }
     },
     {
@@ -6968,11 +6976,6 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
-            },
-            {
-              "source": "createStream",
-              "flag": "--create-stream",
-              "kind": "boolean"
             }
           ],
           "jsonFlag": "--json"

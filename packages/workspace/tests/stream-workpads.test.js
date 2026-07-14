@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
-const { filterRecentWorkpads, hasStreamWorkpadEvidence } = require('../scripts/lib/stream-workpads.js');
+import { filterRecentWorkpads, hasStreamWorkpadEvidence } from '../scripts/lib/streams/workpads';
 
 describe('stream workpad scoping', () => {
   it('excludes cross-stream workpads whose titles contain the area as a substring', () => {

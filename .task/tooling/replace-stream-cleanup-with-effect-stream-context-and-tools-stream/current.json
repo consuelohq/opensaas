@@ -1,0 +1,19 @@
+{
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "baseBranch": "stream/tooling",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1478,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1478",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1478",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1478/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1478",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1478/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
+  "taskSession": "tsk_244fcb23d6da",
+  "tmuxSession": "opensaas-tooling-replace-stream-cleanup-with-effect-stream-contex-244fcb23",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream/.task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/session.json",
+  "createdAt": "2026-07-14T03:23:50.745Z"
+}
