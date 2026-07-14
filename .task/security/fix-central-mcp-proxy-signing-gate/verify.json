@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-central-mcp-proxy-signing-gate",
+  "base": "HEAD",
+  "headSha": "5aaac55ffbeb7a392a6b39ec5ec53041bc9de444",
+  "changeHash": "24be65b72c7e0ec1b3a56a362cd6a768fa280b5bc3b55dbfae1167d268f0841e",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-07-14T23:25:48.331Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-central-mcp-proxy-signing-gate/current.json",
+        ".task/security/fix-central-mcp-proxy-signing-gate/session.json",
+        ".task/security/fix-central-mcp-proxy-signing-gate/workpad.md",
+        ".task/tasks/security/fix-central-mcp-proxy-signing-gate.json",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

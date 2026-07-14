@@ -96,7 +96,7 @@ export async function centralMcpProxyRequest(input: {
   request: Request;
   resolution: Extract<WorkspaceRouteD1Resolution, { allowed: true }>;
   upstreamUrl: string;
-  internalSigningSecret: string;
+  internalSigningSecret?: string;
 }): Promise<Request> {
   try {
     const inboundUrl = new URL(input.request.url);
@@ -122,23 +122,25 @@ export async function centralMcpProxyRequest(input: {
       );
     }
 
-    const edgeTimestamp = String(Date.now());
-    const edgeNonce = crypto.randomUUID();
-    headers.set('x-consuelo-edge-timestamp', edgeTimestamp);
-    headers.set('x-consuelo-edge-nonce', edgeNonce);
-
-    headers.set(
-      'x-consuelo-edge-signature',
-      await edgeSignature({
-        secret: input.internalSigningSecret,
-        method: input.request.method,
-        pathWithSearch: inboundUrl.pathname + inboundUrl.search,
-        workspaceId: input.resolution.workspaceId,
-        surface: input.resolution.surface,
-        timestamp: edgeTimestamp,
-        nonce: edgeNonce,
-      }),
-    );
+    const internalSigningSecret = input.internalSigningSecret?.trim();
+    if (internalSigningSecret) {
+      const edgeTimestamp = String(Date.now());
+      const edgeNonce = crypto.randomUUID();
+      headers.set('x-consuelo-edge-timestamp', edgeTimestamp);
+      headers.set('x-consuelo-edge-nonce', edgeNonce);
+      headers.set(
+        'x-consuelo-edge-signature',
+        await edgeSignature({
+          secret: internalSigningSecret,
+          method: input.request.method,
+          pathWithSearch: inboundUrl.pathname + inboundUrl.search,
+          workspaceId: input.resolution.workspaceId,
+          surface: input.resolution.surface,
+          timestamp: edgeTimestamp,
+          nonce: edgeNonce,
+        }),
+      );
+    }
 
     const init: RequestInit & { duplex?: 'half' } = {
       headers,
@@ -217,14 +219,6 @@ export async function proxyCentralMcpRequest(input: {
       });
     }
 
-    const internalSigningSecret = input.internalSigningSecret?.trim();
-    if (!internalSigningSecret) {
-      return centralMcpSafeError({
-        status: 503,
-        code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
-      });
-    }
-
     const proxyRequest = await centralMcpProxyRequest({
       request: input.request,
       resolution,
@@ -232,7 +226,7 @@ export async function proxyCentralMcpRequest(input: {
         tunnelOriginUrl: resolution.target.tunnelOriginUrl,
         inboundUrl,
       }),
-      internalSigningSecret,
+      internalSigningSecret: input.internalSigningSecret,
     });
 
     return await input.fetchImpl(proxyRequest);
