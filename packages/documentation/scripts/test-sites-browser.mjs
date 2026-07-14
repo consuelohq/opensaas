@@ -1,5 +1,8 @@
-import { chromium } from 'playwright';
-import { spawn } from 'node:child_process';
+import {
+  launchDocumentationBrowser,
+  startDocumentationServer,
+  stopDocumentationServer,
+} from './lib/documentation-browser-test.mjs';
 import net from 'node:net';
 
 const port = await new Promise((resolve, reject) => {
@@ -12,10 +15,7 @@ const port = await new Promise((resolve, reject) => {
   });
 });
 const origin = `http://127.0.0.1:${port}`;
-const server = spawn('bun', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(port)], {
-  cwd: new URL('..', import.meta.url),
-  stdio: ['ignore', 'pipe', 'pipe'],
-});
+const server = startDocumentationServer({ port });
 let output = '';
 server.stdout.on('data', (chunk) => (output += chunk));
 server.stderr.on('data', (chunk) => (output += chunk));
@@ -44,7 +44,7 @@ async function waitForServer() {
 let browser;
 try {
   await waitForServer();
-  browser = await chromium.launch({ headless: true });
+  browser = await launchDocumentationBrowser();
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   await page.goto(`${origin}/sites/`, { waitUntil: 'networkidle' });
 
@@ -105,5 +105,5 @@ try {
   process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 1, port, viewportChecks }, null, 2)}\n`);
 } finally {
   await browser?.close();
-  server.kill('SIGTERM');
+  await stopDocumentationServer(server);
 }

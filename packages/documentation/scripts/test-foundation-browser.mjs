@@ -1,12 +1,12 @@
-import { chromium } from 'playwright';
-import { spawn } from 'node:child_process';
+import {
+  launchDocumentationBrowser,
+  startDocumentationServer,
+  stopDocumentationServer,
+} from './lib/documentation-browser-test.mjs';
 
 const port = 4327;
 const origin = `http://127.0.0.1:${port}`;
-const server = spawn('bun', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(port)], {
-  cwd: new URL('..', import.meta.url),
-  stdio: ['ignore', 'pipe', 'pipe'],
-});
+const server = startDocumentationServer({ port });
 let output = '';
 server.stdout.on('data', (chunk) => (output += chunk));
 server.stderr.on('data', (chunk) => (output += chunk));
@@ -25,7 +25,7 @@ async function waitForServer() {
 let browser;
 try {
   await waitForServer();
-  browser = await chromium.launch({ headless: true });
+  browser = await launchDocumentationBrowser();
   const context = await browser.newContext();
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
   const page = await context.newPage();
@@ -72,6 +72,10 @@ try {
   const markdownResponse = await fetch(`${origin}/start.md`);
   if (!markdownResponse.ok) throw new Error('Markdown endpoint failed');
   const expectedMarkdown = await markdownResponse.text();
+  const legacyMarkdown = await fetch(`${origin}/os/concepts/configuration.md`, { redirect: 'manual' });
+  if (legacyMarkdown.status !== 308) throw new Error(`Legacy Markdown returned ${legacyMarkdown.status}`);
+  if (legacyMarkdown.headers.get('location') !== '/reference/configuration.md') throw new Error('Legacy Markdown redirect points to the wrong route');
+  if (await page.locator('.page-actions-menu').isVisible()) throw new Error('Page actions menu is visible before opening details');
   await page.getByRole('button', { name: 'Copy page' }).click();
   await page.waitForTimeout(100);
   const copied = await page.evaluate(() => navigator.clipboard.readText());
@@ -121,5 +125,5 @@ try {
   process.stdout.write(`${JSON.stringify({ ok: true, globalGroups: globalCount, markdownBytes: expectedMarkdown.length, paragraphWidth, viewportChecks }, null, 2)}\n`);
 } finally {
   await browser?.close();
-  server.kill('SIGTERM');
+  await stopDocumentationServer(server);
 }
