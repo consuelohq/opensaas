@@ -1,5 +1,7 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/os/concepts/configuration': '/reference/configuration/',
+  '/os/glossary': '/reference/glossary/',
   '/os/concepts/mcp-ingress-security': '/secure/hosted-mcp-ingress/',
   '/os/concepts/observability': '/observe/',
   '/tools/sites/overview': '/sites/',

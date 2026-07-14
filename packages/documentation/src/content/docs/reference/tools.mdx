@@ -1,0 +1,100 @@
+---
+title: Tools
+description: Generated facade-tool metadata, typed invocation, and execution policy.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/tooling/tool-manifest.schema.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/facade/facade.test.ts
+    runtime: The generated facade manifest was validated and representative read, mutation, and task-scoped calls were exercised on 2026-07-13.
+  - source: packages/os/scripts/lib/facade/types.ts
+    tests:
+      - packages/os/tests/tools-search-v2.test.ts
+    runtime: Tool discovery output was compared with current manifest metadata and schemas on 2026-07-13.
+---
+
+A facade tool is a typed operation exposed through the workspace tool facade. The generated full manifest marks these entries with `kind: "facade-tool"`.
+
+## Definition fields
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `name` | string | Stable dotted tool name such as `fs.read`. |
+| `methodPath` | string[] | Facade method segments. |
+| `description` | string | Intent and operating boundary. |
+| `category` | string | Discovery category. |
+| `underlying` | string | Backing subsystem or script. |
+| `capabilities` | object | Read, mutation, determinism, and retry metadata. |
+| `defaultTimeout` | positive integer | Default execution timeout in milliseconds. |
+| `inputSchema` | string | Name of the validated input schema. |
+| `outputSchema` | string | Name of the result schema. |
+| `command` | object | Script and argument mapping used by the executor. |
+| `exampleInput` | object | Minimal valid example for discovery. |
+| `sessionRequired` | boolean, optional | Whether a task session is mandatory. |
+
+Tool names follow `^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*)*$`.
+
+## Capability metadata
+
+```json
+{
+  "readOnly": true,
+  "mutating": false,
+  "deterministic": true,
+  "safeToRetry": true
+}
+```
+
+- `readOnly` and `mutating` describe side effects.
+- `deterministic` describes whether equal input and state should produce equal output.
+- `safeToRetry` describes whether an automated caller may retry without duplicating an unsafe effect.
+
+Do not infer `safeToRetry` only from `readOnly`; use the declared value.
+
+## Command mapping
+
+The `command` object can declare:
+
+```json
+{
+  "script": "code-call",
+  "subcommand": "run",
+  "branchMode": "required",
+  "branchArgumentStyle": "flag",
+  "jsonFlag": "--json",
+  "dryRunFlag": "--dry-run",
+  "arguments": [
+    { "source": "path", "flag": "--path", "kind": "value", "required": true }
+  ]
+}
+```
+
+`branchMode` is `none`, `optional`, or `required`. Argument kinds are `value`, `boolean`, `array`, `record`, or `commandArray`.
+
+## Call shape
+
+Agent clients call the facade with a tool name and typed input. Task-scoped operations also put `taskSession` at the call envelope's top level.
+
+```json
+{
+  "tool": "fs.read",
+  "input": {
+    "path": "README.md",
+    "offset": 1,
+    "limit": 80
+  },
+  "taskSession": "tsk_123"
+}
+```
+
+The facade validates input before executing the backing command. It returns a `ToolResult`, not unstructured terminal prose.
+
+## Discovery
+
+Use `get_steering` for the core surface and `tools.search` for everything else. `tools.search` can filter by category and read/mutation intent. The generated core manifest is intentionally smaller than the full manifest.
+
+## Effective availability
+
+Installed does not always mean enabled. Settings overlays can remove a facade tool from the effective manifest. Authorization and approval policy can still block a tool that remains discoverable.

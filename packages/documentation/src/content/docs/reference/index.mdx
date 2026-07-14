@@ -1,7 +1,34 @@
 ---
 title: Reference
-description: Look up exact CLI, configuration, MCP, manifest, and error contracts.
+description: Exact commands, schemas, protocols, routes, results, and terms for Consuelo OS.
 status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/os-raw-steering.test.ts
+      - packages/os/tests/sites-cli.test.ts
+    runtime: The current CLI usage output and JSON command paths were exercised on 2026-07-13.
+  - source: packages/os/manifests/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The generated full and core manifests were parsed and compared with their source schemas on 2026-07-13.
 ---
 
-Use this section when you need the precise shape of a command, setting, result, or protocol.
+Use Reference when you already know what you need and want the exact contract.
+
+- [CLI](/reference/cli/) lists the commands the installed runtime accepts.
+- [Configuration](/reference/configuration/) describes the files Consuelo reads and writes.
+- [MCP](/reference/mcp/) defines discovery, calls, protocol behavior, and errors.
+- [Tools](/reference/tools/) documents facade-tool metadata and invocation rules.
+- [Skills and manifests](/reference/skills-and-manifests/) defines skill metadata and generated registries.
+- [Result and error formats](/reference/result-and-error-formats/) shows the stable structured envelopes.
+- [Environment variables](/reference/environment-variables/) lists supported runtime overrides.
+- [URLs and ports](/reference/urls-and-ports/) lists local and hosted endpoints.
+- [Glossary](/reference/glossary/) gives one meaning to the product's core terms.
+
+## How to read this section
+
+The source files named in each page's evidence block are the authority for the current preview. Commands and fields that are not present in current code are not documented as available.
+
+Consuelo OS is still in preview. A contract can change before a stable release, but the pages here describe the implementation that exists now rather than a roadmap.

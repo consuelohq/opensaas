@@ -113,6 +113,20 @@ const secureItems: SidebarItem[] = [
   { label: 'Security reference', slug: 'secure/security-reference' },
 ];
 
+
+const referenceItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'reference' },
+  { label: 'CLI', slug: 'reference/cli' },
+  { label: 'Configuration', slug: 'reference/configuration' },
+  { label: 'MCP', slug: 'reference/mcp' },
+  { label: 'Tools', slug: 'reference/tools' },
+  { label: 'Skills and manifests', slug: 'reference/skills-and-manifests' },
+  { label: 'Result and error formats', slug: 'reference/result-and-error-formats' },
+  { label: 'Environment variables', slug: 'reference/environment-variables' },
+  { label: 'URLs and ports', slug: 'reference/urls-and-ports' },
+  { label: 'Glossary', slug: 'reference/glossary' },
+];
+
 const observeItems: SidebarItem[] = [
   { label: 'Overview', slug: 'observe' },
   { label: 'Runs', slug: 'observe/runs' },
@@ -158,7 +172,9 @@ export const docsSidebar = docsSections.map(({ label, slug }) => ({
               ? observeItems
               : slug === 'secure'
                 ? secureItems
-                : [{ label: 'Overview', slug }],
+                : slug === 'reference'
+                  ? referenceItems
+                  : [{ label: 'Overview', slug }],
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));

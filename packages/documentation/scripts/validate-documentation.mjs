@@ -68,13 +68,21 @@ const selectedSlugs = [
   'secure/hosted-mcp-ingress',
   'secure/security-reference',
   'reference/index',
+  'reference/cli',
+  'reference/configuration',
+  'reference/mcp',
+  'reference/tools',
+  'reference/skills-and-manifests',
+  'reference/result-and-error-formats',
+  'reference/environment-variables',
+  'reference/urls-and-ports',
+  'reference/glossary',
   'user-guide/user-stories-use-cases',
   'user-guide/getting-started/capabilities/implementation-services',
   'user-guide/getting-started/capabilities/glossary',
   'user-guide/getting-started/capabilities/keyboard-shortcuts',
   'user-guide/getting-started/how-tos/navigate-around-consuelo',
   'user-guide/getting-started/how-tos/configure-your-workspace',
-  'os/glossary',
   'os/concepts/data-model-and-graphql',
   'os/tools/subagents',
   'developers/introduction',
@@ -122,6 +130,8 @@ const removedSlugs = [
   'tools/sites/overview',
   'os/concepts/observability',
   'os/concepts/mcp-ingress-security',
+  'os/concepts/configuration',
+  'os/glossary',
 ];
 
 const adapterNames = [
@@ -168,7 +178,7 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
-for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:secure', 'test:secure-browser', 'test:browser', 'test:boundary']) {
+for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:secure', 'test:secure-browser', 'test:reference', 'test:reference-browser', 'test:browser', 'test:boundary']) {
   assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
 }
 assert(existsSync('bun.lock'), 'bun.lock must exist');
