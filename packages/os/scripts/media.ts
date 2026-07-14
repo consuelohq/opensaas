@@ -80,6 +80,15 @@ function hasFlag(args: string[], flag: string): boolean {
   return args.includes(flag);
 }
 
+function booleanToggle(args: string[], enabledFlag: string, disabledFlag: string): boolean | undefined {
+  const enabled = hasFlag(args, enabledFlag);
+  const disabled = hasFlag(args, disabledFlag);
+  if (enabled && disabled) throw new Error('cannot use ' + enabledFlag + ' and ' + disabledFlag + ' together');
+  if (enabled) return true;
+  if (disabled) return false;
+  return undefined;
+}
+
 function writeJson(value: unknown): void {
   process.stdout.write(JSON.stringify(value, null, 2) + String.fromCharCode(10));
 }
@@ -297,6 +306,7 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
         padding: numericOption(rest, '--padding'),
         fit: optionValue(rest, '--fit') as 'contain' | 'cover' | undefined,
         pattern: optionValue(rest, '--pattern') as 'grid' | 'lines' | 'none' | undefined,
+        dots: booleanToggle(rest, '--dots', '--no-dots'),
       }));
     }
     if (command === 'qa') {
