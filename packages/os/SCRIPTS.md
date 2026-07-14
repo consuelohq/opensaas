@@ -1168,9 +1168,9 @@ bun run office -- --help
 
 ---
 
-### media:screenshot — frame a local screenshot for social/X
+### media:screenshot — compose a local screenshot for social/X
 
-Uses the OS media CLI and the installed FFmpeg runtime. The default is a 1600×900 Consuelo blue (`#0000F2`) canvas with the website's subtle dither clouds in the corners, generous padding, a restrained frame, and a soft shadow. It writes one PNG and does not alter the source screenshot pixels.
+Uses the OS media CLI and the installed FFmpeg runtime. The default is a 1600×900 dark (`#08080A`) canvas with the website's subtle dither clouds in the corners and generous padding. The source screenshot is composited directly without an added frame or drop shadow. It writes one PNG and does not alter the source screenshot pixels.
 
 ```bash
 bun run media:screenshot -- --input ./shot.png --out ./social.png --json
