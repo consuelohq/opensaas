@@ -38,7 +38,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | http | 1 |
 | linear | 8 |
 | mac | 8 |
-| media | 24 |
+| media | 25 |
 | office | 21 |
 | review | 4 |
 | sentry | 7 |
@@ -3571,6 +3571,69 @@ await workspace.call({
   "tool": "media.scene.detect",
   "input": {
     "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.media.screenshot.render
+
+Render a local screenshot into a deterministic social/X-ready PNG with configurable Consuelo themes, spacing, fit, and line patterns.
+
+| Field | Value |
+| --- | --- |
+| Category | media |
+| Signature | `workspace.media.screenshot.render({ input: string; out: string; width?: number; height?: number; theme?: "dark" &#124; "light"; accent?: string; background?: string; padding?: number; fit?: "contain" &#124; "cover"; pattern?: "grid" &#124; "lines" &#124; "none"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ schema: "media.screenshot-result.v1"; ok: true; id: string; source: { path: string }; output: { path: string; width: number; height: number; format: "png"; fileSizeBytes: number }; template: { theme: "dark" &#124; "light"; accent: string; background: string; padding: number; fit: "contain" &#124; "cover"; pattern: "grid" &#124; "lines" &#124; "none" }; toolVersions: Record<string, string>; deterministic: true }>>` |
+| Runtime | `os media screenshot.render` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "media.screenshot.render",
+  "input": {
+    "input": "screenshots/chatgpt.png",
+    "out": "renders/chatgpt-x.png",
+    "theme": "dark",
+    "accent": "#0000F2",
+    "pattern": "grid"
   }
 });
 ```

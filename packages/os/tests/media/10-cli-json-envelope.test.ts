@@ -8,6 +8,7 @@ const commandMatrix = [
   ['probe', '--input', 'fixtures/missing.mp4', '--json'],
   ['frames', 'extract', '--input', 'fixtures/missing.mp4', '--timestamp', '0.1', '--out', 'tmp/media-frames', '--json'],
   ['timeline', 'validate', '--timeline', 'fixtures/missing-timeline.json', '--json'],
+  ['screenshot', 'render', '--input', 'fixtures/missing.png', '--out', 'tmp/social.png', '--json'],
   ['compose', '--timeline', 'fixtures/missing-timeline.json', '--out', 'tmp/out.mp4', '--json'],
   ['qa', '--input', 'fixtures/missing-output.mp4', '--json'],
 ] as const;

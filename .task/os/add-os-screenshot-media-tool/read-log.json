@@ -1,0 +1,28 @@
+{
+  "files": [
+    ".task/os/add-os-screenshot-media-tool/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/media/compose.ts",
+    "packages/os/scripts/lib/media/dependencies.ts",
+    "packages/os/scripts/lib/media/fs.ts",
+    "packages/os/scripts/lib/media/process.ts",
+    "packages/os/scripts/lib/media/qa.ts",
+    "packages/os/scripts/lib/media/schema.ts",
+    "packages/os/scripts/media.ts",
+    "packages/os/test-selection.rules.json",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/media/25-overlay-render.test.ts",
+    "packages/os/tests/media/helpers.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tooling/media-tool-manifest.json",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/media-svg.py",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-07-14T17:13:38.511Z"
+}
