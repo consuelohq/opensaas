@@ -136,6 +136,9 @@ declare const workspace: {
     scene: {
       detect: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     };
+    screenshot: {
+      render: (input: { input: string; out: string; width?: number; height?: number; theme?: "dark" | "light"; accent?: string; background?: string; padding?: number; fit?: "contain" | "cover"; pattern?: "grid" | "lines" | "none"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ schema: "media.screenshot-result.v1"; ok: true; id: string; source: { path: string }; output: { path: string; width: number; height: number; format: "png"; fileSizeBytes: number }; template: { theme: "dark" | "light"; accent: string; background: string; padding: number; fit: "contain" | "cover"; pattern: "grid" | "lines" | "none" }; toolVersions: Record<string, string>; deterministic: true }>>;
+    };
     sports-science: {
       metrics: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     };
