@@ -1,5 +1,12 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/connect/connectors': '/connect/apps-and-services/',
+  '/connect/connectors/github': '/connect/apps-and-services/github/',
+  '/connect/connectors/google-drive': '/connect/apps-and-services/google-drive/',
+  '/connect/connectors/gmail': '/connect/apps-and-services/gmail/',
+  '/connect/connectors/google-calendar': '/connect/apps-and-services/google-calendar/',
+  '/connect/connectors/slack': '/connect/apps-and-services/slack/',
+  '/connect/connectors/additional-connectors': '/connect/apps-and-services/additional-services/',
   '/os/concepts/configuration': '/reference/configuration/',
   '/os/glossary': '/reference/glossary/',
   '/os/concepts/mcp-ingress-security': '/secure/hosted-mcp-ingress/',
@@ -17,8 +24,8 @@ export const legacyRedirects = {
   '/tools/office': '/build/tools/office/',
   '/tools/media/getting-started': '/build/tools/media/',
   '/developers/agent/tool-system': '/build/tools/how-tools-work/',
-  '/developers/agent/integrations': '/connect/connectors/',
-  '/os/concepts/integrations-and-capabilities': '/connect/connectors/',
+  '/developers/agent/integrations': '/connect/apps-and-services/',
+  '/os/concepts/integrations-and-capabilities': '/connect/apps-and-services/',
   '/os/overview': '/start/',
   '/os/how-it-works': '/start/core-concepts/',
   '/os/getting-started/install': '/start/install-consuelo-os/',
@@ -127,8 +134,8 @@ export const legacyRedirects = {
     '/user-guide/getting-started/capabilities/implementation-services',
   '/user-guide/billing/overview':
     '/user-guide/getting-started/capabilities/implementation-services',
-  '/user-guide/calendar-emails/capabilities/calendar': '/connect/connectors/google-calendar/',
-  '/user-guide/calendar-emails/capabilities/mailbox': '/connect/connectors/gmail/',
+  '/user-guide/calendar-emails/capabilities/calendar': '/connect/apps-and-services/google-calendar/',
+  '/user-guide/calendar-emails/capabilities/mailbox': '/connect/apps-and-services/gmail/',
   '/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo':
     '/build/tools/office/',
   '/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo':
@@ -140,7 +147,7 @@ export const legacyRedirects = {
   '/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records':
     '/build/tools/office/',
   '/user-guide/calendar-emails/how-tos/limit-emails-imported': '/build/tools/office/',
-  '/user-guide/calendar-emails/overview': '/connect/connectors/',
+  '/user-guide/calendar-emails/overview': '/connect/apps-and-services/google-workspace/',
   '/user-guide/dashboards/capabilities/chart-settings': '/',
   '/user-guide/dashboards/capabilities/dashboards': '/',
   '/user-guide/dashboards/capabilities/widgets': '/',
@@ -220,7 +227,7 @@ export const legacyRedirects = {
   '/user-guide/graphql-api/overview': '/developers/api/graphql',
   '/user-guide/guides-tutorials/overview': '/start/',
   '/user-guide/highlevel/overview': '/',
-  '/user-guide/integrations/overview': '/connect/connectors/',
+  '/user-guide/integrations/overview': '/connect/apps-and-services/',
   '/user-guide/permissions-access/capabilities/permissions': '/secure/access-and-permissions/',
   '/user-guide/permissions-access/capabilities/sso-configuration': '/secure/access-and-permissions/',
   '/user-guide/permissions-access/how-tos/permissions-faq': '/secure/access-and-permissions/',

@@ -34,24 +34,74 @@ const connectItems: SidebarItem[] = [
     ],
   },
   {
-    label: 'Connectors',
-    items: [
-      { label: 'Overview', slug: 'connect/connectors' },
-      { label: 'GitHub', slug: 'connect/connectors/github' },
-      { label: 'Google Drive', slug: 'connect/connectors/google-drive' },
-      { label: 'Gmail', slug: 'connect/connectors/gmail' },
-      { label: 'Google Calendar', slug: 'connect/connectors/google-calendar' },
-      { label: 'Slack', slug: 'connect/connectors/slack' },
-      { label: 'Additional connectors', slug: 'connect/connectors/additional-connectors' },
-    ],
-  },
-  {
     label: 'Nodes',
     items: [
       { label: 'How nodes work', slug: 'connect/nodes/how-nodes-work' },
       { label: 'Home node', slug: 'connect/nodes/home-node' },
       { label: 'Local nodes', slug: 'connect/nodes/local-nodes' },
       { label: 'Cloud nodes', slug: 'connect/nodes/cloud-nodes' },
+    ],
+  },
+  {
+    label: 'Apps and services',
+    items: [
+      { label: 'Overview', slug: 'connect/apps-and-services' },
+      {
+        label: 'Productivity and communication',
+        items: [
+          { label: 'Google Workspace', slug: 'connect/apps-and-services/google-workspace' },
+          { label: 'Gmail', slug: 'connect/apps-and-services/gmail' },
+          { label: 'Google Drive', slug: 'connect/apps-and-services/google-drive' },
+          { label: 'Google Calendar', slug: 'connect/apps-and-services/google-calendar' },
+          { label: 'Slack', slug: 'connect/apps-and-services/slack' },
+          { label: 'Notion', slug: 'connect/apps-and-services/notion' },
+        ],
+      },
+      {
+        label: 'Code and development',
+        items: [
+          { label: 'GitHub', slug: 'connect/apps-and-services/github' },
+          { label: 'Linear', slug: 'connect/apps-and-services/linear' },
+        ],
+      },
+      {
+        label: 'Deploy and infrastructure',
+        items: [
+          { label: 'Cloudflare', slug: 'connect/apps-and-services/cloudflare' },
+          { label: 'Railway', slug: 'connect/apps-and-services/railway' },
+          { label: 'Vercel', slug: 'connect/apps-and-services/vercel' },
+        ],
+      },
+      {
+        label: 'Observe and monitor',
+        items: [
+          { label: 'Datadog', slug: 'connect/apps-and-services/datadog' },
+          { label: 'Sentry', slug: 'connect/apps-and-services/sentry' },
+        ],
+      },
+      {
+        label: 'Data and analytics',
+        items: [
+          { label: 'Snowflake', slug: 'connect/apps-and-services/snowflake' },
+          { label: 'Supabase', slug: 'connect/apps-and-services/supabase' },
+        ],
+      },
+      {
+        label: 'Sales and CRM',
+        items: [
+          { label: 'GoHighLevel', slug: 'connect/apps-and-services/gohighlevel' },
+          { label: 'Salesforce', slug: 'connect/apps-and-services/salesforce' },
+          { label: 'HubSpot', slug: 'connect/apps-and-services/hubspot' },
+        ],
+      },
+      {
+        label: 'Payments and communication',
+        items: [
+          { label: 'Stripe', slug: 'connect/apps-and-services/stripe' },
+          { label: 'Twilio', slug: 'connect/apps-and-services/twilio' },
+        ],
+      },
+      { label: 'Additional services', slug: 'connect/apps-and-services/additional-services' },
     ],
   },
 ];
@@ -105,7 +155,15 @@ const secureItems: SidebarItem[] = [
   { label: 'Overview', slug: 'secure' },
   { label: 'Security model', slug: 'secure/security-model' },
   { label: 'Access and permissions', slug: 'secure/access-and-permissions' },
-  { label: 'Credentials', slug: 'secure/credentials' },
+  {
+    label: 'Credentials',
+    items: [
+      { label: 'Overview', slug: 'secure/credentials' },
+      { label: 'Apple Keychain and API keys', slug: 'secure/apple-keychain-and-api-keys' },
+      { label: 'Credential detection', slug: 'secure/credential-detection' },
+      { label: 'Other secret managers', slug: 'secure/other-secret-managers' },
+    ],
+  },
   { label: 'Approvals', slug: 'secure/approvals' },
   { label: 'Nodes and network access', slug: 'secure/nodes-and-network-access' },
   { label: 'Tailscale', slug: 'secure/tailscale' },
@@ -139,7 +197,7 @@ const observeItems: SidebarItem[] = [
 
 export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
-  { label: 'Connect', slug: 'connect', description: 'Connect agents, services, and nodes to the same workspace.' },
+  { label: 'Connect', slug: 'connect', description: 'Connect agents, nodes, apps, and services to the same workspace.' },
   { label: 'Build with OS', slug: 'build', description: 'Use tools, skills, steering, workflows, memory, files, and approvals.' },
   { label: 'Sites', slug: 'sites', description: 'Create, preview, and publish pages from your workspace.' },
   { label: 'Observe', slug: 'observe', description: 'Inspect runs, traces, tool calls, artifacts, and logs.' },

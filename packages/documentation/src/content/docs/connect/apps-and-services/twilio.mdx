@@ -1,0 +1,78 @@
+---
+title: Twilio
+description: Use Twilio CLI and APIs today while native Twilio tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `twilio` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the official Twilio CLI and APIs.**
+
+Use Twilio when you need to inspect account resources, phone numbers and logs, and build messaging, voice, email, and webhook workflows.
+
+Consuelo plans to provide a focused `twilio` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up Twilio for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+Install the CLI with Homebrew or another supported method, run `twilio login`, and let the CLI create a local profile. The profile stores a generated API key rather than requiring the agent to handle the raw Auth Token repeatedly.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+Run `twilio phone-numbers:list` or another bounded read before sending a message or changing a number, application, webhook, or account resource.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+twilio.phoneNumbers.list
+twilio.messages.list
+twilio.messages.send
+twilio.calls.get
+twilio.debugger.events
+```
+
+Useful typed inputs:
+
+```text
+profile
+accountSid
+from
+to
+limit
+status
+dryRun
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+Messages, calls, number purchases, webhook changes, recordings, and account configuration are external writes. Require approval and redact phone numbers in logs.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[Twilio official documentation](https://www.twilio.com/docs/twilio-cli/quickstart)

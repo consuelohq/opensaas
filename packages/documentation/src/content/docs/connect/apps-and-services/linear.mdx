@@ -1,0 +1,49 @@
+---
+title: Linear
+description: Search, read, create, and update Linear issues with the built-in tool family.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/tools-search-v2.test.ts
+    runtime: 'The manifest-backed Linear search, read, create, update, label, team, project, and state methods were inspected on 2026-07-14.'
+---
+
+> **Native Consuelo tool: Available now**  
+> **Available today: Yes — through the built-in `linear.*` family.**
+
+Use the built-in tools instead of creating another Linear wrapper.
+
+## Ask your agent
+
+```text
+Use the existing linear.* tools.
+Start with linear.search or linear.issue.
+Resolve teams, states, labels, projects, cycles, and parents by their typed list methods.
+Before creating or updating an issue, show me the final title, description, team, state, labels, and parent.
+```
+
+## Available now
+
+```text
+linear.search
+linear.issue
+linear.createIssue
+linear.updateIssue
+linear.labels
+linear.teams
+linear.projects
+linear.states
+```
+
+Search, reads, and list methods are read-only. `linear.createIssue` and `linear.updateIssue` are external writes and are not safe to retry blindly.
+
+## Credentials
+
+The current tool uses the locally configured Linear API access. Detect configuration without returning the token. See [Credential detection](/secure/credential-detection/).
+
+## Official documentation
+
+[Linear API documentation](https://linear.app/developers)

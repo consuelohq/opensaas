@@ -1,0 +1,39 @@
+---
+title: Slack
+description: Post outbound Slack messages today and understand the current connector boundary.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tools/slack.py
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current adapter was inspected on 2026-07-14; it posts text through a configured incoming webhook and does not provide full Slack read/write OAuth access.'
+---
+
+> **Native Consuelo tool: Partially available**  
+> **Available today: Yes — outbound webhook posts.**
+
+The current Slack adapter reads `SLACK_WEBHOOK_URL` from the local runtime and posts outbound text. It does not search Slack, read channels, manage users, upload files, or provide a general Slack OAuth connection.
+
+## Ask your agent
+
+```text
+Use the existing outbound Slack adapter only for the destination configured on this node.
+Never print SLACK_WEBHOOK_URL.
+Show me the destination and complete message before posting.
+Do not describe this as a full Slack connector.
+```
+
+## Current method
+
+```text
+slack.post
+```
+
+A message is an external write. Require approval before the post and return the provider response without exposing the webhook URL.
+
+A broader native Slack family is planned around scoped OAuth methods such as channel search, thread reads, posts, and file operations.
+
+## Official documentation
+
+[Slack incoming webhooks](https://api.slack.com/messaging/webhooks)
