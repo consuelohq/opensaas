@@ -321,7 +321,6 @@
       "packages/twenty-apps",
       "packages/twenty-cli",
       "packages/twenty-e2e-testing",
-      "packages/twenty-emails",
       "packages/twenty-eslint-rules",
       "packages/twenty-front",
       "packages/twenty-sdk",
