@@ -29,6 +29,7 @@ type ScreenshotPlan = {
     padding: number;
     fit: string;
     pattern: string;
+    dots: boolean;
   };
 };
 
@@ -49,13 +50,18 @@ describe('media.screenshot.render', () => {
       height: 900,
       theme: 'dark',
       accent: '#0000F2',
+      background: '#0000F2',
       padding: 120,
       fit: 'contain',
-      pattern: 'grid',
+      pattern: 'none',
+      dots: true,
     });
     expect(plan.args).toEqual(expect.arrayContaining(['-y', '-frames:v', '1']));
     expect(plan.args.join(' ')).toMatch(/scale=.*force_original_aspect_ratio/);
-    expect(plan.args.join(' ')).toMatch(/drawgrid/);
+    expect(plan.args.join(' ')).not.toMatch(/drawgrid/);
+    expect(plan.args.join(' ')).toContain('cloud-1.png');
+    expect(plan.args.join(' ')).toContain('cloud-4.png');
+    expect(plan.args.join(' ')).toContain('[dots4]');
     expect(plan.args.join(' ')).toMatch(/gblur/);
     expect(plan.args.join(' ')).toMatch(/overlay/);
     expect(plan.args.join(' ')).toContain('0x0000F2');
@@ -75,6 +81,7 @@ describe('media.screenshot.render', () => {
       padding: 80,
       fit: 'cover',
       pattern: 'lines',
+      dots: false,
     });
 
     expect(plan.template).toEqual(expect.objectContaining({
@@ -86,10 +93,12 @@ describe('media.screenshot.render', () => {
       padding: 80,
       fit: 'cover',
       pattern: 'lines',
+      dots: false,
     }));
     expect(plan.args.join(' ')).toContain('0x123456');
     expect(plan.args.join(' ')).toContain('0xFAFAFA');
     expect(plan.args.join(' ')).toMatch(/crop=/);
+    expect(plan.args.join(' ')).not.toContain('cloud-1.png');
     expect(plan.args.join(' ')).not.toMatch(/negate|lutrgb=.*negval/);
   });
 
@@ -115,7 +124,7 @@ describe('media.screenshot.render', () => {
       id: 'screenshot_fixture_001',
       source: { path: 'fixtures/chatgpt.png' },
       output: { path: 'renders/chatgpt-x.png', width: 1600, height: 900, format: 'png', fileSizeBytes: 1024 },
-      template: { theme: 'dark', accent: '#0000F2', background: '#08080A', padding: 120, fit: 'contain', pattern: 'grid' },
+      template: { theme: 'dark', accent: '#0000F2', background: '#0000F2', padding: 120, fit: 'contain', pattern: 'none', dots: true },
       toolVersions: { ffmpeg: 'fixture-ffmpeg' },
       deterministic: true,
     };
@@ -131,6 +140,7 @@ describe('media.screenshot.render', () => {
     try {
       const inputPath = join(tempDir, 'input.png');
       const outputPath = join(tempDir, 'social.png');
+      const plainOutputPath = join(tempDir, 'social-plain.png');
       const generated = spawnSync('ffmpeg', [
         '-v', 'error', '-y', '-f', 'lavfi', '-i', 'color=c=0x202124:s=1280x720',
         '-frames:v', '1', '-update', '1', inputPath,
@@ -139,14 +149,22 @@ describe('media.screenshot.render', () => {
 
       const envelope = expectJsonCliSuccess([
         'screenshot', 'render', '--input', inputPath, '--out', outputPath,
-        '--accent', '#0000F2', '--pattern', 'grid', '--json',
+        '--background', '#0000F2', '--pattern', 'none', '--dots', '--json',
       ]);
 
       expect(envelope.schema).toBe('media.screenshot-result.v1');
       expect(envelope.ok).toBe(true);
+      expect(envelope.template).toMatchObject({ background: '#0000F2', pattern: 'none', dots: true });
       expect(existsSync(outputPath)).toBe(true);
       expect(statSync(outputPath).size).toBeGreaterThan(0);
       expect(JSON.stringify(envelope)).toContain(outputPath);
+
+      const plainEnvelope = expectJsonCliSuccess([
+        'screenshot', 'render', '--input', inputPath, '--out', plainOutputPath,
+        '--background', '#123456', '--pattern', 'lines', '--no-dots', '--json',
+      ]);
+      expect(plainEnvelope.template).toMatchObject({ background: '#123456', pattern: 'lines', dots: false });
+      expect(existsSync(plainOutputPath)).toBe(true);
     } finally {
       removeTempDir(tempDir);
     }
