@@ -23,6 +23,7 @@ import { removeSafeTempDir } from './safe-temp-cleanup';
 type JsonObject = Record<string, unknown>;
 
 let tempHome = '';
+const originalFetch = globalThis.fetch;
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -80,6 +81,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  globalThis.fetch = originalFetch;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_HOME;
   delete process.env.CONSUELO_OS_AUTH_CONFIG;
@@ -297,7 +299,7 @@ describe('MCP gateway adapter', () => {
   });
 
 
-  it('advertises OAuth discovery when MCP auth is missing and accepts active Consuelo OAuth tokens', async () => {
+  it('should accept an active Consuelo OAuth token when a public MCP request targets the central resource', async () => {
     const config = createConfig();
     const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
 
@@ -312,7 +314,7 @@ describe('MCP gateway adapter', () => {
     );
 
     const fetchCalls: Array<{ url: string; body: string }> = [];
-    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       fetchCalls.push({ url, body: String(init?.body ?? '') });
       return new Response(JSON.stringify({
@@ -324,9 +326,9 @@ describe('MCP gateway adapter', () => {
         status: 200,
         headers: { 'content-type': 'application/json' },
       });
-    });
+    };
 
-    const accepted = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+    const accepted = await handleRequest(new Request('https://c-test-connector.consuelohq.com/mcp', {
       method: 'POST',
       headers: {
         authorization: 'Bearer coa_test_oauth_access_token',
@@ -341,7 +343,52 @@ describe('MCP gateway adapter', () => {
     expect(json.result).toBeDefined();
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0].url).toBe('https://os.consuelohq.com/oauth/introspect');
-    expect(fetchCalls[0].body).toContain('resource=https%3A%2F%2Fmcp-test.consuelohq.com%2Fmcp');
+    expect(fetchCalls[0].body).toContain('resource=https%3A%2F%2Fos.consuelohq.com%2Fmcp');
+  });
+
+  it('should reject a node-local bearer when it is presented through the public connector', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:*:read']);
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
+
+    const loopback = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+      },
+      body,
+    }));
+    expect(loopback.status).toBe(200);
+
+    globalThis.fetch = async () => new Response(JSON.stringify({ active: false }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+    const publicConnector = await handleRequest(new Request('https://c-test-connector.consuelohq.com/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+        'x-consuelo-hostname': config.workspaceHost,
+      },
+      body,
+    }));
+
+    expect(publicConnector.status).toBe(401);
+    await expect(publicConnector.json()).resolves.toMatchObject({
+      error: { code: 'UNKNOWN_TOKEN' },
+    });
+
+    const deceptiveHostname = await handleRequest(new Request('https://127.attacker.example/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+      },
+      body,
+    }));
+    expect(deceptiveHostname.status).toBe(401);
   });
 
   it('advertises OAuth discovery for non-POST MCP probes on dynamic workspace hosts', async () => {

@@ -1,0 +1,50 @@
+---
+title: Workspace steering
+description: Customize the durable instruction files shared by agents in one OS home.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+    runtime: The current local steering directory and deterministic load order were verified on 2026-07-13.
+  - source: packages/os/scripts/lib/install-state.ts
+    tests:
+      - packages/os/tests/install-state.test.ts
+    runtime: Provisioning tests verified that existing workspace steering is preserved on reinstall.
+---
+
+Workspace steering lives in the OS home:
+
+```text
+~/.consuelo/steering/
+  system_prompt.md
+  decision.md
+  <additional-files>.md
+```
+
+A fresh installation seeds the first two files. Later provisions preserve existing content.
+
+## What belongs where
+
+Use `system_prompt.md` for durable identity, non-negotiable rules, safety boundaries, and how the agent should use OS.
+
+Use `decision.md` for the decision process: how to investigate, verify, choose an approach, and report uncertainty.
+
+Use additional Markdown files for focused workspace policy that should be loaded for every agent. Their filenames determine alphabetical load order after the two primary files.
+
+## Edit carefully
+
+Keep steering:
+
+- short enough to load at the start of every conversation;
+- specific enough to change behavior;
+- independent of one temporary task;
+- free of credentials and private customer data;
+- consistent with actual tools and approval policy.
+
+After changing steering, start a new agent conversation or call `refresh_steering` once with a concrete reason. Do not repeatedly refresh to test formatting.
+
+## Verify
+
+Call `get_steering` from a fresh caller context and confirm the expected file headings appear in order. If a file is missing, verify that it ends in `.md`, is a regular file, and is not named `steering.md`.

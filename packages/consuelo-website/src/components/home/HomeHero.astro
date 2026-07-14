@@ -9,27 +9,38 @@ const { sectionId = 'intro' } = Astro.props as Props;
 ---
 
 <section class="os-hero" id={sectionId} data-section="hero">
-  <img
-    class="os-hero__art"
-    src="/images/home/connect-transparent.svg"
-    alt=""
-    width="1200"
-    height="900"
-    aria-hidden="true"
-  />
+  <div class="os-hero__atmosphere" aria-hidden="true">
+    <img class="os-hero__cloud os-hero__cloud--1" src="/images/home/dither/cloud-1.png" alt="" width="900" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--2" src="/images/home/dither/cloud-2.png" alt="" width="1020" height="390" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--3" src="/images/home/dither/cloud-3.png" alt="" width="800" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--4" src="/images/home/dither/cloud-4.png" alt="" width="950" height="400" loading="eager" />
+  </div>
 
   <div class="os-hero__content">
     <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
-    <h1>YOUR WORKSPACE, CONNECTED TO EVERY AGENT.</h1>
+    <h1>
+      <span data-hero-line>YOUR WORKSPACE,</span>
+      <span data-hero-line>CONNECTED TO</span>
+      <span data-hero-line>EVERY AGENT</span>
+    </h1>
     <p class="os-hero__subtitle">
       Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
     </p>
 
     <div class="os-hero__actions">
-      <a class="os-hero__button" href="https://os.consuelohq.com">SIGN IN</a>
-      <button class="os-hero__button os-hero__button--quiet" type="button" data-copy-install>
-        <span data-copy-label>DOWNLOAD LOCALLY</span>
-      </button>
+      <a class="os-hero__button" href="https://os.consuelohq.com">
+        SIGN IN
+        <svg class="os-hero__button-arrow" viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
+          <rect x="0" y="0" width="1" height="9" />
+          <rect x="1" y="1" width="1" height="1" />
+          <rect x="2" y="2" width="1" height="1" />
+          <rect x="3" y="3" width="1" height="1" />
+          <rect x="4" y="4" width="1" height="1" />
+          <rect x="3" y="5" width="1" height="1" />
+          <rect x="2" y="6" width="1" height="1" />
+          <rect x="1" y="7" width="1" height="1" />
+        </svg>
+      </a>
     </div>
 
     <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
@@ -86,7 +97,7 @@ const { sectionId = 'intro' } = Astro.props as Props;
     position: relative;
     z-index: 2;
     display: grid;
-    width: min(100%, 58rem);
+    width: min(100%, 78rem);
     justify-items: center;
     gap: clamp(1rem, 1.7vw, 1.5rem);
   }
@@ -98,15 +109,23 @@ const { sectionId = 'intro' } = Astro.props as Props;
   }
 
   .os-hero h1 {
-    max-width: 12.5em;
+    max-width: none;
     margin: 0;
     color: white;
     font-family: var(--site-font-display);
-    font-size: clamp(3.25rem, 6.3vw, 6.6rem);
+    font-size: clamp(4.25rem, 5.5vw, 6.5rem);
     font-weight: 430;
     letter-spacing: 0;
     line-height: 0.9;
     text-wrap: balance;
+  }
+
+  .os-hero h1 > span:first-child {
+    display: block;
+  }
+
+  .os-hero h1 > span:nth-child(2)::after {
+    content: ' ';
   }
 
   .os-hero__subtitle {
@@ -120,7 +139,7 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   .os-hero__actions {
     display: grid;
-    width: min(100%, 17rem);
+    width: min(100%, 31rem);
     gap: 0.55rem;
     margin-top: 0.35rem;
   }
@@ -136,13 +155,21 @@ const { sectionId = 'intro' } = Astro.props as Props;
   }
 
   .os-hero__button {
-    display: grid;
+    display: flex;
     min-height: 2.75rem;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
     background: white;
     color: var(--site-color-brand);
     text-decoration: none;
     transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  }
+
+  .os-hero__button-arrow {
+    width: 0.5rem;
+    height: 0.75rem;
+    shape-rendering: crispEdges;
   }
 
   .os-hero__button--quiet {
@@ -152,7 +179,8 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   .os-hero__button:hover,
   .os-hero__button:focus-visible {
-    background: var(--site-color-soft-white);
+    background: transparent;
+    color: white;
   }
 
   .os-hero__button--quiet:hover,
@@ -189,42 +217,115 @@ const { sectionId = 'intro' } = Astro.props as Props;
     font-size: 0.62rem;
   }
 
-  .os-hero__art {
+  .os-hero__command:hover,
+  .os-hero__command:focus-visible {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .os-hero__atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    /* Dots fade to flat brand blue before the features seam. */
+    mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  }
+
+  .os-hero__cloud {
+    position: absolute;
+    max-width: none;
+    image-rendering: pixelated;
+  }
+
+  .os-hero__cloud--1 {
+    top: 5%;
+    left: -10%;
+    opacity: 0.42;
+  }
+
+  .os-hero__cloud--2 {
+    bottom: 22%;
+    left: -12%;
+    opacity: 0.45;
+  }
+
+  .os-hero__cloud--3 {
+    top: 2%;
+    right: -16%;
+    opacity: 0.34;
+  }
+
+  .os-hero__cloud--4 {
+    bottom: 8%;
+    right: -14%;
+    opacity: 0.4;
+  }
+
+  .os-hero::after {
     position: absolute;
     z-index: 1;
-    bottom: -30%;
-    left: 50%;
-    width: min(92vw, 75rem);
-    max-width: none;
-    opacity: 0.12;
-    filter: brightness(0) invert(1);
-    transform: translateX(-50%);
+    inset: 20% 0 8%;
+    background: radial-gradient(circle at 50% 49%, rgba(0, 0, 242, 0.64), transparent 53%);
+    content: '';
     pointer-events: none;
   }
 
   @media (max-width: 720px) {
     .os-hero {
-      min-height: calc(100svh - 4.5rem);
-      padding: 6.25rem 1rem 3.5rem;
+      min-height: calc(100svh - 4rem);
+      padding: 4.65rem 0.9rem 1.75rem;
     }
 
     .os-hero h1 {
-      font-size: clamp(2.9rem, 13vw, 4.5rem);
+      font-size: clamp(2rem, 9.2vw, 2.35rem);
       line-height: 0.92;
+    }
+
+    .os-hero h1 > span {
+      display: block;
+    }
+
+    .os-hero h1 > span:nth-child(2)::after {
+      content: none;
     }
 
     .os-hero__subtitle {
       max-width: 22rem;
+      font-size: 0.82rem;
     }
 
     .os-hero__command {
-      font-size: 0.62rem;
+      min-height: 2.55rem;
+      font-size: 0.6rem;
     }
 
-    .os-hero__art {
-      bottom: -8%;
-      width: 150vw;
+    .os-hero__cloud--1 {
+      top: 4%;
+      left: -30%;
+      width: 480px;
+      height: 240px;
     }
+
+    .os-hero::after {
+      inset: 20% -25% 9%;
+      background: radial-gradient(circle at 50% 50%, rgba(0, 0, 242, 0.72), transparent 58%);
+    }
+
+    .os-hero__cloud--3 {
+      top: 10%;
+      right: -34%;
+      width: 400px;
+      height: 225px;
+    }
+
+    .os-hero__cloud--2,
+    .os-hero__cloud--4 {
+      display: none;
+    }
+
   }
 
   @media (prefers-reduced-motion: reduce) {

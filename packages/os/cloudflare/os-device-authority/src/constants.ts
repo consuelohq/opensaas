@@ -38,6 +38,7 @@ export const DEFAULT_CONNECTOR_LOCAL_SERVICE_URL = 'http://127.0.0.1:46321';
 export const CHATGPT_OAUTH_CLIENT_ID = 'chatgpt-consuelo-os';
 export const CHATGPT_REDIRECT_PREFIX = 'https://chatgpt.com/connector/oauth/';
 export const MCP_OAUTH_TTL_MS = 60 * 60 * 1000;
+export const MCP_OAUTH_REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const MCP_OAUTH_CODE_TTL_MS = 5 * 60 * 1000;
 export const MCP_OAUTH_SCOPES = [
   'mcp:read',

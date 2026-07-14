@@ -33,8 +33,9 @@ if ! id -u "$daemon_user" >/dev/null 2>&1; then
   exit 1
 fi
 daemon_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$daemon_user}}"
+consuelo_data_home="${CONSUELO_HOME:-$daemon_home/.consuelo}"
 launch_agent_dir="$daemon_home/Library/LaunchAgents"
-log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"
+log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
@@ -44,7 +45,7 @@ watchdog_agent_plist="$launch_agent_dir/${watchdog_label}.plist"
 workspace_generated_plist="$script_dir/generated/${workspace_label}.plist"
 portless_generated_plist="$script_dir/generated/${portless_label}.plist"
 watchdog_generated_plist="$script_dir/generated/${watchdog_label}.plist"
-cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$root_dir/security/generated}"
+cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
 cloudflared_labels=()
 cloudflared_generated_plists=()
 cloudflared_agent_plists=()
@@ -168,25 +169,43 @@ service_labels_csv() {
   printf '%s\n' "$labels"
 }
 
-derive_external_health_url() {
-  if [ -n "${WORKSPACE_WATCHDOG_EXTERNAL_URL:-}" ]; then
-    printf '%s\n' "$WORKSPACE_WATCHDOG_EXTERNAL_URL"
+derive_connector_health_url() {
+  if [ -n "${CONSUELO_CONNECTOR_HEALTH_URL:-}" ]; then
+    printf '%s\n' "$CONSUELO_CONNECTOR_HEALTH_URL"
     return 0
   fi
 
-  if [ -z "${MCP_SERVER_URL:-}" ]; then
-    return 0
+  local config_file="$consuelo_data_home/config.json"
+  local bun_bin="${BUN_BIN:-}"
+  [ -f "$config_file" ] || return 1
+  if [ -z "$bun_bin" ]; then
+    bun_bin="$(command -v bun || true)"
   fi
+  [ -n "$bun_bin" ] || return 1
 
-  local base_url="${MCP_SERVER_URL%/}"
-  if [[ "$base_url" == */mcp ]]; then
-    printf '%s/health\n' "${base_url%/mcp}"
-    return 0
-  fi
-
-  printf '%s/health\n' "$base_url"
+  CONSUELO_CONNECTOR_CONFIG_PATH="$config_file" \
+    CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN="${CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN:-consuelohq.com}" \
+    "$bun_bin" --print '
+(() => {
+  const { createHash } = require("node:crypto");
+  const { readFileSync } = require("node:fs");
+  const config = JSON.parse(readFileSync(process.env.CONSUELO_CONNECTOR_CONFIG_PATH, "utf8"));
+  const connectorId = String(config?.connector?.id || "").trim().toLowerCase();
+  const baseDomain = String(process.env.CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN || "").trim().toLowerCase();
+  if (!/^[a-z0-9](?:[a-z0-9._:-]{0,253}[a-z0-9])?$/.test(connectorId)) {
+    throw new Error("connector id is missing or invalid");
+  }
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(baseDomain)) {
+    throw new Error("connector origin base domain is invalid");
+  }
+  const digest = createHash("sha256")
+    .update("consuelo:connector-origin:v1\0" + connectorId)
+    .digest("hex")
+    .slice(0, 32);
+  return "https://c-" + digest + "." + baseDomain + "/health";
+})()
+'
 }
-
 wait_for_health() {
   local url="$1"
   local attempts="$2"
@@ -240,7 +259,7 @@ print_repair_hint() {
     log "Portless log: $log_dir/portless.log"
   fi
   log "Watchdog log: $log_dir/watchdog.log"
-  log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
+  log "Doctor: CONSUELO_HOME=$consuelo_data_home bun --cwd $root_dir run doctor"
   log "Retry services: bash $script_dir/install-system-daemons.sh"
   log "Remove services only: bash $script_dir/uninstall-system-daemons.sh"
   log "Debug details: CONSUELO_OS_DEBUG=1 bash $script_dir/install-system-daemons.sh --debug"
@@ -252,7 +271,7 @@ print_success_summary() {
   log "Services: $(service_labels_csv)"
   log "LaunchAgents: $launch_agent_dir"
   log "Logs: $log_dir"
-  log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
+  log "Doctor: CONSUELO_HOME=$consuelo_data_home bun --cwd $root_dir run doctor"
   log "Tokens and secrets are saved in local config/state files and are not printed."
 }
 
@@ -361,12 +380,20 @@ if ! wait_for_health "$local_health_url" 20 1; then
   exit 1
 fi
 
-external_health_url="$(derive_external_health_url || true)"
-if [ -n "$external_health_url" ] && ! wait_for_health "$external_health_url" 20 1; then
-  log "external health failed after LaunchAgent cutover"
-  print_repair_hint
-  rollback_agents
-  exit 1
+if [ "${#cloudflared_labels[@]}" -gt 0 ]; then
+  connector_health_url="$(derive_connector_health_url || true)"
+  if [ -z "$connector_health_url" ]; then
+    log "assigned connector health URL could not be derived after LaunchAgent cutover"
+    print_repair_hint
+    rollback_agents
+    exit 1
+  fi
+  if ! wait_for_health "$connector_health_url" 40 1; then
+    log "assigned connector health failed after LaunchAgent cutover"
+    print_repair_hint
+    rollback_agents
+    exit 1
+  fi
 fi
 
 print_success_summary

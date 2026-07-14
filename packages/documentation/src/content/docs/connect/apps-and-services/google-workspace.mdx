@@ -1,0 +1,102 @@
+---
+title: Google Workspace
+description: Use Gmail, Calendar, Drive, Docs, Sheets, and more through gog while native Google tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/integrations.md
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
+    runtime: 'Current OS manifests contain no native Google Workspace tool family; the managed workspace sign-in remains an identity grant rather than service-data access.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through [`openclaw/gogcli`](https://github.com/openclaw/gogcli).**
+
+`gog` is a Google Workspace CLI designed for people, scripts, CI, and coding agents. It covers Gmail, Calendar, Drive, Docs, Sheets, Slides, Contacts, Tasks, and additional Google services with structured output and explicit automation controls.
+
+The Google sign-in used to approve a Consuelo workspace is still an identity grant. It does not silently give OS access to your mail, files, or calendar. `gog` uses a separate Google OAuth client and grant that you control.
+
+## Ask your agent
+
+```text
+Install openclaw/gogcli on this local node and connect only the Google services I name.
+Keep OAuth credentials in the OS or encrypted-file keyring and never print them.
+Use --readonly, --gmail-no-send, --no-input, and --json for the first verification.
+Run gog auth doctor --check, then prove one safe read from the intended account.
+After that, create a typed google.* tool exposing only the operations I approve,
+with focused tests, structured errors, and approval for every write or send action.
+```
+
+## Install `gog`
+
+On macOS:
+
+```bash
+brew install openclaw/tap/gogcli
+gog --version
+```
+
+Create a Google Cloud project, enable only the APIs you need, create a Desktop OAuth client, then add it to `gog`:
+
+```bash
+gog auth credentials ~/Downloads/client_secret_....json
+gog auth add you@example.com --services gmail,calendar,drive,docs,sheets,contacts
+gog auth doctor --check
+```
+
+Set the account explicitly for repeatable automation:
+
+```bash
+export GOG_ACCOUNT=you@example.com
+```
+
+## Start in safe automation mode
+
+```bash
+gog --readonly --gmail-no-send --no-input --json gmail search 'label:inbox' --max 10
+```
+
+These controls matter:
+
+- `--readonly` blocks mutating commands;
+- `--gmail-no-send` blocks Gmail sending even when other reads are allowed;
+- `--no-input` prevents an unattended run from waiting on a prompt;
+- `--json` gives the agent structured output.
+
+## Proposed Consuelo methods
+
+```text
+google.gmail.search
+google.gmail.get
+google.gmail.send
+google.calendar.events
+google.calendar.create
+google.drive.search
+google.drive.download
+google.docs.read
+google.sheets.read
+google.sheets.append
+```
+
+The native namespace should be `google.*`. `gog` is the underlying implementation, not the product vocabulary users must memorize.
+
+## Verification
+
+Before building the wrapper:
+
+1. run `gog auth doctor --check`;
+2. confirm the account explicitly;
+3. execute one read-only command with `--json`;
+4. inspect the returned service and account;
+5. keep sending and mutation disabled until the exact write method is approved.
+
+## Credential storage
+
+On macOS, `gog` can use the OS keyring. Headless environments can use its encrypted-file keyring. In either case, the agent should receive a command result, not the raw OAuth material. See [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/).
+
+## Official documentation
+
+- [`gog` repository and quick start](https://github.com/openclaw/gogcli)
+- [`gog` rendered documentation](https://gogcli.sh/)

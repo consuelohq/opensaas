@@ -87,6 +87,7 @@ function makeHome(html = '<!doctype html><title>Internal workspace</title><main>
     ['traces', 'index.html'],
     ['diffs', 'index.html'],
     ['docs', 'index.html'],
+    ['settings', 'index.html'],
   ];
   for (const sitePath of sitePaths) {
     const filePath = path.join(home, 'sites', ...sitePath);
@@ -123,11 +124,13 @@ contractDescribe('install edge site publisher', () => {
     expect(first.verifiedUrls).toEqual([
       'https://internal.consuelohq.com/',
       'https://internal.consuelohq.com/office',
+      'https://internal.consuelohq.com/observability',
       'https://internal.consuelohq.com/traces',
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
+      'https://internal.consuelohq.com/settings',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'office', 'traces', 'diffs', 'docs']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'office', 'traces', 'traces', 'diffs', 'docs', 'settings']);
     expect(first.routeSql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
@@ -170,16 +173,13 @@ contractDescribe('install edge site publisher', () => {
       now: '2026-06-14T00:00:00.000Z',
     });
 
+    const uniqueSnapshotKeys = [...new Set(result.snapshots.map((snapshot) => snapshot.snapshotKey))];
     expect(commands.map((command) => command.argv.slice(0, 4).join(' '))).toEqual([
-      'wrangler r2 object put',
-      'wrangler r2 object put',
-      'wrangler r2 object put',
-      'wrangler r2 object put',
-      'wrangler r2 object put',
+      ...uniqueSnapshotKeys.map(() => 'wrangler r2 object put'),
       'wrangler d1 execute consuelo-workspace-route-registry',
     ]);
-    expect(commands.slice(0, 5).map((command) => command.argv[4])).toEqual(result.snapshots.map((snapshot) => `consuelo-sites-snapshots/${snapshot.snapshotKey}`));
-    expect(commands[5].argv).toContain('--file');
+    expect(commands.slice(0, uniqueSnapshotKeys.length).map((command) => command.argv[4])).toEqual(uniqueSnapshotKeys.map((snapshotKey) => `consuelo-sites-snapshots/${snapshotKey}`));
+    expect(commands[uniqueSnapshotKeys.length].argv).toContain('--file');
     expect(result).toMatchObject({
       status: 'succeeded',
       workspaceId: 'workspace_internal',
@@ -192,9 +192,11 @@ contractDescribe('install edge site publisher', () => {
       verifiedUrls: [
         'https://internal.consuelohq.com/',
         'https://internal.consuelohq.com/office',
+        'https://internal.consuelohq.com/observability',
         'https://internal.consuelohq.com/traces',
         'https://internal.consuelohq.com/diffs',
         'https://internal.consuelohq.com/docs',
+        'https://internal.consuelohq.com/settings',
       ],
     });
     expect(fs.existsSync(result.logPath)).toBe(true);

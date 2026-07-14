@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-settings-gateway-edge-proxy-routes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1348,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1348",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1348",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1348/add-os-settings-gateway-edge-proxy-routes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1348",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1348/add-os-settings-gateway-edge-proxy-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-gateway-edge-proxy-routes",
+  "taskSession": "tsk_fc76e9beb067",
+  "tmuxSession": "opensaas-os-add-os-settings-gateway-edge-proxy-routes-fc76e9be",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-gateway-edge-proxy-routes/.task/os/add-os-settings-gateway-edge-proxy-routes/session.json",
+  "createdAt": "2026-07-03T03:21:44.146Z"
+}

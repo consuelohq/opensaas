@@ -1,0 +1,77 @@
+---
+title: Stripe
+description: Use Stripe CLI and API today while native Stripe tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `stripe` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the official Stripe CLI and API.**
+
+Use Stripe when you need to inspect sandbox resources, call API endpoints, test webhook flows, and build payment integrations without starting with live-mode writes.
+
+Consuelo plans to provide a focused `stripe` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up Stripe for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+Install Stripe CLI using the official guide, run `stripe login`, and begin in a sandbox. Keep restricted or secret keys in the local credential store.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+Use a read-only sandbox request such as `stripe get /v1/account` before creating customers, payment intents, subscriptions, refunds, or webhook endpoints.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+stripe.account.get
+stripe.customers.list
+stripe.paymentIntents.get
+stripe.events.list
+stripe.webhooks.listen
+```
+
+Useful typed inputs:
+
+```text
+mode
+resourceId
+limit
+startingAfter
+forwardTo
+dryRun
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+Payments, refunds, subscriptions, invoices, customer mutations, and live-mode operations require explicit approval and an unambiguous account and mode.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[Stripe official documentation](https://docs.stripe.com/stripe-cli)

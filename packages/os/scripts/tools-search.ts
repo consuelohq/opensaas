@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
+import { applyManifestOverlay, readManifestOverlay, resolveOverlayHome } from './lib/manifest-overlay';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 
 const require = createRequire(import.meta.url);
@@ -138,6 +139,7 @@ type IntentPack = {
   label: string;
   terms: string[];
   requireAny?: string[];
+  requireAll?: string[];
   boost: Record<string, number>;
   alternatives?: Array<{ intent: string; tools: string[] }>;
   safeDefault?: string;
@@ -216,6 +218,20 @@ const QUERY_ALIASES: Record<string, string[]> = {
 
 const INTENT_PACKS: IntentPack[] = [
   {
+    id: 'stream-cleanup',
+    label: 'preview or remove safe local stream branches',
+    terms: ['stream', 'cleanup', 'clean', 'prune', 'delete', 'remove', 'local', 'branch'],
+    requireAll: ['stream'],
+    requireAny: ['cleanup', 'clean', 'prune', 'delete', 'remove'],
+    boost: { 'stream.cleanup': 120, 'stream.list': 18, 'task.cleanup': -55, 'fs.trash': -35 },
+    alternatives: [
+      { intent: 'inspect stream branches', tools: ['stream.list'] },
+      { intent: 'clean up a task branch/worktree', tools: ['task.cleanup'] },
+    ],
+    safeDefault: 'stream.cleanup previews by default; set apply=true only after reviewing the removable and protected lists.',
+    mutatingGuidance: 'stream.cleanup only deletes local stream refs with an origin backup and zero unique local commits.',
+  },
+  {
     id: 'task-cleanup',
     label: 'clean up or abandon a task branch/worktree',
     terms: ['cleanup', 'clean', 'abandon', 'delete', 'remove', 'stale', 'worktree', 'branch'],
@@ -249,6 +265,17 @@ const INTENT_PACKS: IntentPack[] = [
       { intent: 'merge a pull request', tools: ['task.merge'] },
     ],
     safeDefault: 'task.prs is the safe read-only default for inspecting task PR links.',
+  },
+  {
+    id: 'github-pr-feedback',
+    label: 'fetch pull request feedback comments',
+    terms: ['github', 'pr', 'pull', 'request', 'review', 'reviews', 'comment', 'comments', 'feedback', 'inline', 'actionable', 'bot'],
+    requireAny: ['comments', 'comment', 'feedback', 'inline', 'bot'],
+    boost: { github: 120, 'task.pr': -80, 'task.prs': -20, 'task.merge': -30 },
+    alternatives: [
+      { intent: 'inspect task PR links', tools: ['task.prs'] },
+    ],
+    safeDefault: 'Use github operation pr.reviews for pull request feedback comments.',
   },
   {
     id: 'task-pr-create',
@@ -564,7 +591,10 @@ function readCanonicalManifest(): CanonicalToolManifest {
     throw new Error(`${manifestPath}: expected generated tool manifest with tools array`);
   }
 
-  return parsed as CanonicalToolManifest;
+  const manifest = parsed as CanonicalToolManifest;
+  const home = resolveOverlayHome();
+  if (!fs.existsSync(path.join(home, 'config.json'))) return manifest;
+  return applyManifestOverlay(manifest, readManifestOverlay(home));
 }
 
 function stringField(value: unknown): string | undefined {
@@ -678,6 +708,7 @@ function termSet(query: string): Set<string> {
 function intentMatches(pack: IntentPack, queryTerms: Set<string>): boolean {
   const hasTerm = pack.terms.some((term) => queryTerms.has(term));
   if (!hasTerm) return false;
+  if (pack.requireAll?.length && !pack.requireAll.every((term) => queryTerms.has(term))) return false;
   if (!pack.requireAny?.length) return true;
   return pack.requireAny.some((term) => queryTerms.has(term));
 }

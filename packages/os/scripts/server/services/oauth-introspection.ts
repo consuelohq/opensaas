@@ -17,10 +17,10 @@ export async function authorizeConsueloOAuthMcpRequest(input: {
 }): Promise<Response | null> {
   const endpoint = process.env.CONSUELO_OS_OAUTH_INTROSPECTION_URL ??
     'https://os.consuelohq.com/oauth/introspect';
-  const resource = `https://${input.config.workspaceHost}/mcp`;
 
   let response: Response;
   try {
+    const resource = new URL('/mcp', endpoint).toString();
     response = await fetch(endpoint, {
       method: 'POST',
       signal: AbortSignal.timeout(5_000),

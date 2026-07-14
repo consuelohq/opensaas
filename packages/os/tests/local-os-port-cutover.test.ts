@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -231,8 +232,6 @@ describe('prelaunch local OS port cutover', () => {
         "process.env.WORKSPACE_DAEMON_PORT || '46321'",
       ],
       ['scripts/start-consuelo-daemon.sh', 'PORT:-46321'],
-      ['scripts/start-brain-daemon.sh', 'PORT:-46321'],
-      ['scripts/start-brain.sh', 'PORT:-46321'],
       ['scripts/workspace-watchdog.sh', 'PORT:-46321'],
       ['scripts/install-system-daemons.sh', '${PORT:-46321}'],
       ['scripts/bootstrap.sh', 'http://127.0.0.1:46321'],
@@ -262,6 +261,9 @@ describe('prelaunch local OS port cutover', () => {
       expect(contents, path).toContain(expected);
       expect(contents, path).not.toContain('8960');
     }
+
+    expect(existsSync(resolve(osRoot, 'scripts/start-brain-daemon.sh'))).toBe(false);
+    expect(existsSync(resolve(osRoot, 'scripts/start-brain.sh'))).toBe(false);
   });
 
   it('should leave the independent workspace runtime on its explicit 8850 default', () => {

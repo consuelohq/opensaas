@@ -6,14 +6,14 @@ import { SITE } from "@/config";
 
 {
   SITE.showBackButton && (
-    <div class="app-layout flex items-center gap-4 mt-8 mb-1">
+    <div id="post-utility-nav" class="app-layout mt-8 mb-3 flex min-h-9 items-center gap-3">
       <LinkButton
         id="back-button"
         href="/blog"
-        class="focus-outline text-sm hover:opacity-75"
+        class="focus-outline inline-flex h-9 items-center text-sm font-medium leading-none hover:opacity-75"
         style="color: #B3B3B3;"
       >
-        <span>home</span>
+        <span>Home</span>
       </LinkButton>
       <LanguageSelector />
     </div>
@@ -23,10 +23,10 @@ import { SITE } from "@/config";
 <script>
   function updateGoBackUrl() {
     const backButton = document.querySelector("#back-button");
-  const backUrl = sessionStorage.getItem("backUrl");
-  if (backUrl && backButton) {
-    (backButton as HTMLAnchorElement).href = backUrl;
-  }
+    const backUrl = sessionStorage.getItem("backUrl");
+    if (backUrl && backButton) {
+      (backButton as HTMLAnchorElement).href = backUrl;
+    }
   }
   document.addEventListener("astro:page-load", updateGoBackUrl);
   updateGoBackUrl();

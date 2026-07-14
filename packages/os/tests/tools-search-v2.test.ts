@@ -5,6 +5,7 @@ import { runToolSearch } from '../scripts/tools-search';
 type ToolMatch = {
   name: string;
   capabilities?: { readOnly?: boolean; mutating?: boolean };
+  description?: string;
 };
 
 type ToolSearchPayload = {
@@ -44,6 +45,13 @@ describe('OS tools.search v2 intent resolution', () => {
     }
   });
 
+  it('routes PR review comment feedback to the GitHub facade', async () => {
+    const payload = await runSearch('CodeRabbit Codex PR review comments', 5);
+    expect(payload.recommended).toBe('github');
+    expect(names(payload)[0]).toBe('github');
+    expect(payload.matches[0].description).toContain('pr.reviews');
+  });
+
   it('keeps task and stream workflow tools ahead of code.call', async () => {
     const expectations: Array<[string, string]> = [
       ['task push changed files', 'task.push'],
@@ -51,6 +59,7 @@ describe('OS tools.search v2 intent resolution', () => {
       ['merge git task branch conflict', 'task.merge'],
       ['finish completed task branch', 'task.finish'],
       ['stream sync branch', 'stream.sync'],
+      ['clean up local stream branches', 'stream.cleanup'],
     ];
 
     for (const [query, expected] of expectations) {

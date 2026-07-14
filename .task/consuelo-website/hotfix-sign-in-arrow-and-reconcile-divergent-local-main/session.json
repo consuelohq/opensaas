@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3439f09ccb61",
+  "tmuxSession": "opensaas-consuelo-website-hotfix-sign-in-arrow-and-reconcile-divergent-loc-3439f09c",
+  "area": "consuelo-website",
+  "stream": "stream/consuelo-website",
+  "taskBranch": "task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main",
+  "branch": "task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-hotfix-sign-in-arrow-and-reconcile-divergent-local-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-hotfix-sign-in-arrow-and-reconcile-divergent-local-main",
+  "prNumber": 1456,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1456",
+  "createdAt": "2026-07-13T17:43:02.637Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-hotfix-sign-in-arrow-and-reconcile-divergent-local-main/.task/consuelo-website/hotfix-sign-in-arrow-and-reconcile-divergent-local-main/session.json"
+}

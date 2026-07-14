@@ -17,6 +17,7 @@ export default defineConfig({
     {
       path: '<rootDir>/src/engine/core-modules/i18n/locales/{locale}',
       include: ['src'],
+      exclude: ['src/engine/core-modules/email/templates/**'],
     },
   ],
   catalogsMergePath:

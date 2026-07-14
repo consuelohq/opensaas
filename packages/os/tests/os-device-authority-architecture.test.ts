@@ -73,6 +73,7 @@ describe('OS device authority architecture', () => {
       { method: 'GET', path: '/oauth/authorize', trust: 'public' },
       { method: 'GET', path: '/oauth/google/callback', trust: 'public' },
       { method: 'POST', path: '/oauth/token', trust: 'oauth' },
+      { method: 'POST', path: '/oauth/revoke', trust: 'oauth' },
       { method: 'POST', path: '/oauth/introspect', trust: 'internal' },
       { method: 'ANY', path: '/mcp', trust: 'oauth' },
       { method: 'ANY', path: '/mcp/*', trust: 'oauth' },
@@ -130,6 +131,14 @@ describe('OS device authority architecture', () => {
       name: 'introspection method guard',
       method: 'GET',
       path: '/oauth/introspect',
+      status: 405,
+      allow: 'POST',
+      body: 'Method not allowed\n',
+    },
+    {
+      name: 'revocation method guard',
+      method: 'GET',
+      path: '/oauth/revoke',
       status: 405,
       allow: 'POST',
       body: 'Method not allowed\n',
@@ -312,14 +321,16 @@ describe('OS device authority architecture', () => {
           'Authorization: Bearer header-secret',
           'Bearer standalone-secret',
           'CLOUDFLARE_API_TOKEN=cloudflare-secret',
+          'workspace Cloudflare provisioning failed: Cloudflare API listCloudflareTunnels failed with status 403 api token=operation-secret',
           'https://example.test/?access_token=query-secret&state=state-secret',
         ].join('\n'),
       ),
     );
 
     expect(message).not.toMatch(
-      /header-secret|standalone-secret|cloudflare-secret|query-secret|state-secret/,
+      /header-secret|standalone-secret|cloudflare-secret|operation-secret|query-secret|state-secret/,
     );
     expect(message).toContain('[redacted]');
+    expect(message).toContain('listCloudflareTunnels failed with status 403');
   });
 });

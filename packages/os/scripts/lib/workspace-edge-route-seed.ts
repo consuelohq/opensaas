@@ -39,6 +39,7 @@ const SITE_SNAPSHOT_ROUTES = [
   { pathPrefix: '/tracing', siteId: 'traces' },
   { pathPrefix: '/diffs', siteId: 'diffs' },
   { pathPrefix: '/docs', siteId: 'docs' },
+  { pathPrefix: '/settings', siteId: 'settings' },
 ] as const;
 type SiteSnapshotRoute = typeof SITE_SNAPSHOT_ROUTES[number];
 
@@ -168,6 +169,33 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
+const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/settings/overlay',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'settings-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/settings/*',
+      publicSiteRouteFamily: '/settings/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/settings',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'settings-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/settings/*',
+      publicSiteRouteFamily: '/settings/*',
+    },
+  },
+];
+
 const getPrimaryRoute = (
   record: WorkspaceEdgeSeedRecord,
 ): WorkspaceRouteD1Route => {
@@ -216,6 +244,7 @@ export const createWorkspaceEdgeRouteSeedRecord = (
       siteVersionId: input.siteVersionId,
     })),
     ...buildTraceGatewayRoutes(),
+    ...buildSettingsGatewayRoutes(),
   ];
 
   if (trimmedValue(input.appUpstreamUrl) !== undefined) {

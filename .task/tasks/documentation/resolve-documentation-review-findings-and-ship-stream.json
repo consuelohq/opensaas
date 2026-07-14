@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/resolve-documentation-review-findings-and-ship-stream",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1477,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1477",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1477",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1477/resolve-documentation-review-findings-and-ship-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1477",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1477/resolve-documentation-review-findings-and-ship-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-resolve-documentation-review-findings-and-ship-stream",
+  "taskSession": "tsk_621df4991dd4",
+  "tmuxSession": "opensaas-documentation-resolve-documentation-review-findings-and-ship-s-621df499",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-resolve-documentation-review-findings-and-ship-stream/.task/documentation/resolve-documentation-review-findings-and-ship-stream/session.json",
+  "createdAt": "2026-07-14T02:42:53.767Z"
+}

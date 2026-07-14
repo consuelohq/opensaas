@@ -94,8 +94,11 @@ contractDescribe('workspace edge route seed contract', () => {
       '/tracing',
       '/diffs',
       '/docs',
+      '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
+      '/gateway/settings/overlay',
+      '/gateway/settings',
     ]);
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
       expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
@@ -105,6 +108,7 @@ contractDescribe('workspace edge route seed contract', () => {
       expect.objectContaining({ pathPrefix: '/tracing', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/diffs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'diffs', manifestKey: 'sites/workspace_internal/diffs/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/docs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'docs', manifestKey: 'sites/workspace_internal/docs/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/settings', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'settings', manifestKey: 'sites/workspace_internal/settings/seeded-workspace-site-shell/index.html' }) }),
     ]));
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -125,6 +129,26 @@ contractDescribe('workspace edge route seed contract', () => {
           serviceName: 'trace-sites-read-layer',
           gatewayRouteFamily: '/gateway/traces/*',
           publicSiteRouteFamily: '/observability/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/settings/overlay',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'settings-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/settings/*',
+          publicSiteRouteFamily: '/settings/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/settings',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'settings-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/settings/*',
+          publicSiteRouteFamily: '/settings/*',
         }),
       }),
     ]));
@@ -168,7 +192,7 @@ contractDescribe('workspace edge route seed contract', () => {
 
     const osSql = seed.createWorkspaceEdgeRouteSeedSql({
       connectorId: '  connector_internal  ',
-      tunnelOriginUrl: '  https://connector-internal.os-origin.consuelohq.com  ',
+      tunnelOriginUrl: '  https://c-97c89262e0970bc466db457d4484f366.consuelohq.com  ',
       localServiceUrl: '  http://127.0.0.1:8787  ',
     });
 
@@ -186,6 +210,8 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(osSql).toMatch(/consuelo-gateway-service/);
     expect(osSql).toMatch(/trace-sites-read-layer/);
     expect(osSql).toMatch(/trace-sites-live-endpoints/);
+    expect(osSql).toMatch(/settings-sites-read-endpoints/);
+    expect(osSql).toMatch(/settings-sites-write-endpoints/);
     expect(osSql).not.toMatch(/  connector_internal  /);
     expect(osSql).not.toMatch(/token|credential|secret/i);
     expect(osSql).not.toMatch(/"pathPrefix":"\/traces"[^}]+"kind":"os-connector"/);
@@ -195,7 +221,7 @@ contractDescribe('workspace edge route seed contract', () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
     const osSql = seed.createWorkspaceEdgeRouteSeedSql({
       connectorId: '   ',
-      tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
+      tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
     });
 
     expect(osSql).not.toMatch(/INSERT OR REPLACE INTO workspace_connectors/i);

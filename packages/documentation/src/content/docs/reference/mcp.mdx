@@ -1,0 +1,116 @@
+---
+title: MCP
+description: Current MCP protocol, methods, discovery surface, scopes, and errors.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/mcp-gateway.ts
+    tests:
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: Initialize, discovery, unsupported method, invalid call, and skill invocation responses were exercised on 2026-07-13.
+  - source: packages/os/scripts/server/routes/mcp.ts
+    tests:
+      - packages/os/tests/local-os-server-hono-architecture.test.ts
+    runtime: HTTP method handling and bearer-versus-signed authorization paths were inspected on 2026-07-13.
+---
+
+Consuelo OS exposes Model Context Protocol through local stdio for supported coding agents and HTTPS for approved hosted agents.
+
+## Initialize
+
+The gateway speaks JSON-RPC 2.0 and currently returns MCP protocol version `2024-11-05`.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {}
+}
+```
+
+The result includes:
+
+```json
+{
+  "protocolVersion": "2024-11-05",
+  "serverInfo": {
+    "name": "consuelo-os-gateway",
+    "version": "1.0.0"
+  },
+  "capabilities": {
+    "tools": { "listChanged": false },
+    "prompts": {},
+    "resources": {}
+  }
+}
+```
+
+## Supported methods
+
+| Method | Result | Required scope |
+| --- | --- | --- |
+| `initialize` | Protocol and server capabilities. | `route:/mcp:read` |
+| `notifications/initialized` | Empty result. | `route:/mcp:read` |
+| `ping` | Empty result. | `route:/mcp:read` |
+| `tools/list` | Enabled OS skills as MCP tools. | `route:/mcp:read` |
+| `tools/call` | Calls one OS skill. | Tool-specific scope |
+| `prompts/list` | `prompts: []` | `route:/mcp:read` |
+| `resources/list` | `resources: []` | `route:/mcp:read` |
+
+The gateway does not currently publish MCP prompts or resources. Facade tools are not directly callable through `tools/call`; the MCP callable surface is OS skills from the effective manifest.
+
+## Tool discovery
+
+Each `tools/list` entry contains:
+
+```json
+{
+  "name": "sites",
+  "title": "Sites",
+  "description": "...",
+  "inputSchema": { "type": "object" },
+  "annotations": {
+    "consueloKind": "os-skill",
+    "requiredScope": "tool:sites:read",
+    "category": "read"
+  }
+}
+```
+
+Disabled skills are removed by the effective manifest before discovery.
+
+## Call a tool
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "sites",
+    "arguments": {}
+  }
+}
+```
+
+The result uses MCP text content. Consuelo serializes the skill's structured result or error into the text field and sets `isError` when `CallOutput.ok` is false.
+
+## Gateway errors
+
+Before JSON-RPC execution, route validation can return:
+
+| Code | Meaning |
+| --- | --- |
+| `INVALID_MCP_REQUEST` | Body is not a JSON-RPC request object. |
+| `INVALID_MCP_TOOL_CALL` | `tools/call` has no non-empty tool name. |
+| `UNKNOWN_MCP_METHOD` | Method is outside the supported set. |
+| `UNSUPPORTED_MCP_TOOL` | Name resolves to a non-skill surface; only OS skills are callable. |
+
+JSON-RPC errors use standard codes for the current cases:
+
+- `-32600` — invalid request;
+- `-32601` — method not found;
+- `-32602` — invalid `tools/call` parameters.
+
+Authorization, missing scopes, expired credentials, and signed-transport errors are defined in [Security reference](/secure/security-reference/).

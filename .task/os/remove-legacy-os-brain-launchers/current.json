@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-legacy-os-brain-launchers",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1407,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1407",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1407",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1407/remove-legacy-os-brain-launchers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1407",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1407/remove-legacy-os-brain-launchers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-legacy-os-brain-launchers",
+  "taskSession": "tsk_3633063cc11c",
+  "tmuxSession": "opensaas-os-remove-legacy-os-brain-launchers-3633063c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-legacy-os-brain-launchers/.task/os/remove-legacy-os-brain-launchers/session.json",
+  "createdAt": "2026-07-11T04:09:02.288Z"
+}

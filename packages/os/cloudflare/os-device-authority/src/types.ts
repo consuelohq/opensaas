@@ -103,6 +103,19 @@ export type McpOAuthAccessToken = {
   issuedAt: number;
 };
 
+export type McpOAuthRefreshToken = {
+  tokenHash: string;
+  clientId: string;
+  scope: string;
+  scopes: string[];
+  resource: string;
+  workspaceHost: string;
+  accountId: string;
+  email: string;
+  expiresAt: number;
+  issuedAt: number;
+};
+
 export type WorkspaceRouteRegistryBinding = WorkspaceRouteD1Database;
 export type DefaultSiteSnapshot = {
   key: string;
@@ -152,6 +165,12 @@ export type Store = {
   byMcpOAuthAccessToken(
     tokenHash: string,
   ): Promise<McpOAuthAccessToken | undefined>;
+  delMcpOAuthAccessToken(tokenHash: string): Promise<void>;
+  putMcpOAuthRefreshToken(t: McpOAuthRefreshToken): Promise<void>;
+  byMcpOAuthRefreshToken(
+    tokenHash: string,
+  ): Promise<McpOAuthRefreshToken | undefined>;
+  delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
   putWorkspaceNode(node: WorkspaceNode): Promise<void>;

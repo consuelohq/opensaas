@@ -41,7 +41,7 @@ describe('local OS Hono server architecture', () => {
     expect(existsSync(resolve(serverRoot, 'env.ts'))).toBe(true);
     expect(existsSync(resolve(osRoot, 'scripts/server.ts'))).toBe(false);
 
-    for (const route of ['health', 'mcp', 'steering', 'call', 'traces']) {
+    for (const route of ['health', 'mcp', 'settings', 'steering', 'call', 'traces']) {
       expect(existsSync(resolve(serverRoot, 'routes', `${route}.ts`)), route).toBe(true);
     }
 
@@ -71,16 +71,13 @@ describe('local OS Hono server architecture', () => {
     expect(packageJson.scripts['server:run']).toBe('bun ./scripts/server/main.ts');
     expect(packageJson.scripts['smoke:server']).toBe('bun ./scripts/server/main.ts');
 
-    for (const script of [
-      'scripts/start-consuelo-daemon.sh',
-      'scripts/start-brain-daemon.sh',
-      'scripts/start-brain.sh',
-    ]) {
-      expect(source(script)).toContain(
-        'exec "$bun_bin" "$root_dir/scripts/server/main.ts"',
-      );
-      expect(source(script)).not.toContain('scripts/server.ts');
-    }
+    const daemon = source('scripts/start-consuelo-daemon.sh');
+    expect(daemon).toContain(
+      'exec "$bun_bin" "$root_dir/scripts/server/main.ts"',
+    );
+    expect(daemon).not.toContain('scripts/server.ts');
+    expect(existsSync(resolve(osRoot, 'scripts/start-brain-daemon.sh'))).toBe(false);
+    expect(existsSync(resolve(osRoot, 'scripts/start-brain.sh'))).toBe(false);
 
     expect(source('scripts/server.js')).toContain(
       "path.join(WORKSPACE_DIR, 'scripts', 'server', 'main.ts')",
@@ -107,6 +104,8 @@ describe('local OS Hono server architecture', () => {
       { method: 'GET', path: '/gateway/traces/summary', trust: 'signed' },
       { method: 'GET', path: '/gateway/traces/aggregates', trust: 'signed' },
       { method: 'GET', path: '/gateway/traces/events', trust: 'signed' },
+      { method: 'GET', path: '/gateway/settings/snapshot', trust: 'signed' },
+      { method: 'POST', path: '/gateway/settings/overlay', trust: 'signed' },
       { method: 'ANY', path: '/mcp', trust: 'signed-or-oauth' },
       { method: 'GET', path: '/get_steering', trust: 'signed' },
       { method: 'POST', path: '/get_steering', trust: 'signed' },

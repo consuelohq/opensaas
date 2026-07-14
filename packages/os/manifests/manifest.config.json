@@ -29,7 +29,7 @@
       "context",
       "explore",
       "github",
-      "task.intent",
+      "task.start",
       "review.run",
       "tools.search",
       "tmp"
@@ -63,6 +63,7 @@
       "git.diff",
       "git.status",
       "stream.list",
+      "stream.cleanup",
       "checkFiles",
       "verify"
     ],

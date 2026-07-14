@@ -1,0 +1,77 @@
+---
+title: GoHighLevel
+description: Build a scoped HighLevel API tool today while native GoHighLevel tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `gohighlevel` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the official HighLevel REST API.**
+
+Use GoHighLevel when you need to read and update contacts, conversations, calendars, opportunities, workflows, and other CRM resources.
+
+Consuelo plans to provide a focused `gohighlevel` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up GoHighLevel for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+Choose a private integration token for one controlled workspace or OAuth 2.0 for a multi-workspace integration. Start with the smallest HighLevel scopes required by the workflow.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+Make one read-only request against the intended location and confirm the returned location or contact belongs to the expected account before enabling writes.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+gohighlevel.contacts.search
+gohighlevel.contacts.get
+gohighlevel.opportunities.list
+gohighlevel.calendars.events
+gohighlevel.messages.send
+```
+
+Useful typed inputs:
+
+```text
+locationId
+contactId
+query
+limit
+fields
+dryRun
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+Contact updates, messages, appointments, opportunities, workflow changes, and payments are external writes. Keep them separate from reads and require approval.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[GoHighLevel official documentation](https://marketplace.gohighlevel.com/docs/)

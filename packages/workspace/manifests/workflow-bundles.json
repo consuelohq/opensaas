@@ -755,15 +755,15 @@
           "source": "workspace-tooling",
           "sourcePath": "packages/workspace/tooling/tool-manifest.json",
           "category": "task lifecycle",
-          "description": "create a task branch, worktree, and draft PR",
-          "core": false,
+          "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+          "core": true,
           "definition": {
             "name": "task.start",
             "methodPath": [
               "task",
               "start"
             ],
-            "description": "create a task branch, worktree, and draft PR",
+            "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
             "category": "task lifecycle",
             "underlying": "workspace task.start",
             "capabilities": {
@@ -791,6 +791,11 @@
                   "required": true
                 },
                 {
+                  "source": "workflow",
+                  "flag": "--workflow",
+                  "kind": "value"
+                },
+                {
                   "source": "bodyFile",
                   "flag": "--body-file",
                   "kind": "value"
@@ -799,6 +804,11 @@
                   "source": "startFrom",
                   "flag": "--start-from",
                   "kind": "value"
+                },
+                {
+                  "source": "createStream",
+                  "flag": "--create-stream",
+                  "kind": "boolean"
                 }
               ],
               "jsonFlag": "--json"
@@ -806,7 +816,8 @@
             "exampleInput": {
               "stream": "stream/workspace-agents",
               "title": "example task",
-              "dryRun": true
+              "dryRun": true,
+              "workflow": "task"
             },
             "sessionRequired": false,
             "workflowRole": "task.start"

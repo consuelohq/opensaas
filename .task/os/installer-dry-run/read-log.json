@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/installer-dry-run/workpad.md",
+    "packages/os/docs/installer-runtime-release-checklist.md",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+    "packages/os/tests/installer-runtime-dependencies.test.ts"
+  ],
+  "updatedAt": "2026-07-11T00:34:22.331Z"
+}

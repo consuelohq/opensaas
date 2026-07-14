@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
+import { createConnectorOriginHostname } from '../scripts/lib/connector-origin-hostname';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
@@ -22,6 +23,10 @@ import {
 
 const origin = 'https://os.consuelohq.com';
 const approvalAssertionSecret = 'test-approval-assertion-secret';
+const centralProxyConnectorOrigin = `https://${createConnectorOriginHostname({
+  connectorId: 'connector_home_mac_mini',
+  baseDomain: 'consuelohq.test',
+})}`;
 
 function b64(bytes: Uint8Array): string {
   let s = '';
@@ -171,7 +176,10 @@ function createCapturedWorkspaceConnectorProvisioner(): CapturedWorkspaceConnect
       return {
         connectorId: input.connectorId,
         cloudflareTunnelToken: `cloudflare_tunnel_token_fixture_${connectorLabel}`,
-        tunnelOriginUrl: `https://${connectorLabel}.os-origin.consuelohq.com`,
+        tunnelOriginUrl: `https://${createConnectorOriginHostname({
+          connectorId: input.connectorId,
+          baseDomain: 'consuelohq.com',
+        })}`,
         localServiceUrl: 'http://127.0.0.1:46321',
       };
     },
@@ -233,9 +241,10 @@ describe('os device authority worker', () => {
       authorization_endpoint: `${origin}/oauth/authorize`,
       token_endpoint: `${origin}/oauth/token`,
       introspection_endpoint: `${origin}/oauth/introspect`,
+      revocation_endpoint: `${origin}/oauth/revoke`,
       client_id_metadata_document_supported: true,
       response_types_supported: ['code'],
-      grant_types_supported: ['authorization_code'],
+      grant_types_supported: ['authorization_code', 'refresh_token'],
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
     });
@@ -338,7 +347,7 @@ describe('os device authority worker', () => {
             kind: 'os-connector',
             connectorId: 'connector_home_mac_mini',
             connectorStatus: 'connected',
-            tunnelOriginUrl: 'https://connector-origin.consuelohq.test',
+            tunnelOriginUrl: centralProxyConnectorOrigin,
           },
         },
       ],
@@ -346,7 +355,7 @@ describe('os device authority worker', () => {
 
     const fetchImpl: typeof fetch = async (input, init) => {
       const request = input instanceof Request ? input : new Request(input, init);
-      if (request.url.startsWith('https://connector-origin.consuelohq.test/mcp')) {
+      if (request.url.startsWith(`${centralProxyConnectorOrigin}/mcp`)) {
         return new Response(JSON.stringify({
           url: request.url,
           method: request.method,
@@ -398,6 +407,7 @@ describe('os device authority worker', () => {
     const tokenJson = await tokenResponse.json() as Record<string, unknown>;
     expect(tokenResponse.status).toBe(200);
     expect(tokenJson.access_token).toMatch(/^coa_/);
+    expect(tokenJson.refresh_token).toMatch(/^cor_/);
 
     const proxy = await handler(new Request(origin + '/mcp', {
       method: 'POST',
@@ -416,7 +426,7 @@ describe('os device authority worker', () => {
     };
 
     expect(proxy.status).toBe(200);
-    expect(proxied.url).toBe('https://connector-origin.consuelohq.test/mcp');
+    expect(proxied.url).toBe(`${centralProxyConnectorOrigin}/mcp`);
     expect(proxied.method).toBe('POST');
     expect(proxied.headers['x-consuelo-workspace-id']).toBe('workspace_macbook_air_test');
     expect(proxied.headers['x-consuelo-hostname']).toBe('macbook-air-test.consuelohq.com');
@@ -427,6 +437,60 @@ describe('os device authority worker', () => {
     expect(proxied.headers['x-consuelo-edge-nonce']).toMatch(/^[-A-Za-z0-9_:.]+$/);
     expect(proxied.headers['x-consuelo-edge-signature']).toMatch(/^sha256=[0-9a-f]{64}$/);
     expect(proxied.body).toContain('tools/list');
+
+    const refreshResponse = await handler(new Request(origin + '/oauth/token', {
+      method: 'POST',
+      ...form({
+        grant_type: 'refresh_token',
+        client_id: 'chatgpt-consuelo-os',
+        refresh_token: String(tokenJson.refresh_token),
+        resource: origin + '/mcp',
+      }),
+    }));
+    const refreshJson = await refreshResponse.json() as Record<string, unknown>;
+    expect(refreshResponse.status).toBe(200);
+    expect(refreshJson.access_token).toMatch(/^coa_/);
+    expect(refreshJson.access_token).not.toBe(tokenJson.access_token);
+    expect(refreshJson.refresh_token).toMatch(/^cor_/);
+    expect(refreshJson.refresh_token).not.toBe(tokenJson.refresh_token);
+
+    const replayResponse = await handler(new Request(origin + '/oauth/token', {
+      method: 'POST',
+      ...form({
+        grant_type: 'refresh_token',
+        client_id: 'chatgpt-consuelo-os',
+        refresh_token: String(tokenJson.refresh_token),
+        resource: origin + '/mcp',
+      }),
+    }));
+    expect(replayResponse.status).toBe(400);
+    await expect(replayResponse.json()).resolves.toMatchObject({
+      error: 'invalid_grant',
+    });
+
+    const revokeResponse = await handler(new Request(origin + '/oauth/revoke', {
+      method: 'POST',
+      ...form({
+        client_id: 'chatgpt-consuelo-os',
+        token: String(refreshJson.refresh_token),
+        token_type_hint: 'refresh_token',
+      }),
+    }));
+    expect(revokeResponse.status).toBe(200);
+
+    const revokedResponse = await handler(new Request(origin + '/oauth/token', {
+      method: 'POST',
+      ...form({
+        grant_type: 'refresh_token',
+        client_id: 'chatgpt-consuelo-os',
+        refresh_token: String(refreshJson.refresh_token),
+        resource: origin + '/mcp',
+      }),
+    }));
+    expect(revokedResponse.status).toBe(400);
+    await expect(revokedResponse.json()).resolves.toMatchObject({
+      error: 'invalid_grant',
+    });
   });
 
   it('should support ChatGPT CIMD clients and enforce resource echo during MCP OAuth token exchange', async () => {
@@ -864,7 +928,9 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements[0]).toContain('connector_macbook_air_test');
     expect(routeRegistry.statements[0]).toContain('/mcp');
     expect(routeRegistry.statements[0]).toContain('os-connector');
-    expect(routeRegistry.statements[0]).toContain('https://connector-macbook-air-test.os-origin.consuelohq.com');
+    expect(routeRegistry.statements[0]).toContain(
+      'https://c-8c2381a636d37000454ca2ea20503a0d.consuelohq.com',
+    );
     expect(routeRegistry.statements[0]).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
 

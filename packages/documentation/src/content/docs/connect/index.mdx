@@ -1,0 +1,49 @@
+---
+title: Connect
+description: Connect agents, nodes, apps, and services to one Consuelo workspace.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
+    runtime: Local agent configuration, managed node enrollment, and the current provider-tool manifest were verified from focused source and tests on 2026-07-14.
+---
+
+Consuelo OS separates three kinds of connection:
+
+- **Agents** are the applications that call OS tools.
+- **Nodes** are the computers that run the local OS runtime for a workspace.
+- **Apps and services** are the external systems those tools can work with.
+
+That distinction matters. Connecting Claude Code does not grant access to Gmail, and adding a provider credential does not register another computer as a node.
+
+## Choose what you are connecting
+
+| You want to… | Go to |
+| --- | --- |
+| Use the workspace from ChatGPT or a local coding agent | [Agents](/connect/agents/chatgpt/) |
+| Understand which computer runs the work | [Nodes](/connect/nodes/how-nodes-work/) |
+| Work with Google Workspace, GitHub, deployment platforms, CRMs, data systems, or other providers | [Apps and services](/connect/apps-and-services/) |
+
+## Current support at a glance
+
+**Available now through Consuelo tools**
+
+- ChatGPT through the workspace HTTPS MCP endpoint;
+- Codex, Claude Code, Cursor, OpenCode, Factory Droid, and Gemini CLI through local MCP stdio;
+- managed home and member nodes created by workspace authorization;
+- GitHub, Linear, read-only Sentry investigation, outbound Slack posts, and part of the Railway workflow.
+
+**Available today through an official CLI or API**
+
+- Google Workspace through `gog`;
+- Cloudflare, Vercel, Datadog, Snowflake, Supabase, Salesforce, Stripe, Twilio, HubSpot, Notion, and GoHighLevel through their documented local interfaces;
+- additional providers when your agent builds a small typed tool from the official contract.
+
+The service pages separate **native Consuelo support** from **what you can use today**. Planned tools are labeled as planned; the underlying CLI or API path remains practical and explicit.
+
+## Start with one agent
+
+Install OS and connect one local agent first: [Connect your first agent](/start/connect-your-first-agent/). Return here to add nodes and give that agent access to the services where your work already lives.

@@ -15,6 +15,7 @@
     "stream:sync": "bun ./scripts/stream-sync.js",
     "stream:context": "bun ./scripts/stream-context.js",
     "stream:list": "bun ./scripts/stream-list.js",
+    "stream:cleanup": "bun ./scripts/stream-cleanup.js",
     "railway:logs": "bun ./scripts/railway-logs.js",
     "wait": "bun ./scripts/wait.js",
     "browser": "bun ./scripts/browser.js",
@@ -50,12 +51,11 @@
     "diff_cockpit": "bun ./scripts/diff_cockpit.ts",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
-    "worker": "bun ./scripts/worker.ts",
+    "subagent": "bun ./scripts/subagent.ts",
     "os:release": "bun ./scripts/os-release.ts",
     "os:release-install": "bun ./scripts/os-release-install.ts",
     "os:release-device-auth": "bun ./scripts/os-release-device-auth.ts",
     "office": "bun ./scripts/office.ts",
-    "task-intent": "bun ./scripts/task-intent.js",
     "media:svg": "python3 ./scripts/media-svg.py"
   },
   "dependencies": {

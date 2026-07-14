@@ -19,13 +19,14 @@ done
 
 daemon_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
 daemon_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$daemon_user}}"
+consuelo_data_home="${CONSUELO_HOME:-$daemon_home/.consuelo}"
 uid_value="$(id -u "$daemon_user")"
 launch_domain="gui/$uid_value"
 launch_agent_dir="$daemon_home/Library/LaunchAgents"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
-cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$daemon_home/.consuelo/os/security/generated}"
+cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
 cloudflared_labels=()
 
 log() {
@@ -97,5 +98,5 @@ done
 if [ "$dry_run" -eq 1 ]; then
   log "dry run complete; no LaunchAgents changed"
 else
-  log "Consuelo OS LaunchAgents removed. Data preserved at $daemon_home/.consuelo/os"
+  log "Consuelo OS LaunchAgents removed. Data preserved at $consuelo_data_home"
 fi

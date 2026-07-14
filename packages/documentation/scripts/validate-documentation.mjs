@@ -2,40 +2,110 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const selectedSlugs = [
+  'start/index',
+  'start/install-consuelo-os',
+  'start/create-a-workspace',
+  'start/connect-your-first-agent',
+  'start/local-and-consuelo-cloud',
+  'start/core-concepts',
+  'connect/index',
+  'connect/agents/chatgpt',
+  'connect/agents/codex',
+  'connect/agents/claude-code',
+  'connect/agents/cursor',
+  'connect/agents/opencode',
+  'connect/agents/gemini',
+  'connect/agents/other-agents',
+  'connect/nodes/how-nodes-work',
+  'connect/nodes/home-node',
+  'connect/nodes/local-nodes',
+  'connect/nodes/cloud-nodes',
+  'connect/apps-and-services/index',
+  'connect/apps-and-services/google-workspace',
+  'connect/apps-and-services/gmail',
+  'connect/apps-and-services/google-drive',
+  'connect/apps-and-services/google-calendar',
+  'connect/apps-and-services/slack',
+  'connect/apps-and-services/notion',
+  'connect/apps-and-services/github',
+  'connect/apps-and-services/linear',
+  'connect/apps-and-services/cloudflare',
+  'connect/apps-and-services/railway',
+  'connect/apps-and-services/vercel',
+  'connect/apps-and-services/datadog',
+  'connect/apps-and-services/sentry',
+  'connect/apps-and-services/snowflake',
+  'connect/apps-and-services/supabase',
+  'connect/apps-and-services/gohighlevel',
+  'connect/apps-and-services/salesforce',
+  'connect/apps-and-services/hubspot',
+  'connect/apps-and-services/stripe',
+  'connect/apps-and-services/twilio',
+  'connect/apps-and-services/additional-services',
+  'build/index',
+  'build/tools/how-tools-work',
+  'build/tools/workspace',
+  'build/tools/browser',
+  'build/tools/office',
+  'build/tools/media',
+  'build/skills/how-skills-work',
+  'build/skills/install-a-skill',
+  'build/skills/create-a-skill',
+  'build/skills/skill-structure',
+  'build/steering/how-steering-works',
+  'build/steering/workspace-steering',
+  'build/steering/project-steering',
+  'build/workflows',
+  'build/shared-memory-and-context',
+  'build/files-and-artifacts',
+  'build/approvals',
+  'sites/index',
+  'sites/create-a-site',
+  'sites/pages-and-content',
+  'sites/preview-locally',
+  'sites/publish',
+  'sites/domains',
+  'sites/troubleshooting',
+  'observe/index',
+  'observe/runs',
+  'observe/traces',
+  'observe/tool-calls',
+  'observe/artifacts',
+  'observe/logs',
+  'observe/debugging-failures',
+  'secure/index',
+  'secure/security-model',
+  'secure/access-and-permissions',
+  'secure/credentials',
+  'secure/apple-keychain-and-api-keys',
+  'secure/credential-detection',
+  'secure/other-secret-managers',
+  'secure/approvals',
+  'secure/nodes-and-network-access',
+  'secure/tailscale',
+  'secure/hosted-mcp-ingress',
+  'secure/security-reference',
+  'reference/index',
+  'reference/cli',
+  'reference/configuration',
+  'reference/mcp',
+  'reference/tools',
+  'reference/skills-and-manifests',
+  'reference/result-and-error-formats',
+  'reference/environment-variables',
+  'reference/urls-and-ports',
+  'reference/glossary',
   'user-guide/user-stories-use-cases',
-  'user-guide/introduction',
-  'user-guide/getting-started/capabilities/what-is-consuelo',
   'user-guide/getting-started/capabilities/implementation-services',
   'user-guide/getting-started/capabilities/glossary',
   'user-guide/getting-started/capabilities/keyboard-shortcuts',
-  'user-guide/getting-started/how-tos/create-workspace',
   'user-guide/getting-started/how-tos/navigate-around-consuelo',
   'user-guide/getting-started/how-tos/configure-your-workspace',
-  'os/overview',
-  'os/how-it-works',
-  'os/glossary',
-  'os/concepts/portal',
-  'os/concepts/skills',
-  'os/concepts/scripts',
-  'os/concepts/files-and-artifacts',
-  'os/concepts/approvals',
   'os/concepts/data-model-and-graphql',
-  'os/concepts/context-and-memory',
-  'os/concepts/integrations-and-capabilities',
-  'os/concepts/observability',
-  'os/concepts/local-and-cloud',
-  'tools/overview',
-  'tools/sites/overview',
-  'tools/office',
-  'tools/media/getting-started',
-  'os/tools/browser-tools',
   'os/tools/subagents',
-  'os/tools/overview',
   'developers/introduction',
   'developers/agent/overview',
-  'developers/agent/tool-system',
   'developers/agent/crm-tools',
-  'developers/agent/integrations',
   'developers/api/overview',
   'developers/api/auth',
   'developers/api/graphql',
@@ -44,6 +114,15 @@ const selectedSlugs = [
 ];
 
 const removedSlugs = [
+  'os/overview',
+  'os/how-it-works',
+  'os/getting-started/install',
+  'os/getting-started/connect-agents',
+  'os/getting-started/workspace-launcher',
+  'os/concepts/local-and-cloud',
+  'user-guide/introduction',
+  'user-guide/getting-started/capabilities/what-is-consuelo',
+  'user-guide/getting-started/how-tos/create-workspace',
   'os/agent-context/steering',
   'os/agent-context/decision',
   'os/agent-context/tools',
@@ -52,6 +131,32 @@ const removedSlugs = [
   'os/tools/decision-engine',
   'os/tools/tool-manifest',
   'os/tools/scripts',
+  'developers/agent/integrations',
+  'os/concepts/integrations-and-capabilities',
+  'connect/connectors/index',
+  'connect/connectors/github',
+  'connect/connectors/google-drive',
+  'connect/connectors/gmail',
+  'connect/connectors/google-calendar',
+  'connect/connectors/slack',
+  'connect/connectors/additional-connectors',
+  'os/concepts/portal',
+  'os/concepts/skills',
+  'os/concepts/scripts',
+  'os/concepts/context-and-memory',
+  'os/concepts/files-and-artifacts',
+  'os/concepts/approvals',
+  'os/tools/overview',
+  'os/tools/browser-tools',
+  'tools/overview',
+  'tools/office',
+  'tools/media/getting-started',
+  'developers/agent/tool-system',
+  'tools/sites/overview',
+  'os/concepts/observability',
+  'os/concepts/mcp-ingress-security',
+  'os/concepts/configuration',
+  'os/glossary',
 ];
 
 const adapterNames = [
@@ -98,6 +203,9 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
+for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:secure', 'test:secure-browser', 'test:reference', 'test:reference-browser', 'test:review-cleanup', 'test:browser', 'test:boundary']) {
+  assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
+}
 assert(existsSync('bun.lock'), 'bun.lock must exist');
 
 const rootPackageJson = JSON.parse(read('../../package.json'));
@@ -168,14 +276,25 @@ assert(
   config.includes('RuntimeLanguageSelect.astro'),
   'Starlight LanguageSelect must use runtime translation selector',
 );
+const navigation = read('src/lib/docs-navigation.ts');
 for (const required of [
-  'user-guide/user-stories-use-cases',
-  'tools/sites/overview',
-  'tools/office',
-  'os/overview',
-  'developers/introduction',
+  'Start',
+  'Connect',
+  'Build with OS',
+  'Sites',
+  'Observe',
+  'Secure',
+  'Reference',
 ]) {
-  assert(config.includes(required), `sidebar missing ${required}`);
+  assert(navigation.includes(`label: '${required}'`), `navigation missing ${required}`);
+}
+for (const required of [
+  'docsSidebar',
+  'customCss',
+  'PageTitle',
+  'Sidebar',
+]) {
+  assert(config.includes(required), `Starlight config missing ${required}`);
 }
 assert(
   !config.includes('Example Guide'),
@@ -196,6 +315,29 @@ assert(
   !existsSync('src/content/docs/reference/example.md'),
   'starter reference must be removed',
 );
+for (const file of [
+  'AUTHORING.md',
+  'src/components/PageTitle.astro',
+  'src/components/Sidebar.astro',
+  'src/lib/docs-navigation.ts',
+  'src/lib/markdown-pages.ts',
+  'src/pages/[...slug].md.ts',
+  'src/styles/docs.css',
+]) {
+  assert(existsSync(file), `missing documentation foundation file ${file}`);
+}
+const pageTitle = read('src/components/PageTitle.astro');
+for (const action of ['Copy page', 'View as Markdown', 'Open in ChatGPT', 'Open in Claude']) {
+  assert(pageTitle.includes(action), `page actions missing ${action}`);
+}
+assert(!pageTitle.includes('Ask AI'), 'Ask AI action must not be added');
+const docsCss = read('src/styles/docs.css');
+assert(docsCss.includes('--sl-content-width: 44rem'), 'docs reading lane must remain 44rem');
+assert(docsCss.includes('max-width: 65ch'), 'docs prose measure must remain 65ch');
+const authoring = read('AUTHORING.md');
+for (const status of ['shipped', 'preview', 'planned', 'unresolved', 'deprecated']) {
+  assert(authoring.includes(status), `authoring contract missing ${status} status`);
+}
 
 const readme = read('README.md');
 for (const phrase of [
@@ -246,8 +388,9 @@ for (const path of allFiles) {
 
 const slugs = new Set();
 for (const path of allFiles) {
-  const slug = path.slice(docsRoot.length + 1).replace(/\.(md|mdx)$/, '');
-  slugs.add(slug === 'index' ? '' : slug);
+  const sourceSlug = path.slice(docsRoot.length + 1).replace(/\.(md|mdx)$/, '');
+  const slug = sourceSlug === 'index' ? '' : sourceSlug.replace(/\/index$/, '');
+  slugs.add(slug);
 }
 
 const routeExists = (ref) => {
