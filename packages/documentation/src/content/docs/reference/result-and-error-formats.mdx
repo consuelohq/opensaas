@@ -1,0 +1,134 @@
+---
+title: Result and error formats
+description: Stable tool, skill, MCP, and HTTP error envelopes.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/facade/types.ts
+    tests:
+      - packages/os/tests/facade/facade.test.ts
+    runtime: Successful, validation, task-session, timeout, and command-failure facade results were exercised on 2026-07-13.
+  - source: packages/os/scripts/lib/types.ts
+    tests:
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: Skill CallOutput success and error serialization through MCP was exercised on 2026-07-13.
+---
+
+Consuelo uses structured envelopes so callers do not have to infer success from terminal text.
+
+## `ToolResult`
+
+Facade tools return:
+
+```json
+{
+  "now": "2026-07-13T23:00:00.000Z",
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {},
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 42,
+  "traceId": "trc_123",
+  "apiVersion": "1.0.0"
+}
+```
+
+Optional fields are `requestId`, `inputTokens`, `outputTokens`, `totalTokens`, `detail`, and `changed`.
+
+| Field | Contract |
+| --- | --- |
+| `ok` | Boolean success signal. |
+| `code` | Stable machine-readable facade code. |
+| `message` | Short human-readable summary. |
+| `data` | Tool-specific structured result. |
+| `stderr` | Captured standard error, empty when absent. |
+| `exitCode` | Underlying process status, normally `0` on success and `1` on failure. |
+| `durationMs` | Measured tool duration. |
+| `traceId` | Trace identifier for correlation. |
+| `apiVersion` | Current envelope version, `1.0.0`. |
+
+Current facade codes are:
+
+- `OK`
+- `VALIDATION_ERROR`
+- `AMBIGUOUS_TASK_SELECTION`
+- `WORKTREE_NOT_FOUND`
+- `COMMAND_FAILED`
+- `TIMEOUT`
+- `PARSE_ERROR`
+- `NOT_FOUND`
+- `TASK_SESSION_NOT_FOUND`
+- `TASK_SESSION_REQUIRED`
+- `DRY_RUN`
+
+A failed result can still contain useful `data` and `stderr`. Branch on `ok` and `code`, not on whether text is empty.
+
+## `CallOutput`
+
+OS skills return a different envelope:
+
+```json
+{
+  "ok": true,
+  "name": "sites",
+  "permission": "guidance",
+  "traceId": "trc_456",
+  "durationMs": 18,
+  "result": {},
+  "artifacts": [],
+  "proposedWrites": [],
+  "requiresApproval": false
+}
+```
+
+On failure:
+
+```json
+{
+  "ok": false,
+  "name": "example",
+  "permission": "execute",
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Input did not match the skill schema.",
+    "details": {}
+  }
+}
+```
+
+`permission` is one of `guidance`, `read`, `draft`, `write`, `execute`, `external`, or `admin`. `artifacts`, `proposedWrites`, and `requiresApproval` appear only when relevant.
+
+Skill error codes are subsystem-specific and are not one closed global enum. Treat `error.code` as the machine key and preserve unknown future values.
+
+## MCP result wrapping
+
+MCP `tools/call` wraps the visible skill result as JSON text:
+
+```json
+{
+  "content": [
+    { "type": "text", "text": "{\n  \"summary\": \"...\"\n}" }
+  ],
+  "isError": false
+}
+```
+
+Transport and JSON-RPC errors can occur before a `CallOutput` exists. See [MCP](/reference/mcp/) and [Security reference](/secure/security-reference/).
+
+## HTTP route errors
+
+Local JSON routes generally return:
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "SOME_ERROR",
+    "message": "Safe public message."
+  }
+}
+```
+
+Use the HTTP status for transport outcome and `error.code` for program logic. Do not expose raw internal exception text to end users.

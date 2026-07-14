@@ -1,0 +1,74 @@
+---
+title: Glossary
+description: Canonical meanings for Consuelo OS product and runtime terms.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/README.md
+    tests:
+      - packages/os/tests/install-state.test.ts
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: Installed layout, portal entrypoints, MCP discovery, and execution records were inspected on 2026-07-13.
+  - source: packages/os/scripts/lib/consuelo-home.ts
+    tests:
+      - packages/os/tests/consuelo-home-config.test.ts
+    runtime: Workspace, node, and home configuration schemas were compared with generated files on 2026-07-13.
+---
+
+**Agent** — A client such as ChatGPT, Codex, Claude Code, Cursor, OpenCode, or Gemini CLI that connects to Consuelo OS.
+
+**Approval** — An explicit gate required before a caller performs a sensitive action. Approval is separate from identity, authentication, and authorization.
+
+**Artifact** — A durable output with metadata linking it to the work, skill, run, or trace that produced it.
+
+**Call** — One invocation of an OS skill using `CallInput`, producing `CallOutput`.
+
+**Connector** — A controlled connection between Consuelo OS and an external service or between the hosted edge and a node.
+
+**Consuelo home** — The machine-local root for installed runtime, node state, workspace configuration, tools, skills, logs, and artifacts. The default is `~/.consuelo`.
+
+**Core manifest** — The small generated bootstrap set available with normal steering. It is not the full installed tool catalog.
+
+**Effective manifest** — The generated full manifest after local settings overlays remove disabled tools or skills.
+
+**Facade tool** — A typed operation called through the workspace tool facade, such as `fs.read` or `task.start`. It has validated input and a `ToolResult` envelope.
+
+**File** — Workspace material stored or referenced within an allowed file boundary. A file is not automatically an artifact.
+
+**Home node** — The authoritative machine running live Consuelo OS for a workspace.
+
+**Live OS** — The active runtime and tool authority on a node. It can execute permitted work and produce current traces.
+
+**Local node** — A machine-local OS installation. A local node can be the home node or a member node.
+
+**MCP** — Model Context Protocol, the discovery and invocation protocol used to connect supported agents to OS skills.
+
+**Member node** — A node joined to a workspace without being its authoritative home node.
+
+**Node** — One machine running Consuelo OS, with node-local identity, security material, database, logs, and runtime state.
+
+**OS skill** — A discoverable skill entry that MCP can list and call. It can contain guidance, executable behavior, or both depending on its metadata.
+
+**Permission** — The declared effect tier for a skill: `guidance`, `read`, `draft`, `write`, `execute`, `external`, or `admin`.
+
+**Run** — One bounded execution of work. A run can contain several related tool calls and artifacts.
+
+**Script** — Executable implementation behind a tool or skill. A script is not automatically a public tool.
+
+**Site** — A human-facing page or collection rendered from workspace output. Office is one Site category.
+
+**Static snapshot** — Published Site content served without consulting the live node for each read.
+
+**Steering** — Durable workspace and project instructions agents load before working.
+
+**Task session** — The identifier that binds repository tools to one isolated task branch and worktree.
+
+**Tool** — One operation an agent can call. In broad product language this includes facade tools and callable OS skills; exact manifests distinguish their `kind`.
+
+**Tool call** — One invocation of a named tool with structured input and a structured result.
+
+**Trace** — The correlation record for what ran, what it returned, how long it took, and which related events or artifacts it produced.
+
+**Workspace** — The shared identity, configuration, rules, tools, and durable work boundary used across agents and nodes.
+
+**Workflow bundle** — A generated definition that coordinates a known sequence of tools or skills under one workflow identifier.
