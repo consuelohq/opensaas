@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e9079aeff701",
+  "tmuxSession": "opensaas-security-fix-chatgpt-central-mcp-tool-discovery-e9079aef",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-chatgpt-central-mcp-tool-discovery",
+  "branch": "task/security/fix-chatgpt-central-mcp-tool-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-chatgpt-central-mcp-tool-discovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-chatgpt-central-mcp-tool-discovery",
+  "prNumber": 1494,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1494",
+  "createdAt": "2026-07-14T19:13:02.218Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-chatgpt-central-mcp-tool-discovery/.task/security/fix-chatgpt-central-mcp-tool-discovery/session.json"
+}

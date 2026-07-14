@@ -8,6 +8,7 @@ import {
   finishMcpOAuthGoogleCallback,
   introspectMcpOAuthToken,
   invalidOauthRequest,
+  revokeMcpOAuthToken,
   startMcpOAuthAuthorization,
 } from '../services/mcp-oauth';
 
@@ -81,6 +82,13 @@ async function handleMcpOAuthRequest(
         nowMs: now(),
       });
     }
+    if (url.pathname === '/oauth/revoke') {
+      if (request.method !== 'POST') return methodNotAllowed('POST');
+      return await revokeMcpOAuthToken({
+        request,
+        store: input.store,
+      });
+    }
     return new Response('Not found\n', { status: 404 });
   } catch (error: unknown) {
     if (error instanceof Error) throw error;
@@ -96,5 +104,6 @@ export function registerMcpOAuthRoutes(
   app.all('/oauth/authorize', (context) => handle(context.req.raw));
   app.all('/oauth/google/callback', (context) => handle(context.req.raw));
   app.all('/oauth/token', (context) => handle(context.req.raw));
+  app.all('/oauth/revoke', (context) => handle(context.req.raw));
   app.all('/oauth/introspect', (context) => handle(context.req.raw));
 }

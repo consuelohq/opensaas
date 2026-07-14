@@ -3,6 +3,7 @@ import type {
   Grant,
   McpOAuthAccessToken,
   McpOAuthCode,
+  McpOAuthRefreshToken,
   McpOAuthState,
   OAuthState,
   StorageLike,
@@ -122,6 +123,36 @@ export class DurableStore implements Store {
       throw new Error('mcp oauth token read failed');
     }
   }
+  async delMcpOAuthAccessToken(tokenHash: string) {
+    try {
+      await this.storage.delete(`mot:${tokenHash}`);
+    } catch {
+      throw new Error('mcp oauth token delete failed');
+    }
+  }
+  async putMcpOAuthRefreshToken(t: McpOAuthRefreshToken) {
+    try {
+      await this.storage.put(`mrt:${t.tokenHash}`, t);
+    } catch {
+      throw new Error('mcp oauth refresh token write failed');
+    }
+  }
+  async byMcpOAuthRefreshToken(tokenHash: string) {
+    try {
+      return await this.storage.get<McpOAuthRefreshToken>(
+        `mrt:${tokenHash}`,
+      );
+    } catch {
+      throw new Error('mcp oauth refresh token read failed');
+    }
+  }
+  async delMcpOAuthRefreshToken(tokenHash: string) {
+    try {
+      await this.storage.delete(`mrt:${tokenHash}`);
+    } catch {
+      throw new Error('mcp oauth refresh token delete failed');
+    }
+  }
   async putAccountWorkspace(workspace: AccountWorkspace) {
     try {
       await this.storage.put(`aw:${workspace.accountId}`, workspace);
@@ -158,6 +189,7 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpStates = new Map<string, McpOAuthState>();
   const mcpCodes = new Map<string, McpOAuthCode>();
   const mcpTokens = new Map<string, McpOAuthAccessToken>();
+  const mcpRefreshTokens = new Map<string, McpOAuthRefreshToken>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
   const workspaceNodes = new Map<string, WorkspaceNode>();
   return {
@@ -222,6 +254,22 @@ export function createMemoryDeviceGrantStore(): Store {
     byMcpOAuthAccessToken(tokenHash) {
       const t = mcpTokens.get(tokenHash);
       return Promise.resolve(t ? { ...t, scopes: [...t.scopes] } : undefined);
+    },
+    delMcpOAuthAccessToken(tokenHash) {
+      mcpTokens.delete(tokenHash);
+      return Promise.resolve();
+    },
+    putMcpOAuthRefreshToken(t) {
+      mcpRefreshTokens.set(t.tokenHash, { ...t, scopes: [...t.scopes] });
+      return Promise.resolve();
+    },
+    byMcpOAuthRefreshToken(tokenHash) {
+      const t = mcpRefreshTokens.get(tokenHash);
+      return Promise.resolve(t ? { ...t, scopes: [...t.scopes] } : undefined);
+    },
+    delMcpOAuthRefreshToken(tokenHash) {
+      mcpRefreshTokens.delete(tokenHash);
+      return Promise.resolve();
     },
     putAccountWorkspace(workspace) {
       accountWorkspaces.set(workspace.accountId, { ...workspace });
