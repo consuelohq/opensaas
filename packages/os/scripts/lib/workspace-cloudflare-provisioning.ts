@@ -1878,9 +1878,10 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
       registryRecord: createRegistryRecord({ plan, baseDomain }),
     };
   } catch (error: unknown) {
-    throw new Error('workspace Cloudflare provisioning failed', {
-      cause: error,
-    });
+    throw new Error(
+      `workspace Cloudflare provisioning failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
   }
 };
 
