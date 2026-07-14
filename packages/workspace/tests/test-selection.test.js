@@ -154,7 +154,10 @@ describe('test selection registry', () => {
       cwd: repo,
       env: { GITHUB_ACTIONS: 'true', CI: 'true' },
     });
-    const local = run(['check', '--registry', registryPath, '--base', 'main', '--json'], { cwd: repo });
+    const local = run(['check', '--registry', registryPath, '--base', 'main', '--json'], {
+      cwd: repo,
+      env: { GITHUB_ACTIONS: 'false', CI: 'false' },
+    });
 
     expect(json(ci).changedFiles).toEqual(['packages/app/index.ts']);
     expect(json(local).changedFiles).toEqual([

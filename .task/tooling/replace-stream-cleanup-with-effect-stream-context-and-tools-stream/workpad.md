@@ -106,6 +106,7 @@ started: 2026-07-14
 - Red evidence: new test-selection contracts showed CI included an untracked generated package file and selected two equivalent Nx project tests.
 - Fix: GitHub Actions selection now uses committed `base...HEAD` changes only; local verification still includes working, staged, and untracked files. Nx project test command keys normalize away `--coverage=false` so equivalent project suites run once.
 - Green evidence: all 8 test-selection registry tests pass, including CI dirty-tree isolation and Nx command deduplication.
+- Follow-up CI-only test failure: the regression's local subcase inherited `GITHUB_ACTIONS=true` from the runner. The subcase now explicitly sets `GITHUB_ACTIONS=false` and `CI=false`; all 8 registry tests pass in both local and simulated GitHub Actions environments.
 
 ## current status
 
@@ -113,9 +114,8 @@ started: 2026-07-14
 
 ## files changed
 
-- `packages/twenty-server/.swcrc`
-- `packages/twenty-server/nest-cli.json`
-- `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
+- `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/tests/test-selection.test.js`
 
 
 ## workspace-owned: files changed
@@ -147,6 +147,7 @@ started: 2026-07-14
 - 2026-07-14 17:07:19 `verify`: passed — OK
 - 2026-07-14 17:07:19 `verify`: passed — OK
 - 2026-07-14 17:47:41 `review.run`: passed — OK
+- 2026-07-14 17:59:12 `review.run`: passed — OK
 
 ## key decisions
 
@@ -247,3 +248,7 @@ bun run task:finish
 - 2026-07-14 17:46:43 apply-patch: `packages/workspace/scripts/test-selection.js`
 
 - 2026-07-14 17:47:07 apply-patch: `.task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/workpad.md`
+
+- 2026-07-14 17:58:21 apply-patch: `packages/workspace/tests/test-selection.test.js`
+
+- 2026-07-14 17:59:45 apply-patch: `.task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/workpad.md`
