@@ -152,12 +152,17 @@ const markdownHref = pagePathToMarkdownHref(Astro.url.pathname);
     summary:focus-visible {
       background: var(--sl-color-gray-6);
     }
+    details:not([open]) .page-actions-menu {
+      display: none;
+    }
+    details[open] .page-actions-menu {
+      display: grid;
+    }
     .page-actions-menu {
       background: var(--sl-color-bg-nav);
       border: 1px solid var(--sl-color-hairline-light);
       border-radius: 0.6rem;
       box-shadow: var(--sl-shadow-md);
-      display: grid;
       min-width: 12.5rem;
       padding: 0.35rem;
       position: absolute;

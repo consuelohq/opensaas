@@ -65,24 +65,11 @@ The other useful statuses are:
 - `failed`: configuration or verification returned a specific error;
 - `unsupported`: the agent was detected but has no authoritative native setup path.
 
-## Example: connect OpenCode after installation
+## Connect another agent after installation
 
-First make sure OpenCode has created one of its normal configuration directories. Then run:
+The installer does not currently expose a safe standalone post-install agent command. Do not rerun the non-interactive installer solely to add an agent to an existing managed workspace: that provisioning path also owns workspace and node identity and requires the approved workspace bootstrap.
 
-```bash
-export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
-cd "$CONSUELO_HOME"
-bun ./scripts/install.ts \
-  --yes \
-  --mode local \
-  --home "$CONSUELO_HOME" \
-  --connect-agent opencode \
-  --skip-daemons
-```
-
-This command preserves the existing OS configuration, adds the `consuelo-os` MCP entry to OpenCode, and runs the MCP verification probe.
-
-OpenCode's resulting entry points to the installed command rather than to a source checkout:
+Open the agent once so it creates its normal configuration directory, then follow its provider-specific setup page in [Connect](/connect/). The resulting native configuration points to the installed MCP command:
 
 ```text
 ~/.consuelo/bin/consuelo-os-mcp
@@ -104,10 +91,6 @@ The workspace launcher shows a copyable HTTPS MCP URL and links to ChatGPT conne
 
 ## If no agents are detected
 
-Finish installing Consuelo OS first. Install or open the agent once so it creates its normal configuration directory, then rerun the focused command with that agent's ID:
+Finish installing Consuelo OS first. Install or open the agent once so it creates its normal configuration directory, then use the relevant page in [Connect](/connect/) to add the `consuelo-os` MCP entry without reprovisioning the workspace.
 
-```text
-codex | cursor | claude | opencode | factory | gemini
-```
-
-Do not pass `pi`; it is currently detected but unsupported for native configuration.
+Pi is currently detected but unsupported for native configuration.

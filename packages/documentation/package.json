@@ -25,7 +25,8 @@
     "test:secure": "bun test tests/secure.test.ts",
     "test:secure-browser": "bun scripts/test-secure-browser.mjs",
     "test:reference": "bun test tests/reference.test.ts",
-    "test:reference-browser": "bun scripts/test-reference-browser.mjs"
+    "test:reference-browser": "bun scripts/test-reference-browser.mjs",
+    "test:review-cleanup": "bun test tests/review-cleanup.test.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.0",
