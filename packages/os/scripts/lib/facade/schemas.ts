@@ -990,6 +990,21 @@ export const MediaSvgConvertInput = z.object({
   optimize: z.boolean().optional(),
 });
 
+export const MediaScreenshotRenderInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  input: z.string().min(1),
+  out: z.string().min(1),
+  width: z.number().int().min(800).max(4096).optional(),
+  height: z.number().int().min(450).max(4096).optional(),
+  theme: z.enum(['dark', 'light']).optional(),
+  accent: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  background: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  padding: z.number().int().min(32).optional(),
+  fit: z.enum(['contain', 'cover']).optional(),
+  pattern: z.enum(['grid', 'lines', 'none']).optional(),
+});
+
 export const ResearchIngestInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -1206,6 +1221,7 @@ export const schemaRegistry = {
   WaitInput,
   TmpInput,
   MediaSvgConvertInput,
+  MediaScreenshotRenderInput,
   ResearchIngestInput,
   RailwayLogsInput,
   RailwayRedeployInput,
@@ -1316,6 +1332,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   WaitInput: '{ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgConvertInput: '{ input: string; out: string; strategy?: \"wrapper\" | \"trace\" | \"both\" | \"auto\"; traceEngine?: \"auto\" | \"color\" | \"mono\"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaScreenshotRenderInput: '{ input: string; out: string; width?: number; height?: number; theme?: \"dark\" | \"light\"; accent?: string; background?: string; padding?: number; fit?: \"contain\" | \"cover\"; pattern?: \"grid\" | \"lines\" | \"none\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1335,6 +1352,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
+  MediaScreenshotResult: '{ schema: \"media.screenshot-result.v1\"; ok: true; id: string; source: { path: string }; output: { path: string; width: number; height: number; format: \"png\"; fileSizeBytes: number }; template: { theme: \"dark\" | \"light\"; accent: string; background: string; padding: number; fit: \"contain\" | \"cover\"; pattern: \"grid\" | \"lines\" | \"none\" }; toolVersions: Record<string, string>; deterministic: true }',
   BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
   FsReadOutput: '({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: string; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }',
   FsSearchOutput: '{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }',

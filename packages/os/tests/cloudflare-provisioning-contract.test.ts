@@ -1437,6 +1437,40 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     expect(calls[4]?.body).toMatchObject({ position: { after: 'rule_bootstrap' } });
   });
 
+  it('should preserve the failed Cloudflare operation when workspace provisioning fails', async () => {
+    const { applyWorkspaceCloudflareProvisioning } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const cloudflare: WorkspaceCloudflareProvisioningClient = {
+      async createOrReuseTunnel() {
+        throw new Error(
+          'Cloudflare workspace provisioning client createOrReuseTunnel failed: Cloudflare API listCloudflareTunnels failed with status 403: Authentication error',
+        );
+      },
+      async putTunnelConfig() {},
+      async createOrReuseWorkerRouteExclusion() {
+        return { routeId: 'worker_route_123', status: 'created' };
+      },
+      async createOrReuseDnsRecord() {
+        return { recordId: 'dns_123' };
+      },
+    };
+
+    await expect(
+      applyWorkspaceCloudflareProvisioning({
+        cloudflare,
+        input: {
+          workspaceId: 'workspace_123',
+          workspaceSlug: 'kokayi',
+          baseDomain: 'consuelohq.com',
+          cloudflareZoneId: 'zone_123',
+          connectorId: 'connector_123',
+        },
+      }),
+    ).rejects.toThrow(
+      /createOrReuseTunnel failed: Cloudflare API listCloudflareTunnels failed with status 403: Authentication error/,
+    );
+  });
+
   it('should apply Cloudflare tunnel and DNS operations without Railway DNS provisioning', async () => {
     const { applyWorkspaceCloudflareProvisioning } =
       await loadWorkspaceCloudflareProvisioningContract();

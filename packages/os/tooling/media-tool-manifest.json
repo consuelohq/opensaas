@@ -755,6 +755,59 @@
     ]
   },
   {
+    "name": "media.screenshot.render",
+    "methodPath": [
+      "media",
+      "screenshot",
+      "render"
+    ],
+    "description": "Render a local screenshot into a deterministic social/X-ready PNG with configurable Consuelo themes, spacing, fit, and line patterns.",
+    "category": "media",
+    "underlying": "os media screenshot.render",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": true,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "MediaScreenshotRenderInput",
+    "outputSchema": "MediaScreenshotResult",
+    "command": {
+      "script": "media",
+      "subcommand": "screenshot:render",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "input", "flag": "--input", "kind": "value", "required": true },
+        { "source": "out", "flag": "--out", "kind": "value", "required": true },
+        { "source": "width", "flag": "--width", "kind": "value" },
+        { "source": "height", "flag": "--height", "kind": "value" },
+        { "source": "theme", "flag": "--theme", "kind": "value" },
+        { "source": "accent", "flag": "--accent", "kind": "value" },
+        { "source": "background", "flag": "--background", "kind": "value" },
+        { "source": "padding", "flag": "--padding", "kind": "value" },
+        { "source": "fit", "flag": "--fit", "kind": "value" },
+        { "source": "pattern", "flag": "--pattern", "kind": "value" }
+      ]
+    },
+    "exampleInput": {
+      "input": "screenshots/chatgpt.png",
+      "out": "renders/chatgpt-x.png",
+      "theme": "dark",
+      "accent": "#0000F2",
+      "pattern": "grid"
+    },
+    "sessionRequired": false,
+    "workflowRole": "media.screenshot.render",
+    "requiredProfiles": [
+      "media-core"
+    ],
+    "requiredCommands": [
+      "ffmpeg"
+    ]
+  },
+  {
     "name": "media.qa",
     "methodPath": [
       "media",
