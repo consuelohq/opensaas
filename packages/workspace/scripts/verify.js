@@ -464,6 +464,20 @@ function printHumanResult(result) {
     writeStdout(`  - ${line}`);
   }
 
+  const registryFailures = Array.isArray(result.testSelection?.data?.runResults)
+    ? result.testSelection.data.runResults.filter((suite) => suite.status !== 'passed')
+    : [];
+  if (registryFailures.length > 0) {
+    writeStdout('registry failures:');
+    for (const suite of registryFailures) {
+      writeStdout(`  - ${suite.name}: ${suite.status} (exit ${suite.exitCode ?? 'unknown'})`);
+      const outputLines = String(suite.outputTail || '').split('\n').filter(Boolean).slice(-40);
+      for (const outputLine of outputLines) {
+        writeStdout(`    ${outputLine}`);
+      }
+    }
+  }
+
   for (const risk of result.db.risks) {
     writeStdout(`  ${risk.category}: ${risk.file}`);
   }

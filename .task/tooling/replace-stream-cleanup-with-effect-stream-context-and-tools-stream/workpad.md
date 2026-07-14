@@ -107,6 +107,7 @@ started: 2026-07-14
 - Fix: GitHub Actions selection now uses committed `base...HEAD` changes only; local verification still includes working, staged, and untracked files. Nx project test command keys normalize away `--coverage=false` so equivalent project suites run once.
 - Green evidence: all 8 test-selection registry tests pass, including CI dirty-tree isolation and Nx command deduplication.
 - Follow-up CI-only test failure: the regression's local subcase inherited `GITHUB_ACTIONS=true` from the runner. The subcase now explicitly sets `GITHUB_ACTIONS=false` and `CI=false`; all 8 registry tests pass in both local and simulated GitHub Actions environments.
+- Remaining Linux-only registry failure could not be identified because human-mode `verify` printed only the aggregate registry result. Human output now includes each failed suite name, exit code, and the existing bounded 4,000-character output tail; JSON/stamp contracts are unchanged.
 
 ## current status
 
@@ -114,7 +115,6 @@ started: 2026-07-14
 
 ## files changed
 
-- `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/tests/test-selection.test.js`
 
 
@@ -148,6 +148,7 @@ started: 2026-07-14
 - 2026-07-14 17:07:19 `verify`: passed — OK
 - 2026-07-14 17:47:41 `review.run`: passed — OK
 - 2026-07-14 17:59:12 `review.run`: passed — OK
+- 2026-07-14 18:10:14 `review.run`: passed — OK
 
 ## key decisions
 
@@ -252,3 +253,7 @@ bun run task:finish
 - 2026-07-14 17:58:21 apply-patch: `packages/workspace/tests/test-selection.test.js`
 
 - 2026-07-14 17:59:45 apply-patch: `.task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/workpad.md`
+
+- 2026-07-14 18:09:29 apply-patch: `packages/workspace/scripts/verify.js`
+
+- 2026-07-14 18:09:41 apply-patch: `.task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/workpad.md`
