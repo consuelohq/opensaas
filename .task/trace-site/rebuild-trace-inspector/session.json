@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b85acecb1ce7",
+  "tmuxSession": "opensaas-trace-site-rebuild-trace-inspector-b85acecb",
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/rebuild-trace-inspector",
+  "branch": "task/trace-site/rebuild-trace-inspector",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-rebuild-trace-inspector",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-rebuild-trace-inspector",
+  "prNumber": 1496,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1496",
+  "createdAt": "2026-07-14T21:36:59.174Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-rebuild-trace-inspector/.task/trace-site/rebuild-trace-inspector/session.json"
+}

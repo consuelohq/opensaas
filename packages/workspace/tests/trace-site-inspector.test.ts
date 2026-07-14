@@ -45,9 +45,7 @@ import {
   patchTraceInspectorHtml,
 } from '../scripts/trace-site-inspector/deploy';
 
-import {
-  createArchiveTraceHistoryResponse,
-} from '../scripts/trace-site-inspector/archive-history';
+import { createArchiveTraceHistoryResponse } from '../scripts/trace-site-inspector/archive-history';
 
 import {
   mergeTraceRows,
@@ -59,6 +57,13 @@ import {
   parseTraceHistoryResponse,
   traceHistoryUrl,
 } from '../scripts/trace-site-inspector/pagination-browser';
+import {
+  createInspectorState,
+  filterInspectorCalls,
+  inspectorSections,
+  normalizeBranchBreadcrumb,
+  reduceInspectorState,
+} from '../scripts/trace-site-inspector/inspector-state';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -289,9 +294,7 @@ describe('trace-site virtual list state', () => {
     ];
 
     expect(deriveTraceHistoryCursor(rows)).toBe('id:record-2');
-    expect(deriveTraceHistoryCursor(rows, '000000000123')).toBe(
-      '000000000123',
-    );
+    expect(deriveTraceHistoryCursor(rows, '000000000123')).toBe('000000000123');
     expect(traceHistoryUrl('id:record-2', 75)).toBe(
       '/gateway/traces/recent?direction=older&cursor=id%3Arecord-2&limit=75&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true',
     );
@@ -475,6 +478,97 @@ describe('trace-site virtual list state', () => {
   });
 });
 
+describe('trace-site inspector state contract', () => {
+  test('should keep the selected trace open when live rows replace the visible feed', () => {
+    const selected = row({
+      id: 'selected-record',
+      recordId: 'selected-record',
+      traceId: 'selected-trace',
+      output: 'selected output',
+    });
+    let state = createInspectorState();
+    state = reduceInspectorState(state, {
+      type: 'select',
+      key: stableTraceKey(selected),
+      row: selected,
+    });
+    state = reduceInspectorState(state, {
+      type: 'rows-replaced',
+      rows: [row({ id: 'new-live-record', traceId: 'new-live-trace' })],
+    });
+
+    expect(state.selectedKey).toBe('selected-record');
+    expect(state.selectedRow).toMatchObject({ output: 'selected output' });
+    expect(state.layout).toBe('split');
+  });
+
+  test('should preserve selection through resize, collapse, and full-screen transitions', () => {
+    const selected = row({
+      id: 'selected-record',
+      recordId: 'selected-record',
+      traceId: 'selected-trace',
+    });
+    let state = reduceInspectorState(createInspectorState(), {
+      type: 'select',
+      key: stableTraceKey(selected),
+      row: selected,
+    });
+    state = reduceInspectorState(state, { type: 'resize', width: 720 });
+    state = reduceInspectorState(state, { type: 'toggle-fullscreen' });
+    state = reduceInspectorState(state, { type: 'toggle-fullscreen' });
+    state = reduceInspectorState(state, { type: 'toggle-collapse' });
+
+    expect(state.selectedKey).toBe('selected-record');
+    expect(state.selectedRow).toEqual(selected);
+    expect(state.width).toBe(720);
+    expect(state.layout).toBe('collapsed');
+  });
+
+  test('should expose stacked typed sections and one formatted-or-json mode', () => {
+    const selected = row({
+      rawResolvedInputJson: { path: 'workpad.md' },
+      outputObj: { ok: true },
+      metadata: { provider: 'langfuse' },
+      rawStderr: 'test failed',
+      status: 'error',
+    });
+    const sections = inspectorSections(selected);
+
+    expect(sections.map((section) => section.id)).toEqual([
+      'input',
+      'output',
+      'error',
+      'metadata',
+    ]);
+    expect(createInspectorState().displayMode).toBe('formatted');
+    expect(
+      reduceInspectorState(createInspectorState(), {
+        type: 'set-display-mode',
+        mode: 'json',
+      }).displayMode,
+    ).toBe('json');
+  });
+
+  test('should normalize branch breadcrumbs and search calls without changing state', () => {
+    const state = reduceInspectorState(createInspectorState(), {
+      type: 'set-call-query',
+      query: 'read',
+    });
+    const calls = [
+      row({ id: 'read', name: 'fs.read', input: 'workpad.md' }),
+      row({ id: 'verify', name: 'verify', input: 'unit tests' }),
+    ];
+
+    expect(normalizeBranchBreadcrumb('task/security/fix-auth')).toEqual({
+      stream: 'security',
+      task: 'fix-auth',
+      label: 'security / fix-auth',
+    });
+    expect(filterInspectorCalls(calls, state.callQuery)).toHaveLength(1);
+    expect(state.selectedKey).toBe('');
+  });
+});
+
 describe('trace-site inspector deployment contract', () => {
   test('should patch versioned overlay assets once when deployment runs repeatedly', () => {
     const html =
@@ -492,115 +586,120 @@ describe('trace-site inspector deployment contract', () => {
     ).toHaveLength(1);
   });
 
-  browserTest('should select batch children independently and never paint the obsolete detail layout', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'trace-inspector-selection-'));
-    roots.push(root);
-    const scriptPath = join(root, 'trace-inspector-v29.js');
-    const cssPath = join(root, 'trace-inspector-v29.css');
-    execFileSync(
-      'bun',
-      [
-        'build',
-        new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
-          .pathname,
-        '--target=browser',
-        '--format=esm',
-        `--outfile=${scriptPath}`,
-      ],
-      { stdio: 'pipe' },
-    );
-    copyFileSync(
-      new URL('../scripts/trace-site-inspector/inspector.css', import.meta.url),
-      cssPath,
-    );
+  browserTest(
+    'should select batch children independently and never paint the obsolete detail layout',
+    async () => {
+      const root = mkdtempSync(join(tmpdir(), 'trace-inspector-selection-'));
+      roots.push(root);
+      const scriptPath = join(root, 'trace-inspector-v30.js');
+      const cssPath = join(root, 'trace-inspector-v30.css');
+      execFileSync(
+        'bun',
+        [
+          'build',
+          new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
+            .pathname,
+          '--target=browser',
+          '--format=esm',
+          `--outfile=${scriptPath}`,
+        ],
+        { stdio: 'pipe' },
+      );
+      copyFileSync(
+        new URL(
+          '../scripts/trace-site-inspector/inspector.css',
+          import.meta.url,
+        ),
+        cssPath,
+      );
 
-    const batchParent = row({
-      id: 'batch-parent',
-      recordId: 'batch-parent',
-      traceId: 'parent-trace',
-      name: 'batch',
-      status: 'error',
-      code: 'COMMAND_FAILED',
-      input: 'parent input',
-      output: 'parent output',
-      inputTokens: 10,
-      outputTokens: 20,
-      tokens: 30,
-      batchResultsJson: [
-        {
-          id: 'child-a',
-          recordId: 'child-a',
-          traceId: 'child-a-trace',
-          tool: 'fs.read',
-          name: 'fs.read',
-          status: 'success',
-          code: 'OK',
-          input: 'child A input',
-          output: 'child A output',
-          rawInputJson: { path: 'child-a.txt' },
-          rawResultJson: { ok: true, value: 'child A raw result' },
-          durationMs: 11,
-          inputTokens: 1,
-          outputTokens: 2,
-        },
-        {
-          id: 'child-b',
-          recordId: 'child-b',
-          traceId: 'child-b-trace',
-          tool: 'fs.list',
-          name: 'fs.list',
-          status: 'error',
-          code: 'COMMAND_FAILED',
-          input: 'child B input',
-          output: 'child B output',
-          rawInputJson: { path: 'missing' },
-          rawResultJson: { ok: false, error: 'child B raw result' },
-          durationMs: 22,
-          inputTokens: 3,
-          outputTokens: 4,
-        },
-      ],
-    });
-    const branchPeer = row({
-      id: 'peer-root',
-      recordId: 'peer-root',
-      traceId: 'peer-trace',
-      name: 'review.run',
-      input: 'peer input',
-      output: 'peer output',
-    });
-    const staleBatchParent = {
-      ...batchParent,
-      batchResultsJson: [
-        {
-          traceId: 'child-a-trace',
-          status: 'success',
-          code: 'OK',
-          durationMs: 11,
-          inputTokens: 1,
-          outputTokens: 2,
-        },
-        {
-          traceId: 'child-b-trace',
-          status: 'error',
-          code: 'COMMAND_FAILED',
-          durationMs: 22,
-          inputTokens: 3,
-          outputTokens: 4,
-        },
-      ],
-    };
-    const fillerRows = Array.from({ length: 180 }, (_, index) =>
-      row({
-        id: `filler-${index}`,
-        recordId: `filler-${index}`,
-        traceId: `filler-trace-${index}`,
-        name: 'code.call',
-        input: `filler input ${index}`,
-        output: `filler output ${index}`,
-      }),
-    );
-    const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+      const batchParent = row({
+        id: 'batch-parent',
+        recordId: 'batch-parent',
+        traceId: 'parent-trace',
+        name: 'batch',
+        status: 'error',
+        code: 'COMMAND_FAILED',
+        input: 'parent input',
+        output: 'parent output',
+        inputTokens: 10,
+        outputTokens: 20,
+        tokens: 30,
+        batchResultsJson: [
+          {
+            id: 'child-a',
+            recordId: 'child-a',
+            traceId: 'child-a-trace',
+            tool: 'fs.read',
+            name: 'fs.read',
+            status: 'success',
+            code: 'OK',
+            input: 'child A input',
+            output: 'child A output',
+            rawInputJson: { path: 'child-a.txt' },
+            rawResultJson: { ok: true, value: 'child A raw result' },
+            durationMs: 11,
+            inputTokens: 1,
+            outputTokens: 2,
+          },
+          {
+            id: 'child-b',
+            recordId: 'child-b',
+            traceId: 'child-b-trace',
+            tool: 'fs.list',
+            name: 'fs.list',
+            status: 'error',
+            code: 'COMMAND_FAILED',
+            input: 'child B input',
+            output: 'child B output',
+            rawInputJson: { path: 'missing' },
+            rawResultJson: { ok: false, error: 'child B raw result' },
+            durationMs: 22,
+            inputTokens: 3,
+            outputTokens: 4,
+          },
+        ],
+      });
+      const branchPeer = row({
+        id: 'peer-root',
+        recordId: 'peer-root',
+        traceId: 'peer-trace',
+        name: 'review.run',
+        input: 'peer input',
+        output: 'peer output',
+      });
+      const staleBatchParent = {
+        ...batchParent,
+        batchResultsJson: [
+          {
+            traceId: 'child-a-trace',
+            status: 'success',
+            code: 'OK',
+            durationMs: 11,
+            inputTokens: 1,
+            outputTokens: 2,
+          },
+          {
+            traceId: 'child-b-trace',
+            status: 'error',
+            code: 'COMMAND_FAILED',
+            durationMs: 22,
+            inputTokens: 3,
+            outputTokens: 4,
+          },
+        ],
+      };
+      const fillerRows = Array.from({ length: 180 }, (_, index) =>
+        row({
+          id: `filler-${index}`,
+          recordId: `filler-${index}`,
+          traceId: `filler-trace-${index}`,
+          name: 'code.call',
+          input: `filler input ${index}`,
+          output: `filler output ${index}`,
+        }),
+      );
+      const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
       html,body{margin:0;height:100%}.trxShell{display:grid;grid-template-columns:45% 55%;height:100vh}.trxShell.closed .trxRail{display:none}.trxTablePane{display:grid;grid-template-rows:auto 1fr auto;min-height:0}.trxTableScroll{height:100%;overflow:auto}.trxRail{height:100vh}.trxRailInner,[data-inspector]{height:100%}.trxRow{height:44px}.trxFooter{display:flex;justify-content:space-between;padding:8px}
     </style></head><body>
       <div class="trxShell closed">
@@ -637,308 +736,475 @@ describe('trace-site inspector deployment contract', () => {
         }));
       </script>
     </body></html>`;
-    const patchedHtml = patchTraceInspectorHtml(runtimeHtml);
-    const browser = await chromium.launch({ headless: true });
-    try {
-      const page = await browser.newPage({
-        viewport: { width: 1440, height: 900 },
-      });
-      page.setDefaultTimeout(7_000);
-      await page.route('http://trace.test/**', async (route) => {
-        const pathname = new URL(route.request().url()).pathname;
-        if (pathname.endsWith('trace-inspector-v29.css')) {
-          await route.fulfill({ contentType: 'text/css', body: readFileSync(cssPath) });
-          return;
-        }
-        if (pathname.endsWith('trace-inspector-v29.js')) {
-          await new Promise((resolve) => setTimeout(resolve, 180));
-          await route.fulfill({ contentType: 'text/javascript', body: readFileSync(scriptPath) });
-          return;
-        }
-        if (pathname.endsWith('/live-traces.json')) {
-          await route.fulfill({
-            contentType: 'application/json',
-            body: JSON.stringify({
-              meta: { nextCursor: 'cursor-selection' },
-              rows: [batchParent, branchPeer, ...fillerRows],
-            }),
-          });
-          return;
-        }
-        await route.fulfill({ contentType: 'text/html', body: patchedHtml });
-      });
-      await page.goto('http://trace.test/trace-burn-intelligence', { waitUntil: 'commit' });
-      await page.waitForFunction(
-        () =>
-          ((window as Window & { __traceFirstPaintStates?: unknown[] })
-            .__traceFirstPaintStates?.length ?? 0) > 0,
-      );
-      expect(
-        await page.evaluate(
-          () =>
-            (window as Window & {
-              __traceFirstPaintStates?: Array<{
-                legacy: boolean;
-                boot: boolean;
-                firstSidebar: string;
-              }>;
-            }).__traceFirstPaintStates?.[0],
-        ),
-      ).toEqual({ legacy: false, boot: true, firstSidebar: 'Branch' });
-
-      await page.waitForFunction(
-        () =>
-          Boolean(
-            document.querySelector('.trxRow[data-trace-key="child-a"]'),
-          ) &&
-          Boolean(
-            document.querySelector('.trxRow[data-trace-key="child-b"]'),
-          ) &&
-          Boolean(document.querySelector('.tiInspector:not(.tiInspectorBoot)')),
-      );
-      const initialRows = await page.evaluate(() =>
-        [...document.querySelectorAll<HTMLElement>('.trxRow')]
-          .filter((element) =>
-            ['batch-parent', 'child-a', 'child-b'].includes(
-              element.dataset.traceKey ?? '',
-            ),
-          )
-          .map((element) => ({
-            key: element.dataset.traceKey,
-            rowKey: element.dataset.rowKey,
-            selected: element.getAttribute('aria-selected'),
-          })),
-      );
-      expect(initialRows).toEqual([
-        { key: 'batch-parent', rowKey: 'batch-parent::trace', selected: 'true' },
-        { key: 'child-a', rowKey: 'batch-parent::0:fs.read', selected: 'false' },
-        { key: 'child-b', rowKey: 'batch-parent::1:fs.list', selected: 'false' },
-      ]);
-
-      const assertSelection = async (
-        key: string,
-        expected: string[],
-        rejected: string[],
-      ) => {
-        await page.locator(`.trxRow[data-trace-key="${key}"]`).click();
+      const patchedHtml = patchTraceInspectorHtml(runtimeHtml);
+      const browser = await chromium.launch({ headless: true });
+      try {
+        const page = await browser.newPage({
+          viewport: { width: 1440, height: 900 },
+        });
+        page.setDefaultTimeout(7_000);
+        await page.route('http://trace.test/**', async (route) => {
+          const pathname = new URL(route.request().url()).pathname;
+          if (pathname.endsWith('trace-inspector-v30.css')) {
+            await route.fulfill({
+              contentType: 'text/css',
+              body: readFileSync(cssPath),
+            });
+            return;
+          }
+          if (pathname.endsWith('trace-inspector-v30.js')) {
+            await new Promise((resolve) => setTimeout(resolve, 180));
+            await route.fulfill({
+              contentType: 'text/javascript',
+              body: readFileSync(scriptPath),
+            });
+            return;
+          }
+          if (pathname.endsWith('/live-traces.json')) {
+            await route.fulfill({
+              contentType: 'application/json',
+              body: JSON.stringify({
+                meta: { nextCursor: 'cursor-selection' },
+                rows: [batchParent, branchPeer, ...fillerRows],
+              }),
+            });
+            return;
+          }
+          await route.fulfill({ contentType: 'text/html', body: patchedHtml });
+        });
+        await page.goto('http://trace.test/trace-burn-intelligence', {
+          waitUntil: 'commit',
+        });
         await page.waitForFunction(
-          (selectionKey) =>
-            (window as Window & { __traceSelectedKey?: string })
-              .__traceSelectedKey === selectionKey &&
-            document.querySelector<HTMLElement>('.tiInspector')?.dataset
-              .tiTraceKey === selectionKey,
-          key,
+          () =>
+            ((window as Window & { __traceFirstPaintStates?: unknown[] })
+              .__traceFirstPaintStates?.length ?? 0) > 0,
         );
-        await page.locator('[data-ti-tab="summary"]').click();
-        const state = await page.evaluate(() => ({
-          selected: (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey,
-          selectedRows: [
-            ...document.querySelectorAll<HTMLElement>('.trxRow.selected'),
-          ].map((element) => element.dataset.traceKey),
-          activePeers: [
-            ...document.querySelectorAll<HTMLElement>('.tiPeer.active'),
-          ].map((element) => element.dataset.traceKey),
-          text: document.querySelector<HTMLElement>('[data-inspector]')?.innerText,
-          firstSidebar: document.querySelector<HTMLElement>(
-            '.tiSidebar .tiEyebrow',
-          )?.textContent,
-          traceCard: Boolean(document.querySelector('.tiTraceCard')),
-          detailOpen: document
-            .querySelector('.trxShell')
-            ?.classList.contains('detail-open'),
-          closed: document
-            .querySelector('.trxShell')
-            ?.classList.contains('closed'),
-          inspectorWidth:
-            document.querySelector('.tiInspector')?.getBoundingClientRect()
-              .width ?? 0,
-        }));
-        expect(state.selected).toBe(key);
-        expect(state.selectedRows).toEqual([key]);
-        expect(state.activePeers).toEqual([key]);
-        expect(state.firstSidebar).toBe('Branch');
-        expect(state.traceCard).toBe(false);
-        expect(state.detailOpen).toBe(true);
-        expect(state.closed).toBe(false);
-        expect(state.inspectorWidth).toBeGreaterThan(0);
-        for (const value of expected) expect(state.text).toContain(value);
-        for (const value of rejected) expect(state.text).not.toContain(value);
-      };
+        expect(
+          await page.evaluate(
+            () =>
+              (
+                window as Window & {
+                  __traceFirstPaintStates?: Array<{
+                    legacy: boolean;
+                    boot: boolean;
+                    firstSidebar: string;
+                  }>;
+                }
+              ).__traceFirstPaintStates?.[0],
+          ),
+        ).toEqual({ legacy: false, boot: true, firstSidebar: 'Branch' });
 
-      const assertPanel = async (
-        tab: string,
-        expected: string,
-        rejected?: string,
-      ) => {
-        await page.locator(`[data-ti-tab="${tab}"]`).click();
-        const text = await page.locator('[data-ti-panel]').innerText();
-        expect(text).toContain(expected);
-        if (rejected) expect(text).not.toContain(rejected);
-      };
-
-      await assertSelection(
-        'batch-parent',
-        ['batch', 'error', 'COMMAND_FAILED', '120ms', '30 tok', 'parent-trace'],
-        ['child A raw result'],
-      );
-      await assertPanel('input', 'parent input', 'child A input');
-      await assertPanel('output', 'parent output', 'child A output');
-      await assertSelection(
-        'child-a',
-        ['fs.read', 'success · OK', '11ms', '3 tok', 'child-a-trace'],
-        ['parent output', 'child B raw result'],
-      );
-      await assertPanel('input', 'child A input', 'parent input');
-      await assertPanel('output', 'child A output', 'parent output');
-      await assertPanel('raw', 'child A raw result', 'child B raw result');
-      await assertSelection(
-        'child-b',
-        ['fs.list', 'error · COMMAND_FAILED', '22ms', '7 tok', 'child-b-trace'],
-        ['parent output', 'child A raw result'],
-      );
-      await assertPanel('input', 'child B input', 'parent input');
-      await assertPanel('output', 'child B output', 'parent output');
-      await assertPanel('raw', 'child B raw result', 'child A raw result');
-      expect(
-        await page.evaluate(
+        await page.waitForFunction(
           () =>
-            (window as Window & { __legacyTraceRowClicks?: number })
-              .__legacyTraceRowClicks,
-        ),
-      ).toBe(0);
+            Boolean(
+              document.querySelector('.trxRow[data-trace-key="child-a"]'),
+            ) &&
+            Boolean(
+              document.querySelector('.trxRow[data-trace-key="child-b"]'),
+            ) &&
+            Boolean(
+              document.querySelector('.tiInspector:not(.tiInspectorBoot)'),
+            ),
+        );
+        const initialRows = await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>('.trxRow')]
+            .filter((element) =>
+              ['batch-parent', 'child-a', 'child-b'].includes(
+                element.dataset.traceKey ?? '',
+              ),
+            )
+            .map((element) => ({
+              key: element.dataset.traceKey,
+              rowKey: element.dataset.rowKey,
+              selected: element.getAttribute('aria-selected'),
+            })),
+        );
+        expect(initialRows).toEqual([
+          {
+            key: 'batch-parent',
+            rowKey: 'batch-parent::trace',
+            selected: 'true',
+          },
+          {
+            key: 'child-a',
+            rowKey: 'batch-parent::0:fs.read',
+            selected: 'false',
+          },
+          {
+            key: 'child-b',
+            rowKey: 'batch-parent::1:fs.list',
+            selected: 'false',
+          },
+        ]);
 
-      await page.locator('.tiPeer[data-trace-key="child-a"]').click();
-      await page.waitForFunction(
-        () =>
-          (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey === 'child-a',
-      );
-      await page.locator('[data-ti-tab="output"]').click();
-      expect(await page.locator('.tiPreview').innerText()).toContain('child A output');
-
-      await page.locator('.tiPeer[data-trace-key="peer-root"]').click();
-      await page.waitForFunction(
-        () =>
-          (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey === 'peer-root',
-      );
-      await page.locator('[data-search]').fill('review.run');
-      expect(
-        await page.evaluate(
-          () =>
-            (window as Window & { __traceSelectedKey?: string })
+        const assertSelection = async (
+          key: string,
+          expected: string[],
+          rejected: string[],
+        ) => {
+          await page.locator(`.trxRow[data-trace-key="${key}"]`).click();
+          await page.waitForFunction(
+            (selectionKey) =>
+              (window as Window & { __traceSelectedKey?: string })
+                .__traceSelectedKey === selectionKey &&
+              document.querySelector<HTMLElement>('.tiInspector')?.dataset
+                .tiTraceKey === selectionKey,
+            key,
+          );
+          await page.locator('[data-ti-mode="formatted"]').click();
+          const state = await page.evaluate(() => ({
+            selected: (window as Window & { __traceSelectedKey?: string })
               .__traceSelectedKey,
-        ),
-      ).toBe('peer-root');
-      await page.locator('[data-search]').fill('');
+            selectedRows: [
+              ...document.querySelectorAll<HTMLElement>('.trxRow.selected'),
+            ].map((element) => element.dataset.traceKey),
+            activePeers: [
+              ...document.querySelectorAll<HTMLElement>('.tiPeer.active'),
+            ].map((element) => element.dataset.traceKey),
+            text: document.querySelector<HTMLElement>('[data-inspector]')
+              ?.innerText,
+            firstSidebar: document.querySelector<HTMLElement>(
+              '.tiSidebar .tiEyebrow',
+            )?.textContent,
+            traceCard: Boolean(document.querySelector('.tiTraceCard')),
+            detailOpen: document
+              .querySelector('.trxShell')
+              ?.classList.contains('detail-open'),
+            closed: document
+              .querySelector('.trxShell')
+              ?.classList.contains('closed'),
+            inspectorWidth:
+              document.querySelector('.tiInspector')?.getBoundingClientRect()
+                .width ?? 0,
+          }));
+          expect(state.selected).toBe(key);
+          expect(state.selectedRows).toEqual([key]);
+          expect(state.activePeers).toEqual([key]);
+          expect(state.firstSidebar).toBe('Branch');
+          expect(state.traceCard).toBe(false);
+          expect(state.detailOpen).toBe(true);
+          expect(state.closed).toBe(false);
+          expect(state.inspectorWidth).toBeGreaterThan(0);
+          for (const value of expected) expect(state.text).toContain(value);
+          for (const value of rejected) expect(state.text).not.toContain(value);
+        };
 
-      await page.locator('.trxRow[data-trace-key="child-b"]').click();
-      await page.evaluate(() => {
-        (
-          window as Window & {
-            __traceVirtualList?: {
-              appendPage: (
-                rows: Array<Record<string, unknown>>,
-                cursor: string | null,
-              ) => void;
-            };
-          }
-        ).__traceVirtualList?.appendPage(
+        const assertPanel = async (
+          section: string,
+          expected: string,
+          rejected?: string,
+        ) => {
+          const json = section === 'raw';
+          await page
+            .locator(`[data-ti-mode="${json ? 'json' : 'formatted'}"]`)
+            .click();
+          const text = await page
+            .locator(`[data-ti-section="${json ? 'json' : section}"]`)
+            .innerText();
+          expect(text).toContain(expected);
+          if (rejected) expect(text).not.toContain(rejected);
+        };
+
+        await assertSelection(
+          'batch-parent',
           [
-            {
-              id: 'older-root',
-              recordId: 'older-root',
-              traceId: 'older-trace',
-              branch: 'task/trace-site/example',
-              name: 'fs.read',
-              status: 'success',
-            },
+            'batch',
+            'error',
+            'COMMAND_FAILED',
+            '120ms',
+            '30 tok',
+            'parent-trace',
           ],
-          null,
+          ['child A raw result'],
         );
-      });
-      expect(
-        await page.evaluate(
+        await assertPanel('input', 'parent input', 'child A input');
+        await assertPanel('output', 'parent output', 'child A output');
+        await assertSelection(
+          'child-a',
+          ['fs.read', 'success', 'OK', '11ms', '3 tok', 'child-a-trace'],
+          ['parent output', 'child B raw result'],
+        );
+        await assertPanel('input', 'child-a.txt', 'parent input');
+        await assertPanel('output', 'child A raw result', 'parent output');
+        await assertPanel('raw', 'child A raw result', 'child B raw result');
+        await assertSelection(
+          'child-b',
+          [
+            'fs.list',
+            'error',
+            'COMMAND_FAILED',
+            '22ms',
+            '7 tok',
+            'child-b-trace',
+          ],
+          ['parent output', 'child A raw result'],
+        );
+        await assertPanel('input', 'missing', 'parent input');
+        await assertPanel('output', 'child B raw result', 'parent output');
+        await assertPanel('raw', 'child B raw result', 'child A raw result');
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __legacyTraceRowClicks?: number })
+                .__legacyTraceRowClicks,
+          ),
+        ).toBe(0);
+
+        await page.locator('.tiPeer[data-trace-key="child-a"]').click();
+        await page.waitForFunction(
           () =>
             (window as Window & { __traceSelectedKey?: string })
-              .__traceSelectedKey,
-        ),
-      ).toBe('child-b');
+              .__traceSelectedKey === 'child-a',
+        );
+        await page.locator('[data-ti-mode="formatted"]').click();
+        expect(await page.locator('.tiPreview').innerText()).toContain(
+          'child A output',
+        );
 
-      await page.locator('[data-ti-tab="output"]').click();
-
-      await page.evaluate(() => {
-        const list = document.querySelector<HTMLElement>('.trxTableScroll');
-        if (list) list.scrollTop = list.scrollHeight;
-      });
-      await page.waitForTimeout(100);
-      expect(await page.locator('.tiPreview').innerText()).toContain('child B output');
-
-      await page.locator('[data-ti-back]').dispatchEvent('click');
-      expect(
-        await page.evaluate(() => ({
-          selected: (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey,
-          detailOpen: document
-            .querySelector('.trxShell')
-            ?.classList.contains('detail-open'),
-          closed: document
-            .querySelector('.trxShell')
-            ?.classList.contains('closed'),
-          inspector: Boolean(document.querySelector('.tiInspector')),
-        })),
-      ).toEqual({
-        selected: 'child-b',
-        detailOpen: false,
-        closed: true,
-        inspector: true,
-      });
-      expect(
-        await page.evaluate(
+        await page.locator('.tiPeer[data-trace-key="peer-root"]').click();
+        await page.waitForFunction(
           () =>
-            (window as Window & { __legacyTraceBackClicks?: number })
-              .__legacyTraceBackClicks,
-        ),
-      ).toBe(0);
-      await page.evaluate(() => {
-        (
-          window as Window & {
-            __traceVirtualList?: { scrollToKey: (key: string) => void };
-          }
-        ).__traceVirtualList?.scrollToKey('child-b');
-      });
-      await page.locator('.trxRow[data-trace-key="child-b"]').click();
-      expect(
-        await page.evaluate(() => ({
-          detailOpen: document
-            .querySelector('.trxShell')
-            ?.classList.contains('detail-open'),
-          closed: document
-            .querySelector('.trxShell')
-            ?.classList.contains('closed'),
-        })),
-      ).toEqual({ detailOpen: true, closed: false });
-    } finally {
-      await browser.close();
-    }
-  }, 25_000);
+            (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey === 'peer-root',
+        );
+        await page.locator('[data-search]').fill('review.run');
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __traceSelectedKey?: string })
+                .__traceSelectedKey,
+          ),
+        ).toBe('peer-root');
+        await page.locator('[data-search]').fill('');
 
-  browserTest('should preserve interactive inspector behavior when the trace list is virtualized', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'trace-inspector-runtime-'));
-    roots.push(root);
-    const archiveRoot = join(root, 'site');
-    mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
-    const runtimeRows = Array.from({ length: 500 }, (_, index) =>
-      row({
-        id: `runtime-record-${index}`,
-        recordId: `runtime-record-${index}`,
-        traceId: `runtime-trace-${index}`,
-        displayTime: `00:${String(Math.floor(index / 60)).padStart(2, '0')}:${String(index % 60).padStart(2, '0')}`,
-        output: `runtime output ${index}`,
-      }),
-    );
-    const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+        await page.locator('.trxRow[data-trace-key="child-b"]').click();
+        await page.evaluate(() => {
+          (
+            window as Window & {
+              __traceVirtualList?: {
+                appendPage: (
+                  rows: Array<Record<string, unknown>>,
+                  cursor: string | null,
+                ) => void;
+              };
+            }
+          ).__traceVirtualList?.appendPage(
+            [
+              {
+                id: 'older-root',
+                recordId: 'older-root',
+                traceId: 'older-trace',
+                branch: 'task/trace-site/example',
+                name: 'fs.read',
+                status: 'success',
+              },
+            ],
+            null,
+          );
+        });
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __traceSelectedKey?: string })
+                .__traceSelectedKey,
+          ),
+        ).toBe('child-b');
+
+        await page.locator('[data-ti-call-search]').fill('fs.read');
+        await page.waitForFunction(
+          () =>
+            document.querySelectorAll('.tiPeer[data-trace-key]').length === 2,
+        );
+        expect(
+          await page
+            .locator('.tiPeer[data-trace-key]')
+            .evaluateAll((peers) =>
+              peers.map((peer) => (peer as HTMLElement).dataset.traceKey),
+            ),
+        ).toEqual(['child-a', 'older-root']);
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __traceSelectedKey?: string })
+                .__traceSelectedKey,
+          ),
+        ).toBe('child-b');
+        await page.locator('[data-ti-call-search]').fill('');
+
+        await page.evaluate(
+          ({ parent, peer }) => {
+            (
+              window as Window & {
+                __traceVirtualList?: {
+                  replaceRows: (
+                    rows: Array<Record<string, unknown>>,
+                    cursor: string | null,
+                  ) => void;
+                };
+              }
+            ).__traceVirtualList?.replaceRows(
+              [
+                {
+                  id: 'new-live-record',
+                  recordId: 'new-live-record',
+                  traceId: 'new-live-trace',
+                  branch: 'task/trace-site/example',
+                  name: 'code.call',
+                  status: 'success',
+                  output: 'new live output',
+                },
+                parent,
+                peer,
+              ],
+              'cursor-live',
+            );
+          },
+          { parent: batchParent, peer: branchPeer },
+        );
+        await page.waitForFunction(
+          () =>
+            (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey === 'child-b' &&
+            document.querySelector<HTMLElement>('.tiInspector')?.dataset
+              .tiTraceKey === 'child-b' &&
+            document
+              .querySelector('.trxShell')
+              ?.classList.contains('detail-open'),
+        );
+
+        await page.locator('[data-ti-call-rail]').click();
+        await page.waitForFunction(() =>
+          document
+            .querySelector('.tiInspector')
+            ?.classList.contains('is-call-rail-collapsed'),
+        );
+        await page.locator('[data-ti-call-rail]').click();
+        await page.waitForFunction(
+          () =>
+            !document
+              .querySelector('.tiInspector')
+              ?.classList.contains('is-call-rail-collapsed'),
+        );
+
+        await page.locator('[data-ti-fullscreen]').click();
+        await page.waitForFunction(() =>
+          document
+            .querySelector('.trxShell')
+            ?.classList.contains('ti-inspector-fullscreen'),
+        );
+        await page.locator('[data-ti-fullscreen]').click();
+        await page.waitForFunction(
+          () =>
+            !document
+              .querySelector('.trxShell')
+              ?.classList.contains('ti-inspector-fullscreen'),
+        );
+
+        const widthBefore = await page
+          .locator('.trxRail')
+          .evaluate((element) => element.getBoundingClientRect().width);
+        const divider = page.locator('.tiDivider');
+        const dividerBox = await divider.boundingBox();
+        expect(dividerBox).not.toBeNull();
+        await page.mouse.move(
+          dividerBox!.x + dividerBox!.width / 2,
+          dividerBox!.y + dividerBox!.height / 2,
+        );
+        await page.mouse.down();
+        await page.mouse.move(
+          dividerBox!.x - 100,
+          dividerBox!.y + dividerBox!.height / 2,
+          { steps: 5 },
+        );
+        await page.mouse.up();
+        await expect
+          .poll(() =>
+            page
+              .locator('.trxRail')
+              .evaluate((element) => element.getBoundingClientRect().width),
+          )
+          .toBeGreaterThan(widthBefore + 50);
+
+        await page.locator('[data-ti-mode="formatted"]').click();
+
+        await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.trxTableScroll');
+          if (list) list.scrollTop = list.scrollHeight;
+        });
+        await page.waitForTimeout(100);
+        expect(await page.locator('.tiPreview').innerText()).toContain(
+          'child B output',
+        );
+
+        await page.locator('[data-ti-close]').dispatchEvent('click');
+        expect(
+          await page.evaluate(() => ({
+            selected: (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+            detailOpen: document
+              .querySelector('.trxShell')
+              ?.classList.contains('detail-open'),
+            closed: document
+              .querySelector('.trxShell')
+              ?.classList.contains('closed'),
+            inspector: Boolean(document.querySelector('.tiInspector')),
+          })),
+        ).toEqual({
+          selected: 'child-b',
+          detailOpen: false,
+          closed: true,
+          inspector: true,
+        });
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __legacyTraceBackClicks?: number })
+                .__legacyTraceBackClicks,
+          ),
+        ).toBe(0);
+        await page.evaluate(() => {
+          (
+            window as Window & {
+              __traceVirtualList?: { scrollToKey: (key: string) => void };
+            }
+          ).__traceVirtualList?.scrollToKey('child-b');
+        });
+        await page.locator('.trxRow[data-trace-key="child-b"]').click();
+        expect(
+          await page.evaluate(() => ({
+            detailOpen: document
+              .querySelector('.trxShell')
+              ?.classList.contains('detail-open'),
+            closed: document
+              .querySelector('.trxShell')
+              ?.classList.contains('closed'),
+          })),
+        ).toEqual({ detailOpen: true, closed: false });
+      } finally {
+        await browser.close();
+      }
+    },
+    25_000,
+  );
+
+  browserTest(
+    'should preserve interactive inspector behavior when the trace list is virtualized',
+    async () => {
+      const root = mkdtempSync(join(tmpdir(), 'trace-inspector-runtime-'));
+      roots.push(root);
+      const archiveRoot = join(root, 'site');
+      mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
+      const runtimeRows = Array.from({ length: 500 }, (_, index) =>
+        row({
+          id: `runtime-record-${index}`,
+          recordId: `runtime-record-${index}`,
+          traceId: `runtime-trace-${index}`,
+          displayTime: `00:${String(Math.floor(index / 60)).padStart(2, '0')}:${String(index % 60).padStart(2, '0')}`,
+          output: `runtime output ${index}`,
+        }),
+      );
+      const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
         html,body{margin:0;height:100%}.trxShell{display:grid;grid-template-columns:45% 55%;height:100vh}.trxTableScroll{height:100vh;overflow:auto}.trxRail{height:100vh}.trxRailInner,[data-inspector]{height:100%}
       </style></head><body>
         <div class="trxShell detail-open">
@@ -947,153 +1213,162 @@ describe('trace-site inspector deployment contract', () => {
         </div>
         <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
       </body></html>`;
-    const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v29.js');
-    const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v29.css');
-    execFileSync(
-      'bun',
-      [
-        'build',
-        new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
-          .pathname,
-        '--target=browser',
-        '--format=esm',
-        `--outfile=${scriptPath}`,
-      ],
-      { stdio: 'pipe' },
-    );
-    copyFileSync(
-      new URL('../scripts/trace-site-inspector/inspector.css', import.meta.url),
-      cssPath,
-    );
-
-    const browser = await chromium.launch({ headless: true });
-    try {
-      const page = await browser.newPage({
-        viewport: { width: 1440, height: 900 },
-      });
-      page.setDefaultTimeout(5_000);
-      let prefetchCursor = '';
-      await page.exposeFunction('capturePrefetchCursor', (cursor: string) => {
-        prefetchCursor = cursor;
-      });
-      await page.setContent(runtimeHtml, { waitUntil: 'domcontentloaded' });
-      await page.evaluate(() => {
-        history.replaceState(null, '', '#trace=runtime-record-0');
-        document.addEventListener('trace:prefetch-request', (event) => {
-          const detail = (event as CustomEvent<{ cursor: string }>).detail;
-          event.preventDefault();
-          void (
-            window as Window & {
-              capturePrefetchCursor: (cursor: string) => Promise<void>;
-            }
-          ).capturePrefetchCursor(detail.cursor);
-        });
-      });
-      await page.addStyleTag({ path: cssPath });
-      await page.addScriptTag({ path: scriptPath, type: 'module' });
-      await page.waitForFunction(
-        () =>
-          document.querySelectorAll('.trxRow').length > 0 &&
-          Boolean(document.querySelector('.tiInspector')),
+      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v30.js');
+      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v30.css');
+      execFileSync(
+        'bun',
+        [
+          'build',
+          new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
+            .pathname,
+          '--target=browser',
+          '--format=esm',
+          `--outfile=${scriptPath}`,
+        ],
+        { stdio: 'pipe' },
+      );
+      copyFileSync(
+        new URL(
+          '../scripts/trace-site-inspector/inspector.css',
+          import.meta.url,
+        ),
+        cssPath,
       );
 
-      const desktop = await page.evaluate(() => {
-        const list = document.querySelector<HTMLElement>('.trxTableScroll');
-        return {
-          total: Number(list?.dataset.traceTotal ?? 0),
+      const browser = await chromium.launch({ headless: true });
+      try {
+        const page = await browser.newPage({
+          viewport: { width: 1440, height: 900 },
+        });
+        page.setDefaultTimeout(5_000);
+        let prefetchCursor = '';
+        await page.exposeFunction('capturePrefetchCursor', (cursor: string) => {
+          prefetchCursor = cursor;
+        });
+        await page.setContent(runtimeHtml, { waitUntil: 'domcontentloaded' });
+        await page.evaluate(() => {
+          history.replaceState(null, '', '#trace=runtime-record-0');
+          document.addEventListener('trace:prefetch-request', (event) => {
+            const detail = (event as CustomEvent<{ cursor: string }>).detail;
+            event.preventDefault();
+            void (
+              window as Window & {
+                capturePrefetchCursor: (cursor: string) => Promise<void>;
+              }
+            ).capturePrefetchCursor(detail.cursor);
+          });
+        });
+        await page.addStyleTag({ path: cssPath });
+        await page.addScriptTag({ path: scriptPath, type: 'module' });
+        await page.waitForFunction(
+          () =>
+            document.querySelectorAll('.trxRow').length > 0 &&
+            Boolean(document.querySelector('.tiInspector')),
+        );
+
+        const desktop = await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.trxTableScroll');
+          return {
+            total: Number(list?.dataset.traceTotal ?? 0),
+            mounted: document.querySelectorAll('.trxRow').length,
+            sections: Array.from(
+              document.querySelectorAll<HTMLElement>('[data-ti-section]'),
+            ).map((section) => section.dataset.tiSection),
+            modes: Array.from(
+              document.querySelectorAll<HTMLElement>('[data-ti-mode]'),
+            ).map((mode) => mode.dataset.tiMode),
+          };
+        });
+        expect(desktop.total).toBe(500);
+        expect(desktop.mounted).toBeGreaterThan(0);
+        expect(desktop.mounted).toBeLessThan(100);
+        expect(desktop.sections).toEqual([
+          'input',
+          'output',
+          'error',
+          'metadata',
+        ]);
+        expect(desktop.modes).toEqual(['formatted', 'json']);
+
+        await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.trxTableScroll');
+          if (list) list.scrollTop = list.scrollHeight;
+        });
+        await page.waitForFunction(
+          () =>
+            document
+              .querySelector<HTMLElement>('.trxTableScroll')
+              ?.dataset.traceRange?.endsWith('499') ?? false,
+        );
+        await expect.poll(() => prefetchCursor).toBe('cursor-2');
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        const mobile = await page.evaluate(() => ({
+          viewport: [innerWidth, innerHeight],
           mounted: document.querySelectorAll('.trxRow').length,
-          tabs: Array.from(
-            document.querySelectorAll<HTMLElement>('[data-ti-tab]'),
-          ).map((tab) => tab.dataset.tiTab),
-        };
-      });
-      expect(desktop.total).toBe(500);
-      expect(desktop.mounted).toBeGreaterThan(0);
-      expect(desktop.mounted).toBeLessThan(100);
-      expect(desktop.tabs).toEqual([
-        'summary',
-        'input',
-        'output',
-        'error',
-        'metadata',
-        'raw',
-      ]);
+          closeDisplay: getComputedStyle(
+            document.querySelector<HTMLElement>('[data-ti-close]')!,
+          ).display,
+        }));
+        expect(mobile.viewport).toEqual([390, 844]);
+        expect(mobile.mounted).toBeLessThan(100);
+        expect(mobile.closeDisplay).not.toBe('none');
 
-      await page.evaluate(() => {
-        const list = document.querySelector<HTMLElement>('.trxTableScroll');
-        if (list) list.scrollTop = list.scrollHeight;
-      });
-      await page.waitForFunction(
-        () =>
-          document
-            .querySelector<HTMLElement>('.trxTableScroll')
-            ?.dataset.traceRange?.endsWith('499') ?? false,
+        await page.locator('[data-ti-close]').click();
+        await page.waitForFunction(
+          () =>
+            !document
+              .querySelector('.trxShell')
+              ?.classList.contains('detail-open'),
+        );
+        expect(
+          await page.evaluate(() => ({
+            selected: (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+            inspector: Boolean(
+              document.querySelector('[data-inspector] .tiInspector'),
+            ),
+          })),
+        ).toEqual({ selected: 'runtime-record-0', inspector: true });
+      } finally {
+        await browser.close();
+      }
+    },
+    15_000,
+  );
+
+  browserTest(
+    'should append older history pages while preserving inspector state and terminal behavior',
+    async () => {
+      const root = mkdtempSync(join(tmpdir(), 'trace-inspector-pagination-'));
+      roots.push(root);
+      const archiveRoot = join(root, 'site');
+      mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
+      const runtimeRows = Array.from({ length: 250 }, (_, index) =>
+        row({
+          id: `runtime-record-${index}`,
+          recordId: `runtime-record-${index}`,
+          traceId: `runtime-trace-${index}`,
+          displayTime: `00:${String(Math.floor(index / 60)).padStart(2, '0')}:${String(index % 60).padStart(2, '0')}`,
+          input: `runtime input ${index}`,
+          output: `runtime output ${index}`,
+        }),
       );
-      await expect.poll(() => prefetchCursor).toBe('cursor-2');
-
-      await page.setViewportSize({ width: 390, height: 844 });
-      const mobile = await page.evaluate(() => ({
-        viewport: [innerWidth, innerHeight],
-        mounted: document.querySelectorAll('.trxRow').length,
-        backDisplay: getComputedStyle(
-          document.querySelector<HTMLElement>('.tiMobileBack')!,
-        ).display,
-      }));
-      expect(mobile.viewport).toEqual([390, 844]);
-      expect(mobile.mounted).toBeLessThan(100);
-      expect(mobile.backDisplay).not.toBe('none');
-
-      await page.locator('.tiMobileBack').click();
-      await page.waitForFunction(
-        () =>
-          !document
-            .querySelector('.trxShell')
-            ?.classList.contains('detail-open'),
-      );
-      expect(
-        await page.evaluate(() => ({
-          selected: (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey,
-          inspector: Boolean(
-            document.querySelector('[data-inspector] .tiInspector'),
-          ),
-        })),
-      ).toEqual({ selected: 'runtime-record-0', inspector: true });
-    } finally {
-      await browser.close();
-    }
-  }, 15_000);
-
-  browserTest('should append older history pages while preserving inspector state and terminal behavior', async () => {
-    const root = mkdtempSync(join(tmpdir(), 'trace-inspector-pagination-'));
-    roots.push(root);
-    const archiveRoot = join(root, 'site');
-    mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
-    const runtimeRows = Array.from({ length: 250 }, (_, index) =>
-      row({
-        id: `runtime-record-${index}`,
-        recordId: `runtime-record-${index}`,
-        traceId: `runtime-trace-${index}`,
-        displayTime: `00:${String(Math.floor(index / 60)).padStart(2, '0')}:${String(index % 60).padStart(2, '0')}`,
-        input: `runtime input ${index}`,
-        output: `runtime output ${index}`,
-      }),
-    );
-    const olderRows = [
-      { ...runtimeRows[249] },
-      ...Array.from({ length: 75 }, (_, index) => {
-        const sequence = index + 250;
-        return row({
-          id: `runtime-record-${sequence}`,
-          recordId: `runtime-record-${sequence}`,
-          traceId: `runtime-trace-${sequence}`,
-          displayTime: `older-${sequence}`,
-          input: `runtime input ${sequence}`,
-          output: `runtime output ${sequence}`,
-        });
-      }),
-    ];
-    const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
+      const olderRows = [
+        { ...runtimeRows[249] },
+        ...Array.from({ length: 75 }, (_, index) => {
+          const sequence = index + 250;
+          return row({
+            id: `runtime-record-${sequence}`,
+            recordId: `runtime-record-${sequence}`,
+            traceId: `runtime-trace-${sequence}`,
+            displayTime: `older-${sequence}`,
+            input: `runtime input ${sequence}`,
+            output: `runtime output ${sequence}`,
+          });
+        }),
+      ];
+      const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
         html,body{margin:0;height:100%}.trxShell{display:grid;grid-template-columns:45% 55%;height:100vh}.trxTablePane{display:grid;grid-template-rows:auto 1fr auto;min-height:0}.trxTableScroll{height:100%;overflow:auto}.trxRail{height:100vh}.trxRailInner,[data-inspector]{height:100%}.trxFooter{display:flex;justify-content:space-between;padding:8px}
       </style></head><body>
         <div class="trxShell detail-open">
@@ -1106,216 +1381,220 @@ describe('trace-site inspector deployment contract', () => {
         </div>
         <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
       </body></html>`;
-    const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v29.js');
-    const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v29.css');
-    execFileSync(
-      'bun',
-      [
-        'build',
-        new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
-          .pathname,
-        '--target=browser',
-        '--format=esm',
-        `--outfile=${scriptPath}`,
-      ],
-      { stdio: 'pipe' },
-    );
-    copyFileSync(
-      new URL('../scripts/trace-site-inspector/inspector.css', import.meta.url),
-      cssPath,
-    );
+      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v30.js');
+      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v30.css');
+      execFileSync(
+        'bun',
+        [
+          'build',
+          new URL('../scripts/trace-site-inspector/browser.ts', import.meta.url)
+            .pathname,
+          '--target=browser',
+          '--format=esm',
+          `--outfile=${scriptPath}`,
+        ],
+        { stdio: 'pipe' },
+      );
+      copyFileSync(
+        new URL(
+          '../scripts/trace-site-inspector/inspector.css',
+          import.meta.url,
+        ),
+        cssPath,
+      );
 
-    const browser = await chromium.launch({ headless: true });
-    try {
-      const page = await browser.newPage({
-        viewport: { width: 1440, height: 900 },
-      });
-      page.setDefaultTimeout(5_000);
-      await page.setContent(runtimeHtml, { waitUntil: 'domcontentloaded' });
-      await page.evaluate((pageRows) => {
-        const target = window as Window & {
-          __traceHistoryRequests?: string[];
-          __consueloTraceHistoryTransport?: {
-            fetchJson: (url: string) => Promise<unknown>;
-          };
-          __plainFetchCalls?: number;
-        };
-        target.__traceHistoryRequests = [];
-        target.__plainFetchCalls = 0;
-        window.fetch = async () => {
-          target.__plainFetchCalls = (target.__plainFetchCalls ?? 0) + 1;
-          throw new Error('The inspector must not call fetch directly.');
-        };
-        target.__consueloTraceHistoryTransport = {
-          fetchJson: async (url: string) => {
-            if (url === '/trace-burn-intelligence/live-traces.json') {
-              return { rows: [] };
-            }
-            target.__traceHistoryRequests!.push(url);
-            await new Promise((resolve) => window.setTimeout(resolve, 150));
-            return {
-              ok: true,
-              publicBoundary: 'consuelo-sites-private-archive',
-              route: '/gateway/traces/recent',
-              data: {
-                direction: 'older',
-                rows: pageRows,
-                nextCursor: null,
-              },
+      const browser = await chromium.launch({ headless: true });
+      try {
+        const page = await browser.newPage({
+          viewport: { width: 1440, height: 900 },
+        });
+        page.setDefaultTimeout(5_000);
+        await page.setContent(runtimeHtml, { waitUntil: 'domcontentloaded' });
+        await page.evaluate((pageRows) => {
+          const target = window as Window & {
+            __traceHistoryRequests?: string[];
+            __consueloTraceHistoryTransport?: {
+              fetchJson: (url: string) => Promise<unknown>;
             };
-          },
-        };
-        history.replaceState(null, '', '#trace=runtime-record-10');
-      }, olderRows);
-      await page.addStyleTag({ path: cssPath });
-      await page.addScriptTag({ path: scriptPath, type: 'module' });
-      await page.waitForFunction(
-        () =>
-          document.querySelectorAll('.trxRow').length > 0 &&
-          Boolean(document.querySelector('.tiInspector')),
-      );
-      await page.locator('[data-search]').fill('runtime');
-      await page.locator('[data-ti-tab="output"]').click();
-
-      const initial = await page.evaluate(() => {
-        const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
-        return {
-          total: Number(list.dataset.traceTotal),
-          count: document.querySelector('[data-trace-count]')?.textContent,
-          height: list.scrollHeight,
-          selected: (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey,
-          tab: document.querySelector<HTMLElement>('[data-ti-tab].active')?.dataset
-            .tiTab,
-          query: (document.querySelector('[data-search]') as HTMLInputElement)
-            .value,
-          virtualDomText: document.body.textContent?.includes('Virtual DOM'),
-        };
-      });
-      expect(initial).toMatchObject({
-        total: 250,
-        count: '250',
-        selected: 'runtime-record-10',
-        tab: 'output',
-        query: 'runtime',
-        virtualDomText: false,
-      });
-
-      await page.evaluate(() => {
-        const list = document.querySelector<HTMLElement>('.trxTableScroll');
-        if (list) list.scrollTop = list.scrollHeight;
-      });
-      await page.waitForFunction(
-        () =>
-          ((window as Window & { __traceHistoryRequests?: string[] })
-            .__traceHistoryRequests?.length ?? 0) === 1,
-      );
-      await page.evaluate(() => {
-        document.dispatchEvent(
-          new CustomEvent('trace:prefetch-request', {
-            cancelable: true,
-            detail: {
-              cursor: 'cursor-2',
-              rowCount: 250,
-              lastVirtualIndex: 249,
-              accept: () => {},
-              fail: () => {},
+            __plainFetchCalls?: number;
+          };
+          target.__traceHistoryRequests = [];
+          target.__plainFetchCalls = 0;
+          window.fetch = async () => {
+            target.__plainFetchCalls = (target.__plainFetchCalls ?? 0) + 1;
+            throw new Error('The inspector must not call fetch directly.');
+          };
+          target.__consueloTraceHistoryTransport = {
+            fetchJson: async (url: string) => {
+              if (url === '/trace-burn-intelligence/live-traces.json') {
+                return { rows: [] };
+              }
+              target.__traceHistoryRequests!.push(url);
+              await new Promise((resolve) => window.setTimeout(resolve, 150));
+              return {
+                ok: true,
+                publicBoundary: 'consuelo-sites-private-archive',
+                route: '/gateway/traces/recent',
+                data: {
+                  direction: 'older',
+                  rows: pageRows,
+                  nextCursor: null,
+                },
+              };
             },
-          }),
-        );
-      });
-      await page.waitForTimeout(40);
-      expect(
-        await page.evaluate(
+          };
+          history.replaceState(null, '', '#trace=runtime-record-10');
+        }, olderRows);
+        await page.addStyleTag({ path: cssPath });
+        await page.addScriptTag({ path: scriptPath, type: 'module' });
+        await page.waitForFunction(
           () =>
-            (window as Window & { __traceHistoryRequests?: string[] })
-              .__traceHistoryRequests?.length ?? 0,
-        ),
-      ).toBe(1);
-
-      await page.waitForFunction(
-        () =>
-          document.querySelector<HTMLElement>('.trxTableScroll')?.dataset
-            .traceTotal === '325',
-      );
-      const appended = await page.evaluate(() => {
-        const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
-        const topButton = document.querySelector<HTMLButtonElement>(
-          '[data-trace-scroll-top]',
+            document.querySelectorAll('.trxRow').length > 0 &&
+            Boolean(document.querySelector('.tiInspector')),
         );
-        return {
-          total: Number(list.dataset.traceTotal),
-          count: document.querySelector('[data-trace-count]')?.textContent,
-          height: list.scrollHeight,
-          cursor: list.dataset.traceNextCursor,
-          selected: (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey,
-          tab: document.querySelector<HTMLElement>('[data-ti-tab].active')?.dataset
-            .tiTab,
-          query: (document.querySelector('[data-search]') as HTMLInputElement)
-            .value,
-          topButtonVisible: Boolean(topButton && !topButton.hidden),
-          requestUrl: (
-            window as Window & { __traceHistoryRequests?: string[] }
-          ).__traceHistoryRequests?.[0],
-          plainFetchCalls: (
-            window as Window & { __plainFetchCalls?: number }
-          ).__plainFetchCalls,
-        };
-      });
-      expect(appended).toMatchObject({
-        total: 325,
-        count: '325',
-        cursor: '',
-        selected: 'runtime-record-10',
-        tab: 'output',
-        query: 'runtime',
-        topButtonVisible: true,
-        plainFetchCalls: 0,
-      });
-      expect(appended.height).toBeGreaterThan(initial.height);
-      expect(appended.requestUrl).toContain(
-        '/gateway/traces/recent?direction=older&cursor=cursor-2',
-      );
+        await page.locator('[data-search]').fill('runtime');
+        await page.locator('[data-ti-mode="formatted"]').click();
 
-      await page.locator('[data-trace-scroll-top]').click();
-      await page.waitForFunction(
-        () =>
-          (document.querySelector<HTMLElement>('.trxTableScroll')?.scrollTop ?? 1) <
-          1,
-      );
-      expect(
-        await page.evaluate(() => ({
-          buttonHidden: document.querySelector<HTMLButtonElement>(
+        const initial = await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
+          return {
+            total: Number(list.dataset.traceTotal),
+            count: document.querySelector('[data-trace-count]')?.textContent,
+            height: list.scrollHeight,
+            selected: (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+            mode: document.querySelector<HTMLElement>('.tiInspector')?.dataset
+              .tiDisplayMode,
+            query: (document.querySelector('[data-search]') as HTMLInputElement)
+              .value,
+            virtualDomText: document.body.textContent?.includes('Virtual DOM'),
+          };
+        });
+        expect(initial).toMatchObject({
+          total: 250,
+          count: '250',
+          selected: 'runtime-record-10',
+          mode: 'formatted',
+          query: 'runtime',
+          virtualDomText: false,
+        });
+
+        await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.trxTableScroll');
+          if (list) list.scrollTop = list.scrollHeight;
+        });
+        await page.waitForFunction(
+          () =>
+            ((window as Window & { __traceHistoryRequests?: string[] })
+              .__traceHistoryRequests?.length ?? 0) === 1,
+        );
+        await page.evaluate(() => {
+          document.dispatchEvent(
+            new CustomEvent('trace:prefetch-request', {
+              cancelable: true,
+              detail: {
+                cursor: 'cursor-2',
+                rowCount: 250,
+                lastVirtualIndex: 249,
+                accept: () => {},
+                fail: () => {},
+              },
+            }),
+          );
+        });
+        await page.waitForTimeout(40);
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __traceHistoryRequests?: string[] })
+                .__traceHistoryRequests?.length ?? 0,
+          ),
+        ).toBe(1);
+
+        await page.waitForFunction(
+          () =>
+            document.querySelector<HTMLElement>('.trxTableScroll')?.dataset
+              .traceTotal === '325',
+        );
+        const appended = await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
+          const topButton = document.querySelector<HTMLButtonElement>(
             '[data-trace-scroll-top]',
-          )?.hidden,
-          selected: (window as Window & { __traceSelectedKey?: string })
-            .__traceSelectedKey,
-          query: (document.querySelector('[data-search]') as HTMLInputElement)
-            .value,
-        })),
-      ).toEqual({
-        buttonHidden: true,
-        selected: 'runtime-record-10',
-        query: 'runtime',
-      });
+          );
+          return {
+            total: Number(list.dataset.traceTotal),
+            count: document.querySelector('[data-trace-count]')?.textContent,
+            height: list.scrollHeight,
+            cursor: list.dataset.traceNextCursor,
+            selected: (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+            mode: document.querySelector<HTMLElement>('.tiInspector')?.dataset
+              .tiDisplayMode,
+            query: (document.querySelector('[data-search]') as HTMLInputElement)
+              .value,
+            topButtonVisible: Boolean(topButton && !topButton.hidden),
+            requestUrl: (
+              window as Window & { __traceHistoryRequests?: string[] }
+            ).__traceHistoryRequests?.[0],
+            plainFetchCalls: (window as Window & { __plainFetchCalls?: number })
+              .__plainFetchCalls,
+          };
+        });
+        expect(appended).toMatchObject({
+          total: 325,
+          count: '325',
+          cursor: '',
+          selected: 'runtime-record-10',
+          mode: 'formatted',
+          query: 'runtime',
+          topButtonVisible: true,
+          plainFetchCalls: 0,
+        });
+        expect(appended.height).toBeGreaterThan(initial.height);
+        expect(appended.requestUrl).toContain(
+          '/gateway/traces/recent?direction=older&cursor=cursor-2',
+        );
 
-      await page.evaluate(() => {
-        const list = document.querySelector<HTMLElement>('.trxTableScroll');
-        if (list) list.scrollTop = list.scrollHeight;
-      });
-      await page.waitForTimeout(250);
-      expect(
-        await page.evaluate(
+        await page.locator('[data-trace-scroll-top]').click();
+        await page.waitForFunction(
           () =>
-            (window as Window & { __traceHistoryRequests?: string[] })
-              .__traceHistoryRequests?.length ?? 0,
-        ),
-      ).toBe(1);
-    } finally {
-      await browser.close();
-    }
-  }, 15_000);
+            (document.querySelector<HTMLElement>('.trxTableScroll')
+              ?.scrollTop ?? 1) < 1,
+        );
+        expect(
+          await page.evaluate(() => ({
+            buttonHidden: document.querySelector<HTMLButtonElement>(
+              '[data-trace-scroll-top]',
+            )?.hidden,
+            selected: (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+            query: (document.querySelector('[data-search]') as HTMLInputElement)
+              .value,
+          })),
+        ).toEqual({
+          buttonHidden: true,
+          selected: 'runtime-record-10',
+          query: 'runtime',
+        });
+
+        await page.evaluate(() => {
+          const list = document.querySelector<HTMLElement>('.trxTableScroll');
+          if (list) list.scrollTop = list.scrollHeight;
+        });
+        await page.waitForTimeout(250);
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __traceHistoryRequests?: string[] })
+                .__traceHistoryRequests?.length ?? 0,
+          ),
+        ).toBe(1);
+      } finally {
+        await browser.close();
+      }
+    },
+    15_000,
+  );
 });
 
 describe('sanitized Cloudflare trace preview', () => {
@@ -1373,9 +1652,9 @@ describe('sanitized Cloudflare trace preview', () => {
       'if (url.pathname === "/") return new Response(renderSitesLauncher()';
 
     expect(officeSource).toContain(
-      "import { createArchiveTraceHistoryResponse, enrichTracePayloadWithBatchResults } from ",
+      'import { createArchiveTraceHistoryResponse, enrichTracePayloadWithBatchResults } from ',
     );
-    expect(officeSource).toContain("import { resolveTraceDbPath } from ");
+    expect(officeSource).toContain('import { resolveTraceDbPath } from ');
     expect(officeSource).toContain(
       'function latestTraceDb(){ return resolveTraceDbPath(); }',
     );
@@ -1398,11 +1677,11 @@ describe('sanitized Cloudflare trace preview', () => {
     const outputRoot = join(root, 'public');
     mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
     writeFileSync(
-      join(archiveRoot, '_astro', 'trace-inspector-v29.css'),
+      join(archiveRoot, '_astro', 'trace-inspector-v30.css'),
       'body{}',
     );
     writeFileSync(
-      join(archiveRoot, '_astro', 'trace-inspector-v29.js'),
+      join(archiveRoot, '_astro', 'trace-inspector-v30.js'),
       'export{}',
     );
 
