@@ -11,10 +11,15 @@ import {
   totalTokens,
   type TraceRecord,
 } from './model';
+import {
+  filterInspectorCalls,
+  inspectorSections,
+  inspectorStore,
+  normalizeBranchBreadcrumb,
+  type InspectorSection,
+} from './inspector-state';
 import { installTracePaginationTransport } from './pagination-browser';
 import { installTraceVirtualList } from './virtual-list-browser';
-
-type PreviewTab = 'summary' | 'input' | 'output' | 'error' | 'metadata' | 'raw';
 
 type TraceWindow = Window & {
   __traceRowsByTraceId?: Map<string, TraceRecord>;
@@ -34,20 +39,15 @@ type TraceFeedPayload = {
   traces?: TraceRecord[];
 };
 
-const tabs: Array<{ id: PreviewTab; label: string }> = [
-  { id: 'summary', label: 'Summary' },
-  { id: 'input', label: 'Input' },
-  { id: 'output', label: 'Output' },
-  { id: 'error', label: 'Error' },
-  { id: 'metadata', label: 'Metadata' },
-  { id: 'raw', label: 'Raw' },
-];
+type FlatValue = {
+  path: string;
+  value: unknown;
+  depth: number;
+};
 
-const tabState = new Map<string, PreviewTab>();
 let rendering = false;
 let scheduled = false;
-let mobileMenuOpen = false;
-let wrapped = true;
+let callSearchFrame = 0;
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
@@ -75,68 +75,29 @@ function formatDuration(value: unknown): string {
   return `${Math.round(duration)}ms`;
 }
 
-function pretty(value: unknown): string {
-  if (value === null || value === undefined || value === '')
-    return 'No payload recorded.';
-  const parsed = parseMaybeJson(value);
-  if (typeof parsed === 'string') return parsed || 'No payload recorded.';
-  try {
-    return JSON.stringify(parsed, null, 2);
-  } catch {
-    return String(parsed);
-  }
-}
-
-function boundedPretty(value: unknown): string {
-  const text = pretty(value);
-  const limit = 200_000;
-  return text.length > limit
-    ? `${text.slice(0, limit)}\n\n… preview limited to ${limit.toLocaleString()} characters`
-    : text;
-}
-
-function selectedKey(): string {
-  const target = window as TraceWindow;
-  if (Object.hasOwn(target, '__traceSelectedKey'))
-    return target.__traceSelectedKey ?? '';
-  const node = document.querySelector<HTMLElement>(
-    '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
-  );
-  const key =
-    node?.dataset.traceKey ??
-    new URLSearchParams(location.hash.slice(1)).get('trace') ??
-    '';
-  target.__traceSelectedKey = key;
-  return key;
-}
-
 function traceMap(): Map<string, TraceRecord> {
-  const map = (window as TraceWindow).__traceRowsByTraceId;
-  if (map instanceof Map) return map;
+  const current = (window as TraceWindow).__traceRowsByTraceId;
+  if (current instanceof Map) return current;
   const fallback = new Map<string, TraceRecord>();
   const seed = document.getElementById('trace-seed-data');
   if (seed?.textContent) {
     try {
       const payload = JSON.parse(seed.textContent) as { rows?: TraceRecord[] };
       for (const row of payload.rows ?? []) {
-        const key = stableTraceKey(row);
-        if (key) fallback.set(key, row);
-        if (row.traceId) fallback.set(String(row.traceId), row);
+        addRowToMap(fallback, row);
+        for (const child of childTraceRecords(row))
+          addRowToMap(fallback, child);
       }
     } catch {}
   }
   return fallback;
 }
 
-function selectedRow(): TraceRecord | null {
-  const key = selectedKey();
-  if (!key) return null;
-  const map = traceMap();
-  return (
-    map.get(key) ??
-    [...map.values()].find((row) => stableTraceKey(row) === key) ??
-    null
-  );
+function addRowToMap(map: Map<string, TraceRecord>, row: TraceRecord): void {
+  const key = stableTraceKey(row);
+  if (key) map.set(key, row);
+  const traceId = clean(row.traceId ?? row.trace);
+  if (traceId && !map.has(traceId)) map.set(traceId, row);
 }
 
 function allRows(): TraceRecord[] {
@@ -145,32 +106,24 @@ function allRows(): TraceRecord[] {
   );
 }
 
-function defaultTab(row: TraceRecord): PreviewTab {
-  return isFailure(row) ? 'error' : 'summary';
+function initialSelectionKey(): string {
+  const target = window as TraceWindow;
+  if (Object.hasOwn(target, '__traceSelectedKey'))
+    return target.__traceSelectedKey ?? '';
+  return (
+    document.querySelector<HTMLElement>(
+      '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
+    )?.dataset.traceKey ??
+    new URLSearchParams(location.hash.slice(1)).get('trace') ??
+    ''
+  );
 }
 
-function storedTab(key: string, row: TraceRecord): PreviewTab {
-  const memory = tabState.get(key);
-  if (memory) return memory;
-  try {
-    const stored = sessionStorage.getItem(
-      `trace-inspector-tab:${key}`,
-    ) as PreviewTab | null;
-    if (stored && tabs.some((tab) => tab.id === stored)) {
-      tabState.set(key, stored);
-      return stored;
-    }
-  } catch {}
-  const fallback = defaultTab(row);
-  tabState.set(key, fallback);
-  return fallback;
-}
-
-function saveTab(key: string, tab: PreviewTab): void {
-  tabState.set(key, tab);
-  try {
-    sessionStorage.setItem(`trace-inspector-tab:${key}`, tab);
-  } catch {}
+function syncRowsFromMap(): void {
+  inspectorStore.dispatch({
+    type: 'rows-replaced',
+    rows: dedupeTraceRows(traceMap().values()),
+  });
 }
 
 function rowSummary(row: TraceRecord): string {
@@ -188,232 +141,294 @@ function fact(label: string, value: unknown): string {
   return `<div class="tiFact"><span>${escapeHtml(label)}</span><b>${escapeHtml(value ?? '—')}</b></div>`;
 }
 
-function payload(title: string, value: unknown, extraClass = ''): string {
-  const content = boundedPretty(value);
-  return `<section class="tiPayload ${extraClass}">
-    <header><h3>${escapeHtml(title)}</h3><button type="button" data-ti-copy>Copy</button></header>
-    <pre>${escapeHtml(content)}</pre>
+function flattenValue(
+  value: unknown,
+  path = '',
+  depth = 0,
+  output: FlatValue[] = [],
+): FlatValue[] {
+  if (output.length >= 300) return output;
+  const parsed = typeof value === 'string' ? parseMaybeJson(value) : value;
+  if (Array.isArray(parsed)) {
+    if (!parsed.length)
+      output.push({ path: path || 'value', value: [], depth });
+    for (const [index, item] of parsed.entries())
+      flattenValue(
+        item,
+        path ? `${path}.${index}` : String(index),
+        depth + 1,
+        output,
+      );
+    return output;
+  }
+  if (parsed && typeof parsed === 'object') {
+    const entries = Object.entries(parsed as Record<string, unknown>);
+    if (!entries.length)
+      output.push({ path: path || 'value', value: {}, depth });
+    for (const [key, item] of entries)
+      flattenValue(item, path ? `${path}.${key}` : key, depth + 1, output);
+    return output;
+  }
+  output.push({ path: path || 'value', value: parsed, depth });
+  return output;
+}
+
+function valueType(value: unknown): string {
+  if (value === null || value === undefined) return 'null';
+  if (typeof value === 'boolean') return 'boolean';
+  if (typeof value === 'number') return 'number';
+  return 'string';
+}
+
+function valueMarkup(value: unknown): string {
+  if (value === null || value === undefined)
+    return '<em class="tiValue tiValue-null">null</em>';
+  if (Array.isArray(value))
+    return '<em class="tiValue tiValue-null">empty array</em>';
+  if (typeof value === 'object')
+    return '<em class="tiValue tiValue-null">empty object</em>';
+  const valueText = String(value);
+  const className = `tiValue tiValue-${valueType(value)}`;
+  return valueText.includes('\n') || valueText.length > 180
+    ? `<pre class="${className}">${escapeHtml(valueText)}</pre>`
+    : `<code class="${className}">${escapeHtml(
+        typeof value === 'string' ? `"${valueText}"` : valueText,
+      )}</code>`;
+}
+
+function structuredTable(value: unknown): string {
+  const rows = flattenValue(value);
+  if (!rows.length) return '<p class="tiEmptyValue">No value recorded.</p>';
+  return `<div class="tiDataTable"><div class="tiDataHead"><span>Path</span><span>Value</span></div>
+    ${rows
+      .map(
+        (entry) => `<div class="tiDataRow">
+          <code class="tiDataPath" style="--ti-depth:${entry.depth}">${escapeHtml(entry.path)}</code>
+          <div class="tiDataValue">${valueMarkup(entry.value)}</div>
+        </div>`,
+      )
+      .join('')}
+    ${rows.length >= 300 ? '<p class="tiDataLimit">Preview limited to 300 values.</p>' : ''}
+  </div>`;
+}
+
+function sectionMarkup(section: InspectorSection): string {
+  const emptyError = section.id === 'error' && section.value === null;
+  return `<section class="tiSection tone-${section.tone}" data-ti-section="${section.id}">
+    <header><h3>${escapeHtml(section.title)}</h3><button type="button" data-ti-copy aria-label="Copy ${escapeHtml(section.title)}">Copy</button></header>
+    <div class="tiSectionBody">${emptyError ? '<p class="tiEmptyValue">No error recorded.</p>' : structuredTable(section.value)}</div>
   </section>`;
 }
 
-function failedChildren(row: TraceRecord): TraceRecord[] {
-  const raw = parseMaybeJson(row.batchResultsJson);
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter(
-      (item): item is TraceRecord =>
-        typeof item === 'object' && item !== null && !Array.isArray(item),
-    )
-    .filter(isFailure);
-}
-
-function errorPanel(row: TraceRecord): string {
-  if (!isFailure(row)) {
-    return '<section class="tiEmpty"><h3>No failure recorded</h3><p>This trace completed without an error payload.</p></section>';
-  }
-  const insight = extractTraceError(row);
-  const children = failedChildren(row);
-  const childMarkup = children.length
-    ? `<section class="tiFailedChildren"><header><h3>Failed child calls</h3><span>${children.length}</span></header>
-      ${children
-        .map((child) => {
-          const childInsight = extractTraceError(child);
-          return `<article><div><b>${escapeHtml(childInsight.failedTool || child.tool || 'child call')}</b><span>${escapeHtml(childInsight.code)}</span></div><p>${escapeHtml(childInsight.detail)}</p></article>`;
-        })
-        .join('')}
-    </section>`
-    : '';
-  return `<section class="tiErrorHero">
-      <span class="tiErrorEyebrow">Actionable failure</span>
-      <h3>${escapeHtml(insight.headline)}</h3>
-      <p>${escapeHtml(insight.detail)}</p>
-    </section>
-    ${childMarkup}
-    ${payload('stderr', row.rawStderr, 'tiErrorPayload')}
-    ${payload('Result envelope', row.rawResultJson ?? row.outputObj ?? row.output, 'tiErrorPayload')}`;
-}
-
-function summaryPanel(
+function summaryMarkup(
   row: TraceRecord,
   branch: ReturnType<typeof branchSummary>,
 ): string {
-  return `<section class="tiSummaryHero">
-      <div class="tiSummaryTool">${escapeHtml(row.name ?? row.traceName ?? 'trace')}</div>
-      <p>${escapeHtml(rowSummary(row))}</p>
-    </section>
-    <section class="tiFactsGrid">
+  const failed = isFailure(row);
+  const insight = failed ? extractTraceError(row) : null;
+  return `<section class="tiSummaryHero ${failed ? 'is-error' : ''}">
+    <div>
+      <span class="tiSummaryStatus">${escapeHtml(failed ? 'Actionable failure' : 'Completed')}</span>
+      <h2>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</h2>
+      <p>${escapeHtml(insight?.detail || rowSummary(row))}</p>
+    </div>
+    <section class="tiFactsGrid" aria-label="Selected call metrics">
       ${fact('Status', statusLabel(row))}
       ${fact('Code', clean(row.code) || 'OK')}
-      ${fact('Exit', row.exitCode ?? '—')}
       ${fact('Latency', clean(row.latency) || formatDuration(row.durationMs))}
       ${fact('Tokens', formatCompact(totalTokens(row)))}
-      ${fact('Input tokens', formatCompact(row.inputTokens))}
-      ${fact('Output tokens', formatCompact(row.outputTokens))}
       ${fact('Branch calls', branch.calls)}
-      ${fact('Branch failures', branch.failures)}
-      ${fact('Trace ID', row.traceId ?? row.trace ?? '—')}
-    </section>`;
+      ${fact('Failures', branch.failures)}
+    </section>
+  </section>`;
 }
 
-function metadataPanel(
-  row: TraceRecord,
-  branch: ReturnType<typeof branchSummary>,
-): string {
-  const metadata = {
-    traceId: row.traceId ?? row.trace,
-    recordId: row.recordId ?? row.id,
-    branch: branch.branch,
-    taskSession: row.taskSession,
-    worktree: row.worktree,
-    startTime: row.startTime ?? row.time ?? row.ts,
-    status: row.status,
-    code: row.code,
-    exitCode: row.exitCode,
-    durationMs: row.durationMs,
-    inputTokens: row.inputTokens,
-    outputTokens: row.outputTokens,
-    totalTokens: totalTokens(row),
-    cost: row.cost,
-    metadata: row.metadata,
-  };
-  return payload('Execution metadata', metadata);
-}
-
-function rawPanel(row: TraceRecord): string {
-  return [
-    payload('Resolved input', row.rawResolvedInputJson ?? row.resolvedInputObj),
-    payload('Raw input', row.rawInputJson ?? row.inputObj ?? row.input),
-    payload('Raw result', row.rawResultJson ?? row.outputObj ?? row.output),
-    payload('stderr', row.rawStderr),
-    payload('Batch / child results', row.batchResultsJson),
-  ].join('');
-}
-
-function panel(
-  tab: PreviewTab,
-  row: TraceRecord,
-  branch: ReturnType<typeof branchSummary>,
-): string {
-  switch (tab) {
-    case 'summary':
-      return summaryPanel(row, branch);
-    case 'input':
-      return [
-        payload(
-          'Resolved input',
-          row.rawResolvedInputJson ??
-            row.resolvedInputObj ??
-            row.inputObj ??
-            row.input,
-        ),
-        payload(
-          'Original input',
-          row.rawInputJson ?? row.inputObj ?? row.input,
-        ),
-      ].join('');
-    case 'output':
-      return payload(
-        'Output',
-        row.output ?? row.outputObj ?? row.rawResultJson ?? row.summary,
-      );
-    case 'error':
-      return errorPanel(row);
-    case 'metadata':
-      return metadataPanel(row, branch);
-    case 'raw':
-      return rawPanel(row);
+function jsonMarkup(row: TraceRecord): string {
+  let value = '';
+  try {
+    value = JSON.stringify(row, null, 2);
+  } catch {
+    value = String(row);
   }
+  return `<section class="tiSection tiJsonSection" data-ti-section="json">
+    <header><h3>Raw trace JSON</h3><button type="button" data-ti-copy>Copy</button></header>
+    <div class="tiSectionBody"><pre class="tiRawJson">${escapeHtml(value)}</pre></div>
+  </section>`;
+}
+
+function peerTime(row: TraceRecord): string {
+  const value = clean(row.displayTime ?? row.time ?? row.startTime);
+  if (!value) return '—';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value.slice(-15)
+    : date.toLocaleTimeString([], { hour12: false });
 }
 
 function branchPeers(
   branch: ReturnType<typeof branchSummary>,
   selected: TraceRecord,
+  query: string,
 ): string {
   const selectedId = stableTraceKey(selected);
-  const peerMarkup = (peer: TraceRecord, child = false): string => {
-    const key = stableTraceKey(peer);
-    const status = statusLabel(peer);
-    const depth = Number(peer.__traceDepth ?? 0);
-    return `<button class="tiPeer ${child ? `tiPeerChild depth-${depth}` : ''} ${key === selectedId ? 'active' : ''}" type="button" data-trace-key="${escapeHtml(key)}"${child ? ` style="--depth:${depth}"` : ''}>
-      <span class="tiPeerStatus ${status === 'error' ? 'error' : 'success'}">✤</span>
-      <span class="tiPeerMain"><b>${escapeHtml(peer.name ?? peer.traceName ?? peer.tool ?? 'trace')}</b><small>${escapeHtml(clean(peer.displayTime ?? peer.time ?? peer.startTime).slice(-15) || (child ? 'batch child' : '—'))}</small></span>
-      <span class="tiPeerTokens">${escapeHtml(formatCompact(totalTokens(peer)))} tok</span>
-      <span class="tiPeerDuration">${escapeHtml(clean(peer.latency) || formatDuration(peer.durationMs))}</span>
-    </button>`;
-  };
-  return (
-    branch.peers
-      .map((peer) =>
-        [
-          peerMarkup(peer),
-          ...childTraceRecords(peer).map((child) => peerMarkup(child, true)),
-        ].join(''),
-      )
-      .join('') ||
-    '<div class="tiEmptyCompact">No branch peers in this feed window.</div>'
-  );
+  const calls = branch.peers.flatMap((peer) => [
+    peer,
+    ...childTraceRecords(peer),
+  ]);
+  const filtered = filterInspectorCalls(calls, query);
+  if (!filtered.length)
+    return '<div class="tiEmptyCompact">No calls match this search.</div>';
+  return filtered
+    .map((peer) => {
+      const key = stableTraceKey(peer);
+      const status = statusLabel(peer);
+      const child = isBatchChild(peer);
+      return `<button class="tiPeer ${child ? 'tiPeerChild' : ''} ${key === selectedId ? 'active' : ''}" type="button" data-trace-key="${escapeHtml(key)}">
+        <span class="tiPeerStatus ${status === 'error' ? 'error' : 'success'}" aria-label="${escapeHtml(status)}"></span>
+        <span class="tiPeerMain"><b>${escapeHtml(peer.name ?? peer.traceName ?? peer.tool ?? 'trace')}</b><small>${escapeHtml(peerTime(peer))}</small></span>
+        <span class="tiPeerTokens">${escapeHtml(formatCompact(totalTokens(peer)))} tok</span>
+        <span class="tiPeerDuration">${escapeHtml(clean(peer.latency) || formatDuration(peer.durationMs))}</span>
+      </button>`;
+    })
+    .join('');
 }
 
 function inspectorMarkup(row: TraceRecord): string {
+  const state = inspectorStore.getSnapshot();
   const key = stableTraceKey(row);
   const branch = branchSummary(allRows(), row);
-  const active = storedTab(key, row);
-  return `<div class="tiInspector ${wrapped ? 'is-wrapped' : ''} ${mobileMenuOpen ? 'mobile-menu-open' : ''}" data-ti-trace-key="${escapeHtml(key)}" data-ti-active-tab="${active}">
-    <header class="tiMobileBar">
-      <button type="button" class="tiMobileBack" data-ti-back data-drawer-handle>Back</button>
-      <span>Trace detail</span>
-      <button type="button" class="tiMobileMenu" data-ti-menu>${mobileMenuOpen ? 'Preview' : 'Menu'}</button>
-    </header>
-    <aside class="tiSidebar" aria-label="Trace and branch context">
-      <section class="tiBranchCard">
-        <header>
-          <div><div class="tiEyebrow">Branch</div><h3 title="${escapeHtml(branch.branch)}">${escapeHtml(branch.branch)}</h3></div>
-          <span class="tiBranchCalls">${branch.calls} calls</span>
-        </header>
-        <div class="tiBranchTotals">
-          ${fact('Total', `${formatCompact(branch.totalTokens)} tok`)}
-          ${fact('Input', formatCompact(branch.inputTokens))}
-          ${fact('Output', formatCompact(branch.outputTokens))}
-          ${fact('Failures', branch.failures)}
-          ${fact('Call time', formatDuration(branch.durationMs))}
+  const breadcrumb = normalizeBranchBreadcrumb(branch.branch);
+  const formatted = inspectorSections(row).map(sectionMarkup).join('');
+  const content =
+    state.displayMode === 'json'
+      ? jsonMarkup(row)
+      : `${summaryMarkup(row, branch)}${formatted}`;
+  return `<div class="tiInspector ${state.callRailCollapsed ? 'is-call-rail-collapsed' : ''}" data-ti-trace-key="${escapeHtml(key)}" data-ti-display-mode="${state.displayMode}">
+    <header class="tiToolbar">
+      <div class="tiToolbarIdentity">
+        <div class="tiBreadcrumb" title="${escapeHtml(branch.branch)}"><span>${escapeHtml(breadcrumb.stream)}</span>${breadcrumb.task ? `<i>/</i><b>${escapeHtml(breadcrumb.task)}</b>` : ''}</div>
+        <div class="tiSelectedMeta"><strong>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</strong><span class="tiStatusDot ${statusLabel(row)}"></span><span>${escapeHtml(statusLabel(row))}</span><span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span><span>${escapeHtml(formatCompact(totalTokens(row)))} tok</span></div>
+      </div>
+      <div class="tiToolbarActions">
+        <div class="tiModeSwitch" role="group" aria-label="Trace display mode">
+          <button type="button" data-ti-mode="formatted" class="${state.displayMode === 'formatted' ? 'active' : ''}">Formatted</button>
+          <button type="button" data-ti-mode="json" class="${state.displayMode === 'json' ? 'active' : ''}">JSON</button>
         </div>
-        <div class="tiPeerList" aria-label="Branch calls">${branchPeers(branch, row)}</div>
-      </section>
-    </aside>
-    <main class="tiPreview" aria-label="Trace preview">
-      <header class="tiPreviewHeader">
-        <div><div class="tiEyebrow">Preview</div><h2>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</h2><div class="tiPreviewMeta"><span>${escapeHtml(statusLabel(row))}${clean(row.code) ? ` · ${escapeHtml(row.code)}` : ''}</span><span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span><span>${escapeHtml(formatCompact(totalTokens(row)))} tok</span><code>${escapeHtml(row.traceId ?? row.trace ?? key)}</code></div></div>
-        <div class="tiPreviewActions"><button type="button" data-ti-wrap>${wrapped ? 'No wrap' : 'Wrap'}</button></div>
-      </header>
-      <nav class="tiTabs" aria-label="Trace preview sections">
-        ${tabs.map((tab) => `<button type="button" class="${tab.id === active ? 'active' : ''}" data-ti-tab="${tab.id}">${tab.label}${tab.id === 'error' && isFailure(row) ? '<i></i>' : ''}</button>`).join('')}
-      </nav>
-      <div class="tiPanel" data-ti-panel="${active}">${panel(active, row, branch)}</div>
-    </main>
+        <button type="button" class="tiIconButton" data-ti-call-rail aria-label="${state.callRailCollapsed ? 'Expand tool calls' : 'Collapse tool calls'}" title="${state.callRailCollapsed ? 'Expand tool calls' : 'Collapse tool calls'}">☰</button>
+        <button type="button" class="tiIconButton" data-ti-fullscreen aria-label="${state.layout === 'fullscreen' ? 'Exit full screen' : 'Full screen'}" title="${state.layout === 'fullscreen' ? 'Exit full screen' : 'Full screen'}">${state.layout === 'fullscreen' ? '↙' : '↗'}</button>
+        <button type="button" class="tiIconButton tiCloseButton" data-ti-close aria-label="Close trace inspector" title="Close">×</button>
+      </div>
+    </header>
+    <div class="tiInspectorBody">
+      <aside class="tiSidebar" aria-label="Branch calls">
+        <section class="tiBranchCard">
+          <header><div><div class="tiEyebrow">Branch</div><h3>${escapeHtml(breadcrumb.label)}</h3></div><span class="tiBranchCalls">${branch.calls} calls</span></header>
+          <div class="tiBranchTotals">
+            ${fact('Total', `${formatCompact(branch.totalTokens)} tok`)}
+            ${fact('Input', formatCompact(branch.inputTokens))}
+            ${fact('Output', formatCompact(branch.outputTokens))}
+            ${fact('Failures', branch.failures)}
+            ${fact('Call time', formatDuration(branch.durationMs))}
+          </div>
+          <label class="tiCallSearch"><span aria-hidden="true">⌕</span><input type="search" data-ti-call-search value="${escapeHtml(state.callQuery)}" placeholder="Search tool calls" aria-label="Search tool calls"></label>
+          <div class="tiPeerList" aria-label="Tool calls">${branchPeers(branch, row, state.callQuery)}</div>
+        </section>
+      </aside>
+      <main class="tiPreview" aria-label="Trace details">
+        <div class="tiContent">${content}</div>
+      </main>
+    </div>
   </div>`;
+}
+
+function applyLayout(): void {
+  const state = inspectorStore.getSnapshot();
+  const shell = document.querySelector<HTMLElement>('.trxShell');
+  const rail = document.querySelector<HTMLElement>('.trxRail');
+  if (!shell || !rail) return;
+  shell.style.setProperty('--ti-inspector-width', `${state.width}px`);
+  const open = Boolean(state.selectedKey) && state.layout !== 'collapsed';
+  shell.classList.toggle('ti-inspector-open', open);
+  shell.classList.toggle(
+    'ti-inspector-fullscreen',
+    open && state.layout === 'fullscreen',
+  );
+  shell.classList.toggle('closed', !open);
+  shell.classList.toggle('detail-open', open);
+  rail.setAttribute('aria-hidden', String(!open));
+  ensureDivider();
+}
+
+function ensureDivider(): void {
+  const rail = document.querySelector<HTMLElement>('.trxRail');
+  const parent = rail?.parentElement;
+  if (!rail || !parent) return;
+  let divider = parent.querySelector<HTMLElement>(
+    ':scope > .tiDivider, :scope > .trxResizer',
+  );
+  if (divider) divider.classList.add('tiDivider');
+  if (!divider) {
+    divider = document.createElement('button');
+    divider.className = 'tiDivider';
+    divider.setAttribute('type', 'button');
+    divider.setAttribute('aria-label', 'Resize or collapse trace inspector');
+    divider.setAttribute('title', 'Drag to resize · click to close');
+    parent.insertBefore(divider, rail);
+  }
+  if (divider.dataset.tiInstalled === 'true') return;
+  divider.dataset.tiInstalled = 'true';
+  divider.addEventListener('click', (event) => event.preventDefault());
+  divider.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = inspectorStore.getSnapshot().width;
+    let moved = false;
+    divider?.setPointerCapture(event.pointerId);
+    document.documentElement.classList.add('ti-is-resizing');
+    const move = (moveEvent: PointerEvent) => {
+      const delta = startX - moveEvent.clientX;
+      if (Math.abs(delta) > 4) moved = true;
+      if (moved)
+        inspectorStore.dispatch({ type: 'resize', width: startWidth + delta });
+    };
+    const up = (upEvent: PointerEvent) => {
+      divider?.releasePointerCapture(upEvent.pointerId);
+      divider?.removeEventListener('pointermove', move);
+      divider?.removeEventListener('pointerup', up);
+      divider?.removeEventListener('pointercancel', up);
+      document.documentElement.classList.remove('ti-is-resizing');
+      if (!moved) inspectorStore.dispatch({ type: 'toggle-collapse' });
+    };
+    divider?.addEventListener('pointermove', move);
+    divider?.addEventListener('pointerup', up);
+    divider?.addEventListener('pointercancel', up);
+  });
 }
 
 function render(force = false): void {
   if (rendering) return;
   const inspector = document.querySelector<HTMLElement>('[data-inspector]');
-  const row = selectedRow();
   if (!inspector) return;
-  if (!row) {
-    inspector.replaceChildren();
-    delete inspector.dataset.tiSignature;
-    return;
+  let state = inspectorStore.getSnapshot();
+  if (!state.selectedRow) {
+    syncRowsFromMap();
+    state = inspectorStore.getSnapshot();
+    if (!state.selectedRow) return;
   }
-  const key = stableTraceKey(row);
-  const active = storedTab(key, row);
+  const row = state.selectedRow;
   const signature = [
-    key,
-    active,
+    state.selectedKey,
+    state.displayMode,
+    state.callQuery,
+    state.callRailCollapsed,
+    state.layout,
+    state.width,
     row.status,
     row.code,
     row.durationMs,
     totalTokens(row),
-    mobileMenuOpen,
-    wrapped,
+    allRows().length,
   ].join(':');
   if (
     !force &&
@@ -421,17 +436,38 @@ function render(force = false): void {
     inspector.querySelector('.tiInspector')
   )
     return;
+
+  const panelScroll =
+    inspector.querySelector<HTMLElement>('.tiPreview')?.scrollTop ?? 0;
+  const callScroll =
+    inspector.querySelector<HTMLElement>('.tiPeerList')?.scrollTop ?? 0;
+  const searchFocused =
+    document.activeElement instanceof HTMLInputElement &&
+    document.activeElement.matches('[data-ti-call-search]');
+  const cursor =
+    searchFocused && document.activeElement instanceof HTMLInputElement
+      ? document.activeElement.selectionStart
+      : null;
+
   rendering = true;
   try {
-    const scroll =
-      inspector.querySelector<HTMLElement>('.tiPanel')?.scrollTop ?? 0;
     inspector.innerHTML = inspectorMarkup(row);
     inspector.dataset.tiSignature = signature;
-    const panel = inspector.querySelector<HTMLElement>('.tiPanel');
-    if (panel) panel.scrollTop = scroll;
+    const panel = inspector.querySelector<HTMLElement>('.tiPreview');
+    const calls = inspector.querySelector<HTMLElement>('.tiPeerList');
+    if (panel) panel.scrollTop = panelScroll;
+    if (calls) calls.scrollTop = callScroll;
+    if (searchFocused) {
+      const input = inspector.querySelector<HTMLInputElement>(
+        '[data-ti-call-search]',
+      );
+      input?.focus({ preventScroll: true });
+      if (input && cursor !== null) input.setSelectionRange(cursor, cursor);
+    }
   } finally {
     rendering = false;
   }
+  applyLayout();
 }
 
 function scheduleRender(): void {
@@ -439,7 +475,9 @@ function scheduleRender(): void {
   scheduled = true;
   requestAnimationFrame(() => {
     scheduled = false;
+    syncRowsFromMap();
     render();
+    applyLayout();
   });
 }
 
@@ -462,7 +500,7 @@ async function refreshLiveRows(): Promise<void> {
       ? undefined
       : clean(payload.meta?.nextCursor) || null;
     (window as TraceWindow).__traceVirtualList?.replaceRows(rows, nextCursor);
-    render(true);
+    inspectorStore.dispatch({ type: 'rows-replaced', rows });
   } catch {
     // The static seed remains a complete offline fallback.
   }
@@ -477,67 +515,72 @@ document.addEventListener('click', async (event) => {
     (window as TraceWindow).__traceVirtualList?.select(peer.dataset.traceKey);
     return;
   }
-  const tab = target.closest<HTMLElement>('[data-ti-tab]');
-  if (tab) {
+  const mode = target.closest<HTMLElement>('[data-ti-mode]');
+  if (mode?.dataset.tiMode === 'formatted' || mode?.dataset.tiMode === 'json') {
     event.preventDefault();
     event.stopPropagation();
-    const row = selectedRow();
-    const next = tab.dataset.tiTab as PreviewTab;
-    if (row && tabs.some((item) => item.id === next)) {
-      saveTab(stableTraceKey(row), next);
-      mobileMenuOpen = false;
-      render(true);
-    }
+    inspectorStore.dispatch({
+      type: 'set-display-mode',
+      mode: mode.dataset.tiMode,
+    });
     return;
   }
-  if (target.closest('[data-ti-menu]')) {
+  if (target.closest('[data-ti-call-rail]')) {
     event.preventDefault();
     event.stopPropagation();
-    mobileMenuOpen = !mobileMenuOpen;
-    render(true);
+    inspectorStore.dispatch({ type: 'toggle-call-rail' });
     return;
   }
-  if (target.closest('[data-ti-wrap]')) {
+  if (target.closest('[data-ti-fullscreen]')) {
     event.preventDefault();
     event.stopPropagation();
-    wrapped = !wrapped;
-    render(true);
+    inspectorStore.dispatch({ type: 'toggle-fullscreen' });
+    return;
+  }
+  if (target.closest('[data-ti-close], [data-ti-back]')) {
+    event.preventDefault();
+    event.stopPropagation();
+    inspectorStore.dispatch({ type: 'close' });
     return;
   }
   const copy = target.closest<HTMLElement>('[data-ti-copy]');
   if (copy) {
     event.preventDefault();
     event.stopPropagation();
-    const text =
-      copy.closest('.tiPayload')?.querySelector('pre')?.textContent ?? '';
+    const copyText =
+      copy.closest('.tiSection')?.querySelector('.tiSectionBody')
+        ?.textContent ?? '';
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(copyText);
       copy.textContent = 'Copied';
       window.setTimeout(() => {
         copy.textContent = 'Copy';
-      }, 1200);
+      }, 1_200);
     } catch {
       copy.textContent = 'Copy failed';
     }
-    return;
   }
-  if (target.closest('[data-ti-back]')) {
-    mobileMenuOpen = false;
-    const shell = document.querySelector<HTMLElement>('.trxShell');
-    shell?.classList.remove('detail-open');
-    shell?.classList.add('closed');
+});
+
+document.addEventListener('input', (event) => {
+  const target = event.target;
+  if (
+    target instanceof HTMLInputElement &&
+    target.matches('[data-ti-call-search]')
+  ) {
+    inspectorStore.dispatch({ type: 'set-call-query', query: target.value });
+    cancelAnimationFrame(callSearchFrame);
+    callSearchFrame = requestAnimationFrame(() => render(true));
   }
 });
 
 const observer = new MutationObserver((mutations) => {
   if (rendering) return;
   if (
-    mutations.some(
+    mutations.every(
       (mutation) =>
         mutation.target instanceof Element &&
-        mutation.target.closest(
-          '[data-inspector] .tiInspector, [data-trace-virtual-content]',
-        ),
+        mutation.target.closest('[data-inspector] .tiInspector'),
     )
   )
     return;
@@ -553,10 +596,20 @@ observer.observe(observerRoot, {
   attributeFilter: ['class', 'aria-selected'],
 });
 
+inspectorStore.subscribe((state) => {
+  (window as TraceWindow).__traceSelectedKey = state.selectedKey;
+  scheduleRender();
+  applyLayout();
+});
+
+const initialKey = initialSelectionKey();
+if (initialKey)
+  inspectorStore.dispatch({ type: 'hydrate-selection', key: initialKey });
+syncRowsFromMap();
 installTracePaginationTransport();
 installTraceVirtualList();
 void refreshLiveRows();
-document.addEventListener('trace:selection-change', () => render(true));
-window.addEventListener('resize', scheduleRender);
+document.addEventListener('trace:selection-change', scheduleRender);
+window.addEventListener('resize', applyLayout);
 window.setInterval(scheduleRender, 2_000);
 scheduleRender();

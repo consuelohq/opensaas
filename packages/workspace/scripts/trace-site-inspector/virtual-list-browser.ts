@@ -20,6 +20,7 @@ import {
   type TraceChildRecord,
   type TraceRecord,
 } from './model';
+import { inspectorStore } from './inspector-state';
 import {
   deriveTraceHistoryCursor,
   type TracePrefetchRequestDetail,
@@ -158,7 +159,10 @@ class TraceVirtualListController {
       this.cursorWasDerived && !this.historyPageAccepted
         ? deriveTraceHistoryCursor(rows)
         : this.nextCursor;
-    this.replaceRows(rows.filter((row) => !isBatchChild(row)), nextCursor);
+    this.replaceRows(
+      rows.filter((row) => !isBatchChild(row)),
+      nextCursor,
+    );
   }
 
   syncFilters(): void {
@@ -222,13 +226,24 @@ class TraceVirtualListController {
 
   select(key: string): void {
     const target = traceWindow();
+    const row =
+      this.ownedMap.get(key) ??
+      [...this.ownedMap.values()].find(
+        (candidate) => stableTraceKey(candidate) === key,
+      );
+    if (!row) return;
+    inspectorStore.dispatch({ type: 'select', key, row });
     target.__traceSelectedKey = key;
     const shell = document.querySelector<HTMLElement>('.trxShell');
     shell?.classList.remove('closed');
     shell?.classList.add('detail-open');
     const hash = `trace=${encodeURIComponent(key)}`;
     if (location.hash.slice(1) !== hash) {
-      history.replaceState(null, '', `${location.pathname}${location.search}#${hash}`);
+      history.replaceState(
+        null,
+        '',
+        `${location.pathname}${location.search}#${hash}`,
+      );
     }
     for (const row of this.target.content.querySelectorAll<HTMLElement>(
       '.trxRow',
@@ -243,6 +258,7 @@ class TraceVirtualListController {
   }
 
   clearSelection(): void {
+    inspectorStore.dispatch({ type: 'clear-selection' });
     traceWindow().__traceSelectedKey = '';
     for (const row of this.target.content.querySelectorAll<HTMLElement>(
       '.trxRow',
@@ -283,6 +299,10 @@ class TraceVirtualListController {
     this.ownedMap = traceMapForRows(this.rows);
     this.ownedFingerprint = mapFingerprint(this.ownedMap);
     traceWindow().__traceRowsByTraceId = this.ownedMap;
+    inspectorStore.dispatch({
+      type: 'rows-replaced',
+      rows: dedupeTraceRows(this.ownedMap.values()),
+    });
   }
 
   private virtualizerOptions(): VirtualizerOptions<
@@ -659,20 +679,19 @@ function traceWindow(): TraceWindow {
 }
 
 function currentSelectedKey(): string {
+  const owned = inspectorStore.getSnapshot().selectedKey;
+  if (owned) return owned;
   const target = traceWindow();
-  if (Object.hasOwn(target, '__traceSelectedKey'))
-    return target.__traceSelectedKey ?? '';
-  const selected = document.querySelector<HTMLElement>(
-    '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
-  );
-  if (selected?.dataset.traceKey) {
-    target.__traceSelectedKey = selected.dataset.traceKey;
-    return target.__traceSelectedKey;
-  }
-  const hashKey =
-    new URLSearchParams(location.hash.slice(1)).get('trace') ?? '';
-  target.__traceSelectedKey = hashKey;
-  return hashKey;
+  const legacy =
+    target.__traceSelectedKey ??
+    document.querySelector<HTMLElement>(
+      '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
+    )?.dataset.traceKey ??
+    new URLSearchParams(location.hash.slice(1)).get('trace') ??
+    '';
+  if (legacy)
+    inspectorStore.dispatch({ type: 'hydrate-selection', key: legacy });
+  return legacy;
 }
 
 function currentSelectedRootKey(): string {
@@ -863,9 +882,7 @@ export function installTraceVirtualList(): () => void {
       if (target.closest('[data-ti-back]')) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        const shell = document.querySelector<HTMLElement>('.trxShell');
-        shell?.classList.remove('detail-open');
-        shell?.classList.add('closed');
+        inspectorStore.dispatch({ type: 'close' });
         return;
       }
     },
