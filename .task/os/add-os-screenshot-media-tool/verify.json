@@ -27,7 +27,7 @@
     "packages/os/tests/media/helpers.ts",
     "packages/os/tooling/media-tool-manifest.json"
   ],
-  "verifiedAt": "2026-07-14T17:15:44.573Z",
+  "verifiedAt": "2026-07-14T17:16:50.930Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -45,6 +45,7 @@
         ".task/os/add-os-screenshot-media-tool/evidence-log.json",
         ".task/os/add-os-screenshot-media-tool/read-log.json",
         ".task/os/add-os-screenshot-media-tool/session.json",
+        ".task/os/add-os-screenshot-media-tool/verify.json",
         ".task/os/add-os-screenshot-media-tool/workpad.md",
         ".task/tasks/os/add-os-screenshot-media-tool.json",
         "packages/os/SCRIPTS.md",

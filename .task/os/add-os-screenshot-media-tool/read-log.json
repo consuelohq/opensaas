@@ -21,8 +21,9 @@
     "packages/os/tooling/media-tool-manifest.json",
     "packages/workspace/package.json",
     "packages/workspace/scripts/media-svg.py",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/scripts/test-selection.js",
     "packages/workspace/test-selection.rules.json"
   ],
-  "updatedAt": "2026-07-14T17:13:38.511Z"
+  "updatedAt": "2026-07-14T17:17:48.237Z"
 }
