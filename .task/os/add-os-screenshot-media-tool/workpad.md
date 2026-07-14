@@ -1,3 +1,11 @@
+## Summary
+
+- Changed: added the OS-only `media.screenshot.render` tool, local `media:screenshot` Bun script, typed facade, versioned result schema, dependency declaration, generated manifests/types/docs, and focused tests.
+- Why: Ko needs a reusable local workflow that turns ordinary product screenshots into polished X-ready media without adding a hosted service or duplicating the implementation in Workspace.
+- Design: FFmpeg-only because it is already installed by OS; default 1600×900 dark composition with Consuelo blue `#0000F2`, optional light theme, configurable background/accent/padding, contain/cover fit, and grid/lines/plain patterns. Screenshot pixels are not inverted or recolored.
+- Validation: generated and probed a real PNG; 120 media tests passed; 511 tool-manifest expectations passed; focused facade command planning passed; package syntax/typecheck passed; generated outputs were byte-stable; strict review and publish verification passed with zero findings.
+- Issues and recovery: ImageMagick was unavailable, so the renderer uses FFmpeg only. Several publication calls exposed tooling requirements around changed-file selection, branch synchronization, and exact workpad checkpoint headings; each was corrected without bypassing verification.
+- Follow-up: the two reference screenshots remain in the ChatGPT sandbox and were not committed. The shipped command accepts their local equivalents once Ko saves them on the OS machine.
 
 ## Final lifecycle
 
@@ -27,3 +35,5 @@
 ## workspace-owned: files read
 
 - `packages/workspace/scripts/task-push.js`
+
+- 2026-07-14 17:19:07 apply-patch: `.task/os/add-os-screenshot-media-tool/workpad.md`
