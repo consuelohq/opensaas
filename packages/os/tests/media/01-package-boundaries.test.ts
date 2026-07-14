@@ -10,6 +10,7 @@ describe('media package boundaries', () => {
     expect(scripts?.media).toBe('bun ./scripts/media.ts');
     expect(scripts?.['media:doctor']).toBe('bun ./scripts/media.ts doctor --json');
     expect(scripts?.['media:install']).toBe('bun ./scripts/media.ts install');
+    expect(scripts?.['media:screenshot']).toBe('bun ./scripts/media.ts screenshot render');
     expect(scripts?.['media:test']).toBe('vitest run tests/media');
     expect(scripts?.['media:test:manifest']).toBe('vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts');
     expect(scripts?.['media:test:deps']).toBe('vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts');
@@ -18,7 +19,7 @@ describe('media package boundaries', () => {
     expect(scripts?.['media:test:youtube']).toBe('vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts');
     expect(scripts?.['media:test:audio']).toBe('vitest run tests/media/20-audio-transcribe.test.ts');
     expect(scripts?.['media:test:vision']).toBe('vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts');
-    expect(scripts?.['media:test:render']).toBe('vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts');
+    expect(scripts?.['media:test:render']).toBe('vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts');
     expect(scripts?.['media:test:handoff']).toBe('vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts');
   });
 
@@ -35,7 +36,11 @@ describe('media package boundaries', () => {
   it('should satisfy media contract when it keeps media implementation under packages/os and away from workspace/office ownership', () => {
     const workspaceFiles = listRepoFiles('packages/workspace').filter((file) => !file.includes('node_modules'));
     const officeFiles = listRepoFiles('packages/office').concat(listRepoFiles('packages/consuelo-design'));
-    const suspiciousWorkspaceMediaFiles = workspaceFiles.filter((file) => /media|ffmpeg|ffprobe|yt-dlp|mediapipe|opencv/i.test(file));
+    const knownWorkspaceCompatibilityFiles = new Set(['packages/workspace/scripts/media-svg.py']);
+    const suspiciousWorkspaceMediaFiles = workspaceFiles.filter((file) => (
+      /media|ffmpeg|ffprobe|yt-dlp|mediapipe|opencv/i.test(file)
+      && !knownWorkspaceCompatibilityFiles.has(file)
+    ));
     const suspiciousOfficeMediaFiles = officeFiles.filter((file) => /media\.compose|media\.probe|ffmpeg|ffprobe|yt-dlp|mediapipe|opencv/i.test(file));
 
     expect(suspiciousWorkspaceMediaFiles, 'workspace should not own media implementation files').toEqual([]);

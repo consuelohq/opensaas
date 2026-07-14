@@ -3,7 +3,7 @@
 
 <section class="cloud-cta" aria-labelledby="cloud-cta-title" data-section="cloud">
   <div class="cloud-cta__copy">
-    <p>LOCAL <span aria-hidden="true">•</span> CLOUD <span aria-hidden="true">•</span> OPEN SOURCE</p>
+    <p>FREE PLUS SUPER ULTRA</p>
     <h2 id="cloud-cta-title">CONSUELO CLOUD</h2>
     <p class="cloud-cta__description">
       Keep the same workspace and let Consuelo run the home node for you.
@@ -71,6 +71,13 @@
     font: 650 0.7rem/1 var(--site-font-mono);
     letter-spacing: 0.1em;
     text-decoration: none;
+    transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  }
+
+  .cloud-cta a:hover,
+  .cloud-cta a:focus-visible {
+    background: transparent;
+    color: white;
   }
 
   .cloud-cta__wordmark {

@@ -1,0 +1,46 @@
+---
+title: Files and artifacts
+description: Distinguish ordinary files from versioned outputs with provenance and optional app visibility.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/artifacts.ts
+    tests:
+      - packages/os/tests/artifacts.test.ts
+      - packages/os/tests/os-call-artifacts.test.ts
+    runtime: Local artifact creation, versioning, rollback, and trace linkage were exercised by focused tests on 2026-07-13.
+  - source: packages/os/scripts/lib/cloud-artifacts.ts
+    tests:
+      - packages/os/tests/cloud-artifacts.test.ts
+    runtime: App-visible publication and safe failure codes were exercised by focused tests.
+---
+
+A **file** is ordinary material an agent can read or write within its allowed scope. An **artifact** is a durable output with metadata and versions that connect it to the execution that produced it.
+
+## Local artifact model
+
+Current local artifacts store:
+
+- an artifact record and immutable versions in the local SQLite database;
+- bytes under the OS artifact directory;
+- the producing trace and skill;
+- type, format, status, and timestamps;
+- a current version that can be rolled back.
+
+Creation and update writes are atomic. Artifact changes can refresh the local Sites view so the output is reviewable without exposing raw storage paths as the product surface.
+
+## Files remain useful
+
+Use ordinary files for source material, configuration, scratch work, repository changes, and inputs that do not need artifact metadata. A file does not become an artifact merely because an agent created it.
+
+## App-visible publication
+
+An artifact remains local unless a supported publish path is used. When app file capability is configured, OS can upload artifact bytes, create an app file record, and return app-visible references.
+
+Publication fails safely when the app capability is missing, an attachment target is unsupported, or upload or record creation fails. A local artifact is not lost because app publication failed.
+
+## Provenance
+
+Keep the trace identifier with the artifact handoff. It lets a later agent connect the output to tool calls and failures instead of treating an unexplained file as authoritative.
+
+Use [Sites](/sites/) for publishing pages and [Observe](/observe/) for trace inspection.

@@ -26,7 +26,6 @@ jobs:
       files: |
         package.json
         packages/twenty-server/**
-        packages/twenty-emails/**
         packages/twenty-shared/**
         .github/workflows/ci-breaking-changes.yaml
 
@@ -103,9 +102,7 @@ jobs:
         uses: ./.github/actions/yarn-install
 
       - name: Build shared dependencies
-        run: |
-          npx nx build twenty-shared
-          npx nx build twenty-emails
+        run: npx nx build twenty-shared
 
       - name: Build current branch server
         run: npx nx build twenty-server
@@ -269,7 +266,6 @@ jobs:
         run: |
           npx nx reset
           npx nx build twenty-shared
-          npx nx build twenty-emails
 
       - name: Build main branch server
         run: npx nx build twenty-server

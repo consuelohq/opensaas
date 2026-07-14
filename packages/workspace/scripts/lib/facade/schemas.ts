@@ -332,7 +332,7 @@ export const FsHttpInput = z.object({
   ...requestFields,
   ...dryRunField,
   method: z.enum(['get', 'post', 'put', 'patch', 'delete', 'head']).optional(),
-  url: z.string().url(),
+  url: z.url(),
   headers: z.record(z.string(), z.string()).optional(),
   body: z.string().optional(),
 });
@@ -354,6 +354,7 @@ export const TaskStartInput = z.object({
   description: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
+  createStream: z.boolean().optional(),
 }).refine((input) => Boolean(input.area || input.stream), {
   message: 'provide either area or stream',
   path: ['area'],
@@ -557,6 +558,13 @@ export const StreamListInput = z.object({
   repo: optionalString,
 });
 
+export const StreamCleanupInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  apply: z.boolean().optional(),
+  keep: stringArray,
+});
+
 export const ReviewInput = z.object({
   ...requestFields,
   ...branchField,
@@ -658,13 +666,20 @@ export const BrowserInput = z.object({
 export const BrowserOpenInput = z.object({
   ...requestFields,
   ...dryRunField,
-  url: z.string().url(),
+  url: z.url(),
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
   ...browserDeviceFlags,
 }).refine(requireCompleteBrowserViewport, {
   message: 'provide both width and height for browser viewport overrides',
   path: ['width'],
+});
+
+export const BrowserHeadedInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  url: z.url(),
+  provider: optionalString,
 });
 
 export const BrowserPageInput = z.object({
@@ -700,13 +715,6 @@ export const BrowserFillInput = z.object({
   ...dryRunField,
   ref: z.string().min(1),
   text: z.string(),
-});
-
-export const BrowserLoginInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-  name: z.string().min(1),
-  headed: z.boolean().optional(),
 });
 
 export const BrowserEvalInput = z.object({
@@ -1116,6 +1124,7 @@ export const schemaRegistry = {
   AuditInput,
   StreamInput,
   StreamListInput,
+  StreamCleanupInput,
   ReviewInput,
   VerifyInput,
   PrReviewInput,
@@ -1125,11 +1134,11 @@ export const schemaRegistry = {
   GitDiffInput,
   BrowserInput,
   BrowserOpenInput,
+  BrowserHeadedInput,
   BrowserPageInput,
   BrowserScreenshotInput,
   BrowserElementInput,
   BrowserFillInput,
-  BrowserLoginInput,
   BrowserEvalInput,
   BrowserRawInput,
   BrowserGetInput,
@@ -1203,7 +1212,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskStartInput: '{ stream?: string; area?: string; title: string; workflow?: "task" | "office" | "design" | "sites"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskStartInput: '{ stream?: string; area?: string; title: string; workflow?: "task" | "office" | "design" | "sites"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1224,6 +1233,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
+  StreamCleanupInput: '{ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ReviewInput: "{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",
   VerifyInput: '{ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1233,11 +1243,11 @@ export const schemaTypeSignatures: Record<string, string> = {
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserHeadedInput: '{ url: string; provider?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserScreenshotInput: '{ name?: string; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserElementInput: '{ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserFillInput: '{ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserGetInput: '{ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

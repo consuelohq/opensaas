@@ -129,6 +129,7 @@ describe('tools.search v2 intent resolution', () => {
       ['merge git task branch conflict', 'task.merge'],
       ['finish completed task branch', 'task.finish'],
       ['stream sync branch', 'stream.sync'],
+      ['clean up local stream branches', 'stream.cleanup'],
     ];
 
     for (const [query, expected] of expectations) {

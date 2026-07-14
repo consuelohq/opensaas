@@ -1,4 +1,6 @@
 ---
+import '@fontsource-variable/bodoni-moda';
+import '@fontsource-variable/inter';
 import SeoHead from '../components/SeoHead.astro';
 import SiteSmoothScroll from '../components/site/SiteSmoothScroll.astro';
 import { siteMetadata } from '../lib/site-seo';
@@ -11,6 +13,9 @@ type Props = {
   description?: string;
   canonicalPath?: string;
   image?: string;
+  imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   type?: 'website' | 'article';
   publishDate?: Date;
   modifiedDate?: Date | null;
@@ -23,6 +28,9 @@ const {
   description = siteMetadata.defaultDescription,
   canonicalPath = Astro.url.pathname,
   image = siteMetadata.defaultOgImage,
+  imageAlt,
+  imageWidth,
+  imageHeight,
   type = 'website',
   publishDate,
   modifiedDate,
@@ -45,6 +53,9 @@ const {
       {description}
       canonicalPath={canonicalPath}
       image={image}
+      imageAlt={imageAlt}
+      imageWidth={imageWidth}
+      imageHeight={imageHeight}
       type={type}
       publishDate={publishDate}
       modifiedDate={modifiedDate}
@@ -125,6 +136,7 @@ const {
 
   html {
     background: var(--site-color-paper);
+    overflow-x: clip;
   }
 
   html.lenis,
@@ -142,6 +154,7 @@ const {
     line-height: 1.55;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
   }
 
   @keyframes launch-translation-shimmer {
@@ -225,6 +238,7 @@ const {
     width: 100%;
     min-height: 100vh;
     background: var(--site-color-paper);
+    overflow-x: clip;
   }
 
   .launch-section {

@@ -1,0 +1,19 @@
+{
+  "area": "cleanup",
+  "stream": "stream/cleanup",
+  "taskBranch": "task/cleanup/mail-maintenance",
+  "baseBranch": "stream/cleanup",
+  "sourceBranch": "stream/cleanup",
+  "startFrom": "stream",
+  "prNumber": 1469,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1469",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1469",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1469/mail-maintenance",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1469",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1469/mail-maintenance",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-cleanup-mail-maintenance",
+  "taskSession": "tsk_a1f5813f49b7",
+  "tmuxSession": "opensaas-cleanup-mail-maintenance-a1f5813f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-cleanup-mail-maintenance/.task/cleanup/mail-maintenance/session.json",
+  "createdAt": "2026-07-13T19:41:01.466Z"
+}

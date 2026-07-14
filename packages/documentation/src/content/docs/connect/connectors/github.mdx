@@ -1,0 +1,53 @@
+---
+title: GitHub
+description: Give Consuelo OS access to GitHub repository and pull-request workflows.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tools-search-v2.test.ts
+      - packages/os/tests/github.test.ts
+    runtime: The generated manifest exposes workspace.github, and repository PR operations are exercised throughout the workspace task and review suites.
+---
+GitHub is available through the typed `workspace.github` facade. It supports repository inspection and pull-request workflows such as viewing PRs, checks, reviews, files, diffs, branches, and merges.
+
+## Authentication
+
+The runtime resolves GitHub authentication in this order:
+
+```text
+GITHUB_TOKEN
+GH_TOKEN
+workspace package .env
+existing gh CLI authentication
+```
+
+Set a token only in the runtime environment or its protected `.env` file. Do not put it in an MDX page, steering file, task prompt, or tool argument.
+
+## Verify
+
+Ask an agent to call `workspace.github` with a read-only operation such as `repo.view` or `pr.view` against a repository it should access. A successful response verifies both tool discovery and GitHub authentication.
+
+Example tool intent:
+
+```text
+Use workspace.github to view repository consuelohq/opensaas.
+```
+
+## Permissions
+
+GitHub enforces the token's repository and organization permissions. Consuelo does not widen them. A read-only token cannot merge a PR; a token without private-repository access cannot inspect one.
+
+Mutating operations still require the tool policy and task workflow to permit them. Connecting GitHub is not blanket approval to push, merge, or change repository settings.
+
+## Troubleshooting
+
+- **Missing GitHub token:** set `GITHUB_TOKEN` or `GH_TOKEN`, or authenticate the GitHub CLI on the runtime host.
+- **Repository not found:** verify repository spelling and token access; GitHub often returns not-found for unauthorized private repositories.
+- **Operation rejected:** use one of the semantic operations exposed by `workspace.github` rather than raw CLI syntax.
+- **Merge blocked:** inspect required checks, review state, and branch protection first.
+
+## Revoke
+
+Remove the token from the runtime environment and revoke it in GitHub. Existing trace records may retain non-secret repository metadata, but the runtime can no longer make authenticated calls.

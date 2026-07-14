@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/documentation/write-verified-connect-documentation/workpad.md",
+    "packages/documentation/src/content/docs/start/connect-your-first-agent.mdx",
+    "packages/os/package.json",
+    "packages/os/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-07-13T16:20:15.146Z"
+}

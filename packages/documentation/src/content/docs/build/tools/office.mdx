@@ -1,0 +1,51 @@
+---
+title: Office
+description: Create, validate, and publish durable design artifacts through Office.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/skills/office/SKILL.md
+    tests:
+      - packages/os/tests/office-skill.test.ts
+    runtime: The current Office orchestration guide and active subskill presets were loaded through OS on 2026-07-13.
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: Current Office tool definitions and workflow roles were inspected in the generated manifest.
+---
+
+Office is the design and durable-artifact workspace inside Consuelo OS. It coordinates existing tools and scripts; it is not a separate script engine.
+
+## Default workflow
+
+```text
+brief
+  → choose an Office subskill or template
+  → create or edit source
+  → validate the result in a browser
+  → publish when approved
+  → verify the durable route
+```
+
+Office currently supports work orders for websites, demos, image briefs, digital e-guides, HTML email, motion frames, and HyperFrames output. `office.listSkills` and `office.listDesignSystems` expose the current options.
+
+## Headless first
+
+Use source-first, headless generation for normal work. For example, `office.generateWebsite` creates an Open Design work order without requiring a visible design session. Use `live: true` only when a headed collaborative session is actually needed.
+
+```json
+{
+  "tool": "office.generateWebsite",
+  "input": {
+    "name": "launch-page",
+    "prompt": "Create the approved launch-page work order",
+    "live": false
+  }
+}
+```
+
+## Validate and publish
+
+Use browser tools to verify the rendered result. Publishing through `design.publish` or another Office publish surface is a separate action from drafting and may require explicit approval.
+
+Office source, validation evidence, and durable links should travel together in the final handoff. [Sites](/sites/) owns the user-facing publishing model in detail.

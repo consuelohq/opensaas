@@ -7,7 +7,7 @@ import { msg } from '@lingui/core/macro';
 import { render } from '@react-email/render';
 import { addMilliseconds } from 'date-fns';
 import ms from 'ms';
-import { SendInviteLinkEmail } from 'twenty-emails';
+import { SendInviteLinkEmail } from 'src/engine/core-modules/email/templates';
 import { AppPath } from 'twenty-shared/types';
 import { getAppPath, isDefined } from 'twenty-shared/utils';
 import { IsNull, Repository } from 'typeorm';

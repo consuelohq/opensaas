@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates",
+  "base": "origin/main",
+  "headSha": "0e16235afc1a63f801c64f78b3ccefb7835460a7",
+  "changeHash": "f1a80f2225e66334942425e0091e6bc5497b4d37a1f5ee3986e5976770420b86",
+  "changedFiles": [
+    "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+    "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+  ],
+  "verifiedAt": "2026-07-13T18:32:08.117Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates/current.json",
+        ".task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates/evidence-log.json",
+        ".task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates/read-log.json",
+        ".task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates/session.json",
+        ".task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates/workpad.md",
+        ".task/tasks/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates.json",
+        "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,85 @@
+---
+title: Artifacts
+description: Follow durable outputs back to the run and immutable version that produced them.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/artifacts.ts
+    tests:
+      - packages/os/tests/artifacts.test.ts
+      - packages/os/tests/os-call-artifacts.test.ts
+    runtime: A daily-revenue-brief artifact was created in an isolated home and its history returned one current immutable version with trace and hash metadata on 2026-07-13.
+  - source: packages/os/scripts/artifacts.ts
+    tests:
+      - packages/os/tests/artifact-render.test.ts
+    runtime: The installed artifact history command and JSON result shape were exercised on 2026-07-13.
+---
+
+An artifact is a durable output of work: a brief, report, document, export, dataset, image, HTML page, or another stored file. It is different from stdout or a log line because it has an artifact record and version history.
+
+## Provenance on the artifact
+
+The current artifact record can preserve:
+
+- artifact ID, workspace, creating user, skill name, and producing `traceId`;
+- title, type, format, status, and storage mode;
+- storage key and local path;
+- source-object references and input summary;
+- skill and script versions when supplied;
+- current version ID, version count, and timestamps.
+
+The producing run can return an artifact descriptor immediately. Office materializes artifact records into a local review surface, but Office is not the source of the version history.
+
+## Inspect version history
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" artifacts -- history --id art_example --json
+```
+
+The current history result includes fields such as:
+
+| Field | Meaning |
+| --- | --- |
+| `versionNumber` | Monotonic version number for the artifact. |
+| `parentVersionId` | Version that immediately preceded this one. |
+| `restoredFromVersionId` | Earlier version used for a rollback, when applicable. |
+| `traceId` | Run or operation that created this version. |
+| `reason` | Why the version exists, such as create, update, or rollback. |
+| `storageKey`, `localPath` | Where the immutable bytes are stored. |
+| `contentSha256` | SHA-256 hash of the stored content. |
+| `byteSize` | Stored byte length. |
+| `isCurrent` | Whether this version is the current one. |
+
+Each successful update writes immutable version bytes and moves the current pointer. A rollback creates a new version that references the version it restored; it does not rewrite history.
+
+## Match an artifact to a run
+
+Start from either side:
+
+- From a run result, copy the artifact ID and `traceId`.
+- From artifact history, read the version `traceId` and creation timestamp.
+- Use [Runs](/observe/runs/) for OS execution status.
+- Use [Tool calls](/observe/tool-calls/) when the producing operation came through the workspace facade.
+
+A trace ID is the correlation key. The artifact ID is the durable object key. Keep both when escalating a problem.
+
+## Storage is part of the record
+
+The current local implementation stores artifact files beneath the Consuelo home. The descriptor reports a relative path plus a resolved local path. Storage mode can also describe S3 or external storage, but the public docs should only claim a remote copy exists when the returned record says so.
+
+## Verify the file, not only the metadata
+
+When correctness matters:
+
+1. Read the current version metadata.
+2. Confirm the file exists at the recorded path.
+3. Compare its hash or byte size when integrity is in question.
+4. Open the rendered output in the appropriate application.
+5. Confirm the content matches the run result and source inputs.
+
+An artifact record can prove provenance and location. It does not prove that the document is factually correct or visually acceptable.
+
+## Artifacts in Sites
+
+Sites can publish or present artifact-backed output for review. That publication is a separate versioned surface. The artifact history remains the source for artifact versions; the Sites page registry remains the source for published page versions.

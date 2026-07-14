@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cffc683c383b",
+  "tmuxSession": "opensaas-documentation-sync-documentation-stream-with-main-after-secure-cffc683c",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/sync-documentation-stream-with-main-after-secure-merge",
+  "branch": "task/documentation/sync-documentation-stream-with-main-after-secure-merge",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-documentation-stream-with-main-after-secure-merge",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-documentation-stream-with-main-after-secure-merge",
+  "prNumber": 1473,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1473",
+  "createdAt": "2026-07-13T21:32:48.705Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-documentation-stream-with-main-after-secure-merge/.task/documentation/sync-documentation-stream-with-main-after-secure-merge/session.json"
+}

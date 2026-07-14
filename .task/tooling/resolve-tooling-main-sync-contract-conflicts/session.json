@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6f8ec67d8299",
+  "tmuxSession": "opensaas-tooling-resolve-tooling-main-sync-contract-conflicts-6f8ec67d",
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/resolve-tooling-main-sync-contract-conflicts",
+  "branch": "task/tooling/resolve-tooling-main-sync-contract-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-resolve-tooling-main-sync-contract-conflicts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-resolve-tooling-main-sync-contract-conflicts",
+  "prNumber": 1435,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1435",
+  "createdAt": "2026-07-13T00:20:52.239Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-resolve-tooling-main-sync-contract-conflicts/.task/tooling/resolve-tooling-main-sync-contract-conflicts/session.json"
+}

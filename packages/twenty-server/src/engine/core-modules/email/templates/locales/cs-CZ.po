@@ -1,0 +1,234 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2025-02-01 18:53+0100\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: cs\n"
+"Project-Id-Version: cf448e737e0d6d7b78742f963d761c61\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2025-01-01 00:00\n"
+"Last-Translator: \n"
+"Language-Team: Czech\n"
+"Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
+"X-Crowdin-Project: cf448e737e0d6d7b78742f963d761c61\n"
+"X-Crowdin-Project-ID: 1\n"
+"X-Crowdin-Language: cs\n"
+"X-Crowdin-File: /packages/twenty-server/src/engine/core-modules/email/templates/locales/en.po\n"
+"X-Crowdin-File-ID: 27\n"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-reset-link.email.tsx
+msgid "Reset your password 🗝"
+msgstr "Obnovte své heslo 🗝"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-reset-link.email.tsx
+msgid "Set your password 🗝"
+msgstr "Nastavte své heslo 🗝"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-reset-link.email.tsx
+msgid "Reset"
+msgstr "Obnovit"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-reset-link.email.tsx
+msgid "Set"
+msgstr "Nastavit"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-reset-link.email.tsx
+msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
+msgstr "Tento odkaz je platný pouze následující {duration}. Pokud odkaz nefunguje, můžete přímo použít odkaz pro ověření přihlášení:"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx
+msgid "Suspended Workspace"
+msgstr "Pozastavený pracovní prostor"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx
+#: src/engine/core-modules/email/templates/emails/password-update-notify.email.tsx
+#: src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx
+msgid "Dear {userName},"
+msgstr "Vážený {userName},"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx
+#: src/engine/core-modules/email/templates/emails/password-update-notify.email.tsx
+#: src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx
+msgid "Hello,"
+msgstr "Dobrý den,"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx
+msgid "It appears that your workspace <0>{workspaceDisplayName}</0> has been suspended for {daysSinceInactive} days."
+msgstr "Zdá se, že váš pracovní prostor <0>{workspaceDisplayName}</0> byl pozastaven na dobu {daysSinceInactive} dní."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx
+msgid "The workspace will be deactivated in {remainingDays} {dayOrDays}, and all its data will be deleted."
+msgstr "Pracovní prostor bude deaktivován za {remainingDays} {dayOrDays} a všechna jeho data budou smazána."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx
+msgid "If you wish to continue using Consuelo, please update your subscription within the next {remainingDays} {dayOrDays}."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/warn-suspended-workspace.email.tsx
+msgid "Update your subscription"
+msgstr "Aktualizujte své předplatné"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Heslo bylo aktualizováno"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Toto je potvrzení, že heslo k vašemu účtu ({email}) bylo úspěšně změněno {formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Pokud jste tuto změnu neiniciovali, prosím, okamžitě kontaktujte majitele vašeho pracovního prostoru."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx
+msgid "Deleted Workspace"
+msgstr "Smazaný pracovní prostor"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx
+msgid "Your workspace <0>{workspaceDisplayName}</0> has been deleted as your subscription expired {daysSinceInactive} days ago."
+msgstr "Váš pracovní prostor <0>{workspaceDisplayName}</0> byl odstraněn, protože vaše předplatné vypršelo před {daysSinceInactive} dny."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx
+msgid "All data in this workspace has been permanently deleted."
+msgstr "Všechna data v tomto pracovním prostoru byla trvale odstraněna."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx
+msgid "If you wish to use Consuelo again, you can create a new workspace."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx
+msgid "Create a new workspace"
+msgstr "Vytvořit nový pracovní prostor"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/send-invite-link.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>) has invited you to join a workspace called <1>{workspaceName}</1>."
+msgstr "{senderName} (<0>{senderEmail}</0>) vás pozval/a připojit se k pracovnímu prostoru nazvanému <1>{workspaceName}</1>."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/send-invite-link.email.tsx
+msgid "Accept invite"
+msgstr "Přijměte pozvánku"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/validate-approved-access-domain.email.tsx
+#: src/engine/core-modules/email/templates/emails/validate-approved-access-domain.email.tsx
+msgid "Validate domain"
+msgstr "Ověřit doménu"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/validate-approved-access-domain.email.tsx
+msgid "{senderName} (<0>{senderEmail}</0>): Please validate this domain to allow users with <1>@{domain}</1> email addresses to join your workspace without requiring an invitation."
+msgstr "{senderName} (<0>{senderEmail}</0>): Ověřte prosím tuto doménu, aby uživatelé s <1>@{domain}</1> e-mailovými adresami mohli vstoupit do vašeho pracovního prostoru bez nutnosti pozvání."
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/send-email-verification-link.email.tsx
+msgid "Confirm your new email address"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/send-email-verification-link.email.tsx
+msgid "Confirm your email address"
+msgstr "Potvrďte svou e-mailovou adresu"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/send-email-verification-link.email.tsx
+msgid "Confirm new email"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/emails/send-email-verification-link.email.tsx
+msgid "Verify Email"
+msgstr "Ověřit e-mail"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Website"
+msgstr "Webové stránky"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Visit Consuelo's website"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Github"
+msgstr "GitHub"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Visit Consuelo's GitHub repository"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "User guide"
+msgstr "Uživatelská příručka"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Read Consuelo's user guide"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Developers"
+msgstr "Vývojáři"
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Visit Consuelo's developer documentation"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/engine/core-modules/email/templates/components/Footer.tsx
+msgid "San Francisco / Paris"
+msgstr "San Francisco / Paříž"

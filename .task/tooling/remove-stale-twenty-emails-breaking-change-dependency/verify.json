@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/tooling/remove-stale-twenty-emails-breaking-change-dependency",
+  "base": "origin/stream/tooling",
+  "headSha": "6797fcddc4f9b2a7f4163fd3e9445b7ed0e0c4eb",
+  "changeHash": "0558f5389bc06208944ee45d85e77ccc5713fe48a2efec7419d8679d1791c136",
+  "changedFiles": [
+    ".github/workflows/ci-breaking-changes.yaml"
+  ],
+  "verifiedAt": "2026-07-13T00:18:00.329Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/ci-breaking-changes.yaml",
+        ".task/tasks/tooling/remove-stale-twenty-emails-breaking-change-dependency.json",
+        ".task/tooling/remove-stale-twenty-emails-breaking-change-dependency/current.json",
+        ".task/tooling/remove-stale-twenty-emails-breaking-change-dependency/evidence-log.json",
+        ".task/tooling/remove-stale-twenty-emails-breaking-change-dependency/read-log.json",
+        ".task/tooling/remove-stale-twenty-emails-breaking-change-dependency/session.json",
+        ".task/tooling/remove-stale-twenty-emails-breaking-change-dependency/verify.json",
+        ".task/tooling/remove-stale-twenty-emails-breaking-change-dependency/workpad.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,49 @@
+---
+title: Connect
+description: Connect agents, services, and computers to one Consuelo workspace.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
+    runtime: Local agent configuration, ChatGPT MCP routing, and managed node enrollment were verified from focused tests on 2026-07-13.
+---
+Consuelo OS separates three kinds of connection:
+
+- **Agents** are the applications that call OS tools.
+- **Connectors** give those tools access to an external service.
+- **Nodes** are the computers that run the local OS runtime for a workspace.
+
+That distinction matters. Connecting Claude Code does not grant access to Gmail, and adding a GitHub credential does not register another computer as a node.
+
+## Choose what you are connecting
+
+| You want to… | Go to |
+| --- | --- |
+| Use the workspace from ChatGPT or a local coding agent | [Agents](/connect/agents/chatgpt/) |
+| Give OS a supported external-service capability | [Connectors](/connect/connectors/) |
+| Understand which computer runs the work | [Nodes](/connect/nodes/how-nodes-work/) |
+
+## Current support at a glance
+
+**Ready now**
+
+- ChatGPT through the workspace HTTPS MCP endpoint;
+- Codex, Claude Code, Cursor, OpenCode, Factory Droid, and Gemini CLI through local MCP stdio;
+- the GitHub workspace tool when GitHub authentication is available;
+- outbound Slack messages through a configured webhook;
+- managed home and member nodes created by workspace authorization.
+
+**Assisted or not yet self-service**
+
+- Google Drive, Gmail, and Google Calendar service access;
+- additional service connectors;
+- Consuelo-hosted cloud nodes.
+
+The pages in this section say when setup is automatic, manual, assisted, or unavailable. They do not treat a planned capability as connected.
+
+## Start with one agent
+
+Install OS and connect one local agent first: [Connect your first agent](/start/connect-your-first-agent/). Return here for provider-specific configuration, service access, and multi-node behavior.

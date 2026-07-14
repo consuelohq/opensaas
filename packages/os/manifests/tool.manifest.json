@@ -12,13 +12,13 @@
       "label": "dev-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/dev-tool-manifest.json",
-      "entryCount": 122
+      "entryCount": 123
     },
     {
       "label": "media-tooling",
       "kind": "facade-tool",
       "path": "packages/os/tooling/media-tool-manifest.json",
-      "entryCount": 24
+      "entryCount": 25
     }
   ],
   "tools": [
@@ -882,22 +882,22 @@
       }
     },
     {
-      "name": "browser.login",
+      "name": "browser.headed",
       "kind": "facade-tool",
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "utilities",
-      "description": "run a saved browser auth login profile",
+      "description": "open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent",
       "core": false,
       "definition": {
-        "name": "browser.login",
+        "name": "browser.headed",
         "methodPath": [
           "browser",
-          "login"
+          "headed"
         ],
-        "description": "run a saved browser auth login profile",
+        "description": "open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent",
         "category": "utilities",
-        "underlying": "workspace browser.login",
+        "underlying": "workspace browser.headed",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -905,28 +905,27 @@
           "safeToRetry": false
         },
         "defaultTimeout": 300000,
-        "inputSchema": "BrowserLoginInput",
+        "inputSchema": "BrowserHeadedInput",
         "outputSchema": "RawOutput",
         "command": {
           "script": "browser",
-          "subcommand": "login",
+          "subcommand": "headed",
           "branchMode": "none",
           "arguments": [
             {
-              "source": "name",
+              "source": "url",
               "kind": "value",
               "required": true
             },
             {
-              "source": "headed",
-              "flag": "--headed",
-              "kind": "boolean"
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value"
             }
           ]
         },
         "exampleInput": {
-          "name": "consuelo",
-          "headed": true,
+          "url": "https://dash.cloudflare.com",
           "dryRun": true
         },
         "sessionRequired": false
@@ -1106,60 +1105,9 @@
         },
         "exampleInput": {
           "args": [
-            "auth",
+            "tab",
             "list"
           ],
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "browser.reauth",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "utilities",
-      "description": "restart the browser daemon and run a saved auth login profile",
-      "core": false,
-      "definition": {
-        "name": "browser.reauth",
-        "methodPath": [
-          "browser",
-          "reauth"
-        ],
-        "description": "restart the browser daemon and run a saved auth login profile",
-        "category": "utilities",
-        "underlying": "workspace browser.reauth",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "BrowserLoginInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "browser",
-          "subcommand": "reauth",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "name",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "headed",
-              "flag": "--headed",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "name": "consuelo",
-          "headed": true,
           "dryRun": true
         },
         "sessionRequired": false
@@ -1184,7 +1132,7 @@
         "underlying": "workspace browser.screenshot",
         "capabilities": {
           "readOnly": false,
-          "mutating": true,
+          "mutating": false,
           "deterministic": false,
           "safeToRetry": false
         },
@@ -1263,10 +1211,10 @@
         "category": "utilities",
         "underlying": "workspace browser.snap",
         "capabilities": {
-          "readOnly": false,
-          "mutating": true,
+          "readOnly": true,
+          "mutating": false,
           "deterministic": false,
-          "safeToRetry": false
+          "safeToRetry": true
         },
         "defaultTimeout": 300000,
         "inputSchema": "EmptyInput",
@@ -1274,6 +1222,44 @@
         "command": {
           "script": "browser",
           "subcommand": "snap",
+          "branchMode": "none",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "browser.status",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "utilities",
+      "description": "report safe browser daemon and page status without authentication values",
+      "core": false,
+      "definition": {
+        "name": "browser.status",
+        "methodPath": [
+          "browser",
+          "status"
+        ],
+        "description": "report safe browser daemon and page status without authentication values",
+        "category": "utilities",
+        "underlying": "workspace browser.status",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "browser",
+          "subcommand": "status",
           "branchMode": "none",
           "arguments": []
         },
@@ -5232,6 +5218,110 @@
       }
     },
     {
+      "name": "media.screenshot.render",
+      "kind": "facade-tool",
+      "source": "media-tooling",
+      "sourcePath": "packages/os/tooling/media-tool-manifest.json",
+      "category": "media",
+      "description": "Render a local screenshot into a deterministic social/X-ready PNG with configurable Consuelo themes, spacing, fit, and line patterns.",
+      "core": false,
+      "definition": {
+        "name": "media.screenshot.render",
+        "methodPath": [
+          "media",
+          "screenshot",
+          "render"
+        ],
+        "description": "Render a local screenshot into a deterministic social/X-ready PNG with configurable Consuelo themes, spacing, fit, and line patterns.",
+        "category": "media",
+        "underlying": "os media screenshot.render",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": true,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "MediaScreenshotRenderInput",
+        "outputSchema": "MediaScreenshotResult",
+        "command": {
+          "script": "media",
+          "subcommand": "screenshot:render",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "input",
+              "flag": "--input",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "out",
+              "flag": "--out",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "width",
+              "flag": "--width",
+              "kind": "value"
+            },
+            {
+              "source": "height",
+              "flag": "--height",
+              "kind": "value"
+            },
+            {
+              "source": "theme",
+              "flag": "--theme",
+              "kind": "value"
+            },
+            {
+              "source": "accent",
+              "flag": "--accent",
+              "kind": "value"
+            },
+            {
+              "source": "background",
+              "flag": "--background",
+              "kind": "value"
+            },
+            {
+              "source": "padding",
+              "flag": "--padding",
+              "kind": "value"
+            },
+            {
+              "source": "fit",
+              "flag": "--fit",
+              "kind": "value"
+            },
+            {
+              "source": "pattern",
+              "flag": "--pattern",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "input": "screenshots/chatgpt.png",
+          "out": "renders/chatgpt-x.png",
+          "theme": "dark",
+          "accent": "#0000F2",
+          "pattern": "grid"
+        },
+        "sessionRequired": false,
+        "workflowRole": "media.screenshot.render",
+        "requiredProfiles": [
+          "media-core"
+        ],
+        "requiredCommands": [
+          "ffmpeg"
+        ]
+      }
+    },
+    {
       "name": "media.sports-science.metrics",
       "kind": "facade-tool",
       "source": "media-tooling",
@@ -7489,6 +7579,55 @@
       }
     },
     {
+      "name": "stream.cleanup",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "stream",
+      "description": "preview or remove safe local stream refs that are fully backed by origin",
+      "core": false,
+      "definition": {
+        "name": "stream.cleanup",
+        "methodPath": [
+          "stream",
+          "cleanup"
+        ],
+        "description": "preview or remove safe local stream refs that are fully backed by origin",
+        "category": "stream",
+        "underlying": "workspace stream.cleanup",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "StreamCleanupInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "stream:cleanup",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "apply",
+              "flag": "--apply",
+              "kind": "boolean"
+            },
+            {
+              "source": "keep",
+              "flag": "--keep",
+              "kind": "array"
+            }
+          ]
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "stream.context",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -8297,6 +8436,11 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
+            },
+            {
+              "source": "createStream",
+              "flag": "--create-stream",
+              "kind": "boolean"
             },
             {
               "source": "pr",

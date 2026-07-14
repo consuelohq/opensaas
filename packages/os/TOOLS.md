@@ -38,11 +38,11 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | http | 1 |
 | linear | 8 |
 | mac | 8 |
-| media | 24 |
+| media | 25 |
 | office | 21 |
 | review | 4 |
 | sentry | 7 |
-| stream | 3 |
+| stream | 4 |
 | subagent | 1 |
 | task lifecycle | 11 |
 | tooling | 1 |
@@ -3611,6 +3611,69 @@ await workspace.call({
 }
 ```
 
+### workspace.media.screenshot.render
+
+Render a local screenshot into a deterministic social/X-ready PNG with configurable Consuelo themes, spacing, fit, and line patterns.
+
+| Field | Value |
+| --- | --- |
+| Category | media |
+| Signature | `workspace.media.screenshot.render({ input: string; out: string; width?: number; height?: number; theme?: "dark" &#124; "light"; accent?: string; background?: string; padding?: number; fit?: "contain" &#124; "cover"; pattern?: "grid" &#124; "lines" &#124; "none"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ schema: "media.screenshot-result.v1"; ok: true; id: string; source: { path: string }; output: { path: string; width: number; height: number; format: "png"; fileSizeBytes: number }; template: { theme: "dark" &#124; "light"; accent: string; background: string; padding: number; fit: "contain" &#124; "cover"; pattern: "grid" &#124; "lines" &#124; "none" }; toolVersions: Record<string, string>; deterministic: true }>>` |
+| Runtime | `os media screenshot.render` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "media.screenshot.render",
+  "input": {
+    "input": "screenshots/chatgpt.png",
+    "out": "renders/chatgpt-x.png",
+    "theme": "dark",
+    "accent": "#0000F2",
+    "pattern": "grid"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### workspace.media.sports-science.metrics
 
 Compute sports-science metrics from pose and motion artifacts.
@@ -5807,6 +5870,65 @@ await workspace.call({
 
 ## stream
 
+### workspace.stream.cleanup
+
+preview or remove safe local stream refs that are fully backed by origin
+
+| Field | Value |
+| --- | --- |
+| Category | stream |
+| Signature | `workspace.stream.cleanup({ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace stream.cleanup` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "stream.cleanup",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### workspace.stream.context
 
 show recent stream context
@@ -6597,7 +6719,7 @@ Call this directly at the beginning of every scoped repo task, before tools.sear
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites" &#124; "media"; description?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; pr?: string &#124; number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; workflow?: "task" &#124; "office" &#124; "design" &#124; "sites" &#124; "media"; description?: string; pr?: string &#124; number; github?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os task.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
@@ -7558,15 +7680,15 @@ await workspace.call({
 }
 ```
 
-### workspace.browser.login
+### workspace.browser.headed
 
-run a saved browser auth login profile
+open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent
 
 | Field | Value |
 | --- | --- |
 | Category | utilities |
-| Signature | `workspace.browser.login({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace browser.login` |
+| Signature | `workspace.browser.headed({ url: string; provider?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace browser.headed` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
 
@@ -7574,10 +7696,9 @@ run a saved browser auth login profile
 
 ```ts
 await workspace.call({
-  "tool": "browser.login",
+  "tool": "browser.headed",
   "input": {
-    "name": "consuelo",
-    "headed": true,
+    "url": "https://dash.cloudflare.com",
     "dryRun": true
   }
 });
@@ -7762,70 +7883,9 @@ await workspace.call({
   "tool": "browser.raw",
   "input": {
     "args": [
-      "auth",
+      "tab",
       "list"
     ],
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.browser.reauth
-
-restart the browser daemon and run a saved auth login profile
-
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.browser.reauth({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace browser.reauth` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "browser.reauth",
-  "input": {
-    "name": "consuelo",
-    "headed": true,
     "dryRun": true
   }
 });
@@ -7876,7 +7936,7 @@ capture a browser screenshot
 | Category | utilities |
 | Signature | `workspace.browser.screenshot({ name?: string; full?: boolean; preset?: "desktop" &#124; "mobile" &#124; "tablet" &#124; "ipad" &#124; "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" &#124; "light" &#124; "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace browser.screenshot` |
-| Capability | writes state · mutating · single-shot |
+| Capability | writes state · non-mutating · single-shot |
 | Default timeout | 300000ms |
 
 #### Example call
@@ -7937,7 +7997,7 @@ capture an accessibility snapshot
 | Category | utilities |
 | Signature | `workspace.browser.snap({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace browser.snap` |
-| Capability | writes state · mutating · single-shot |
+| Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
 
 #### Example call
@@ -7945,6 +8005,65 @@ capture an accessibility snapshot
 ```ts
 await workspace.call({
   "tool": "browser.snap",
+  "input": {
+    "dryRun": true
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.browser.status
+
+report safe browser daemon and page status without authentication values
+
+| Field | Value |
+| --- | --- |
+| Category | utilities |
+| Signature | `workspace.browser.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace browser.status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 300000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "browser.status",
   "input": {
     "dryRun": true
   }

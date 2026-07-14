@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+  "events": [
+    {
+      "id": "265a5439-9e68-4981-af80-ae8ab5939b3a",
+      "occurred_at": "2026-07-13T16:59:41.517Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/site/LanguageSelector.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents"
+      }
+    },
+    {
+      "id": "98f9834f-0472-41a8-bb9d-0526c269a120",
+      "occurred_at": "2026-07-13T16:59:57.920Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/ShareLinks.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents"
+      }
+    },
+    {
+      "id": "37bb6e6c-8c9b-42b5-8e10-8ded20a04db8",
+      "occurred_at": "2026-07-13T17:00:28.256Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents"
+      }
+    },
+    {
+      "id": "2d166f83-11ee-411c-945c-bb838ad93598",
+      "occurred_at": "2026-07-13T17:00:46.659Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/astro.config.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents"
+      }
+    },
+    {
+      "id": "eee927e3-650c-47fa-a17b-fec45dd9b61b",
+      "occurred_at": "2026-07-13T17:03:11.272Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents"
+      }
+    },
+    {
+      "id": "38daa540-6be5-457f-9186-0cc9a97f7f24",
+      "occurred_at": "2026-07-13T17:08:11.263Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/LinkButton.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-13T17:08:11.324Z"
+}

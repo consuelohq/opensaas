@@ -1,0 +1,83 @@
+---
+title: Environment variables
+description: Supported local runtime, workspace, service, and developer overrides.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/consuelo-home.ts
+    tests:
+      - packages/os/tests/consuelo-home-config.test.ts
+      - packages/os/tests/repo-default-config.test.ts
+    runtime: Home, workspace-config, and repository precedence were exercised in isolated environments on 2026-07-13.
+  - source: packages/os/scripts/server/env.ts
+    tests:
+      - packages/os/tests/local-os-port-cutover.test.ts
+    runtime: Port precedence and invalid-range failures were exercised on 2026-07-13.
+---
+
+Prefer generated configuration over environment variables. Use these variables for process-local overrides, automation, or managed capability injection.
+
+## Runtime location and server
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `CONSUELO_HOME` | `~/.consuelo` | Primary Consuelo home override. |
+| `CONSUELO_OS_HOME` | none | Compatibility alias used when `CONSUELO_HOME` is absent. |
+| `CONSUELO_OS_PORT` | `46321` | Preferred local server port override. Must be an integer from 1 through 65535. |
+| `PORT` | none | Fallback port override when `CONSUELO_OS_PORT` is absent. |
+| `CONSUELO_OS_SERVER_NAME` | `consuelo-os` | Name returned by local health metadata. |
+
+When both home variables are present, use `CONSUELO_HOME` consistently. When both port variables are present, `CONSUELO_OS_PORT` wins.
+
+## Workspace and project selection
+
+| Variable | Meaning |
+| --- | --- |
+| `CONSUELO_WORKSPACE_CONFIG` | Absolute or home-relative path to a specific `workspace.yaml`. |
+| `CONSUELO_REPO` | `owner/repo` override for repository-oriented workspace tools. |
+| `CONSUELO_WORKSPACE_ID` | Default workspace context for an OS skill call when the input omits it. |
+| `CONSUELO_USER_ID` | Default user context for an OS skill call when the input omits it. |
+
+Repository selection precedence is explicit tool input, `CONSUELO_REPO`, the selected project in `workspace.yaml`, then the current fallback repository.
+
+## Connected service capabilities
+
+These pairs are normally injected by managed setup or an operator. Values ending in `_API_KEY` are secrets.
+
+| Variables | Capability |
+| --- | --- |
+| `CONSUELO_APP_GRAPHQL_URL` + `CONSUELO_APP_GRAPHQL_API_KEY` | Preferred Consuelo workspace GraphQL connection. |
+| `CONSUELO_GRAPHQL_URL` + `CONSUELO_INTERNAL_GRAPHQL_API_KEY` | Compatibility GraphQL connection used when the preferred pair is absent. |
+| `CONSUELO_APP_API_URL` + `CONSUELO_APP_API_KEY` | Consuelo app Files API and cloud artifact operations. |
+| `CONSUELO_OS_API_URL` + `CONSUELO_OS_API_KEY` | Hosted OS control-plane capability when configured. |
+
+A URL without its matching key is reported as not configured. Do not place secret values in `workspace.yaml`, logs, documentation, or task output.
+
+## Observability overrides
+
+| Variable | Meaning |
+| --- | --- |
+| `CONSUELO_TRACE_DB` | Explicit SQLite database used by trace gateway reads. |
+| `TRACE_DB` | Compatibility fallback when `CONSUELO_TRACE_DB` is absent. |
+
+The normal local runtime uses the database under the active Consuelo home; most users should not set these.
+
+## Developer task worktrees
+
+| Variable | Meaning |
+| --- | --- |
+| `WORKSPACE_WORKTREE_ROOT` | Preferred root for isolated task worktrees. |
+| `OPENSAAS_WORKTREE_ROOT` | Compatibility fallback. |
+
+These affect repository task tooling, not the user's workspace files.
+
+## Shell example
+
+```bash
+export CONSUELO_HOME="$HOME/.consuelo"
+export CONSUELO_OS_PORT="46321"
+cd "$CONSUELO_HOME"
+bun ./scripts/server.js status
+```
+
+Avoid committing `.env` files containing service keys. When diagnosing configuration, report whether a variable is present—not its secret value.

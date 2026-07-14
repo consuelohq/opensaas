@@ -9,13 +9,33 @@
     "preview": "astro preview",
     "astro": "astro",
     "validate": "bun scripts/validate-documentation.mjs",
-    "test:translation": "bun scripts/test-translation.mjs"
+    "test:translation": "bun scripts/test-translation.mjs",
+    "test:foundation": "bun test tests/foundation.test.ts",
+    "test:start": "bun test tests/start.test.ts",
+    "test:boundary": "bun scripts/check-package-boundary.mjs",
+    "test:browser": "bun scripts/test-foundation-browser.mjs",
+    "test:connect": "bun test tests/connect.test.ts",
+    "test:connect-browser": "bun scripts/test-connect-browser.mjs",
+    "test:build": "bun test tests/build.test.ts",
+    "test:build-browser": "bun scripts/test-build-browser.mjs",
+    "test:sites": "bun test tests/sites.test.ts",
+    "test:sites-browser": "bun scripts/test-sites-browser.mjs",
+    "test:observe": "bun test tests/observe.test.ts",
+    "test:observe-browser": "bun scripts/test-observe-browser.mjs",
+    "test:secure": "bun test tests/secure.test.ts",
+    "test:secure-browser": "bun scripts/test-secure-browser.mjs",
+    "test:reference": "bun test tests/reference.test.ts",
+    "test:reference-browser": "bun scripts/test-reference-browser.mjs",
+    "test:review-cleanup": "bun test tests/review-cleanup.test.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.0",
     "@astrojs/starlight": "^0.41.2",
     "astro": "^7.0.2",
     "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
   },
   "packageManager": "bun@1.3.14"
 }

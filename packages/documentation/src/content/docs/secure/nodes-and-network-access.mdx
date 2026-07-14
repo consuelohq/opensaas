@@ -1,0 +1,71 @@
+---
+title: Nodes and network access
+description: Understand home-node authority, loopback services, outbound connectors, and workspace route ownership.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/workspace-connector-transport.ts
+    tests:
+      - packages/os/tests/workspace-gateway-contract.test.ts
+      - packages/os/tests/install-workspace-bootstrap-contract.test.ts
+    runtime: Outbound connector planning, loopback origin, generated service configuration, and secret placement were exercised on 2026-07-13.
+  - source: packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts
+    tests:
+      - packages/os/tests/cloudflare-d1-route-registry.test.ts
+      - packages/os/tests/cloudflare-edge-router.test.ts
+    runtime: Host/path ownership, longest-prefix routing, route auth modes, revocation, and offline failures were exercised on 2026-07-13.
+---
+
+A node is a machine running Consuelo OS for a workspace. Network access should expose a specific workspace route—not the machine as a general-purpose server.
+
+## Home and member nodes
+
+The **home node** is the authoritative runtime for the workspace. The first approved node normally becomes home. Later approved nodes can join as members, and a previously registered node can reconnect.
+
+Node registration binds a node ID, role, name, workspace identity, and public key to the approved account workspace. A member node does not become home merely because it reconnects first.
+
+## The local service stays private
+
+The local Bun gateway defaults to:
+
+```text
+http://127.0.0.1:46321
+```
+
+Loopback means the service is reachable from that machine, not from the entire local network. Generated Caddy configuration proxies only to the private Bun server and strips or overwrites gateway-sensitive headers before forwarding.
+
+Do not change the listener to `0.0.0.0` as a shortcut for connecting an agent. Use the supported local MCP command, private network path, or managed workspace connector.
+
+## Outbound connector
+
+A managed local workspace uses an **outbound connector**. The connector initiates the connection from the node to Consuelo-managed routing; the installer does not open an arbitrary inbound port on the machine.
+
+The current transport planner supports a managed Cloudflare Tunnel path and a relay-shaped transport contract. The approved bootstrap supplies only the scoped connector material needed for the selected route.
+
+```text
+workspace edge → approved connector route → loopback Caddy → local Bun gateway
+```
+
+The edge request is signed. The local gateway verifies fresh request proof and caller scope before tool execution.
+
+## Hostname and path ownership
+
+The route registry maps a workspace hostname and path prefix to one target, auth mode, and status. More-specific paths win over root routes. Unknown, disabled, or revoked routes fail closed.
+
+Route records do not store the connector's tunnel credential. Revoking a hostname makes its routes unavailable without needing to expose or recover that credential.
+
+Reserved Consuelo platform hostnames are rejected before workspace route lookup. A workspace cannot claim the docs, installer, app, or other platform surfaces.
+
+## Static and live routes
+
+A root route can serve a public static Sites snapshot while `/mcp` or `/gateway/*` uses a protected live connector. Treat each path as its own policy boundary.
+
+Do not infer that the entire hostname is public because one static page is public.
+
+## Verify network posture
+
+- Confirm the local listener is loopback only.
+- Confirm the intended hostname and path are active in the managed route.
+- Confirm the connector is online before debugging credentials.
+- Confirm revoked and unknown routes return a bounded denial.
+- Keep private node addresses, connector origins, and tunnel material out of public logs and documentation.

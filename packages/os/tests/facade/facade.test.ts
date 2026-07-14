@@ -274,6 +274,65 @@ describe('typed facade executor', () => {
     ]));
   });
 
+  it('plans media.screenshot.render facade calls with configurable social-card arguments', async () => {
+    const schema = getInputSchema('MediaScreenshotRenderInput');
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({
+      input: 'chatgpt.png',
+      out: 'chatgpt-x.png',
+      width: 1600,
+      height: 900,
+      theme: 'dark',
+      accent: '#0000F2',
+      background: '#08080A',
+      padding: 120,
+      fit: 'contain',
+      pattern: 'grid',
+    }).success).toBe(true);
+
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('media.screenshot.render', {
+      input: 'chatgpt.png',
+      out: 'chatgpt-x.png',
+      width: 1600,
+      height: 900,
+      theme: 'dark',
+      accent: '#0000F2',
+      background: '#08080A',
+      padding: 120,
+      fit: 'contain',
+      pattern: 'grid',
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'media',
+      'screenshot:render',
+      '--input',
+      'chatgpt.png',
+      '--out',
+      'chatgpt-x.png',
+      '--width',
+      '1600',
+      '--height',
+      '900',
+      '--theme',
+      'dark',
+      '--accent',
+      '#0000F2',
+      '--background',
+      '#08080A',
+      '--padding',
+      '120',
+      '--fit',
+      'contain',
+      '--pattern',
+      'grid',
+      '--json',
+    ]));
+  });
+
   it.each(manifestEntries.map((entry) => entry.name))('validates input for %s', async (toolName) => {
     const entry = manifestEntries.find((item) => item.name === toolName);
     if (!entry) throw new Error(`missing entry: ${toolName}`);

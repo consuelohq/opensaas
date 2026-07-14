@@ -1,0 +1,56 @@
+---
+title: Shared memory and context
+description: Save durable context deliberately and retrieve trace-backed history without replacing source systems.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/workspace/tests/context-trace.test.js
+    runtime: The typed context operations and local trace filters were inspected and exercised by focused tests on 2026-07-13.
+  - source: packages/workspace/scripts/context.js
+    tests:
+      - packages/workspace/tests/context-trace.test.js
+    runtime: Current search, read, save, list, and trace operations were inspected.
+---
+
+Consuelo OS can preserve selected context so another agent can continue without relying on one chat window.
+
+The `context` tool currently supports operations for searching, reading, saving, and listing durable context, plus inspecting local workspace traces.
+
+## Save what is worth carrying forward
+
+Good saved context contains:
+
+- a durable decision and why it was made;
+- verified current state;
+- exact files, tools, tests, and links needed next;
+- known uncertainty or a blocker;
+- a continuation-ready handoff.
+
+Do not save raw conversational noise, secrets, or a duplicate of data already maintained in a structured source of truth.
+
+## Context is not automatic total memory
+
+OS does not promise to remember everything an agent sees. Saved context is structured, intentional material that can be searched later. Trace history records executions, but it is not a replacement for a maintained spec, repository, calendar, CRM, or other source of truth.
+
+## Search before duplicating
+
+```json
+{
+  "tool": "context",
+  "input": {
+    "operation": "search",
+    "keyword": "documentation navigation",
+    "limit": 5
+  }
+}
+```
+
+Read the matching item before saving another version. Use clear titles and categories so later agents can distinguish a current handoff from historical research.
+
+## Trace-backed context
+
+The same tool can filter local traces by trace ID, tool, status, time window, text, task session, or branch. Use that path to answer “what actually ran?” and the saved-context path to answer “what should the next agent know?”
+
+[Observe](/observe/) covers traces and debugging in detail.

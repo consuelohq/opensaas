@@ -350,7 +350,7 @@ export const FsHttpInput = z.object({
   ...requestFields,
   ...dryRunField,
   method: z.enum(['get', 'post', 'put', 'patch', 'delete', 'head']).optional(),
-  url: z.string().url(),
+  url: z.url(),
   headers: z.record(z.string(), z.string()).optional(),
   body: z.string().optional(),
 });
@@ -374,6 +374,7 @@ export const TaskStartInput = z.object({
   github: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
+  createStream: z.boolean().optional(),
 }).refine((input) => Boolean(input.area || input.stream || input.pr || input.github), {
   message: 'provide area/stream or a PR reference',
   path: ['area'],
@@ -583,6 +584,13 @@ export const StreamListInput = z.object({
   repo: optionalString,
 });
 
+export const StreamCleanupInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  apply: z.boolean().optional(),
+  keep: stringArray,
+});
+
 export const ReviewInput = z.object({
   ...requestFields,
   ...branchField,
@@ -684,13 +692,20 @@ export const BrowserInput = z.object({
 export const BrowserOpenInput = z.object({
   ...requestFields,
   ...dryRunField,
-  url: z.string().url(),
+  url: z.url(),
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
   ...browserDeviceFlags,
 }).refine(requireCompleteBrowserViewport, {
   message: 'provide both width and height for browser viewport overrides',
   path: ['width'],
+});
+
+export const BrowserHeadedInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  url: z.url(),
+  provider: optionalString,
 });
 
 export const BrowserPageInput = z.object({
@@ -726,13 +741,6 @@ export const BrowserFillInput = z.object({
   ...dryRunField,
   ref: z.string().min(1),
   text: z.string(),
-});
-
-export const BrowserLoginInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-  name: z.string().min(1),
-  headed: z.boolean().optional(),
 });
 
 export const BrowserEvalInput = z.object({
@@ -982,6 +990,21 @@ export const MediaSvgConvertInput = z.object({
   optimize: z.boolean().optional(),
 });
 
+export const MediaScreenshotRenderInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  input: z.string().min(1),
+  out: z.string().min(1),
+  width: z.number().int().min(800).max(4096).optional(),
+  height: z.number().int().min(450).max(4096).optional(),
+  theme: z.enum(['dark', 'light']).optional(),
+  accent: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  background: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  padding: z.number().int().min(32).optional(),
+  fit: z.enum(['contain', 'cover']).optional(),
+  pattern: z.enum(['grid', 'lines', 'none']).optional(),
+});
+
 export const ResearchIngestInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -1155,6 +1178,7 @@ export const schemaRegistry = {
   AuditInput,
   StreamInput,
   StreamListInput,
+  StreamCleanupInput,
   ReviewInput,
   VerifyInput,
   PrReviewInput,
@@ -1164,11 +1188,11 @@ export const schemaRegistry = {
   GitDiffInput,
   BrowserInput,
   BrowserOpenInput,
+  BrowserHeadedInput,
   BrowserPageInput,
   BrowserScreenshotInput,
   BrowserElementInput,
   BrowserFillInput,
-  BrowserLoginInput,
   BrowserEvalInput,
   BrowserRawInput,
   BrowserGetInput,
@@ -1197,6 +1221,7 @@ export const schemaRegistry = {
   WaitInput,
   TmpInput,
   MediaSvgConvertInput,
+  MediaScreenshotRenderInput,
   ResearchIngestInput,
   RailwayLogsInput,
   RailwayRedeployInput,
@@ -1243,7 +1268,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "office" | "design" | "sites" | "media"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; pr?: string | number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "office" | "design" | "sites" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPrInput: '{ branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1264,6 +1289,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
+  StreamCleanupInput: '{ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ReviewInput: "{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",
   VerifyInput: '{ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1273,11 +1299,11 @@ export const schemaTypeSignatures: Record<string, string> = {
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserHeadedInput: '{ url: string; provider?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserScreenshotInput: '{ name?: string; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserElementInput: '{ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserFillInput: '{ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserGetInput: '{ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1306,6 +1332,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   WaitInput: '{ seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgConvertInput: '{ input: string; out: string; strategy?: \"wrapper\" | \"trace\" | \"both\" | \"auto\"; traceEngine?: \"auto\" | \"color\" | \"mono\"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaScreenshotRenderInput: '{ input: string; out: string; width?: number; height?: number; theme?: \"dark\" | \"light\"; accent?: string; background?: string; padding?: number; fit?: \"contain\" | \"cover\"; pattern?: \"grid\" | \"lines\" | \"none\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1325,6 +1352,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
+  MediaScreenshotResult: '{ schema: \"media.screenshot-result.v1\"; ok: true; id: string; source: { path: string }; output: { path: string; width: number; height: number; format: \"png\"; fileSizeBytes: number }; template: { theme: \"dark\" | \"light\"; accent: string; background: string; padding: number; fit: \"contain\" | \"cover\"; pattern: \"grid\" | \"lines\" | \"none\" }; toolVersions: Record<string, string>; deterministic: true }',
   BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
   FsReadOutput: '({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: string; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }',
   FsSearchOutput: '{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }',

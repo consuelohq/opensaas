@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const MEDIA_ASSET_SCHEMA = 'media.asset.v1';
 export const MEDIA_TIMELINE_SCHEMA = 'media.timeline.v1';
 export const MEDIA_RENDER_RESULT_SCHEMA = 'media.render-result.v1';
+export const MEDIA_SCREENSHOT_RESULT_SCHEMA = 'media.screenshot-result.v1';
 
 export const mediaSchemaKinds = [
   'media.asset.v1',
@@ -15,6 +16,7 @@ export const mediaSchemaKinds = [
   'media.pose-track.v1',
   'media.motion-track.v1',
   'media.overlay.v1',
+  'media.screenshot-result.v1',
   'media.breakdown-plan.v1',
   'media.export-package.v1',
   'media.svg-result.v1',
@@ -169,6 +171,29 @@ export const MediaSvgResultSchema = z.object({
 });
 
 export const MediaDependencyReportSchema = z.object({ schema: z.literal('media.dependency-report.v1') }).passthrough();
+const HexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
+export const MediaScreenshotResultSchema = z.object({
+  schema: z.literal(MEDIA_SCREENSHOT_RESULT_SCHEMA),
+  id: NonEmptyStringSchema,
+  source: z.object({ path: NonEmptyStringSchema }).passthrough(),
+  output: z.object({
+    path: NonEmptyStringSchema,
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+    format: z.literal('png'),
+    fileSizeBytes: z.number().int().nonnegative(),
+  }).passthrough(),
+  template: z.object({
+    theme: z.enum(['dark', 'light']),
+    accent: HexColorSchema,
+    background: HexColorSchema,
+    padding: z.number().int().nonnegative(),
+    fit: z.enum(['contain', 'cover']),
+    pattern: z.enum(['grid', 'lines', 'none']),
+  }).passthrough(),
+  toolVersions: z.record(z.string(), NonEmptyStringSchema),
+  deterministic: z.literal(true),
+}).passthrough();
 export const MediaIngestManifestSchema = z.object({ schema: z.literal('media.ingest-manifest.v1') }).passthrough();
 export const MediaFrameManifestSchema = z.object({ schema: z.literal('media.frame-manifest.v1') }).passthrough();
 export const MediaTranscriptWordSchema = z.object({
