@@ -101,6 +101,11 @@ started: 2026-07-14
 - Red evidence: cache-disabled `nx build twenty-server` completed but emitted 4,851 files, no suspended-workspace email/component modules, and the compiled barrel failed with `MODULE_NOT_FOUND`.
 - Fix: configure the Nest SWC builder with `extensions: [".js", ".ts", ".tsx"]`, enable `jsc.parser.tsx`, and use automatic React transform.
 - Green evidence: the focused build-config contract passes; cache-disabled `nx build twenty-server` emits 4,888 files; representative email, component, and renderer modules exist; Node successfully requires the compiled email barrel.
+- Consuelo CI selected six suites even though the committed PR diff selects five. The extra `auto:twenty-sdk:test` came from CI working-tree artifacts because `test-selection.js` combined committed, working, staged, and untracked paths after dependency setup.
+- The registry also scheduled `npx nx test twenty-server` twice because the auto-discovered command only differed by `--coverage=false`.
+- Red evidence: new test-selection contracts showed CI included an untracked generated package file and selected two equivalent Nx project tests.
+- Fix: GitHub Actions selection now uses committed `base...HEAD` changes only; local verification still includes working, staged, and untracked files. Nx project test command keys normalize away `--coverage=false` so equivalent project suites run once.
+- Green evidence: all 8 test-selection registry tests pass, including CI dirty-tree isolation and Nx command deduplication.
 
 ## current status
 
@@ -108,82 +113,9 @@ started: 2026-07-14
 
 ## files changed
 
-- `package.json`
-- `packages/os/SCRIPTS.md`
-- `packages/os/TOOLS.md`
-- `packages/os/manifests/core.manifest.json`
-- `packages/os/manifests/manifest.config.json`
-- `packages/os/manifests/tool.manifest.json`
-- `packages/os/manifests/workflow-bundles.json`
-- `packages/os/package.json`
-- `packages/os/scripts/lib/facade/schemas.ts`
-- `packages/os/scripts/lib/install-state.ts`
-- `packages/os/scripts/lib/stream-lifecycle.js` (deleted)
-- `packages/os/scripts/stream-cleanup.js` (deleted)
-- `packages/os/scripts/stream-context.js`
-- `packages/os/scripts/stream-list.js`
-- `packages/os/scripts/task-start.js`
-- `packages/os/scripts/tools-search.ts`
-- `packages/os/src/generated/workspace.d.ts`
-- `packages/os/tests/audit/script-parity-audit.test.ts`
-- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
-- `packages/os/tests/tools-search-v2.test.ts`
-- `packages/os/tooling/dev-tool-manifest.json`
-- `packages/os/tooling/script-parity-classifications.json`
-- `packages/workspace/SCRIPTS.md`
-- `packages/workspace/TOOLS.md`
-- `packages/workspace/manifests/core-manifest.json`
-- `packages/workspace/manifests/manifest.config.json`
-- `packages/workspace/manifests/tool-manifest.json`
-- `packages/workspace/manifests/workflow-bundles.json`
-- `packages/workspace/package.json`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/scripts/lib/stream-lifecycle.js` (deleted)
-- `packages/workspace/scripts/lib/stream-workpads.js` (deleted)
-- `packages/workspace/scripts/stream-cleanup.js` (deleted)
-- `packages/workspace/scripts/stream-context.js`
-- `packages/workspace/scripts/stream-list.js`
-- `packages/workspace/scripts/task-start.js`
-- `packages/workspace/scripts/tools-search.ts`
-- `packages/workspace/src/generated/workspace.d.ts`
-- `packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap`
-- `packages/workspace/tests/facade/facade.test.ts`
-- `packages/workspace/tests/stream-lifecycle.test.ts` (deleted)
-- `packages/workspace/tests/stream-workpads.test.js`
-- `packages/workspace/tests/tools-search-v2.test.ts`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/os/scripts/lib/streams/cli.ts`
-- `packages/os/scripts/lib/streams/context-runtime.ts`
-- `packages/os/scripts/lib/streams/create-runtime.ts`
-- `packages/os/scripts/lib/streams/creation.ts`
-- `packages/os/scripts/lib/streams/errors.ts`
-- `packages/os/scripts/lib/streams/instructions.ts`
-- `packages/os/scripts/lib/streams/inventory.ts`
-- `packages/os/scripts/lib/streams/list-runtime.ts`
-- `packages/os/scripts/lib/streams/service.ts`
-- `packages/os/scripts/lib/streams/types.ts`
-- `packages/os/scripts/lib/streams/workpads.ts`
-- `packages/os/scripts/stream-create.js`
-- `packages/os/streams/media/AGENTS.md`
-- `packages/os/streams/security/AGENTS.md`
-- `packages/os/streams/tools/AGENTS.md`
-- `packages/os/tests/stream-install-state.test.ts`
-- `packages/workspace/scripts/lib/streams/cli.ts`
-- `packages/workspace/scripts/lib/streams/context-runtime.ts`
-- `packages/workspace/scripts/lib/streams/create-runtime.ts`
-- `packages/workspace/scripts/lib/streams/creation.ts`
-- `packages/workspace/scripts/lib/streams/errors.ts`
-- `packages/workspace/scripts/lib/streams/instructions.ts`
-- `packages/workspace/scripts/lib/streams/inventory.ts`
-- `packages/workspace/scripts/lib/streams/list-runtime.ts`
-- `packages/workspace/scripts/lib/streams/service.ts`
-- `packages/workspace/scripts/lib/streams/types.ts`
-- `packages/workspace/scripts/lib/streams/workpads.ts`
-- `packages/workspace/scripts/stream-create.js`
-- `packages/workspace/streams/media/AGENTS.md`
-- `packages/workspace/streams/security/AGENTS.md`
-- `packages/workspace/streams/tools/AGENTS.md`
-- `packages/workspace/tests/stream-service.test.ts`
+- `packages/twenty-server/.swcrc`
+- `packages/twenty-server/nest-cli.json`
+- `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
 
 
 ## workspace-owned: files changed
@@ -214,6 +146,7 @@ started: 2026-07-14
 - 2026-07-14 17:04:12 `review.run`: passed — OK
 - 2026-07-14 17:07:19 `verify`: passed — OK
 - 2026-07-14 17:07:19 `verify`: passed — OK
+- 2026-07-14 17:47:41 `review.run`: passed — OK
 
 ## key decisions
 
@@ -287,10 +220,13 @@ bun run task:finish
 - `packages/workspace/scripts/stream-list.js`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/scripts/task-start.js`
+- `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/scripts/verify.js`
 - `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/facade/facade.test.ts`
 - `packages/workspace/tests/stream-service.test.ts`
 - `packages/workspace/tests/stream-workpads.test.js`
+- `packages/workspace/tests/test-selection.test.js`
 - `packages/workspace/tests/tools-search-v2.test.ts`
 - `packages/workspace/tooling/tool-manifest.json`
 
@@ -306,3 +242,8 @@ bun run task:finish
 
 - 2026-07-14 17:08:58 `git reset --mixed origin/task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream`: failed exit 1 trace: `trc_f5ba07407fb8`
   - output: error: Script not found "task:exec"
+
+- 2026-07-14 17:46:20 apply-patch: `packages/workspace/tests/test-selection.test.js`
+- 2026-07-14 17:46:43 apply-patch: `packages/workspace/scripts/test-selection.js`
+
+- 2026-07-14 17:47:07 apply-patch: `.task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream/workpad.md`

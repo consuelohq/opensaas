@@ -8,7 +8,10 @@
     "packages/twenty-server/.swcrc",
     "packages/twenty-server/src/engine/core-modules/email/templates/emails/clean-suspended-workspace.email.tsx",
     "packages/workspace/scripts/lib/streams/cli.ts",
-    "packages/workspace/tests/stream-service.test.ts"
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/tests/stream-service.test.ts",
+    "packages/workspace/tests/test-selection.test.js"
   ],
-  "updatedAt": "2026-07-14T17:01:39.687Z"
+  "updatedAt": "2026-07-14T17:45:59.873Z"
 }

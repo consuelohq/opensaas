@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/tooling/replace-stream-cleanup-with-effect-stream-context-and-tools-stream",
   "base": "origin/main",
-  "headSha": "9729706245bbbe9ea154a907cf06c9b0a34f077e",
-  "changeHash": "aa2766a460902a5f57b7640c1622d7b523ff805427623f35ba2705ea43b4240c",
+  "headSha": "8d94d629a8a2bc378a033cfd5ff45e643d5bd2a8",
+  "changeHash": "ac9268b7e702bafc92cabac7e21d3d1a1f151383d5dd43274f12ad8e0435ca18",
   "changedFiles": [
     "package.json",
     "packages/os/SCRIPTS.md",
@@ -68,6 +68,7 @@
     "packages/workspace/scripts/stream-create.js",
     "packages/workspace/scripts/stream-list.js",
     "packages/workspace/scripts/task-start.js",
+    "packages/workspace/scripts/test-selection.js",
     "packages/workspace/scripts/tools-search.ts",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/streams/media/AGENTS.md",
@@ -77,11 +78,12 @@
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tests/stream-service.test.ts",
     "packages/workspace/tests/stream-workpads.test.js",
+    "packages/workspace/tests/test-selection.test.js",
     "packages/workspace/tests/tools-search-v2.test.ts",
     "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-07-14T17:09:57.357Z",
+  "verifiedAt": "2026-07-14T17:48:08.564Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -168,6 +170,7 @@
         "packages/workspace/scripts/stream-create.js",
         "packages/workspace/scripts/stream-list.js",
         "packages/workspace/scripts/task-start.js",
+        "packages/workspace/scripts/test-selection.js",
         "packages/workspace/scripts/tools-search.ts",
         "packages/workspace/src/generated/workspace.d.ts",
         "packages/workspace/streams/media/AGENTS.md",
@@ -178,6 +181,7 @@
         "packages/workspace/tests/stream-lifecycle.test.ts",
         "packages/workspace/tests/stream-service.test.ts",
         "packages/workspace/tests/stream-workpads.test.js",
+        "packages/workspace/tests/test-selection.test.js",
         "packages/workspace/tests/tools-search-v2.test.ts",
         "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
         "packages/workspace/tooling/tool-manifest.json"
@@ -200,6 +204,16 @@
           "reason": "Task routing and metadata changes must prove task-session behavior.",
           "matchedFiles": [
             "packages/workspace/scripts/task-start.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/scripts/test-selection.js",
+            "packages/workspace/tests/test-selection.test.js"
           ],
           "origin": "explicit"
         },
@@ -259,6 +273,18 @@
           "critical": true
         },
         {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
           "name": "workspace audit tests",
           "command": [
             "bun",
@@ -280,18 +306,6 @@
           ],
           "ruleId": "twenty-server-project",
           "critical": true
-        },
-        {
-          "name": "twenty-server test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server",
-            "--coverage=false"
-          ],
-          "ruleId": "auto:twenty-server:test",
-          "critical": false
         }
       ],
       "level": "pass",
@@ -313,8 +327,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 471,
-          "outputTail": "r task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.07ms]\n{\"level\":\"error\",\"tool\":\"task.exec\",\"command\":\"workspace task.exec\",\"implementationCommand\":\"workspace task.exec\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.334Z\"}\n(pass) typed facade executor > validates input for task.exec [0.13ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.334Z\"}\n(pass) typed facade executor > validates input for task.init [0.23ms]\n(pass) typed facade executor > validates input for task.merge [0.09ms]\n(pass) typed facade executor > validates input for task.pr [0.11ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.334Z\"}\n(pass) typed facade executor > validates input for task.push [0.27ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.335Z\"}\n(pass) typed facade executor > validates input for task.start [0.27ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.335Z\"}\n(pass) typed facade executor > validates input for tmp [0.22ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.335Z\"}\n(pass) typed facade executor > validates input for tools.search [0.27ms]\n(pass) typed facade executor > validates input for verify [0.09ms]\n(pass) typed facade executor > validates input for wait [0.14ms]\n(pass) typed facade executor > validates input for website.deploy [0.08ms]\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"workspace subagent\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.336Z\"}\n(pass) typed facade executor > validates input for subagent [0.32ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:09:55.336Z\"}\n(pass) typed facade executor > validates input for media.svg [0.35ms]\n\n 126 pass\n 431 filtered out\n 0 fail\n 58 expect() calls\nRan 126 tests across 1 file. [464.00ms]\n"
+          "durationMs": 312,
+          "outputTail": "r task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.07ms]\n{\"level\":\"error\",\"tool\":\"task.exec\",\"command\":\"workspace task.exec\",\"implementationCommand\":\"workspace task.exec\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.574Z\"}\n(pass) typed facade executor > validates input for task.exec [0.15ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.574Z\"}\n(pass) typed facade executor > validates input for task.init [0.27ms]\n(pass) typed facade executor > validates input for task.merge [0.09ms]\n(pass) typed facade executor > validates input for task.pr [0.11ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.574Z\"}\n(pass) typed facade executor > validates input for task.push [0.26ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.575Z\"}\n(pass) typed facade executor > validates input for task.start [0.31ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.575Z\"}\n(pass) typed facade executor > validates input for tmp [0.25ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.575Z\"}\n(pass) typed facade executor > validates input for tools.search [0.27ms]\n(pass) typed facade executor > validates input for verify [0.10ms]\n(pass) typed facade executor > validates input for wait [0.17ms]\n(pass) typed facade executor > validates input for website.deploy [0.08ms]\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"workspace subagent\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.576Z\"}\n(pass) typed facade executor > validates input for subagent [0.38ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-14T17:48:05.576Z\"}\n(pass) typed facade executor > validates input for media.svg [0.40ms]\n\n 126 pass\n 431 filtered out\n 0 fail\n 58 expect() calls\nRan 126 tests across 1 file. [304.00ms]\n"
         },
         {
           "name": "workspace task session tests",
@@ -330,8 +344,26 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 141,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [1.08ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.56ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.05ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.18ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.12ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.24ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.06ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.05ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [134.00ms]\n"
+          "durationMs": 168,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [1.83ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.61ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.28ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.19ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.12ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.23ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.32ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.07ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [161.00ms]\n"
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1504,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1084\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 650\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:48:06\n\u001b[2m   Duration \u001b[22m 1.17s\u001b[2m (transform 11ms, setup 0ms, import 17ms, tests 1.08s, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "workspace audit tests",
@@ -348,8 +380,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 497,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 102\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:09:55\n\u001b[2m   Duration \u001b[22m 212ms\u001b[2m (transform 44ms, setup 0ms, import 48ms, tests 102ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 459,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-stream-cleanup-with-effect-stream-context-and-tools-stream\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 103\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:48:07\n\u001b[2m   Duration \u001b[22m 206ms\u001b[2m (transform 43ms, setup 0ms, import 48ms, tests 103ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "twenty-server affected test target",
@@ -365,26 +397,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 574,
+          "durationMs": 610,
           "outputTail": "[1mgenerate-nullable.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/view-id-parser-utils/__tests__/\u001b[22m\u001b[1mparse-view-id-rest-request.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing/utils/__tests__/\u001b[22m\u001b[1mnormalize-price-ref.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/filter-parser-utils/__tests__/\u001b[22m\u001b[1madd-default-conjunction.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/metadata-modules/flat-entity/utils/__tests__/\u001b[22m\u001b[1msort-metadata-names-children-first.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mmime-encode.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-enum-field-gql-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-composite-field-object-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-composite-field-enum-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-folder-manager/utils/__tests__/\u001b[22m\u001b[1mshould-sync-folder-by-default.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/__tests__/\u001b[22m\u001b[1mworkspace.factory.spec.ts\u001b[22m (\u001b[0m\u001b[1m\u001b[41m38.632 s\u001b[49m\u001b[22m\u001b[0m)\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/app-token/services/\u001b[22m\u001b[1mapp-token.service.spec.ts\u001b[22m (\u001b[0m\u001b[1m\u001b[41m5.422 s\u001b[49m\u001b[22m\u001b[0m)\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/file/file-upload/resolvers/\u001b[22m\u001b[1mfile-upload.resolver.spec.ts\u001b[22m (\u001b[0m\u001b[1m\u001b[41m22.199 s\u001b[49m\u001b[22m\u001b[0m)\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\n=============================== Coverage summary ===============================\n\u001b[33;1mStatements   : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mBranches     : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mFunctions    : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mLines        : Unknown% ( 0/0 )\u001b[0m\n================================================================================\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3512 passed\u001b[39m\u001b[22m, 3522 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        96.107 s\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n"
-        },
-        {
-          "name": "twenty-server test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server",
-            "--coverage=false"
-          ],
-          "ruleId": "auto:twenty-server:test",
-          "critical": false,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 608,
-          "outputTail": "22m\u001b[1mgoogle-apis-scopes.service.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/match-participant/utils/__tests__/\u001b[22m\u001b[1madd-person-email-filters-to-query-builder.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mcreate-sql-where-tuple-in-clause.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-relation-connect-input-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/blocklist/utils/__tests__/\u001b[22m\u001b[1mis-email-blocklisted.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/logic-function/logic-function-executor/utils/__tests__/\u001b[22m\u001b[1mbuild-env-var.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/tool-provider/output-serialization/__tests__/\u001b[22m\u001b[1mstrip-empty-values.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/auth/services/\u001b[22m\u001b[1mgoogle-apis-scopes.service.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/search/utils/__tests__/\u001b[22m\u001b[1mformat-search-terms.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-subscription-event-to-database-customer.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/twenty-config/decorators/__tests__/\u001b[22m\u001b[1mcast-to-upper-snake-case.decorator.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-product-event-to-database-product.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/transformer-utils/__tests__/\u001b[22m\u001b[1mtransform-array-field.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/utils/version/__tests__/\u001b[22m\u001b[1mget-previous-version.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/workflow/workflow-executor/workflow-actions/iterator/utils/__tests__/\u001b[22m\u001b[1mget-all-step-ids-in-loop.util.spec.ts\u001b[22m\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3512 passed\u001b[39m\u001b[22m, 3522 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        56.324 s, estimated 86 s\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n"
         }
       ],
       "failedSuites": []

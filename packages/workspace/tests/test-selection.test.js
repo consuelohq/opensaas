@@ -25,6 +25,12 @@ function json(result) {
   return JSON.parse(result.stdout);
 }
 
+function git(cwd, args) {
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  expect(result.status, result.stderr).toBe(0);
+  return result.stdout.trim();
+}
+
 describe('test selection registry', () => {
   it('discovers and seeds the existing test inventory', () => {
     const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);
@@ -117,6 +123,76 @@ describe('test selection registry', () => {
     expect(data.failedSuites).toHaveLength(1);
     expect(data.failedSuites[0].status).toBe('failed');
     expect(data.failedSuites[0].error?.code).toBe('ETIMEDOUT');
+  });
+
+  it('ignores generated working-tree files in GitHub Actions selection', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'test-selection-ci-'));
+    const registryPath = path.join(repo, 'registry.json');
+    fs.mkdirSync(path.join(repo, 'packages', 'app'), { recursive: true });
+    fs.mkdirSync(path.join(repo, 'packages', 'generated'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'packages', 'app', 'index.ts'), 'export const value = 1;\n');
+    fs.writeFileSync(registryPath, JSON.stringify({
+      version: 1,
+      rules: [
+        { id: 'app', source: ['packages/app/**'], tests: [], critical: false, origin: 'test' },
+        { id: 'generated', source: ['packages/generated/**'], tests: [], critical: false, origin: 'test' },
+      ],
+    }));
+    git(repo, ['init']);
+    git(repo, ['config', 'user.email', 'test-selection@example.com']);
+    git(repo, ['config', 'user.name', 'Test Selection']);
+    git(repo, ['add', '.']);
+    git(repo, ['commit', '-m', 'base']);
+    git(repo, ['branch', '-M', 'main']);
+    git(repo, ['switch', '-c', 'task/example']);
+    fs.writeFileSync(path.join(repo, 'packages', 'app', 'index.ts'), 'export const value = 2;\n');
+    git(repo, ['add', 'packages/app/index.ts']);
+    git(repo, ['commit', '-m', 'change app']);
+    fs.writeFileSync(path.join(repo, 'packages', 'generated', 'artifact.ts'), 'export const generated = true;\n');
+
+    const ci = run(['check', '--registry', registryPath, '--base', 'main', '--json'], {
+      cwd: repo,
+      env: { GITHUB_ACTIONS: 'true', CI: 'true' },
+    });
+    const local = run(['check', '--registry', registryPath, '--base', 'main', '--json'], { cwd: repo });
+
+    expect(json(ci).changedFiles).toEqual(['packages/app/index.ts']);
+    expect(json(local).changedFiles).toEqual([
+      'packages/app/index.ts',
+      'packages/generated/artifact.ts',
+    ]);
+  });
+
+  it('deduplicates equivalent Nx project test commands', () => {
+    const registryPath = path.join(os.tmpdir(), `test-selection-dedupe-${Date.now()}.json`);
+    fs.writeFileSync(registryPath, JSON.stringify({
+      version: 1,
+      rules: [
+        {
+          id: 'explicit',
+          source: ['packages/server/**'],
+          critical: true,
+          origin: 'test',
+          tests: [{ name: 'server affected test', command: ['npx', 'nx', 'test', 'server'] }],
+        },
+        {
+          id: 'auto:server:test',
+          source: ['packages/server/**'],
+          critical: false,
+          origin: 'auto',
+          tests: [{ name: 'server test', command: ['npx', 'nx', 'test', 'server', '--coverage=false'] }],
+        },
+      ],
+    }));
+
+    const result = run([
+      'check',
+      '--registry', registryPath,
+      '--changed-file', 'packages/server/src/index.ts',
+      '--json',
+    ]);
+
+    expect(json(result).selectedSuites).toHaveLength(1);
   });
 
 });

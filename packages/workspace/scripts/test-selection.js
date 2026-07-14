@@ -153,7 +153,15 @@ function matchesPattern(file, pattern) {
 }
 
 function commandKey(command) {
-  return JSON.stringify(command);
+  const normalized = [...command];
+  if (
+    normalized[0] === 'npx'
+    && normalized[1] === 'nx'
+    && normalized[2] === 'test'
+  ) {
+    return JSON.stringify(normalized.filter((argument) => argument !== '--coverage=false'));
+  }
+  return JSON.stringify(normalized);
 }
 
 function normalizeRule(rule, source = 'explicit') {
@@ -261,7 +269,10 @@ function changedFiles(root, args) {
   const staged = spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' });
   const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' });
   const files = new Set();
-  for (const result of [committed, working, staged, untracked]) {
+  const results = process.env.GITHUB_ACTIONS === 'true'
+    ? [committed]
+    : [committed, working, staged, untracked];
+  for (const result of results) {
     if (result.status !== 0) continue;
     for (const line of result.stdout.split(/\r?\n/)) if (line.trim()) files.add(line.trim());
   }
