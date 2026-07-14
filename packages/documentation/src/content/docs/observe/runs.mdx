@@ -1,0 +1,87 @@
+---
+title: Runs
+description: Inspect current OS skill executions, statuses, durations, artifacts, and failure summaries.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/runtime-state.ts
+    tests:
+      - packages/os/tests/runtime-state.test.ts
+      - packages/os/tests/os-call-artifacts.test.ts
+    runtime: An isolated home recorded a successful daily-revenue-brief run and a failed missing-skill run on 2026-07-13.
+  - source: packages/os/scripts/doctor-watch.ts
+    tests:
+      - packages/os/tests/doctor-logs.test.ts
+    runtime: doctor:watch, doctor:errors, and doctor:analytics returned the seeded records with trace IDs, durations, artifact count, and SKILL_NOT_FOUND.
+---
+
+A run is one execution of an OS skill. The current local runtime records it in SQLite before the skill starts and updates it when the skill succeeds or fails.
+
+## What a run records
+
+The `skill_executions` table currently includes:
+
+| Field | Meaning |
+| --- | --- |
+| `trace_id` | Primary identifier used to connect the call to events, output, errors, and artifacts. |
+| `name` | Skill name requested by the caller. |
+| `workspace_id`, `user_id` | Scope when those values were supplied. |
+| `status` | `started`, `succeeded`, or `failed`. |
+| `input_json`, `output_json` | Redacted serialized input and final result. |
+| `error_code`, `error_message` | Safe failure summary when the run failed. |
+| `started_at`, `finished_at` | Execution timestamps. |
+| `duration_ms` | Wall-clock duration recorded at completion. |
+
+A second table, `execution_events`, records lifecycle events such as `execution.started`, `execution.succeeded`, and `execution.failed`. It is an event trail for the run, not a second copy of the whole result.
+
+## Watch recent runs
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" doctor:watch -- --once --limit 20
+```
+
+Remove `--once` to keep watching. The command polls at a one-second interval by default and accepts a minimum interval of 250 milliseconds.
+
+Useful filters:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" doctor:watch -- --skill daily-revenue-brief --once
+bun run --cwd "$CONSUELO_HOME" doctor:watch -- --trace-id trc_example --once
+bun run --cwd "$CONSUELO_HOME" doctor:watch -- --errors --once --json
+```
+
+The human view shows status, duration, skill, trace ID, artifact count when available, and a bounded error summary.
+
+## Inspect failures only
+
+```bash
+bun run --cwd "$CONSUELO_HOME" doctor:errors -- --limit 20
+bun run --cwd "$CONSUELO_HOME" doctor:errors -- --trace-id trc_example --json
+bun run --cwd "$CONSUELO_HOME" doctor:errors -- --skill missing-skill --json
+```
+
+`doctor:errors` reads failed `skill_executions`. JSON output uses the public field names `traceId`, `skill`, `status`, `errorCode`, `errorMessage`, and `durationMs`.
+
+## Compare execution health
+
+```bash
+bun run --cwd "$CONSUELO_HOME" doctor:analytics -- --json
+bun run --cwd "$CONSUELO_HOME" doctor:analytics -- --skill daily-revenue-brief
+```
+
+The analytics command groups runs by skill and status, then reports count, average duration, maximum duration, and failure counts by error code. It is a current local summary, not a billing, SLO, or long-term analytics system.
+
+## Where the records live
+
+The current home layout resolves the local database beneath:
+
+```text
+$CONSUELO_HOME/node/db/consuelo.db
+```
+
+Use the commands above instead of editing the database directly. A custom `--home` or `--db` can point the doctor commands at an isolated or recovered store.
+
+## A run can finish without doing every intended business action
+
+A `succeeded` status means the current skill returned successfully. Read the result as well. A scaffold or degraded-capability result can succeed while reporting missing configuration or proposed next steps. Success does not invent data, external side effects, or artifacts that the skill did not actually produce.

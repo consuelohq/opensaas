@@ -1,0 +1,53 @@
+---
+title: Media
+description: Inspect, transform, compose, and verify media through typed OS tools.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/tooling/media-tool-manifest.json
+    tests:
+      - packages/os/tests/media/17-media-ingest-source-capture.test.ts
+      - packages/os/tests/media/23-vision-pose-mediapipe.test.ts
+    runtime: The active media tool definitions, runtime profiles, and focused ingest and pose tests were inspected on 2026-07-13.
+---
+
+Media tools turn source video, audio, images, and SVGs into structured, inspectable outputs. The current surface includes ingest, probing, frame and audio extraction, transcription, scene and motion analysis, composition, export, and quality checks.
+
+## Check the runtime first
+
+Run `media.doctor` before a workflow that depends on optional media packages. Tools declare required profiles or commands; for example, `media.probe` requires the media-core profile and `ffprobe`.
+
+## A typical video path
+
+```text
+media.ingest
+  → media.probe
+  → frames, audio, transcript, scenes, or motion analysis
+  → media.timeline.validate
+  → media.compose
+  → media.qa
+  → media.export
+```
+
+Not every job needs every step. Keep the intermediate artifacts that explain how the final result was produced.
+
+## Example inspection
+
+```json
+{
+  "tool": "media.probe",
+  "input": {
+    "source": "/path/to/video.mp4"
+  }
+}
+```
+
+Use the schema returned by tool discovery for the current input fields. Media tools return structured facts and artifact references rather than requiring an agent to infer success from command output.
+
+## SVG work
+
+`media.svg` supports structured creation, inspection, rendering, measurement, editing, verification, and snapshots. `media.svg.convert` covers raster-to-SVG conversion. Verify visible output after changes; valid XML alone is not visual proof.
+
+## Current boundary
+
+Media support depends on the capabilities installed on the node running the work. A tool can exist in the registry while an optional runtime profile is missing. Treat the doctor's result as the current node's source of truth.

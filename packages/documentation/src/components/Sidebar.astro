@@ -1,0 +1,48 @@
+---
+import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter';
+import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro';
+import SidebarSublist from '@astrojs/starlight/components/SidebarSublist.astro';
+import { selectSectionSidebar } from '../lib/docs-navigation';
+
+const navigation = selectSectionSidebar(
+  Astro.locals.starlightRoute.sidebar,
+  Astro.url.pathname,
+);
+---
+
+{
+  navigation.mode === 'section' ? (
+    <nav aria-label={`${navigation.sectionLabel} documentation`} class="section-sidebar">
+      <a class="all-docs" href="/">← All documentation</a>
+      <SidebarSublist sublist={navigation.entries} />
+    </nav>
+  ) : (
+    <SidebarPersister>
+      <SidebarSublist sublist={navigation.entries} />
+    </SidebarPersister>
+  )
+}
+
+<div class="md:sl-hidden">
+  <MobileMenuFooter />
+</div>
+
+<style>
+  @layer starlight.core {
+    .section-sidebar {
+      display: grid;
+      gap: 1rem;
+    }
+    .all-docs {
+      color: var(--sl-color-gray-2);
+      display: inline-flex;
+      font-size: var(--sl-text-sm);
+      padding-inline: 0.5rem;
+      text-decoration: none;
+    }
+    .all-docs:hover,
+    .all-docs:focus-visible {
+      color: var(--sl-color-white);
+    }
+  }
+</style>

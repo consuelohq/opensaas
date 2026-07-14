@@ -1,0 +1,151 @@
+---
+title: Configuration
+description: Canonical Consuelo home, workspace, node, runtime, and settings files.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/consuelo-home.ts
+    tests:
+      - packages/os/tests/consuelo-home-config.test.ts
+      - packages/os/tests/repo-default-config.test.ts
+    runtime: Default global, node, and workspace YAML were generated in a temporary Consuelo home on 2026-07-13.
+  - source: packages/os/scripts/lib/manifest-overlay.ts
+    tests:
+      - packages/os/tests/manifest-overlay.test.ts
+    runtime: Settings overlay creation, validation, atomic replacement, and 0600 permissions were exercised on 2026-07-13.
+---
+
+The default Consuelo home is:
+
+```text
+~/.consuelo
+```
+
+Set `CONSUELO_HOME` to move it. `CONSUELO_OS_HOME` remains a compatibility alias. A legacy value ending in `~/.consuelo/os` is normalized to `~/.consuelo` by the canonical home resolver.
+
+## Layout
+
+```text
+~/.consuelo/
+  consuelo.yaml
+  config.json
+  runtime/
+    current/
+  node/
+    node.yaml
+    db/consuelo.db
+    keys/
+    security/
+      generated/
+      overrides/
+    logs/
+    runs/
+    cache/
+    tmp/
+    workspaces/
+  workspaces/
+    <workspace-id>/
+      shared/workspace.yaml
+  security/
+    overrides/manifest.overlay.json
+```
+
+`config.json` is local runtime and installer state. The versioned YAML files are the structured global, node, and shared workspace configuration.
+
+## `consuelo.yaml`
+
+Global configuration is strict YAML with `version: 1`.
+
+```yaml
+version: 1
+activeWorkspace: workspace_123
+activeNode: node_123
+runtime:
+  current: runtime/current
+```
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `activeWorkspace` | string, optional | Workspace selected by default. |
+| `activeNode` | string, optional | Node selected by default. |
+| `runtime.current` | string, optional | Path to the active runtime release. |
+
+Unknown fields fail schema validation.
+
+## `node/node.yaml`
+
+```yaml
+version: 1
+node:
+  id: node_123
+  name: ko-mac
+  role: home
+capabilities:
+  - local-runtime
+  - darwin
+workspaces:
+  - id: workspace_123
+    state: workspaces/workspace_123/state
+```
+
+`node.role` is `home` or `member` when present. Node keys, credentials, databases, logs, and run state remain node-local.
+
+## `workspace.yaml`
+
+The shared workspace file lives at `workspaces/<workspace-id>/shared/workspace.yaml`.
+
+```yaml
+version: 1
+workspace:
+  id: workspace_123
+  name: acme
+  slug: acme
+  host: acme.consuelohq.com
+defaults:
+  project: opensaas
+  node: local
+projects:
+  - id: opensaas
+    name: OpenSaaS
+    repo: consuelohq/opensaas
+    defaultBranch: main
+routing: {}
+policy:
+  allowedAgents: []
+sites: {}
+agents:
+  defaults: []
+```
+
+Project repositories use `owner/repo` form. `localPaths` and `worktreeRoot` may be supplied per project. The schema is strict; malformed YAML and unknown keys are reported with their field path.
+
+## `config.json`
+
+`config.json` contains machine-local installer and runtime state such as mode, port, agent connection records, workspace identity, connector state, and generated security metadata. It is not the shared workspace file and should not be copied between nodes.
+
+## Settings overlay
+
+The current settings command stores disabled tools, skills, and workflows in:
+
+```text
+~/.consuelo/security/overrides/manifest.overlay.json
+```
+
+```json
+{
+  "version": 1,
+  "disabledSkills": [],
+  "disabledTools": ["fs.trash"],
+  "disabledWorkflows": [],
+  "updatedAt": "2026-07-13T23:00:00.000Z"
+}
+```
+
+Writes are atomic and the file is set to mode `0600`. Names must exist in the current generated manifest or workflow bundle.
+
+## Editing rules
+
+- Prefer the installer and `settings` commands over hand-editing generated files.
+- Keep node secrets and generated authentication material out of `workspace.yaml`.
+- Preserve `version: 1` until the runtime ships a migration for a newer version.
+- Run the OS doctor after moving the home, changing ports, or editing workspace identity.

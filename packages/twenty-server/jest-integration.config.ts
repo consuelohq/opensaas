@@ -24,7 +24,7 @@ const jestConfig: JestConfigWithTsJest = {
   silent: false,
   errorOnDeprecated: true,
   maxConcurrency: 1,
-  moduleFileExtensions: ['js', 'json', 'ts'],
+  moduleFileExtensions: ['js', 'jsx', 'json', 'ts', 'tsx'],
   rootDir: '.',
   testEnvironment: 'node',
   testPathIgnorePatterns: [
@@ -38,17 +38,20 @@ const jestConfig: JestConfigWithTsJest = {
   testTimeout: 20000,
   maxWorkers: 1,
   transform: {
-    '^.+\\.(t|j)s$': [
+    '^.+\\.(t|j)sx?$': [
       '@swc/jest',
       {
         jsc: {
           parser: {
             syntax: 'typescript',
-            tsx: false,
+            tsx: true,
             decorators: true,
           },
           transform: {
             decoratorMetadata: true,
+            react: {
+              runtime: 'automatic',
+            },
           },
           baseUrl: '.',
           paths: {

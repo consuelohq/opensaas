@@ -1,0 +1,59 @@
+---
+title: How skills work
+description: Learn how skills package reusable guidance, capabilities, tools, and approval rules.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/skills.ts
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Current skill validation, compact registry generation, and manifest alignment were exercised by focused tests on 2026-07-13.
+  - source: packages/os/skills/skills.json
+    tests:
+      - packages/os/tests/install-state.test.ts
+    runtime: The active bundled registry and installed-skill materialization contract were inspected.
+---
+
+A **skill** is a reusable operating guide for a kind of work. It tells an agent when the skill applies, which tools and scripts to use, what order to follow, and where approval is required.
+
+A skill is not the same thing as a tool:
+
+- tools perform typed operations;
+- skills explain how to combine operations well;
+- scripts contain executable implementation.
+
+## Two files define the basic contract
+
+```text
+my-skill/
+  SKILL.md
+  skill.json
+```
+
+`SKILL.md` is the guidance entrypoint. `skill.json` is compact metadata used for discovery, installation, permission checks, and registry generation.
+
+## Loading is not execution
+
+Reading a skill gives the agent instructions. It does not automatically run the scripts or tools named inside it.
+
+Some skills also have a runtime runner callable through the OS skill execution surface. A declared skill without a current runner returns `SKILL_NOT_IMPLEMENTED`; do not assume every guidance skill is independently executable.
+
+## Permissions stay aligned
+
+Skill metadata includes a permission tier and `requiresApproval`. Validation checks that these values match the canonical manifest. A skill cannot claim a safer permission level than the operation exposed by its runtime entry.
+
+## Installed skills
+
+Bundled skills selected during setup are copied into:
+
+```text
+~/.consuelo/skills/
+```
+
+The compact installed registry is:
+
+```text
+~/.consuelo/skills/skills.json
+```
+
+User-owned local skill folders are preserved when OS is provisioned again.

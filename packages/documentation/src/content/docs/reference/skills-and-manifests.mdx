@@ -1,0 +1,94 @@
+---
+title: Skills and manifests
+description: Skill metadata, guidance entrypoints, executable skills, and generated registries.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/skills.ts
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: Guidance and executable skill validation was run against the bundled registry on 2026-07-13.
+  - source: packages/os/manifests/manifest.config.json
+    tests:
+      - packages/os/tests/manifest-overlay.test.ts
+    runtime: Full, core, and workflow manifest generation inputs and outputs were parsed on 2026-07-13.
+---
+
+A skill packages agent guidance or executable workspace behavior behind one discoverable name.
+
+## Skill directory
+
+```text
+packages/os/skills/<name>/
+  skill.json
+  SKILL.md
+  references/
+  scripts/
+  subskills/
+```
+
+Only `skill.json` is universal. Guidance skills normally load `SKILL.md`; executable skills can point to a script through the source tool manifest.
+
+## `skill.json`
+
+Common fields are:
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `name` | yes | Stable skill name. |
+| `title` | yes | Human-readable title. |
+| `description` | yes | What the skill provides. |
+| `trigger` | no | When an agent should load it. |
+| `entrypoint` | no | Guidance or metadata entrypoint. |
+| `load` | no | Resource path for guidance loading. |
+| `script` | executable skills | Backing script path. |
+| `permission` | yes | `guidance`, `read`, `draft`, `write`, `execute`, `external`, or `admin`. |
+| `requiresApproval` | yes | Whether execution requires explicit approval. |
+| `status` | no | For example `active` or `deprecated`. |
+| `artifactTypes` | no | Artifact types the skill may produce. |
+| `capabilities` | no | Required or supplied capability labels. |
+| `tools` | guidance skills | Tools the guidance expects. |
+| `subskills` | no | Focused child skill declarations. |
+
+A guidance skill must declare the canonical `os.get_steering` and `os.call` tools and its load path must exist. Executable metadata must agree with the source manifest's script, permission, and `requiresApproval` values.
+
+## Source OS-skill manifest
+
+`packages/os/tooling/tool-manifest.json` is the source list of callable OS skills. An entry includes:
+
+```json
+{
+  "name": "daily-revenue-brief",
+  "title": "Daily Revenue Brief",
+  "description": "...",
+  "permission": "read",
+  "requiresApproval": false,
+  "writesRecords": false,
+  "externalSideEffects": false,
+  "requiredEnv": [],
+  "requiredIntegrations": [],
+  "implementation": { "script": "scripts/revenue/daily-revenue-brief.ts" },
+  "inputSchema": { "type": "object" },
+  "outputSchema": { "type": "object" }
+}
+```
+
+## Generated manifests
+
+| File | Kind | Purpose |
+| --- | --- | --- |
+| `manifests/tool.manifest.json` | `consuelo-os-tool-manifest` | Full generated registry containing `os-skill` and `facade-tool` entries. |
+| `manifests/core.manifest.json` | `consuelo-os-core-manifest` | Small bootstrap tool surface returned with normal steering. |
+| `manifests/workflow-bundles.json` | workflow bundle registry | Generated workflow definitions. |
+| `skills/skills.json` | skill registry | Compact installed/bundled skill discovery metadata. |
+
+The generator combines the regular OS-skill source with developer and media facade-tool sources defined in `manifests/manifest.config.json`.
+
+## Effective manifest
+
+`manifest.overlay.json` filters disabled skills and tools from the generated full manifest. It does not rewrite the package manifest. MCP discovery and the settings surface read the effective result.
+
+## Compatibility and deprecation
+
+Deprecated skills can remain in the registry with `status: "deprecated"`, `deprecated: true`, and `supersededBy`. New documentation and calls should use the replacement name.

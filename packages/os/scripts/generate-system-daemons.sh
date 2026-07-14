@@ -63,7 +63,8 @@ if ! id -u "$consuelo_user" >/dev/null 2>&1; then
   exit 1
 fi
 consuelo_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$consuelo_user}}"
-log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"
+consuelo_data_home="${CONSUELO_HOME:-$consuelo_home/.consuelo}"
+log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"
 workspace_label="$(sanitize_label 'com.consuelo.system' "${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}")"
 portless_label="$(sanitize_label 'com.consuelo.portless.system' "${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}")"
 watchdog_label="$(sanitize_label 'com.consuelo.watchdog' "${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}")"
@@ -134,6 +135,8 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
     <string>${consuelo_user}</string>
     <key>WORKSPACE_DAEMON_HOME</key>
     <string>${consuelo_home}</string>
+    <key>WORKSPACE_DAEMON_CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
     <key>WORKSPACE_DAEMON_USER</key>
     <string>${consuelo_user}</string>
     <key>WORKSPACE_DAEMON_PATH</key>

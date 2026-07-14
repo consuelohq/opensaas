@@ -5,9 +5,10 @@
   "module": "dist/index.mjs",
   "types": "dist/sdk/index.d.ts",
   "bin": {
-    "twenty": "dist/cli.cjs"
+    "twenty": "bin/twenty.mjs"
   },
   "files": [
+    "bin",
     "dist",
     "README.md",
     "package.json"
