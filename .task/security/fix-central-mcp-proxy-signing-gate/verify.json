@@ -3,14 +3,14 @@
   "publishValid": true,
   "mode": "full",
   "branch": "task/security/fix-central-mcp-proxy-signing-gate",
-  "base": "HEAD",
-  "headSha": "5aaac55ffbeb7a392a6b39ec5ec53041bc9de444",
-  "changeHash": "24be65b72c7e0ec1b3a56a362cd6a768fa280b5bc3b55dbfae1167d268f0841e",
+  "base": "origin/stream/security",
+  "headSha": "f92759c83415ee7bebebd67b3f7de5ea5cd1f48d",
+  "changeHash": "578388f022f2a0c620440642e184c53469c93f70fa0263d1d7654b84204ae548",
   "changedFiles": [
     "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
     "packages/os/tests/os-device-authority-worker.test.ts"
   ],
-  "verifiedAt": "2026-07-14T23:25:48.331Z",
+  "verifiedAt": "2026-07-14T23:39:08.645Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -26,6 +26,7 @@
       "changedFiles": [
         ".task/security/fix-central-mcp-proxy-signing-gate/current.json",
         ".task/security/fix-central-mcp-proxy-signing-gate/session.json",
+        ".task/security/fix-central-mcp-proxy-signing-gate/verify.json",
         ".task/security/fix-central-mcp-proxy-signing-gate/workpad.md",
         ".task/tasks/security/fix-central-mcp-proxy-signing-gate.json",
         "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
