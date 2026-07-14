@@ -1,0 +1,19 @@
+{
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/rebuild-trace-inspector",
+  "baseBranch": "stream/trace-site",
+  "sourceBranch": "stream/trace-site",
+  "startFrom": "stream",
+  "prNumber": 1496,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1496",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1496",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1496/rebuild-trace-inspector",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1496",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1496/rebuild-trace-inspector",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-rebuild-trace-inspector",
+  "taskSession": "tsk_b85acecb1ce7",
+  "tmuxSession": "opensaas-trace-site-rebuild-trace-inspector-b85acecb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-rebuild-trace-inspector/.task/trace-site/rebuild-trace-inspector/session.json",
+  "createdAt": "2026-07-14T21:36:59.175Z"
+}
