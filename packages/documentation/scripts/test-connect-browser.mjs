@@ -20,17 +20,32 @@ const routes = [
   ['OpenCode', '/connect/agents/opencode/'],
   ['Gemini', '/connect/agents/gemini/'],
   ['Other agents', '/connect/agents/other-agents/'],
-  ['Overview', '/connect/connectors/'],
-  ['GitHub', '/connect/connectors/github/'],
-  ['Google Drive', '/connect/connectors/google-drive/'],
-  ['Gmail', '/connect/connectors/gmail/'],
-  ['Google Calendar', '/connect/connectors/google-calendar/'],
-  ['Slack', '/connect/connectors/slack/'],
-  ['Additional connectors', '/connect/connectors/additional-connectors/'],
   ['How nodes work', '/connect/nodes/how-nodes-work/'],
   ['Home node', '/connect/nodes/home-node/'],
   ['Local nodes', '/connect/nodes/local-nodes/'],
   ['Cloud nodes', '/connect/nodes/cloud-nodes/'],
+  ['Apps and services', '/connect/apps-and-services/'],
+  ['Google Workspace', '/connect/apps-and-services/google-workspace/'],
+  ['Gmail', '/connect/apps-and-services/gmail/'],
+  ['Google Drive', '/connect/apps-and-services/google-drive/'],
+  ['Google Calendar', '/connect/apps-and-services/google-calendar/'],
+  ['Slack', '/connect/apps-and-services/slack/'],
+  ['Notion', '/connect/apps-and-services/notion/'],
+  ['GitHub', '/connect/apps-and-services/github/'],
+  ['Linear', '/connect/apps-and-services/linear/'],
+  ['Cloudflare', '/connect/apps-and-services/cloudflare/'],
+  ['Railway', '/connect/apps-and-services/railway/'],
+  ['Vercel', '/connect/apps-and-services/vercel/'],
+  ['Datadog', '/connect/apps-and-services/datadog/'],
+  ['Sentry', '/connect/apps-and-services/sentry/'],
+  ['Snowflake', '/connect/apps-and-services/snowflake/'],
+  ['Supabase', '/connect/apps-and-services/supabase/'],
+  ['GoHighLevel', '/connect/apps-and-services/gohighlevel/'],
+  ['Salesforce', '/connect/apps-and-services/salesforce/'],
+  ['HubSpot', '/connect/apps-and-services/hubspot/'],
+  ['Stripe', '/connect/apps-and-services/stripe/'],
+  ['Twilio', '/connect/apps-and-services/twilio/'],
+  ['Additional services', '/connect/apps-and-services/additional-services/'],
 ];
 
 async function waitForServer() {
@@ -56,7 +71,8 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  if ((await groups.count()) !== 4) throw new Error(`Expected Connect plus three nested groups, found ${await groups.count()}`);
+  const expectedGroups = 11;
+  if ((await groups.count()) !== expectedGroups) throw new Error(`Expected ${expectedGroups} expanded Connect groups, found ${await groups.count()}`);
   for (let index = 0; index < await groups.count(); index += 1) {
     if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('A Connect navigation group started collapsed');
   }
@@ -67,15 +83,19 @@ try {
     const markdownHref = href === '/connect/' ? '/connect.md' : `${href.slice(0, -1)}.md`;
     const markdown = await fetch(`${origin}${markdownHref}`);
     if (!markdown.ok) throw new Error(`${markdownHref} returned ${markdown.status}`);
-    if (label !== 'Overview' || href === '/connect/') {
-      const matches = sidebar.getByRole('link', { name: label, exact: true });
-      if ((await matches.count()) < 1) throw new Error(`${label} is missing from Connect navigation`);
-    }
+    const markdownText = await markdown.text();
+    if (!markdownText.includes(`# ${label === 'Overview' ? 'Connect' : label}`)) throw new Error(`${markdownHref} is missing its page heading`);
+    const navLabel = href === '/connect/' || href === '/connect/apps-and-services/' ? 'Overview' : label;
+    if ((await sidebar.getByRole('link', { name: navLabel, exact: true }).count()) < 1) throw new Error(`${label} is missing from Connect navigation`);
   }
 
-  await page.goto(`${origin}/connect/connectors/google-drive/`, { waitUntil: 'networkidle' });
-  if (!(await page.getByText('not currently self-service', { exact: false }).first().isVisible())) throw new Error('Google Drive support boundary is missing');
-  if (!(await sidebar.getByRole('link', { name: 'Google Drive', exact: true }).getAttribute('aria-current'))) throw new Error('Deep link did not mark Google Drive current');
+  await page.goto(`${origin}/connect/apps-and-services/google-workspace/`, { waitUntil: 'networkidle' });
+  if (!(await page.getByText('openclaw/gogcli', { exact: false }).first().isVisible())) throw new Error('Google Workspace gog guidance is missing');
+  if (!(await page.getByText('Native Consuelo tool: Planned', { exact: false }).first().isVisible())) throw new Error('Google Workspace planned status is missing');
+  if (!(await sidebar.getByRole('link', { name: 'Google Workspace', exact: true }).getAttribute('aria-current'))) throw new Error('Deep link did not mark Google Workspace current');
+
+  await page.goto(`${origin}/connect/apps-and-services/railway/`, { waitUntil: 'networkidle' });
+  if (!(await page.getByText('railway.logs', { exact: false }).first().isVisible())) throw new Error('Railway partial support guidance is missing');
 
   await page.goto(`${origin}/connect/nodes/local-nodes/`, { waitUntil: 'networkidle' });
   if (!(await page.getByText('cloudflare-tunnel', { exact: false }).first().isVisible())) throw new Error('Local node transport guidance is missing');
@@ -86,19 +106,19 @@ try {
     { name: 'mobile', width: 390, height: 844 },
   ]) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto(`${origin}/connect/agents/chatgpt/`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/connect/apps-and-services/google-workspace/`, { waitUntil: 'networkidle' });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (overflow > 1) throw new Error(`${viewport.name} layout overflows by ${overflow}px`);
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.getByRole('link', { name: 'Cloud nodes', exact: true }).isVisible())) throw new Error('Nested Connect navigation is unavailable on mobile');
+      if (!(await page.getByRole('link', { name: 'Additional services', exact: true }).isVisible())) throw new Error('Nested Apps and services navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });
   }
 
-  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 4, viewportChecks }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: expectedGroups, viewportChecks }, null, 2)}\n`);
 } finally {
   await browser?.close();
   await stopDocumentationServer(server);

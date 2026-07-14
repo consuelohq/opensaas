@@ -1,0 +1,55 @@
+---
+title: Railway
+description: Use existing Railway log and redeploy tools plus the official CLI for the remaining surface.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: '`railway.logs` and `railway.redeploy` were verified in the current tool manifest on 2026-07-14; a complete Railway provider family is not yet published.'
+---
+
+> **Native Consuelo tool: Partially available**  
+> **Available today: Yes — through `railway.logs`, `railway.redeploy`, and the official Railway CLI.**
+
+Consuelo already exposes the two Railway operations used most often during incident response and routine delivery. Use the official CLI for project linking, status, services, variables, environments, and other operations until the native family is complete.
+
+## Ask your agent
+
+```text
+Use railway.logs for read-only runtime or deployment logs.
+Use railway.redeploy only after I approve the exact project, service, and environment.
+For any missing operation, use the official Railway CLI locally, verify the linked project first,
+and implement a narrowly typed railway.* method rather than extending one generic deploy tool.
+```
+
+## Available now
+
+```text
+railway.logs
+railway.redeploy
+```
+
+## Use the underlying CLI
+
+Install Railway CLI using the official guide, then authenticate and link the intended project. Before a write, inspect the active project, environment, and service with the CLI’s status and listing commands.
+
+## Planned family
+
+```text
+railway.projects.list
+railway.services.list
+railway.status
+railway.logs
+railway.deploy
+railway.redeploy
+railway.variables.list
+railway.variables.set
+```
+
+Useful typed inputs include project, service, environment, deployment, line limit, follow, and approval. Variables, deploys, redeploys, removals, and service changes require approval.
+
+## Official documentation
+
+[Railway CLI](https://docs.railway.com/cli)

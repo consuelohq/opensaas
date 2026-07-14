@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_91f22f45f390",
+  "tmuxSession": "opensaas-os-restructure-apps-and-services-documentation-91f22f45",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restructure-apps-and-services-documentation",
+  "branch": "task/os/restructure-apps-and-services-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restructure-apps-and-services-documentation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restructure-apps-and-services-documentation",
+  "prNumber": 1485,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1485",
+  "createdAt": "2026-07-14T17:42:38.521Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restructure-apps-and-services-documentation/.task/os/restructure-apps-and-services-documentation/session.json"
+}

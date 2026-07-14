@@ -25,6 +25,9 @@ const routes = [
   ['Security model', '/secure/security-model/'],
   ['Access and permissions', '/secure/access-and-permissions/'],
   ['Credentials', '/secure/credentials/'],
+  ['Apple Keychain and API keys', '/secure/apple-keychain-and-api-keys/'],
+  ['Credential detection', '/secure/credential-detection/'],
+  ['Other secret managers', '/secure/other-secret-managers/'],
   ['Approvals', '/secure/approvals/'],
   ['Nodes and network access', '/secure/nodes-and-network-access/'],
   ['Tailscale', '/secure/tailscale/'],
@@ -55,8 +58,11 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  if ((await groups.count()) !== 1) throw new Error(`Expected one expanded Secure group, found ${await groups.count()}`);
-  if (!(await groups.first().evaluate((element) => element.open))) throw new Error('Secure navigation started collapsed');
+  const expectedGroups = 2;
+  if ((await groups.count()) !== expectedGroups) throw new Error(`Expected ${expectedGroups} expanded Secure groups, found ${await groups.count()}`);
+  for (let index = 0; index < await groups.count(); index += 1) {
+    if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('A Secure navigation group started collapsed');
+  }
 
   for (const [label, href] of routes) {
     const response = await fetch(`${origin}${href}`);
@@ -66,7 +72,7 @@ try {
     if (!markdown.ok) throw new Error(`${markdownHref} returned ${markdown.status}`);
     const markdownText = await markdown.text();
     if (!markdownText.includes(`# ${label}`)) throw new Error(`${markdownHref} is missing its page heading`);
-    const navLabel = label === 'Secure' ? 'Overview' : label;
+    const navLabel = label === 'Secure' || href === '/secure/credentials/' ? 'Overview' : label;
     if ((await sidebar.getByRole('link', { name: navLabel, exact: true }).count()) < 1) throw new Error(`${label} is missing from Secure navigation`);
   }
 
@@ -74,6 +80,9 @@ try {
     ['/secure/security-model/', 'static Sites snapshot'],
     ['/secure/access-and-permissions/', 'UNKNOWN_TOOL_SCOPE'],
     ['/secure/credentials/', 'MCP_BEARER_TOKEN'],
+    ['/secure/apple-keychain-and-api-keys/', 'security add-generic-password'],
+    ['/secure/credential-detection/', 'Credential detection answers one narrow question'],
+    ['/secure/other-secret-managers/', 'Native Consuelo support: Planned'],
     ['/secure/approvals/', 'device public key'],
     ['/secure/nodes-and-network-access/', '127.0.0.1:46321'],
     ['/secure/tailscale/', 'private Tailnet'],
@@ -85,8 +94,11 @@ try {
     if (!(await page.getByText(text, { exact: false }).first().isVisible())) throw new Error(`${href} is missing verified text: ${text}`);
   }
 
-  await page.goto(`${origin}/secure/hosted-mcp-ingress/`, { waitUntil: 'networkidle' });
-  if (!(await sidebar.getByRole('link', { name: 'Hosted MCP ingress', exact: true }).getAttribute('aria-current'))) throw new Error('Deep link did not mark Hosted MCP ingress current');
+  await page.goto(`${origin}/secure/credential-detection/`, { waitUntil: 'networkidle' });
+  if (!(await page.getByRole('heading', { name: 'Detection does not grant permission' }).isVisible())) throw new Error('Credential detection permission boundary is missing');
+
+  await page.goto(`${origin}/secure/apple-keychain-and-api-keys/`, { waitUntil: 'networkidle' });
+  if (!(await sidebar.getByRole('link', { name: 'Apple Keychain and API keys', exact: true }).getAttribute('aria-current'))) throw new Error('Deep link did not mark Apple Keychain current');
 
   const viewportChecks = [];
   for (const viewport of [
@@ -94,19 +106,19 @@ try {
     { name: 'mobile', width: 390, height: 844 },
   ]) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto(`${origin}/secure/security-reference/`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/secure/apple-keychain-and-api-keys/`, { waitUntil: 'networkidle' });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (overflow > 1) throw new Error(`${viewport.name} layout overflows by ${overflow}px`);
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.getByRole('link', { name: 'Hosted MCP ingress', exact: true }).isVisible())) throw new Error('Secure navigation is unavailable on mobile');
+      if (!(await page.getByRole('link', { name: 'Other secret managers', exact: true }).isVisible())) throw new Error('Credential navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });
   }
 
-  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 1, port, viewportChecks }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: expectedGroups, port, viewportChecks }, null, 2)}\n`);
 } finally {
   await browser?.close();
   await stopDocumentationServer(server);
