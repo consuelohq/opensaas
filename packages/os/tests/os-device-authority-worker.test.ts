@@ -605,6 +605,22 @@ describe('os device authority worker', () => {
       scopes: ['mcp:read', 'mcp:call', 'tool:*:read', 'route:/mcp:read'],
       sub: 'google:google-sub-123',
     });
+
+    const writeScopeIntrospection = await handler(new Request(`${origin}/oauth/introspect`, {
+      method: 'POST',
+      ...form({
+        token: String(tokenJson.access_token),
+        resource,
+        scope: 'tool:mac.process:write',
+      }),
+    }));
+    await expect(writeScopeIntrospection.json()).resolves.toMatchObject({
+      active: true,
+      client_id: clientId,
+      workspace_host: workspaceHost,
+      resource,
+      scopes: ['mcp:read', 'mcp:call', 'tool:*:read', 'route:/mcp:read'],
+    });
   });
 
   it('should issue and introspect OAuth access tokens for workspace MCP resources through Google approval', async () => {
