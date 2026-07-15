@@ -214,25 +214,107 @@ const startItems = [
   { label: 'Core concepts', slug: 'start/core-concepts' },
 ];
 
+const sectionItemsBySlug: Record<string, SidebarItem[]> = {
+  start: startItems,
+  connect: connectItems,
+  build: buildItems,
+  sites: sitesItems,
+  observe: observeItems,
+  secure: secureItems,
+  reference: referenceItems,
+};
+
+export const globalSectionLinks = docsSections.map(({ label, slug }) => ({
+  label,
+  href: `/${slug}/`,
+}));
+
 export const docsSidebar = docsSections.map(({ label, slug }) => ({
   label,
   collapsed: true,
-  items:
-    slug === 'start'
-      ? startItems
-      : slug === 'connect'
-        ? connectItems
-        : slug === 'build'
-          ? buildItems
-          : slug === 'sites'
-            ? sitesItems
-            : slug === 'observe'
-              ? observeItems
-              : slug === 'secure'
-                ? secureItems
-                : slug === 'reference'
-                  ? referenceItems
-                  : [{ label: 'Overview', slug }],
+  items: sectionItemsBySlug[slug] ?? [{ label: 'Overview', slug }],
+}));
+
+export type DocsBreadcrumb = {
+  label: string;
+  href?: string;
+  current?: boolean;
+};
+
+function findBreadcrumbTrail(
+  items: SidebarItem[],
+  targetSlug: string,
+  parents: DocsBreadcrumb[] = [],
+): DocsBreadcrumb[] | undefined {
+  for (const item of items) {
+    if ('slug' in item) {
+      if (item.slug === targetSlug) {
+        return [
+          ...parents,
+          { label: item.label, href: `/${item.slug}/`, current: true },
+        ];
+      }
+      continue;
+    }
+
+    const found = findBreadcrumbTrail(item.items, targetSlug, [
+      ...parents,
+      { label: item.label },
+    ]);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+export function getBreadcrumbs(pathname: string): DocsBreadcrumb[] {
+  const targetSlug = pathname.split('?')[0]?.split('#')[0]?.replace(/^\/+|\/+$/g, '') ?? '';
+  if (!targetSlug) return [];
+
+  const sectionSlug = targetSlug.split('/')[0];
+  const section = docsSections.find((candidate) => candidate.slug === sectionSlug);
+  if (!section) return [];
+
+  const sectionCrumb: DocsBreadcrumb = {
+    label: section.label,
+    href: `/${section.slug}/`,
+  };
+  if (targetSlug === section.slug) return [{ ...sectionCrumb, current: true }];
+
+  const trail = findBreadcrumbTrail(
+    sectionItemsBySlug[section.slug] ?? [],
+    targetSlug,
+  );
+  if (!trail) return [sectionCrumb];
+
+  return [
+    sectionCrumb,
+    ...trail.filter((crumb) => crumb.label !== 'Overview'),
+  ];
+}
+
+function firstLeaf(item: SidebarItem): { label: string; slug: string } | undefined {
+  if ('slug' in item) return item;
+  for (const child of item.items) {
+    const leaf = firstLeaf(child);
+    if (leaf) return leaf;
+  }
+  return undefined;
+}
+
+export const footerSections = docsSections.map((section) => ({
+  label: section.label,
+  href: `/${section.slug}/`,
+  links: (sectionItemsBySlug[section.slug] ?? [])
+    .filter((item) => item.label !== 'Overview')
+    .map((item) => {
+      const leaf = firstLeaf(item);
+      if (!leaf) return undefined;
+      return {
+        label: item.label,
+        href: `/${leaf.slug}/`,
+      };
+    })
+    .filter((link): link is { label: string; href: string } => Boolean(link)),
 }));
 
 const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));
