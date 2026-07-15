@@ -54,15 +54,15 @@ function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 
-const PRIMARY_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
-const LEGACY_STEERING_FILE = 'steering.md';
+const PRIMARY_STEERING_FILES = ['system_prompt.md'] as const;
+const EXCLUDED_STEERING_FILES = new Set(['steering.md', 'decision.md']);
 
 function localSteeringDir(home: string): string {
   return path.join(home, 'steering');
 }
 
 function isSupportedSteeringMarkdown(fileName: string): boolean {
-  return fileName.endsWith('.md') && fileName.toLowerCase() !== LEGACY_STEERING_FILE;
+  return fileName.endsWith('.md') && !EXCLUDED_STEERING_FILES.has(fileName.toLowerCase());
 }
 
 function readSteeringMarkdownFiles(steeringDir: string): Array<{ name: string; content: string }> {
@@ -682,7 +682,6 @@ Do not call get_steering again unless you are intentionally refreshing bootstrap
 
 Read only the specific file you need:
 - $CONSUELO_HOME/steering/system_prompt.md
-- $CONSUELO_HOME/steering/decision.md
 - packages/os/manifests/core.manifest.json
 
 Useful alternatives:
@@ -854,9 +853,6 @@ export function getRawSteering(): string {
   const devSteering = readIfExists(path.join(packageRoot, 'steering', 'system_prompt.md'));
   if (devSteering)
     sections.push('# bundled OS system_prompt.md', '', devSteering);
-  const decision = readIfExists(path.join(packageRoot, 'steering', 'decision.md'));
-  if (decision)
-    sections.push('', '# bundled OS decision.md', '', decision);
   const manifest = readIfExists(
     path.join(packageRoot, 'manifests', 'tool.manifest.json'),
   );
