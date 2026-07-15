@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4c9f04dd76b4",
+  "tmuxSession": "opensaas-website-refine-cloud-footer-to-match-hermes-4c9f04dd",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/refine-cloud-footer-to-match-hermes",
+  "branch": "task/website/refine-cloud-footer-to-match-hermes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-refine-cloud-footer-to-match-hermes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-refine-cloud-footer-to-match-hermes",
+  "prNumber": 1520,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1520",
+  "createdAt": "2026-07-15T23:45:06.547Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-refine-cloud-footer-to-match-hermes/.task/website/refine-cloud-footer-to-match-hermes/session.json"
+}
