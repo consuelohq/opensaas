@@ -15,7 +15,6 @@ import type {
   Store,
 } from '../types';
 import {
-  hasGrantedScope,
   hash,
   hashChallenge,
   host,
@@ -541,15 +540,13 @@ export async function introspectMcpOAuthToken(input: {
     const p = await params(input.request);
     const token = p.get('token') ?? '';
     const resource = p.get('resource') ?? '';
-    const requiredScope = p.get('scope') ?? '';
     const stored = token
       ? await input.store.byMcpOAuthAccessToken(await hash(token))
       : undefined;
     if (
       !stored ||
       input.nowMs >= stored.expiresAt ||
-      (resource && resource !== stored.resource) ||
-      !hasGrantedScope(stored.scopes, requiredScope)
+      (resource && resource !== stored.resource)
     ) {
       return json({ active: false });
     }

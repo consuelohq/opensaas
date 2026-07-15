@@ -153,6 +153,87 @@ describe('local OS server review findings', () => {
     expect(observedSignal).toBe(timeoutSignal);
   });
 
+  it('should authorize an ordinary write tool when the active token grants mcp:call', async () => {
+    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({
+      active: true,
+      workspace_host: 'review-test.consuelohq.com',
+      scopes: ['mcp:read', 'mcp:call', 'tool:*:read'],
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    const response = await authorizeConsueloOAuthMcpRequest({
+      config: {
+        workspaceHost: 'review-test.consuelohq.com',
+      } as GatewaySecurityConfig,
+      bearerToken: 'test-oauth-token',
+      requiredScope: 'tool:mac.process:write',
+    });
+
+    expect(response).toBeNull();
+  });
+
+  it.each([
+    {
+      condition: 'mcp:call is the only callable-tool grant for a dangerous tool',
+      scopes: ['mcp:call'],
+      requiredScope: 'tool:task.push:dangerous',
+    },
+    {
+      condition: 'the token has only read grants for an ordinary write tool',
+      scopes: ['mcp:read', 'tool:*:read'],
+      requiredScope: 'tool:mac.process:write',
+    },
+  ])(
+    'should return MISSING_SCOPE when $condition',
+    async ({ scopes, requiredScope }) => {
+      vi.stubGlobal('fetch', async () => new Response(JSON.stringify({
+        active: true,
+        workspace_host: 'review-test.consuelohq.com',
+        scopes,
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }));
+
+      const response = await authorizeConsueloOAuthMcpRequest({
+        config: {
+          workspaceHost: 'review-test.consuelohq.com',
+        } as GatewaySecurityConfig,
+        bearerToken: 'test-oauth-token',
+        requiredScope,
+      });
+
+      expect(response?.status).toBe(403);
+      await expect(responseJson(response as Response)).resolves.toMatchObject({
+        error: { code: 'MISSING_SCOPE' },
+      });
+    },
+  );
+
+  it('should return UNKNOWN_TOKEN when OAuth introspection reports an inactive token', async () => {
+    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({
+      active: false,
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    const response = await authorizeConsueloOAuthMcpRequest({
+      config: {
+        workspaceHost: 'review-test.consuelohq.com',
+      } as GatewaySecurityConfig,
+      bearerToken: 'test-oauth-token',
+      requiredScope: 'tool:mac.process:write',
+    });
+
+    expect(response?.status).toBe(401);
+    await expect(responseJson(response as Response)).resolves.toMatchObject({
+      error: { code: 'UNKNOWN_TOKEN' },
+    });
+  });
+
   it('clears a rejected OS runtime import so a later call can retry', async () => {
     const runtimeModule = await import('../scripts/server/services/os-runtime');
     const createLoader = (
