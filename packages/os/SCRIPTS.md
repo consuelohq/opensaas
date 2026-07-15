@@ -1519,3 +1519,9 @@ Active leases are advisory but enforced by default. A different agent cannot pat
 
 
 
+
+## Trace watcher
+
+- `bun run trace:watch` follows the canonical OS `tool_traces` sidecar with readable timestamps, status, duration, token totals, branch coloring, nested operations, and compact result details.
+- The database path resolves in this order: `--db`, `CONSUELO_TRACE_DB`, `TRACE_DB`, then `$CONSUELO_HOME/node/db/traces.db`.
+- Use `--once --limit 50` for a bounded snapshot, or omit `--once` for live polling. Filters include `--errors`, `--since`, `--task`, `--branch`, `--worktree`, and `--tool`.
