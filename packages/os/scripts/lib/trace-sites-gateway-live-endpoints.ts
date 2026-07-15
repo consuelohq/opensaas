@@ -1,12 +1,24 @@
 import {
   createTraceSitesGatewayReadLayer,
   type TraceSitesGatewayReadBackendAdapter,
+  type TraceSitesGatewayReadBackendInput,
   type TraceSitesGatewayReadLayerRequest,
   type TraceSitesGatewayReadLayerResult,
 } from './trace-sites-gateway-read-layer';
+import {
+  createTraceSitesGatewayLiveStreamEndpoint,
+  type TraceSitesGatewayLiveStreamRow,
+} from './trace-sites-gateway-live-stream';
+import {
+  DEFAULT_TRACE_READ_POLICY,
+  canScopeReadTraceSites,
+  resolveTraceGatewayDiscovery,
+  validateTraceReadQuery,
+} from './trace-sites-gateway-contract';
 import type {
   TraceGatewaySessionScope,
   TraceSiteSlug,
+  TraceSitesDashboardEvent,
   TraceSourceMode,
 } from './trace-sites-gateway-contract';
 
@@ -45,7 +57,7 @@ export function createTraceSitesGatewayLiveEndpoints(options: TraceSitesGatewayL
       let scope: TraceGatewaySessionScope;
       try {
         scope = await options.resolveScope(request);
-      } catch (error) {
+      } catch (error: unknown) {
         return jsonResponse({
           ok: false,
           publicBoundary: 'consuelo-gateway',
@@ -56,12 +68,130 @@ export function createTraceSitesGatewayLiveEndpoints(options: TraceSitesGatewayL
         }, 403);
       }
 
+      if (url.pathname === '/gateway/traces/events') {
+        return sseLiveResponse(request, url, scope, readLayer);
+      }
+
+      if (
+        url.pathname === '/gateway/traces/recent' &&
+        url.searchParams.get('direction') === 'older'
+      ) {
+        return olderHistoryResponse(url, scope, options.backend);
+      }
+
       const layerResult = await readLayer.readTraceSitesDashboard(readRequestFromUrl(url, scope));
       if (!layerResult.ok) return failureResponse(url.pathname, layerResult);
-      if (url.pathname === '/gateway/traces/events') return sseSnapshotResponse(url.pathname, layerResult);
       return successJsonResponse(url.pathname, layerResult);
     },
   };
+}
+
+async function olderHistoryResponse(
+  url: URL,
+  scope: TraceGatewaySessionScope,
+  backend: TraceSitesGatewayReadBackendAdapter,
+): Promise<Response> {
+  const request = readRequestFromUrl(url, scope);
+  const limit = request.limit ?? DEFAULT_TRACE_READ_POLICY.maxWindowSize;
+  const input: TraceSitesGatewayReadBackendInput = {
+    workspaceId: request.workspaceId,
+    workspaceHost: request.workspaceHost,
+    site: request.site,
+    sourceMode: request.sourceMode,
+    cursor: request.cursor,
+    limit,
+  };
+
+  if (
+    request.workspaceId !== scope.workspaceId ||
+    !canScopeReadTraceSites(scope, request.workspaceHost, request.site) ||
+    !scope.sourceModesAllowed.includes(request.sourceMode)
+  ) {
+    return historyFailureResponse('TRACE_READ_SCOPE_DENIED', 'Trace history read scope was denied.', 403);
+  }
+
+  const validation = validateTraceReadQuery({
+    workspaceId: request.workspaceId,
+    workspaceHost: request.workspaceHost,
+    site: request.site,
+    cursor: request.cursor,
+    limit,
+    includeRawPayload: true,
+    requesterCanReadRawPayload:
+      request.includeRawPayload === true &&
+      request.site === 'trace-burn-intelligence' &&
+      canScopeReadTraceSites(scope, request.workspaceHost, request.site),
+  });
+  if (!validation.ok) {
+    return jsonResponse({
+      ok: false,
+      publicBoundary: 'consuelo-gateway',
+      route: '/gateway/traces/recent',
+      error: {
+        code: validation.errors[0] ?? 'TRACE_HISTORY_QUERY_INVALID',
+        message: 'Trace history query is invalid.',
+      },
+      errors: validation.errors,
+    }, 403);
+  }
+
+  const discovery = resolveTraceGatewayDiscovery({
+    workspaceId: request.workspaceId,
+    workspaceHost: request.workspaceHost,
+    sourceMode: request.sourceMode,
+    bridgeConfigured: request.bridgeConfigured,
+  });
+  if (discovery.sitesHydration === 'unavailable-without-bridge') {
+    return historyFailureResponse(
+      'BRIDGE_REQUIRED',
+      'A configured bridge is required before hosted Trace Sites can read local off-network history.',
+      503,
+    );
+  }
+  if (!backend.readHistoryPage) {
+    return historyFailureResponse(
+      'TRACE_HISTORY_UNAVAILABLE',
+      'The trace history backend is unavailable.',
+      503,
+    );
+  }
+
+  try {
+    const health = await backend.resolveHealth?.(input);
+    if (health?.traceStoreAvailable === false) {
+      return historyFailureResponse(
+        'TRACE_STORE_UNAVAILABLE',
+        'The trace store is unavailable.',
+        503,
+      );
+    }
+    const page = await backend.readHistoryPage(input);
+    return jsonResponse({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: '/gateway/traces/recent',
+      data: {
+        direction: 'older',
+        rows: page.rows,
+        nextCursor: page.nextCursor,
+      },
+    });
+  } catch {
+    return historyFailureResponse(
+      'TRACE_HISTORY_READ_FAILED',
+      'Trace history read failed.',
+      503,
+    );
+  }
+}
+
+function historyFailureResponse(code: string, message: string, status: number): Response {
+  return jsonResponse({
+    ok: false,
+    publicBoundary: 'consuelo-gateway',
+    route: '/gateway/traces/recent',
+    error: { code, message },
+  }, status);
 }
 
 export function traceGatewayScopeFromHeaders(request: Request): TraceGatewaySessionScope {
@@ -97,6 +227,7 @@ function readRequestFromUrl(url: URL, scope: TraceGatewaySessionScope): TraceSit
     cursor: url.searchParams.get('cursor') || '000000000000',
     limit,
     bridgeConfigured: url.searchParams.get('bridgeConfigured') === 'true',
+    includeRawPayload: url.searchParams.get('includeRawPayload') === 'true',
   };
 }
 
@@ -123,28 +254,98 @@ function failureResponse(route: string, result: Extract<TraceSitesGatewayReadLay
   }, statusForFailure(result));
 }
 
-function sseSnapshotResponse(route: string, result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>): Response {
-  const payload = JSON.stringify({
-    ok: true,
-    publicBoundary: result.publicBoundary,
-    route,
-    data: responseData(result),
-  });
+async function sseLiveResponse(
+  request: Request,
+  url: URL,
+  scope: TraceGatewaySessionScope,
+  readLayer: ReturnType<typeof createTraceSitesGatewayReadLayer>,
+): Promise<Response> {
+  try {
+    const initialReadRequest = readRequestFromUrl(url, scope);
+    const initialResult = await readLayer.readTraceSitesDashboard(initialReadRequest);
+    if (!initialResult.ok) return failureResponse(url.pathname, initialResult);
 
-  return new Response([
-    'event: trace-sites-snapshot',
-    `id: ${result.cursor}`,
-    `data: ${payload}`,
-    '',
-    '',
-  ].join('\n'), {
-    status: 200,
-    headers: {
-      'content-type': 'text/event-stream; charset=utf-8',
-      'cache-control': 'no-cache, no-transform',
-      connection: 'keep-alive',
-    },
-  });
+    const initialSnapshot = streamSnapshotFromReadResult(initialResult);
+    const streamEndpoint = createTraceSitesGatewayLiveStreamEndpoint({
+      backend: {
+        readInitialSnapshot(input) {
+          if (input.cursor === initialReadRequest.cursor) return Promise.resolve(initialSnapshot);
+          return readStreamSnapshotAtCursor(url, scope, readLayer, input.cursor);
+        },
+        readAfterCursor(cursor) {
+          return readStreamSnapshotAtCursor(url, scope, readLayer, cursor);
+        },
+      },
+    });
+
+    return streamEndpoint.handle({
+      method: request.method,
+      url: request.url,
+      host: url.host,
+      workspaceId: scope.workspaceId,
+      sourceMode: initialReadRequest.sourceMode,
+      bridgeConfigured: url.searchParams.get('bridgeConfigured') !== 'false',
+      headers: Object.fromEntries(request.headers.entries()),
+      session: { workspaceId: scope.workspaceId },
+    });
+  } catch (error: unknown) {
+    return jsonResponse({
+      ok: false,
+      publicBoundary: 'consuelo-gateway',
+      route: url.pathname,
+      error: {
+        code: 'TRACE_SITES_STREAM_UNAVAILABLE',
+        message: error instanceof Error ? error.message.slice(0, 240) : 'Trace Sites live stream unavailable.',
+      },
+    }, 503);
+  }
+}
+
+async function readStreamSnapshotAtCursor(
+  url: URL,
+  scope: TraceGatewaySessionScope,
+  readLayer: ReturnType<typeof createTraceSitesGatewayReadLayer>,
+  cursor: string,
+) {
+  try {
+    const nextUrl = new URL(url.toString());
+    nextUrl.searchParams.set('cursor', cursor);
+    const result = await readLayer.readTraceSitesDashboard(readRequestFromUrl(nextUrl, scope));
+    if (!result.ok) throw new Error(result.errors[0]?.code ?? 'TRACE_SITES_STREAM_READ_FAILED');
+    return streamSnapshotFromReadResult(result);
+  } catch (error: unknown) {
+    throw new Error(error instanceof Error ? error.message : 'TRACE_SITES_STREAM_READ_FAILED');
+  }
+}
+
+function streamSnapshotFromReadResult(result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>) {
+  return {
+    cursor: result.cursor,
+    rows: result.recentEvents.map((event, index) => streamRowFromDashboardEvent(event, result.cursor, index)),
+  };
+}
+
+function streamRowFromDashboardEvent(
+  event: TraceSitesDashboardEvent,
+  cursor: string,
+  index: number,
+): TraceSitesGatewayLiveStreamRow {
+  const record = event as TraceSitesDashboardEvent & Record<string, unknown>;
+  const traceId = typeof record.traceId === 'string' ? record.traceId : undefined;
+  const idempotencyKey = typeof record.idempotencyKey === 'string' ? record.idempotencyKey : undefined;
+  const rowCursor = typeof record.cursor === 'string' ? record.cursor : cursor;
+  const status = typeof record.status === 'string' ? record.status : record.success === false ? 'error' : 'ok';
+
+  return {
+    ...record,
+    id: traceId ?? idempotencyKey ?? `${cursor}:${index}`,
+    traceId,
+    cursor: rowCursor,
+    idempotencyKey,
+    toolName: typeof record.tool === 'string' ? record.tool : undefined,
+    status,
+    startedAt: typeof record.startedAt === 'string' ? record.startedAt : undefined,
+  };
 }
 
 function responseData(result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>) {

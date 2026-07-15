@@ -2,6 +2,8 @@ import {
   createCloudflareManagedOsMcpIngressPolicyClient,
   createOptionalManagedOsMcpIngressPolicyConfigFromEnv,
   ensureManagedOsMcpIngressPolicy,
+  syncManagedOsMcpTrustedProviderIpAllowlist,
+  type TrustedProviderIpAllowlistSyncResult,
   type WorkspaceCloudflareManagedOsMcpIngressPolicyClient,
   type WorkspaceCloudflareManagedOsMcpIngressPolicyResult,
 } from './workspace-cloudflare-provisioning';
@@ -18,7 +20,10 @@ export type PlatformManagedOsMcpIngressPolicyProvisioningResult =
       zoneId: string;
       allowedIpsListName: string;
     }
-  | ({ status: 'provisioned' } & WorkspaceCloudflareManagedOsMcpIngressPolicyResult);
+  | ({
+      status: 'provisioned';
+      trustedProviderIpAllowlist?: TrustedProviderIpAllowlistSyncResult;
+    } & WorkspaceCloudflareManagedOsMcpIngressPolicyResult);
 
 export type PlatformManagedOsMcpIngressPolicyProvisioningInput = {
   env: PlatformCloudflareEnv;
@@ -73,12 +78,23 @@ export const provisionPlatformManagedOsMcpIngressPolicyFromEnv = async (
         apiBaseUrl: input.env.CLOUDFLARE_API_BASE_URL,
         fetchImpl: input.fetchImpl,
       });
+    const trustedProviderIpAllowlist = await syncManagedOsMcpTrustedProviderIpAllowlist({
+      cloudflare,
+      config,
+      fetchImpl: input.fetchImpl,
+    });
     const result = await ensureManagedOsMcpIngressPolicy({
       cloudflare,
       config,
     });
 
-    return { status: 'provisioned', ...result };
+    return {
+      status: 'provisioned',
+      ...(trustedProviderIpAllowlist.status === 'synced'
+        ? { trustedProviderIpAllowlist }
+        : {}),
+      ...result,
+    };
   } catch (error: unknown) {
     throw new Error(
       `platform managed OS MCP ingress policy provisioning failed: ${getErrorMessage(error)}`,

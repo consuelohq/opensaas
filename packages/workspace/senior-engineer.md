@@ -1,13 +1,11 @@
 Your job is to implement one focused task with high confidence, clear evidence, and targeted blast radius.
 
-This skill does not own the task lifecycle. Use the task/workflow skill for task start, workspace tool sequencing, publishing, PR promotion, and cleanup.
+This skill does not own the task lifecycle. Use `task.intent` for task start, workspace tool sequencing, publishing, PR promotion, and cleanup.
 
 This skill owns engineering judgment.
-
-
 ---
 
-## 1) Operating stance
+# Operating stance
 
 - Ship one focused change at a time.
 - Keep `main` stable and boring.
@@ -22,187 +20,67 @@ A good worker agent is not just fast. A good worker agent leaves behind a worksp
 
 ---
 
-## 2) Tooling principles
-
-Use the workspace tool surface as the source of truth.
-
-Preference order:
-
-1. Use direct typed workspace tools for single known operations and durable transitions.
-2. Use `context.search` and`explore` for discovery and prior context.
-3. Use no-session `code.run` for multi-step read/investigation before a task exists.
-4. Use `task.intent` to start a task workflow with just-in-time tool discovery and hooks.
-5. Use task-scoped `code.run` for semantic workflows that compose multiple typed tools inside a task.
-6. Use `batch` as the default parallel fanout primitive for dependency-free workspace work. Reach for it whenever several known tool calls can run at the same time: multi-file reads, targeted searches across known areas, status + diff + context gathering, PR/file/review inspection, and independent validation checks. `batch` is not just a checklist helper; it is the preferred way to reduce latency and collect evidence across multiple surfaces when later steps do not depend on earlier results. Do not use `batch` when a step’s inputs must be chosen from a previous step’s output; use `code.run` for that kind of semantic workflow.
-7. Use `git.diff` for structured diff inspection after edits.
-8. Use lifecycle tools directly: `status`, `audit`, `review.run`, `verify`, `task.push`, `task.pr`, `task.prs`, `task.merge`, `task.finish` and `task.cleanup`.
-9. Use `github` for GitHub/PR state and raw GitHub escape hatches with `reason`; use current `gh` only as a temporary fallback.
-10. Use `code.call` for focused command/runtime evidence: tests, builds, typechecks, package scripts, syntax checks, exact CLI reproduction, small diagnostics, or commands with no typed workspace equivalent.
-11. Use local shell-style or host fallback execution only when the workspace tool model cannot express the operation. Record the tooling gap.
-
-
-
-Examples of typed-tool preference:
-
-- Use `status` instead of `task.exec git status`.
-- Use `github` for GitHub state instead of ad hoc `gh` shell commands when possible.
-- Use `audit` for workspace scripts/docs/index drift.
-- Use `checkFiles` for JavaScript/TypeScript/Python syntax checks when available.
-- Use `review.run` for workspace review.
-- Use `verify` for the publish safety gate.
-- Use `confirm` for validation evidence when it adds proof.
-- Use `dev` for service-backed local infrastructure and behavior validation.
-
-`code.run` is a semantic composer over the existing typed workspace tools. It is not a separate execution environment and not a guardrail bypass.
-
-Do not wrap a single obvious typed call in `code.run`. Use direct `workspace.call` for one known operation unless `code.run` is adding summarization, branching, or composition value.
-
-Prefer `code.run` when the work is workspace orchestration:
-
-- inspect traces/logs/status and summarize the result
-- search → read → decide
-- read → patch/write → reread
-- inspect manifest/config/docs and return a compact answer
-- coordinate several typed workspace tools in one semantic pass
-- avoid ad hoc `python -c`, `node -e`, heredocs, or long shell strings for file inspection/transformation when typed workspace tools can do it
-
-Use no-session `code.run` before a task exists for read/investigation workflows that compose non-task tools.
-
-Use task-scoped `code.run` after `task.start` when composing task-scoped tools. Pass `taskSession` on the outer workspace call; nested workspace helpers inherit task context.
-
-Use `code.call` as the normal command/runtime runner.
-
-Use `code.call` when the command itself is the evidence:
-
-- run focused tests
-- run package scripts
-- run build/typecheck/lint commands
-- run language/runtime syntax checks
-- reproduce exact CLI behavior
-- execute commands that have no typed workspace equivalent
-- validate process behavior such as exit codes, argv parsing, redirects, or output shape
-- run small non-mutating diagnostics with `mode: "read"`
-
-Use the most specific `code.call` runtime:
-
-| Need | Runtime |
-| --- | --- |
-| Python diagnostics, Python syntax checks, Python scripts | `language: "python"` |
-| Bun/JS/TS diagnostics, package-command orchestration, JSON/result shaping | `language: "bun"` |
-| Shell semantics such as pipes, redirects, env expansion, shell builtins, or short shell smoke checks | `language: "bash"` |
-
-Do not use Bash just to invoke Python or Bun. Use `language: "python"` for Python work and `language: "bun"` for Bun/package orchestration.
-
-
-`code.call` should usually be short, focused, and validation-oriented. If an agent is using command execution repeatedly for reading files, editing files, JSON inspection, workpad updates, or glue logic, switch to `code.run` plus typed workspace tools.
-
-
----
-
-Explore is a discovery command, not just decision-engine setup.
-
-Use `explore` anywhere you would otherwise start guessing paths or asking “where is this implemented?”
-
-An `explore` query should be short and single-intent. Use one concept, subsystem, symbol, or question per query.
-
-Good:
-
-```text
-task intent workflow
-```
-
-Bad:
-
-```text
-task intent workflowRole script intent task-intent task.intent
-```
-
-The failure mode is query blending: several competing hypotheses inside one query make retrieval less precise. `explore` does not reason across multiple query meanings in one call.
-
-When multiple query phrasings are plausible, run independent `explore` calls in `batch`:
-
-```ts
-await workspace.call({
-  tool: "batch",
-  input: {
-    steps: [
-      {
-        tool: "explore",
-        input: { query: "task intent", limit: 8 },
-        parallel: true,
-      },
-      {
-        tool: "explore",
-        input: { query: "where is task intent handled", limit: 8 },
-        parallel: true,
-      },
-    ],
-  },
-  timeout: 300,
-})
-```
-
-Treat `explore` as a prior over where to inspect next. After retrieval narrows the map, use `code.call` in read mode to inspect the likely files, confirm exact symbols, and return a task-shaped evidence packet.
-
-## 3) Decision and evidence principles
-
-Use the decision engine to move from uncertainty to evidence-backed action.
-
-The task workflow skill owns the exact loop. This skill owns the judgment standard:
-
-- `explore` is retrieval, not proof.
-- `decideNext` is the policy layer.
-- `confidenceScore` measures evidence quality, not permission to skip tests.
-- `exploit` means the evidence is concentrated enough to stop wandering and edit.
-- `confirm` means belief meets reality.
-- `audit` checks workspace surface truth: scripts, docs, and index freshness.
-
-Do not edit the first plausible file just because search found it. Read enough context to understand the local pattern and failure mode.
-
-
-Use `code.call` preferably with a batched follow-up, if possible, after the direction is clear.
-
-Confidence comes from:
-- files actually read
-- connected code paths inspected
-- tests or runtime checks run
-- validation output
-- contradictions resolved
-- behavior reproduced or smoked
-
-Confidence does not come from:
-- one semantic search result
-- memory
-- vibes
-- a syntax check alone
-- an API response that does not cover callbacks, queues, locks, jobs, or side effects
-
----
-
-## 4. Design principles
+# Design Principles
 
 Prefer clear boundaries.
 
+Architecture should separate responsibilities before it separates files. A correct implementation makes it obvious where app contracts end, where domain logic lives, where providers are adapted, and where persistence or lifecycle behavior begins.
+
+### Boundary model
+
+Keep these concerns separate:
+
+| Concern | Role |
+| --- | --- |
+| App contract | Stable interface the rest of the app calls |
+| Domain service | Business logic and product behavior |
+| Provider integration | External API, SDK, webhook, or runtime-specific behavior |
+| Persistence | Database, cache, storage, and durable state |
+| Lifecycle/callback handling | Jobs, queues, webhooks, retries, locks, and side effects |
+| UI state | Presentation state and user interaction |
+
+Do not collapse these into one function, component, endpoint, or Effect program.
+
+### Backend
+
 Backend business logic belongs in services, not thin API adapters.
 
-Frontend should call stable app contracts, not provider-specific or legacy runtime paths.
+API adapters should parse input, call the stable service contract, and return the response. They should not become the place where product behavior, provider quirks, persistence decisions, and lifecycle logic accumulate.
 
-External provider callbacks/webhooks can remain REST endpoints when the provider requires public URLs.
+### Frontend
 
-Provider-specific objects should be adapted at the boundary. Internal services should consume typed domain objects.
+Frontend code should call stable app contracts, not provider-specific or legacy runtime paths.
 
-For platform code, separate:
+UI code should not know which provider, queue, webhook, storage layer, or runtime implementation powers the behavior unless that detail is part of the product contract.
 
-- app contract
-- domain service
-- provider integration
-- persistence
-- lifecycle/callback handling
-- UI state
+### Providers
 
-Avoid mixing these into one function or component.
+Provider-specific objects should be adapted at the boundary.
 
-## API design and performance review
+External callbacks and webhooks can remain REST endpoints when the provider requires public URLs, but provider payloads should be translated into typed domain objects before reaching internal services.
+
+Internal services should consume domain types, not raw provider objects.
+
+### Effect
+
+Use Effect to make boundaries explicit, typed, and composable.
+
+Good Effect code separates:
+
+- Input parsing.
+- Dependency access.
+- Provider calls.
+- Domain decisions.
+- Persistence.
+- Error mapping.
+- Retry/lifecycle behavior.
+- Output shaping.
+
+Effect should make the control flow safer and more inspectable. It should not become a container for mixed responsibilities.
+
+A strong Effect implementation has small named effects with clear jobs, typed failures at the boundary, and composition at the service layer. A weak implementation wraps a tangled function in `Effect.gen` and calls it architecture.
+
+# API design and performance review
 
 When designing, reviewing, or refactoring APIs, treat performance as an engineering discipline, not a reflex. Do not optimize first. Start by identifying the real bottleneck through load testing, request profiling, traces, database query inspection, and production-like traffic assumptions. Only apply optimization once an endpoint has a confirmed performance issue or a clear scalability requirement.
 
@@ -231,14 +109,9 @@ For API design and review, check these seven performance patterns:
 
 Default review stance: first prove the bottleneck, then choose the simplest optimization that addresses it without adding unnecessary complexity. Every API performance change should include evidence, expected effect, and a validation path.
 
-
-
-
-
-
 ---
 
-## 5) Test-first engineering discipline
+# Test-first engineering discipline (TDD)
 
 Test-driven development is the default engineering posture for this skill.
 
@@ -302,73 +175,105 @@ If the agent cannot identify an appropriate test, it must stop and explain the t
 
 
 ---
-## 6) Workpad contract
+# Workpad Contract
 
-You must always maintain the scoped task workpad throughout execution:
+Always maintain the scoped task workpad throughout execution:
 
-`.task/<area>/<task-slug>/workpad.md`
+```text
+.task/<area>/<task-slug>/workpad.md
+```
 
-- acceptance criteria
-- implementation plan
-- key decisions
-- notes for Ko
-- improvements noticed
-- errors or blockers
-- validation commands and results
+The workpad is durable task memory. It is a running engineering log for Ko, reviewers, workspace hooks, context memory, and future agents.
 
-The workpad is a running engineering log, not polished prose. This is for humans to help with reviewing code, and it provides future agents with context of the current state of work.
+The workpad is usually prebuilt by the task workflow. Do not invent a new structure when the workflow already created one. Read the workpad first, then fill in the agent-owned sections as the task progresses.
 
-Use it to record:
-- Why one implementation path was chosen over another
-- What evidence supported the edit
-- What validation proved
-- What validation was skipped or narrowed and why
-- any surprising failure
-- out-of-scope issues noticed during the task
+## Core Rule
 
-Do not leave the workpad empty. A reviewer should be able to understand the task state without reconstructing your reasoning from chat history.
+Use the workpad at three points:
 
-## Test-first workpad discipline
+| Moment | What to do |
+| --- | --- |
+| Start | After `task.intent` or `task.start`, read the workpad and fill in acceptance criteria, plan, and test strategy if applicable |
+| Middle | Update it when you make a key decision, find a blocker, recover from an error, narrow scope, or learn something future agents need |
+| End | Before push or PR, update status, files changed, validation evidence, risks, and notes for Ko |
 
-For non-trivial code changes, define the test strategy before implementation. The task workpad is the durable contract between Ko, the agent, and the codebase.
+Do not leave prebuilt sections as `none yet` or placeholder text when you have real task state.
 
-Before editing production code, fill the agent-owned `Test-first contract` section with behavior under test, existing pattern to follow, intended tests, focused red command, expected red failure, and no-test waiver when a test is genuinely inappropriate.
+## Agent-Owned vs Workspace-Owned
 
-Run the focused test before implementation and let workspace-owned workpad sections capture the red evidence, green evidence, files read, test selection, and post-validation where tooling supports it. Do not weaken or rewrite the pretest after implementation unless the contract itself was wrong; record the reason in the workpad.
+| Section type | Owner | Rule |
+| --- | --- | --- |
+| Agent-owned sections | Agent | Keep these accurate and current |
+| Workspace-owned sections | Tooling/hooks | Do not overwrite; use them as evidence |
 
-Every task needs test decision coverage. Most behavior changes need test-first coverage. Copy-only, docs-only, generated-file, trivial formatting, and mechanical rename tasks may use a no-test waiver with validation matched to the risk.
+Workspace-owned sections may include files read, files changed, activity logs, test selection, and validation evidence.
 
+Agent-owned sections usually include acceptance criteria, plan, current status, key decisions, notes for Ko, improvements noticed, issues and recovery, implementation notes, skipped findings, and final changed files.
 
-## 7) Implementation principles
+The exact baseline may evolve. Follow the structure the task workflow creates.
 
-Implement only what the acceptance criteria require.
+## What to Fill In
 
-Before editing:
-- read the relevant standards and local patterns
-- identify the smallest correct edit target
-- understand nearby tests or validation paths
-- write or update the plan in the workpad
+At minimum, the workpad should explain:
 
-During editing:
-- prefer small, reviewable changes
-- preserve existing architecture unless there is evidence it is wrong
-- avoid mixing cleanup, refactor, and behavior changes unless the task explicitly calls for it
-- keep domain logic separate from side effects
-- keep error paths explicit
-- avoid broad rewrites when a focused fix is enough
+- What “done” means for this task.
+- What implementation path the agent plans to take.
+- What evidence supports the chosen path.
+- What changed.
+- What validation proved.
+- What validation was skipped, narrowed, or deferred, and why.
+- What Ko or the next agent should know.
 
-After editing:
-- reread changed ranges
-- inspect the diff with the best available typed/workspace tooling
-- run the smallest meaningful validation first
-- then run the broader review/verify gates
-- update the workpad with actual results
+Use concise Markdown. The workpad is not polished prose, but it should be readable.
 
-Do not hide uncertainty. If the validation does not prove the behavior, say so and continue or escalate.
+## Test Strategy
+
+Every task needs a test decision.
+
+For non-trivial behavior changes, fill in the test strategy before editing production code. If the workpad includes a `Test-first contract`, use it.
+
+Record:
+
+- Behavior under test.
+- Existing local pattern to follow.
+- New or changed tests.
+- Focused red command.
+- Expected red failure.
+- No-test waiver when test-first coverage is genuinely inappropriate.
+
+Do not weaken or rewrite the pretest after implementation unless the original contract was wrong. If it was wrong, record why.
+
+Copy-only, docs-only, generated-file-only, trivial formatting, and mechanical rename tasks may use a no-test waiver with validation matched to the actual risk.
+
+## What Belongs in the Workpad
+
+Record durable task state:
+
+- Why one implementation path was chosen over another.
+- What files, symbols, or systems mattered.
+- What evidence supported the edit.
+- What validation proved.
+- What failed and how it was recovered.
+- What was intentionally left out of scope.
+- What should be easier for the next agent to continue.
+
+Do not record:
+
+- Raw logs.
+- Huge command output.
+- Temporary thoughts with no durable value.
+- Secrets, tokens, or credentials.
+- Repeated status lines that do not change task state.
+
+### Final Standard
+
+Before push or PR, a reviewer should be able to read the workpad and understand the current task state without reconstructing the chat.
+
+A strong workpad is executable context: it tells the next actor what was attempted, what changed, what passed, what remains risky, and where to continue.
 
 ---
 
-## 8) Coding standards
+# Coding standards
 
 ### TypeScript
 
@@ -416,7 +321,7 @@ Do not hide uncertainty. If the validation does not prove the behavior, say so a
 - Do not introduce a new abstraction unless it removes real duplication or clarifies ownership.
 
 ---
-## 9) Validation principles
+# Validation principles
 
 Run validation that matches the risk of the change.
 
@@ -429,7 +334,7 @@ Validation ladder:
 5. Service-backed E2E when behavior depends on runtime infrastructure.
 6. Runtime/provider/log validation when callbacks, queues, jobs, external APIs, auth, or permissions are involved.
 
-Use typed validation tools where available:
+### Use typed validation tools where available:
 
 - `check-files` for JavaScript syntax checks.
 - `audit` for workspace scripts/docs/index drift.
@@ -439,7 +344,7 @@ Use typed validation tools where available:
 - `dev` for service-backed local validation.
 - `status` and `doctor` for environment and workspace state.
 
-Use `code.call` for focused validation only when no more specific typed validation tool exists. 
+### Use `code.call` for focused validation only when no more specific typed validation tool exists. 
 
 Good `code.call` validation uses:
 - Python compilation or Python validation scripts with `language: "python"` 
@@ -460,109 +365,6 @@ Good `code.call` validation uses:
 | Full publish safety gate | `verify` |
 | Service-backed behavior proof | `dev` plus relevant runtime/log/state checks |
 
-await workspace.call({
-  tool: "code.call",
-  taskSession,
-  input: {
-    language: "python",
-    mode: "verify",
-    code: `
-import py_compile
-import sys
-
-files = ["packages/workspace/scripts/example.py"]
-failures = []
-
-for file in files:
-    try:
-        py_compile.compile(file, doraise=True)
-    except Exception as error:
-        failures.append({"file": file, "error": str(error)})
-
-print({"ok": len(failures) == 0, "failures": failures})
-sys.exit(1 if failures else 0)
-`.trim(),
-    maxResultChars: 20000,
-  },
-  timeout: 120,
-})
-await workspace.call({
-  tool: "code.call",
-  taskSession,
-  input: {
-    language: "bun",
-    mode: "verify",
-    code: `
-const proc = Bun.spawnSync({
-  cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/facade/facade.test.ts"],
-  stdout: "pipe",
-  stderr: "pipe",
-})
-
-const stdout = new TextDecoder().decode(proc.stdout)
-const stderr = new TextDecoder().decode(proc.stderr)
-
-console.log(JSON.stringify({
-  ok: proc.exitCode === 0,
-  command: "bun --cwd packages/workspace test tests/facade/facade.test.ts",
-  exitCode: proc.exitCode,
-  stdout: stdout.slice(-12000),
-  stderr: stderr.slice(-12000),
-}, null, 2))
-
-process.exit(proc.exitCode)
-`.trim(),
-    maxResultChars: 30000,
-  },
-  timeout: 600,
-})
-await workspace.call({
-  tool: "code.call",
-  taskSession,
-  input: {
-    language: "bun",
-    mode: "edit",
-    code: `
-const commands = [
-  ["bun", "run", "--cwd", "packages/os", "generate-types"],
-  ["bun", "run", "--cwd", "packages/os", "generate-docs"],
-]
-
-const results = []
-
-for (const cmd of commands) {
-  const proc = Bun.spawnSync({
-    cmd,
-    stdout: "pipe",
-    stderr: "pipe",
-  })
-
-  const stdout = new TextDecoder().decode(proc.stdout)
-  const stderr = new TextDecoder().decode(proc.stderr)
-
-  const result = {
-    command: cmd.join(" "),
-    ok: proc.exitCode === 0,
-    exitCode: proc.exitCode,
-    stdout: stdout.slice(-8000),
-    stderr: stderr.slice(-8000),
-  }
-
-  results.push(result)
-
-  if (proc.exitCode !== 0) {
-    console.log(JSON.stringify({ ok: false, failed: result, results }, null, 2))
-    process.exit(proc.exitCode)
-  }
-}
-
-console.log(JSON.stringify({ ok: true, results }, null, 2))
-`.trim(),
-    maxResultChars: 30000,
-  },
-  timeout: 600,
-})
-
 
 A syntax check alone is not sufficient for behavior changes.
 
@@ -581,11 +383,11 @@ Record exact validation commands, tool calls, environment mode, logs, transcript
 
 ---
 
-## 10) Service-backed and E2E behavior proof
+# Service-backed and E2E behavior proof
 
-For product behavior changes, focused tests are not enough by default. Run the smallest meaningful end-to-end path that proves the changed behavior in a realistic development environment.
+For product behavior changes, focused tests are not enough by default. Run meaningful end-to-end path that proves the changed behavior in a realistic development environment.
 
-Use the `dev` workspace tooling when available.
+Use the `dev` workspace tool.
 
 Use `dev` for:
 - starting/stopping Postgres and Redis
@@ -597,8 +399,6 @@ Use `dev` for:
 - running scenario modes
 - inspecting Redis locks safely
 - collecting transcripts and runtime logs
-
-Do not manually recreate Postgres/Redis/Twilio/tunnel setup the `dev` tool exposes it.
 
 For behavior changes involving calls, jobs, webhooks, queues, locks, callbacks, external APIs, auth, or permissions, the validation ladder is:
 
@@ -624,32 +424,32 @@ Do not publish behavior changes with only typecheck/lint unless Ko explicitly wa
 
 ---
 
-## 11) Review discipline
+# Review Discipline
 
 Before publishing or reporting done, self-review the changed files.
 
 Look for:
-- accidental scope creep
-- generated slop
-- dead code
-- stale comments
-- untested behavior
-- fragile timing or race assumptions
-- poor error messages
-- leaked secrets or sensitive logs
-- inconsistent local patterns
-- missing cleanup paths
-- missing validation evidence
+
+- Accidental scope creep
+- Generated slop
+- Dead code
+- Stale comments
+- Untested behavior
+- Fragile timing or race assumptions
+- Poor error messages
+- Leaked secrets or sensitive logs
+- Inconsistent local patterns
+- Missing cleanup paths
+- Missing validation evidence
 
 A clean diff is part of the deliverable.
 
 Do not leave “while I was here” edits in the PR unless they directly support the task.
 
 ---
+# Git and commit principles
 
-## 12) Git and commit principles
-
-The task workflow skill owns the exact publish commands.
+Envoke `task-intent` tool for the exact publish commands when you need them.
 
 Engineering rules:
 
@@ -663,7 +463,7 @@ Engineering rules:
 
 ---
 
-## 13) Conflict and parallel-agent principles
+# Conflict and parallel-agent principles
 
 Assume parallel agents are active.
 
@@ -685,27 +485,24 @@ Do not casually pick ours/theirs for real code conflicts.
 
 ---
 
-## 14) Definition of engineering done
+## Documentation
 
-A task is engineering-ready for review only when:
+Public docs live in `packages/documentation`, the Bun-owned Astro/Starlight app for `docs.consuelohq.com`. Before docs work, read `packages/documentation/README.md`. Do not edit or recreate legacy Mintlify docs, generated `docs.json`, or committed machine-translated locale trees.
+---
+# Definition of Done
 
-- acceptance criteria are complete
-- implementation matches the narrow task scope
-- decision evidence is sufficient
-- changed files were self-reviewed
-- validation matches the actual risk
-- behavior changes have behavior proof
-- workpad reflects final decisions and validation
-- publish state is verified by the task workflow
-- no outcome-changing warnings remain in stderr/logs
+A task is ready for review only when:
 
-A task is not done just because:
-- code compiles
-- tests pass unrelated areas
-- a command exits zero
-- a PR exists
-- the agent is confident
-- the first implementation seems plausible
+- Acceptance criteria are complete.
+- Implementation matches the narrow task scope.
+- Decision evidence is sufficient.
+- Changed files were self-reviewed.
+- Validation matches the actual risk.
+- Behavior changes have behavior proof.
+- The workpad reflects final decisions and validation.
+- Publish state is verified by the task workflow.
+- No outcome-changing warnings remain in stderr or logs.
+- Task branch has been merged into Stream branch, with conflicts resvolved.
 
 Done means the change is reviewable, recoverable, and proven at the right level.
 
@@ -758,7 +555,7 @@ Before saying “blocked,” report:
 * evidence that the failure is outside normal task recovery
 * safest next action
 
-### Temp file workflow
+### Tmp file workflow
 
 1. Write the full prompt, patch plan, command script, or worker instructions to a temp file.
 

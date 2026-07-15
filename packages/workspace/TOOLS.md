@@ -45,7 +45,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | review | 4 |
 | sentry | 7 |
 | stream | 3 |
-| task lifecycle | 13 |
+| task lifecycle | 11 |
 | tooling | 1 |
 | utilities | 34 |
 | worker | 1 |
@@ -249,7 +249,7 @@ await workspace.call({
 
 ### workspace.checkFiles
 
-run syntax checks over a set of files through task:exec
+run node --check syntax checks over a set of files in the resolved task worktree
 
 | Field | Value |
 | --- | --- |
@@ -4630,71 +4630,6 @@ await workspace.call({
 
 ## task lifecycle
 
-### workspace.task.call
-
-run a command inside a task worktree
-
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.call({ branch?: string; command: string[]; tddPhase?: "red" &#124; "green" &#124; "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace task.call` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "task.call",
-  "input": {
-    "branch": "task/workspace-agents/example",
-    "command": [
-      "git",
-      "status",
-      "--short"
-    ],
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
 ### workspace.task.cleanup
 
 preview or remove stale task worktrees and branches
@@ -4832,71 +4767,6 @@ await workspace.call({
   "tool": "task.ensureSynced",
   "input": {
     "branch": "task/workspace-agents/example"
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.task.exec
-
-legacy alias for task.call; run a command inside a task worktree
-
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.task.exec({ branch?: string; command: string[]; tddPhase?: "red" &#124; "green" &#124; "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace task.exec` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "task.exec",
-  "input": {
-    "branch": "task/workspace-agents/example",
-    "command": [
-      "git",
-      "status",
-      "--short"
-    ],
-    "dryRun": true
   }
 });
 ```

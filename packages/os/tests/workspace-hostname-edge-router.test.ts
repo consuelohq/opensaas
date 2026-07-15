@@ -129,7 +129,7 @@ contractDescribe('workspace hostname edge routing contract', () => {
     expect(await personal.text()).toContain('sites/workspace_kokayi/kokayi-home/version_1/index.html');
     expect(business.status).toBe(200);
     expect(await business.text()).toContain('sites/workspace_openai/openai-home/version_1/index.html');
-    expect(cachePuts.map((entry) => entry.url)).toEqual(['https://kokayi.consuelohq.com/', 'https://openai.consuelohq.com/']);
+    expect(cachePuts.map((entry) => entry.url)).toEqual([]);
     expect(r2Reads).toEqual(['sites/workspace_kokayi/kokayi-home/version_1/index.html', 'sites/workspace_openai/openai-home/version_1/index.html']);
   });
 

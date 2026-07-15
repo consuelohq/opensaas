@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/trace-site/polish-internal-trace-inspector-preview",
+  "base": "origin/main",
+  "headSha": "cc3874b7446a2e8512069d84c15ef5d9216b01b2",
+  "changeHash": "24133a721f4d262f35ba7fb352cac080614482f73ebedf373c48d2c3a4d8fdb2",
+  "changedFiles": [
+    "packages/workspace/scripts/trace-site-inspector/browser.ts",
+    "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+    "packages/workspace/scripts/trace-site-inspector/inspector.css",
+    "packages/workspace/scripts/trace-site-inspector/model.ts",
+    "packages/workspace/scripts/trace-site-inspector/preview.ts",
+    "packages/workspace/tests/trace-site-inspector.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T03:26:04.270Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/trace-site/polish-internal-trace-inspector-preview.json",
+        ".task/trace-site/polish-internal-trace-inspector-preview/current.json",
+        ".task/trace-site/polish-internal-trace-inspector-preview/evidence-log.json",
+        ".task/trace-site/polish-internal-trace-inspector-preview/read-log.json",
+        ".task/trace-site/polish-internal-trace-inspector-preview/session.json",
+        ".task/trace-site/polish-internal-trace-inspector-preview/workpad.md",
+        "packages/workspace/scripts/trace-site-inspector/browser.ts",
+        "packages/workspace/scripts/trace-site-inspector/deploy.ts",
+        "packages/workspace/scripts/trace-site-inspector/inspector.css",
+        "packages/workspace/scripts/trace-site-inspector/model.ts",
+        "packages/workspace/scripts/trace-site-inspector/preview.ts",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

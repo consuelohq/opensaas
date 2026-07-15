@@ -1,0 +1,32 @@
+---
+const { title, href, icon, img } = Astro.props;
+const isExternal = typeof href === 'string' && /^https?:\/\//.test(href);
+---
+
+{href ? (
+  <a class="mintlify-card" href={href} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noreferrer' : undefined}>
+    {img && <img src={img} alt="" loading="lazy" />}
+    <div class="mintlify-card-heading">
+      {icon && <span aria-hidden="true" class="mintlify-card-icon">{icon}</span>}
+      {title && <strong>{title}</strong>}
+    </div>
+    <slot />
+  </a>
+) : (
+  <div class="mintlify-card">
+    {img && <img src={img} alt="" loading="lazy" />}
+    <div class="mintlify-card-heading">
+      {icon && <span aria-hidden="true" class="mintlify-card-icon">{icon}</span>}
+      {title && <strong>{title}</strong>}
+    </div>
+    <slot />
+  </div>
+)}
+
+<style>
+  .mintlify-card { border: 1px solid var(--sl-color-gray-5); border-radius: 0.875rem; color: inherit; display: block; padding: 1rem; text-decoration: none; }
+  .mintlify-card:hover { border-color: var(--sl-color-text-accent); }
+  .mintlify-card img { border-radius: 0.625rem; display: block; margin-bottom: 0.85rem; width: 100%; }
+  .mintlify-card-heading { align-items: center; display: flex; gap: 0.5rem; margin-bottom: 0.35rem; }
+  .mintlify-card-icon { color: var(--sl-color-text-accent); font-size: 0.85rem; }
+</style>

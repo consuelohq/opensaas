@@ -163,7 +163,7 @@ describe('dangerous material policy', () => {
         timestamp: '2026-06-16T20:00:00.000Z',
         nonce: 'dangerous-material-ingress-1',
       });
-      const { handleRequest } = await import('./scripts/server.ts?dangerous-material-ingress');
+      const { handleRequest } = await import('./scripts/server/app.ts?dangerous-material-ingress');
       const httpResponse = await handleRequest(new Request('http://127.0.0.1:8960/call', {
         method: 'POST',
         headers: signed.headers,

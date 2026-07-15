@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/docs/fix-docs-deploy-review-comments",
+  "base": "origin/stream/docs",
+  "headSha": "9e884df940d59228eab8d3f1a0f06255a12452eb",
+  "changeHash": "4410eac47042415da637a9e7d6d752708f077c26370451c13acf0d185177f763",
+  "changedFiles": [
+    "packages/workspace/scripts/docs-deploy.js",
+    "packages/workspace/scripts/web-deploy.js",
+    "packages/workspace/tests/deploy-wrappers.test.js"
+  ],
+  "verifiedAt": "2026-07-03T09:20:59.556Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/docs/fix-docs-deploy-review-comments/current.json",
+        ".task/docs/fix-docs-deploy-review-comments/session.json",
+        ".task/docs/fix-docs-deploy-review-comments/workpad.md",
+        ".task/tasks/docs/fix-docs-deploy-review-comments.json",
+        "packages/workspace/scripts/docs-deploy.js",
+        "packages/workspace/scripts/web-deploy.js",
+        "packages/workspace/tests/deploy-wrappers.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

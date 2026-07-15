@@ -1,0 +1,315 @@
+---
+import { homeFeaturePreviewItems } from '../../data/home-content';
+import FeatureArtwork from './FeatureArtwork.astro';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'features' } = Astro.props as Props;
+---
+
+<section
+  id={sectionId}
+  class="feature-preview"
+  aria-labelledby="feature-preview-heading"
+  data-testid="home-feature-preview"
+  data-motion-section="feature-preview"
+  data-section="features"
+>
+  <div class="feature-preview__panel">
+    <div class="feature-preview__scroll-region">
+      <div class="feature-preview__blue-sliver" aria-hidden="true"></div>
+
+      <div class="feature-preview__inner">
+        <div class="feature-preview__pin-column" aria-hidden="true">
+          <div class="feature-preview__badge-pin">
+            <img
+              class="feature-preview__badge-logo"
+              src="/images/logo/clean-blue-transparent.svg"
+              alt=""
+              width="52"
+              height="52"
+              decoding="async"
+            />
+          </div>
+        </div>
+
+        <div class="feature-preview__content" data-feature-content-track>
+          <header class="feature-preview__header">
+            <p class="feature-preview__tabs" aria-hidden="true">
+              <span class="feature-preview__tab feature-preview__tab--active">FEATURE</span>
+              <span class="feature-preview__tab">PREVIEW</span>
+            </p>
+            <h2 id="feature-preview-heading" class="sr-only">Consuelo OS feature preview</h2>
+          </header>
+
+          <div class="feature-preview__grid">
+            {
+              homeFeaturePreviewItems.map((item) => (
+                <article class="feature-preview__item">
+                  <p class="feature-preview__index">
+                    #{item.number} {item.label}
+                  </p>
+                  <h3 class="feature-preview__title">
+                    {item.title.split('\n').map((line, lineIndex) => (
+                      <>
+                        {lineIndex > 0 ? <br /> : null}
+                        {line}
+                      </>
+                    ))}
+                  </h3>
+                  <div class="feature-preview__artwork">
+                    <FeatureArtwork
+                      motif={item.motif}
+                      alt={item.imageAlt}
+                      assetSrc={item.assetSrc}
+                    />
+                  </div>
+                  <p class="feature-preview__description">{item.body}</p>
+                </article>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-preview__wordmark-wrap" aria-hidden="true">
+      <p class="feature-preview__wordmark">CONSUELO</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .feature-preview {
+    padding: var(--site-frame-inset);
+    background: var(--site-color-paper);
+    color: var(--site-color-ink);
+  }
+
+  .feature-preview__panel {
+    --feature-pin-col: clamp(3.65rem, 5.25vw, 4.65rem);
+    --feature-badge-gap: 0.5rem;
+    --feature-badge-size: clamp(2.75rem, 4vw, 3.25rem);
+    --feature-header-offset: clamp(0.35rem, 0.85vw, 0.6rem);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--site-color-surface);
+    overflow: visible;
+  }
+
+  .feature-preview__scroll-region {
+    position: relative;
+    padding-top: var(--site-panel-pad);
+    overflow: visible;
+  }
+
+  .feature-preview__blue-sliver {
+    position: sticky;
+    top: 0;
+    z-index: 12;
+    height: var(--site-sticky-sliver);
+    margin-top: calc(-1 * var(--site-panel-pad));
+    margin-bottom: calc(-1 * var(--site-sticky-sliver));
+    margin-inline: calc(-1 * var(--site-panel-pad));
+    width: calc(100% + 2 * var(--site-panel-pad));
+    background: var(--site-color-paper);
+    pointer-events: none;
+  }
+
+  .feature-preview__inner {
+    display: grid;
+    grid-template-columns: var(--feature-pin-col) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .feature-preview__pin-column {
+    align-self: stretch;
+    min-height: 100%;
+  }
+
+  .feature-preview__badge-pin {
+    position: sticky;
+    top: calc(var(--site-sticky-sliver) + var(--feature-badge-gap));
+    z-index: 11;
+    display: flex;
+    justify-content: center;
+    padding-top: var(--feature-badge-gap);
+    padding-bottom: 0.35rem;
+  }
+
+  .feature-preview__badge-logo {
+    display: block;
+    width: var(--feature-badge-size);
+    height: var(--feature-badge-size);
+    object-fit: contain;
+  }
+
+  .feature-preview__content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding:
+      0
+      var(--site-panel-pad)
+      0
+      0;
+  }
+
+  .feature-preview__header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    margin: 0 0 clamp(1rem, 2vw, 1.65rem);
+    padding-top: var(--feature-header-offset);
+  }
+
+  .feature-preview__tabs {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    font-family: var(--site-font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--site-color-muted);
+  }
+
+  .feature-preview__tab--active {
+    color: var(--site-color-ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .feature-preview__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: clamp(0.85rem, 1.8vw, 1.5rem);
+    row-gap: clamp(2rem, 4vw, 3.25rem);
+    padding-bottom: clamp(0.65rem, 1.4vw, 1.15rem);
+  }
+
+  .feature-preview__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    min-width: 0;
+  }
+
+  .feature-preview__index {
+    margin: 0;
+    font-family: var(--site-font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    color: var(--site-color-muted);
+  }
+
+  .feature-preview__title {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(1.35rem, 2.1vw, 1.85rem);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    color: var(--site-color-ink);
+    min-height: 2.2em;
+  }
+
+  .feature-preview__artwork {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .feature-preview__description {
+    margin: 0;
+    max-width: 34ch;
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.7rem, 0.82vw, 0.78rem);
+    font-weight: 600;
+    line-height: 1.62;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--site-color-ink);
+  }
+
+  .feature-preview__wordmark-wrap {
+    margin-top: 0;
+    padding:
+      clamp(0.1rem, 0.5vw, 0.35rem)
+      var(--site-panel-pad)
+      clamp(0.2rem, 0.45vw, 0.4rem);
+    overflow: visible;
+  }
+
+  .feature-preview__wordmark {
+    margin: 0;
+    padding: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(5rem, 17.25vw, 15.35rem);
+    font-weight: 400;
+    line-height: 0.72;
+    letter-spacing: -0.032em;
+    text-transform: uppercase;
+    color: var(--site-color-ink);
+    white-space: nowrap;
+    width: calc(100% + 2 * var(--site-panel-pad));
+    margin-inline: calc(-1 * var(--site-panel-pad));
+    overflow: visible;
+    display: block;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 960px) {
+    .feature-preview__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-preview__pin-column,
+    .feature-preview__blue-sliver {
+      display: none;
+    }
+
+    .feature-preview__content {
+      padding-left: var(--site-panel-pad);
+    }
+
+    .feature-preview__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .feature-preview__description {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .feature-preview__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-preview__wordmark-wrap {
+      margin-top: clamp(-0.85rem, -2vw, -0.35rem);
+      padding-bottom: 0.45rem;
+    }
+
+    .feature-preview__wordmark {
+      font-size: clamp(2.45rem, 15.5vw, 3.85rem);
+      line-height: 0.76;
+      letter-spacing: -0.028em;
+      white-space: nowrap;
+    }
+  }
+</style>

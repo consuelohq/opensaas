@@ -120,6 +120,10 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.officeIndexPath)).toBe(true);
     expect(existsSync(refreshResult.officeDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
+    const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
+    expect(tracesHtml).toContain('<h1>Traces</h1>');
+    expect(tracesHtml).toContain('/gateway/traces/recent');
+    expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
@@ -203,6 +207,34 @@ describe('Sites CLI', () => {
     expect(html).not.toContain('const siteHotkeys = {');
     expect(html).not.toContain('Versioned local Sites pages with current pointers');
     expect(html).not.toContain('<div class="grid">');
+  });
+
+  it('rewrites legacy ChatGPT MCP URLs before rendering the launcher', () => {
+    const configPath = join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json');
+    mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
+    writeFileSync(configPath, JSON.stringify({
+      version: 1,
+      kind: 'consuelo-chatgpt-mcp-connection',
+      auth: 'bearer',
+      url: 'https://legacy-workspace.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:8960/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+      scopes: ['route:/mcp:read', 'tool:*:read'],
+      createdAt: '2026-06-13T00:00:00.000Z',
+    }, null, 2));
+
+    const refreshResult = runSitesCommand(['refresh', '--json']);
+    const html = readFileSync(refreshResult.indexPath, 'utf8');
+    const migrated = JSON.parse(readFileSync(configPath, 'utf8'));
+
+    expect(html).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
+    expect(html).not.toContain('https://legacy-workspace.consuelohq.com/mcp');
+    expect(migrated).toMatchObject({
+      url: 'https://os.consuelohq.com/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+    });
   });
 
   it('publishes Sites pages with immutable versions and stale base-version protection', () => {

@@ -172,7 +172,7 @@ Use GitHub or `task.pr` results to inspect PR state.
 
 Use `task.prs` only if that tool is present in the current manifest.
 
-For diffs, use the workspace/GitHub tool surface where available. Only fall back to `task.exec` for `git diff` when there is not yet a typed tool that exposes the exact local diff you need.
+For diffs, use the workspace/GitHub tool surface where available. Only fall back to `code.call` for `git diff` when there is not yet a typed tool that exposes the exact local diff you need.
 
 Task Session Handling — Canonical Task Context
 taskSession is the canonical handle for task-scoped work.
@@ -189,7 +189,7 @@ await workspace.call({
   },
   timeout: 120,
 })
-Correct task-scoped command execution uses code.call, not task.call, task.exec, raw shell, or host escape hatches:
+Correct task-scoped command execution uses code.call, not code.call, code.call, raw shell, or host escape hatches:
 await workspace.call({
   tool: "code.call",
   taskSession,
@@ -209,10 +209,10 @@ syntax checks
 codegen commands
 small diagnostic commands
 language-specific validation commands
-Do not use task.call or task.exec for normal command execution. If either appears in an old workpad, handoff, or copied example, treat it as legacy guidance and translate it to code.call.
+Do not use code.call for normal command execution. If either appears in an old workpad, handoff, or copied example, treat it as legacy guidance and translate it to code.call.
 Avoid this legacy shape:
 await workspace.call({
-  tool: "task.exec",
+  tool: "code.call",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/workspace", "test"],
@@ -243,7 +243,7 @@ await workspace.call({
   },
 })
 That should return VALIDATION_ERROR.
-If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by task.start was passed at the top level. Do not switch to branch-threading, root task metadata, task.call, task.exec, or host shell fallback as the default recovery path.
+If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by task.start was passed at the top level. Do not switch to branch-threading, root task metadata, code.call, code.call, or host shell fallback as the default recovery path.
 Inside code.run and batch, pass taskSession on the outer workspace.call. Nested workspace.* calls inherit task context.
 
 
@@ -995,7 +995,7 @@ code.call for focused package/test/build/typecheck/codegen/syntax commands and s
 status, audit, review.run, verify, task.push, task.pr, and task.merge for known lifecycle workflows.
 github for GitHub/PR state.
 Host or raw-shell fallback only when no typed workspace surface can safely express the operation; record the tooling gap.
-Do not use task.call or task.exec for normal command execution. Translate old examples to code.call.
+Do not use code.call for normal command execution. Translate old examples to code.call.
 Keep the scoped workpad current:
 acceptance criteria
 implementation plan
@@ -1310,7 +1310,7 @@ Record the command, trace ID, and meaningful failure signal in the scoped workpa
 Implement the change.
 Rerun the focused command through code.call and capture green.
 Record the command, trace ID, and result in the scoped workpad.
-Do not use task.call, task.exec, host shell tools, or ad hoc terminal commands for TDD evidence when code.call can run the command.
+Do not use code.call, code.call, host shell tools, or ad hoc terminal commands for TDD evidence when code.call can run the command.
 Common validation command examples
 Workspace package test:
 await workspace.call({

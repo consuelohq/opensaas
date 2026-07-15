@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_092019eb2cf3",
+  "tmuxSession": "opensaas-security-release-readiness-retry-092019eb",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/release-readiness-retry",
+  "branch": "task/security/release-readiness-retry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-readiness-retry",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-readiness-retry",
+  "prNumber": 1391,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1391",
+  "createdAt": "2026-07-10T23:55:31.140Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-readiness-retry/.task/security/release-readiness-retry/session.json"
+}

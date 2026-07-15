@@ -36,7 +36,7 @@ type ConsueloGatewayServiceTarget = {
   kind: 'consuelo-gateway-service';
   serviceName: 'trace-sites-read-layer' | 'trace-sites-live-endpoints' | (string & {});
   gatewayRouteFamily: '/gateway/traces/*' | (string & {});
-  publicSiteRouteFamily: '/traces/*' | (string & {});
+  publicSiteRouteFamily: '/observability/*' | (string & {});
 };
 
 type RouteTarget = SiteSnapshotTarget | OsConnectorTarget | ServiceUpstreamTarget | ConsueloGatewayServiceTarget;
@@ -153,12 +153,16 @@ function signInternalEdgeRequest(input: {
   pathWithSearch: string;
   workspaceId: string;
   surface: string;
+  timestamp: string;
+  nonce: string;
 }): string {
   const canonical = [
     input.method.toUpperCase(),
     input.pathWithSearch,
     input.workspaceId,
     input.surface,
+    input.timestamp,
+    input.nonce,
   ].join('\n');
 
   return `sha256=${createHmac('sha256', input.secret).update(canonical).digest('hex')}`;
@@ -197,7 +201,7 @@ function gatewayReadTarget(): ConsueloGatewayServiceTarget {
     kind: 'consuelo-gateway-service',
     serviceName: 'trace-sites-read-layer',
     gatewayRouteFamily: '/gateway/traces/*',
-    publicSiteRouteFamily: '/traces/*',
+    publicSiteRouteFamily: '/observability/*',
   };
 }
 
@@ -206,7 +210,7 @@ function gatewayLiveTarget(): ConsueloGatewayServiceTarget {
     kind: 'consuelo-gateway-service',
     serviceName: 'trace-sites-live-endpoints',
     gatewayRouteFamily: '/gateway/traces/*',
-    publicSiteRouteFamily: '/traces/*',
+    publicSiteRouteFamily: '/observability/*',
   };
 }
 
@@ -257,7 +261,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
     });
 
-    const traceRoute = record.routes.find((route) => route.pathPrefix === '/traces');
+    const traceRoute = record.routes.find((route) => route.pathPrefix === '/observability');
     const mcpRoute = record.routes.find((route) => route.pathPrefix === '/mcp');
     const gatewayRoutes = record.routes.filter((route) => route.target.kind === 'consuelo-gateway-service');
 
@@ -274,6 +278,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot').map((route) => route.pathPrefix)).toEqual([
       '/',
       '/office',
+      '/observability',
       '/traces',
       '/tracing',
       '/diffs',
@@ -283,6 +288,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       surface: 'os',
       target: { kind: 'os-connector', connectorId: 'connector_internal' },
     });
+    expect(record.routes.some((route) => route.pathPrefix === '/observability' && route.target.kind === 'os-connector')).toBe(false);
     expect(record.routes.some((route) => route.pathPrefix === '/traces' && route.target.kind === 'os-connector')).toBe(false);
     expect(gatewayRoutes.map((route) => route.target).filter((target): target is ConsueloGatewayServiceTarget => target.kind === 'consuelo-gateway-service')).toEqual(expect.arrayContaining([
       expect.objectContaining(gatewayReadTarget()),
@@ -371,26 +377,38 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
 
     const readPath = '/gateway/traces/recent?cursor=00000000';
     const livePath = '/gateway/traces/events?cursor=00000000';
+    const readTimestamp = String(Date.now());
+    const readNonce = 'test-read-nonce';
     const readResponse = await router.fetch(new Request(`https://internal.consuelohq.com${readPath}`, {
       headers: {
+        'x-consuelo-edge-timestamp': readTimestamp,
+        'x-consuelo-edge-nonce': readNonce,
         'x-consuelo-edge-signature': signInternalEdgeRequest({
           secret: 'edge-test-secret',
           method: 'GET',
           pathWithSearch: readPath,
           workspaceId: 'workspace_internal',
           surface: 'sites',
+          timestamp: readTimestamp,
+          nonce: readNonce,
         }),
       },
     }));
     const readBody = (await readResponse.json()) as Record<string, unknown>;
+    const liveTimestamp = String(Date.now());
+    const liveNonce = 'test-live-nonce';
     const liveResponse = await router.fetch(new Request(`https://internal.consuelohq.com${livePath}`, {
       headers: {
+        'x-consuelo-edge-timestamp': liveTimestamp,
+        'x-consuelo-edge-nonce': liveNonce,
         'x-consuelo-edge-signature': signInternalEdgeRequest({
           secret: 'edge-test-secret',
           method: 'GET',
           pathWithSearch: livePath,
           workspaceId: 'workspace_internal',
           surface: 'sites',
+          timestamp: liveTimestamp,
+          nonce: liveNonce,
         }),
       },
     }));
@@ -404,7 +422,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
         serviceName: 'trace-sites-read-layer',
         gatewayServiceName: 'trace-sites-read-layer',
         gatewayRouteFamily: '/gateway/traces/*',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
       },
     });
     expect(liveResponse.status).toBe(200);
@@ -415,7 +433,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
         serviceName: 'trace-sites-live-endpoints',
         gatewayServiceName: 'trace-sites-live-endpoints',
         gatewayRouteFamily: '/gateway/traces/*',
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
       },
     });
     expect(upstreamRequests).toHaveLength(0);
@@ -437,13 +455,13 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
 
     expect(traceDescriptors).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
         gatewayServiceName: 'trace-sites-read-layer',
         publicBoundary: 'consuelo-gateway',
       }),
       expect.objectContaining({
-        publicSiteRouteFamily: '/traces/*',
+        publicSiteRouteFamily: '/observability/*',
         gatewayRouteFamily: '/gateway/traces/*',
         gatewayServiceName: 'trace-sites-live-endpoints',
         publicBoundary: 'consuelo-gateway',
@@ -494,6 +512,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
 
     expect(expectedPlan.verifyUrl).toBe('https://internal.consuelohq.com/');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/office"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/observability"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/traces"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/diffs"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/docs"');
@@ -501,6 +520,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(verificationUrls).toEqual([
       'https://internal.consuelohq.com/',
       'https://internal.consuelohq.com/office',
+      'https://internal.consuelohq.com/observability',
       'https://internal.consuelohq.com/traces',
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
@@ -511,6 +531,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       verifiedUrls: [
         'https://internal.consuelohq.com/',
         'https://internal.consuelohq.com/office',
+        'https://internal.consuelohq.com/observability',
         'https://internal.consuelohq.com/traces',
         'https://internal.consuelohq.com/diffs',
         'https://internal.consuelohq.com/docs',

@@ -284,12 +284,13 @@ function authPathForHome(home: string): string {
 }
 
 function caddyPathForHome(home: string): string {
-  return path.join(home, 'security', 'generated', 'Caddyfile');
+  return path.join(home, 'caddy', 'Caddyfile');
 }
 
 function ensureSecurityDirs(home: string): void {
   fs.mkdirSync(path.join(home, 'security', 'generated'), { recursive: true });
   fs.mkdirSync(path.join(home, 'security', 'overrides'), { recursive: true });
+  fs.mkdirSync(path.join(home, 'caddy'), { recursive: true });
   fs.mkdirSync(path.join(home, 'logs'), { recursive: true });
 }
 

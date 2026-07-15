@@ -386,9 +386,14 @@ await workspace.call({
     taskSession,
     mode: "verify",
     code: `
-      const test = await workspace.code.call({
-        command: ["bun", "test", "packages/workspace/tests/codemode.test.ts"],
-        timeout: 120000
+      const test = await workspace.call({
+        tool: "code.call",
+        input: {
+          language: "bun",
+          mode: "verify",
+          code: 'const proc = Bun.spawnSync({ cmd: ["bun", "test", "packages/workspace/tests/codemode.test.ts"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)',
+          timeout: 120000,
+        },
       });
 
       return {
@@ -488,7 +493,7 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | `git clean -fd`, `git clean -fdx` | Stop and ask Ko; use `fs.trash` for known files or `task.cleanup` for stale task worktrees | Git clean can delete untracked work. |
 | `git checkout -- <file>`, `git restore <file>` | Typed `git.restorePaths` when available; otherwise ask or use smallest task-scoped fallback with exact paths | Restore can discard edits. Needs path-level intent. |
 | `git merge <branch>` | `stream.sync`, `task.pr`, `task.merge`, or future `stream.mergeIntoTask` | Stream/task merges need metadata handling, conflict reporting, and branch guarantees. |
-| `gh pr view`, `gh pr checks`, `gh api` through `code.call` or legacy `code.call` | Typed `github` tool; current `gh` workspace tool only as temporary fallback | GitHub state is not task-worktree shell work. |
+| `gh pr view`, `gh pr checks`, `gh api` through `code.call` | Typed `github` tool; current `gh` workspace tool only as temporary fallback | GitHub state is not task-worktree shell work. |
 | `cat > file <<EOF ... EOF` | `tmp` + `fs.write` with `contentFile` or `fs.apply_patch` with `patchFile` for marker/diff patches | Heredocs are fragile and often safety-filtered. |
 | `python - <<PY ... PY`, `node - <<JS ... JS`, `bun -e "<large code>"` | temp script/input file + `code.call` argv; or `code.run` | Large inline scripts cross too many parsing layers. |
 | giant `bash -lc "..."` strings | typed tool, `code.run`, or short argv array | Shell strings hide intent and trigger safety filters. |
@@ -540,9 +545,9 @@ Before running any legacy command example, translate it into the current typed w
 
 If a legacy command cannot be translated, state the missing typed operation and use the smallest safe fallback.
 
-## GitHub and PR state must not use code.call or code.call
+## GitHub and PR state must not use code.call
 
-Do not use `code.call` or legacy `code.call` to run GitHub CLI commands for PR state.
+Do not use `code.call` to run GitHub CLI commands for PR state.
 
 Bad:
 
@@ -570,7 +575,7 @@ await workspace.call({
 })
 ```
 
-Until the typed `github` tool exists, use the existing `gh` workspace tool only as a compatibility fallback, never through `code.call` or legacy `code.call`.
+Until the typed `github` tool exists, use the existing `gh` workspace tool only as a compatibility fallback, never through `code.call`.
 
 If the desired GitHub action is not supported by a typed tool, report it as a tooling gap.
 
@@ -578,7 +583,7 @@ If the desired GitHub action is not supported by a typed tool, report it as a to
 
 Raw shell usage should be observable and reducible over time.
 
-When an agent uses `code.call`, legacy `code.call`, `mac.call`, or legacy `mac.exec` with shell-shaped commands, classify the command afterward:
+When an agent uses `code.call`, `mac.call`, or legacy `mac.exec` with shell-shaped commands, classify the command afterward:
 
 | Raw pattern | Classification |
 |---|---|
@@ -1114,7 +1119,7 @@ File edit primitive routing:
 - Use `fs.apply_patch` for anchored marker/diff patches, especially multi-file edits and add/move/delete operations.
 - Use `fs.write` for new files, whole-file replacement, or exact appends.
 - Use `contentFile` or `patchFile` for multiline or large payloads. Inline `content` and `patchText` are only for short scalar text.
-- Use `code.call` to run commands inside the task worktree. Do not use `code.call` or legacy `code.call` to transport source code, scripts, or patches through a giant shell argument.
+- Use `code.call` to run commands inside the task worktree. Do not use `code.call` to transport source code, scripts, or patches through a giant shell argument.
 - Commands travel as argv arrays. Source code, scripts, patches, and multiline replacements travel as files.
 
 
@@ -1450,11 +1455,11 @@ For typed facade changes, follow the validation path documented in `packages/wor
 
 ```ts
 
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 300 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "run", "generate-types"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 300 })
 
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 300 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "run", "generate-docs"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 300 })
 
-await workspace.call({ tool: "code.call", taskSession, input: { command: ["bun", "--cwd", "packages/workspace", "run", "test", "tests/facade/facade.test.ts"] }, timeout: 600 })
+await workspace.call({ tool: "code.call", taskSession, input: { language: "bun", mode: "verify", code: 'const proc = Bun.spawnSync({ cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/facade/facade.test.ts"], stdout: "pipe", stderr: "pipe" }); console.log(new TextDecoder().decode(proc.stdout)); console.error(new TextDecoder().decode(proc.stderr)); process.exit(proc.exitCode ?? 1)' }, timeout: 600 })
 
 await workspace.call({ tool: "audit", taskSession, input: { scripts: true }, timeout: 300 })
 

@@ -62,7 +62,7 @@ function findServerPid() {
 }
 
 function findServerPids() {
-  return parsePids(run('pgrep', ['-f', 'packages/os/scripts/server.ts|scripts/server.ts']));
+  return parsePids(run('pgrep', ['-f', 'packages/os/scripts/server/main.ts|scripts/server/main.ts']));
 }
 
 function findPortPids() {

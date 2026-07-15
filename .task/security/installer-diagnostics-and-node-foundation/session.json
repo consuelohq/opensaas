@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_390db3031706",
+  "tmuxSession": "opensaas-security-installer-diagnostics-and-node-foundation-390db303",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/installer-diagnostics-and-node-foundation",
+  "branch": "task/security/installer-diagnostics-and-node-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-diagnostics-and-node-foundation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-diagnostics-and-node-foundation",
+  "prNumber": 1361,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1361",
+  "createdAt": "2026-07-03T18:38:11.480Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-diagnostics-and-node-foundation/.task/security/installer-diagnostics-and-node-foundation/session.json"
+}

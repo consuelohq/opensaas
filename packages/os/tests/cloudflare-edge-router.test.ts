@@ -296,9 +296,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     );
     expect(upstreamRequests[0].headers.get('x-consuelo-route')).toBe('/dialer');
     expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBeNull();
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
-      'sha256=e9652e5ea05501c2fe16ca735512b3b24cf4c6850cfe9d43cc59b198b5388333',
-    );
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-timestamp') ?? '').toMatch(/^\d+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-nonce') ?? '').toMatch(/^[-A-Za-z0-9_:.]+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature') ?? '').toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 
 
@@ -469,9 +469,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests[0].headers.get('x-consuelo-connector-id')).toBe(
       'connector_123',
     );
-    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature')).toBe(
-      'sha256=be9edfab49ef02523d70ec8d5cfc1597ab3a8fa7ff770d8202aa2902dc4a4bcd',
-    );
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-timestamp') ?? '').toMatch(/^\d+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-nonce') ?? '').toMatch(/^[-A-Za-z0-9_:.]+$/);
+    expect(upstreamRequests[0].headers.get('x-consuelo-edge-signature') ?? '').toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 
 
@@ -598,6 +598,50 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(cacheKeys).toEqual(['https://kokayi.consuelohq.com/']);
   });
 
+
+  it('should serve sites.consuelohq.com as a public site snapshot host', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const r2Reads: string[] = [];
+    const siteR2: WorkspaceSitesEdgeR2Bucket = {
+      async get(key) {
+        r2Reads.push(key);
+        if (key !== 'sites/workspace_testing/launcher/version_sites/index.html') return null;
+        return { text: async () => '<!doctype html><title>Consuelo OS Sites</title>' };
+      },
+    };
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          return {
+            allowed: true,
+            workspaceId: 'workspace_testing',
+            hostname: input.host,
+            route: '/',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'launcher',
+              versionId: 'version_sites',
+              manifestKey: 'sites/workspace_testing/launcher/version_sites/index.html',
+              contentType: 'text/html; charset=utf-8',
+              cachePolicy: 'static-shell',
+            },
+          };
+        },
+      },
+      siteSnapshots: { r2: siteR2 },
+    });
+
+    const response = await router.fetch(new Request('https://sites.consuelohq.com/'));
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('Consuelo OS Sites');
+    expect(response.headers.get('x-consuelo-site-version')).toBe('version_sites');
+    expect(r2Reads).toEqual(['sites/workspace_testing/launcher/version_sites/index.html']);
+  });
 
   it('should ignore cached site snapshots when the cached version does not match the current D1 target', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =

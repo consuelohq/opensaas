@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/workspace-agents/implement-pricing-route/workpad.md",
+    "AGENTS.md",
+    "packages/consuelo-website/animations.md",
+    "packages/consuelo-website/src/components/home/FeatureArtwork.astro",
+    "packages/consuelo-website/src/data/pricing-content.ts",
+    "packages/consuelo-website/src/data/site-links.ts",
+    "packages/consuelo-website/src/pages/pricing.astro",
+    "packages/consuelo-website/src/styles/primitives.css",
+    "packages/consuelo-website/tests/website-structure.test.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-08T23:45:32.620Z"
+}

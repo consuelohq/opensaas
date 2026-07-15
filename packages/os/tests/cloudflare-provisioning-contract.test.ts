@@ -36,12 +36,36 @@ type CloudflareRuleset = {
   rules: CloudflareRulesetRule[];
 };
 
+type TrustedOsMcpProviderIpSourceId =
+  | 'openai_chatgpt_connectors'
+  | 'openai_codex_cloud'
+  | 'anthropic_claude';
+
+type CloudflareAccountIpListItemInput = {
+  ip: string;
+  comment?: string;
+};
+
+type TrustedProviderIpAllowlistSyncResult =
+  | {
+      status: 'skipped';
+      reason: 'trusted provider IP allowlist env not configured';
+    }
+  | {
+      status: 'synced';
+      count: number;
+      operationId?: string;
+    };
+
 type WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
   zoneId: string;
   customRulesetId?: string;
   baseDomain: string;
   mcpAllowedIpsListName: string;
   temporaryDenyIpCidrs?: string[];
+  trustedProviderIpSourceIds?: TrustedOsMcpProviderIpSourceId[];
+  trustedProviderExtraIpCidrs?: string[];
+  managedMcpHostnames?: string[];
   allowInstallBootstrapRuleId?: string;
   allowInstallBootstrapRuleRef?: string;
   allowInstallBootstrapRuleDescription?: string;
@@ -79,6 +103,10 @@ type WorkspaceCloudflareProvisioningClient = {
   getAccountIpList?: (input: {
     name: string;
   }) => Promise<{ id: string; name: string } | null>;
+  createAccountIpListItems?: (input: {
+    listId: string;
+    items: CloudflareAccountIpListItemInput[];
+  }) => Promise<{ operationId?: string }>;
   getZoneCustomRuleset?: (input: {
     zoneId: string;
     rulesetId?: string;
@@ -110,6 +138,7 @@ type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = Required<
   Pick<
     WorkspaceCloudflareProvisioningClient,
     | 'getAccountIpList'
+    | 'createAccountIpListItems'
     | 'getZoneCustomRuleset'
     | 'createZoneCustomRuleset'
     | 'createZoneCustomRulesetRule'
@@ -179,6 +208,22 @@ type WorkspaceCloudflareProvisioningContract = {
     apiBaseUrl?: string;
     fetchImpl?: typeof fetch;
   }) => WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
+  createCloudflareWorkspaceProvisioningClient: (input: {
+    accountId: string;
+    apiToken: string;
+    apiBaseUrl?: string;
+    fetchImpl?: typeof fetch;
+  }) => WorkspaceCloudflareProvisioningClient;
+  resolveTrustedOsMcpProviderIpRanges: (input: {
+    sourceIds?: TrustedOsMcpProviderIpSourceId[];
+    extraCidrs?: string[];
+    fetchImpl?: typeof fetch;
+  }) => Promise<string[]>;
+  syncManagedOsMcpTrustedProviderIpAllowlist: (input: {
+    cloudflare: WorkspaceCloudflareProvisioningClient;
+    config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
+    fetchImpl?: typeof fetch;
+  }) => Promise<TrustedProviderIpAllowlistSyncResult>;
   ensureManagedOsMcpIngressPolicy: (input: {
     cloudflare: WorkspaceCloudflareProvisioningClient;
     config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
@@ -204,6 +249,9 @@ async function loadWorkspaceCloudflareProvisioningContract(): Promise<WorkspaceC
     'createOptionalManagedOsMcpIngressPolicyConfigFromEnv',
     'applyWorkspaceCloudflareProvisioningFromEnv',
     'createCloudflareManagedOsMcpIngressPolicyClient',
+    'createCloudflareWorkspaceProvisioningClient',
+    'resolveTrustedOsMcpProviderIpRanges',
+    'syncManagedOsMcpTrustedProviderIpAllowlist',
     'ensureManagedOsMcpIngressPolicy',
   ];
   const missingExports = requiredExports.filter(
@@ -306,6 +354,14 @@ const createFakeCloudflarePolicyClient = (input: {
       calls.push({ operation: 'getAccountIpList', key: input.name, body: input });
       return accountLists.find((list) => list.name === input.name) ?? null;
     },
+    async createAccountIpListItems(input) {
+      calls.push({
+        operation: 'createAccountIpListItems',
+        key: input.listId,
+        body: input,
+      });
+      return { operationId: 'list_items_operation_123' };
+    },
     async getZoneCustomRuleset(input) {
       calls.push({ operation: 'getZoneCustomRuleset', key: input.zoneId, body: input });
       if (input.rulesetId && input.rulesetId !== ruleset.id) return null;
@@ -403,7 +459,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     );
   });
 
-  it('should build managed OS MCP ingress rules for the OS hostname class', async () => {
+  it('should build managed OS MCP ingress rules for central OS and workspace hostname classes', async () => {
     const { buildManagedOsMcpIngressPolicyRules } =
       await loadWorkspaceCloudflareProvisioningContract();
 
@@ -445,6 +501,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         'not ends_with(http.host, ".os-origin.consuelohq.com")',
       );
       expect(expression).toContain('starts_with(http.request.uri.path, "/mcp")');
+      expect(expression).toContain('or http.host in {\n    "os.consuelohq.com"\n  }');
       expect(expression).toContain('"workspace.consuelohq.com"');
       expect(expression).toContain('"workspace-edge.consuelohq.com"');
       expect(expression).not.toContain('kokayi.consuelohq.com');
@@ -463,6 +520,18 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     );
   });
 
+  it('should identify invalid managed OS MCP hostnames in provisioning errors', async () => {
+    const { buildManagedOsMcpIngressPolicyRules } =
+      await loadWorkspaceCloudflareProvisioningContract();
+
+    expect(() => buildManagedOsMcpIngressPolicyRules({
+      zoneId: 'zone_123',
+      baseDomain: 'consuelohq.com',
+      mcpAllowedIpsListName: 'mcp_allowed_ips',
+      managedMcpHostnames: ['os.example.com'],
+    })).toThrow(/os\.example\.com.*consuelohq\.com/);
+  });
+
   it('should read managed OS MCP ingress policy config from Cloudflare env', async () => {
     const { createManagedOsMcpIngressPolicyConfigFromEnv } =
       await loadWorkspaceCloudflareProvisioningContract();
@@ -476,6 +545,12 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_ID: 'rule_bootstrap',
         CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS:
           '2603:6080:37f0:6c50::/64, 2603:6080:37f0:b460::/64',
+        CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES:
+          'openai_chatgpt_connectors, anthropic_claude',
+        CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS:
+          '203.0.113.0/24, 2001:db8:203::/48',
+        CLOUDFLARE_MCP_MANAGED_HOSTNAMES:
+          'os.consuelohq.com, workspace.consuelohq.com',
       },
     });
 
@@ -489,6 +564,12 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         '2603:6080:37f0:6c50::/64',
         '2603:6080:37f0:b460::/64',
       ],
+      trustedProviderIpSourceIds: [
+        'openai_chatgpt_connectors',
+        'anthropic_claude',
+      ],
+      trustedProviderExtraIpCidrs: ['203.0.113.0/24', '2001:db8:203::/48'],
+      managedMcpHostnames: ['os.consuelohq.com', 'workspace.consuelohq.com'],
     });
     expect(() =>
       createManagedOsMcpIngressPolicyConfigFromEnv({
@@ -502,6 +583,182 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
         env: { CLOUDFLARE_ZONE_ID: 'zone_123' },
       }),
     ).toThrow(/CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME/);
+    expect(() =>
+      createManagedOsMcpIngressPolicyConfigFromEnv({
+        baseDomain: 'consuelohq.com',
+        env: {
+          CLOUDFLARE_ZONE_ID: 'zone_123',
+          CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: 'mcp_allowed_ips',
+          CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES: 'google_gemini',
+        },
+      }),
+    ).toThrow(/unknown trusted OS MCP provider IP source/);
+  });
+
+  it('should resolve trusted provider CIDRs from official provider sources and approved extras', async () => {
+    const { resolveTrustedOsMcpProviderIpRanges } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const fetchCalls: string[] = [];
+    const fetchImpl: typeof fetch = async (input) => {
+      const request = new Request(input);
+      fetchCalls.push(request.url);
+
+      if (request.url === 'https://openai.com/chatgpt-connectors.json') {
+        return new Response(
+          JSON.stringify({
+            prefixes: [
+              { ipv4Prefix: '20.42.10.0/24' },
+              { ipv6Prefix: '2001:db8:42::/48' },
+            ],
+          }),
+        );
+      }
+      if (request.url === 'https://openai.com/chatgpt-agents.json') {
+        return new Response(
+          JSON.stringify({ prefixes: [{ ipv4Prefix: '20.99.0.0/16' }] }),
+        );
+      }
+
+      return new Response(JSON.stringify({ error: 'unexpected provider feed' }), {
+        status: 500,
+      });
+    };
+
+    const cidrs = await resolveTrustedOsMcpProviderIpRanges({
+      sourceIds: [
+        'openai_chatgpt_connectors',
+        'openai_codex_cloud',
+        'anthropic_claude',
+      ],
+      extraCidrs: ['203.0.113.0/24', '20.42.10.0/24'],
+      fetchImpl,
+    });
+
+    expect(fetchCalls).toEqual([
+      'https://openai.com/chatgpt-connectors.json',
+      'https://openai.com/chatgpt-agents.json',
+    ]);
+    expect(cidrs).toEqual([
+      '20.42.10.0/24',
+      '2001:db8:42::/48',
+      '20.99.0.0/16',
+      '160.79.104.0/21',
+      '203.0.113.0/24',
+    ]);
+    expect(JSON.stringify(cidrs)).not.toMatch(/127\.0\.0\.1|192\.168\./);
+  });
+
+  it('should sync trusted provider CIDRs into the configured Cloudflare account IP list', async () => {
+    const { syncManagedOsMcpTrustedProviderIpAllowlist } =
+      await loadWorkspaceCloudflareProvisioningContract();
+    const fakeCloudflare = createFakeCloudflarePolicyClient({});
+
+    const result = await syncManagedOsMcpTrustedProviderIpAllowlist({
+      cloudflare: fakeCloudflare.client,
+      config: {
+        zoneId: 'zone_123',
+        baseDomain: 'consuelohq.com',
+        mcpAllowedIpsListName: 'mcp_allowed_ips',
+        trustedProviderIpSourceIds: ['anthropic_claude'],
+        trustedProviderExtraIpCidrs: ['203.0.113.0/24'],
+      },
+    });
+
+    expect(result).toEqual({
+      status: 'synced',
+      count: 2,
+      operationId: 'list_items_operation_123',
+    });
+    expect(fakeCloudflare.calls.map((call) => call.operation)).toEqual([
+      'getAccountIpList',
+      'createAccountIpListItems',
+    ]);
+    expect(fakeCloudflare.calls[1]?.body).toEqual({
+      listId: 'list_mcp_allowed_ips',
+      items: [
+        {
+          ip: '160.79.104.0/21',
+          comment: 'Consuelo OS MCP trusted provider: anthropic_claude',
+        },
+        {
+          ip: '203.0.113.0/24',
+          comment: 'Consuelo OS MCP trusted provider: manual_extra',
+        },
+      ],
+    });
+  });
+
+  it('should post trusted provider CIDRs through the real Cloudflare account list endpoint', async () => {
+    const {
+      createCloudflareManagedOsMcpIngressPolicyClient,
+      syncManagedOsMcpTrustedProviderIpAllowlist,
+    } = await loadWorkspaceCloudflareProvisioningContract();
+    const calls: Array<{ method: string; path: string; body?: unknown }> = [];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      const parsedUrl = new URL(request.url);
+      const body = request.method === 'GET' ? undefined : await request.json();
+      calls.push({
+        method: request.method,
+        path: parsedUrl.pathname,
+        ...(body ? { body } : {}),
+      });
+
+      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/accounts/account_123/rules/lists')) {
+        return new Response(JSON.stringify({
+          success: true,
+          result: [{ id: 'list_123', name: 'mcp_allowed_ips', kind: 'ip' }],
+        }));
+      }
+      if (request.method === 'POST' && parsedUrl.pathname.endsWith('/accounts/account_123/rules/lists/list_123/items')) {
+        return new Response(JSON.stringify({
+          success: true,
+          result: { operation_id: 'list_items_operation_123' },
+        }));
+      }
+
+      return new Response(JSON.stringify({
+        success: false,
+        errors: [{ message: 'unexpected request' }],
+      }), { status: 500 });
+    };
+    const cloudflare = createCloudflareManagedOsMcpIngressPolicyClient({
+      accountId: 'account_123',
+      apiToken: 'token_fixture',
+      fetchImpl,
+    });
+
+    const result = await syncManagedOsMcpTrustedProviderIpAllowlist({
+      cloudflare,
+      config: {
+        zoneId: 'zone_123',
+        baseDomain: 'consuelohq.com',
+        mcpAllowedIpsListName: 'mcp_allowed_ips',
+        trustedProviderExtraIpCidrs: ['203.0.113.0/24'],
+      },
+    });
+
+    expect(result).toEqual({
+      status: 'synced',
+      count: 1,
+      operationId: 'list_items_operation_123',
+    });
+    expect(calls).toEqual([
+      {
+        method: 'GET',
+        path: '/client/v4/accounts/account_123/rules/lists',
+      },
+      {
+        method: 'POST',
+        path: '/client/v4/accounts/account_123/rules/lists/list_123/items',
+        body: [
+          {
+            ip: '203.0.113.0/24',
+            comment: 'Consuelo OS MCP trusted provider: manual_extra',
+          },
+        ],
+      },
+    ]);
   });
 
   it('should derive optional managed OS MCP ingress policy only when policy env is present', async () => {
@@ -1206,6 +1463,98 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       tunnelCredential: 'credential_fixture',
     });
     expect(JSON.stringify(result.registryRecord)).not.toContain('credential_fixture');
+  });
+
+  it('should call Cloudflare APIs for remote tunnel, tunnel token, config, and DNS records', async () => {
+    const {
+      applyWorkspaceCloudflareProvisioning,
+      createCloudflareWorkspaceProvisioningClient,
+    } = await loadWorkspaceCloudflareProvisioningContract();
+    const calls: Array<{ method: string; url: string; body?: unknown }> = [];
+    const fetchImpl = async (request: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = String(request);
+      const method = init?.method ?? 'GET';
+      const body = init?.body ? JSON.parse(String(init.body)) as unknown : undefined;
+      calls.push({ method, url, ...(body ? { body } : {}) });
+
+      if (url.endsWith('/accounts/account_123/cfd_tunnel?name=workspace-workspace_123-connector-macbook-air')) {
+        return new Response(JSON.stringify({ success: true, result: [] }));
+      }
+      if (url.endsWith('/accounts/account_123/cfd_tunnel') && method === 'POST') {
+        return new Response(JSON.stringify({ success: true, result: { id: 'tunnel_123' } }));
+      }
+      if (url.endsWith('/accounts/account_123/cfd_tunnel/tunnel_123/token')) {
+        return new Response(JSON.stringify({ success: true, result: 'tunnel_token_123' }));
+      }
+      if (url.endsWith('/accounts/account_123/cfd_tunnel/tunnel_123/configurations') && method === 'PUT') {
+        return new Response(JSON.stringify({ success: true, result: {} }));
+      }
+      if (url.includes('/zones/zone_123/dns_records?type=CNAME&')) {
+        return new Response(JSON.stringify({ success: true, result: [] }));
+      }
+      if (url.endsWith('/zones/zone_123/dns_records') && method === 'POST') {
+        return new Response(JSON.stringify({ success: true, result: { id: `record_${calls.length}` } }));
+      }
+
+      return new Response(JSON.stringify({ success: false, errors: [{ message: `unexpected ${method} ${url}` }] }), { status: 500 });
+    };
+
+    const cloudflare = createCloudflareWorkspaceProvisioningClient({
+      accountId: 'account_123',
+      apiToken: 'api_token_123',
+      apiBaseUrl: 'https://api.cloudflare.test/client/v4',
+      fetchImpl,
+    });
+    const result = await applyWorkspaceCloudflareProvisioning({
+      cloudflare,
+      input: {
+        workspaceId: 'workspace_123',
+        workspaceSlug: 'kokayi',
+        baseDomain: 'consuelohq.com',
+        cloudflareZoneId: 'zone_123',
+        connectorId: 'connector_macbook_air',
+        localServiceUrl: 'http://127.0.0.1:8960',
+      },
+    });
+
+    expect(result.connectorBootstrap).toMatchObject({
+      connectorId: 'connector_macbook_air',
+      tunnelId: 'tunnel_123',
+      tunnelCredential: 'tunnel_token_123',
+    });
+    expect(calls.map((call) => call.method)).toEqual([
+      'GET',
+      'POST',
+      'GET',
+      'PUT',
+      'GET',
+      'POST',
+      'GET',
+      'POST',
+    ]);
+    expect(calls[3]?.body).toEqual({
+      config: {
+        ingress: [
+          {
+            hostname: 'connector-macbook-air.os-origin.consuelohq.com',
+            service: 'http://127.0.0.1:8960',
+          },
+          { service: 'http_status:404' },
+        ],
+      },
+    });
+    expect(calls[5]?.body).toMatchObject({
+      type: 'CNAME',
+      name: 'kokayi.consuelohq.com',
+      content: 'workspace-edge.consuelohq.com',
+      proxied: true,
+    });
+    expect(calls[7]?.body).toMatchObject({
+      type: 'CNAME',
+      name: 'connector-macbook-air.os-origin.consuelohq.com',
+      content: 'tunnel_123.cfargotunnel.com',
+      proxied: true,
+    });
   });
 
   it('should keep client bootstrap credentials separate from durable registry data', async () => {

@@ -68,6 +68,21 @@ export type TraceSitesGatewayRecentEvents = {
   deltas?: TraceSitesLiveDelta[];
 };
 
+export type TraceSitesGatewayHistoryRow = Record<string, unknown> & {
+  id: string;
+  recordId: string;
+  traceId: string;
+  name: string;
+  traceName: string;
+  status: string;
+  ok: boolean;
+};
+
+export type TraceSitesGatewayHistoryPage = {
+  rows: TraceSitesGatewayHistoryRow[];
+  nextCursor: string | null;
+};
+
 export type TraceSitesGatewayCachedAggregate = {
   cursor: string;
   summary: TraceSitesDashboardSummary | null;
@@ -78,6 +93,7 @@ type MaybePromise<T> = T | Promise<T>;
 export type TraceSitesGatewayReadBackendAdapter = {
   resolveHealth?: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<Partial<TraceSitesGatewayReadBackendHealth>>;
   readRecentEvents: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<TraceSitesGatewayRecentEvents>;
+  readHistoryPage?: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<TraceSitesGatewayHistoryPage>;
   readCachedAggregate: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<TraceSitesGatewayCachedAggregate>;
 };
 
@@ -306,13 +322,19 @@ async function resolveBackendHealth(
   backend: TraceSitesGatewayReadBackendAdapter,
   input: TraceSitesGatewayReadBackendInput,
 ): Promise<TraceSitesGatewayReadBackendHealth> {
-  const health = await backend.resolveHealth?.(input);
-  return {
-    traceStoreAvailable: health?.traceStoreAvailable ?? true,
-    aggregateCacheAvailable: health?.aggregateCacheAvailable ?? true,
-    localRelayOnline: health?.localRelayOnline ?? true,
-    cloudRunnerSaturated: health?.cloudRunnerSaturated ?? false,
-  };
+  try {
+    const health = await backend.resolveHealth?.(input);
+    return {
+      traceStoreAvailable: health?.traceStoreAvailable ?? true,
+      aggregateCacheAvailable: health?.aggregateCacheAvailable ?? true,
+      localRelayOnline: health?.localRelayOnline ?? true,
+      cloudRunnerSaturated: health?.cloudRunnerSaturated ?? false,
+    };
+  } catch (error: unknown) {
+    throw error instanceof Error
+      ? error
+      : new Error('Trace backend health check failed.');
+  }
 }
 
 function failure(
