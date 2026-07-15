@@ -76,5 +76,7 @@ describe('OS raw steering routing', () => {
     expect(output.permission).toBe('guidance');
     expect(output.result?.steering).toContain('# Consuelo OS raw/operator steering');
     expect(output.result?.steering).toContain('# canonical full tool manifest');
+    expect(output.result?.steering).not.toContain('# bundled OS decision.md');
+    expect(output.result?.steering).not.toContain('# decision process');
   });
 });
