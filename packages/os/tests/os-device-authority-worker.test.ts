@@ -319,7 +319,20 @@ describe('os device authority worker', () => {
     });
   });
 
-  it('should resolve central MCP OAuth to the verified account workspace and proxy through the signed connector route', async () => {
+  it.each([
+    {
+      condition: 'internal edge signing is configured',
+      internalSigningSecret: 'test-edge-secret',
+      expectSignature: true,
+    },
+    {
+      condition: 'the private connector uses OAuth introspection without internal edge signing',
+      internalSigningSecret: undefined,
+      expectSignature: false,
+    },
+  ])(
+    'should resolve central MCP OAuth to the verified account workspace when $condition',
+    async ({ internalSigningSecret, expectSignature }) => {
     const store = createMemoryDeviceGrantStore();
     await seedGoogleAccountWorkspace(store, {
       workspaceSlug: 'macbook-air-test',
@@ -374,7 +387,7 @@ describe('os device authority worker', () => {
       googleOAuthClientSecret: 'test-google-client-secret',
       fetchImpl,
       workspaceRouteRegistry: routeRegistry,
-      workspaceEdgeInternalSigningSecret: 'test-edge-secret',
+      workspaceEdgeInternalSigningSecret: internalSigningSecret,
     });
     const verifier = 'test-central-proxy-pkce-verifier';
     const challenge = b64(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))));
@@ -433,9 +446,15 @@ describe('os device authority worker', () => {
     expect(proxied.headers['x-consuelo-route']).toBe('/mcp');
     expect(proxied.headers['x-consuelo-surface']).toBe('os');
     expect(proxied.headers['x-consuelo-connector-id']).toBe('connector_home_mac_mini');
-    expect(proxied.headers['x-consuelo-edge-timestamp']).toMatch(/^\d+$/);
-    expect(proxied.headers['x-consuelo-edge-nonce']).toMatch(/^[-A-Za-z0-9_:.]+$/);
-    expect(proxied.headers['x-consuelo-edge-signature']).toMatch(/^sha256=[0-9a-f]{64}$/);
+    if (expectSignature) {
+      expect(proxied.headers['x-consuelo-edge-timestamp']).toMatch(/^\d+$/);
+      expect(proxied.headers['x-consuelo-edge-nonce']).toMatch(/^[-A-Za-z0-9_:.]+$/);
+      expect(proxied.headers['x-consuelo-edge-signature']).toMatch(/^sha256=[0-9a-f]{64}$/);
+    } else {
+      expect(proxied.headers['x-consuelo-edge-timestamp']).toBeUndefined();
+      expect(proxied.headers['x-consuelo-edge-nonce']).toBeUndefined();
+      expect(proxied.headers['x-consuelo-edge-signature']).toBeUndefined();
+    }
     expect(proxied.body).toContain('tools/list');
 
     const refreshResponse = await handler(new Request(origin + '/oauth/token', {
@@ -491,7 +510,8 @@ describe('os device authority worker', () => {
     await expect(revokedResponse.json()).resolves.toMatchObject({
       error: 'invalid_grant',
     });
-  });
+    },
+  );
 
   it('should support ChatGPT CIMD clients and enforce resource echo during MCP OAuth token exchange', async () => {
     const store = createMemoryDeviceGrantStore();
@@ -584,6 +604,22 @@ describe('os device authority worker', () => {
       resource,
       scopes: ['mcp:read', 'mcp:call', 'tool:*:read', 'route:/mcp:read'],
       sub: 'google:google-sub-123',
+    });
+
+    const writeScopeIntrospection = await handler(new Request(`${origin}/oauth/introspect`, {
+      method: 'POST',
+      ...form({
+        token: String(tokenJson.access_token),
+        resource,
+        scope: 'tool:mac.process:write',
+      }),
+    }));
+    await expect(writeScopeIntrospection.json()).resolves.toMatchObject({
+      active: true,
+      client_id: clientId,
+      workspace_host: workspaceHost,
+      resource,
+      scopes: ['mcp:read', 'mcp:call', 'tool:*:read', 'route:/mcp:read'],
     });
   });
 

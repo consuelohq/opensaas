@@ -16,7 +16,8 @@ import {
 } from '../middleware/dangerous-material';
 import { internalError, jsonResponse } from '../middleware/errors';
 import { logLocalOsServerError } from '../logger';
-import { executeLocalOsCall } from '../services/call-service';
+import { executeLocalOsFacadeTool } from '../services/call-service';
+import { readGuardedLocalOsSteering } from '../services/steering-service';
 
 const MCP_PATH = '/mcp';
 
@@ -71,9 +72,10 @@ export function createMcpRoutes(): Hono {
       if (denied) return denied;
 
       const result = await handleMcpGatewayJsonRpc(body, {
-        executeCall: async (input) => {
+        getSteering: readGuardedLocalOsSteering,
+        executeFacadeTool: async (toolName, toolInput) => {
           try {
-            return await executeLocalOsCall(input);
+            return await executeLocalOsFacadeTool(toolName, toolInput);
           } catch (error: unknown) {
             logLocalOsServerError(
               'local_os.mcp_tool_execution_failed',
@@ -81,17 +83,13 @@ export function createMcpRoutes(): Hono {
               {
                 code: 'OS_EXECUTION_FAILED',
                 route: MCP_PATH,
-                toolName: input.name,
+                toolName,
               },
             );
             return {
               ok: false,
-              name: input.name,
-              permission: 'execute',
-              error: {
-                code: 'OS_EXECUTION_FAILED',
-                message: 'OS tool execution failed.',
-              },
+              code: 'OS_EXECUTION_FAILED',
+              message: 'OS tool execution failed.',
             };
           }
         },
