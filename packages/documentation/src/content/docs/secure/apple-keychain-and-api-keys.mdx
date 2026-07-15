@@ -1,0 +1,67 @@
+---
+title: Apple Keychain and API keys
+description: Keep provider credentials on the local Mac and expose commands, not secret values, to agents.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/scripts/sentry.js
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current Sentry facade was inspected on 2026-07-14; it reads provider configuration from macOS Keychain or local environment variables and does not print the token.'
+  - source: packages/os/scripts/ai-review.js
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'Existing Keychain lookup and setup patterns were inspected on 2026-07-14.'
+---
+
+Apple Keychain is the current default pattern for long-lived provider credentials on a macOS node. The credential stays with the local process. The agent receives a typed tool result, not the raw API key.
+
+This is separate from Consuelo’s own workspace and signed-request credentials. A Stripe key, Sentry token, or provider OAuth refresh token authorizes that provider; it does not identify an OS caller or grant the caller permission to invoke every tool.
+
+## Store a key
+
+Use a stable service name owned by the provider tool:
+
+```bash
+security add-generic-password -U   -a "$USER"   -s "consuelo-<provider>-api-key"   -w "<secret>"
+```
+
+The service name is configuration. The secret is not. Document the service name and expected scopes, but never print, commit, screenshot, or paste the value into a prompt.
+
+## Read it inside the tool
+
+A local tool can request the value at execution time:
+
+```bash
+security find-generic-password   -a "$USER"   -s "consuelo-<provider>-api-key"   -w
+```
+
+Do not run that command as a conversational diagnostic because `-w` writes the secret to standard output. The tool should capture it in-process, pass it directly to the provider client, and redact errors and logs.
+
+## Ask your agent
+
+```text
+Store this provider credential in Apple Keychain on the local node.
+Use a stable service name under the consuelo-<provider>-* namespace.
+Never print, return, log, or interpolate the secret into a command shown to me.
+Add a separate configuration check that reports only present or missing.
+Use the secret only inside the provider adapter after tool permission is granted.
+```
+
+## Prefer provider sessions when available
+
+An official CLI may manage its own session or profile. Use that mechanism when it is scoped, local, and documented. Do not copy a CLI-managed token into a second store merely so an agent can read it.
+
+## Rotate and remove
+
+Rotate a key in the provider first, update the local keychain item, verify one read-only operation, then revoke the old key. When removing a tool, revoke the provider credential as well as deleting the local item.
+
+```bash
+security delete-generic-password   -a "$USER"   -s "consuelo-<provider>-api-key"
+```
+
+Deletion and rotation are administrative changes. Confirm the provider, account, service name, and replacement path before acting.
+
+## Official documentation
+
+[Apple Keychain Access User Guide](https://support.apple.com/guide/keychain-access/welcome/mac)

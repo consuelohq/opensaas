@@ -15,6 +15,7 @@ import { extractFramesForCli } from './lib/media/frames';
 import { createMediaInstallPlan } from './lib/media/install-plan';
 import { probeForCli } from './lib/media/probe';
 import { qaForCli } from './lib/media/qa';
+import { renderScreenshotForCli } from './lib/media/screenshot';
 import { validateTimelineForCli } from './lib/media/timeline';
 
 type ParsedProfileArgs = {
@@ -79,6 +80,15 @@ function hasFlag(args: string[], flag: string): boolean {
   return args.includes(flag);
 }
 
+function booleanToggle(args: string[], enabledFlag: string, disabledFlag: string): boolean | undefined {
+  const enabled = hasFlag(args, enabledFlag);
+  const disabled = hasFlag(args, disabledFlag);
+  if (enabled && disabled) throw new Error('cannot use ' + enabledFlag + ' and ' + disabledFlag + ' together');
+  if (enabled) return true;
+  if (disabled) return false;
+  return undefined;
+}
+
 function writeJson(value: unknown): void {
   process.stdout.write(JSON.stringify(value, null, 2) + String.fromCharCode(10));
 }
@@ -134,6 +144,14 @@ function allOptionValues(args: string[], flag: string): string[] {
 
 function parseNumericOptions(args: string[], flag: string): number[] {
   return allOptionValues(args, flag).map((value) => Number(value)).filter((value) => Number.isFinite(value));
+}
+
+function numericOption(args: string[], flag: string): number | undefined {
+  const raw = optionValue(args, flag);
+  if (raw === undefined) return undefined;
+  const value = Number(raw);
+  if (!Number.isFinite(value)) throw new Error('invalid numeric value for ' + flag + ': ' + raw);
+  return value;
 }
 
 function inputExists(path: string | undefined): path is string {
@@ -270,54 +288,77 @@ async function handleCoreCommand(command: string, args: string[]): Promise<unkno
       if (!outPath) return missingInputError('compose out', outPath);
       return await Effect.runPromise(composeForCli({ timelinePath, outPath }));
     }
+    if (command === 'screenshot' || command === 'screenshot.render' || command === 'screenshot:render') {
+      const rest = command === 'screenshot' && args[0] === 'render' ? args.slice(1) : args;
+      if (process.env.CONSUELO_MEDIA_TEST_FORCE_MISSING === 'ffmpeg') return missingDependencyError('ffmpeg');
+      const inputPath = optionValue(rest, '--input');
+      const outPath = optionValue(rest, '--out');
+      if (!inputExists(inputPath)) return missingInputError('screenshot.render', inputPath);
+      if (!outPath) return missingInputError('screenshot.render out', outPath);
+      return await Effect.runPromise(renderScreenshotForCli({
+        inputPath,
+        outPath,
+        width: numericOption(rest, '--width'),
+        height: numericOption(rest, '--height'),
+        theme: optionValue(rest, '--theme') as 'dark' | 'light' | undefined,
+        accent: optionValue(rest, '--accent'),
+        background: optionValue(rest, '--background'),
+        padding: numericOption(rest, '--padding'),
+        fit: optionValue(rest, '--fit') as 'contain' | 'cover' | undefined,
+        pattern: optionValue(rest, '--pattern') as 'grid' | 'lines' | 'none' | undefined,
+        dots: booleanToggle(rest, '--dots', '--no-dots'),
+      }));
+    }
     if (command === 'qa') {
       const inputPath = optionValue(args, '--input');
       if (!inputExists(inputPath)) return missingInputError('qa', inputPath);
       return await Effect.runPromise(qaForCli({ inputPath }));
     }
-    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'svg convert', 'audio transcribe', 'frames extract', 'timeline validate', 'compose', 'qa'] } };
+    return { schema: 'media.help.v1', ok: true, data: { commands: ['doctor', 'install', 'probe', 'svg convert', 'audio transcribe', 'frames extract', 'timeline validate', 'screenshot render', 'compose', 'qa'] } };
   } catch (error: unknown) {
     return { schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CORE_COMMAND_ERROR', message: error instanceof Error ? error.message : String(error) } };
   }
 }
 
 async function main(): Promise<void> {
-  const [command = 'help', ...rest] = process.argv.slice(2);
-  if (command === 'doctor') {
-    const args = parseProfileArgs(rest);
-    writeJson(await Effect.runPromise(checkMediaDependenciesEffect({ profiles: args.profiles, allProfiles: args.allProfiles })));
-    return;
-  }
-  if (command === 'install') {
-    const args = parseProfileArgs(rest);
-    if (!args.dryRun && !hasCommand('brew')) {
-      writeJson({
-        schema: 'media.install-error.v1',
-        ok: false,
-        error: { code: 'HOMEBREW_UNAVAILABLE', message: 'Homebrew is required for media install. Run a dry-run or install Homebrew first.' },
-      });
-      process.exitCode = 1;
+  try {
+    const [command = 'help', ...rest] = process.argv.slice(2);
+    if (command === 'doctor') {
+      const args = parseProfileArgs(rest);
+      writeJson(await Effect.runPromise(checkMediaDependenciesEffect({ profiles: args.profiles, allProfiles: args.allProfiles })));
       return;
     }
-    if (!args.dryRun) {
-      writeJson({
-        schema: 'media.install-error.v1',
-        ok: false,
-        error: { code: 'INSTALL_REQUIRES_EXPLICIT_FUTURE_APPROVAL', message: 'Media install execution is not implemented yet. Use --dry-run.' },
-      });
-      process.exitCode = 1;
+    if (command === 'install') {
+      const args = parseProfileArgs(rest);
+      if (!args.dryRun && !hasCommand('brew')) {
+        writeJson({
+          schema: 'media.install-error.v1',
+          ok: false,
+          error: { code: 'HOMEBREW_UNAVAILABLE', message: 'Homebrew is required for media install. Run a dry-run or install Homebrew first.' },
+        });
+        process.exitCode = 1;
+        return;
+      }
+      if (!args.dryRun) {
+        writeJson({
+          schema: 'media.install-error.v1',
+          ok: false,
+          error: { code: 'INSTALL_REQUIRES_EXPLICIT_FUTURE_APPROVAL', message: 'Media install execution is not implemented yet. Use --dry-run.' },
+        });
+        process.exitCode = 1;
+        return;
+      }
+      writeJson(createMediaInstallPlan({ profiles: args.profiles, dryRun: args.dryRun, maxEstimatedSizeMb: args.maxEstimatedSizeMb }));
       return;
     }
-    writeJson(createMediaInstallPlan({ profiles: args.profiles, dryRun: args.dryRun, maxEstimatedSizeMb: args.maxEstimatedSizeMb }));
-    return;
-  }
 
-  const envelope = await handleCoreCommand(command, rest);
-  writeJson(envelope);
-  if (typeof envelope === 'object' && envelope !== null && 'ok' in envelope && envelope.ok === false) process.exitCode = 1;
+    const envelope = await handleCoreCommand(command, rest);
+    writeJson(envelope);
+    if (typeof envelope === 'object' && envelope !== null && 'ok' in envelope && envelope.ok === false) process.exitCode = 1;
+  } catch (error: unknown) {
+    writeJson({ schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CLI_ERROR', message: error instanceof Error ? error.message : String(error) } });
+    process.exitCode = 1;
+  }
 }
 
-main().catch((error: unknown) => {
-  writeJson({ schema: 'media.error.v1', ok: false, error: { code: 'MEDIA_CLI_ERROR', message: error instanceof Error ? error.message : String(error) } });
-  process.exit(1);
-});
+void main();

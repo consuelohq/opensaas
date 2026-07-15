@@ -1168,6 +1168,21 @@ bun run office -- --help
 
 ---
 
+### media:screenshot — frame a local screenshot for social/X
+
+Uses the OS media CLI and the installed FFmpeg runtime. The default is a 1600×900 Consuelo blue (`#0000F2`) canvas with the website's subtle dither clouds in the corners, generous padding, a restrained frame, and a soft shadow. It writes one PNG and does not alter the source screenshot pixels.
+
+```bash
+bun run media:screenshot -- --input ./shot.png --out ./social.png --json
+bun run media:screenshot -- --input ./shot.png --out ./social-plain.png --no-dots --json
+bun run media:screenshot -- --input ./shot.png --out ./social-light.png --theme light --pattern lines --no-dots --json
+bun run media:screenshot -- --input ./shot.png --out ./social-custom.png --background '#123456' --dots --padding 96 --fit contain --json
+```
+
+Supported image inputs: PNG, JPEG, and WebP. Output must be PNG. Use `--background` for the canvas color, `--dots` or `--no-dots` for the website-derived corner decoration, and `--pattern grid|lines|none` independently for an optional geometric pattern. Use `--width` and `--height` to override the canvas and `--fit cover` to crop into the available card area.
+
+---
+
 ### doctor — workspace diagnostics
 
 checks local workspace prerequisites, server health, git state, and related command availability.

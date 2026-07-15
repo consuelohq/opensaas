@@ -35,7 +35,7 @@ export const renderHomepageSocialCard = async () => {
       ),
     ]);
     const onBrand = readToken(tokens, '--site-color-on-brand');
-    const cardBackground = '#000000';
+    const cardBackground = '#0000F2';
     const bodoniData = bodoniFont.toString('base64');
     const interData = interFont.toString('base64');
     const browser = await chromium.launch();
@@ -129,7 +129,7 @@ export const renderHomepageSocialCard = async () => {
 };
 
 export const writeHomepageSocialCard = async (
-  outputPath = join(packageRoot, 'public/consuelo-os-og-20260713.png'),
+  outputPath = join(packageRoot, 'public/consuelo-os-og-20260714.png'),
 ) => {
   try {
     const image = await renderHomepageSocialCard();

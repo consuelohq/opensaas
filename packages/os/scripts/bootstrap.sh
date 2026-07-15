@@ -23,13 +23,10 @@ resolve_runtime_home() {
     printf '%s\n' "$CONSUELO_RUNTIME_HOME"
     return 0
   fi
-  if [ "$OS_HOME" = "$LEGACY_OS_HOME" ] && [ -f "$LEGACY_OS_HOME/package.json" ]; then
-    printf '%s\n' "$LEGACY_OS_HOME"
-    return 0
-  fi
   printf '%s\n' "$OS_HOME/runtime/current"
 }
 RUNTIME_HOME="$(resolve_runtime_home)"
+RUNTIME_RELEASES_DIR="${CONSUELO_RUNTIME_RELEASES_DIR:-$OS_HOME/runtime/releases}"
 RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
 DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
 SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
@@ -979,7 +976,7 @@ current_repo_dir() {
   return 1
 }
 download_source_archive() {
-  local tmp_dir archive_file parent_dir staged_dir
+  local tmp_dir archive_file parent_dir staged_dir source_sha
   tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
   archive_file="$tmp_dir/source.tar.gz"
   staged_dir="$tmp_dir/source"
@@ -991,6 +988,8 @@ download_source_archive() {
     rm -rf "$tmp_dir"
     return 1
   fi
+  source_sha="$(shasum -a 256 "$archive_file")"
+  source_sha="${source_sha%% *}"
 
   if ! tar -xzf "$archive_file" -C "$staged_dir" --strip-components=1; then
     rm -rf "$tmp_dir"
@@ -1001,6 +1000,7 @@ download_source_archive() {
     rm -rf "$tmp_dir"
     return 1
   fi
+  printf 'sha256-%s\n' "$source_sha" > "$staged_dir/.consuelo-release-id"
 
   rm -rf "$SOURCE_DIR"
   mv "$staged_dir" "$SOURCE_DIR"
@@ -1022,6 +1022,7 @@ download_source() {
 
   require_command tar "Consuelo OS needs tar to unpack the source archive. tar is expected on supported macOS installs."
   require_command mktemp "Consuelo OS needs mktemp to stage the source archive safely. mktemp is expected on supported macOS installs."
+  require_command shasum "Consuelo OS needs shasum to identify downloaded runtime releases. shasum is expected on supported macOS installs."
 
   if [ -e "$SOURCE_DIR" ] && [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
     fail "$SOURCE_DIR exists but does not contain packages/os/scripts/install.ts. Move it or set CONSUELO_OS_SOURCE_DIR to another temporary path."
@@ -1069,6 +1070,59 @@ resolve_source() {
 
   download_source
 }
+runtime_release_id() {
+  local marker="$REPO_DIR/.consuelo-release-id"
+  local value=""
+
+  if [ -f "$marker" ]; then
+    IFS= read -r value < "$marker" || true
+  fi
+  if [ -z "$value" ]; then
+    value="$(shasum -a 256 "$REPO_DIR/packages/os/scripts/bootstrap.sh")"
+    value="source-${value%% *}"
+  fi
+  case "$value" in
+    *[!A-Za-z0-9._-]*|'') return 1 ;;
+  esac
+  printf '%s\n' "$value"
+}
+
+promote_hosted_runtime() {
+  case "$SOURCE_STATUS" in
+    local|would_download|would_refresh) return 0 ;;
+  esac
+  [ "$DRY_RUN" -eq 0 ] || return 0
+
+  local release_id release_dir temporary_link
+  release_id="$(runtime_release_id)" || fail "downloaded Consuelo OS source had an invalid release identity"
+  release_dir="$RUNTIME_RELEASES_DIR/$release_id"
+  temporary_link="${RUNTIME_HOME}.new.$$"
+
+  mkdir -p "$RUNTIME_RELEASES_DIR" "$(dirname "$RUNTIME_HOME")"
+  if [ -e "$release_dir" ]; then
+    if [ ! -f "$release_dir/packages/os/scripts/install.ts" ] || [ ! -d "$release_dir/packages/os/node_modules/@clack/prompts" ]; then
+      rm -rf "$release_dir"
+      mv "$REPO_DIR" "$release_dir"
+    elif [ "$REPO_DIR" != "$release_dir" ]; then
+      rm -rf "$REPO_DIR"
+    fi
+  else
+    mv "$REPO_DIR" "$release_dir"
+  fi
+
+  rm -f "$temporary_link"
+  ln -s "$release_dir" "$temporary_link"
+  if [ -L "$RUNTIME_HOME" ] || [ -f "$RUNTIME_HOME" ]; then
+    rm -f "$RUNTIME_HOME"
+  elif [ -d "$RUNTIME_HOME" ]; then
+    rmdir "$RUNTIME_HOME" || fail "$RUNTIME_HOME contains unmanaged files and cannot be activated safely"
+  elif [ -e "$RUNTIME_HOME" ]; then
+    fail "$RUNTIME_HOME cannot be replaced safely"
+  fi
+  mv "$temporary_link" "$RUNTIME_HOME"
+  REPO_DIR="$RUNTIME_HOME"
+}
+
 install_runtime_dependencies() {
   local os_dir="$1"
   log "Installing Consuelo OS runtime dependencies..."
@@ -1251,13 +1305,27 @@ open_workspace_launcher() {
 
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
-  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --dry-run --quiet)
+  (
+    cd "$os_dir"
+    CONSUELO_HOME="$OS_HOME" \
+      CONSUELO_DAEMON_HOME="$HOME" \
+      CONSUELO_SECURITY_GENERATED_DIR="$OS_HOME/node/security/generated" \
+      CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
+      bash ./scripts/install-system-daemons.sh --dry-run --quiet
+  )
   DAEMON_STATUS="dry_run"
 }
 
 install_daemons_quiet() {
   local os_dir="$REPO_DIR/packages/os"
-  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
+  (
+    cd "$os_dir"
+    CONSUELO_HOME="$OS_HOME" \
+      CONSUELO_DAEMON_HOME="$HOME" \
+      CONSUELO_SECURITY_GENERATED_DIR="$OS_HOME/node/security/generated" \
+      CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
+      bash ./scripts/install-system-daemons.sh --quiet
+  )
 }
 
 maybe_install_daemons() {
@@ -1295,7 +1363,12 @@ maybe_install_daemons() {
 
   if [ "$DEBUG" = "1" ]; then
     local os_dir="$REPO_DIR/packages/os"
-    CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
+    CONSUELO_OS_DEBUG=1 \
+      CONSUELO_HOME="$OS_HOME" \
+      CONSUELO_DAEMON_HOME="$HOME" \
+      CONSUELO_SECURITY_GENERATED_DIR="$OS_HOME/node/security/generated" \
+      CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
+      "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
     run_with_loading_dots "setting up background service" install_daemons_quiet
     log "background service ready"
@@ -1328,6 +1401,7 @@ main() {
   resolve_source
   ensure_dependencies
   run_onboarding
+  promote_hosted_runtime
   maybe_install_daemons
   print_success_summary
   open_workspace_launcher

@@ -1,0 +1,50 @@
+---
+title: Sentry
+description: Investigate Sentry projects, issues, events, and traces with the built-in read-only tools.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current read-only Sentry configuration, project, issue, event, and trace methods were inspected on 2026-07-14.'
+---
+
+> **Native Consuelo tool: Available now for investigation**  
+> **Available today: Yes — through the built-in `sentry.*` family and Sentry CLI.**
+
+The current Consuelo tools are deliberately read-only. They read Sentry configuration from Apple Keychain or local environment variables without printing the authentication token.
+
+## Ask your agent
+
+```text
+Use sentry.config to verify configuration without exposing credentials.
+Use sentry.projects, sentry.issues, sentry.issue, sentry.issueEvent, sentry.event,
+or sentry.trace to investigate the problem.
+Keep all current Consuelo Sentry work read-only.
+Use sentry-cli separately for release, artifact, source-map, or debug-file workflows.
+```
+
+## Available now
+
+```text
+sentry.config
+sentry.projects
+sentry.issues
+sentry.issue
+sentry.issueEvent
+sentry.event
+sentry.trace
+```
+
+## Credentials
+
+The built-in facade checks Keychain-backed Sentry configuration and returns status without the secret. See [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/).
+
+## Broader roadmap
+
+A future Sentry family may include release, monitor, artifact, and issue-state writes. Those should remain separate from investigation and require approval.
+
+## Official documentation
+
+[Sentry CLI](https://docs.sentry.io/cli/)

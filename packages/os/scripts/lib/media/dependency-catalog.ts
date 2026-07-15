@@ -31,7 +31,7 @@ export const mediaRuntimeDependencies: MediaRuntimeDependency[] = [
     packageManagers: { homebrew: 'ffmpeg' },
     versionCommands: [['ffmpeg', '-version'], ['ffprobe', '-version']],
     installHint: 'brew install ffmpeg',
-    requiredBy: ['media.probe', 'media.frames.extract', 'media.compose', 'media.qa', 'media.svg.convert'],
+    requiredBy: ['media.probe', 'media.frames.extract', 'media.screenshot.render', 'media.compose', 'media.qa', 'media.svg.convert'],
     optional: false,
     estimatedInstalledSizeMb: 180,
   },
