@@ -8,7 +8,9 @@ import {
   createDefaultGlobalYamlConfig,
   createDefaultNodeYamlConfig,
   createDefaultWorkspaceYamlConfig,
+  loadGlobalYamlConfig,
   loadNodeYamlConfig,
+  loadWorkspaceYamlConfig,
   resolveConsueloHome,
   resolveConsueloHomeLayout,
   writeYamlConfig,
@@ -290,6 +292,88 @@ export function readLocalNodeIdentity(home?: string): LocalNodeIdentity | undefi
   } catch {
     return undefined;
   }
+}
+
+type ExistingProvisionIdentity = {
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  node?: LocalNodeIdentity;
+};
+
+function readExistingProvisionIdentity(input: {
+  home: string;
+  layout: ReturnType<typeof resolveConsueloHomeLayout>;
+  config: OsConfig;
+}): ExistingProvisionIdentity | undefined {
+  const node = readLocalNodeIdentity(input.home);
+
+  if (!fs.existsSync(input.layout.globalConfigPath)) {
+    return input.config.workspace
+      ? {
+          workspaceId: input.config.workspace.id,
+          workspaceSlug: input.config.workspace.slug,
+          workspaceHost: input.config.workspace.host,
+          ...(node ? { node } : {}),
+        }
+      : undefined;
+  }
+
+  const globalConfig = loadGlobalYamlConfig(input.layout.globalConfigPath);
+  const activeWorkspace = globalConfig.activeWorkspace;
+  if (!activeWorkspace) {
+    return input.config.workspace
+      ? {
+          workspaceId: input.config.workspace.id,
+          workspaceSlug: input.config.workspace.slug,
+          workspaceHost: input.config.workspace.host,
+          ...(node ? { node } : {}),
+        }
+      : undefined;
+  }
+
+  if (input.config.workspace && input.config.workspace.id !== activeWorkspace) {
+    throw new Error('active workspace does not match the installed OS config');
+  }
+
+  const workspaceConfigPath = input.layout.workspaceConfigPath(activeWorkspace);
+  if (!fs.existsSync(workspaceConfigPath)) {
+    throw new Error('active workspace config is missing');
+  }
+
+  const workspaceConfig = loadWorkspaceYamlConfig(workspaceConfigPath);
+  if (workspaceConfig.workspace.id !== activeWorkspace) {
+    throw new Error('active workspace does not match workspace.yaml');
+  }
+
+  const fallbackWorkspace = input.config.workspace?.id === activeWorkspace
+    ? input.config.workspace
+    : undefined;
+  const workspaceSlug = workspaceConfig.workspace.slug ?? fallbackWorkspace?.slug;
+  const workspaceHost = workspaceConfig.workspace.host ?? fallbackWorkspace?.host;
+  if (!workspaceSlug || !workspaceHost) {
+    throw new Error('active workspace is missing its slug or host');
+  }
+
+  if (globalConfig.activeNode && node && globalConfig.activeNode !== node.nodeId) {
+    throw new Error('active node does not match node.yaml');
+  }
+
+  return {
+    workspaceId: activeWorkspace,
+    workspaceSlug,
+    workspaceHost,
+    ...(node
+      ? { node }
+      : globalConfig.activeNode
+        ? {
+            node: {
+              nodeId: globalConfig.activeNode,
+              nodeName: os.hostname() || 'local',
+            },
+          }
+        : {}),
+  };
 }
 
 function nowIso(): string {
@@ -1319,20 +1403,30 @@ export function provisionLocalOs(
   const gatewayPort = options.port ??
     (config.port === LEGACY_DEFAULT_PORT ? DEFAULT_PORT : config.port ?? DEFAULT_PORT);
   const workspaceBootstrap = options.workspaceBootstrap;
+  const existingIdentity = workspaceBootstrap
+    ? undefined
+    : readExistingProvisionIdentity({ home, layout, config });
   const workspaceIdentity = workspaceBootstrap
     ? {
         workspaceId: workspaceBootstrap.workspaceId,
         workspaceSlug: workspaceBootstrap.workspaceSlug,
         workspaceHost: workspaceBootstrap.workspaceHost,
       }
-    : {
+    : existingIdentity ?? {
         workspaceId: 'local-consuelo-os',
         workspaceSlug: 'local',
         workspaceHost: 'local.consuelohq.com',
       };
-  const nodeId = workspaceBootstrap?.nodeId ?? workspaceBootstrap?.connectorId ?? 'local';
-  const nodeName = workspaceBootstrap?.nodeName ?? (os.hostname() || 'local');
-  const nodeRole = workspaceBootstrap?.nodeRole ?? 'home';
+  const nodeId = workspaceBootstrap?.nodeId ??
+    workspaceBootstrap?.connectorId ??
+    existingIdentity?.node?.nodeId ??
+    'local';
+  const nodeName = workspaceBootstrap?.nodeName ??
+    existingIdentity?.node?.nodeName ??
+    (os.hostname() || 'local');
+  const nodeRole = workspaceBootstrap?.nodeRole ??
+    existingIdentity?.node?.nodeRole ??
+    'home';
 
   for (const dir of [
     layout.workspaceSharedDir(workspaceIdentity.workspaceId),
