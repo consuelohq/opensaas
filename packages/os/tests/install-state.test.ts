@@ -107,6 +107,98 @@ describe('local OS install state', () => {
     }
   });
 
+  it('should reuse the active workspace and node when reprovisioning without a new bootstrap', () => {
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({
+        mode: 'local',
+        workspaceBootstrap: {
+          workspaceId: 'workspace_existing',
+          workspaceSlug: 'existing',
+          workspaceHost: 'existing.consuelohq.com',
+          connectorId: 'connector_existing',
+          connectorTransport: 'websocket-relay',
+          nodeId: 'node_existing',
+          nodeName: 'Existing Mac',
+          nodeRole: 'home',
+        },
+      });
+    `);
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local' });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    const config = JSON.parse(readFileSync(result.configPath, 'utf8'));
+    const auth = JSON.parse(readFileSync(
+      join(tempHome, 'node', 'security', 'generated', 'auth.json'),
+      'utf8',
+    ));
+    const globalConfig = readFileSync(join(tempHome, 'consuelo.yaml'), 'utf8');
+    const nodeConfig = readFileSync(join(tempHome, 'node', 'node.yaml'), 'utf8');
+
+    expect(config.workspace).toEqual({
+      id: 'workspace_existing',
+      slug: 'existing',
+      host: 'existing.consuelohq.com',
+    });
+    expect(config.connector).toMatchObject({ id: 'connector_existing' });
+    expect(auth.workspaceId).toBe('workspace_existing');
+    expect(globalConfig).toContain('activeWorkspace: workspace_existing');
+    expect(globalConfig).toContain('activeNode: node_existing');
+    expect(nodeConfig).toContain('id: node_existing');
+    expect(existsSync(join(tempHome, 'workspaces', 'local-consuelo-os'))).toBe(false);
+  });
+
+
+  it('should reject a noninteractive update when the active workspace conflicts with installed state', () => {
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({
+        mode: 'local',
+        workspaceBootstrap: {
+          workspaceId: 'workspace_existing',
+          workspaceSlug: 'existing',
+          workspaceHost: 'existing.consuelohq.com',
+          connectorId: 'connector_existing',
+          connectorTransport: 'websocket-relay',
+          nodeId: 'node_existing',
+          nodeName: 'Existing Mac',
+          nodeRole: 'home',
+        },
+      });
+    `);
+
+    const globalConfigPath = join(tempHome, 'consuelo.yaml');
+    writeFileSync(
+      globalConfigPath,
+      readFileSync(globalConfigPath, 'utf8').replace(
+        'activeWorkspace: workspace_existing',
+        'activeWorkspace: workspace_other',
+      ),
+    );
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      try {
+        provisionLocalOs({ mode: 'local' });
+        process.stdout.write(JSON.stringify({ ok: true }));
+      } catch (error: unknown) {
+        process.stdout.write(JSON.stringify({
+          ok: false,
+          message: error instanceof Error ? error.message : String(error),
+        }));
+      }
+    `));
+
+    expect(result).toEqual({
+      ok: false,
+      message: 'active workspace does not match the installed OS config',
+    });
+  });
+
   it('creates the approved local home shape and preserves existing config', () => {
     const first = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');

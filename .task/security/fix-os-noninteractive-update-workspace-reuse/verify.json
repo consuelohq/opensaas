@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-os-noninteractive-update-workspace-reuse",
+  "base": "HEAD",
+  "headSha": "4cabe32f153deb6f576125c959740ac328f211c6",
+  "changeHash": "42cfa63526112898e8bfbc57c7432ff118a517fad1f9827d24bb89159e6d7546",
+  "changedFiles": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/install-state.test.ts"
+  ],
+  "verifiedAt": "2026-07-15T05:56:23.039Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-os-noninteractive-update-workspace-reuse/current.json",
+        ".task/security/fix-os-noninteractive-update-workspace-reuse/session.json",
+        ".task/security/fix-os-noninteractive-update-workspace-reuse/verify.json",
+        ".task/security/fix-os-noninteractive-update-workspace-reuse/workpad.md",
+        ".task/tasks/security/fix-os-noninteractive-update-workspace-reuse.json",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
