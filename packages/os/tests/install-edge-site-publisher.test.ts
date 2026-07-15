@@ -83,7 +83,7 @@ function makeHome(html = '<!doctype html><title>Internal workspace</title><main>
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-install-edge-publish-'));
   const sitePaths = [
     ['index.html'],
-    ['office', 'index.html'],
+    ['artifacts', 'index.html'],
     ['traces', 'index.html'],
     ['diffs', 'index.html'],
     ['docs', 'index.html'],
@@ -123,14 +123,14 @@ contractDescribe('install edge site publisher', () => {
     expect(first.verifyUrl).toBe('https://internal.consuelohq.com/');
     expect(first.verifiedUrls).toEqual([
       'https://internal.consuelohq.com/',
-      'https://internal.consuelohq.com/office',
+      'https://internal.consuelohq.com/artifacts',
       'https://internal.consuelohq.com/observability',
       'https://internal.consuelohq.com/traces',
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/settings',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'office', 'traces', 'traces', 'diffs', 'docs', 'settings']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'diffs', 'docs', 'settings']);
     expect(first.routeSql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
@@ -191,7 +191,7 @@ contractDescribe('install edge site publisher', () => {
       verifyUrl: 'https://internal.consuelohq.com/',
       verifiedUrls: [
         'https://internal.consuelohq.com/',
-        'https://internal.consuelohq.com/office',
+        'https://internal.consuelohq.com/artifacts',
         'https://internal.consuelohq.com/observability',
         'https://internal.consuelohq.com/traces',
         'https://internal.consuelohq.com/diffs',

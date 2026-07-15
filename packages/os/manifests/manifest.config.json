@@ -69,21 +69,20 @@
     ],
     "excludePrefixes": [
       "browser.",
-      "office.",
-      "design.",
       "linear.",
       "railway.",
       "sentry.",
       "task.",
       "website.",
-      "mac."
+      "mac.",
+      "artifacts."
     ],
     "excludeCategories": [
       "browser",
-      "consuelo design",
       "linear",
       "railway",
-      "sentry"
+      "sentry",
+      "artifacts"
     ]
   },
   "workflows": {

@@ -58,7 +58,7 @@ function printHelp() {
   writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --workflow <value>    workflow bundle to return: task|office|design|sites|media (default: task)');
+  writeStdout('  --workflow <value>    workflow bundle to return: task|artifacts|design|sites|media (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
   writeStdout('  --create-stream        explicitly create the remote stream when it does not exist');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);

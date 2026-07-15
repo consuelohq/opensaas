@@ -29,6 +29,11 @@ export type WorkspaceRouteD1RouteTarget =
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
+    }
+  | {
+      kind: 'redirect';
+      location: string;
+      statusCode: 301 | 302 | 307 | 308;
     };
 
 export type WorkspaceRouteD1Route = {

@@ -189,7 +189,7 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-edge-sites-gateway-'));
   const sitePaths = [
     ['index.html'],
-    ['office', 'index.html'],
+    ['artifacts', 'index.html'],
     ['traces', 'index.html'],
     ['diffs', 'index.html'],
     ['docs', 'index.html'],
@@ -203,7 +203,7 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
   return home;
 }
 
-function siteSnapshotTarget(siteId: 'launcher' | 'office' | 'traces' | 'diffs' | 'docs' | 'settings' = 'launcher'): SiteSnapshotTarget {
+function siteSnapshotTarget(siteId: 'launcher' | 'artifacts' | 'traces' | 'diffs' | 'docs' | 'settings' = 'launcher'): SiteSnapshotTarget {
   return {
     kind: 'site-snapshot',
     siteId,
@@ -261,7 +261,7 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
     status: 'active',
     routes: [
       { surface: 'sites', pathPrefix: '/', auth: 'public', status: 'active', target: siteSnapshotTarget('launcher') },
-      { surface: 'sites', pathPrefix: '/office', auth: 'public', status: 'active', target: siteSnapshotTarget('office') },
+      { surface: 'sites', pathPrefix: '/artifacts', auth: 'public', status: 'active', target: siteSnapshotTarget('artifacts') },
       { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
       { surface: 'sites', pathPrefix: '/tracing', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
       { surface: 'sites', pathPrefix: '/diffs', auth: 'public', status: 'active', target: siteSnapshotTarget('diffs') },
@@ -316,7 +316,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot').map((route) => route.pathPrefix)).toEqual([
       '/',
-      '/office',
+      '/artifacts',
       '/observability',
       '/traces',
       '/tracing',
@@ -721,7 +721,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
 
     expect(expectedPlan.verifyUrl).toBe('https://internal.consuelohq.com/');
-    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/office"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/artifacts"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/observability"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/traces"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/diffs"');
@@ -730,7 +730,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(expectedPlan.routeSql).toContain('"kind":"consuelo-gateway-service"');
     expect(verificationUrls).toEqual([
       'https://internal.consuelohq.com/',
-      'https://internal.consuelohq.com/office',
+      'https://internal.consuelohq.com/artifacts',
       'https://internal.consuelohq.com/observability',
       'https://internal.consuelohq.com/traces',
       'https://internal.consuelohq.com/diffs',
@@ -742,7 +742,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       verifyUrl: 'https://internal.consuelohq.com/',
       verifiedUrls: [
         'https://internal.consuelohq.com/',
-        'https://internal.consuelohq.com/office',
+        'https://internal.consuelohq.com/artifacts',
         'https://internal.consuelohq.com/observability',
         'https://internal.consuelohq.com/traces',
         'https://internal.consuelohq.com/diffs',

@@ -88,7 +88,7 @@ contractDescribe('workspace edge route seed contract', () => {
     });
     expect(record.routes.map((route) => route.pathPrefix)).toEqual([
       '/',
-      '/office',
+      '/artifacts',
       '/observability',
       '/traces',
       '/tracing',
@@ -99,10 +99,13 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/traces',
       '/gateway/settings/overlay',
       '/gateway/settings',
+      '/gateway/artifacts',
+      '/office',
+      '/design-wiki',
     ]);
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
       expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
-      expect.objectContaining({ pathPrefix: '/office', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'office', manifestKey: 'sites/workspace_internal/office/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/artifacts', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'artifacts', manifestKey: 'sites/workspace_internal/artifacts/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/observability', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/traces', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/tracing', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
@@ -150,6 +153,26 @@ contractDescribe('workspace edge route seed contract', () => {
           gatewayRouteFamily: '/gateway/settings/*',
           publicSiteRouteFamily: '/settings/*',
         }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/artifacts',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'artifacts-sites-read-layer',
+          gatewayRouteFamily: '/gateway/artifacts/*',
+          publicSiteRouteFamily: '/artifacts/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/office',
+        auth: 'public',
+        target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
+      }),
+      expect.objectContaining({
+        pathPrefix: '/design-wiki',
+        auth: 'public',
+        target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
       }),
     ]));
   });

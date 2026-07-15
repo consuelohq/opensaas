@@ -2,10 +2,10 @@
   "id": "digital-eguide",
   "title": "Digital E-guide",
   "uses": [
-    "office"
+    "artifacts"
   ],
   "workflow": "digital-eguide",
-  "defaultTool": "office.generateDigitalEguide",
+  "defaultTool": "artifacts.generateDigitalEguide",
   "primaryOpenDesignSkill": "digital-eguide",
   "templates": [
     "research",
@@ -16,6 +16,6 @@
   "extraRules": [
     "Choose the specific template from the user brief: research, spec, or plan.",
     "Use the reader shell for polished long-form e-guide output.",
-    "Publish durable artifacts through design.publish and verify the wiki entry."
+    "Publish durable artifacts through artifacts.publish and verify the artifacts catalog entry."
   ]
 }

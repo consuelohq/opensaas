@@ -189,10 +189,9 @@ type StoredAuthConfig = {
 };
 
 const PUBLIC_ROUTES = [
-  '/office',
+  '/artifacts',
   '/diffs',
   '/docs',
-  '/wiki',
   '/traces',
   '/tools',
   '/api',

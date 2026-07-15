@@ -16,14 +16,14 @@ Flow:
 call("daily-revenue-brief") -> Bun skill -> optional GraphQL proof query -> structured result
 ```
 
-Permission: `read`
+Permission: `draft`
 
-This skill does not implement the full revenue brief. It reports scaffold status, GraphQL connectivity status, and next wiring steps.
+This skill publishes a versioned HTML brief into the canonical Artifacts catalog while reporting GraphQL connectivity status and remaining production-data wiring.
 
 
-## Office
+## Artifacts
 
-`office` is the top-level orchestration skill for design artifact work. Landing pages are represented as the `landing-page` subskill/preset, not as the primary product skill. The skill teaches agents how to chain existing `office.*` tools, template rules, browser validation, `design.publish`, and `/office` verification.
+`artifacts` is the top-level orchestration skill for durable generated output. Landing pages, guides, specifications, plans, reports, email, images, demos, and motion work are additive subskills. The skill teaches agents how to generate and validate source-first output, publish with `artifacts.publish`, and verify `/artifacts` plus immutable history.
 
 
 ## Consuelo Workspace Snapshot

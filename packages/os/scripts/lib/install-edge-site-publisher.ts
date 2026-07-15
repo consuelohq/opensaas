@@ -57,7 +57,7 @@ const writeLog = (file: string, entries: unknown[]) => { fs.mkdirSync(path.dirna
 
 const snapshotSites = [
   { siteId: 'launcher', pathPrefix: '/', relativePath: ['index.html'] },
-  { siteId: 'office', pathPrefix: '/office', relativePath: ['office', 'index.html'] },
+  { siteId: 'artifacts', pathPrefix: '/artifacts', relativePath: ['artifacts', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/observability', relativePath: ['traces', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/traces', relativePath: ['traces', 'index.html'] },
   { siteId: 'diffs', pathPrefix: '/diffs', relativePath: ['diffs', 'index.html'] },

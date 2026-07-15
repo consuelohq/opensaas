@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/consolidate-office-into-os-artifacts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1516,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1516",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1516",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1516/consolidate-office-into-os-artifacts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1516",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1516/consolidate-office-into-os-artifacts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-consolidate-office-into-os-artifacts",
+  "taskSession": "tsk_ebbe3db64e02",
+  "tmuxSession": "opensaas-os-consolidate-office-into-os-artifacts-ebbe3db6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-consolidate-office-into-os-artifacts/.task/os/consolidate-office-into-os-artifacts/session.json",
+  "createdAt": "2026-07-15T18:39:43.750Z"
+}

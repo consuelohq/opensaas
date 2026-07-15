@@ -12,9 +12,8 @@ type SitesCommandResult = {
   indexPath: string;
   pagesDir?: string;
   pagesRegistryPath?: string;
-  officeIndexPath: string;
-  officeDataPath: string;
-  officeAssetsDir: string;
+  artifactsIndexPath: string;
+  artifactsDataPath: string;
   tracesIndexPath: string;
   diffsIndexPath: string;
   docsIndexPath: string;
@@ -22,8 +21,8 @@ type SitesCommandResult = {
   artifacts: number;
   generatedAt: string | null;
   indexExists: boolean;
-  officeIndexExists: boolean;
-  officeDataExists: boolean;
+  artifactsIndexExists: boolean;
+  artifactsDataExists: boolean;
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
   docsIndexExists: boolean;
@@ -85,12 +84,15 @@ function runSitesCommand(args: string[]): SitesCommandResult {
   `)) as SitesCommandResult;
 }
 
-describe('Sites artifact database loading', () => {
-  it('should guard database stat before opening SQLite', () => {
+describe('Sites artifact boundary', () => {
+  it('delegates artifact materialization without loading SQLite', () => {
     const source = readFileSync('scripts/lib/sites.ts', 'utf8');
-    expect(source).toContain('try {\n    stat = fs.statSync(dbPath);');
-    expect(source).toContain('} catch {\n    return [];\n  }');
-    expect(source.indexOf('stat = fs.statSync(dbPath);')).toBeLessThan(source.indexOf('const Database = loadBunSqliteDatabase();'));
+    expect(source).toContain("import {\n  artifactsSiteDataPath,");
+    expect(source).toContain('readArtifactCatalog,');
+    expect(source).toContain('refreshArtifactsSite,');
+    expect(source).not.toContain('bun:sqlite');
+    expect(source).not.toContain('loadBunSqliteDatabase');
+    expect(source).not.toContain('OfficeSiteData');
   });
 });
 describe('Sites CLI', () => {
@@ -103,8 +105,8 @@ describe('Sites CLI', () => {
     expect(pathResult.indexPath).toBe(join(tempHome, 'sites', 'index.html'));
     expect(pathResult.pagesDir).toBe(join(tempHome, 'sites', 'pages'));
     expect(pathResult.pagesRegistryPath).toBe(join(tempHome, 'sites', '.data', 'pages', 'registry.json'));
-    expect(pathResult.officeIndexPath).toBe(join(tempHome, 'sites', 'office', 'index.html'));
-    expect(pathResult.officeDataPath).toBe(join(tempHome, 'sites', 'office', 'data', 'artifacts.json'));
+    expect(pathResult.artifactsIndexPath).toBe(join(tempHome, 'sites', 'artifacts', 'index.html'));
+    expect(pathResult.artifactsDataPath).toBe(join(tempHome, 'sites', 'artifacts', 'data', 'catalog.json'));
     expect(pathResult.tracesIndexPath).toBe(join(tempHome, 'sites', 'traces', 'index.html'));
     expect(pathResult.diffsIndexPath).toBe(join(tempHome, 'sites', 'diffs', 'index.html'));
     expect(pathResult.docsIndexPath).toBe(join(tempHome, 'sites', 'docs', 'index.html'));
@@ -117,8 +119,8 @@ describe('Sites CLI', () => {
     expect(refreshResult.artifacts).toBe(0);
     expect(existsSync(refreshResult.indexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'pages', 'index.html'))).toBe(true);
-    expect(existsSync(refreshResult.officeIndexPath)).toBe(true);
-    expect(existsSync(refreshResult.officeDataPath)).toBe(true);
+    expect(existsSync(refreshResult.artifactsIndexPath)).toBe(true);
+    expect(existsSync(refreshResult.artifactsDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
     const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
     expect(tracesHtml).toContain('<h1>Traces</h1>');
@@ -127,8 +129,8 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
-    expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
-    expect(JSON.parse(readFileSync(refreshResult.officeDataPath, 'utf8')).artifacts).toEqual([]);
+    expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
+    expect(JSON.parse(readFileSync(refreshResult.artifactsDataPath, 'utf8')).entries).toEqual([]);
 
     const statusResult = runSitesCommand(['status', '--json']);
 
@@ -136,8 +138,8 @@ describe('Sites CLI', () => {
       ok: true,
       command: 'status',
       indexExists: true,
-      officeIndexExists: true,
-      officeDataExists: true,
+      artifactsIndexExists: true,
+      artifactsDataExists: true,
       tracesIndexExists: true,
       diffsIndexExists: true,
       docsIndexExists: true,
@@ -158,7 +160,7 @@ describe('Sites CLI', () => {
       ok: true,
       command: 'status',
       indexPath: join(tempHome, 'sites', 'index.html'),
-      officeDataPath: join(tempHome, 'sites', 'office', 'data', 'artifacts.json'),
+      artifactsDataPath: join(tempHome, 'sites', 'artifacts', 'data', 'catalog.json'),
     });
     expect(cliStatus).not.toHaveProperty('githubIndexPath');
 

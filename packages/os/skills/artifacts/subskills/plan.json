@@ -2,10 +2,10 @@
   "id": "plan",
   "title": "Plan",
   "uses": [
-    "office"
+    "artifacts"
   ],
   "workflow": "digital-eguide",
-  "defaultTool": "office.generateDigitalEguide",
+  "defaultTool": "artifacts.generateDigitalEguide",
   "primaryOpenDesignSkill": "digital-eguide",
   "templates": [
     "plan"

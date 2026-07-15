@@ -4,7 +4,7 @@ import path from 'node:path';
 import { getPackageRoot } from '../lib/manifest';
 import type { CallOutput, SkillContext } from '../lib/types';
 
-type OfficeInput = {
+type ArtifactsInput = {
   subskill?: string;
   includeReferences?: boolean;
 };
@@ -18,45 +18,45 @@ function readJson(relativePath: string): unknown {
 }
 
 function listSubskills(): unknown[] {
-  const root = path.join(getPackageRoot(), 'skills/office/subskills');
+  const root = path.join(getPackageRoot(), 'skills/artifacts/subskills');
   if (!fs.existsSync(root)) return [];
   return fs.readdirSync(root)
     .filter((name) => name.endsWith('.json'))
     .sort()
-    .map((name) => readJson(`skills/office/subskills/${name}`));
+    .map((name) => readJson(`skills/artifacts/subskills/${name}`));
 }
 
-function normalizeInput(input: unknown): OfficeInput {
+function normalizeInput(input: unknown): ArtifactsInput {
   return input != null && typeof input === 'object' && !Array.isArray(input)
-    ? input as OfficeInput
+    ? input as ArtifactsInput
     : {};
 }
 
-export async function runOffice(input: unknown, context: SkillContext): Promise<CallOutput> {
+export async function runArtifacts(input: unknown, context: SkillContext): Promise<CallOutput> {
   try {
     const normalizedInput = normalizeInput(input);
     const subskills = listSubskills();
     const selected = typeof normalizedInput.subskill === 'string'
       ? subskills.find((item) => item != null && typeof item === 'object' && (item as { id?: unknown }).id === normalizedInput.subskill) ?? null
       : null;
-    const skillMd = readText('skills/office/SKILL.md');
+    const skillMd = readText('skills/artifacts/SKILL.md');
     const result = {
-      summary: 'Office orchestration guide loaded. Use this skill to chain workspace tools and existing design scripts; use subskills as additive presets.',
-      skill: 'office',
+      summary: 'Artifacts orchestration guide loaded. Use this skill to chain OS tools and existing design scripts; use subskills as additive presets.',
+      skill: 'artifacts',
       permission: context.manifestEntry.permission,
       selectedSubskill: selected,
       subskills,
       guide: skillMd,
       references: {
         operatorManual: 'areas/consuelo-design/AGENTS.md',
-        packagedManual: 'packages/os/skills/office/references/agents.md',
+        packagedManual: 'packages/os/skills/artifacts/references/agents.md',
         designSystem: 'packages/consuelo-website/DESIGN.md',
       },
       nextActions: [
         'Read areas/consuelo-design/AGENTS.md and packages/consuelo-website/DESIGN.md.',
-        'Select the matching subskill/preset from packages/os/skills/office/subskills.',
-        'Call existing office.* workspace tools and create or update source-first artifacts.',
-        'Validate in browser, publish with design.publish when approved, and verify /office.',
+        'Select the matching subskill/preset from packages/os/skills/artifacts/subskills.',
+        'Call existing artifacts.* OS tools and create or update source-first outputs.',
+        'Validate in browser, publish with artifacts.publish when approved, and verify /artifacts.',
       ],
     };
     return {
@@ -74,8 +74,8 @@ export async function runOffice(input: unknown, context: SkillContext): Promise<
       permission: context.manifestEntry.permission,
       requiresApproval: context.manifestEntry.requiresApproval,
       error: {
-        code: 'OFFICE_GUIDE_FAILED',
-        message: error instanceof Error ? error.message.slice(0, 240) : 'Could not load Office guide.',
+        code: 'ARTIFACTS_GUIDE_FAILED',
+        message: error instanceof Error ? error.message.slice(0, 240) : 'Could not load Artifacts guide.',
       },
     };
   }

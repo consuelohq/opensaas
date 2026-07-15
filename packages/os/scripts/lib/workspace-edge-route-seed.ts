@@ -33,7 +33,7 @@ const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_
 const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
 const SITE_SNAPSHOT_ROUTES = [
   { pathPrefix: '/', siteId: 'launcher' },
-  { pathPrefix: '/office', siteId: 'office' },
+  { pathPrefix: '/artifacts', siteId: 'artifacts' },
   { pathPrefix: '/observability', siteId: 'traces' },
   { pathPrefix: '/traces', siteId: 'traces' },
   { pathPrefix: '/tracing', siteId: 'traces' },
@@ -196,6 +196,38 @@ const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
+const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/artifacts',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'artifacts-sites-read-layer',
+      gatewayRouteFamily: '/gateway/artifacts/*',
+      publicSiteRouteFamily: '/artifacts/*',
+    },
+  },
+];
+
+const buildLegacyArtifactRedirectRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/office',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/design-wiki',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
+  },
+];
+
 const getPrimaryRoute = (
   record: WorkspaceEdgeSeedRecord,
 ): WorkspaceRouteD1Route => {
@@ -212,6 +244,7 @@ const getTargetOriginUrl = (target: WorkspaceRouteD1RouteTarget): string => {
   if (target.kind === 'service-upstream') return target.upstreamUrl;
   if (target.kind === 'os-connector') return target.tunnelOriginUrl;
   if (target.kind === 'site-snapshot') return `r2://consuelo-sites-snapshots/${target.manifestKey}`;
+  if (target.kind === 'redirect') return `redirect://${target.location}`;
   return `consuelo-gateway://${target.serviceName}`;
 };
 
@@ -245,6 +278,8 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     })),
     ...buildTraceGatewayRoutes(),
     ...buildSettingsGatewayRoutes(),
+    ...buildArtifactsGatewayRoutes(),
+    ...buildLegacyArtifactRedirectRoutes(),
   ];
 
   if (trimmedValue(input.appUpstreamUrl) !== undefined) {

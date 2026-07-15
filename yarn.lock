@@ -26891,8 +26891,6 @@ __metadata:
 "consuelo-design@workspace:packages/consuelo-design":
   version: 0.0.0-use.local
   resolution: "consuelo-design@workspace:packages/consuelo-design"
-  bin:
-    consuelo-design: ./scripts/consuelo-design.ts
   languageName: unknown
   linkType: soft
 

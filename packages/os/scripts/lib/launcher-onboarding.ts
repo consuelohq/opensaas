@@ -14,7 +14,7 @@ const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
 const launcherLinks = {
   sites: [
     { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-    { label: 'Artifacts', href: 'https://sites.consuelohq.com/office' },
+    { label: 'Artifacts', href: 'https://sites.consuelohq.com/artifacts' },
     { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
     { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
   ],

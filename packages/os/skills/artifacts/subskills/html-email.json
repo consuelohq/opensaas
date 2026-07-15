@@ -2,10 +2,10 @@
   "id": "html-email",
   "title": "HTML Email",
   "uses": [
-    "office"
+    "artifacts"
   ],
   "workflow": "email",
-  "defaultTool": "office.generateEmail",
+  "defaultTool": "artifacts.generateEmail",
   "primaryOpenDesignSkill": "email-marketing",
   "templates": [
     "email"
