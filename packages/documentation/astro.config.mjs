@@ -21,6 +21,7 @@ export default defineConfig({
         LanguageSelect: './src/components/translation/RuntimeLanguageSelect.astro',
         PageTitle: './src/components/PageTitle.astro',
         Sidebar: './src/components/Sidebar.astro',
+        Footer: './src/components/Footer.astro',
       },
       sidebar: docsSidebar,
       social: [
