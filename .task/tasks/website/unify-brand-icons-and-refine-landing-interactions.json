@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/unify-brand-icons-and-refine-landing-interactions",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 1499,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1499",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1499",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1499/unify-brand-icons-and-refine-landing-interactions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1499",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1499/unify-brand-icons-and-refine-landing-interactions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-unify-brand-icons-and-refine-landing-interactions",
+  "taskSession": "tsk_80d88658f362",
+  "tmuxSession": "opensaas-website-unify-brand-icons-and-refine-landing-interaction-80d88658",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-unify-brand-icons-and-refine-landing-interactions/.task/website/unify-brand-icons-and-refine-landing-interactions/session.json",
+  "createdAt": "2026-07-14T23:22:32.199Z"
+}

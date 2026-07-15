@@ -14,7 +14,41 @@ describe('Consuelo OS homepage presentation', () => {
     expect(hero).not.toContain('DOWNLOAD LOCALLY');
     expect(hero).toContain('width: min(100%, 31rem);');
     expect(hero).toContain('min-height: calc(100svh - 4rem);');
-    expect(hero.match(/data-hero-line/g)).toHaveLength(3);
+    expect(hero.match(/<span data-hero-line>/g)).toHaveLength(3);
+  });
+
+  test('should fit three authored hero lines with Pretext when the container changes', async () => {
+    const hero = await readSource('src/components/home/HomeHero.astro');
+
+    expect(hero).toContain("import { layout, prepare } from '@chenglou/pretext'");
+    expect(hero).toContain("const heroLines = Array.from");
+    expect(hero).toContain('new ResizeObserver');
+    expect(hero).toContain("document.fonts.ready");
+    expect(hero).toContain("heading.style.setProperty('--hero-title-size'");
+    expect(hero).toContain('.os-hero h1 > span {');
+    expect(hero).toContain('display: block;');
+    expect(hero).not.toContain('.os-hero h1 > span:nth-child(2)::after');
+  });
+
+  test('should reveal a fixed full-viewport cloud footer behind the scrolling page', async () => {
+    const [homepage, footer] = await Promise.all([
+      readSource('src/pages/index.astro'),
+      readSource('src/components/home/HomeCloudCta.astro'),
+    ]);
+
+    expect(homepage).toContain('class="home-scroll-layer"');
+    expect(homepage.indexOf('</div>')).toBeLessThan(homepage.indexOf('<HomeCloudCta'));
+    expect(footer).toContain('position: fixed;');
+    expect(footer).toContain('height: 100dvh;');
+    expect(footer).toContain('opacity: var(--cloud-reveal-opacity');
+    expect(footer).toContain('pointer-events: var(--cloud-reveal-pointer-events');
+    expect(footer).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
+    expect(footer).toContain("window.addEventListener('scroll', scheduleReveal, { passive: true })");
+    expect(footer).toContain('window.requestAnimationFrame(updateReveal)');
+    expect(footer).toContain('data-cloud-title-line');
+    expect(footer).toContain('CONSUELO OS');
+    expect(footer).toContain('MIT LICENSE');
+    expect(footer).toContain('bottom: 0;');
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {
