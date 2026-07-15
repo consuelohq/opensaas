@@ -37,8 +37,19 @@ const schemaEntries = [
 >
   <SiteHeader pageSections={[{ id: 'features', label: 'FEATURES' }, { id: 'faq', label: 'FAQ' }]} />
   <main>
-    <HomeHero sectionId="intro" />
-    <HomeFeaturePreview sectionId="features" />
+    <div class="home-scroll-layer" data-home-scroll-layer>
+      <HomeHero sectionId="intro" />
+      <HomeFeaturePreview sectionId="features" />
+    </div>
     <HomeCloudCta />
   </main>
 </MarketingLayout>
+
+<style>
+  .home-scroll-layer {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 100dvh;
+    background: var(--site-color-brand);
+  }
+</style>

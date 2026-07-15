@@ -1,7 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { normalizeMdxToMarkdown, pagePathToMarkdownHref, sourcePathToMarkdownSlug } from '../src/lib/markdown-pages';
-import { selectSectionSidebar } from '../src/lib/docs-navigation';
+import {
+  footerSections,
+  getBreadcrumbs,
+  globalSectionLinks,
+  selectSectionSidebar,
+} from '../src/lib/docs-navigation';
 import type { DocsSidebarEntry } from '../src/lib/docs-navigation';
 
 describe('standalone documentation package', () => {
@@ -104,6 +109,32 @@ describe('documentation navigation', () => {
     { type: 'group', label: 'Connect', collapsed: true, entries: [{ type: 'link', label: 'Overview', href: '/connect/', isCurrent: true, attrs: {} }] },
   ] satisfies DocsSidebarEntry[];
 
+  test('derives direct global links, breadcrumbs, and footer columns from one registry', () => {
+    expect(globalSectionLinks).toHaveLength(7);
+    expect(globalSectionLinks[0]).toEqual({ label: 'Start', href: '/start/' });
+    expect(globalSectionLinks.at(-1)).toEqual({ label: 'Reference', href: '/reference/' });
+
+    expect(getBreadcrumbs('/')).toEqual([]);
+    expect(getBreadcrumbs('/start/')).toEqual([
+      { label: 'Start', href: '/start/', current: true },
+    ]);
+    expect(getBreadcrumbs('/build/tools/how-tools-work/')).toEqual([
+      { label: 'Build with OS', href: '/build/' },
+      { label: 'Tools' },
+      { label: 'How tools work', href: '/build/tools/how-tools-work/', current: true },
+    ]);
+
+    expect(footerSections).toHaveLength(7);
+    expect(footerSections.find((section) => section.label === 'Start')?.links).toContainEqual({
+      label: 'Install Consuelo OS',
+      href: '/start/install-consuelo-os/',
+    });
+    expect(footerSections.find((section) => section.label === 'Build with OS')?.links).toContainEqual({
+      label: 'Tools',
+      href: '/build/tools/how-tools-work/',
+    });
+  });
+
   test('keeps the global index and scopes section routes to one expanded group', () => {
     expect(selectSectionSidebar(sidebar, '/')).toEqual({ mode: 'global', entries: sidebar });
     const selected = selectSectionSidebar(sidebar, '/connect/');
@@ -128,6 +159,7 @@ describe('foundation source contract', () => {
     }
     expect(config).toContain('PageTitle:');
     expect(config).toContain('Sidebar:');
+    expect(config).toContain('Footer:');
     expect(config).toContain('customCss:');
   });
 
@@ -137,12 +169,46 @@ describe('foundation source contract', () => {
     }
   });
 
-  test('adds the approved page actions and no ask-AI action', () => {
+  test('adds the approved Vercel-style page actions and no ask-AI action', () => {
     const component = read('src/components/PageTitle.astro');
     for (const label of ['Copy page', 'View as Markdown', 'Open in ChatGPT', 'Open in Claude']) {
       expect(component).toContain(label);
     }
+    for (const description of [
+      'Copy page as Markdown for LLMs',
+      'Open this page as plain text',
+      'Copy this page and open ChatGPT',
+      'Copy this page and open Claude',
+    ]) {
+      expect(component).toContain(description);
+    }
+    expect(component).toContain('page-action-icon');
+    expect(component).toContain('page-breadcrumbs');
     expect(component).not.toContain('Ask AI');
+  });
+
+  test('renders a separate site footer and simplified sidebar hierarchy', () => {
+    const sidebar = read('src/components/Sidebar.astro');
+    const footer = read('src/components/Footer.astro');
+    const siteFooter = read('src/components/SiteFooter.astro');
+    const card = read('src/components/mintlify/Card.astro');
+    const css = read('src/styles/docs.css');
+
+    expect(sidebar).toContain('global-section-link');
+    expect(sidebar).toContain('globalSectionLinks');
+    expect(footer).toContain('SiteFooter');
+    expect(footer).toContain('data-docs-site-footer-home');
+    expect(siteFooter).toContain('footerSections');
+    expect(siteFooter).toContain('data-docs-site-footer');
+    expect(siteFooter).toContain('docs-registry-grid');
+    expect(card).toContain('border: 2px solid var(--sl-color-text-accent)');
+    expect(card).toContain(':focus:not(:focus-visible)');
+    expect(css).toContain("#starlight__sidebar a:focus:not(:focus-visible)");
+    expect(css).toContain("#starlight__sidebar a[aria-current='page']");
+    expect(css).toContain('#starlight__sidebar ul ul li');
+    expect(css).toContain('border-inline-start: 0');
+    expect(css).toContain('.page > .docs-site-footer');
+    expect(css).toContain('position: sticky');
   });
 
   test('uses a calm reading measure without changing the font family', () => {

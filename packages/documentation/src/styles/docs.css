@@ -1,3 +1,5 @@
+@layer starlight.base, starlight.reset, starlight.core, starlight.content, starlight.components, starlight.utils, starlight.overrides;
+
 @layer starlight.overrides {
   :root {
     --sl-content-width: 44rem;
@@ -34,6 +36,92 @@
   .sl-markdown-content table {
     display: block;
     overflow-x: auto;
+  }
+
+  #starlight__sidebar a:focus:not(:focus-visible),
+  #starlight__sidebar summary:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  #starlight__sidebar a:focus-visible,
+  #starlight__sidebar summary:focus-visible {
+    outline: 2px solid var(--sl-color-text-accent);
+    outline-offset: 2px;
+  }
+
+  #starlight__sidebar a[aria-current='page'] {
+    background: color-mix(
+      in srgb,
+      var(--sl-color-text-accent) 15%,
+      transparent
+    );
+    box-shadow: inset 3px 0 0 var(--sl-color-text-accent);
+    color: var(--sl-color-white);
+  }
+
+  #starlight__sidebar a[aria-current='page']:hover {
+    background: color-mix(
+      in srgb,
+      var(--sl-color-text-accent) 21%,
+      transparent
+    );
+    color: var(--sl-color-white);
+  }
+
+
+  #starlight__sidebar ul ul li {
+    border-inline-start: 0;
+    margin-inline-start: 0;
+    padding-inline-start: 0.75rem;
+  }
+
+  @media (min-width: 50rem) {
+    html[data-has-sidebar] .page {
+      align-items: stretch;
+      display: grid;
+      grid-template-columns: var(--sl-sidebar-width) minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      padding-top: var(--sl-nav-height);
+    }
+
+    html[data-has-sidebar] .page > .sidebar {
+      align-self: stretch;
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+    }
+
+    html[data-has-sidebar] .page > .main-frame {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+      padding-inline-start: 0;
+      padding-top: var(--sl-mobile-toc-height);
+    }
+
+    html[data-has-sidebar] .sidebar-pane {
+      height: calc(100vh - var(--sl-nav-height));
+      inset: auto;
+      position: sticky;
+      top: var(--sl-nav-height);
+      width: var(--sl-sidebar-width);
+    }
+
+    .page > .docs-site-footer {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      min-width: 0;
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .right-sidebar {
+      height: calc(100vh - var(--sl-nav-height));
+      padding-top: 0;
+      position: sticky;
+      top: var(--sl-nav-height);
+    }
   }
 
   @media (max-width: 50rem) {

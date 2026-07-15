@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1507,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1507",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1507",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1507/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1507",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1507/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy",
+  "taskSession": "tsk_9b7add02afa5",
+  "tmuxSession": "opensaas-os-separate-documentation-footer-scroll-region-and--9b7add02",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/.task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/session.json",
+  "createdAt": "2026-07-15T02:26:04.454Z"
+}

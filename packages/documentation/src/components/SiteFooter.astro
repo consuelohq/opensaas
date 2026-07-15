@@ -1,0 +1,139 @@
+---
+import { footerSections } from '../lib/docs-navigation';
+---
+
+<section class="docs-site-footer" data-docs-site-footer>
+  <nav aria-label="Documentation registry">
+    <div class="docs-site-footer-inner">
+      <div class="docs-registry-grid">
+        {footerSections.map((section) => (
+          <section class="docs-registry-column">
+            <h2><a href={section.href}>{section.label}</a></h2>
+            <ul>
+              {section.links.map((link) => (
+                <li><a href={link.href}>{link.label}</a></li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  </nav>
+</section>
+
+<script>
+  const desktopFooterQuery = window.matchMedia('(min-width: 50rem)');
+
+  const placeSiteFooter = () => {
+    const footer = document.querySelector('[data-docs-site-footer]');
+    const home = document.querySelector('[data-docs-site-footer-home]');
+    const page = document.querySelector('.page');
+    const mainFrame = page?.querySelector(':scope > .main-frame');
+
+    if (!(footer instanceof HTMLElement) || !(home instanceof HTMLElement)) return;
+
+    if (
+      desktopFooterQuery.matches &&
+      page instanceof HTMLElement &&
+      mainFrame instanceof HTMLElement
+    ) {
+      if (footer.parentElement !== page || footer.previousElementSibling !== mainFrame) {
+        mainFrame.insertAdjacentElement('afterend', footer);
+      }
+      return;
+    }
+
+    if (footer.parentElement !== home) home.append(footer);
+  };
+
+  placeSiteFooter();
+  desktopFooterQuery.addEventListener('change', placeSiteFooter);
+  document.addEventListener('astro:after-swap', placeSiteFooter);
+</script>
+
+<style>
+  @layer starlight.core {
+    .docs-site-footer {
+      background: var(--sl-color-black);
+      border-top: 1px solid var(--sl-color-hairline);
+      box-sizing: border-box;
+      margin-top: clamp(2.5rem, 6vw, 4.5rem);
+      padding-block: clamp(3rem, 7vw, 5.5rem) clamp(4rem, 9vw, 7rem);
+      width: 100%;
+    }
+
+    .docs-site-footer-inner {
+      margin-inline: auto;
+      max-width: 88rem;
+      padding-inline: clamp(1.25rem, 4vw, 4rem);
+    }
+
+    .docs-registry-grid {
+      display: grid;
+      gap: 3rem 1.75rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .docs-registry-column {
+      min-width: 0;
+    }
+
+    .docs-registry-column h2 {
+      font-size: var(--sl-text-sm);
+      font-weight: 600;
+      line-height: 1.35;
+      margin: 0 0 0.9rem;
+    }
+
+    .docs-registry-column h2 a {
+      color: var(--sl-color-white);
+      text-decoration: none;
+    }
+
+    .docs-registry-column ul {
+      display: grid;
+      gap: 0.5rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .docs-registry-column li {
+      line-height: 1.35;
+      min-width: 0;
+    }
+
+    .docs-registry-column li a {
+      color: var(--sl-color-gray-3);
+      display: inline-block;
+      font-size: var(--sl-text-xs);
+      overflow-wrap: anywhere;
+      text-decoration: none;
+    }
+
+    .docs-registry-column a:hover,
+    .docs-registry-column a:focus-visible {
+      color: var(--sl-color-white);
+    }
+
+    .docs-registry-column a:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    @media (min-width: 50rem) {
+      :global(.page > .docs-site-footer) {
+        margin-top: 0;
+      }
+
+      :global(.page > .docs-site-footer) .docs-registry-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 72rem) {
+      :global(.page > .docs-site-footer) .docs-registry-grid {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+      }
+    }
+  }
+</style>

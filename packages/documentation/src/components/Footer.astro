@@ -1,0 +1,48 @@
+---
+import EditLink from 'virtual:starlight/components/EditLink';
+import LastUpdated from 'virtual:starlight/components/LastUpdated';
+import Pagination from 'virtual:starlight/components/Pagination';
+import SiteFooter from './SiteFooter.astro';
+---
+
+<footer class="docs-page-footer">
+  <div class="docs-footer-meta">
+    <EditLink />
+    <LastUpdated />
+  </div>
+
+  <Pagination />
+
+  <div class="docs-site-footer-home" data-docs-site-footer-home>
+    <SiteFooter />
+  </div>
+</footer>
+
+<style>
+  @layer starlight.core {
+    .docs-page-footer {
+      display: grid;
+      gap: 1.75rem;
+      padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    }
+
+    .docs-footer-meta {
+      align-items: center;
+      color: var(--sl-color-gray-3);
+      display: flex;
+      flex-wrap: wrap;
+      font-size: var(--sl-text-sm);
+      gap: 0.75rem 3rem;
+      justify-content: space-between;
+      margin-top: 3rem;
+    }
+
+    .docs-footer-meta > :global(p:only-child) {
+      margin-inline-start: auto;
+    }
+
+    .docs-site-footer-home {
+      display: contents;
+    }
+  }
+</style>

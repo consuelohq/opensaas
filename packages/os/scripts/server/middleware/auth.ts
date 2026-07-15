@@ -123,6 +123,20 @@ function bearerTokenFromRequest(request: Request): string | null {
   return match?.[1]?.trim() || null;
 }
 
+function isLoopbackRequest(request: Request): boolean {
+  try {
+    const hostname = new URL(request.url).hostname.toLowerCase();
+    return (
+      hostname === 'localhost' ||
+      hostname === '::1' ||
+      hostname === '[::1]' ||
+      hostname === '127.0.0.1'
+    );
+  } catch {
+    return false;
+  }
+}
+
 function workspaceHostFromRequest(
   request: Request,
   config?: GatewaySecurityConfig,
@@ -180,16 +194,18 @@ export async function authorizeBearerMcpRequest(input: {
     );
   }
 
-  const result = verifyBearerMcpRequest({
-    config,
-    bearerToken,
-    path: input.path,
-    requiredScope: input.requiredScope,
-    now: new Date().toISOString(),
-  });
-  if (result.ok) return null;
-  if (result.error.code !== 'UNKNOWN_TOKEN') {
-    return verificationResponse(result);
+  if (isLoopbackRequest(input.request)) {
+    const result = verifyBearerMcpRequest({
+      config,
+      bearerToken,
+      path: input.path,
+      requiredScope: input.requiredScope,
+      now: new Date().toISOString(),
+    });
+    if (result.ok) return null;
+    if (result.error.code !== 'UNKNOWN_TOKEN') {
+      return verificationResponse(result);
+    }
   }
 
   return authorizeConsueloOAuthMcpRequest({
