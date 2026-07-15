@@ -1,4 +1,9 @@
-import { describe, expect, test } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+import { afterEach, describe, expect, test } from 'vitest';
 
 import {
   compactSuccessDetail,
@@ -6,7 +11,8 @@ import {
   renderRow,
   summarizeCodeCallForTraceWatch,
   type Args,
-} from '../../../scripts/operator/trace-watch';
+  resolveTraceWatchDbPath,
+} from '../scripts/trace-watch';
 
 type TraceWatchRow = Record<string, unknown>;
 
@@ -48,8 +54,8 @@ function codeCallRow(overrides: Partial<TraceWatchRow> = {}): TraceWatchRow {
     trace_id: 'trc_code_call',
     tool: 'code.call',
     task_session: 'tsk_1',
-    branch: 'task/workspace-agents/improve-code-call-trace-watch-telemetry-and-examples',
-    worktree: '.task/workspace-agents/improve-code-call-trace-watch-telemetry-and-examples',
+    branch: 'task/os/improve-code-call-trace-watch-telemetry-and-examples',
+    worktree: '.task/os/improve-code-call-trace-watch-telemetry-and-examples',
     status: 'ok',
     code: 'OK',
     exit_code: 0,
@@ -61,7 +67,7 @@ function codeCallRow(overrides: Partial<TraceWatchRow> = {}): TraceWatchRow {
     resolved_input_json: JSON.stringify({
       language: 'bun',
       mode: 'verify',
-      code: 'const commands = [["bun", "--cwd", "packages/workspace", "test", "tests/tool-manifest.test.ts"]]; Bun.spawnSync({ cmd: commands[0] })',
+      code: 'const commands = [["bun", "--cwd", "packages/os", "test", "tests/tool-manifest.test.ts"]]; Bun.spawnSync({ cmd: commands[0] })',
       maxResultChars: 60000,
     }),
     result_json: JSON.stringify({
@@ -77,7 +83,7 @@ function codeCallRow(overrides: Partial<TraceWatchRow> = {}): TraceWatchRow {
         stdout: JSON.stringify({
           ok: true,
           results: [
-            { command: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts', ok: true, exitCode: 0, durationMs: 1200 },
+            { command: 'bun --cwd packages/os test tests/tool-manifest.test.ts', ok: true, exitCode: 0, durationMs: 1200 },
             { command: 'bun --cwd packages/os test tests/tool-manifest.test.ts', ok: true, exitCode: 0, durationMs: 900 },
           ],
         }),
@@ -102,8 +108,8 @@ function batchRow(childResult: Record<string, unknown>, stepInput: Record<string
     trace_id: 'trc_batch',
     tool: 'batch',
     task_session: 'tsk_1',
-    branch: 'task/workspace-agents/strengthen-code-call-examples',
-    worktree: '.task/workspace-agents/strengthen-code-call-examples',
+    branch: 'task/os/strengthen-code-call-examples',
+    worktree: '.task/os/strengthen-code-call-examples',
     status: ok ? 'ok' : 'error',
     code: ok ? 'OK' : 'COMMAND_FAILED',
     exit_code: ok ? 0 : 1,
@@ -125,18 +131,23 @@ function batchRow(childResult: Record<string, unknown>, stepInput: Record<string
   };
 }
 
-function captureRow(row: TraceWatchRow): string {
-  const lines: string[] = [];
-  const originalLog = console.log;
+function captureRowWithArgs(args: Args, row: TraceWatchRow): string {
+  const chunks: string[] = [];
+  const originalWrite = process.stdout.write;
   try {
-    console.log = (value?: unknown) => {
-      lines.push(String(value ?? ''));
-    };
-    renderRow(baseArgs, row);
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+      chunks.push(String(chunk));
+      return true;
+    }) as typeof process.stdout.write;
+    renderRow(args, row);
   } finally {
-    console.log = originalLog;
+    process.stdout.write = originalWrite;
   }
-  return lines.join('\n');
+  return chunks.join('').replace(/\n$/, '');
+}
+
+function captureRow(row: TraceWatchRow): string {
+  return captureRowWithArgs(baseArgs, row);
 }
 
 describe('trace:watch code.call telemetry', () => {
@@ -180,6 +191,18 @@ describe('trace:watch code.call telemetry', () => {
     expect(rendered).toContain('code.call');
   });
 
+  test('renders deterministic ANSI branch coloring when color is enabled', () => {
+    const row = codeCallRow({ branch: 'task/os/colored-branch' });
+    const first = captureRowWithArgs({ ...baseArgs, color: true }, row);
+    const second = captureRowWithArgs({ ...baseArgs, color: true }, row);
+    const plain = captureRowWithArgs({ ...baseArgs, color: false }, row);
+
+    expect(first).toBe(second);
+    expect(first).toMatch(/\u001b\[(?:32|33|34|35|36|93|94|95|96)m/);
+    expect(first).toContain('os/colored-branch');
+    expect(plain).not.toContain('\u001b[');
+  });
+
   test('renders child command rows from code.call JSON stdout results', () => {
     const operations = nestedOperationsForRow(codeCallRow());
 
@@ -187,7 +210,7 @@ describe('trace:watch code.call telemetry', () => {
     expect(operations.map((operation) => operation.tool)).toEqual(['code.call cmd', 'code.call cmd']);
     expect(operations.every((operation) => operation.totalTokens === undefined)).toBe(true);
     expect(operations.map((operation) => operation.detail)).toEqual([
-      'bun --cwd packages/workspace test tests/tool-manifest.test.ts',
+      'bun --cwd packages/os test tests/tool-manifest.test.ts',
       'bun --cwd packages/os test tests/tool-manifest.test.ts',
     ]);
 
@@ -195,7 +218,7 @@ describe('trace:watch code.call telemetry', () => {
     expect(rendered).toContain('code.call cmd');
     const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
     expect(nestedLines).not.toContain('0 tokens');
-    expect(rendered).toContain('bun --cwd packages/workspace test tests/tool-manifest.test.ts');
+    expect(rendered).toContain('bun --cwd packages/os test tests/tool-manifest.test.ts');
     expect(rendered).toContain('bun --cwd packages/os test tests/tool-manifest.test.ts');
   });
 
@@ -204,7 +227,7 @@ describe('trace:watch code.call telemetry', () => {
       resolved_input_json: JSON.stringify({
         language: 'bash',
         mode: 'verify',
-        code: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts',
+        code: 'bun --cwd packages/os test tests/tool-manifest.test.ts',
         maxResultChars: 20000,
       }),
       result_json: JSON.stringify({
@@ -246,7 +269,7 @@ describe('trace:watch code.call telemetry', () => {
       resolved_input_json: JSON.stringify({
         language: 'bun',
         mode: 'edit',
-        code: 'const commands = [["bun", "run", "--cwd", "packages/workspace", "generate-tool-manifest"]]; await Bun.write("packages/workspace/TOOLS.md", "updated")',
+        code: 'const commands = [["bun", "run", "--cwd", "packages/os", "generate-tool-manifest"]]; await Bun.write("packages/os/TOOLS.md", "updated")',
         maxResultChars: 50000,
       }),
       result_json: JSON.stringify({
@@ -262,11 +285,11 @@ describe('trace:watch code.call telemetry', () => {
           stdout: JSON.stringify({
             ok: true,
             results: [
-              { command: 'bun run --cwd packages/workspace generate-tool-manifest', ok: true, exitCode: 0 },
+              { command: 'bun run --cwd packages/os generate-tool-manifest', ok: true, exitCode: 0 },
             ],
           }),
           stderr: '',
-          filesChanged: ['packages/workspace/TOOLS.md', 'packages/workspace/manifests/tool-manifest.json'],
+          filesChanged: ['packages/os/TOOLS.md', 'packages/os/manifests/tool-manifest.json'],
           truncated: true,
         },
       }),
@@ -293,7 +316,7 @@ describe('trace:watch code.call telemetry', () => {
       code_call_stdout: JSON.stringify({
         ok: true,
         results: [
-          { command: 'bun --cwd packages/workspace test tests/trace-watch.test.ts', ok: true, exitCode: 0 },
+          { command: 'bun --cwd packages/os test tests/trace-watch.test.ts', ok: true, exitCode: 0 },
         ],
       }),
       code_call_files_changed_count: 0,
@@ -310,7 +333,7 @@ describe('trace:watch code.call telemetry', () => {
       truncated: false,
     });
     expect(nestedOperationsForRow(row).map((operation) => operation.detail)).toEqual([
-      'bun --cwd packages/workspace test tests/trace-watch.test.ts',
+      'bun --cwd packages/os test tests/trace-watch.test.ts',
     ]);
   });
 
@@ -373,7 +396,7 @@ describe('trace:watch code.call telemetry', () => {
           stdout: JSON.stringify({
             ok: false,
             results: [
-              { command: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts', ok: false, exitCode: 1 },
+              { command: 'bun --cwd packages/os test tests/tool-manifest.test.ts', ok: false, exitCode: 1 },
             ],
           }),
           stderr: '',
@@ -391,7 +414,7 @@ describe('trace:watch code.call telemetry', () => {
       tool: 'code.call cmd',
       ok: false,
       code: 'TESTS_FAILED',
-      detail: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts',
+      detail: 'bun --cwd packages/os test tests/tool-manifest.test.ts',
     });
     expect(operations[0].totalTokens).toBeUndefined();
     expect(rendered).toContain('TESTS_FAILED');
@@ -428,7 +451,7 @@ describe('trace:watch code.call telemetry', () => {
         stdout: JSON.stringify({
           ok: true,
           results: [
-            { command: 'bun --cwd packages/workspace test tests/workflow-intent.test.ts tests/tool-manifest.test.ts', ok: true, exitCode: 0 },
+            { command: 'bun --cwd packages/os test tests/workflow-intent.test.ts tests/tool-manifest.test.ts', ok: true, exitCode: 0 },
             { command: 'bun --cwd packages/os test tests/tool-manifest.test.ts', ok: true, exitCode: 0 },
           ],
         }),
@@ -467,7 +490,7 @@ describe('trace:watch code.call telemetry', () => {
     const stepInput = {
       language: 'bun',
       mode: 'verify',
-      code: 'const proc = Bun.spawnSync({ cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/tool-manifest.test.ts"] })',
+      code: 'const proc = Bun.spawnSync({ cmd: ["bun", "--cwd", "packages/os", "test", "tests/tool-manifest.test.ts"] })',
       maxResultChars: 20000,
     };
     const row = batchRow({
@@ -487,7 +510,7 @@ describe('trace:watch code.call telemetry', () => {
         stdout: JSON.stringify({
           ok: false,
           results: [
-            { command: 'bun --cwd packages/workspace test tests/tool-manifest.test.ts', ok: false, exitCode: 1 },
+            { command: 'bun --cwd packages/os test tests/tool-manifest.test.ts', ok: false, exitCode: 1 },
           ],
         }),
         stderr: '',
@@ -558,5 +581,82 @@ describe('trace:watch code.call telemetry', () => {
     expect(rendered).toContain('1.5k tokens');
     const nestedLines = rendered.split('\n').filter((line) => line.includes('↳')).join('\n');
     expect(nestedLines).not.toContain('0 tokens');
+  });
+});
+
+
+describe('OS trace:watch ownership and CLI', () => {
+  const tempPaths: string[] = [];
+
+  afterEach(() => {
+    for (const tempPath of tempPaths.splice(0)) rmSync(tempPath, { recursive: true, force: true });
+  });
+
+  test('resolves explicit CLI, Consuelo, compatibility, and default sidecar paths in priority order', () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-trace-watch-path-'));
+    tempPaths.push(home);
+    const cliDb = join(home, 'cli.db');
+    const consueloDb = join(home, 'consuelo.db');
+    const compatDb = join(home, 'compat.db');
+
+    expect(resolveTraceWatchDbPath({ ...baseArgs, db: cliDb }, {
+      CONSUELO_HOME: home,
+      CONSUELO_TRACE_DB: consueloDb,
+      TRACE_DB: compatDb,
+    })).toBe(resolve(cliDb));
+    expect(resolveTraceWatchDbPath(baseArgs, {
+      CONSUELO_HOME: home,
+      CONSUELO_TRACE_DB: consueloDb,
+      TRACE_DB: compatDb,
+    })).toBe(resolve(consueloDb));
+    expect(resolveTraceWatchDbPath(baseArgs, {
+      CONSUELO_HOME: home,
+      TRACE_DB: compatDb,
+    })).toBe(resolve(compatDb));
+    expect(resolveTraceWatchDbPath(baseArgs, { CONSUELO_HOME: home })).toBe(
+      join(home, 'node', 'db', 'traces.db'),
+    );
+  });
+
+  test('owns both package and repository-root trace:watch scripts from packages/os', () => {
+    const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as { scripts?: Record<string, string> };
+    const rootJson = JSON.parse(readFileSync(join(process.cwd(), '..', '..', 'package.json'), 'utf8')) as { scripts?: Record<string, string> };
+
+    expect(packageJson.scripts?.['trace:watch']).toBe('bun ./scripts/trace-watch.ts');
+    expect(rootJson.scripts?.['trace:watch']).toBe('bun packages/os/scripts/trace-watch.ts');
+    expect(existsSync(join(process.cwd(), '..', '..', 'scripts', 'operator', 'trace-watch.ts'))).toBe(false);
+  });
+
+  test('prints a real canonical OS sidecar row once without an explicit db flag', () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-trace-watch-cli-'));
+    tempPaths.push(home);
+    const dbPath = join(home, 'node', 'db', 'traces.db');
+    mkdirSync(join(home, 'node', 'db'), { recursive: true });
+    const schema = [
+      'CREATE TABLE tool_traces (',
+      'id TEXT, ts TEXT, trace_id TEXT, mcp_trace_id TEXT, source TEXT, tool TEXT,',
+      'task_session TEXT, branch TEXT, worktree TEXT, status TEXT, ok INTEGER, code TEXT,',
+      'exit_code INTEGER, duration_ms INTEGER, input_json TEXT, resolved_input_json TEXT,',
+      'result_json TEXT, stderr TEXT, input_tokens INTEGER, output_tokens INTEGER, total_tokens INTEGER',
+      ');',
+      "INSERT INTO tool_traces VALUES ('row-1','2026-07-15T22:00:00.000Z','trc_live',NULL,'facade','tools.search','tsk_live','task/os/live-watch','/tmp/live-watch','ok',1,'OK',0,670,'{}','{}','{\"ok\":true,\"message\":\"command completed\"}','',20,22,42);",
+    ].join(' ');
+    const create = spawnSync('sqlite3', [dbPath, schema], { encoding: 'utf8' });
+    expect(create.status, create.stderr).toBe(0);
+
+    const env = { ...process.env, CONSUELO_HOME: home } as Record<string, string>;
+    delete env.CONSUELO_TRACE_DB;
+    delete env.TRACE_DB;
+    const run = spawnSync('bun', ['run', 'trace:watch', '--', '--once', '--limit', '1', '--no-color'], {
+      cwd: process.cwd(),
+      env,
+      encoding: 'utf8',
+    });
+
+    expect(run.status, run.stderr).toBe(0);
+    expect(run.stdout).toContain('tools.search');
+    expect(run.stdout).toContain('42 tokens');
+    expect(run.stdout).toContain('os/live-watch');
+    expect(run.stdout).toContain('command completed');
   });
 });

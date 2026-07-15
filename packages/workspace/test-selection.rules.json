@@ -97,21 +97,21 @@
       "id": "trace-watch",
       "critical": true,
       "source": [
-        "scripts/operator/trace-watch.ts"
+        "packages/os/scripts/trace-watch.ts"
       ],
       "tests": [
         {
-          "name": "trace watch build",
+          "name": "OS trace watcher behavior",
           "command": [
             "bun",
-            "build",
-            "scripts/operator/trace-watch.ts",
-            "--target=bun",
-            "--outfile=/tmp/trace-watch-test-selection.js"
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-watch.test.ts"
           ]
         }
       ],
-      "reason": "Trace renderer changes must compile."
+      "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior."
     },
     {
       "id": "workspace-audit-docs",

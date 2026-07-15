@@ -280,7 +280,7 @@
     "trace:analytics": "bun scripts/operator/trace-analytics.ts",
     "trace:costs": "bun scripts/operator/trace-costs.ts",
     "trace:errors": "bun scripts/operator/trace-errors.ts",
-    "trace:watch": "bun scripts/operator/trace-watch.ts",
+    "trace:watch": "bun packages/os/scripts/trace-watch.ts",
     "trace:home": "bun scripts/operator/trace-home.ts",
     "test-selection:generate": "node packages/workspace/scripts/test-selection.js generate",
     "test-selection:check": "node packages/workspace/scripts/test-selection.js check",

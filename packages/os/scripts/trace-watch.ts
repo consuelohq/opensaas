@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { resolve } from 'node:path';
+
+import { resolveCanonicalTraceDbPath, type TraceEnvironment } from './lib/trace-persistence';
 
 type Row = Record<string, unknown>;
 export type Args = {
@@ -71,18 +72,20 @@ export type CodeCallTraceSummary = {
   replacement?: string;
 };
 
-const defaultTraceDb = join(
-  homedir(),
-  'Library/Application Support/OpenWorkspace/traces/e8425497c3ee20bf0a28e9da/traces.db',
-);
+export function resolveTraceWatchDbPath(
+  args: Pick<Args, 'db'>,
+  env: TraceEnvironment = process.env,
+): string {
+  return args.db ? resolve(args.db) : resolveCanonicalTraceDbPath({ env });
+}
 
-const usage = `Watch local workspace traces live.
+const usage = `Watch Consuelo OS traces live.
 
 Usage:
   bun run trace:watch [options]
 
 Options:
-  --db <path>            Trace DB path. Defaults to current OpenWorkspace trace DB.
+  --db <path>            Trace DB path. Defaults to the canonical Consuelo OS sidecar.
   --task <taskSession>   Only show one task session.
   --branch <branch>      Only show one branch.
   --worktree <text>      Match worktree path text.
@@ -102,7 +105,7 @@ Options:
 Examples:
   bun run trace:watch
   bun run trace:watch --limit 20
-  bun run trace:watch --branch task/workspace-agents/fix-database
+  bun run trace:watch --branch task/os/fix-database
   bun run trace:watch --errors --since 1h
 `;
 
@@ -258,6 +261,13 @@ function c(args: Args, code: string, text: string): string {
   return `\u001b[${code}m${text}\u001b[0m`;
 }
 
+function writeLine(text = ''): void {
+  process.stdout.write(`${text}\n`);
+}
+
+function writeError(text: string): void {
+  process.stderr.write(`${text}\n`);
+}
 
 const traceTimeFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
@@ -313,7 +323,7 @@ function shortBranch(row: Row): string {
   return raw.replace(/^task\//, '').replace(/^stream\//, 'stream/');
 }
 
-function parseJson(value: unknown): any {
+function parseJson(value: unknown): unknown {
   if (typeof value !== 'string' || !value.trim()) return null;
   try { return JSON.parse(value); } catch { return null; }
 }
@@ -705,9 +715,9 @@ function renderVerifyBecause(args: Args, row: Row): void {
   if (String(row.tool || '') !== 'verify') return;
   const lines = verifyBecauseLines(row);
   if (lines.length === 0) return;
-  console.log(`  ${c(args, '2', 'because:')}`);
+  writeLine(`  ${c(args, '2', 'because:')}`);
   for (const line of lines) {
-    console.log(`    ${c(args, '2', '-')} ${line}`);
+    writeLine(`    ${c(args, '2', '-')} ${line}`);
   }
 }
 
@@ -882,14 +892,14 @@ function divider(args: Args): string {
 
 function renderStartup(args: Args, db: string) {
   if (args.json) return;
-  console.log(c(args, '2', `watching traces • ${db}`));
-  console.log(c(args, '2', 'press Ctrl-C to stop • flags: --limit 20, --errors, --since 10m, --task <id>, --branch <branch>, --worktree <text>, --tool <tool>, --json, --raw-json'));
-  console.log(divider(args));
+  writeLine(c(args, '2', `watching traces • ${db}`));
+  writeLine(c(args, '2', 'press Ctrl-C to stop • flags: --limit 20, --errors, --since 10m, --task <id>, --branch <branch>, --worktree <text>, --tool <tool>, --json, --raw-json'));
+  writeLine(divider(args));
 }
 
 export function renderRow(args: Args, row: Row) {
   if (args.json) {
-    console.log(JSON.stringify(args.rawJson ? row : compactTraceRow(row)));
+    writeLine(JSON.stringify(args.rawJson ? row : compactTraceRow(row)));
     return;
   }
   const ok = String(row.status || '') === 'ok' && String(row.code || '') === 'OK' && Number(row.exit_code || 0) === 0;
@@ -905,16 +915,16 @@ export function renderRow(args: Args, row: Row) {
     ? `${c(args, '2', time)}  ${icon} ${tool} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens} ${code}  ${branch}`
     : `${c(args, '2', time)}  ${icon} ${tool} ${code} ${fmtDuration(row.duration_ms).padStart(7)} ${tokens}  ${branch}`;
   const detail = ok ? compactSuccessDetail(row) : compactErrorDetail(row);
-  if (ok && detail) console.log(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
-  else console.log(first);
-  if (!ok && detail) console.log(`  ${c(args, '2', detail)}`);
+  if (ok && detail) writeLine(`${first} ${c(args, '2', '|')} ${c(args, '2', detail)}`);
+  else writeLine(first);
+  if (!ok && detail) writeLine(`  ${c(args, '2', detail)}`);
   renderVerifyBecause(args, row);
   if (args.nested) {
     const visibleNested = args.nestedLimit === undefined ? nested : nested.slice(0, args.nestedLimit);
-    for (const operation of visibleNested) console.log(renderNestedOperation(args, operation));
-    if (args.nestedLimit !== undefined && nested.length > args.nestedLimit) console.log(renderNestedOverflow(args, nested.length - args.nestedLimit));
+    for (const operation of visibleNested) writeLine(renderNestedOperation(args, operation));
+    if (args.nestedLimit !== undefined && nested.length > args.nestedLimit) writeLine(renderNestedOverflow(args, nested.length - args.nestedLimit));
   }
-  console.log(divider(args));
+  writeLine(divider(args));
 }
 
 function sleep(ms: number) {
@@ -924,11 +934,11 @@ function sleep(ms: number) {
 export async function main() {
   let args: Args;
   try { args = parseArgs(Bun.argv.slice(2)); }
-  catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exit(2); }
-  if (args.help) { console.log(usage); return; }
-  const db = args.db || process.env.TRACE_DB || defaultTraceDb;
+  catch (error: unknown) { writeError(error instanceof Error ? error.message : String(error)); process.exit(2); }
+  if (args.help) { writeLine(usage); return; }
+  const db = resolveTraceWatchDbPath(args);
   args.db = db;
-  if (!existsSync(db)) { console.error(`trace db not found: ${db}`); process.exit(1); }
+  if (!existsSync(db)) { writeError(`trace db not found: ${db}`); process.exit(1); }
 
   const filters = sqlFilters(args);
   if (!args.once) renderStartup(args, db);
@@ -953,7 +963,7 @@ export async function main() {
     const result = runSql(db, baseSelect(` AND rowid > ${lastId}${filters}`, 'ASC', undefined, args.rawJson));
     if (result.locked) {
       lockedPolls += 1;
-      if (!args.json && lockedPolls === 3) console.error(c(args, '2', 'trace db is busy; waiting for writer lock to clear...'));
+      if (!args.json && lockedPolls === 3) writeError(c(args, '2', 'trace db is busy; waiting for writer lock to clear...'));
       await sleep(args.interval);
       continue;
     }
@@ -968,8 +978,8 @@ export async function main() {
 }
 
 if (import.meta.main) {
-  main().catch((error) => {
-    console.error(error instanceof Error ? error.message : String(error));
+  main().catch((error: unknown) => {
+    writeError(error instanceof Error ? error.message : String(error));
     process.exit(1);
   });
 }
