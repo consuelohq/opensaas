@@ -46,9 +46,15 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain("window.addEventListener('scroll', scheduleReveal, { passive: true })");
     expect(footer).toContain('window.requestAnimationFrame(updateReveal)');
     expect(footer).toContain('data-cloud-title-line');
-    expect(footer).toContain('CONSUELO OS');
+    expect(footer).toContain('CONSUELO OS <span>V0.10.3</span>');
     expect(footer).toContain('MIT LICENSE');
     expect(footer).toContain('bottom: 0;');
+    expect(footer).toContain('font: 500 0.62rem/1.45');
+    expect(footer).toContain('justify-items: end;');
+    expect(footer).toContain('text-align: right;');
+    expect(footer).toContain('aspect-ratio: 4 / 5;');
+    expect(footer).toContain('window.innerHeight * 1.2');
+    expect(footer).toContain('Math.pow(progress, 1.5)');
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {

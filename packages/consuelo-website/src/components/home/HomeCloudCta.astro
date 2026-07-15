@@ -30,7 +30,7 @@
     loading="lazy"
   />
 
-  <p class="cloud-cta__version">CONSUELO OS</p>
+  <p class="cloud-cta__version">CONSUELO OS <span>V0.10.3</span></p>
   <div class="cloud-cta__signature" aria-label="Consuelo OS, MIT License, 2026">
     <span class="cloud-cta__badge" aria-hidden="true">
       <img src="/images/home/consuelo-mark.svg" alt="" width="52" height="52" />
@@ -71,11 +71,15 @@
     gap: clamp(0.65rem, 1.6vh, 1rem);
   }
 
-  .cloud-cta__eyebrow,
-  .cloud-cta__version,
-  .cloud-cta__signature {
+  .cloud-cta__eyebrow {
     font: 650 0.62rem/1.45 var(--site-font-mono);
     letter-spacing: 0.16em;
+  }
+
+  .cloud-cta__version,
+  .cloud-cta__signature {
+    font: 500 0.62rem/1.45 var(--site-font-mono);
+    letter-spacing: 0.14em;
   }
 
   .cloud-cta__eyebrow {
@@ -124,12 +128,12 @@
   .cloud-cta__wordmark {
     position: absolute;
     z-index: 1;
-    top: 54%;
+    top: 55%;
     left: 50%;
     margin: 0;
     color: rgba(255, 255, 255, 0.13);
     font-family: var(--site-font-display);
-    font-size: clamp(7rem, 22vw, 22rem);
+    font-size: clamp(6rem, 16vw, 15rem);
     line-height: 0.7;
     transform: translate(-50%, -50%);
     white-space: nowrap;
@@ -159,20 +163,30 @@
 
   .cloud-cta__version {
     left: clamp(1rem, 4vw, 4rem);
+    display: flex;
+    align-items: baseline;
+    gap: 0.7em;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .cloud-cta__version span {
+    opacity: 0.78;
   }
 
   .cloud-cta__signature {
     right: clamp(1rem, 4vw, 4rem);
     display: grid;
-    justify-items: center;
+    justify-items: end;
     gap: 0.18rem;
+    text-align: right;
   }
 
   .cloud-cta__badge {
     position: relative;
     display: grid;
-    width: 3.15rem;
-    aspect-ratio: 1;
+    width: 3rem;
+    aspect-ratio: 4 / 5;
     place-items: center;
     overflow: hidden;
     border: 1px solid white;
@@ -184,6 +198,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center 30%;
   }
 
   .cloud-cta__badge strong {
@@ -191,7 +206,7 @@
     right: 0.18rem;
     bottom: 0.08rem;
     color: var(--site-color-brand);
-    font: 700 0.5rem/1 var(--site-font-mono);
+    font: 600 0.5rem/1 var(--site-font-mono);
   }
 
   @media (max-width: 600px) {
@@ -221,31 +236,34 @@
     }
 
     .cloud-cta__wordmark {
-      top: 58%;
-      font-size: 31vw;
+      display: none;
     }
 
     .cloud-cta__art {
       width: min(39rem, 115vw);
       max-width: 115vw;
-      max-height: 50dvh;
+      max-height: 54dvh;
     }
 
     .cloud-cta__version {
       bottom: 0.75rem;
       left: 0.75rem;
-      max-width: 4.5rem;
       text-align: left;
+    }
+
+    .cloud-cta__version,
+    .cloud-cta__signature {
+      font-size: 0.48rem;
+      letter-spacing: 0.13em;
     }
 
     .cloud-cta__signature {
       right: 0.75rem;
       bottom: 0.65rem;
-      font-size: 0.48rem;
     }
 
     .cloud-cta__badge {
-      width: 2.6rem;
+      width: 2.45rem;
     }
   }
 
@@ -268,11 +286,11 @@
       animationFrame = 0;
       const scrollLimit = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
       const remaining = Math.max(0, scrollLimit - window.scrollY);
-      const revealDistance = Math.max(320, Math.min(640, window.innerHeight * 0.75));
+      const revealDistance = Math.max(640, Math.min(1200, window.innerHeight * 1.2));
       const progress = reducedMotion.matches
         ? 1
         : Math.max(0, Math.min(1, 1 - remaining / revealDistance));
-      const opacity = reducedMotion.matches ? 1 : progress * progress;
+      const opacity = reducedMotion.matches ? 1 : Math.pow(progress, 1.5);
       const interactive = progress >= 0.98;
 
       footer.style.setProperty('--cloud-reveal-opacity', opacity.toFixed(3));

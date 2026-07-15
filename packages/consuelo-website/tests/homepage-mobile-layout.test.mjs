@@ -308,6 +308,24 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(initialFooterState.pointerEvents, 'none');
     assert.equal(initialFooterState.inert, true);
 
+    await page.evaluate(() => {
+      const scrollLimit = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight,
+      );
+      window.scrollTo(0, Math.max(0, scrollLimit - window.innerHeight * 0.9));
+    });
+    await page.waitForTimeout(200);
+    const earlyFooterState = await page.locator('[data-cloud-reveal]').evaluate((footer) => ({
+      opacity: Number.parseFloat(getComputedStyle(footer).opacity),
+      pointerEvents: getComputedStyle(footer).pointerEvents,
+      inert: footer.hasAttribute('inert'),
+    }));
+    assert.ok(earlyFooterState.opacity > 0.05);
+    assert.ok(earlyFooterState.opacity < 0.95);
+    assert.equal(earlyFooterState.pointerEvents, 'none');
+    assert.equal(earlyFooterState.inert, true);
+
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForFunction(() => {
       const footer = document.querySelector('[data-cloud-reveal]');
@@ -321,10 +339,21 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
 
     const mobileFooterContract = await page.evaluate(() => {
       const art = document.querySelector('.cloud-cta__art');
-      if (!(art instanceof HTMLImageElement)) {
-        throw new Error('Expected cloud footer art');
+      const wordmark = document.querySelector('.cloud-cta__wordmark');
+      const version = document.querySelector('.cloud-cta__version');
+      const signature = document.querySelector('.cloud-cta__signature');
+      const badge = document.querySelector('.cloud-cta__badge');
+      if (
+        !(art instanceof HTMLImageElement) ||
+        !(wordmark instanceof HTMLElement) ||
+        !(version instanceof HTMLElement) ||
+        !(signature instanceof HTMLElement) ||
+        !(badge instanceof HTMLElement)
+      ) {
+        throw new Error('Expected complete cloud footer composition');
       }
       const artBox = art.getBoundingClientRect();
+      const badgeBox = badge.getBoundingClientRect();
       const titleLines = Array.from(
         document.querySelectorAll('[data-cloud-title-line]'),
       ).map((line) => Math.round(line.getBoundingClientRect().top));
@@ -332,13 +361,30 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       return {
         artTop: artBox.top,
         artBottom: artBox.bottom,
+        badgeHeight: badgeBox.height,
+        badgeWidth: badgeBox.width,
+        signatureFontWeight: Number.parseInt(getComputedStyle(signature).fontWeight, 10),
+        signatureJustifyItems: getComputedStyle(signature).justifyItems,
+        signatureTextAlign: getComputedStyle(signature).textAlign,
         titleLines,
+        versionFontWeight: Number.parseInt(getComputedStyle(version).fontWeight, 10),
+        versionText: version.textContent?.replace(/\s+/g, ' ').trim(),
+        versionWhiteSpace: getComputedStyle(version).whiteSpace,
         viewportHeight: window.innerHeight,
+        wordmarkDisplay: getComputedStyle(wordmark).display,
       };
     });
     assert.equal(new Set(mobileFooterContract.titleLines).size, 2);
     assert.ok(mobileFooterContract.artTop >= 0);
     assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
+    assert.equal(mobileFooterContract.wordmarkDisplay, 'none');
+    assert.equal(mobileFooterContract.versionText, 'CONSUELO OS V0.10.3');
+    assert.equal(mobileFooterContract.versionWhiteSpace, 'nowrap');
+    assert.ok(mobileFooterContract.versionFontWeight <= 500);
+    assert.ok(mobileFooterContract.signatureFontWeight <= 500);
+    assert.equal(mobileFooterContract.signatureJustifyItems, 'end');
+    assert.equal(mobileFooterContract.signatureTextAlign, 'right');
+    assert.ok(mobileFooterContract.badgeHeight > mobileFooterContract.badgeWidth * 1.15);
 
     const reducedMotionPage = await browser.newPage({
       viewport: { width: 390, height: 844 },
