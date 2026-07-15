@@ -51,4 +51,10 @@ if [ -z "$bun_bin" ]; then
   exit 1
 fi
 
+bun_dir="$(dirname "$bun_bin")"
+case ":$PATH:" in
+  *":$bun_dir:"*) ;;
+  *) export PATH="$bun_dir:$PATH" ;;
+esac
+
 exec "$bun_bin" "$root_dir/scripts/server/main.ts"
