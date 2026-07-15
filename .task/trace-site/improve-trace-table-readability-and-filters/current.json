@@ -1,0 +1,19 @@
+{
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/improve-trace-table-readability-and-filters",
+  "baseBranch": "stream/trace-site",
+  "sourceBranch": "stream/trace-site",
+  "startFrom": "stream",
+  "prNumber": 1500,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1500",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1500",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1500/improve-trace-table-readability-and-filters",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1500",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1500/improve-trace-table-readability-and-filters",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-improve-trace-table-readability-and-filters",
+  "taskSession": "tsk_30dea0377c3a",
+  "tmuxSession": "opensaas-trace-site-improve-trace-table-readability-and-filters-30dea037",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-improve-trace-table-readability-and-filters/.task/trace-site/improve-trace-table-readability-and-filters/session.json",
+  "createdAt": "2026-07-14T23:38:39.578Z"
+}
