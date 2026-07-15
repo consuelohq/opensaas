@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const INSPECTOR_VERSION = 'v36';
+export const INSPECTOR_VERSION = 'v37';
 export const INSPECTOR_CSS_HREF = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.css`;
 export const INSPECTOR_SCRIPT_SRC = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.js`;
 export const TRACE_INSPECTOR_BOOTSTRAP_MARKUP = `<div class="tiInspector tiInspectorBoot" aria-busy="true"><header class="tiToolbar"><div class="tiToolbarIdentity"><div class="tiBreadcrumb"><span>Trace</span><b>Loading...</b></div><div class="tiSelectedMeta">Preparing inspector</div></div></header><div class="tiInspectorBody"><aside class="tiSidebar" aria-label="Branch calls"><section class="tiBranchCard"><header><div><div class="tiEyebrow">Branch</div><h3>Loading branch...</h3></div></header></section></aside><main class="tiPreview" aria-label="Trace details"><div class="tiContent"><section class="tiSummaryHero"><div><span class="tiSummaryStatus">Loading</span><h2>Loading trace...</h2></div></section></div></main></div></div>`;
