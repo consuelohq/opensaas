@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-chatgpt-mcp-tool-descriptor-discovery",
+  "base": "HEAD",
+  "headSha": "2d5f9c870dca185637f4d8211154da5597f78a29",
+  "changeHash": "59bf72810446048c4af44e586f2750c7ae3b3332c31d53c9167f0a5c711ef0a2",
+  "changedFiles": [
+    "packages/os/scripts/lib/mcp-gateway.ts",
+    "packages/os/scripts/mcp-stdio.ts",
+    "packages/os/scripts/server/routes/mcp.ts",
+    "packages/os/scripts/server/services/call-service.ts",
+    "packages/os/scripts/server/services/steering-service.ts",
+    "packages/os/tests/mcp-gateway.test.ts"
+  ],
+  "verifiedAt": "2026-07-15T02:15:17.802Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-chatgpt-mcp-tool-descriptor-discovery/current.json",
+        ".task/security/fix-chatgpt-mcp-tool-descriptor-discovery/session.json",
+        ".task/security/fix-chatgpt-mcp-tool-descriptor-discovery/workpad.md",
+        ".task/tasks/security/fix-chatgpt-mcp-tool-descriptor-discovery.json",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/mcp-stdio.ts",
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/server/services/call-service.ts",
+        "packages/os/scripts/server/services/steering-service.ts",
+        "packages/os/tests/mcp-gateway.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
