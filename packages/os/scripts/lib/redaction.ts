@@ -5,6 +5,22 @@ const REDACTED_RAW_PAYLOAD = '[REDACTED_RAW_PAYLOAD]';
 const SENSITIVE_KEY_PATTERN = /(?:password|passphrase|secret|token|api[_-]?key|authorization|cookie|credential|private[_-]?key|client[_-]?secret|session|jwt)/i;
 const RAW_PAYLOAD_KEY_PATTERN = /^(?:raw|rawPayload|rawBody|requestBody|responseBody|body|payload)$/i;
 const SENSITIVE_QUERY_KEY_PATTERN = /(?:password|passphrase|secret|token|api[_-]?key|authorization|cookie|credential|private[_-]?key|client[_-]?secret|session|jwt)/i;
+const TRACE_SAFE_STRING_KEYS = new Set([
+  'traceId',
+  'trace_id',
+  'mcpTraceId',
+  'mcp_trace_id',
+  'requestId',
+  'request_id',
+  'taskSession',
+  'task_session',
+  'branch',
+  'worktree',
+  'stdoutLogPath',
+  'stderrLogPath',
+  'rawLogPath',
+]);
+const TRACE_TOKEN_COUNT_KEY_PATTERN = /^(?:input|output|total|reasoning(?:_?output)?|cached|cache_?read)_?tokens?$/i;
 
 function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -98,8 +114,54 @@ function redactValueInternal(value, key, seen) {
   return output;
 }
 
+function redactTraceValueInternal(value, key, seen) {
+  if (key && TRACE_SAFE_STRING_KEYS.has(key) && typeof value === 'string') return value;
+  if (key && TRACE_TOKEN_COUNT_KEY_PATTERN.test(key) && typeof value === 'number') return value;
+  if (key && looksLikeSensitiveKey(key)) return REDACTED_SECRET;
+  if (key && looksLikeRawPayloadKey(key)) {
+    return {
+      redacted: true,
+      type: REDACTED_RAW_PAYLOAD,
+      bytes: approximateBytes(value),
+    };
+  }
+
+  if (typeof value === 'string') return redactText(value);
+  if (typeof value === 'bigint') return value.toString();
+  if (value === null || value === undefined) return value;
+  if (typeof value !== 'object') return value;
+
+  if (seen.has(value)) return '[REDACTED_CIRCULAR]';
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    return value.map((item) => redactTraceValueInternal(item, undefined, seen));
+  }
+
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: redactText(value.message),
+    };
+  }
+
+  if (!isPlainObject(value)) {
+    return redactText(String(value));
+  }
+
+  const output = {};
+  for (const [entryKey, entryValue] of Object.entries(value)) {
+    output[entryKey] = redactTraceValueInternal(entryValue, entryKey, seen);
+  }
+  return output;
+}
+
 export function redactJson(value) {
   return redactValueInternal(value, undefined, new WeakSet());
+}
+
+export function redactTraceJson(value) {
+  return redactTraceValueInternal(value, undefined, new WeakSet());
 }
 
 export function redactValue(value) {
