@@ -59,8 +59,6 @@
     ],
     "excludePrefixes": [
       "browser.",
-      "office.",
-      "design.",
       "linear.",
       "railway.",
       "sentry.",
@@ -70,7 +68,6 @@
     ],
     "excludeCategories": [
       "browser",
-      "consuelo design",
       "linear",
       "railway",
       "sentry"

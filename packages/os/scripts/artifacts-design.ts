@@ -242,7 +242,7 @@ function getDesignSystem(args: ParsedArgs): void {
   if (args.json) {
     printJson({
       name: 'consuelo',
-      policy: 'Base Consuelo design system returns only DESIGN.md and office/AGENTS.md. Website-specific animations.md and website AGENTS.md are attached only to website/motion workflow sessions.',
+      policy: 'Base Consuelo design context returns only DESIGN.md and the design-tooling AGENTS.md. Website-specific animations.md and website AGENTS.md are attached only to website/motion workflow sessions.',
       files,
     });
     return;
@@ -351,7 +351,9 @@ function buildRailwayCheckResult() {
 
   for (const dockerfile of DEPLOYMENT_DOCKERFILES) {
     const content = readText(dockerfile);
-    if (content.includes('office')) failures.push(`${dockerfile} references office`);
+    if (content.includes('packages/consuelo-design')) {
+      failures.push(`${dockerfile} includes the vendored Consuelo Design package`);
+    }
   }
 
   for (const manifestPath of DEPLOYED_PACKAGE_MANIFESTS) {
@@ -359,8 +361,8 @@ function buildRailwayCheckResult() {
     const manifest = JSON.parse(readText(manifestPath)) as Record<string, Record<string, string> | undefined>;
     for (const group of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']) {
       const dependencies = manifest[group];
-      if (dependencies?.['office'] || dependencies?.['@consuelo/design']) {
-        failures.push(`${manifestPath} ${group} references office`);
+      if (dependencies?.['@consuelo/design']) {
+        failures.push(`${manifestPath} ${group} references @consuelo/design`);
       }
     }
   }
@@ -413,7 +415,7 @@ function check(args: ParsedArgs): ReturnType<typeof buildBoundaryCheckResult> {
   const result = buildBoundaryCheckResult();
 
   if (args.json) printJson(result);
-  else if (result.ok && !args.quiet) writeStdout('office check passed.\n');
+  else if (result.ok && !args.quiet) writeStdout('artifacts design boundary check passed.\n');
   else {
     if (result.missingPaths.length > 0) writeStderr(`missing paths:\n${result.missingPaths.join('\n')}`);
     if (result.hasNestedGitMetadata) writeStderr(`${OPEN_DESIGN_RELATIVE_ROOT}/.git should not be committed.`);
@@ -577,7 +579,7 @@ async function openUrl(url: string, args: ParsedArgs): Promise<void> {
 
 async function createWorkflowProject(workflow: WorkflowConfig, runtime: RuntimeUrls, args: ParsedArgs) {
   if (!runtime.daemonUrl || !runtime.webUrl) {
-    throw new Error('Open Design did not return daemon/web URLs. Run `bun run office run` and retry.');
+    throw new Error('Open Design did not return daemon/web URLs. Run `bun run artifacts run` and retry.');
   }
   const id = projectIdForWorkflow(workflow.id);
   const name = args.name ?? `${workflow.projectPrefix} ${timestampLabel()}`;
@@ -589,7 +591,7 @@ async function createWorkflowProject(workflow: WorkflowConfig, runtime: RuntimeU
     designSystemId: null,
     pendingPrompt,
     metadata: {
-      source: 'office',
+      source: 'artifacts',
       workflow: workflow.id,
       primarySkill: workflow.skillId,
       fallbackSkillIds: workflow.fallbackSkillIds,
@@ -630,7 +632,7 @@ async function startWorkflowSession(workflow: WorkflowConfig, args: ParsedArgs):
           skillId: workflow.skillId,
           designSystemId: null,
           metadata: {
-            source: 'office',
+            source: 'artifacts',
             workflow: workflow.id,
             primarySkill: workflow.skillId,
             fallbackSkillIds: workflow.fallbackSkillIds,
@@ -684,7 +686,7 @@ function uiCommand(command: string, args: ParsedArgs): Promise<void> {
 }
 
 function help(): void {
-  writeStdout(`office
+  writeStdout(`artifacts
 
 Bun-first Consuelo facade over vendored Open Design.
 
@@ -699,7 +701,7 @@ Commands:
   render hyperframes          Start/open a HyperFrames render working session
   list-skills                 Show upstream skills and Consuelo workflow mapping
   list-design-systems         Show Consuelo default plus upstream reference systems
-  get-design-system           Print base Consuelo DESIGN.md and office AGENTS.md only
+  get-design-system           Print base Consuelo DESIGN.md and design-tooling AGENTS.md only
   check                       Run package boundary and Railway exclusion checks
   ui:bg|ui:status|ui:logs|ui:stop  Manage Open Design background runtime
   od:build                    Build the Open Design daemon CLI
@@ -712,7 +714,7 @@ Flags:
   --prompt <brief>            Attach Ko's brief to the generated Open Design pending prompt
 
 Notes:
-  The Consuelo facade is Bun-native and lives in packages/workspace/scripts.
+  The Consuelo facade is Bun-native and lives in packages/os/scripts.
   pnpm is only used behind this facade because upstream Open Design pins pnpm@10.33.2.
 `);
 }
@@ -743,7 +745,7 @@ async function main(): Promise<void> {
         const railway = railwayCheck({ ...args, json: false, quiet: true });
         const result = { ok: boundary.ok && railway.ok, boundary, railway };
         if (args.json) printJson(result);
-        else if (!args.quiet) writeStdout('office full check passed.\n');
+        else if (!args.quiet) writeStdout('artifacts full check passed.\n');
         break;
       }
       case 'generate':

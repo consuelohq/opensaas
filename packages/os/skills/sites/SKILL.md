@@ -1,39 +1,38 @@
-# Sites skill
+# Sites
 
-## Purpose
+Sites is Consuelo OS delivery infrastructure. It materializes local HTML surfaces and provides the files that local Hono routes and Cloudflare workspace-edge snapshots serve.
 
-Sites is the local Consuelo OS site system. Use this skill when work involves generated work surfaces, local HTML pages, artifact-backed output, or the Office site category inside Sites.
+Artifacts is the product domain for durable generated outputs. Sites must not create a second artifact catalog or rename artifacts as a site category.
 
-Artifacts are the internal provenance, storage, and metadata layer. Sites is the user-facing place where generated work is organized for local review.
-
-## Current local layout
+## Local layout
 
 ```text
 <OS_HOME>/sites/
 <OS_HOME>/sites/index.html
+<OS_HOME>/sites/artifacts/index.html
+<OS_HOME>/sites/artifacts/data/catalog.json
 <OS_HOME>/sites/pages/
-<OS_HOME>/sites/pages/index.html
-<OS_HOME>/sites/pages/<slug>/index.html
-<OS_HOME>/sites/pages/<slug>/versions/<versionId>/index.html
 <OS_HOME>/sites/.data/pages/registry.json
 <OS_HOME>/sites/.data/pages/leases.json
-<OS_HOME>/sites/office/
-<OS_HOME>/sites/office/index.html
-<OS_HOME>/sites/office/data/artifacts.json
-<OS_HOME>/sites/office/assets/
 <OS_HOME>/sites/traces/index.html
 <OS_HOME>/sites/diffs/index.html
+<OS_HOME>/sites/docs/index.html
+<OS_HOME>/sites/settings/index.html
 ```
 
-Do not create `sites/github/` yet. GitHub and workflow views are future Sites categories, not part of the current local scaffold.
+The canonical artifact bytes and catalog live under:
 
-## Office under Sites
-
-Office is currently the artifact-backed Sites category for generated docs, reports, files, and pages. Artifact creation refreshes the Office site data under `sites/office/data/artifacts.json`.
+```text
+<OS_HOME>/artifacts/catalog.json
+<OS_HOME>/artifacts/current/<artifact-route>/
+<OS_HOME>/artifacts/versions/<artifact-route>/<version-id>/
+```
 
 ## Commands
 
-Use the canonical Sites command surface:
+Use `bun run artifacts` for artifact generation, publishing, history, rollback, and index refresh.
+
+Use the Sites command only for delivery infrastructure and typed collaborative pages:
 
 ```bash
 bun ./scripts/os.ts sites path
@@ -46,25 +45,11 @@ bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.js
 bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>]
 ```
 
-Each command supports `--json`.
+## Boundaries
 
-`sites refresh` is repeatable and safe. It regenerates local Sites files from the current artifact database without deleting local OS configuration or user-owned skills/tools.
-
-## Guardrails
-
-- Treat `sites/` as the canonical local layout.
-- Treat `sites/office/` as the current generated-work category.
-- Do not treat `pages/office/` as canonical.
-- Do not introduce public or hosted URL security assumptions in this local-only flow.
-- Preserve artifacts as the storage/provenance layer rather than the user-facing product name.
-
-
-## Versioned Sites pages
-
-`sites publish` writes generated local pages into the Sites page registry. Every publish creates an immutable version and updates the current page pointer. Existing pages require `--base-version <currentVersionId>` so multiple agents cannot silently overwrite one another. Use `--force-publish` only when Ko explicitly wants an intentional overwrite or recovery publish.
-
-Supported page kinds are `spec`, `plan`, `guide`, `trace`, `diff`, `office`, and `uncategorized`. For `spec`, `plan`, and `guide`, use `sites render` with typed `content.json` and the canonical Consuelo reader shell before publishing. Do not hand-author reader HTML for those pages.
-
-Use `sites patch` when an agent changes one section of an existing typed page. The patch command edits that section in `content.json`, re-renders reader pages, and publishes a new immutable version. If the page changed since the supplied base version and the changed sections do not overlap, the patch auto-rebases; if the same section changed, it rejects with `SECTION_CONFLICT`.
-
-Use `sites lease` before parallel agent work on the same page. A lease is scoped to `pageId#sectionId`, has a TTL, blocks other agents by default, and can be released or overridden only with explicit `--force-publish` approval.
+- `/artifacts` is the canonical durable-output route.
+- Sites may serve or snapshot artifact output but must not own a separate artifact model.
+- Do not create retired artifact-site aliases, parallel archives, or fallback reads.
+- Typed collaborative pages remain separate because they have section leases and patch/rebase behavior.
+- Trace and Settings pages may hydrate from their signed Hono gateways.
+- Public edge compatibility for historical URLs belongs in explicit redirects, not internal aliases.

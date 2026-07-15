@@ -12,7 +12,7 @@ Runtime implementations live in `packages/os/scripts/`. The current smoke skill 
 
 Purpose: prove the first Consuelo OS runtime spine.
 
-Permission: `read`
+Permission: `draft`
 
 Approval: not required
 
@@ -61,9 +61,9 @@ Failure modes:
 The skill should keep returning structured output even when the current data model is incomplete.
 
 
-## Office
+## Artifacts
 
-`office` is the top-level orchestration skill for design artifact work. Landing pages are represented as the `landing-page` subskill/preset, not as the primary product skill. The skill teaches agents how to chain existing `office.*` tools, template rules, browser validation, `design.publish`, and `/office` verification.
+`artifacts` is the top-level orchestration skill for durable generated output. Landing pages, guides, specifications, plans, reports, email, images, demos, and motion work are additive subskills. The skill teaches agents how to generate and validate source-first output, publish with `artifacts.publish`, and verify `/artifacts` plus immutable history.
 
 
 ### consuelo-workspace-snapshot

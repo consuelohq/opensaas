@@ -6,33 +6,33 @@ function runBunEval(code: string): string {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      CONSUELO_HOME: '/tmp/office-skill-test-home',
+      CONSUELO_HOME: '/tmp/artifacts-skill-test-home',
     },
     encoding: 'utf8',
   });
 }
 
-describe('office skill', () => {
-  it('loads the orchestration guide and subskill presets', () => {
+describe('artifacts skill', () => {
+  it('loads the canonical orchestration guide and subskill presets', () => {
     const result = JSON.parse(runBunEval(`
       const { executeCall } = await import('./scripts/os.ts');
       const result = await executeCall({
-        name: 'office',
-        traceId: 'trc_office_guide_test_' + Date.now() + '_' + process.pid,
+        name: 'artifacts',
+        traceId: 'trc_artifacts_guide_test_' + Date.now() + '_' + process.pid,
         input: { subskill: 'landing-page' },
       });
       process.stdout.write(JSON.stringify(result));
     `));
 
     expect(result.ok).toBe(true);
-    expect(result.name).toBe('office');
+    expect(result.name).toBe('artifacts');
     expect(result.permission).toBe('draft');
     expect(result.result).toMatchObject({
-      skill: 'office',
+      skill: 'artifacts',
       selectedSubskill: {
         id: 'landing-page',
         workflow: 'website',
-        defaultTool: 'office.generateWebsite',
+        defaultTool: 'artifacts.generateWebsite',
         primaryOpenDesignSkill: 'saas-landing',
       },
       references: {
@@ -42,6 +42,7 @@ describe('office skill', () => {
     });
     expect(result.result.subskills.map((subskill: { id: string }) => subskill.id)).toContain('spec');
     expect(result.result.guide).toContain('source-first');
-    expect(JSON.stringify(result.result)).not.toContain('consuelo' + 'Design.');
+    expect(JSON.stringify(result.result)).not.toContain('office.');
+    expect(JSON.stringify(result.result)).not.toContain('/office');
   });
 });

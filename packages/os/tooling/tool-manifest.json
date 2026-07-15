@@ -24,10 +24,10 @@
   {
     "name": "daily-revenue-brief",
     "title": "Daily Revenue Brief",
-    "description": "Scaffold skill that proves get_steering -> call -> Bun skill -> optional GraphQL proof query -> structured result.",
-    "permission": "read",
+    "description": "Generates and publishes a versioned Daily Revenue Brief into the canonical Consuelo Artifacts catalog after proving optional GraphQL connectivity.",
+    "permission": "draft",
     "requiresApproval": false,
-    "writesRecords": false,
+    "writesRecords": true,
     "externalSideEffects": false,
     "requiredEnv": [
       "CONSUELO_GRAPHQL_URL",
@@ -95,18 +95,18 @@
     }
   },
   {
-    "name": "office",
-    "title": "Office",
-    "description": "Top-level orchestration skill for Office artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and design wiki verification.",
+    "name": "artifacts",
+    "title": "Artifacts",
+    "description": "Canonical orchestration skill for durable Consuelo artifact generation, validation, publishing, history, and rollback.",
     "permission": "draft",
     "requiresApproval": false,
     "writesRecords": false,
     "externalSideEffects": false,
     "requiredIntegrations": [
-      "office"
+      "artifacts"
     ],
     "implementation": {
-      "script": "scripts/design/office.ts"
+      "script": "scripts/design/artifacts.ts"
     },
     "inputSchema": {
       "type": "object",
@@ -130,61 +130,5 @@
         "nextActions"
       ]
     }
-  },
-  {
-    "name": "office-landing-page",
-    "title": "Office Landing Page (compatibility alias)",
-    "description": "Deprecated compatibility alias for the landing-page subskill under the top-level office skill. Prefer office with subskill=landing-page for new design work.",
-    "permission": "draft",
-    "requiresApproval": false,
-    "writesRecords": false,
-    "externalSideEffects": false,
-    "requiredIntegrations": [
-      "office"
-    ],
-    "implementation": {
-      "script": "scripts/design/office-landing-page.ts"
-    },
-    "inputSchema": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "artifactTitle": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "prompt": {
-          "type": "string"
-        },
-        "campaign": {
-          "type": "object",
-          "additionalProperties": true
-        },
-        "sourceContext": {
-          "type": "object",
-          "additionalProperties": true
-        },
-        "publish": {
-          "type": "boolean"
-        },
-        "replaceCustomerFacingPage": {
-          "type": "boolean"
-        }
-      }
-    },
-    "outputSchema": {
-      "type": "object",
-      "required": [
-        "summary",
-        "workflow",
-        "designSystem",
-        "primaryDesignSkill",
-        "nextActions"
-      ]
-    },
-    "deprecated": true,
-    "supersededBy": "office#landing-page"
   }
 ]

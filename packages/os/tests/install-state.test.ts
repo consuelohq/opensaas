@@ -296,17 +296,17 @@ describe('local OS install state', () => {
     expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'task')).toBe(true);
 
     const sitesIndexPath = join(tempHome, 'sites', 'index.html');
-    const officeSiteIndexPath = join(tempHome, 'sites', 'office', 'index.html');
-    const officeSiteDataPath = join(tempHome, 'sites', 'office', 'data', 'artifacts.json');
+    const artifactsSiteIndexPath = join(tempHome, 'sites', 'artifacts', 'index.html');
+    const artifactsSiteDataPath = join(tempHome, 'sites', 'artifacts', 'data', 'catalog.json');
     const tracesIndexPath = join(tempHome, 'sites', 'traces', 'index.html');
     const diffsIndexPath = join(tempHome, 'sites', 'diffs', 'index.html');
     expect(existsSync(sitesIndexPath)).toBe(true);
-    expect(existsSync(officeSiteIndexPath)).toBe(true);
-    expect(existsSync(officeSiteDataPath)).toBe(true);
+    expect(existsSync(artifactsSiteIndexPath)).toBe(true);
+    expect(existsSync(artifactsSiteDataPath)).toBe(true);
     expect(existsSync(tracesIndexPath)).toBe(true);
     expect(existsSync(diffsIndexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
-    expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
+    expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
 
     const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'tool.manifest.json'), 'utf8'));
     const coreToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'core.manifest.json'), 'utf8'));
@@ -433,41 +433,42 @@ describe('local OS install state', () => {
     );
   });
 
-  it('materializes the local Office site from persisted artifacts', () => {
+  it('materializes the canonical Artifacts site from persisted route-addressed artifacts', () => {
     const result = JSON.parse(runBunEval(`
+      const { writeFileSync } = await import('node:fs');
+      const { join } = await import('node:path');
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
-      const { createWorkspaceArtifact } = await import('./scripts/lib/artifacts.ts');
+      const { publishArtifact } = await import('./scripts/lib/artifacts.ts');
       provisionLocalOs({ mode: 'local' });
-      const artifact = createWorkspaceArtifact({
-        traceId: 'trc_office_site_test',
-        workspaceId: 'workspace-id',
-        createdByUserId: 'user-id',
-        skillName: 'daily-revenue-brief',
+      const target = join(process.env.CONSUELO_HOME, 'quarterly-pipeline-brief.html');
+      writeFileSync(target, '<!doctype html><html><body><h1>Quarterly Pipeline Brief</h1></body></html>');
+      const published = publishArtifact({
+        home: process.env.CONSUELO_HOME,
+        target,
+        path: '/briefs/quarterly-pipeline-brief',
         title: 'Quarterly Pipeline Brief',
-        fileName: 'quarterly-pipeline-brief.json',
-        type: 'brief',
-        format: 'json',
-        content: { summary: 'pipeline is healthy' },
-        inputSummary: { source: 'sites-test' },
+        category: 'briefs',
+        template: 'guide',
+        traceId: 'trc_artifacts_site_test',
+        skillName: 'daily-revenue-brief',
+        now: '2026-07-15T00:00:00.000Z',
       });
       provisionLocalOs({ mode: 'local' });
-      process.stdout.write(JSON.stringify({ artifact }));
-    `)) as { artifact: { id: string; localPath: string; path: string } };
+      process.stdout.write(JSON.stringify({ artifact: published.artifact, version: published.version }));
+    `)) as { artifact: { id: string; path: string; currentVersionId: string }; version: { localPath: string } };
 
     const sitesIndexPath = join(tempHome, 'sites', 'index.html');
-    const officeSiteIndexPath = join(tempHome, 'sites', 'office', 'index.html');
-    const officeSiteDataPath = join(tempHome, 'sites', 'office', 'data', 'artifacts.json');
-    const officeSiteAssetsPath = join(tempHome, 'sites', 'office', 'assets');
+    const artifactsSiteIndexPath = join(tempHome, 'sites', 'artifacts', 'index.html');
+    const artifactsSiteDataPath = join(tempHome, 'sites', 'artifacts', 'data', 'catalog.json');
     expect(existsSync(sitesIndexPath)).toBe(true);
-    expect(existsSync(officeSiteIndexPath)).toBe(true);
-    expect(existsSync(officeSiteDataPath)).toBe(true);
-    expect(existsSync(officeSiteAssetsPath)).toBe(true);
+    expect(existsSync(artifactsSiteIndexPath)).toBe(true);
+    expect(existsSync(artifactsSiteDataPath)).toBe(true);
     for (const site of ['traces', 'diffs']) {
       expect(existsSync(join(tempHome, 'sites', site))).toBe(true);
       expect(existsSync(join(tempHome, 'sites', site, 'index.html'))).toBe(true);
     }
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
-    expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
+    expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
 
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
     expect(sitesIndex).toContain('<title>Consuelo OS</title>');
@@ -491,30 +492,28 @@ describe('local OS install state', () => {
     expect(sitesIndex).not.toContain('GitHub Workflows');
     expect(sitesIndex).not.toContain('[GTM]');
 
-    const officeSitePage = readFileSync(officeSiteIndexPath, 'utf8');
-    expect(officeSitePage).toContain('Office');
-    expect(officeSitePage).toContain('Quarterly Pipeline Brief');
+    const artifactsSitePage = readFileSync(artifactsSiteIndexPath, 'utf8');
+    expect(artifactsSitePage).toContain('Consuelo Artifacts');
+    expect(artifactsSitePage).toContain('Quarterly Pipeline Brief');
+    expect(artifactsSitePage).toContain('/artifacts/briefs/quarterly-pipeline-brief');
 
-    const officeSiteData = JSON.parse(readFileSync(officeSiteDataPath, 'utf8')) as {
-      artifacts: Array<{
+    const artifactsSiteData = JSON.parse(readFileSync(artifactsSiteDataPath, 'utf8')) as {
+      entries: Array<{
         id: string;
         title: string;
-        traceId: string;
-        storageMode: string;
         path: string;
-        localPath: string;
+        currentVersionId: string;
       }>;
     };
-    expect(officeSiteData.artifacts).toEqual([
+    expect(artifactsSiteData.entries).toEqual([
       expect.objectContaining({
         id: result.artifact.id,
         title: 'Quarterly Pipeline Brief',
-        traceId: 'trc_office_site_test',
-        storageMode: 'local',
         path: result.artifact.path,
-        localPath: result.artifact.localPath,
+        currentVersionId: result.artifact.currentVersionId,
       }),
     ]);
+    expect(existsSync(result.version.localPath)).toBe(true);
   });
 
   it('preserves local user skills while refreshing the installed registry', () => {
@@ -547,7 +546,7 @@ describe('local OS install state', () => {
   });
 
 
-  it('migrates existing Office skill selections to Sites', () => {
+  it('drops unknown legacy skill selections without mapping them to another skill', () => {
     mkdirSync(tempHome, { recursive: true });
     writeFileSync(join(tempHome, 'config.json'), `${JSON.stringify({
       version: 1,
@@ -568,10 +567,11 @@ describe('local OS install state', () => {
     `));
 
     const config = JSON.parse(readFileSync(join(tempHome, 'config.json'), 'utf8'));
-    expect(config.selectedSkills).toContain('sites');
     expect(config.selectedSkills).toContain('task');
     expect(config.selectedSkills).not.toContain('office');
-    expect(existsSync(join(tempHome, 'skills', 'sites', 'SKILL.md'))).toBe(true);
+    expect(config.selectedSkills).not.toContain('sites');
+    expect(config.selectedSkills).not.toContain('artifacts');
+    expect(existsSync(join(tempHome, 'skills', 'office'))).toBe(false);
   });
 
   it('installs every full-manifest tool even when only one skill is selected', () => {

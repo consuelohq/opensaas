@@ -6,6 +6,7 @@ import {
 } from './env';
 import { internalError } from './middleware/errors';
 import { routeNotFoundResponse } from './middleware/fallback';
+import { createArtifactRoutes } from './routes/artifacts';
 import { createCallRoutes } from './routes/call';
 import { createHealthRoutes } from './routes/health';
 import { createMcpRoutes } from './routes/mcp';
@@ -19,6 +20,7 @@ export function createLocalOsApp(
   const app = new Hono();
 
   app.route('/', createHealthRoutes(config));
+  app.route('/', createArtifactRoutes());
   app.route('/', createTraceRoutes());
   app.route('/', createSettingsRoutes());
   app.route('/', createMcpRoutes());

@@ -870,13 +870,12 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(routePaths).toEqual([
       '/api',
       '/apps/chatgpt',
+      '/artifacts',
       '/diffs',
       '/docs',
       '/mcp',
-      '/office',
       '/tools',
       '/traces',
-      '/wiki',
     ]);
     for (const route of registry.routes) {
       expect(route).toMatchObject({
@@ -887,12 +886,12 @@ describe('Consuelo OS public gateway security contract', () => {
     }
     expect(registry.resolve({
       host: 'acme.consuelohq.com',
-      path: '/office',
+      path: '/artifacts',
       workspaceId: 'workspace-acme',
-    })).toMatchObject({ route: '/office', upstream: { host: '127.0.0.1', port: 8850 } });
+    })).toMatchObject({ route: '/artifacts', upstream: { host: '127.0.0.1', port: 8850 } });
     expect(() => registry.resolve({
       host: 'other.consuelohq.com',
-      path: '/office',
+      path: '/artifacts',
       workspaceId: 'workspace-acme',
     })).toThrow(/workspace|tenant|host/i);
     expect(() => registry.resolve({

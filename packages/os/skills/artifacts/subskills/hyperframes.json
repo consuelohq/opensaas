@@ -2,10 +2,10 @@
   "id": "hyperframes",
   "title": "HyperFrames Render",
   "uses": [
-    "office"
+    "artifacts"
   ],
   "workflow": "hyperframes",
-  "defaultTool": "office.renderHyperframes",
+  "defaultTool": "artifacts.renderHyperframes",
   "primaryOpenDesignSkill": "hyperframes",
   "fallbackOpenDesignSkills": [
     "motion-frames"

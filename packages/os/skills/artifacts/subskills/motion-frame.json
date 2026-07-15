@@ -2,10 +2,10 @@
   "id": "motion-frame",
   "title": "Motion Frame",
   "uses": [
-    "office"
+    "artifacts"
   ],
   "workflow": "motion-frame",
-  "defaultTool": "office.generateMotionFrame",
+  "defaultTool": "artifacts.generateMotionFrame",
   "primaryOpenDesignSkill": "motion-frames",
   "fallbackOpenDesignSkills": [
     "hyperframes",
