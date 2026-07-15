@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/make-traces-near-live",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "stream/workspace",
+  "startFrom": "stream",
+  "prNumber": 1519,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1519",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1519",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1519/make-traces-near-live",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1519",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1519/make-traces-near-live",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live",
+  "taskSession": "tsk_9dde3aa21635",
+  "tmuxSession": "opensaas-workspace-make-traces-near-live-9dde3aa2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/.task/workspace/make-traces-near-live/session.json",
+  "createdAt": "2026-07-15T23:32:51.007Z"
+}

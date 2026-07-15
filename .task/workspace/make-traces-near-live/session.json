@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9dde3aa21635",
+  "tmuxSession": "opensaas-workspace-make-traces-near-live-9dde3aa2",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/make-traces-near-live",
+  "branch": "task/workspace/make-traces-near-live",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live",
+  "prNumber": 1519,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1519",
+  "createdAt": "2026-07-15T23:32:51.006Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/.task/workspace/make-traces-near-live/session.json"
+}
