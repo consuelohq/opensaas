@@ -15,6 +15,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Consuelo Docs',
+      favicon: 'https://consuelohq.com/favicon.svg',
       customCss: ['./src/styles/docs.css'],
       components: {
         LanguageSelect: './src/components/translation/RuntimeLanguageSelect.astro',
