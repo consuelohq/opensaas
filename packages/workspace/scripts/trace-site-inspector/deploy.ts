@@ -13,10 +13,11 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const INSPECTOR_VERSION = 'v30';
+export const INSPECTOR_VERSION = 'v36';
 export const INSPECTOR_CSS_HREF = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.css`;
 export const INSPECTOR_SCRIPT_SRC = `/trace-burn-intelligence/_astro/trace-inspector-${INSPECTOR_VERSION}.js`;
 export const TRACE_INSPECTOR_BOOTSTRAP_MARKUP = `<div class="tiInspector tiInspectorBoot" aria-busy="true"><header class="tiToolbar"><div class="tiToolbarIdentity"><div class="tiBreadcrumb"><span>Trace</span><b>Loading...</b></div><div class="tiSelectedMeta">Preparing inspector</div></div></header><div class="tiInspectorBody"><aside class="tiSidebar" aria-label="Branch calls"><section class="tiBranchCard"><header><div><div class="tiEyebrow">Branch</div><h3>Loading branch...</h3></div></header></section></aside><main class="tiPreview" aria-label="Trace details"><div class="tiContent"><section class="tiSummaryHero"><div><span class="tiSummaryStatus">Loading</span><h2>Loading trace...</h2></div></section></div></main></div></div>`;
+export const TRACE_TABLE_FOOTER_MARKUP = `<button type="button" data-show-filters>filters</button><span class="trxTraceTotal"><b data-trace-count>0</b> traces</span>`;
 export const TRACE_INSPECTOR_BOOTSTRAP_SCRIPT = `<script id="consuelo-trace-inspector-bootstrap">(()=>{const mount=document.querySelector('[data-inspector]');if(!mount||mount.querySelector('.tiInspector'))return;mount.innerHTML=${JSON.stringify(TRACE_INSPECTOR_BOOTSTRAP_MARKUP)};mount.dataset.traceInspectorBootstrapped=''})()</script>`;
 export const TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT = `<script id="consuelo-trace-history-transport">(()=>{const historyRoute='/gateway/traces/recent';const liveRoute='/trace-burn-intelligence/live-traces.json';const normalizeError=error=>error instanceof Error?error:new Error('Trace data request failed.');window.__consueloTraceHistoryTransport={fetchJson(url){const allowed=typeof url==='string'&&(url===liveRoute||url.startsWith(historyRoute+'?'));if(!allowed)return Promise.reject(new Error('Trace data route is not allowed.'));return fetch(url,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>({response,payload}))).then(({response,payload})=>{if(!response.ok){const message=payload&&payload.error&&typeof payload.error.message==='string'?payload.error.message:'Trace data request failed.';throw new Error(message)}return payload},error=>{throw normalizeError(error)})}}})()</script>`;
 
@@ -27,11 +28,24 @@ const defaultArchiveRoot = resolve(
 );
 
 export function patchTraceInspectorHtml(html: string): string {
-  const withFinalStructure = replaceInspectorMountContents(
+  const withFinalInspector = replaceInspectorMountContents(
     html,
     TRACE_INSPECTOR_BOOTSTRAP_MARKUP,
   );
-  const withoutOldCss = withFinalStructure.replace(
+  const withoutRetiredCockpit = removeElementByClass(
+    withFinalInspector,
+    'screen',
+  );
+  const withoutLegacyToolbar = removeElementByClass(
+    withoutRetiredCockpit,
+    'trxToolbar',
+  );
+  const withFinalFooter = replaceElementContentsByClass(
+    withoutLegacyToolbar,
+    'trxFooter',
+    TRACE_TABLE_FOOTER_MARKUP,
+  );
+  const withoutOldCss = withFinalFooter.replace(
     /<link[^>]+href=["'][^"']*trace-inspector-v\d+\.css["'][^>]*>\s*/g,
     '',
   );
@@ -84,6 +98,51 @@ function replaceInspectorMountContents(html: string, markup: string): string {
     return `${html.slice(0, contentStart)}${markup}${html.slice(match.index)}`;
   }
   return html;
+}
+
+function removeElementByClass(html: string, className: string): string {
+  return rewriteElementByClass(html, className, '', true);
+}
+
+function replaceElementContentsByClass(
+  html: string,
+  className: string,
+  markup: string,
+): string {
+  return rewriteElementByClass(html, className, markup, false);
+}
+
+function rewriteElementByClass(
+  html: string,
+  className: string,
+  markup: string,
+  removeElement: boolean,
+): string {
+  const opening = new RegExp(
+    `<([a-zA-Z][\\w:-]*)([^>]*\\bclass\\s*=\\s*["'][^"']*\\b${escapeRegExp(className)}\\b[^"']*["'][^>]*)>`,
+    'i',
+  ).exec(html);
+  if (!opening || opening.index === undefined) return html;
+  const tag = opening[1];
+  if (!tag) return html;
+  const contentStart = opening.index + opening[0].length;
+  const tags = new RegExp(`<\\/?${tag}\\b[^>]*>`, 'gi');
+  tags.lastIndex = contentStart;
+  let depth = 1;
+  for (let match = tags.exec(html); match; match = tags.exec(html)) {
+    const token = match[0];
+    if (token.startsWith('</')) depth -= 1;
+    else if (!token.endsWith('/>')) depth += 1;
+    if (depth !== 0) continue;
+    return removeElement
+      ? `${html.slice(0, opening.index)}${html.slice(match.index + token.length)}`
+      : `${html.slice(0, contentStart)}${markup}${html.slice(match.index)}`;
+  }
+  return html;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export async function deployTraceInspector(

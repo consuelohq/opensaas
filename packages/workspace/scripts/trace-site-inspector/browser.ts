@@ -106,17 +106,24 @@ function allRows(): TraceRecord[] {
   );
 }
 
-function initialSelectionKey(): string {
+function resetInitialTraceSurface(): void {
   const target = window as TraceWindow;
-  if (Object.hasOwn(target, '__traceSelectedKey'))
-    return target.__traceSelectedKey ?? '';
-  return (
-    document.querySelector<HTMLElement>(
-      '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
-    )?.dataset.traceKey ??
-    new URLSearchParams(location.hash.slice(1)).get('trace') ??
-    ''
-  );
+  target.__traceSelectedKey = '';
+  document.querySelector(':scope > body > .screen')?.remove();
+  document.querySelector('.trxShell > .trxToolbar')?.remove();
+  for (const row of document.querySelectorAll<HTMLElement>(
+    '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
+  )) {
+    row.classList.remove('selected', 'isSelected', 'active');
+    row.setAttribute('aria-selected', 'false');
+  }
+  if (new URLSearchParams(location.hash.slice(1)).has('trace')) {
+    try {
+      history.replaceState(null, '', `${location.pathname}${location.search}`);
+    } catch {
+      location.hash = '';
+    }
+  }
 }
 
 function syncRowsFromMap(): void {
@@ -346,8 +353,20 @@ function applyLayout(): void {
   const shell = document.querySelector<HTMLElement>('.trxShell');
   const rail = document.querySelector<HTMLElement>('.trxRail');
   if (!shell || !rail) return;
-  shell.style.setProperty('--ti-inspector-width', `${state.width}px`);
+  const body = rail.parentElement;
+  const availableWidth = body?.clientWidth ?? shell.clientWidth;
+  const tableFloor = Math.min(640, Math.max(320, availableWidth * 0.38));
+  const maxWidth = Math.max(420, availableWidth - tableFloor - 8);
+  const inspectorWidth = Math.min(state.width, maxWidth);
+  shell.style.setProperty('--ti-inspector-width', `${inspectorWidth}px`);
   const open = Boolean(state.selectedKey) && state.layout !== 'collapsed';
+  body?.style.setProperty(
+    'grid-template-columns',
+    open
+      ? `minmax(${Math.floor(tableFloor)}px, 1fr) 8px minmax(420px, ${inspectorWidth}px)`
+      : 'minmax(0, 1fr)',
+    'important',
+  );
   shell.classList.toggle('ti-inspector-open', open);
   shell.classList.toggle(
     'ti-inspector-fullscreen',
@@ -364,16 +383,19 @@ function ensureDivider(): void {
   const parent = rail?.parentElement;
   if (!rail || !parent) return;
   let divider = parent.querySelector<HTMLElement>(
-    ':scope > .tiDivider, :scope > .trxResizer',
+    ':scope > .tiDivider[data-ti-installed="true"]',
   );
-  if (divider) divider.classList.add('tiDivider');
   if (!divider) {
     divider = document.createElement('button');
-    divider.className = 'tiDivider';
+    divider.className = 'trxResizer tiDivider';
     divider.setAttribute('type', 'button');
     divider.setAttribute('aria-label', 'Resize or collapse trace inspector');
     divider.setAttribute('title', 'Drag to resize · click to close');
-    parent.insertBefore(divider, rail);
+    const retiredDivider = parent.querySelector<HTMLElement>(
+      ':scope > .tiDivider, :scope > .trxResizer',
+    );
+    if (retiredDivider) retiredDivider.replaceWith(divider);
+    else parent.insertBefore(divider, rail);
   }
   if (divider.dataset.tiInstalled === 'true') return;
   divider.dataset.tiInstalled = 'true';
@@ -383,14 +405,21 @@ function ensureDivider(): void {
     event.preventDefault();
     const startX = event.clientX;
     const startWidth = inspectorStore.getSnapshot().width;
+    const availableWidth = parent.clientWidth;
+    const tableFloor = Math.min(640, Math.max(320, availableWidth * 0.38));
+    const maxWidth = Math.max(420, availableWidth - tableFloor - 8);
     let moved = false;
     divider?.setPointerCapture(event.pointerId);
     document.documentElement.classList.add('ti-is-resizing');
     const move = (moveEvent: PointerEvent) => {
       const delta = startX - moveEvent.clientX;
       if (Math.abs(delta) > 4) moved = true;
-      if (moved)
-        inspectorStore.dispatch({ type: 'resize', width: startWidth + delta });
+      if (moved) {
+        inspectorStore.dispatch({
+          type: 'resize',
+          width: Math.min(startWidth + delta, maxWidth),
+        });
+      }
     };
     const up = (upEvent: PointerEvent) => {
       divider?.releasePointerCapture(upEvent.pointerId);
@@ -602,9 +631,7 @@ inspectorStore.subscribe((state) => {
   applyLayout();
 });
 
-const initialKey = initialSelectionKey();
-if (initialKey)
-  inspectorStore.dispatch({ type: 'hydrate-selection', key: initialKey });
+resetInitialTraceSurface();
 syncRowsFromMap();
 installTracePaginationTransport();
 installTraceVirtualList();
@@ -612,4 +639,5 @@ void refreshLiveRows();
 document.addEventListener('trace:selection-change', scheduleRender);
 window.addEventListener('resize', applyLayout);
 window.setInterval(scheduleRender, 2_000);
+applyLayout();
 scheduleRender();

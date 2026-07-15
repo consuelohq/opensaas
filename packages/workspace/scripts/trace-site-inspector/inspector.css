@@ -14,6 +14,334 @@
   --ti-motion: 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.trace-system-font .trxShell,
+.trace-system-font .trxShell button,
+.trace-system-font .trxShell input,
+.trace-system-font .trxShell select,
+.trace-system-font .tiInspector,
+.trace-system-font .tiInspector button,
+.trace-system-font .tiInspector input {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
+}
+
+.trace-system-font .mono,
+.trace-system-font pre,
+.trace-system-font code,
+.trace-system-font .tiCodeValue {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.trxTablePane {
+  position: relative;
+  min-width: 0;
+}
+
+.trxShell {
+  grid-template-rows: 38px minmax(0, 1fr) !important;
+}
+
+.trxShell > .trxToolbar {
+  display: none !important;
+}
+
+.trxBody:has(> .trxRail) {
+  display: grid !important;
+  grid-template-columns:
+    minmax(320px, 1fr) 8px
+    minmax(420px, var(--ti-inspector-width)) !important;
+  min-width: 0;
+  min-height: 0;
+  transition: grid-template-columns var(--ti-motion);
+}
+
+.trxShell.closed .trxBody:has(> .trxRail) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.trxFilterPanel {
+  position: absolute;
+  z-index: 80;
+  inset: 0 auto 0 0;
+  box-sizing: border-box;
+  width: clamp(288px, 28vw, 380px);
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  color: var(--ti-text);
+  background: rgba(9, 9, 8, 0.985);
+  border-right: 1px solid var(--ti-line-strong);
+  box-shadow: 22px 0 54px rgba(0, 0, 0, 0.42);
+  animation: trx-filter-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.trxFilterPanel[hidden] {
+  display: none;
+}
+
+@keyframes trx-filter-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.trxFilterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--ti-line);
+}
+
+.trxFilterHeader > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.trxFilterHeader span {
+  color: var(--ti-faint);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.trxFilterHeader strong {
+  color: var(--ti-text);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.trxFilterHeaderActions {
+  display: flex;
+  gap: 5px;
+}
+
+.trxFilterHeaderActions button,
+.trxFilterMore,
+.trxFilterPanel > footer button {
+  appearance: none;
+  border: 1px solid var(--ti-line);
+  border-radius: 7px;
+  background: var(--ti-panel);
+  color: var(--ti-muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.trxFilterHeaderActions button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+}
+
+.trxFilterHeaderActions button:hover,
+.trxFilterHeaderActions button:focus-visible,
+.trxFilterMore:hover,
+.trxFilterMore:focus-visible,
+.trxFilterPanel > footer button:hover,
+.trxFilterPanel > footer button:focus-visible {
+  border-color: var(--ti-line-strong);
+  color: var(--ti-text);
+  outline: none;
+}
+
+.trxFilterSearch {
+  margin: 10px 12px 7px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 1px solid var(--ti-line);
+  border-radius: 7px;
+  background: #070706;
+  color: var(--ti-faint);
+}
+
+.trxFilterSearch:focus-within {
+  border-color: rgba(215, 181, 109, 0.55);
+}
+
+.trxFilterSearch input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ti-text);
+  font: inherit;
+}
+
+.trxFilterContent {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 2px 8px 12px;
+}
+
+.trxFilterSection {
+  min-width: 0;
+  padding: 10px 4px 11px;
+  border-bottom: 1px solid var(--ti-line);
+}
+
+.trxFilterSection h3 {
+  margin: 0 7px 7px;
+  color: var(--ti-muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trxFilterValues {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.trxFilterValue {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px;
+  border-radius: 6px;
+  color: var(--ti-text);
+  cursor: pointer;
+}
+
+.trxFilterValue:hover {
+  background: var(--ti-panel-raised);
+}
+
+.trxFilterValue input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--ti-gold);
+  pointer-events: none;
+}
+
+.trxFilterValue > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.trxFilterValue small {
+  color: var(--ti-faint);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trxFilterValue [data-trace-filter-only] {
+  appearance: none;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ti-gold);
+  opacity: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+}
+
+.trxFilterValue:hover [data-trace-filter-only],
+.trxFilterValue [data-trace-filter-only]:focus-visible {
+  opacity: 1;
+}
+
+.trxFilterMore {
+  margin: 7px 7px 0;
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+.trxFilterEmpty {
+  margin: 5px 7px;
+  color: var(--ti-faint);
+  font-size: 11px;
+}
+
+.trxFilterPanel > footer {
+  padding: 9px 12px;
+  border-top: 1px solid var(--ti-line);
+  background: var(--ti-panel);
+}
+
+.trxFilterPanel > footer button {
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+.trxRow .trxCheck {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.trxRow:hover .trxCheck,
+.trxRow:focus-visible .trxCheck,
+.trxRow.selected .trxCheck,
+.trxRow[aria-selected='true'] .trxCheck {
+  opacity: 1;
+}
+
+.trxRow.is-error .trxInputCell,
+.trxRow.is-error .trxOutputCell {
+  color: var(--ti-red) !important;
+}
+
+.trxInputCell,
+.trxOutputCell {
+  cursor: help;
+}
+
+.trxHoverCard {
+  position: fixed;
+  z-index: 20000;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(680px, calc(100vw - 24px));
+  max-height: min(420px, calc(100vh - 24px));
+  overflow: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--ti-line-strong);
+  border-radius: 8px;
+  background: rgba(14, 13, 11, 0.985);
+  color: var(--ti-text);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.52);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.trxHoverCard[hidden] {
+  display: none;
+}
+
 [data-trace-virtual-list] {
   position: relative;
   contain: strict;
@@ -29,19 +357,18 @@
 }
 
 [data-trace-virtual-content] > .trxRow {
+  box-sizing: border-box;
   position: absolute;
   inset: 0 auto auto 0;
+  width: 100%;
+  height: 44px;
   min-width: 100%;
+  overflow: hidden;
   will-change: transform;
 }
 
 .trxFooter[data-trace-virtual-footer] > [data-next-page] {
   display: none !important;
-}
-
-.trxFooter[data-trace-virtual-footer]::after {
-  content: attr(data-trace-count) ' traces';
-  color: var(--ti-muted);
 }
 
 .trxFooter[data-trace-virtual-footer] [data-trace-scroll-top] {
