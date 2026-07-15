@@ -891,8 +891,8 @@ describe('trace-site inspector deployment contract', () => {
     async () => {
       const root = mkdtempSync(join(tmpdir(), 'trace-table-runtime-'));
       roots.push(root);
-      const scriptPath = join(root, 'trace-inspector-v36.js');
-      const cssPath = join(root, 'trace-inspector-v36.css');
+      const scriptPath = join(root, 'trace-inspector-v37.js');
+      const cssPath = join(root, 'trace-inspector-v37.css');
       execFileSync(
         'bun',
         [
@@ -1006,9 +1006,9 @@ describe('trace-site inspector deployment contract', () => {
         ),
       ];
       const runtimeHtml = `<!doctype html><html><head><meta charset="utf-8"><style>
-        html,body{margin:0;height:100%}.trxShell{display:grid;height:100vh}#tbmLiveTraceModal .trxBody{display:grid;grid-template-columns:minmax(0,1fr) 9px minmax(520px,var(--rail,820px))!important}.trxTablePane{display:grid;grid-template-rows:auto 1fr auto;height:100%;min-height:0}.trxTableScroll{height:100%;overflow:auto}.trxRow{display:grid;grid-template-columns:24px 60px 120px 70px 70px 150px minmax(220px,1fr) minmax(220px,1fr) 130px 70px 90px;align-items:center;width:100%;height:44px}.trxFooter{display:flex;justify-content:space-between;padding:8px}
+        html,body{margin:0;height:100%}.tbxModal{display:none;position:fixed;inset:0;z-index:10000}.trxShell{display:grid;height:100vh}#tbmLiveTraceModal .trxBody{display:grid;grid-template-columns:minmax(0,1fr) 9px minmax(520px,var(--rail,820px))!important}.trxTablePane{display:grid;grid-template-rows:auto 1fr auto;height:100%;min-height:0}.trxTableScroll{height:100%;overflow:auto}.trxRow{display:grid;grid-template-columns:24px 60px 120px 70px 70px 150px minmax(220px,1fr) minmax(220px,1fr) 130px 70px 90px;align-items:center;width:100%;height:44px}.trxFooter{display:flex;justify-content:space-between;padding:8px}
       </style></head><body>
-        <div id="tbmLiveTraceModal"><div class="trxShell closed"><div class="trxChrome"></div><div class="trxBody"><div class="trxTablePane"><input data-search aria-label="Search traces"><div class="trxTableScroll"><div data-trace-rows></div></div><footer class="trxFooter"><button type="button" data-show-filters>filters</button><span><b data-trace-count>14</b> traces</span></footer></div><div class="trxResizer" data-retired-divider></div><div class="trxRail"><div data-inspector></div></div></div></div></div>
+        <div id="tbmLiveTraceModal" class="tbxModal"><div class="trxShell closed"><div class="trxChrome"></div><div class="trxBody"><div class="trxTablePane"><input data-search aria-label="Search traces"><div class="trxTableScroll"><div data-trace-rows></div></div><footer class="trxFooter"><button type="button" data-show-filters>filters</button><span><b data-trace-count>14</b> traces</span></footer></div><div class="trxResizer" data-retired-divider></div><div class="trxRail"><div data-inspector></div></div></div></div></div>
         <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ rows: semanticRows })}</script>
       </body></html>`;
 
@@ -1038,6 +1038,12 @@ describe('trace-site inspector deployment contract', () => {
             Boolean(document.querySelector('.trxFilterPanel')),
         );
 
+        expect(await page.locator('#tbmLiveTraceModal').isVisible()).toBe(true);
+        expect(
+          await page
+            .locator('.trxRow[data-trace-key="code-root"]')
+            .isVisible(),
+        ).toBe(true);
         expect(
           await page
             .locator('.trxRow[data-trace-key="code-root"] .trxInputCell')
@@ -1156,8 +1162,8 @@ describe('trace-site inspector deployment contract', () => {
     async () => {
       const root = mkdtempSync(join(tmpdir(), 'trace-inspector-selection-'));
       roots.push(root);
-      const scriptPath = join(root, 'trace-inspector-v36.js');
-      const cssPath = join(root, 'trace-inspector-v36.css');
+      const scriptPath = join(root, 'trace-inspector-v37.js');
+      const cssPath = join(root, 'trace-inspector-v37.css');
       execFileSync(
         'bun',
         [
@@ -1313,14 +1319,14 @@ describe('trace-site inspector deployment contract', () => {
         page.setDefaultTimeout(7_000);
         await page.route('http://trace.test/**', async (route) => {
           const pathname = new URL(route.request().url()).pathname;
-          if (pathname.endsWith('trace-inspector-v36.css')) {
+          if (pathname.endsWith('trace-inspector-v37.css')) {
             await route.fulfill({
               contentType: 'text/css',
               body: readFileSync(cssPath),
             });
             return;
           }
-          if (pathname.endsWith('trace-inspector-v36.js')) {
+          if (pathname.endsWith('trace-inspector-v37.js')) {
             await new Promise((resolve) => setTimeout(resolve, 180));
             await route.fulfill({
               contentType: 'text/javascript',
@@ -1841,8 +1847,8 @@ describe('trace-site inspector deployment contract', () => {
         </div>
         <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
       </body></html>`;
-      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v36.js');
-      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v36.css');
+      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v37.js');
+      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v37.css');
       execFileSync(
         'bun',
         [
@@ -2025,8 +2031,8 @@ describe('trace-site inspector deployment contract', () => {
         </div>
         <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
       </body></html>`;
-      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v36.js');
-      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v36.css');
+      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v37.js');
+      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v37.css');
       execFileSync(
         'bun',
         [
@@ -2333,11 +2339,11 @@ describe('sanitized Cloudflare trace preview', () => {
     const outputRoot = join(root, 'public');
     mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
     writeFileSync(
-      join(archiveRoot, '_astro', 'trace-inspector-v36.css'),
+      join(archiveRoot, '_astro', 'trace-inspector-v37.css'),
       'body{}',
     );
     writeFileSync(
-      join(archiveRoot, '_astro', 'trace-inspector-v36.js'),
+      join(archiveRoot, '_astro', 'trace-inspector-v37.js'),
       'export{}',
     );
 

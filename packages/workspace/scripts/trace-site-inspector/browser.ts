@@ -109,6 +109,9 @@ function allRows(): TraceRecord[] {
 function resetInitialTraceSurface(): void {
   const target = window as TraceWindow;
   target.__traceSelectedKey = '';
+  const traceSurface = document.getElementById('tbmLiveTraceModal');
+  traceSurface?.style.setProperty('display', 'block', 'important');
+  traceSurface?.setAttribute('aria-hidden', 'false');
   document.querySelector(':scope > body > .screen')?.remove();
   document.querySelector('.trxShell > .trxToolbar')?.remove();
   for (const row of document.querySelectorAll<HTMLElement>(
