@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { redactJson, redactText } from '../scripts/lib/redaction';
+import { redactJson, redactText, redactTraceJson } from '../scripts/lib/redaction';
 
 const forbiddenStrings = [
   'correct-horse-battery',
@@ -63,5 +63,36 @@ describe('OS log redaction', () => {
     expect(redacted).not.toContain('+1 (415) 555-1212');
     expect(redacted).toContain('Bearer [REDACTED_SECRET]');
     expect(redacted).toContain('[REDACTED_PHONE:1212]');
+  });
+
+  it('preserves trace identity and numeric usage while still redacting credentials', () => {
+    const redacted = redactTraceJson({
+      traceId: 'trc_000000000001',
+      mcpTraceId: 'trc_parent_000000000002',
+      taskSession: 'tsk_b03a8a027a84',
+      branch: 'task/os/wire-canonical-os-trace-persistence',
+      worktree: '/tmp/consuelo-task-worktree',
+      inputTokens: 12,
+      output_tokens: 34,
+      reasoningOutputTokens: 5,
+      totalTokens: 51,
+      apiKey: 'sk_test_1234567890abcdef1234567890',
+      authorization: 'Bearer bearer-token-1234567890abcdef',
+    }) as Record<string, unknown>;
+
+    expect(redacted).toMatchObject({
+      traceId: 'trc_000000000001',
+      mcpTraceId: 'trc_parent_000000000002',
+      taskSession: 'tsk_b03a8a027a84',
+      branch: 'task/os/wire-canonical-os-trace-persistence',
+      worktree: '/tmp/consuelo-task-worktree',
+      inputTokens: 12,
+      output_tokens: 34,
+      reasoningOutputTokens: 5,
+      totalTokens: 51,
+      apiKey: '[REDACTED_SECRET]',
+      authorization: '[REDACTED_SECRET]',
+    });
+    expectNoForbiddenLeaks(redacted);
   });
 });

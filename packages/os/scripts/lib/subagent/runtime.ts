@@ -5,6 +5,10 @@ import path from 'node:path';
 import { createToolResult } from '../facade/errors';
 import { logToolExecution } from '../facade/logger';
 import type { ExecuteToolOptions, RunnerResult, ToolInput, ToolManifestEntry, ToolResult } from '../facade/types';
+import {
+  recordSubagentTraceEventsSafely,
+  type SubagentTraceEvent,
+} from '../trace-persistence';
 
 export type SubagentProvider = 'codex' | 'pi' | 'opencode' | 'grok';
 export type SubagentBundle = 'core' | 'media';
@@ -405,6 +409,8 @@ async function executeCodexSubagent(
       traceId: context.traceId,
       stdout: run.stdout,
       stderr: run.stderr,
+      taskSession: input.audit.taskSession,
+      branch: input.audit.branch,
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
@@ -513,6 +519,8 @@ async function executeOpencodeSubagent(
       traceId: context.traceId,
       stdout: run.stdout,
       stderr: run.stderr,
+      taskSession: input.audit.taskSession,
+      branch: input.audit.branch,
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
@@ -593,6 +601,8 @@ async function executePiSubagent(
       traceId: context.traceId,
       stdout: run.stdout,
       stderr: run.stderr,
+      taskSession: input.audit.taskSession,
+      branch: input.audit.branch,
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
@@ -671,6 +681,8 @@ async function executeGrokSubagent(
       traceId: context.traceId,
       stdout: run.stdout,
       stderr: run.stderr,
+      taskSession: input.audit.taskSession,
+      branch: input.audit.branch,
     }),
     exitCode: run.exitCode,
     durationMs: elapsedMs(started, context.options.now),
@@ -684,6 +696,7 @@ async function executeGrokSubagent(
 function subagentToolResult(
   entry: ToolManifestEntry,
   context: {
+    env: NodeJS.ProcessEnv;
     startedAt: number;
     traceId: string;
     requestId?: string;
@@ -733,7 +746,17 @@ function subagentToolResult(
     requestId: context.requestId,
     now: context.options.now,
   });
-  logResult(entry, entry.name, result, input.command.join(' '), input.audit.branch, `workspace ${entry.name}`, context.options.logMode);
+  logResult(
+    entry,
+    entry.name,
+    result,
+    input.command.join(' '),
+    input.audit.branch,
+    `workspace ${entry.name}`,
+    context.options.logMode,
+    data,
+    context.env,
+  );
   return result;
 }
 
@@ -871,6 +894,8 @@ function compactSubagentOutput(input: {
   traceId: string;
   stdout: string;
   stderr: string;
+  taskSession?: string;
+  branch?: string;
 }): Pick<SubagentData, 'stdout' | 'stderr' | 'finalMessage' | 'summary' | 'rawLogPath' | 'stdoutLogPath' | 'stderrLogPath' | 'stdoutChars' | 'stderrChars' | 'usage'> {
   const parsed = parseSubagentOutput(input.provider, input.stdout);
   const logs = persistSubagentLogs(input);
@@ -878,6 +903,15 @@ function compactSubagentOutput(input: {
   const events = parseSubagentTraceEvents(input.provider, input.stdout);
   const stderrSummary = compactText(input.stderr);
   const summary = buildSubagentRunSummary({ traceId: input.traceId, events, finalMessage, stdout: input.stdout });
+  recordSubagentTraceEventsSafely({
+    provider: input.provider,
+    parentTraceId: input.traceId,
+    cwd: input.cwd,
+    taskSession: input.taskSession,
+    branch: input.branch,
+    stdoutLogPath: logs.stdoutLogPath,
+    events,
+  });
   return {
     stdout: summary.compact,
     stderr: stderrSummary,
@@ -890,6 +924,128 @@ function compactSubagentOutput(input: {
     stderrChars: input.stderr.length,
     ...(parsed.usage ? { usage: parsed.usage } : {}),
   };
+}
+
+export function parseSubagentTraceEvents(
+  provider: SubagentProvider,
+  stdout: string,
+): SubagentTraceEvent[] {
+  if (provider !== 'codex') return [];
+  return parseCodexTraceEvents(stdout);
+}
+
+function parseCodexTraceEvents(stdout: string): SubagentTraceEvent[] {
+  const events: SubagentTraceEvent[] = [];
+  for (const line of stdout.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    let event: Record<string, unknown>;
+    try {
+      event = JSON.parse(trimmed) as Record<string, unknown>;
+    } catch {
+      continue;
+    }
+
+    if (event.type === 'item.completed') {
+      const item = isRecord(event.item) ? event.item : undefined;
+      if (!item) continue;
+      if (item.type === 'mcp_tool_call') {
+        const server = stringValue(item.server) || 'unknown';
+        const mcpTool = stringValue(item.tool) || 'unknown';
+        const args = isRecord(item.arguments) ? item.arguments : undefined;
+        const facadeTool = mcpTool === 'call' && args
+          ? stringValue(args.tool)
+          : undefined;
+        const isGetSteering = mcpTool === 'get_steering';
+        const tool = isGetSteering
+          ? 'codex.get_steering'
+          : facadeTool
+            ? `codex.${facadeTool}`
+            : `codex.${server}.${mcpTool}`;
+        const error = item.error;
+        const result = item.result;
+        const inputTokens = estimateTokens(args || item.arguments || {});
+        const outputTokens = estimateTokens(result || error || {});
+        events.push({
+          eventType: 'mcp_tool_call',
+          itemId: stringValue(item.id),
+          tool,
+          facadeTool,
+          status: error ? 'error' : 'ok',
+          ok: !error,
+          code: error ? 'COMMAND_FAILED' : 'OK',
+          input: { server, tool: mcpTool, arguments: args || item.arguments },
+          result: error || result,
+          inputTokens,
+          outputTokens,
+          totalTokens: inputTokens + outputTokens,
+        });
+      } else if (item.type === 'command_execution') {
+        const command = stringValue(item.command) || '';
+        const exitCode = typeof item.exit_code === 'number' ? item.exit_code : 0;
+        const output = stringValue(item.aggregated_output) || '';
+        const inputTokens = estimateTokens(command);
+        const outputTokens = estimateTokens(output);
+        events.push({
+          eventType: 'command_execution',
+          itemId: stringValue(item.id),
+          tool: 'codex.command_execution',
+          status: exitCode === 0 ? 'ok' : 'error',
+          ok: exitCode === 0,
+          code: exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
+          command,
+          input: { command },
+          result: { exitCode, output: compactText(output) },
+          inputTokens,
+          outputTokens,
+          totalTokens: inputTokens + outputTokens,
+        });
+      } else if (item.type === 'agent_message') {
+        const text = stringValue(item.text) || '';
+        const outputTokens = estimateTokens(text);
+        events.push({
+          eventType: 'agent_message',
+          itemId: stringValue(item.id),
+          tool: 'codex.agent_message',
+          status: 'ok',
+          ok: true,
+          code: 'OK',
+          result: text,
+          inputTokens: 0,
+          outputTokens,
+          totalTokens: outputTokens,
+        });
+      }
+    }
+
+    if (event.type === 'turn.completed') {
+      const usage = isRecord(event.usage) ? event.usage : undefined;
+      const inputTokens = numberValue(usage?.input_tokens) || 0;
+      const outputTokens = numberValue(usage?.output_tokens) || 0;
+      const reasoningTokens = numberValue(usage?.reasoning_output_tokens) || 0;
+      events.push({
+        eventType: 'turn.completed',
+        tool: 'codex.turn.completed',
+        status: 'ok',
+        ok: true,
+        code: 'OK',
+        result: { usage },
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens + reasoningTokens,
+      });
+    }
+  }
+  return events;
+}
+
+function estimateTokens(value: unknown): number {
+  const text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+  return text ? Math.ceil(text.length / 4) : 0;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 export function parseSubagentOutput(provider: SubagentProvider, stdout: string): {
@@ -1224,9 +1380,14 @@ function logResult(
   branch?: string,
   facadeCommand?: string,
   logMode: ExecuteToolOptions['logMode'] = 'all',
+  data?: SubagentData,
+  env?: NodeJS.ProcessEnv,
 ): void {
-  if (logMode === 'silent') return;
-  if (logMode === 'errors' && result.ok) return;
+  const emit = logMode !== 'silent' && !(logMode === 'errors' && result.ok);
+  const usage = data?.usage;
+  const totalTokens = usage
+    ? (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0) + (usage.reasoningOutputTokens ?? 0)
+    : undefined;
 
   logToolExecution({
     tool: entry?.name || toolName,
@@ -1239,6 +1400,25 @@ function logResult(
     requestId: result.requestId,
     ok: result.ok,
     code: result.code,
+    taskSession: data?.audit.taskSession,
+    worktree: data?.cwd,
+    input: data ? {
+      provider: data.provider,
+      model: data.model,
+      bundle: data.bundle,
+      outputFormat: data.outputFormat,
+      mode: data.mode,
+      policy: data.policy,
+      instructionPath: data.instructionPath,
+    } : undefined,
+    resolvedInput: data,
+    result,
+    stderr: result.stderr,
+    inputTokens: usage?.inputTokens,
+    outputTokens: usage?.outputTokens,
+    totalTokens,
+    env,
+    emit,
     capabilities: {
       readOnly: entry?.capabilities.readOnly ?? true,
       mutating: entry?.capabilities.mutating ?? false,
