@@ -219,7 +219,7 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
 
     assert.equal(
       (await page.locator('.cloud-cta__copy > p').first().innerText()).trim(),
-      'FREE PLUS SUPER ULTRA',
+      'FREE • PLUS • SUPER • ULTRA',
     );
 
     const expectedQuestions = [
@@ -269,6 +269,94 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       .first()
       .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
     assert.ok(mobileFaqFontSize <= 20);
+
+    for (const width of [768, 1024, 1180]) {
+      const responsivePage = await browser.newPage({
+        viewport: { width, height: 900 },
+      });
+      await responsivePage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+      await responsivePage.waitForFunction(() => {
+        const heading = document.querySelector('.os-hero h1');
+        return (
+          document.fonts.status === 'loaded' &&
+          heading instanceof HTMLElement &&
+          heading.style.getPropertyValue('--hero-title-size') !== ''
+        );
+      });
+
+      const responsiveContract = await responsivePage.evaluate(() => ({
+        lineTops: Array.from(document.querySelectorAll('.os-hero h1 [data-hero-line]')).map(
+          (line) => Math.round(line.getBoundingClientRect().top),
+        ),
+        horizontalOverflow:
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      }));
+
+      assert.equal(new Set(responsiveContract.lineTops).size, 3);
+      assert.equal(responsiveContract.horizontalOverflow, 0);
+      await responsivePage.close();
+    }
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(150);
+    const initialFooterState = await page.locator('[data-cloud-reveal]').evaluate((footer) => ({
+      opacity: Number.parseFloat(getComputedStyle(footer).opacity),
+      pointerEvents: getComputedStyle(footer).pointerEvents,
+      inert: footer.hasAttribute('inert'),
+    }));
+    assert.equal(initialFooterState.opacity, 0);
+    assert.equal(initialFooterState.pointerEvents, 'none');
+    assert.equal(initialFooterState.inert, true);
+
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForFunction(() => {
+      const footer = document.querySelector('[data-cloud-reveal]');
+      return (
+        footer instanceof HTMLElement &&
+        Number.parseFloat(getComputedStyle(footer).opacity) >= 0.98 &&
+        getComputedStyle(footer).pointerEvents === 'auto' &&
+        !footer.hasAttribute('inert')
+      );
+    });
+
+    const mobileFooterContract = await page.evaluate(() => {
+      const art = document.querySelector('.cloud-cta__art');
+      if (!(art instanceof HTMLImageElement)) {
+        throw new Error('Expected cloud footer art');
+      }
+      const artBox = art.getBoundingClientRect();
+      const titleLines = Array.from(
+        document.querySelectorAll('[data-cloud-title-line]'),
+      ).map((line) => Math.round(line.getBoundingClientRect().top));
+
+      return {
+        artTop: artBox.top,
+        artBottom: artBox.bottom,
+        titleLines,
+        viewportHeight: window.innerHeight,
+      };
+    });
+    assert.equal(new Set(mobileFooterContract.titleLines).size, 2);
+    assert.ok(mobileFooterContract.artTop >= 0);
+    assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
+
+    const reducedMotionPage = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+    });
+    await reducedMotionPage.emulateMedia({ reducedMotion: 'reduce' });
+    await reducedMotionPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await reducedMotionPage.locator('[data-cloud-reveal]').waitFor({ state: 'attached' });
+    const reducedMotionFooter = await reducedMotionPage
+      .locator('[data-cloud-reveal]')
+      .evaluate((footer) => ({
+        opacity: Number.parseFloat(getComputedStyle(footer).opacity),
+        transitionDuration: getComputedStyle(footer).transitionDuration,
+        inert: footer.hasAttribute('inert'),
+      }));
+    assert.equal(reducedMotionFooter.opacity, 1);
+    assert.equal(reducedMotionFooter.transitionDuration, '0s');
+    assert.equal(reducedMotionFooter.inert, false);
+    await reducedMotionPage.close();
 
     const desktopPage = await browser.newPage({
       viewport: { width: 1440, height: 900 },

@@ -53,7 +53,7 @@ export const getOrganizationSchema = (): StructuredData => ({
   '@id': `${siteMetadata.siteUrl}/#organization`,
   name: siteMetadata.siteName,
   url: siteMetadata.siteUrl,
-  logo: resolveImageUrl('/images/home/consuelo-mark.svg'),
+  logo: resolveImageUrl('/favicon.svg'),
   sameAs: [siteMetadata.githubUrl, siteMetadata.docsUrl],
   description: siteMetadata.defaultDescription,
 });

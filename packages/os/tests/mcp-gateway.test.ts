@@ -229,7 +229,7 @@ describe('MCP gateway credential lifecycle', () => {
 });
 
 describe('MCP gateway adapter', () => {
-  it('resolves manifest-backed scopes and fails closed for unknown tools', () => {
+  it('should resolve nested facade scopes and fail closed when the MCP call is malformed or unknown', () => {
     const listScope = resolveMcpGatewayRequiredScope(JSON.stringify({
       jsonrpc: '2.0',
       id: 'tools',
@@ -239,25 +239,50 @@ describe('MCP gateway adapter', () => {
       jsonrpc: '2.0',
       id: 'call',
       method: 'tools/call',
-      params: { name: 'get_raw_steering', arguments: {} },
+      params: {
+        name: 'call',
+        arguments: { tool: 'explore', input: { query: 'status' } },
+      },
     }));
     const unknownScope = resolveMcpGatewayRequiredScope(JSON.stringify({
       jsonrpc: '2.0',
       id: 'call',
       method: 'tools/call',
-      params: { name: 'missing_tool', arguments: {} },
+      params: { name: 'call', arguments: { tool: 'missing_tool' } },
+    }));
+    const missingNestedTool = resolveMcpGatewayRequiredScope(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: { name: 'call', arguments: {} },
+    }));
+    const directFacadeCall = resolveMcpGatewayRequiredScope(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: { name: 'explore', arguments: {} },
     }));
 
     expect(listScope).toMatchObject({ ok: true, requiredScope: 'route:/mcp:read' });
     expect(callScope).toMatchObject({
       ok: true,
-      toolName: 'get_raw_steering',
-      requiredScope: 'tool:get_raw_steering:read',
+      toolName: 'explore',
+      requiredScope: 'tool:explore:read',
     });
     expect(unknownScope).toMatchObject({
       ok: false,
       status: 403,
       error: { code: 'UNKNOWN_TOOL_SCOPE' },
+    });
+    expect(missingNestedTool).toMatchObject({
+      ok: false,
+      status: 400,
+      error: { code: 'INVALID_MCP_TOOL_CALL' },
+    });
+    expect(directFacadeCall).toMatchObject({
+      ok: false,
+      status: 403,
+      error: { code: 'UNSUPPORTED_MCP_TOOL' },
     });
   });
 
@@ -290,7 +315,7 @@ describe('MCP gateway adapter', () => {
         jsonrpc: '2.0',
         id: 'call',
         method: 'tools/call',
-        params: { name: 'get_raw_steering', arguments: {} },
+        params: { name: 'call', arguments: { tool: 'explore', input: {} } },
       }),
     }));
     await expect(denied.json()).resolves.toMatchObject({
@@ -408,52 +433,95 @@ describe('MCP gateway adapter', () => {
     );
   });
 
-  it('filters non-callable facade tools out of the MCP surface', async () => {
+  it('should expose exactly the annotated OS facade tools when ChatGPT lists tools', async () => {
     const listResponse = await handleMcpGatewayJsonRpc(JSON.stringify({
       jsonrpc: '2.0',
       id: 'tools',
       method: 'tools/list',
     }), {
-      executeCall: async () => ({
-        ok: false,
-        name: 'unused',
-        permission: 'read',
-        error: { code: 'UNUSED', message: 'unused' },
-      }),
+      getSteering: async () => 'unused',
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
     });
-    const facadeToolScope = resolveMcpGatewayRequiredScope(JSON.stringify({
-      jsonrpc: '2.0',
-      id: 'call',
-      method: 'tools/call',
-      params: { name: 'code.call', arguments: {} },
-    }));
+    const result = isJsonObject(listResponse.result) ? listResponse.result : {};
+    const tools = Array.isArray(result.tools) ? result.tools : [];
 
-    expect(JSON.stringify(listResponse)).toContain('get_raw_steering');
-    expect(JSON.stringify(listResponse)).not.toContain('code.call');
-    expect(facadeToolScope).toMatchObject({
-      ok: false,
-      status: 403,
-      error: { code: 'UNSUPPORTED_MCP_TOOL' },
+    expect(tools.map((tool) => isJsonObject(tool) ? tool.name : null)).toEqual([
+      'get_steering',
+      'call',
+    ]);
+    for (const tool of tools) {
+      expect(tool).toMatchObject({
+        inputSchema: { type: 'object' },
+        annotations: {
+          readOnlyHint: true,
+          openWorldHint: false,
+          destructiveHint: false,
+        },
+      });
+      const toolRecord = isJsonObject(tool) ? tool : {};
+      const annotations = isJsonObject(toolRecord.annotations) ? toolRecord.annotations : {};
+      expect(Object.keys(annotations).sort()).toEqual([
+        'destructiveHint',
+        'openWorldHint',
+        'readOnlyHint',
+      ]);
+    }
+  });
+
+  it('should return guarded steering when ChatGPT calls get_steering', async () => {
+    const getSteering = vi.fn(async () => '# OS steering');
+    const executeFacadeTool = vi.fn();
+
+    const response = await handleMcpGatewayJsonRpc(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'steering-1',
+      method: 'tools/call',
+      params: { name: 'get_steering', arguments: {} },
+    }), { getSteering, executeFacadeTool });
+
+    expect(getSteering).toHaveBeenCalledOnce();
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+    expect(response).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'steering-1',
+      result: {
+        isError: false,
+        content: [{ type: 'text', text: '# OS steering' }],
+      },
     });
   });
 
-  it('adapts tools/call output into MCP content without echoing request metadata', async () => {
+  it('should dispatch nested facade calls without echoing request metadata', async () => {
     const body = JSON.stringify({
       jsonrpc: '2.0',
       id: 'call-1',
       method: 'tools/call',
-      params: { name: 'get_raw_steering', arguments: { reason: 'unit-test' } },
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'explore',
+          input: { query: 'status' },
+          taskSession: 'tsk_test',
+          timeout: 12_000,
+        },
+      },
     });
+    const executeFacadeTool = vi.fn(async (input) => ({
+      ok: true,
+      code: 'OK',
+      data: { acceptedInput: input },
+    }));
 
     const response = await handleMcpGatewayJsonRpc(body, {
-      executeCall: async (input) => ({
-        ok: true,
-        name: input.name,
-        permission: 'read',
-        result: { acceptedInput: input.input },
-      }),
+      getSteering: async () => 'unused',
+      executeFacadeTool,
     });
 
+    expect(executeFacadeTool).toHaveBeenCalledWith('explore', {
+      query: 'status',
+      taskSession: 'tsk_test',
+      timeout: 12_000,
+    });
     expect(response).toMatchObject({
       jsonrpc: '2.0',
       id: 'call-1',
@@ -462,10 +530,11 @@ describe('MCP gateway adapter', () => {
     expect(JSON.stringify(response)).toContain('acceptedInput');
     expect(JSON.stringify(response)).not.toContain('x-consuelo-signature');
   });
+
 });
 
 describe('MCP gateway server route', () => {
-  it('serves tools/list through the signed /mcp compatibility endpoint', async () => {
+  it('should serve the two OS facade tools through the signed MCP endpoint', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
@@ -486,18 +555,19 @@ describe('MCP gateway server route', () => {
     const json = await readJsonResponse(response);
 
     expect(response.status).toBe(200);
-    expect(JSON.stringify(json)).toContain('get_raw_steering');
+    expect(JSON.stringify(json)).toContain('get_steering');
+    expect(JSON.stringify(json)).toContain('call');
     expect(JSON.stringify(json)).not.toContain(token.secret);
   });
 
-  it('denies tools/call when the signed credential lacks the tool scope', async () => {
+  it('should deny nested facade calls when the signed credential lacks the tool scope', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const body = JSON.stringify({
       jsonrpc: '2.0',
       id: 'call',
       method: 'tools/call',
-      params: { name: 'get_raw_steering', arguments: {} },
+      params: { name: 'call', arguments: { tool: 'explore', input: { query: 'status' } } },
     });
     const signed = signMachineRequest({
       config,

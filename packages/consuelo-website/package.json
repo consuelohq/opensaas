@@ -7,6 +7,7 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "generate:social-card": "bun scripts/generate-social-card.ts",
+    "generate:brand-assets": "bun scripts/generate-brand-assets.ts",
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",

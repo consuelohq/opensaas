@@ -1,15 +1,15 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="1200.000000pt" height="1200.000000pt" viewBox="0 0 1200.000000 1200.000000"
- preserveAspectRatio="xMidYMid meet"><rect x="10" y="10" width="1180" height="1180" fill="none" stroke="#0000F2" stroke-width="20"/>
-<rect width="100%" height="100%" fill="#FFFFFF"/>
-<metadata>
-Created by potrace 1.16, written by Peter Selinger 2001-2019
-</metadata>
-<g transform="translate(0.000000,1200.000000) scale(0.100000,-0.100000)"
-fill="#0000F2" stroke="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg data-consuelo-app-icon="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" role="img" aria-label="Consuelo">
+  <defs>
+    <clipPath id="consuelo-app-tile">
+      <rect width="1200" height="1200" rx="216" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#consuelo-app-tile)">
+    <rect width="1200" height="1200" rx="216" fill="#FFFFFF" />
+    <g transform="translate(84 84) scale(0.86)">
+      <g transform="translate(0.000000,1200.000000) scale(0.100000,-0.100000)"
+fill="#000000" stroke="none">
 <path d="M6810 11837 c-7 -7 -84 -14 -285 -26 -129 -7 -160 -12 -218 -36 -61
 -25 -73 -26 -119 -17 -29 5 -61 6 -72 2 -18 -7 -16 -9 11 -9 17 -1 44 -6 59
 -11 l28 -11 -23 -22 c-21 -21 -22 -22 -52 -4 -17 9 -37 17 -44 17 -7 0 -26 14
@@ -1777,4 +1777,6 @@ l-45 -41 42 32 c38 28 60 50 51 50 -2 0 -23 -18 -48 -41z M4684 134 c-32 -25
 16 -1 19 -3 4 -6 -2 -5 -13z M4690 15 c-7 -8 -8 -15 -2 -15 5 0 15 7 22 15 7
 8 8 15 2 15 -5 0 -15 -7 -22 -15z"/>
 </g>
+    </g>
+  </g>
 </svg>
