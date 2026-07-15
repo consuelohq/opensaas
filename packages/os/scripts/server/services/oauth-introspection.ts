@@ -5,9 +5,12 @@ import { jsonResponse, unauthorized } from '../middleware/errors';
 function scopeAllowed(scopes: string[], requiredScope: string): boolean {
   if (scopes.includes(requiredScope)) return true;
   const parts = requiredScope.split(':');
-  return parts.length === 3 && parts[0] === 'tool' && (
-    scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*')
-  );
+  if (parts.length !== 3 || parts[0] !== 'tool') return false;
+  const category = parts[2];
+  if (scopes.includes(`tool:*:${category}`) || scopes.includes('tool:*:*')) {
+    return true;
+  }
+  return scopes.includes('mcp:call') && (category === 'read' || category === 'write');
 }
 
 export async function authorizeConsueloOAuthMcpRequest(input: {

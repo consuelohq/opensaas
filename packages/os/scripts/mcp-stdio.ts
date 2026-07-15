@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
 import { handleMcpGatewayJsonRpc } from './lib/mcp-gateway';
-import { executeCall } from './os';
+import { executeTool } from './lib/facade/executor';
+import { executeGetSteering } from './os';
 
 type JsonObject = Record<string, unknown>;
 
@@ -51,7 +52,10 @@ function writeMessage(message: JsonObject): void {
 }
 
 async function handleBody(body: string): Promise<void> {
-  const response = await handleMcpGatewayJsonRpc(body, { executeCall });
+  const response = await handleMcpGatewayJsonRpc(body, {
+    getSteering: async () => executeGetSteering(),
+    executeFacadeTool: async (toolName, input) => executeTool(toolName, input, { logMode: 'errors' }),
+  });
   writeMessage(response);
 }
 
