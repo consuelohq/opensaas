@@ -201,6 +201,25 @@ describe('trace-site semantic table formatting', () => {
     expect(formatted.inputLabel).not.toContain('{');
   });
 
+  test('should ignore truncated JSON table previews when the full code input is available', () => {
+    const formatted = formatTraceTableRow(
+      row({
+        name: 'code.call',
+        rawResolvedInputJson: {
+          language: 'bun',
+          mode: 'verify',
+          code: "const commands = [['bun', 'test'], ['bun', 'run', 'build']]; for (const command of commands) Bun.spawnSync({ cmd: command });",
+        },
+        input:
+          "{\"code\": \"const commands = [['bun', 'test'], ['bun', 'run', 'build']]; const results = [];",
+      }),
+    );
+
+    expect(formatted.toolLabel).toBe('bun.verify');
+    expect(formatted.inputLabel).toBe('run verification');
+    expect(formatted.inputLabel).not.toMatch(/[{}"']/);
+  });
+
   test('should summarize spawned verification, deployment, and patch commands at a glance', () => {
     const cases = [
       {

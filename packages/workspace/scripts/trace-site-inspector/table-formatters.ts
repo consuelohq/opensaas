@@ -574,11 +574,7 @@ function normalizeSeparators(value: string): string {
 
 function isSerializedStructure(value: string): boolean {
   const trimmed = value.trim();
-  if (!trimmed || !'[{'.includes(trimmed[0] ?? '')) return false;
-  const parsed = parseMaybeJson(trimmed);
-  return (
-    parsed !== trimmed && (Array.isArray(parsed) || record(parsed) !== null)
-  );
+  return Boolean(trimmed) && '[{'.includes(trimmed[0] ?? '');
 }
 
 function looksLikeSourceCode(value: string): boolean {
