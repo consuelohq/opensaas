@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/retune-landing-typography-and-complete-footer-illustration-fill",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 1524,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1524",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1524",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1524/retune-landing-typography-and-complete-footer-illustration-fill",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1524",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1524/retune-landing-typography-and-complete-footer-illustration-fill",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-retune-landing-typography-and-complete-footer-illustration-fill",
+  "taskSession": "tsk_97194d5c2fe7",
+  "tmuxSession": "opensaas-website-retune-landing-typography-and-complete-footer-il-97194d5c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-retune-landing-typography-and-complete-footer-illustration-fill/.task/website/retune-landing-typography-and-complete-footer-illustration-fill/session.json",
+  "createdAt": "2026-07-16T05:57:24.154Z"
+}
