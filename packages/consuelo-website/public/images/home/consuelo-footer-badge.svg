@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 121 173" role="img" aria-label="Consuelo OS">
+  <defs>
+    <clipPath id="frame">
+      <rect width="121" height="173" />
+    </clipPath>
+  </defs>
+  <rect width="121" height="173" fill="#fff" />
+  <g clip-path="url(#frame)">
+    <image href="holding-world.svg" x="-98" y="-11" width="282" height="282" />
+  </g>
+  <rect x="0.75" y="0.75" width="119.5" height="171.5" fill="none" stroke="#fff" stroke-width="1.5" />
+  <rect y="0" width="121" height="20" fill="#fff" />
+  <text x="60.5" y="13.5" fill="#0000F2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="8" font-weight="700" letter-spacing="0.9" text-anchor="middle">CONSUELO</text>
+  <rect y="146" width="121" height="27" fill="#fff" fill-opacity="0.94" />
+  <text x="60.5" y="164" fill="#0000F2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="700" letter-spacing="1.4" text-anchor="middle">OS</text>
+</svg>

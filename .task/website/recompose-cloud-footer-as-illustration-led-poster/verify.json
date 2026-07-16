@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/recompose-cloud-footer-as-illustration-led-poster",
+  "base": "origin/stream/website",
+  "headSha": "aa8e2db10e8c21df898762e1e62047e2f6ec9d97",
+  "changeHash": "23e89734086d508ea3fec19889a63fa265f77e0b6c51196cd9f4aa5fa33f36b1",
+  "changedFiles": [
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/public/images/home/consuelo-footer-badge.svg",
+    "packages/consuelo-website/public/images/home/holding-world-editorial.png",
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+  ],
+  "verifiedAt": "2026-07-16T02:51:20.581Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/recompose-cloud-footer-as-illustration-led-poster.json",
+        ".task/website/recompose-cloud-footer-as-illustration-led-poster/current.json",
+        ".task/website/recompose-cloud-footer-as-illustration-led-poster/evidence-log.json",
+        ".task/website/recompose-cloud-footer-as-illustration-led-poster/read-log.json",
+        ".task/website/recompose-cloud-footer-as-illustration-led-poster/session.json",
+        ".task/website/recompose-cloud-footer-as-illustration-led-poster/verify.json",
+        ".task/website/recompose-cloud-footer-as-illustration-led-poster/workpad.md",
+        "packages/consuelo-website/package.json",
+        "packages/consuelo-website/public/images/home/consuelo-footer-badge.svg",
+        "packages/consuelo-website/public/images/home/holding-world-editorial.png",
+        "packages/consuelo-website/scripts/generate-footer-art.ts",
+        "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+        "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+        "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
