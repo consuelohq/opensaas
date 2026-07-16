@@ -24,7 +24,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(hero).not.toContain('new ResizeObserver');
     expect(hero).not.toContain('document.fonts.ready');
     expect(hero).not.toContain("heading.style.setProperty('--hero-title-size'");
-    expect(hero).toContain('font-size: clamp(2.2rem, 9.45vw, 6.5rem);');
+    expect(hero).toContain('font-size: clamp(2.15rem, 9.25vw, 6.25rem);');
     expect(hero).toContain('.os-hero h1 > span {');
     expect(hero).toContain('display: block;');
     expect(hero).not.toContain('.os-hero h1 > span:nth-child(2)::after');
@@ -71,21 +71,39 @@ describe('Consuelo OS homepage presentation', () => {
 
     expect(footer).not.toContain('@chenglou/pretext');
     expect(footer).not.toContain("heading.style.setProperty('--cloud-title-size'");
-    expect(footer).toContain('font-size: clamp(2.9rem, 4.58vw, 4.15rem);');
-    expect(footer).toContain('font-size: clamp(3.2rem, 7.36vw, 4rem);');
-    expect(footer).toContain('font-size: clamp(3.25rem, 15.2vw, 4rem);');
+    expect(footer).toContain('font-size: clamp(2.8rem, 4.4vw, 4rem);');
+    expect(footer).toContain('font-size: clamp(3.05rem, 7.1vw, 3.85rem);');
+    expect(footer).toContain('font-size: clamp(3.1rem, 14.7vw, 3.8rem);');
     expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
     expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
-    expect(footer).toContain('/images/home/holding-world-editorial.png');
+    expect(footer).toContain('/generated/holding-world-editorial.png');
     expect(footer).not.toContain('filter: brightness(0) invert(1)');
     expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
     expect(footer).toContain('RUN THE HOME NODE FOR YOU');
     expect(footer).toContain('--cloud-gutter: clamp(4.75rem, 8.5vw, 8rem);');
-    expect(footer).toContain('/images/home/consuelo-footer-badge.png');
+    expect(footer).toContain('/generated/consuelo-footer-badge.png');
     expect(footer).toContain('aspect-ratio: 121 / 173;');
     expect(footer).toContain('justify-items: end;');
     expect(footer).toContain('text-align: right;');
     expect(footer).toContain('.cloud-cta__badge {\n      display: none;');
+  });
+
+  test('should generate footer binaries before dev and build without tracking them', async () => {
+    const [packageJson, gitignore, generator] = await Promise.all([
+      readSource('package.json'),
+      readSource('.gitignore'),
+      readSource('scripts/generate-footer-art.ts'),
+    ]);
+
+    expect(packageJson).toContain('"dev": "bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain('"start": "bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain(
+      '"build": "bun run generate:footer-art && astro check && astro build"',
+    );
+    expect(gitignore).toContain('public/generated/');
+    expect(generator).toContain("public/generated/holding-world-editorial.png");
+    expect(generator).toContain("public/generated/consuelo-footer-badge.png");
+    expect(generator).toContain('bodyUnderlayMask');
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {

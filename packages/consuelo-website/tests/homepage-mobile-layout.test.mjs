@@ -134,6 +134,8 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.deepEqual(settledHeadlineFrame, firstHeadlineFrame);
     assert.equal(firstHeadlineFrame.hero.inlineSize, '');
     assert.equal(firstHeadlineFrame.cloud.inlineSize, '');
+    assert.ok(Math.abs(Number.parseFloat(firstHeadlineFrame.hero.fontSize) - 36.075) < 0.25);
+    assert.ok(Math.abs(Number.parseFloat(firstHeadlineFrame.cloud.fontSize) - 57.33) < 0.35);
     await page.locator('main').waitFor();
 
     const mobileHeader = page.locator('.os-header__mobile');
@@ -344,6 +346,10 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       assert.deepEqual(settledFrame, firstFrame);
       assert.equal(firstFrame.heroInline, '');
       assert.equal(firstFrame.cloudInline, '');
+      const expectedHeroFonts = { 768: 71.04, 1024: 94.72, 1180: 100 };
+      const expectedCloudFonts = { 768: 54.528, 1024: 45.056, 1180: 51.92 };
+      assert.ok(Math.abs(Number.parseFloat(firstFrame.heroFont) - expectedHeroFonts[width]) < 0.4);
+      assert.ok(Math.abs(Number.parseFloat(firstFrame.cloudFont) - expectedCloudFonts[width]) < 0.4);
 
       const responsiveContract = await responsivePage.evaluate(() => ({
         lineTops: Array.from(document.querySelectorAll('.os-hero h1 [data-hero-line]')).map(
@@ -451,6 +457,7 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
         artSrc: art.getAttribute('src'),
         artTop: artBox.top,
         artBottom: artBox.bottom,
+        artHeight: artBox.height,
         bluePixels,
         whitePixels,
         badgeDisplay: getComputedStyle(badge).display,
@@ -474,7 +481,8 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(new Set(mobileFooterContract.titleLines).size, 2);
     assert.ok(mobileFooterContract.artTop >= 0);
     assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
-    assert.equal(mobileFooterContract.artSrc, '/images/home/holding-world-editorial.png');
+    assert.equal(mobileFooterContract.artSrc, '/generated/holding-world-editorial.png');
+    assert.ok(mobileFooterContract.artHeight <= 408);
     assert.equal(mobileFooterContract.artFilter, 'none');
     assert.ok(mobileFooterContract.bluePixels > 1000);
     assert.ok(mobileFooterContract.whitePixels > 1000);
@@ -625,7 +633,8 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     );
     assert.ok(desktopFooterContract.artTop <= desktopFooterContract.viewportHeight * 0.38);
     assert.ok(Math.abs(desktopFooterContract.artBottom - desktopFooterContract.viewportHeight) <= 1);
-    assert.ok(desktopFooterContract.artWidth >= desktopFooterContract.viewportWidth * 0.38);
+    assert.ok(desktopFooterContract.artWidth >= 520);
+    assert.ok(desktopFooterContract.artWidth <= 545);
     assert.deepEqual(desktopFooterContract.wordLineDisplays, ['block', 'block']);
     assert.ok(desktopFooterContract.secondWordSize < desktopFooterContract.firstWordSize);
     assert.ok(desktopFooterContract.versionLeft >= desktopFooterContract.viewportWidth * 0.075);
@@ -633,7 +642,7 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(desktopFooterContract.signatureTextAlign, 'right');
     assert.equal(desktopFooterContract.signatureJustifyItems, 'end');
     assert.notEqual(desktopFooterContract.badgeDisplay, 'none');
-    assert.equal(desktopFooterContract.badgeSrc, '/images/home/consuelo-footer-badge.png');
+    assert.equal(desktopFooterContract.badgeSrc, '/generated/consuelo-footer-badge.png');
     assert.equal(desktopFooterContract.badgeNaturalWidth, 242);
     assert.equal(desktopFooterContract.badgeNaturalHeight, 346);
     assert.ok(desktopFooterContract.badgeRatio >= 1.35);
@@ -685,7 +694,8 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.ok(
       Math.abs(tabletFooterContract.artAspect - tabletFooterContract.naturalArtAspect) <= 0.01,
     );
-    assert.ok(tabletFooterContract.artTop <= 320);
+    assert.ok(tabletFooterContract.artTop >= 325);
+    assert.ok(tabletFooterContract.artTop <= 345);
     assert.ok(Math.abs(tabletFooterContract.artBottom - 900) <= 1);
     assert.notEqual(tabletFooterContract.wordmarkDisplay, 'none');
     assert.notEqual(tabletFooterContract.badgeDisplay, 'none');

@@ -2,12 +2,23 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { describe, expect, test } from 'bun:test';
+import { beforeAll, describe, expect, test } from 'bun:test';
 import sharp from 'sharp';
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const artPath = join(packageRoot, 'public/images/home/holding-world-editorial.png');
-const badgePath = join(packageRoot, 'public/images/home/consuelo-footer-badge.png');
+const artPath = join(packageRoot, 'public/generated/holding-world-editorial.png');
+const badgePath = join(packageRoot, 'public/generated/consuelo-footer-badge.png');
+
+beforeAll(() => {
+  const generated = Bun.spawnSync({
+    cmd: ['bun', 'scripts/generate-footer-art.ts'],
+    cwd: packageRoot,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  expect(generated.exitCode).toBe(0);
+});
 
 const countRegion = async (path, bounds) => {
   const { data, info } = await sharp(path).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -44,14 +55,18 @@ describe('cloud footer editorial artwork', () => {
     expect(metadata.height).toBeGreaterThan(1900);
 
     const hair = await countRegion(artPath, { left: 0.42, right: 0.83, top: 0.03, bottom: 0.38 });
-    const garment = await countRegion(artPath, { left: 0.42, right: 0.88, top: 0.5, bottom: 0.96 });
-    const hand = await countRegion(artPath, { left: 0.16, right: 0.52, top: 0.56, bottom: 0.82 });
+    const outerRobe = await countRegion(artPath, { left: 0.66, right: 0.96, top: 0.5, bottom: 0.96 });
+    const sleeve = await countRegion(artPath, { left: 0.38, right: 0.62, top: 0.54, bottom: 0.86 });
+    const forearm = await countRegion(artPath, { left: 0.22, right: 0.5, top: 0.62, bottom: 0.82 });
+    const palm = await countRegion(artPath, { left: 0.12, right: 0.36, top: 0.59, bottom: 0.75 });
     const globe = await countRegion(artPath, { left: 0.12, right: 0.42, top: 0.42, bottom: 0.72 });
 
     expect(hair.blue).toBeGreaterThan(8000);
-    expect(garment.white).toBeGreaterThan(20_000);
-    expect(garment.blue).toBeGreaterThan(2500);
-    expect(hand.white).toBeGreaterThan(2500);
+    expect(outerRobe.white).toBeGreaterThan(16_000);
+    expect(outerRobe.blue).toBeGreaterThan(2500);
+    expect(sleeve.white).toBeGreaterThan(8500);
+    expect(forearm.white).toBeGreaterThan(5500);
+    expect(palm.white).toBeGreaterThan(3500);
     expect(globe.blue).toBeGreaterThan(3000);
   });
 

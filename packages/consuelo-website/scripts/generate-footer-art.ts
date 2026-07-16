@@ -6,13 +6,14 @@ import sharp from 'sharp';
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePath = join(packageRoot, 'public/images/home/holding-world.svg');
-const outputPath = join(packageRoot, 'public/images/home/holding-world-editorial.png');
-const badgePath = join(packageRoot, 'public/images/home/consuelo-footer-badge.png');
+const outputPath = join(packageRoot, 'public/generated/holding-world-editorial.png');
+const badgePath = join(packageRoot, 'public/generated/consuelo-footer-badge.png');
 const renderSize = 1200;
 const outputScale = 2;
 const alphaThreshold = 8;
 const closureRadius = 1;
-const interiorRadius = 2;
+const bodyClosureRadius = 5;
+const interiorRadius = 3;
 const outputMargin = 12;
 
 const render = await sharp(sourcePath)
@@ -125,42 +126,48 @@ const erode = (source: Uint8Array, radius: number) => {
   return output;
 };
 
-const barrier = dilate(ink, closureRadius);
 const inkInterior = erode(ink, interiorRadius);
-const outside = new Uint8Array(width * height);
-const queue = new Int32Array(width * height);
-let queueStart = 0;
-let queueEnd = 0;
+const floodOutside = (barrier: Uint8Array) => {
+  const outside = new Uint8Array(width * height);
+  const queue = new Int32Array(width * height);
+  let queueStart = 0;
+  let queueEnd = 0;
 
-const enqueue = (index: number) => {
-  if (index < 0 || index >= outside.length || barrier[index] === 1 || outside[index] === 1) {
-    return;
+  const enqueue = (index: number) => {
+    if (index < 0 || index >= outside.length || barrier[index] === 1 || outside[index] === 1) {
+      return;
+    }
+
+    outside[index] = 1;
+    queue[queueEnd] = index;
+    queueEnd += 1;
+  };
+
+  for (let x = 0; x < width; x += 1) {
+    enqueue(x);
+    enqueue((height - 1) * width + x);
+  }
+  for (let y = 0; y < height; y += 1) {
+    enqueue(y * width);
+    enqueue(y * width + width - 1);
   }
 
-  outside[index] = 1;
-  queue[queueEnd] = index;
-  queueEnd += 1;
+  while (queueStart < queueEnd) {
+    const index = queue[queueStart];
+    queueStart += 1;
+    const x = index % width;
+
+    if (x > 0) enqueue(index - 1);
+    if (x < width - 1) enqueue(index + 1);
+    if (index >= width) enqueue(index - width);
+    if (index < width * (height - 1)) enqueue(index + width);
+  }
+
+  return outside;
 };
 
-for (let x = 0; x < width; x += 1) {
-  enqueue(x);
-  enqueue((height - 1) * width + x);
-}
-for (let y = 0; y < height; y += 1) {
-  enqueue(y * width);
-  enqueue(y * width + width - 1);
-}
-
-while (queueStart < queueEnd) {
-  const index = queue[queueStart];
-  queueStart += 1;
-  const x = index % width;
-
-  if (x > 0) enqueue(index - 1);
-  if (x < width - 1) enqueue(index + 1);
-  if (index >= width) enqueue(index - width);
-  if (index < width * (height - 1)) enqueue(index + width);
-}
+const detailOutside = floodOutside(dilate(ink, closureRadius));
+const bodyOutside = floodOutside(dilate(ink, bodyClosureRadius));
 
 const cropLeft = Math.max(0, minX - outputMargin);
 const cropTop = Math.max(0, minY - outputMargin);
@@ -203,7 +210,7 @@ const scalePoints = (region: (typeof whiteInkRegions)[number]) =>
   region
     .map(([x, y]) => `${Math.round(x * outputWidth)},${Math.round(y * outputHeight)}`)
     .join(' ');
-const whiteRegionSvg = Buffer.from(`
+const bodyRegionSvg = Buffer.from(`
   <svg width="${outputWidth}" height="${outputHeight}" xmlns="http://www.w3.org/2000/svg">
     <rect width="100%" height="100%" fill="#000000" />
     ${whiteInkRegions.map((region) => `<polygon points="${scalePoints(region)}" fill="#FFFFFF" />`).join('')}
@@ -216,10 +223,25 @@ const whiteRegionSvg = Buffer.from(`
     />
   </svg>
 `);
-const whiteRegionMask = await sharp(whiteRegionSvg)
+const bodyRegionMask = await sharp(bodyRegionSvg)
   .greyscale()
   .raw()
   .toBuffer();
+const bodyUnderlayMask = new Uint8Array(outputWidth * outputHeight);
+
+for (let y = 0; y < outputHeight; y += 1) {
+  for (let x = 0; x < outputWidth; x += 1) {
+    const sourceX = cropLeft + x;
+    const sourceY = cropTop + y;
+    const sourceIndex = sourceY * width + sourceX;
+    const outputIndex = y * outputWidth + x;
+    const inBodyRegion = bodyRegionMask[outputIndex] > 128;
+
+    if (inBodyRegion && bodyOutside[sourceIndex] === 0) {
+      bodyUnderlayMask[outputIndex] = 1;
+    }
+  }
+}
 let bluePixels = 0;
 let whitePixels = 0;
 let whitenedInkPixels = 0;
@@ -231,31 +253,32 @@ for (let y = 0; y < outputHeight; y += 1) {
     const sourceIndex = sourceY * width + sourceX;
     const sourceOffset = sourceIndex * channels;
     const outputOffset = (y * outputWidth + x) * 4;
+    const outputIndex = y * outputWidth + x;
     const alpha = render.data[sourceOffset + 3];
+    const inBodyRegion = bodyRegionMask[outputIndex] > 128;
+    const hasWhiteUnderlay =
+      bodyUnderlayMask[outputIndex] === 1 || detailOutside[sourceIndex] === 0;
 
-    if (alpha > alphaThreshold) {
-      const whiteInk =
-        inkInterior[sourceIndex] === 1 &&
-        whiteRegionMask[y * outputWidth + x] > 128;
-      output[outputOffset] = whiteInk ? 255 : render.data[sourceOffset];
-      output[outputOffset + 1] = whiteInk ? 255 : render.data[sourceOffset + 1];
-      output[outputOffset + 2] = whiteInk ? 255 : render.data[sourceOffset + 2];
-      output[outputOffset + 3] = alpha;
-      if (whiteInk) {
-        whitePixels += 1;
-        whitenedInkPixels += 1;
-      } else {
-        bluePixels += 1;
-      }
-      continue;
-    }
-
-    if (outside[sourceIndex] === 0) {
+    if (hasWhiteUnderlay) {
       output[outputOffset] = 255;
       output[outputOffset + 1] = 255;
       output[outputOffset + 2] = 255;
       output[outputOffset + 3] = 255;
       whitePixels += 1;
+    }
+
+    if (alpha > alphaThreshold) {
+      const whiteInk = inBodyRegion && inkInterior[sourceIndex] === 1;
+      if (whiteInk) {
+        whitenedInkPixels += 1;
+      } else {
+        output[outputOffset] = render.data[sourceOffset];
+        output[outputOffset + 1] = render.data[sourceOffset + 1];
+        output[outputOffset + 2] = render.data[sourceOffset + 2];
+        output[outputOffset + 3] = alpha;
+        bluePixels += 1;
+      }
+      continue;
     }
   }
 }
@@ -280,13 +303,13 @@ const badgeCrop = await sharp(output, {
   },
 })
   .extract({
-    left: Math.round(outputWidth * 0.12),
+    left: Math.round(outputWidth * 0.34),
     top: Math.round(outputHeight * 0.04),
-    width: Math.round(outputWidth * 0.76),
-    height: Math.round(outputHeight * 0.78),
+    width: Math.round(outputWidth * 0.52),
+    height: Math.round(outputHeight * 0.64),
   })
   .resize(226, 286, {
-    fit: 'contain',
+    fit: 'cover',
     background: { r: 255, g: 255, b: 255, alpha: 0 },
   })
   .png()
@@ -329,6 +352,7 @@ process.stdout.write(
       whitePixels,
       whitenedInkPixels,
       closureRadius,
+      bodyClosureRadius,
       interiorRadius,
       outputScale,
     },
