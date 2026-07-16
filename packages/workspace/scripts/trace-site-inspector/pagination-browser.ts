@@ -5,6 +5,8 @@ export type TraceHistoryPage = {
   nextCursor: string | null;
 };
 
+export type TraceLivePage = TraceHistoryPage;
+
 export type TracePrefetchRequestDetail = {
   cursor: string;
   rowCount: number;
@@ -38,8 +40,20 @@ export function deriveTraceHistoryCursor(
 }
 
 export function traceHistoryUrl(cursor: string, limit = 100): string {
+  return traceCursorUrl('older', cursor, limit);
+}
+
+export function traceLiveUrl(cursor: string, limit = 100): string {
+  return traceCursorUrl('newer', cursor, limit);
+}
+
+function traceCursorUrl(
+  direction: 'older' | 'newer',
+  cursor: string,
+  limit: number,
+): string {
   const params = new URLSearchParams({
-    direction: 'older',
+    direction,
     cursor,
     limit: String(Math.max(1, Math.floor(limit))),
     site: 'trace-burn-intelligence',
@@ -50,14 +64,25 @@ export function traceHistoryUrl(cursor: string, limit = 100): string {
 }
 
 export function parseTraceHistoryResponse(value: unknown): TraceHistoryPage {
+  return parseTraceCursorResponse(value, 'older');
+}
+
+export function parseTraceLiveResponse(value: unknown): TraceLivePage {
+  return parseTraceCursorResponse(value, 'newer');
+}
+
+function parseTraceCursorResponse(
+  value: unknown,
+  direction: 'older' | 'newer',
+): TraceHistoryPage {
   const envelope = asRecord(value);
   if (!envelope || envelope.ok !== true) {
     const error = asRecord(envelope?.error);
     throw new Error(clean(error?.message) || 'Trace history request failed.');
   }
   const data = asRecord(envelope.data);
-  if (!data || data.direction !== 'older') {
-    throw new Error('Trace history response is missing the older direction.');
+  if (!data || data.direction !== direction) {
+    throw new Error(`Trace response is missing the ${direction} direction.`);
   }
   if (!Array.isArray(data.rows)) {
     throw new Error('Trace history response rows must be an array.');
@@ -68,9 +93,20 @@ export function parseTraceHistoryResponse(value: unknown): TraceHistoryPage {
   }
   const nextCursor = data.nextCursor;
   if (nextCursor !== null && typeof nextCursor !== 'string') {
-    throw new Error('Trace history response nextCursor must be a string or null.');
+    throw new Error(
+      'Trace history response nextCursor must be a string or null.',
+    );
   }
   return { rows, nextCursor };
+}
+
+export function deriveTraceLiveCursor(rows: Iterable<TraceRecord>): string {
+  const newest = Array.from(rows).at(0);
+  const metadata = asRecord(newest?.metadata);
+  const rowid = clean(metadata?.rowid);
+  if (rowid && /^\d+$/.test(rowid)) return rowid.padStart(12, '0');
+  const key = stableTraceKey(newest);
+  return key ? `id:${key}` : '000000000000';
 }
 
 export function installTracePaginationTransport(): () => void {
@@ -94,7 +130,9 @@ export function installTracePaginationTransport(): () => void {
     document.removeEventListener('trace:prefetch-request', handlePrefetch);
 }
 
-async function fetchTraceHistoryPage(cursor: string): Promise<TraceHistoryPage> {
+async function fetchTraceHistoryPage(
+  cursor: string,
+): Promise<TraceHistoryPage> {
   try {
     const transport = window.__consueloTraceHistoryTransport;
     if (!transport) {

@@ -54,15 +54,19 @@ import {
 } from '../scripts/trace-site-inspector/trace-list';
 import {
   deriveTraceHistoryCursor,
+  parseTraceLiveResponse,
   parseTraceHistoryResponse,
   traceHistoryUrl,
+  traceLiveUrl,
 } from '../scripts/trace-site-inspector/pagination-browser';
 import {
   createInspectorState,
   filterInspectorCalls,
   inspectorSections,
+  isWorkpadTrace,
   normalizeBranchBreadcrumb,
   reduceInspectorState,
+  workpadTraceValue,
 } from '../scripts/trace-site-inspector/inspector-state';
 import {
   formatTraceTableRow,
@@ -230,6 +234,36 @@ describe('trace-site semantic table formatting', () => {
         ).inputLabel,
       ).toBe(item.expected);
     }
+  });
+
+  test('should identify workpad activity and replace raw source code with readable actions', () => {
+    const workpadEdit = formatTraceTableRow(
+      row({
+        name: 'code.call',
+        rawResolvedInputJson: {
+          language: 'bun',
+          mode: 'edit',
+          code: `const text = await Bun.file('.task/workspace/ship/workpad.md').text(); await Bun.write('.task/workspace/ship/workpad.md', text + '\\nproof')`,
+        },
+      }),
+    );
+    expect(workpadEdit).toMatchObject({
+      toolLabel: 'workpad.edit',
+      inputLabel: 'edit workpad.md',
+    });
+
+    const search = formatTraceTableRow(
+      row({
+        name: 'code.call',
+        rawResolvedInputJson: {
+          language: 'bun',
+          mode: 'read',
+          code: `const matches = source.matchAll(/(?:Tests?|test)\\s+(\\d+)\\s+failed/gi); return [...matches].map((match) => match[1])`,
+        },
+      }),
+    );
+    expect(search.inputLabel).toBe('inspect test failures');
+    expect(search.inputLabel).not.toMatch(/[{}()"';]/);
   });
 
   test('should format frequent tools with concise human-readable labels and summaries', () => {
@@ -590,6 +624,23 @@ describe('trace-site virtual list state', () => {
     ).toThrow('rows');
   });
 
+  test('should derive and parse the one-second SQLite newer-trace cursor contract', () => {
+    expect(traceLiveUrl('000000000123', 100)).toBe(
+      '/gateway/traces/recent?direction=newer&cursor=000000000123&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true',
+    );
+    const rows = [row({ id: 'live-1', recordId: 'live-1' })];
+    expect(
+      parseTraceLiveResponse({
+        ok: true,
+        data: {
+          direction: 'newer',
+          rows,
+          nextCursor: '000000000124',
+        },
+      }),
+    ).toEqual({ rows, nextCursor: '000000000124' });
+  });
+
   test('should expose older history only through the trusted private archive boundary', async () => {
     const readHistoryPage = vi.fn(async () => ({
       rows: [row({ id: 'older-1', recordId: 'older-1' })],
@@ -640,6 +691,34 @@ describe('trace-site virtual list state', () => {
       cursor: 'id:record-2',
       limit: 75,
     });
+  });
+
+  test('should expose newer rows through the same trusted SQLite cursor boundary', async () => {
+    const readNewerPage = vi.fn(async () => ({
+      rows: [row({ id: 'live-1', recordId: 'live-1' })],
+      nextCursor: '000000000124',
+    }));
+    const response = await createArchiveTraceHistoryResponse({
+      request: new Request(
+        'https://private.example/gateway/traces/recent?direction=newer&cursor=000000000123&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true',
+      ),
+      dbPath: '/private/traces.db',
+      backend: {
+        readRecentEvents: vi.fn(),
+        readCachedAggregate: vi.fn(),
+        readNewerPage,
+      },
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      data: {
+        direction: 'newer',
+        rows: [{ recordId: 'live-1' }],
+        nextCursor: '000000000124',
+      },
+    });
+    expect(readNewerPage).toHaveBeenCalledOnce();
   });
 
   test('should enrich paginated batch children from their ordered batch steps', async () => {
@@ -821,6 +900,25 @@ describe('trace-site inspector state contract', () => {
         mode: 'json',
       }).displayMode,
     ).toBe('json');
+  });
+
+  test('should expose a dedicated workpad mode only for workpad activity', () => {
+    const workpad = row({
+      name: 'fs.read',
+      rawResolvedInputJson: { path: '.task/workspace/ship/workpad.md' },
+      rawResultJson: { data: { stdout: '# Workpad\\n\\nCurrent proof.' } },
+    });
+    expect(isWorkpadTrace(workpad)).toBe(true);
+    expect(workpadTraceValue(workpad)).toContain('# Workpad');
+    expect(
+      reduceInspectorState(createInspectorState(), {
+        type: 'set-display-mode',
+        mode: 'workpad',
+      }).displayMode,
+    ).toBe('workpad');
+    expect(isWorkpadTrace(row({ name: 'fs.read', input: 'README.md' }))).toBe(
+      false,
+    );
   });
 
   test('should normalize branch breadcrumbs and search calls without changing state', () => {
@@ -1034,15 +1132,13 @@ describe('trace-site inspector deployment contract', () => {
           () =>
             document
               .querySelector('.trxRow[data-trace-key="code-root"]')
-              ?.querySelector('.trxToolName')?.textContent === 'bun.read' &&
+              ?.querySelector('.trxToolName')?.textContent === 'workpad.read' &&
             Boolean(document.querySelector('.trxFilterPanel')),
         );
 
         expect(await page.locator('#tbmLiveTraceModal').isVisible()).toBe(true);
         expect(
-          await page
-            .locator('.trxRow[data-trace-key="code-root"]')
-            .isVisible(),
+          await page.locator('.trxRow[data-trace-key="code-root"]').isVisible(),
         ).toBe(true);
         expect(
           await page
@@ -1071,11 +1167,15 @@ describe('trace-site inspector deployment contract', () => {
             output: getComputedStyle(
               element.querySelector<HTMLElement>('.trxOutputCell')!,
             ).color,
+            branch: getComputedStyle(
+              element.querySelector<HTMLElement>('.trxBranch')!,
+            ).color,
           }));
-        expect(errorColors).toEqual({
+        expect(errorColors).toMatchObject({
           input: 'rgb(239, 118, 95)',
           output: 'rgb(239, 118, 95)',
         });
+        expect(errorColors.branch).not.toBe(errorColors.input);
 
         expect(await page.locator('html').getAttribute('class')).toContain(
           'trace-system-font',
@@ -1091,9 +1191,11 @@ describe('trace-site inspector deployment contract', () => {
           await page.locator('[data-trace-filter-more="tools"]').textContent(),
         ).toMatch(/^Show \d+ more$/);
 
+        await page.locator('[data-trace-filter-more="tools"]').click();
+
         await page
           .locator(
-            '[data-filter-section="tools"] [data-trace-filter-value="bun.read"] [data-trace-filter-only]',
+            '[data-filter-section="tools"] [data-trace-filter-value="workpad.read"] [data-trace-filter-only]',
           )
           .click();
         await page.waitForFunction(
@@ -1104,7 +1206,7 @@ describe('trace-site inspector deployment contract', () => {
                   diagnostics: () => { filtered: number } | null;
                 };
               }
-            ).__traceVirtualList?.diagnostics()?.filtered === 2,
+            ).__traceVirtualList?.diagnostics()?.filtered === 1,
         );
         expect(await page.locator('.trxFilterPanel').isVisible()).toBe(true);
 
@@ -1118,13 +1220,58 @@ describe('trace-site inspector deployment contract', () => {
         const inputCell = page.locator(
           '.trxRow[data-trace-key="code-root"] .trxInputCell',
         );
+        expect(await inputCell.getAttribute('title')).toBeNull();
         await inputCell.hover();
+        await page.waitForTimeout(850);
+        expect(await page.locator('.trxHoverCard').isVisible()).toBe(false);
         await page.waitForFunction(
           () => !document.querySelector<HTMLElement>('.trxHoverCard')?.hidden,
         );
         expect(await page.locator('.trxHoverCard').textContent()).toContain(
           "await Bun.file('workpad.md').text()",
         );
+        expect(await page.locator('.trxHoverCard').textContent()).not.toContain(
+          '⌕',
+        );
+
+        await page.locator('.trxRow[data-trace-key="code-root"]').click();
+        await page.waitForFunction(() =>
+          Boolean(document.querySelector('[data-ti-mode="workpad"]')),
+        );
+        const inspectorIdentity = await page
+          .locator('.tiInspector')
+          .evaluate((element) => {
+            (element as HTMLElement).dataset.testIdentity = 'stable';
+            return element.getBoundingClientRect().height;
+          });
+        expect(inspectorIdentity).toBeGreaterThan(0);
+        expect(
+          await page.locator('.tiHeaderMetrics .tiHeaderMetric').count(),
+        ).toBe(6);
+        expect(await page.locator('.tiBranchTotals').count()).toBe(0);
+        await page.locator('[data-ti-call-search]').fill('bun.read');
+        expect(
+          await page.locator('.tiInspector').getAttribute('data-test-identity'),
+        ).toBe('stable');
+        await page.locator('[data-ti-mode="workpad"]').click();
+        expect(
+          await page.locator('[data-ti-section="workpad"]').innerText(),
+        ).toContain('workspace notes');
+
+        const footerLayout = await page
+          .locator('.trxFooter')
+          .evaluate((footer) => {
+            const children = [...footer.children] as HTMLElement[];
+            return {
+              count: children.length,
+              columns: getComputedStyle(footer).gridTemplateColumns,
+              labels: children.map((child) => child.textContent?.trim()),
+            };
+          });
+        expect(footerLayout.count).toBe(3);
+        expect(footerLayout.labels[0]).toBe('filters');
+        expect(footerLayout.labels[1]).toContain('traces');
+        expect(footerLayout.labels[2]).toBe('Scroll to top');
 
         const rowCheckbox = page.locator(
           '.trxRow[data-trace-key="code-root"] .trxCheck',
@@ -1316,6 +1463,8 @@ describe('trace-site inspector deployment contract', () => {
         const page = await browser.newPage({
           viewport: { width: 1440, height: 900 },
         });
+        const pageErrors: string[] = [];
+        page.on('pageerror', (error) => pageErrors.push(error.message));
         page.setDefaultTimeout(7_000);
         await page.route('http://trace.test/**', async (route) => {
           const pathname = new URL(route.request().url()).pathname;
@@ -1367,17 +1516,18 @@ describe('trace-site inspector deployment contract', () => {
                 }
               ).__traceFirstPaintStates?.[0],
           ),
-        ).toEqual({ legacy: false, boot: true, firstSidebar: 'Branch' });
+        ).toEqual({ legacy: false, boot: true, firstSidebar: '' });
 
-        await page.waitForFunction(
-          () =>
-            Boolean(
-              document.querySelector('.trxRow[data-trace-key="child-a"]'),
-            ) &&
-            Boolean(
-              document.querySelector('.trxRow[data-trace-key="child-b"]'),
+        await expect
+          .poll(() =>
+            page.evaluate(() =>
+              [...document.querySelectorAll<HTMLElement>('.trxRow')].map(
+                (element) => element.dataset.traceKey,
+              ),
             ),
-        );
+          )
+          .toEqual(expect.arrayContaining(['child-a', 'child-b']));
+        expect(pageErrors).toEqual([]);
         expect(
           await page.evaluate(() => ({
             selected:
@@ -1477,7 +1627,7 @@ describe('trace-site inspector deployment contract', () => {
           expect(state.selected).toBe(key);
           expect(state.selectedRows).toEqual([key]);
           expect(state.activePeers).toEqual([key]);
-          expect(state.firstSidebar).toBe('Branch');
+          expect(state.firstSidebar).toBeUndefined();
           expect(state.traceCard).toBe(false);
           expect(state.detailOpen).toBe(true);
           expect(state.closed).toBe(false);
@@ -1689,6 +1839,15 @@ describe('trace-site inspector deployment contract', () => {
             .querySelector('.trxShell')
             ?.classList.contains('ti-inspector-fullscreen'),
         );
+        const fullscreenLayout = await page
+          .locator('.trxRail')
+          .evaluate((element) => ({
+            railWidth: element.getBoundingClientRect().width,
+            viewportWidth: window.innerWidth,
+          }));
+        expect(fullscreenLayout.railWidth).toBeGreaterThan(
+          fullscreenLayout.viewportWidth - 40,
+        );
         await page.locator('[data-ti-fullscreen]').click();
         await page.waitForFunction(
           () =>
@@ -1756,6 +1915,28 @@ describe('trace-site inspector deployment contract', () => {
                 .__retiredDividerUsed,
           ),
         ).not.toBe(true);
+
+        const expandedDividerBox = await divider.boundingBox();
+        expect(expandedDividerBox).not.toBeNull();
+        await page.mouse.move(
+          expandedDividerBox!.x + expandedDividerBox!.width / 2,
+          expandedDividerBox!.y + expandedDividerBox!.height / 2,
+        );
+        await page.mouse.down();
+        await page.mouse.move(2, expandedDividerBox!.y + 20, { steps: 12 });
+        await page.mouse.up();
+        await expect
+          .poll(() =>
+            page
+              .locator('.trxRail')
+              .evaluate((element) => element.getBoundingClientRect().width),
+          )
+          .toBeGreaterThan(1_330);
+        expect(
+          await page.evaluate(() =>
+            localStorage.getItem('consuelo.trace-inspector.width'),
+          ),
+        ).toMatch(/^\d+$/);
 
         await page.locator('[data-ti-mode="formatted"]').click();
 
@@ -2063,12 +2244,14 @@ describe('trace-site inspector deployment contract', () => {
         await page.evaluate((pageRows) => {
           const target = window as Window & {
             __traceHistoryRequests?: string[];
+            __traceLiveRequests?: string[];
             __consueloTraceHistoryTransport?: {
               fetchJson: (url: string) => Promise<unknown>;
             };
             __plainFetchCalls?: number;
           };
           target.__traceHistoryRequests = [];
+          target.__traceLiveRequests = [];
           target.__plainFetchCalls = 0;
           window.fetch = async () => {
             target.__plainFetchCalls = (target.__plainFetchCalls ?? 0) + 1;
@@ -2078,6 +2261,34 @@ describe('trace-site inspector deployment contract', () => {
             fetchJson: async (url: string) => {
               if (url === '/trace-burn-intelligence/live-traces.json') {
                 return { rows: [] };
+              }
+              if (url.includes('direction=newer')) {
+                target.__traceLiveRequests!.push(url);
+                if (target.__traceLiveRequests!.length === 1) {
+                  throw new Error('transient cursor read failure');
+                }
+                return {
+                  ok: true,
+                  data: {
+                    direction: 'newer',
+                    rows:
+                      target.__traceLiveRequests!.length === 2
+                        ? [
+                            {
+                              id: 'live-record-251',
+                              recordId: 'live-record-251',
+                              traceId: 'live-trace-251',
+                              branch: 'task/trace-site/example',
+                              name: 'fs.read',
+                              status: 'success',
+                              input: 'live input',
+                              output: 'live output',
+                            },
+                          ]
+                        : [],
+                    nextCursor: '000000000251',
+                  },
+                };
               }
               target.__traceHistoryRequests!.push(url);
               await new Promise((resolve) => window.setTimeout(resolve, 150));
@@ -2117,6 +2328,26 @@ describe('trace-site inspector deployment contract', () => {
         );
         await page.locator('[data-search]').fill('runtime');
         await page.locator('[data-ti-mode="formatted"]').click();
+        await page.locator('.tiInspector').evaluate((element) => {
+          (element as HTMLElement).dataset.testIdentity = 'stable-live';
+        });
+        await page.waitForFunction(
+          () =>
+            document.querySelector<HTMLElement>('.trxTableScroll')?.dataset
+              .traceTotal === '251',
+        );
+        const liveRequestsBeforeFocus = await page.evaluate(
+          () =>
+            (window as Window & { __traceLiveRequests?: string[] })
+              .__traceLiveRequests?.length ?? 0,
+        );
+        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+        await page.waitForFunction(
+          (count) =>
+            ((window as Window & { __traceLiveRequests?: string[] })
+              .__traceLiveRequests?.length ?? 0) > count,
+          liveRequestsBeforeFocus,
+        );
 
         const initial = await page.evaluate(() => {
           const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
@@ -2131,16 +2362,24 @@ describe('trace-site inspector deployment contract', () => {
             query: (document.querySelector('[data-search]') as HTMLInputElement)
               .value,
             virtualDomText: document.body.textContent?.includes('Virtual DOM'),
+            inspectorIdentity:
+              document.querySelector<HTMLElement>('.tiInspector')?.dataset
+                .testIdentity,
+            liveRequests:
+              (window as Window & { __traceLiveRequests?: string[] })
+                .__traceLiveRequests?.length ?? 0,
           };
         });
         expect(initial).toMatchObject({
-          total: 250,
-          count: '250',
+          total: 251,
+          count: '251',
           selected: 'runtime-record-10',
           mode: 'formatted',
           query: 'runtime',
           virtualDomText: false,
+          inspectorIdentity: 'stable-live',
         });
+        expect(initial.liveRequests).toBeGreaterThanOrEqual(3);
 
         await page.evaluate(() => {
           const list = document.querySelector<HTMLElement>('.trxTableScroll');
@@ -2177,7 +2416,7 @@ describe('trace-site inspector deployment contract', () => {
         await page.waitForFunction(
           () =>
             document.querySelector<HTMLElement>('.trxTableScroll')?.dataset
-              .traceTotal === '325',
+              .traceTotal === '326',
         );
         const appended = await page.evaluate(() => {
           const list = document.querySelector<HTMLElement>('.trxTableScroll')!;
@@ -2204,8 +2443,8 @@ describe('trace-site inspector deployment contract', () => {
           };
         });
         expect(appended).toMatchObject({
-          total: 325,
-          count: '325',
+          total: 326,
+          count: '326',
           cursor: '',
           selected: 'runtime-record-10',
           mode: 'formatted',

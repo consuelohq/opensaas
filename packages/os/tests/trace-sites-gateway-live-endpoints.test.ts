@@ -10,7 +10,10 @@ import {
 } from '../scripts/lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from '../scripts/lib/trace-sites-local-read-backend';
 import { createFixtureTraceSitesReadBackend } from '../scripts/lib/trace-sites-gateway-read-layer';
-import { type TraceSitesDashboardEvent, type TraceSitesDashboardSummary } from '../scripts/lib/trace-sites-gateway-contract';
+import {
+  type TraceSitesDashboardEvent,
+  type TraceSitesDashboardSummary,
+} from '../scripts/lib/trace-sites-gateway-contract';
 
 let tempDir: string;
 
@@ -42,7 +45,9 @@ const cachedSummary: TraceSitesDashboardSummary = {
   totalCostUsd: 0,
   errorPressure: 0.2,
   avgBurnPerCall: 500,
-  topBranches: [{ branch: 'task/sites/trace-live-read-endpoints', tokens: 2500 }],
+  topBranches: [
+    { branch: 'task/sites/trace-live-read-endpoints', tokens: 2500 },
+  ],
   topTools: [{ tool: 'trace:watch', tokens: 2500 }],
   failureCauses: [{ cause: 'COMMAND_FAILED', count: 1 }],
   sourceModes: ['local-networked'],
@@ -56,7 +61,8 @@ function request(path: string): Request {
       'x-consuelo-workspace-host': 'testing.consuelohq.com',
       'x-consuelo-trace-read': 'true',
       'x-consuelo-allowed-sites': 'trace,trace-burn-intelligence',
-      'x-consuelo-source-modes': 'local-networked,cloud-compute,local-off-network',
+      'x-consuelo-source-modes':
+        'local-networked,cloud-compute,local-off-network',
       'x-consuelo-retention-policy-id': 'ret_workspace_default',
     },
   });
@@ -133,12 +139,19 @@ async function createHistoryFixtureDb(dbPath: string): Promise<void> {
 describe('Trace Sites gateway live endpoints', () => {
   it('serves recent Trace Site events through gateway JSON without exposing direct backend targets', async () => {
     const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createFixtureTraceSitesReadBackend({ cursor: '00000001', events: [event] }),
+      backend: createFixtureTraceSitesReadBackend({
+        cursor: '00000001',
+        events: [event],
+      }),
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
-    const response = await endpoints.handle(request('/gateway/traces/recent?cursor=00000000&limit=20&sourceMode=local-networked'));
-    const body = await response.json() as Record<string, unknown>;
+    const response = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?cursor=00000000&limit=20&sourceMode=local-networked',
+      ),
+    );
+    const body = (await response.json()) as Record<string, unknown>;
     const serialized = JSON.stringify(body);
 
     expect(response.status).toBe(200);
@@ -162,12 +175,23 @@ describe('Trace Sites gateway live endpoints', () => {
 
   it('serves summary and aggregate dashboard data through the same gateway read layer', async () => {
     const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createFixtureTraceSitesReadBackend({ cursor: '00000001', events: [event] }),
+      backend: createFixtureTraceSitesReadBackend({
+        cursor: '00000001',
+        events: [event],
+      }),
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
-    const summary = await endpoints.handle(request('/gateway/traces/summary?cursor=00000000&sourceMode=local-networked'));
-    const aggregate = await endpoints.handle(request('/gateway/traces/aggregates?cursor=00000000&sourceMode=local-networked'));
+    const summary = await endpoints.handle(
+      request(
+        '/gateway/traces/summary?cursor=00000000&sourceMode=local-networked',
+      ),
+    );
+    const aggregate = await endpoints.handle(
+      request(
+        '/gateway/traces/aggregates?cursor=00000000&sourceMode=local-networked',
+      ),
+    );
 
     expect(await summary.json()).toMatchObject({
       ok: true,
@@ -242,6 +266,44 @@ describe('Trace Sites gateway live endpoints', () => {
     });
   });
 
+  it('serves full newer trace rows from the SQLite cursor without replaying or skipping records', async () => {
+    const dbPath = join(tempDir, 'newer-endpoint.db');
+    await createHistoryFixtureDb(dbPath);
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: createLocalTraceSitesReadBackend({ dbPath }),
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+
+    const first = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=newer&cursor=id%3Arow_2&limit=1&sourceMode=local-networked&includeRawPayload=true',
+      ),
+    );
+    expect(first.status).toBe(200);
+    expect(await first.json()).toMatchObject({
+      ok: true,
+      data: {
+        direction: 'newer',
+        nextCursor: '000000000003',
+        rows: [{ recordId: 'row_3', inputTokens: 30, outputTokens: 60 }],
+      },
+    });
+
+    const second = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=newer&cursor=000000000003&limit=10&sourceMode=local-networked&includeRawPayload=true',
+      ),
+    );
+    expect(await second.json()).toMatchObject({
+      ok: true,
+      data: {
+        direction: 'newer',
+        nextCursor: '000000000004',
+        rows: [{ recordId: 'row_4' }],
+      },
+    });
+  });
+
   it('serves cached aggregate degraded state when the trace store is unavailable', async () => {
     const endpoints = createTraceSitesGatewayLiveEndpoints({
       backend: createFixtureTraceSitesReadBackend({
@@ -252,7 +314,11 @@ describe('Trace Sites gateway live endpoints', () => {
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
-    const response = await endpoints.handle(request('/gateway/traces/aggregates?cursor=00000000&sourceMode=local-networked'));
+    const response = await endpoints.handle(
+      request(
+        '/gateway/traces/aggregates?cursor=00000000&sourceMode=local-networked',
+      ),
+    );
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
@@ -291,7 +357,11 @@ describe('Trace Sites gateway live endpoints', () => {
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
-    const response = await endpoints.handle(request('/gateway/traces/events?cursor=00000000&sourceMode=local-networked'));
+    const response = await endpoints.handle(
+      request(
+        '/gateway/traces/events?cursor=00000000&sourceMode=local-networked',
+      ),
+    );
     const text = await response.text();
 
     expect(response.status).toBe(200);
@@ -305,14 +375,20 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(text).not.toContain('event: trace-sites-snapshot');
   });
 
-
   it('returns structured unavailable errors for local off-network without a bridge', async () => {
     const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createFixtureTraceSitesReadBackend({ cursor: '00000001', events: [event] }),
+      backend: createFixtureTraceSitesReadBackend({
+        cursor: '00000001',
+        events: [event],
+      }),
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
-    const response = await endpoints.handle(request('/gateway/traces/recent?cursor=00000000&sourceMode=local-off-network'));
+    const response = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?cursor=00000000&sourceMode=local-off-network',
+      ),
+    );
 
     expect(response.status).toBe(503);
     expect(await response.json()).toMatchObject({
@@ -466,9 +542,8 @@ describe('Trace Sites local trace backend adapter', () => {
       'row_3',
       'row_2',
     ]);
-    expect(fromMcpTraceId.rows.map((historyRow) => historyRow.recordId)).toEqual([
-      'row_3',
-      'row_2',
-    ]);
+    expect(
+      fromMcpTraceId.rows.map((historyRow) => historyRow.recordId),
+    ).toEqual(['row_3', 'row_2']);
   });
 });

@@ -7,7 +7,7 @@ import {
   type TraceRecord,
 } from './model';
 
-export type InspectorDisplayMode = 'formatted' | 'json';
+export type InspectorDisplayMode = 'formatted' | 'json' | 'workpad';
 export type InspectorLayout = 'split' | 'collapsed' | 'fullscreen';
 
 export type InspectorState = {
@@ -42,7 +42,7 @@ export type InspectorEvent =
 
 const DEFAULT_WIDTH = 680;
 const MIN_WIDTH = 420;
-const MAX_WIDTH = 1_280;
+const MAX_WIDTH = 10_000;
 
 export function createInspectorState(
   input: Partial<InspectorState> = {},
@@ -175,6 +175,39 @@ export function inspectorSections(row: TraceRecord): InspectorSection[] {
   ];
 }
 
+export function isWorkpadTrace(row: TraceRecord | null | undefined): boolean {
+  if (!row) return false;
+  return [
+    row.input,
+    row.summary,
+    row.rawInputJson,
+    row.rawResolvedInputJson,
+    row.resolvedInputObj,
+    row.inputObj,
+  ].some((value) => /\bworkpad\.md\b/i.test(serializedText(value)));
+}
+
+export function workpadTraceValue(row: TraceRecord): string {
+  const result = asRecord(parseMaybeJson(row.rawResultJson ?? row.outputObj));
+  const data = asRecord(result?.data);
+  const nested = asRecord(data?.data);
+  const candidates = [
+    nested?.stdout,
+    nested?.output,
+    data?.stdout,
+    data?.output,
+    result?.stdout,
+    result?.output,
+    row.output,
+    row.summary,
+  ];
+  for (const candidate of candidates) {
+    const value = clean(candidate);
+    if (value) return value;
+  }
+  return 'No workpad content was recorded for this call.';
+}
+
 export function normalizeBranchBreadcrumb(value: unknown): {
   stream: string;
   task: string;
@@ -230,6 +263,21 @@ function findSelectedRow(
         clean(row.traceId ?? row.trace) === selectedKey,
     ) ?? null
   );
+}
+
+function serializedText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  try {
+    return JSON.stringify(value ?? '');
+  } catch {
+    return String(value ?? '');
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 type InspectorListener = (state: InspectorState) => void;

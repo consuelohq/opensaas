@@ -76,6 +76,11 @@ const TRACE_HISTORY_PAGE_SQL = [
   'LIMIT ?;',
 ].join('\n');
 
+const TRACE_NEWER_PAGE_SQL = TRACE_HISTORY_PAGE_SQL.replace(
+  'WHERE rowid < ?',
+  'WHERE rowid > ?',
+).replace('ORDER BY rowid DESC', 'ORDER BY rowid ASC');
+
 const TRACE_HISTORY_CURSOR_SQL = [
   'SELECT rowid',
   'FROM tool_traces',
@@ -104,7 +109,9 @@ const RECENT_TRACE_EVENTS_SQL = [
   'LIMIT ?;',
 ].join('\n');
 
-export function createLocalTraceSitesReadBackend(options: LocalTraceSitesReadBackendOptions): TraceSitesGatewayReadBackendAdapter {
+export function createLocalTraceSitesReadBackend(
+  options: LocalTraceSitesReadBackendOptions,
+): TraceSitesGatewayReadBackendAdapter {
   return {
     resolveHealth() {
       return {
@@ -120,6 +127,9 @@ export function createLocalTraceSitesReadBackend(options: LocalTraceSitesReadBac
     readHistoryPage(input) {
       return readTraceHistoryPage(options.dbPath, input);
     },
+    readNewerPage(input) {
+      return readNewerTracePage(options.dbPath, input);
+    },
     readCachedAggregate(): TraceSitesGatewayCachedAggregate {
       return {
         cursor: options.cachedCursor ?? '000000000000',
@@ -127,6 +137,32 @@ export function createLocalTraceSitesReadBackend(options: LocalTraceSitesReadBac
       };
     },
   };
+}
+
+async function readNewerTracePage(
+  dbPath: string,
+  input: TraceSitesGatewayReadBackendInput,
+): Promise<TraceSitesGatewayHistoryPage> {
+  if (!existsSync(dbPath)) return { rows: [], nextCursor: input.cursor };
+
+  const { Database } = await import('bun:sqlite');
+  const db = new Database(dbPath, { readonly: true });
+  try {
+    const afterRowid = resolveHistoryAfterRowid(db, input.cursor);
+    const pageSize = Math.max(1, Math.floor(input.limit));
+    const rows = db
+      .query(TRACE_NEWER_PAGE_SQL)
+      .all(afterRowid, pageSize) as TraceRow[];
+    const nextCursor = rows.length
+      ? rowidToCursor(rows[rows.length - 1].rowid)
+      : rowidToCursor(afterRowid);
+    return {
+      rows: rows.map(historyRowFromTraceRow).reverse(),
+      nextCursor,
+    };
+  } finally {
+    db.close();
+  }
 }
 
 async function readTraceHistoryPage(
@@ -157,7 +193,10 @@ async function readTraceHistoryPage(
   }
 }
 
-async function readRecentTraceEvents(dbPath: string, input: TraceSitesGatewayReadBackendInput): Promise<TraceSitesGatewayRecentEvents> {
+async function readRecentTraceEvents(
+  dbPath: string,
+  input: TraceSitesGatewayReadBackendInput,
+): Promise<TraceSitesGatewayRecentEvents> {
   if (!existsSync(dbPath)) {
     return { cursor: input.cursor, events: [] };
   }
@@ -170,7 +209,9 @@ async function readRecentTraceEvents(dbPath: string, input: TraceSitesGatewayRea
       .query(RECENT_TRACE_EVENTS_SQL)
       .all(afterRowid, input.limit) as TraceRow[];
 
-    const cursor = rows.length ? rowidToCursor(rows[rows.length - 1].rowid) : rowidToCursor(afterRowid);
+    const cursor = rows.length
+      ? rowidToCursor(rows[rows.length - 1].rowid)
+      : rowidToCursor(afterRowid);
     return {
       cursor,
       events: rows.map((row) => rowToDashboardEvent(row, input)),
@@ -180,36 +221,54 @@ async function readRecentTraceEvents(dbPath: string, input: TraceSitesGatewayRea
   }
 }
 
-function rowToDashboardEvent(row: TraceRow, input: TraceSitesGatewayReadBackendInput): TraceSitesDashboardEvent {
+function rowToDashboardEvent(
+  row: TraceRow,
+  input: TraceSitesGatewayReadBackendInput,
+): TraceSitesDashboardEvent {
   const cursor = rowidToCursor(row.rowid);
-  const traceId = cleanString(row.trace_id) || cleanString(row.id) || `trace-row-${cursor}`;
+  const traceId =
+    cleanString(row.trace_id) || cleanString(row.id) || `trace-row-${cursor}`;
   const outputTokens = numberValue(row.output_tokens ?? row.total_tokens);
   const inputTokens = numberValue(row.input_tokens);
-  const success = (row.status ?? 'ok') === 'ok' && (row.code ?? 'OK') === 'OK' && (row.exit_code === null || row.exit_code === undefined || row.exit_code === 0);
+  const success =
+    (row.status ?? 'ok') === 'ok' &&
+    (row.code ?? 'OK') === 'OK' &&
+    (row.exit_code === null ||
+      row.exit_code === undefined ||
+      row.exit_code === 0);
 
   return {
     traceId,
     idempotencyKey: `${input.workspaceId}:${traceId}:${cursor}`,
     sourceMode: input.sourceMode,
-    branch: cleanString(row.branch) || cleanString(row.task_session) || '(no branch)',
+    branch:
+      cleanString(row.branch) || cleanString(row.task_session) || '(no branch)',
     tool: cleanString(row.tool) || 'unknown',
     inputTokens,
     outputTokens,
     costUsd: 0,
     success,
-    ...(success ? {} : { errorCause: cleanString(row.code) || `EXIT_${row.exit_code ?? 'UNKNOWN'}` }),
+    ...(success
+      ? {}
+      : {
+          errorCause:
+            cleanString(row.code) || `EXIT_${row.exit_code ?? 'UNKNOWN'}`,
+        }),
   };
 }
 
 function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
-  const recordId = cleanString(row.id) || `trace-row-${rowidToCursor(row.rowid)}`;
+  const recordId =
+    cleanString(row.id) || `trace-row-${rowidToCursor(row.rowid)}`;
   const traceId = cleanString(row.trace_id) || recordId;
   const tool = cleanString(row.tool) || 'unknown';
   const success =
     row.ok === 1 ||
     ((row.status ?? 'ok') === 'ok' &&
       (row.code ?? 'OK') === 'OK' &&
-      (row.exit_code === null || row.exit_code === undefined || row.exit_code === 0));
+      (row.exit_code === null ||
+        row.exit_code === undefined ||
+        row.exit_code === 0));
   const durationMs = numberValue(row.duration_ms);
   const inputTokens = numberValue(row.input_tokens);
   const outputTokens = numberValue(row.output_tokens);
@@ -219,7 +278,8 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   const rawResultJson = cleanString(row.result_json);
   const rawStderr = cleanString(row.stderr);
   const resultMessage = resultMessageFromJson(rawResultJson);
-  const batchResults = tool === 'batch' ? batchResultsFromJson(rawResultJson) : [];
+  const batchResults =
+    tool === 'batch' ? batchResultsFromJson(rawResultJson) : [];
   const historyRow: TraceSitesGatewayHistoryRow = {
     id: recordId,
     recordId,
@@ -227,7 +287,8 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     time: cleanString(row.ts),
     name: tool,
     traceName: tool,
-    branch: cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
+    branch:
+      cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
     taskSession: cleanString(row.task_session),
     worktree: cleanString(row.worktree),
     status: success ? 'success' : cleanString(row.status) || 'error',
@@ -281,10 +342,27 @@ function resolveHistoryBeforeRowid(
     if (matched?.rowid && matched.rowid > 0) return matched.rowid;
   }
 
-  const latest = db.query('SELECT max(rowid) AS rowid FROM tool_traces').get() as {
+  const latest = db
+    .query('SELECT max(rowid) AS rowid FROM tool_traces')
+    .get() as {
     rowid?: number | null;
   } | null;
   return numberValue(latest?.rowid) + 1;
+}
+
+function resolveHistoryAfterRowid(
+  db: import('bun:sqlite').Database,
+  cursor: string,
+): number {
+  const numeric = Number(cursor);
+  if (Number.isFinite(numeric) && numeric >= 0) return Math.floor(numeric);
+
+  const recordId = cursor.startsWith('id:') ? cursor.slice(3) : cursor;
+  if (!recordId) return 0;
+  const matched = db
+    .query(TRACE_HISTORY_CURSOR_SQL)
+    .get(recordId, recordId, recordId) as { rowid?: number } | null;
+  return matched?.rowid && matched.rowid > 0 ? matched.rowid : 0;
 }
 
 function resultMessageFromJson(value: string): string {

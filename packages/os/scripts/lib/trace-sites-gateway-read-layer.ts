@@ -91,19 +91,36 @@ export type TraceSitesGatewayCachedAggregate = {
 type MaybePromise<T> = T | Promise<T>;
 
 export type TraceSitesGatewayReadBackendAdapter = {
-  resolveHealth?: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<Partial<TraceSitesGatewayReadBackendHealth>>;
-  readRecentEvents: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<TraceSitesGatewayRecentEvents>;
-  readHistoryPage?: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<TraceSitesGatewayHistoryPage>;
-  readCachedAggregate: (input: TraceSitesGatewayReadBackendInput) => MaybePromise<TraceSitesGatewayCachedAggregate>;
+  resolveHealth?: (
+    input: TraceSitesGatewayReadBackendInput,
+  ) => MaybePromise<Partial<TraceSitesGatewayReadBackendHealth>>;
+  readRecentEvents: (
+    input: TraceSitesGatewayReadBackendInput,
+  ) => MaybePromise<TraceSitesGatewayRecentEvents>;
+  readHistoryPage?: (
+    input: TraceSitesGatewayReadBackendInput,
+  ) => MaybePromise<TraceSitesGatewayHistoryPage>;
+  readNewerPage?: (
+    input: TraceSitesGatewayReadBackendInput,
+  ) => MaybePromise<TraceSitesGatewayHistoryPage>;
+  readCachedAggregate: (
+    input: TraceSitesGatewayReadBackendInput,
+  ) => MaybePromise<TraceSitesGatewayCachedAggregate>;
 };
 
 export type TraceSitesGatewayServices = {
   readService: TraceGatewayDiscovery['readService'];
-  aggregateService: TraceGatewayDiscovery['readService'] | 'aggregate-cache' | null;
+  aggregateService:
+    | TraceGatewayDiscovery['readService']
+    | 'aggregate-cache'
+    | null;
   runnerControlService: TraceGatewayDiscovery['runnerControlService'];
 };
 
-type TraceSitesReadDataState = TraceGatewayResilienceState['dashboardData'] | 'bridge-required' | 'denied';
+type TraceSitesReadDataState =
+  | TraceGatewayResilienceState['dashboardData']
+  | 'bridge-required'
+  | 'denied';
 
 export type TraceSitesGatewayReadLayerSuccess = {
   ok: true;
@@ -136,10 +153,14 @@ export type TraceSitesGatewayReadLayerFailure = {
   errors: TraceSitesGatewayReadLayerError[];
 };
 
-export type TraceSitesGatewayReadLayerResult = TraceSitesGatewayReadLayerSuccess | TraceSitesGatewayReadLayerFailure;
+export type TraceSitesGatewayReadLayerResult =
+  | TraceSitesGatewayReadLayerSuccess
+  | TraceSitesGatewayReadLayerFailure;
 
 export type TraceSitesGatewayReadLayer = {
-  readTraceSitesDashboard: (request: TraceSitesGatewayReadLayerRequest) => Promise<TraceSitesGatewayReadLayerResult>;
+  readTraceSitesDashboard: (
+    request: TraceSitesGatewayReadLayerRequest,
+  ) => Promise<TraceSitesGatewayReadLayerResult>;
 };
 
 export function createTraceSitesGatewayReadLayer(
@@ -149,7 +170,9 @@ export function createTraceSitesGatewayReadLayer(
   const readPolicy = options.readPolicy ?? DEFAULT_TRACE_READ_POLICY;
 
   return {
-    async readTraceSitesDashboard(request: TraceSitesGatewayReadLayerRequest): Promise<TraceSitesGatewayReadLayerResult> {
+    async readTraceSitesDashboard(
+      request: TraceSitesGatewayReadLayerRequest,
+    ): Promise<TraceSitesGatewayReadLayerResult> {
       const discovery = resolveTraceGatewayDiscovery({
         workspaceId: request.workspaceId,
         workspaceHost: request.workspaceHost,
@@ -158,49 +181,99 @@ export function createTraceSitesGatewayReadLayer(
       });
       const gatewayServices = getGatewayServices(discovery);
 
-      if (!canScopeReadTraceSites(request.scope, request.workspaceHost, request.site) || request.scope.workspaceId !== request.workspaceId) {
-        return failure(request, 'denied', [{
-          code: 'SCOPE_DENIED',
-          message: 'Trace Sites reads require workspace trace-read scope and the requested Site scope.',
-        }], discovery, gatewayServices);
+      if (
+        !canScopeReadTraceSites(
+          request.scope,
+          request.workspaceHost,
+          request.site,
+        ) ||
+        request.scope.workspaceId !== request.workspaceId
+      ) {
+        return failure(
+          request,
+          'denied',
+          [
+            {
+              code: 'SCOPE_DENIED',
+              message:
+                'Trace Sites reads require workspace trace-read scope and the requested Site scope.',
+            },
+          ],
+          discovery,
+          gatewayServices,
+        );
       }
 
       if (!request.scope.sourceModesAllowed.includes(request.sourceMode)) {
-        return failure(request, 'denied', [{
-          code: 'SOURCE_MODE_DENIED',
-          message: 'The workspace session is not allowed to read the requested trace source mode.',
-        }], discovery, gatewayServices);
+        return failure(
+          request,
+          'denied',
+          [
+            {
+              code: 'SOURCE_MODE_DENIED',
+              message:
+                'The workspace session is not allowed to read the requested trace source mode.',
+            },
+          ],
+          discovery,
+          gatewayServices,
+        );
       }
 
-      const validation = validateTraceReadQuery({
-        workspaceId: request.workspaceId,
-        workspaceHost: request.workspaceHost,
-        site: request.site,
-        cursor: request.cursor,
-        limit: request.limit,
-        includeRawPayload: request.includeRawPayload,
-        requesterCanReadRawPayload: request.requesterCanReadRawPayload,
-      }, readPolicy);
+      const validation = validateTraceReadQuery(
+        {
+          workspaceId: request.workspaceId,
+          workspaceHost: request.workspaceHost,
+          site: request.site,
+          cursor: request.cursor,
+          limit: request.limit,
+          includeRawPayload: request.includeRawPayload,
+          requesterCanReadRawPayload: request.requesterCanReadRawPayload,
+        },
+        readPolicy,
+      );
 
       if (!validation.ok) {
-        return failure(request, 'denied', [{
-          code: 'READ_QUERY_INVALID',
-          message: 'Trace Sites read query failed the PR1 gateway read contract.',
-          contractErrors: validation.errors,
-        }], discovery, gatewayServices);
+        return failure(
+          request,
+          'denied',
+          [
+            {
+              code: 'READ_QUERY_INVALID',
+              message:
+                'Trace Sites read query failed the PR1 gateway read contract.',
+              contractErrors: validation.errors,
+            },
+          ],
+          discovery,
+          gatewayServices,
+        );
       }
 
-      if (discovery.sitesHydration === 'unavailable-without-bridge' || discovery.relayStatus === 'bridge-required') {
-        return failure(request, 'bridge-required', [{
-          code: 'BRIDGE_REQUIRED',
-          message: 'Local off-network Trace Sites hydration requires a configured bridge.',
-        }], discovery, gatewayServices, resolveTraceGatewayResilienceState({
-          sourceMode: request.sourceMode,
-          localRelayOnline: false,
-          cloudRunnerSaturated: false,
-          traceStoreAvailable: false,
-          aggregateCacheAvailable: false,
-        }));
+      if (
+        discovery.sitesHydration === 'unavailable-without-bridge' ||
+        discovery.relayStatus === 'bridge-required'
+      ) {
+        return failure(
+          request,
+          'bridge-required',
+          [
+            {
+              code: 'BRIDGE_REQUIRED',
+              message:
+                'Local off-network Trace Sites hydration requires a configured bridge.',
+            },
+          ],
+          discovery,
+          gatewayServices,
+          resolveTraceGatewayResilienceState({
+            sourceMode: request.sourceMode,
+            localRelayOnline: false,
+            cloudRunnerSaturated: false,
+            traceStoreAvailable: false,
+            aggregateCacheAvailable: false,
+          }),
+        );
       }
 
       const backendInput: TraceSitesGatewayReadBackendInput = {
@@ -242,24 +315,47 @@ export function createTraceSitesGatewayReadLayer(
             };
           }
 
-          return failure(request, 'unavailable', [{
-            code: 'AGGREGATE_CACHE_EMPTY',
-            message: 'Trace store is unavailable and the aggregate cache did not return a cached summary.',
-          }], discovery, gatewayServices, resilience);
+          return failure(
+            request,
+            'unavailable',
+            [
+              {
+                code: 'AGGREGATE_CACHE_EMPTY',
+                message:
+                  'Trace store is unavailable and the aggregate cache did not return a cached summary.',
+              },
+            ],
+            discovery,
+            gatewayServices,
+            resilience,
+          );
         }
 
-        return failure(request, 'unavailable', [{
-          code: 'TRACE_STORE_UNAVAILABLE',
-          message: 'Trace store is unavailable and no aggregate cache is available for Trace Sites.',
-        }], discovery, gatewayServices, resilience);
+        return failure(
+          request,
+          'unavailable',
+          [
+            {
+              code: 'TRACE_STORE_UNAVAILABLE',
+              message:
+                'Trace store is unavailable and no aggregate cache is available for Trace Sites.',
+            },
+          ],
+          discovery,
+          gatewayServices,
+          resilience,
+        );
       }
 
       const recent = await backend.readRecentEvents(backendInput);
       const boundedEvents = boundEvents(recent.events, backendInput.limit);
-      const liveState = applyTraceSitesLiveDeltas({
-        cursor: recent.cursor,
-        events: boundedEvents,
-      }, recent.deltas ?? []);
+      const liveState = applyTraceSitesLiveDeltas(
+        {
+          cursor: recent.cursor,
+          events: boundedEvents,
+        },
+        recent.deltas ?? [],
+      );
 
       return {
         ok: true,
@@ -281,14 +377,16 @@ export function createTraceSitesGatewayReadLayer(
   };
 }
 
-export function createFixtureTraceSitesReadBackend(input: {
-  events?: TraceSitesDashboardEvent[];
-  deltas?: TraceSitesLiveDelta[];
-  cursor?: string;
-  cachedSummary?: TraceSitesDashboardSummary | null;
-  cachedCursor?: string;
-  health?: Partial<TraceSitesGatewayReadBackendHealth>;
-} = {}): TraceSitesGatewayReadBackendAdapter {
+export function createFixtureTraceSitesReadBackend(
+  input: {
+    events?: TraceSitesDashboardEvent[];
+    deltas?: TraceSitesLiveDelta[];
+    cursor?: string;
+    cachedSummary?: TraceSitesDashboardSummary | null;
+    cachedCursor?: string;
+    health?: Partial<TraceSitesGatewayReadBackendHealth>;
+  } = {},
+): TraceSitesGatewayReadBackendAdapter {
   const cursor = input.cursor ?? '00000000';
   return {
     resolveHealth() {
@@ -310,7 +408,9 @@ export function createFixtureTraceSitesReadBackend(input: {
   };
 }
 
-function getGatewayServices(discovery: TraceGatewayDiscovery): TraceSitesGatewayServices {
+function getGatewayServices(
+  discovery: TraceGatewayDiscovery,
+): TraceSitesGatewayServices {
   return {
     readService: discovery.readService,
     aggregateService: discovery.readService ? 'aggregate-cache' : null,
@@ -360,7 +460,10 @@ function failure(
   };
 }
 
-function boundEvents(events: TraceSitesDashboardEvent[], limit: number): TraceSitesDashboardEvent[] {
+function boundEvents(
+  events: TraceSitesDashboardEvent[],
+  limit: number,
+): TraceSitesDashboardEvent[] {
   if (limit < 0) return [];
   return events.slice(Math.max(0, events.length - limit));
 }

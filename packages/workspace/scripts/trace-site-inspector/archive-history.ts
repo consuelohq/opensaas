@@ -58,7 +58,9 @@ export function enrichTracePayloadWithBatchResults<T>(
         ) as unknown[];
         byTrace.set(
           clean(batchRow.trace_id),
-          results.map((child, index) => compactBatchResult(child, steps[index])),
+          results.map((child, index) =>
+            compactBatchResult(child, steps[index]),
+          ),
         );
       } catch {
         byTrace.set(clean(batchRow.trace_id), []);
@@ -97,14 +99,19 @@ export async function createArchiveTraceHistoryResponse(input: {
 }): Promise<Response> {
   const url = new URL(input.request.url);
   if (input.request.method !== 'GET' || url.pathname !== HISTORY_ROUTE) {
-    return jsonFailure('TRACE_HISTORY_ROUTE_NOT_FOUND', 'Trace history route not found.', 404);
+    return jsonFailure(
+      'TRACE_HISTORY_ROUTE_NOT_FOUND',
+      'Trace history route not found.',
+      404,
+    );
   }
 
   const direction = url.searchParams.get('direction');
   const cursor = clean(url.searchParams.get('cursor'));
   const site = url.searchParams.get('site');
   const sourceMode = url.searchParams.get('sourceMode');
-  const includeRawPayload = url.searchParams.get('includeRawPayload') === 'true';
+  const includeRawPayload =
+    url.searchParams.get('includeRawPayload') === 'true';
   if (!includeRawPayload) {
     return jsonFailure(
       'RAW_PAYLOAD_ACCESS_DENIED',
@@ -113,7 +120,7 @@ export async function createArchiveTraceHistoryResponse(input: {
     );
   }
   if (
-    direction !== 'older' ||
+    (direction !== 'older' && direction !== 'newer') ||
     !cursor ||
     site !== HISTORY_SITE ||
     sourceMode !== HISTORY_SOURCE_MODE
@@ -128,7 +135,9 @@ export async function createArchiveTraceHistoryResponse(input: {
   const limit = boundedLimit(url.searchParams.get('limit'));
   const backend =
     input.backend ?? createLocalTraceSitesReadBackend({ dbPath: input.dbPath });
-  if (!backend.readHistoryPage) {
+  const readPage =
+    direction === 'newer' ? backend.readNewerPage : backend.readHistoryPage;
+  if (!readPage) {
     return jsonFailure(
       'TRACE_HISTORY_UNAVAILABLE',
       'Trace history is unavailable.',
@@ -154,7 +163,7 @@ export async function createArchiveTraceHistoryResponse(input: {
         503,
       );
     }
-    const page = await backend.readHistoryPage(backendInput);
+    const page = await readPage(backendInput);
     const enriched = enrichTracePayloadWithBatchResults(
       { rows: page.rows },
       input.dbPath,
@@ -164,7 +173,7 @@ export async function createArchiveTraceHistoryResponse(input: {
       publicBoundary: 'consuelo-sites-private-archive',
       route: HISTORY_ROUTE,
       data: {
-        direction: 'older',
+        direction,
         rows: enriched.rows,
         nextCursor: page.nextCursor,
       },
@@ -258,7 +267,11 @@ function compactBatchResult(result: unknown, step: unknown): TraceRecord {
   if (record.data !== undefined) {
     output.data = compactTraceValue(record.data, 12_000);
     const childOutput =
-      data?.output ?? data?.stdout ?? data?.content ?? data?.text ?? data?.message;
+      data?.output ??
+      data?.stdout ??
+      data?.content ??
+      data?.text ??
+      data?.message;
     if (childOutput !== undefined) {
       output.output = compactTraceValue(childOutput, 8_000);
     }
