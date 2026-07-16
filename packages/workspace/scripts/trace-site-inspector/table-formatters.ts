@@ -253,11 +253,14 @@ function summarizeInput(
     return [base, head].filter(Boolean).join('…') || 'current changes';
   }
   if (tool.startsWith('browser')) {
-    return (
-      clean(
-        input?.url ?? input?.selector ?? input?.expression ?? input?.action,
-      ) || normalizeSeparators(valueText(row.input))
+    const target = clean(
+      input?.url ?? input?.selector ?? input?.expression ?? input?.action,
     );
+    if (target) return target;
+    if (clean(input?.js)) {
+      return tool.includes('test') ? 'run browser test' : 'evaluate page state';
+    }
+    return humanPayload(row.input, 'browser request');
   }
   if (tool === 'stream.context') {
     return (
@@ -278,16 +281,21 @@ function summarizeOutput(
   toolLabel: string,
   isError: boolean,
 ): string {
+  const tool = clean(row.name ?? row.traceName ?? row.tool);
   if (isError) {
+    const error = extractTraceError(row);
+    if (tool.startsWith('browser')) return 'browser evaluation failed';
+    const detail = [
+      error.detail,
+      row.rawStderr ?? row.stderr,
+      row.output ?? row.summary,
+    ]
+      .map((value) => humanPayload(value, ''))
+      .find(Boolean);
     return normalizeSeparators(
-      extractTraceError(row).detail ||
-        clean(row.rawStderr ?? row.stderr) ||
-        valueText(row.output ?? row.summary) ||
-        clean(row.code) ||
-        'error',
+      detail || humanStatusCode(error.code || row.code) || 'error',
     );
   }
-  const tool = clean(row.name ?? row.traceName ?? row.tool);
   if (tool === 'get_steering') return 'steering loaded';
   const result = resultRecord(row);
   const data = record(result?.data) ?? result;
@@ -584,6 +592,10 @@ function normalizeSeparators(value: string): string {
 function humanPayload(value: unknown, fallback: string): string {
   const text = valueText(value);
   return !text || isSerializedStructure(text) ? fallback : text;
+}
+
+function humanStatusCode(value: unknown): string {
+  return clean(value).replaceAll('_', ' ').toLowerCase();
 }
 
 function isSerializedStructure(value: string): boolean {

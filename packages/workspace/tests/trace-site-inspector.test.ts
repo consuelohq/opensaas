@@ -250,12 +250,39 @@ describe('trace-site semantic table formatting', () => {
           '{"context": 2, "files": true, "hunks": true, "taskSession": "tsk_diff"}',
       }),
     );
+    const browserEvaluation = formatTraceTableRow(
+      row({
+        name: 'browser.eval',
+        status: 'error',
+        code: 'COMMAND_FAILED',
+        rawResolvedInputJson: {
+          js: "document.querySelector('main')?.getBoundingClientRect()",
+        },
+        input:
+          '{"js": "document.querySelector(\'main\')?.getBoundingClientRect()"}',
+        output:
+          "const main = document.querySelector('main'); throw new Error('missing');",
+      }),
+    );
+    const truncatedError = formatTraceTableRow(
+      row({
+        name: 'code.call',
+        status: 'error',
+        code: 'COMMAND_FAILED',
+        rawResolvedInputJson: { language: 'bun', mode: 'verify' },
+        output:
+          '{"apiVersion":"1.0.0","code":"COMMAND_FAILED","data":{"durationMs":41',
+      }),
+    );
 
     expect(review.inputLabel).toBe('PR #1449');
     expect(review.outputLabel).toBe('review completed');
     expect(diff.inputLabel).toBe('current changes');
+    expect(browserEvaluation.inputLabel).toBe('evaluate page state');
+    expect(browserEvaluation.outputLabel).toBe('browser evaluation failed');
+    expect(truncatedError.outputLabel).toBe('command failed');
     expect(
-      `${review.inputLabel}${review.outputLabel}${diff.inputLabel}`,
+      `${review.inputLabel}${review.outputLabel}${diff.inputLabel}${browserEvaluation.inputLabel}${browserEvaluation.outputLabel}${truncatedError.outputLabel}`,
     ).not.toMatch(/[{}"']/);
   });
 
