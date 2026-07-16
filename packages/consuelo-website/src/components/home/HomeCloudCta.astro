@@ -29,8 +29,8 @@
     class="cloud-cta__art"
     src="/images/home/holding-world-editorial.png"
     alt="Consuelo holding a connected world"
-    width="1831"
-    height="2063"
+    width="1832"
+    height="2064"
     loading="eager"
     decoding="async"
   />
@@ -38,71 +38,12 @@
   <p class="cloud-cta__version">CONSUELO OS <span>V0.10.3</span></p>
   <div class="cloud-cta__signature" aria-label="Consuelo OS, MIT License, 2026">
     <span class="cloud-cta__badge" aria-hidden="true">
-      <img src="/images/home/consuelo-footer-badge.svg" alt="" width="121" height="173" />
+      <img src="/images/home/consuelo-footer-badge.png" alt="" width="242" height="346" />
     </span>
     <span>CONSUELO</span>
     <span>MIT LICENSE <span aria-hidden="true">•</span> 2026</span>
   </div>
 </section>
-
-<script>
-  import { layout, prepare } from '@chenglou/pretext';
-
-  const setupCloudTitle = (heading: HTMLHeadingElement) => {
-    const titleLines = Array.from(
-      heading.querySelectorAll<HTMLElement>('[data-cloud-title-line]'),
-    );
-    const mobile = window.matchMedia('(max-width: 600px)');
-    let animationFrame = 0;
-
-    const fitTitle = () => {
-      const availableWidth = heading.clientWidth;
-      const computed = window.getComputedStyle(heading);
-      const textGroups = mobile.matches
-        ? titleLines.map((line) => line.textContent?.trim() ?? '')
-        : [titleLines.map((line) => line.textContent?.trim() ?? '').join(' ')];
-
-      if (availableWidth <= 0 || textGroups.length === 0) {
-        return;
-      }
-
-      const fits = (fontSize: number) => {
-        const font = computed.fontWeight + ' ' + fontSize + 'px ' + computed.fontFamily;
-        return textGroups.every((text) => {
-          const preparedLine = prepare(text, font);
-          return layout(preparedLine, availableWidth - 1, fontSize * 0.9).lineCount === 1;
-        });
-      };
-
-      let lowerBound = 28;
-      let upperBound = mobile.matches ? 76 : 96;
-
-      for (let iteration = 0; iteration < 9; iteration += 1) {
-        const candidate = (lowerBound + upperBound) / 2;
-        if (fits(candidate)) {
-          lowerBound = candidate;
-        } else {
-          upperBound = candidate;
-        }
-      }
-
-      heading.style.setProperty('--cloud-title-size', lowerBound.toFixed(2) + 'px');
-    };
-
-    const scheduleFit = () => {
-      window.cancelAnimationFrame(animationFrame);
-      animationFrame = window.requestAnimationFrame(fitTitle);
-    };
-
-    const resizeObserver = new ResizeObserver(scheduleFit);
-    resizeObserver.observe(heading);
-    mobile.addEventListener('change', scheduleFit);
-    document.fonts.ready.then(scheduleFit);
-    scheduleFit();
-  };
-
-  document.querySelectorAll<HTMLHeadingElement>('.cloud-cta h2').forEach(setupCloudTitle);
-</script>
 
 <style>
   .cloud-cta {
@@ -157,7 +98,7 @@
     margin: 0;
     color: white;
     font-family: var(--site-font-display);
-    font-size: var(--cloud-title-size, clamp(3.2rem, 5vw, 5.6rem));
+    font-size: clamp(2.9rem, 4.58vw, 4.15rem);
     font-weight: 430;
     letter-spacing: 0.01em;
     line-height: 0.88;
@@ -296,6 +237,10 @@
       width: min(74vw, 36rem);
     }
 
+    .cloud-cta h2 {
+      font-size: clamp(3.2rem, 7.36vw, 4rem);
+    }
+
     .cloud-cta__art {
       height: min(65dvh, 36.5rem);
       max-width: none;
@@ -314,6 +259,7 @@
     }
 
     .cloud-cta h2 {
+      font-size: clamp(3.25rem, 15.2vw, 4rem);
       line-height: 0.82;
       white-space: normal;
     }
