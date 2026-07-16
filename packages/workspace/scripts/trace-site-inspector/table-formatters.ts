@@ -234,6 +234,10 @@ function summarizeInput(
   if (tool === 'review.run') {
     return clean(input?.base ?? input?.branch) || 'current changes';
   }
+  if (tool === 'aiReview' || tool === 'prReview') {
+    const pr = clean(input?.pr ?? input?.number);
+    return pr ? `PR #${pr}` : 'current pull request';
+  }
   if (tool === 'verify') {
     return clean(input?.base ?? input?.branch) || 'current task';
   }
@@ -246,10 +250,7 @@ function summarizeInput(
   if (tool === 'git.diff') {
     const base = clean(input?.base);
     const head = clean(input?.head ?? input?.branch);
-    return (
-      [base, head].filter(Boolean).join('…') ||
-      normalizeSeparators(valueText(row.input))
-    );
+    return [base, head].filter(Boolean).join('…') || 'current changes';
   }
   if (tool.startsWith('browser')) {
     return (
@@ -264,7 +265,11 @@ function summarizeInput(
       normalizeSeparators(valueText(row.input))
     );
   }
-  return normalizeSeparators(summarizeObject(input) || valueText(row.input));
+  const summary = summarizeObject(input);
+  const raw = valueText(row.input);
+  return normalizeSeparators(
+    summary || (isSerializedStructure(raw) ? 'request details' : raw),
+  );
 }
 
 function summarizeOutput(
@@ -349,9 +354,8 @@ function summarizeOutput(
         );
   }
   return normalizeSeparators(
-    valueText(row.output ?? row.summary) ||
-      clean(data?.message ?? result?.message) ||
-      'completed',
+    clean(data?.message ?? result?.message) ||
+      humanPayload(row.output ?? row.summary, 'completed'),
   );
 }
 
@@ -557,6 +561,11 @@ function summarizeObject(input: Record<string, unknown> | null): string {
     'title',
     'operation',
     'action',
+    'message',
+    'url',
+    'selector',
+    'keyword',
+    'pattern',
   ]) {
     const value = clean(input[key]);
     if (value) return value;
@@ -570,6 +579,11 @@ function normalizeSeparators(value: string): string {
     .replace(/\s*·\s*/g, ' · ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function humanPayload(value: unknown, fallback: string): string {
+  const text = valueText(value);
+  return !text || isSerializedStructure(text) ? fallback : text;
 }
 
 function isSerializedStructure(value: string): boolean {

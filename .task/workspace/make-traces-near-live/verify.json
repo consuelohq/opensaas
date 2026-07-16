@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/workspace/make-traces-near-live",
   "base": "HEAD",
-  "headSha": "9b7f66a8aada3de1ce282ec661808dd1fc172554",
-  "changeHash": "1f3ade03d93a961d529db44863ecd238f5464cf1d709a4ab3a8c22529a11aa72",
+  "headSha": "2644eefa93febfe6e96e3e3355723d91c88dee4b",
+  "changeHash": "649e62f6369eb0ac878d6ebead70104f79c1fb98506d12a068688b5c8da7b486",
   "changedFiles": [
     "packages/workspace/scripts/trace-site-inspector/table-formatters.ts",
     "packages/workspace/tests/trace-site-inspector.test.ts"
   ],
-  "verifiedAt": "2026-07-16T02:17:06.838Z",
+  "verifiedAt": "2026-07-16T02:27:30.947Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -100,8 +100,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 436,
-          "outputTail": "\n RUN  v4.0.18 /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/packages/os\n\n ✓ tests/trace-sites-gateway-live-endpoints.test.ts (10 tests) 25ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  22:16:49\n   Duration  157ms (transform 59ms, setup 0ms, import 71ms, tests 25ms, environment 0ms)\n\n"
+          "durationMs": 370,
+          "outputTail": "\n RUN  v4.0.18 /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/packages/os\n\n ✓ tests/trace-sites-gateway-live-endpoints.test.ts (10 tests) 18ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  22:27:12\n   Duration  115ms (transform 46ms, setup 0ms, import 54ms, tests 18ms, environment 0ms)\n\n"
         },
         {
           "name": "trace gateway DB resolution",
@@ -119,8 +119,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 462,
-          "outputTail": "\n RUN  v4.0.18 /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/packages/os\n\n ✓ tests/trace-gateway-service.test.ts (1 test) 2ms\n\n Test Files  1 passed (1)\n      Tests  1 passed (1)\n   Start at  22:16:49\n   Duration  208ms (transform 77ms, setup 0ms, import 141ms, tests 2ms, environment 0ms)\n\n"
+          "durationMs": 397,
+          "outputTail": "\n RUN  v4.0.18 /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/packages/os\n\n ✓ tests/trace-gateway-service.test.ts (1 test) 2ms\n\n Test Files  1 passed (1)\n      Tests  1 passed (1)\n   Start at  22:27:13\n   Duration  172ms (transform 64ms, setup 0ms, import 116ms, tests 2ms, environment 0ms)\n\n"
         },
         {
           "name": "trace site inspector pagination",
@@ -138,8 +138,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 16562,
-          "outputTail": "\n RUN  v4.0.18 /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/packages/workspace\n\n ✓ tests/trace-site-inspector.test.ts (39 tests) 16083ms\n     ✓ should render semantic rows, durable checkbox filters, hover detail, and a reversible system font  3839ms\n     ✓ should select batch children independently and never paint the obsolete detail layout  7687ms\n     ✓ should preserve interactive inspector behavior when the trace list is virtualized  1203ms\n     ✓ should append older history pages while preserving inspector state and terminal behavior  3252ms\n\n Test Files  1 passed (1)\n      Tests  39 passed (39)\n   Start at  22:16:50\n   Duration  16.43s (transform 90ms, setup 0ms, import 288ms, tests 16.08s, environment 0ms)\n\n"
+          "durationMs": 17422,
+          "outputTail": "\n RUN  v4.0.18 /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-make-traces-near-live/packages/workspace\n\n ✓ tests/trace-site-inspector.test.ts (40 tests) 16921ms\n     ✓ should render semantic rows, durable checkbox filters, hover detail, and a reversible system font  3934ms\n     ✓ should select batch children independently and never paint the obsolete detail layout  8463ms\n     ✓ should preserve interactive inspector behavior when the trace list is virtualized  1216ms\n     ✓ should append older history pages while preserving inspector state and terminal behavior  3214ms\n\n Test Files  1 passed (1)\n      Tests  40 passed (40)\n   Start at  22:27:13\n   Duration  17.28s (transform 89ms, setup 0ms, import 302ms, tests 16.92s, environment 0ms)\n\n"
         }
       ],
       "failedSuites": []
