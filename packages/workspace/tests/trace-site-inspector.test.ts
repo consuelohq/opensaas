@@ -274,6 +274,20 @@ describe('trace-site semantic table formatting', () => {
           '{"apiVersion":"1.0.0","code":"COMMAND_FAILED","data":{"durationMs":41',
       }),
     );
+    const taskCall = formatTraceTableRow(
+      row({
+        name: 'task.call',
+        status: 'error',
+        code: 'COMMAND_FAILED',
+        rawResolvedInputJson: {
+          command: ['git', 'reset', '--hard', 'origin/stream/documentation'],
+          taskSession: 'tsk_call',
+        },
+        input:
+          '{"command": ["git", "reset", "--hard", "origin/stream/documentation"], "taskSession": "tsk_call"}',
+        output: 'error: Script not found "task:exec"',
+      }),
+    );
 
     expect(review.inputLabel).toBe('PR #1449');
     expect(review.outputLabel).toBe('review completed');
@@ -281,8 +295,12 @@ describe('trace-site semantic table formatting', () => {
     expect(browserEvaluation.inputLabel).toBe('evaluate page state');
     expect(browserEvaluation.outputLabel).toBe('browser evaluation failed');
     expect(truncatedError.outputLabel).toBe('command failed');
+    expect(taskCall.inputLabel).toBe(
+      'git reset --hard origin/stream/documentation',
+    );
+    expect(taskCall.outputLabel).toBe('script not found · task:exec');
     expect(
-      `${review.inputLabel}${review.outputLabel}${diff.inputLabel}${browserEvaluation.inputLabel}${browserEvaluation.outputLabel}${truncatedError.outputLabel}`,
+      `${review.inputLabel}${review.outputLabel}${diff.inputLabel}${browserEvaluation.inputLabel}${browserEvaluation.outputLabel}${truncatedError.outputLabel}${taskCall.inputLabel}${taskCall.outputLabel}`,
     ).not.toMatch(/[{}"']/);
   });
 

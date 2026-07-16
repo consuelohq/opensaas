@@ -242,6 +242,8 @@ function summarizeInput(
     return clean(input?.base ?? input?.branch) || 'current task';
   }
   if (tool.startsWith('task.')) {
+    const command = stringArray(input?.command);
+    if (command.length) return summarizeSpawnedCommand(command);
     return (
       clean(input?.title ?? input?.branch ?? input?.stream ?? input?.message) ||
       normalizeSeparators(valueText(row.input))
@@ -293,7 +295,9 @@ function summarizeOutput(
       .map((value) => humanPayload(value, ''))
       .find(Boolean);
     return normalizeSeparators(
-      detail || humanStatusCode(error.code || row.code) || 'error',
+      humanErrorDetail(detail) ||
+        humanStatusCode(error.code || row.code) ||
+        'error',
     );
   }
   if (tool === 'get_steering') return 'steering loaded';
@@ -596,6 +600,12 @@ function humanPayload(value: unknown, fallback: string): string {
 
 function humanStatusCode(value: unknown): string {
   return clean(value).replaceAll('_', ' ').toLowerCase();
+}
+
+function humanErrorDetail(value: unknown): string {
+  const text = clean(value).replace(/^error:\s*/i, '');
+  const script = text.match(/^Script not found ["']([^"']+)["']$/i);
+  return script ? `script not found · ${script[1]}` : text;
 }
 
 function isSerializedStructure(value: string): boolean {
