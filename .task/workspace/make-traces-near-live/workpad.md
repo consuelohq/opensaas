@@ -42,11 +42,9 @@ started: 2026-07-15
 
 ## files changed
 
-- `packages/workspace/scripts/trace-site-inspector/{archive-history,browser,deploy,inspector-state,pagination-browser,table-formatters,virtual-list-browser}.ts`
-- `packages/workspace/scripts/trace-site-inspector/inspector.css`
+- `packages/workspace/scripts/trace-site-inspector/table-formatters.ts`
 - `packages/workspace/tests/trace-site-inspector.test.ts`
-- `packages/os/scripts/lib/trace-sites-{gateway-live-endpoints,gateway-read-layer,local-read-backend}.ts`
-- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+
 
 ## workspace-owned: files changed
 
