@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/website/recompose-cloud-footer-as-illustration-led-poster/workpad.md",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-16T02:49:23.355Z"
+}

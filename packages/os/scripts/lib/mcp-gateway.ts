@@ -276,7 +276,7 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
       };
     }
 
-    const toolScope = resolveToolScope(facadeCall.tool);
+    const toolScope = resolveToolScope(facadeCall.tool, facadeCall.input);
     if (!toolScope.ok) {
       return { ok: false, status: toolScope.status, error: toolScope.error };
     }
