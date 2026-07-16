@@ -27,3 +27,6 @@ pnpm-debug.log*
 # dither asset generation (sources/previews are not committed)
 scripts/sources/
 scripts/preview-sheet.png
+
+# Generated from the committed SVG source during dev/build.
+public/generated/
