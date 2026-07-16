@@ -41,6 +41,13 @@ const MAX_RETAINED_ROWS = 100_000;
 const PREFETCH_THRESHOLD = 25;
 const ESTIMATED_ROW_HEIGHT = 44;
 const OVERSCAN = 12;
+const TRACE_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
 
 type TraceFeedPayload = {
   meta?: { nextCursor?: unknown };
@@ -123,10 +130,8 @@ class TraceVirtualListController {
   private lastRequestedCursor: string | null = null;
   private fetching = false;
   private ownedMap = new Map<string, TraceRecord>();
-  private ownedFingerprint = '';
   private mountedCount = 0;
   private range = 'empty';
-  private historyPageAccepted = false;
   private readonly virtualizer: TraceVirtualizer;
   private readonly unmount: () => void;
 
@@ -134,7 +139,6 @@ class TraceVirtualListController {
     private readonly target: TraceListTarget,
     rows: TraceRecord[],
     nextCursor: string | null,
-    private cursorWasDerived: boolean,
   ) {
     this.rows = mergeTraceRows([], rows, {
       direction: 'append',
@@ -168,20 +172,9 @@ class TraceVirtualListController {
     this.target.content.removeAttribute('data-trace-virtual-content');
   }
 
-  syncFromWindow(): void {
-    const map = traceWindow().__traceRowsByTraceId;
-    if (!(map instanceof Map)) return;
-    const fingerprint = mapFingerprint(map);
-    if (map === this.ownedMap && fingerprint === this.ownedFingerprint) return;
-    const rows = dedupeTraceRows(map.values());
-    const nextCursor =
-      this.cursorWasDerived && !this.historyPageAccepted
-        ? deriveTraceHistoryCursor(rows)
-        : this.nextCursor;
-    this.replaceRows(
-      rows.filter((row) => !isBatchChild(row)),
-      nextCursor,
-    );
+  reassertOwnership(): void {
+    if (traceWindow().__traceRowsByTraceId === this.ownedMap) return;
+    traceWindow().__traceRowsByTraceId = this.ownedMap;
   }
 
   syncFilters(): void {
@@ -190,8 +183,6 @@ class TraceVirtualListController {
   }
 
   appendPage(rows: TraceRecord[], nextCursor: string | null): void {
-    this.historyPageAccepted = true;
-    this.cursorWasDerived = false;
     this.nextCursor = nextCursor;
     this.lastRequestedCursor = null;
     this.fetching = false;
@@ -216,7 +207,6 @@ class TraceVirtualListController {
   }
 
   setNextCursor(nextCursor: string | null): void {
-    this.cursorWasDerived = false;
     if (nextCursor !== this.nextCursor) this.lastRequestedCursor = null;
     this.nextCursor = nextCursor;
     this.updateDiagnostics();
@@ -327,7 +317,6 @@ class TraceVirtualListController {
 
   private replaceOwnedMap(): void {
     this.ownedMap = traceMapForRows(this.rows);
-    this.ownedFingerprint = mapFingerprint(this.ownedMap);
     currentFacets = traceFilterFacets(this.rows);
     ensureTraceTableControls();
     renderTraceFilterPanel();
@@ -545,7 +534,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   appendCell(
     button,
     'trxStart mono',
-    clean(row.displayTime ?? row.time) || '—',
+    formatTraceTime(row),
   );
   appendCell(button, 'trxToolCell', '', (cell) => {
     setTraceTooltip(cell, `${formatted.toolLabel} · stored as ${sourceTool}`);
@@ -816,6 +805,20 @@ function formatCompact(value: unknown): string {
   return String(Math.round(parsed));
 }
 
+function formatTraceTime(row: TraceRecord): string {
+  const raw = clean(row.displayTime ?? row.time ?? row.startTime);
+  if (!raw) return '—';
+  if (/^\d{2}:\d{2}:\d{2}$/.test(raw)) return raw;
+  if (/^\d{2}:\d{2}$/.test(raw)) return `${raw}:00`;
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  const parts = TRACE_TIME_FORMATTER.formatToParts(date);
+  const hour = parts.find((part) => part.type === 'hour')?.value ?? '--';
+  const minute = parts.find((part) => part.type === 'minute')?.value ?? '--';
+  const second = parts.find((part) => part.type === 'second')?.value ?? '--';
+  return `${hour === '24' ? '00' : hour}:${minute}:${second}`;
+}
+
 function formatDuration(value: unknown, fallback: unknown): string {
   const duration = Number(value ?? Number.NaN);
   if (!Number.isFinite(duration)) return clean(fallback) || '—';
@@ -886,22 +889,16 @@ function initialRows(): TraceRecord[] {
   return dedupeTraceRows(seedPayload().rows ?? []);
 }
 
-function initialCursorState(rows: TraceRecord[]): {
-  cursor: string | null;
-  derived: boolean;
-} {
+function initialCursor(rows: TraceRecord[]): string | null {
   const meta = seedPayload().meta;
   if (meta && Object.hasOwn(meta, 'nextCursor')) {
     const value = meta.nextCursor;
-    return {
-      cursor: deriveTraceHistoryCursor(
-        rows,
-        typeof value === 'string' ? value : null,
-      ),
-      derived: false,
-    };
+    return deriveTraceHistoryCursor(
+      rows,
+      typeof value === 'string' ? value : null,
+    );
   }
-  return { cursor: deriveTraceHistoryCursor(rows), derived: true };
+  return deriveTraceHistoryCursor(rows);
 }
 
 function seedPayload(): TraceFeedPayload {
@@ -929,16 +926,6 @@ function traceMapForRows(rows: TraceRecord[]): Map<string, TraceRecord> {
     }
   }
   return map;
-}
-
-function mapFingerprint(map: Map<string, TraceRecord>): string {
-  const values = dedupeTraceRows(map.values());
-  return [
-    map.size,
-    values.length,
-    stableTraceKey(values[0]),
-    stableTraceKey(values.at(-1)),
-  ].join(':');
 }
 
 function findTraceListTarget(): TraceListTarget | null {
@@ -1050,15 +1037,13 @@ export function installTraceVirtualList(): () => void {
     if (!controller?.isMountedOn(target)) {
       controller?.destroy();
       const rows = initialRows();
-      const cursorState = initialCursorState(rows);
       controller = new TraceVirtualListController(
         target,
         rows,
-        cursorState.cursor,
-        cursorState.derived,
+        initialCursor(rows),
       );
     } else {
-      controller.syncFromWindow();
+      controller.reassertOwnership();
     }
     if (pendingReplacement) {
       controller.replaceRows(
