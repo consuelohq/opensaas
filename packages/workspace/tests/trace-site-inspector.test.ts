@@ -220,6 +220,45 @@ describe('trace-site semantic table formatting', () => {
     expect(formatted.inputLabel).not.toMatch(/[{}"']/);
   });
 
+  test('should never use serialized payloads as generic table labels', () => {
+    const review = formatTraceTableRow(
+      row({
+        name: 'aiReview',
+        rawResolvedInputJson: {
+          noPost: true,
+          pr: 1449,
+          taskSession: 'tsk_review',
+        },
+        input: '{"noPost": true, "pr": 1449, "taskSession": "tsk_review"}',
+        rawResultJson: {
+          ok: true,
+          message: 'review completed',
+        },
+        output: '{"ok": true, "message": "review completed"}',
+      }),
+    );
+    const diff = formatTraceTableRow(
+      row({
+        name: 'git.diff',
+        rawResolvedInputJson: {
+          context: 2,
+          files: true,
+          hunks: true,
+          taskSession: 'tsk_diff',
+        },
+        input:
+          '{"context": 2, "files": true, "hunks": true, "taskSession": "tsk_diff"}',
+      }),
+    );
+
+    expect(review.inputLabel).toBe('PR #1449');
+    expect(review.outputLabel).toBe('review completed');
+    expect(diff.inputLabel).toBe('current changes');
+    expect(
+      `${review.inputLabel}${review.outputLabel}${diff.inputLabel}`,
+    ).not.toMatch(/[{}"']/);
+  });
+
   test('should summarize spawned verification, deployment, and patch commands at a glance', () => {
     const cases = [
       {
