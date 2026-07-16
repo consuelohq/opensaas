@@ -1087,7 +1087,7 @@ async function main(): Promise<void> {
 
   if (command === 'settings') {
     try {
-      const result = runSettingsOverlayCommand(args);
+      const result = await runSettingsOverlayCommand(args);
       if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}\n`);
       else writeStdout(`${result.message}\n`);
       if (!result.ok) process.exitCode = 1;

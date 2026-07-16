@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import type { ConsueloGatewaySessionScope } from './consuelo-sites-gateway-types';
 import {
   applySettingsGatewayOverlayPatch,
@@ -66,7 +68,7 @@ export function createSettingsSitesGatewayEndpoints(
           }, 403);
         }
 
-        const result = readSettingsGatewaySnapshot(options.home);
+        const result = await readSettingsGatewaySnapshot(options.home);
         if (!result.ok) {
           return jsonResponse({
             ok: false,
@@ -105,7 +107,12 @@ export function createSettingsSitesGatewayEndpoints(
         }
 
         const body = await request.clone().text();
-        const result = applySettingsGatewayOverlayPatch(options.home, body);
+        const result = await applySettingsGatewayOverlayPatch(options.home, body, {
+          actorType: 'user',
+          actorId: scope.userId,
+          workspaceId: scope.workspaceId,
+          correlationId: request.headers.get('x-consuelo-request-id') || randomUUID(),
+        });
         if (!result.ok) {
           return jsonResponse({
             ok: false,
@@ -139,17 +146,37 @@ export function createSettingsSitesGatewayEndpoints(
 export function settingsGatewayScopeFromHeaders(request: Request): ConsueloGatewaySessionScope {
   const url = new URL(request.url);
   const headers = request.headers;
+  const userId = headers.get('x-consuelo-user-id') || headers.get('x-consuelo-caller-id');
+  const workspaceId = headers.get('x-consuelo-workspace-id');
+  const workspaceHost = headers.get('x-consuelo-workspace-host');
   const allowedSites = splitHeader(headers.get('x-consuelo-allowed-sites'));
   const capabilities = splitHeader(headers.get('x-consuelo-capabilities'));
-  const sourceModes = splitHeader(headers.get('x-consuelo-source-modes')).filter(isSettingsSourceMode);
+  const sourceModeValues = splitHeader(headers.get('x-consuelo-source-modes'));
+  const sourceModes = sourceModeValues.filter(isSettingsSourceMode);
+
+  if (!userId || !workspaceId || !workspaceHost) {
+    throw new Error('Signed Settings gateway identity and workspace headers are required.');
+  }
+  if (workspaceHost !== url.host) {
+    throw new Error('Signed Settings gateway workspace host does not match the request host.');
+  }
+  if (!allowedSites.includes('settings')) {
+    throw new Error('Signed Settings gateway scope does not allow the Settings site.');
+  }
+  if (capabilities.length === 0) {
+    throw new Error('Signed Settings gateway capabilities are required.');
+  }
+  if (sourceModes.length === 0 || sourceModes.length !== sourceModeValues.length) {
+    throw new Error('Signed Settings gateway source modes are required and must be valid.');
+  }
 
   return {
-    userId: headers.get('x-consuelo-user-id') || headers.get('x-consuelo-caller-id') || 'signed-gateway-caller',
-    workspaceId: headers.get('x-consuelo-workspace-id') || 'workspace-unknown',
-    workspaceHost: headers.get('x-consuelo-workspace-host') || url.host,
-    allowedSites: allowedSites.length ? allowedSites : ['settings'],
-    capabilities: capabilities.length ? capabilities : ['settings-read', 'settings-write'],
-    sourceModesAllowed: sourceModes.length ? sourceModes : ['local-networked', 'cloud-compute'],
+    userId,
+    workspaceId,
+    workspaceHost,
+    allowedSites,
+    capabilities,
+    sourceModesAllowed: sourceModes,
     bridgeConfigured: headers.get('x-consuelo-bridge-configured') === 'true',
   };
 }

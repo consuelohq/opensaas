@@ -36,17 +36,17 @@ describe('settings gateway', () => {
     expect(invalid).toMatchObject({ ok: false, status: 400 });
   });
 
-  it('applies overlay patches and returns an updated snapshot', () => {
+  it('applies overlay patches and returns an updated snapshot', async () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-gateway-'));
     writeMinimalOsHome(home);
     const tool = readFullToolManifest().tools.find((entry) => entry.kind === 'facade-tool');
     expect(tool).toBeTruthy();
 
-    const snapshot = readSettingsGatewaySnapshot(home);
+    const snapshot = await readSettingsGatewaySnapshot(home);
     expect(snapshot.ok).toBe(true);
     expect(snapshot.snapshot.overlay.path).toBe(manifestOverlayPath(home));
 
-    const patched = applySettingsGatewayOverlayPatch(
+    const patched = await applySettingsGatewayOverlayPatch(
       home,
       JSON.stringify({ kind: 'tool', name: tool!.name, enabled: false }),
     );

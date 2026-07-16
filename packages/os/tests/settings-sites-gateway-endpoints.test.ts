@@ -118,4 +118,21 @@ describe('Settings Sites gateway endpoints', () => {
     expect(response.status).toBe(403);
     expect(body.error.code).toBe('CAPABILITY_SCOPE_DENIED');
   });
+
+  it('fails closed when signed gateway scope headers are missing', async () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-gateway-endpoints-'));
+    writeMinimalOsHome(home);
+    const endpoints = createSettingsSitesGatewayEndpoints({
+      home,
+      resolveScope: settingsGatewayScopeFromHeaders,
+    });
+
+    const response = await endpoints.handle(new Request(
+      'https://testing.consuelohq.com/gateway/settings/snapshot',
+    ));
+    const body = await response.json() as { error: { code: string } };
+
+    expect(response.status).toBe(403);
+    expect(body.error.code).toBe('SCOPE_RESOLUTION_FAILED');
+  });
 });

@@ -42,7 +42,10 @@ export function createSettingsRoutes(): Hono {
       );
       if (home instanceof Response) return home;
 
-      const result = readSettingsGatewaySnapshot(home);
+      const result = await readSettingsGatewaySnapshot(home);
+      if (!result.ok) {
+        return jsonResponse({ ok: false, error: result.error }, result.status);
+      }
       return jsonResponse({ ok: true, snapshot: result.snapshot });
     } catch (error: unknown) {
       return internalError(error);
@@ -66,7 +69,7 @@ export function createSettingsRoutes(): Hono {
       );
       if (home instanceof Response) return home;
 
-      const result = applySettingsGatewayOverlayPatch(home, body);
+      const result = await applySettingsGatewayOverlayPatch(home, body);
       if (!result.ok) {
         return jsonResponse({ ok: false, error: result.error }, result.status);
       }
