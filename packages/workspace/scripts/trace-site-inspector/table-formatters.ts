@@ -79,6 +79,14 @@ export function semanticToolLabel(
   input = resolvedInput(row),
 ): string {
   const tool = clean(row.name ?? row.traceName ?? row.tool) || 'trace';
+  if (isWorkpadActivity(row, input)) {
+    if (tool === 'fs.apply_patch' || tool === 'fs.patch')
+      return 'workpad.patch';
+    if (tool === 'fs.read') return 'workpad.read';
+    if (tool === 'fs.write') return 'workpad.edit';
+    const mode = clean(input?.mode) || summaryPrefix(row.input)?.mode || 'view';
+    return `workpad.${mode === 'write' ? 'edit' : mode.toLowerCase()}`;
+  }
   if (tool === 'code.call') {
     const language =
       clean(input?.language) || summaryPrefix(row.input)?.language || 'code';
@@ -159,6 +167,10 @@ function summarizeInput(
   toolLabel: string,
 ): string {
   const tool = clean(row.name ?? row.traceName ?? row.tool);
+  if (isWorkpadActivity(row, input)) {
+    const action = toolLabel.split('.').at(-1) || 'view';
+    return `${action === 'patch' ? 'patch' : action} workpad.md`;
+  }
   if (tool === 'code.call') {
     const rawExisting = valueText(row.input);
     const existing = isSerializedStructure(rawExisting) ? '' : rawExisting;
@@ -423,7 +435,39 @@ function summarizeCode(code: string, mode: string): string {
   if (command.length) return summarizeSpawnedCommand(command);
   const test = code.match(/(?:vitest|jest|test)\s+(?:run\s+)?([^'"\n;]+)/i);
   if (test) return `test ${test[1].trim()}`;
-  return code.replace(/\s+/g, ' ').slice(0, 220);
+  if (/matchAll?[\s\S]{0,180}(?:fail|error|test)/i.test(code)) {
+    return 'inspect test failures';
+  }
+  if (/\b(?:readFile|Bun\.file|\.text\(\))\b/.test(code)) {
+    return 'inspect file contents';
+  }
+  if (/\b(?:writeFile|Bun\.write|applyPatch)\b/.test(code)) {
+    return 'edit files';
+  }
+  if (mode === 'verify') return 'run verification';
+  if (mode === 'edit') return 'edit source';
+  if (mode === 'read') return 'inspect source';
+  return 'run code';
+}
+
+function isWorkpadActivity(
+  row: TraceRecord,
+  input: Record<string, unknown> | null,
+): boolean {
+  const values = [
+    row.input,
+    row.summary,
+    row.rawInputJson,
+    row.rawResolvedInputJson,
+    input?.path,
+    input?.file,
+    input?.paths,
+    input?.files,
+    input?.patch,
+    input?.content,
+    input?.code,
+  ];
+  return values.some((value) => /\bworkpad\.md\b/i.test(valueText(value)));
 }
 
 function spawnedCommand(code: string): string[] {

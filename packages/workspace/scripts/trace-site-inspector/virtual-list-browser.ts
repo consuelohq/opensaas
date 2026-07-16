@@ -37,7 +37,7 @@ import {
   type TraceFilterFacets,
 } from './table-formatters';
 
-const MAX_RETAINED_ROWS = 5_000;
+const MAX_RETAINED_ROWS = 100_000;
 const PREFETCH_THRESHOLD = 25;
 const ESTIMATED_ROW_HEIGHT = 44;
 const OVERSCAN = 12;
@@ -106,6 +106,9 @@ const expandedFilterKinds = new Set<keyof TraceFilterFacets>();
 let filterSearch = '';
 let filterPanelOpen = false;
 let fontPreferenceInitialized = false;
+let hoverOpenTimer = 0;
+let hoverCloseTimer = 0;
+let hoverTarget: HTMLElement | null = null;
 let currentFacets: TraceFilterFacets = {
   tools: [],
   branches: [],
@@ -292,6 +295,8 @@ class TraceVirtualListController {
   }
 
   private setRows(rows: TraceRecord[], direction: TracePageDirection): void {
+    const previousHeight = this.target.scroller.scrollHeight;
+    const previousTop = this.target.scroller.scrollTop;
     this.rows = mergeTraceRows(this.rows, rows, {
       direction,
       maxRows: MAX_RETAINED_ROWS,
@@ -299,6 +304,11 @@ class TraceVirtualListController {
     });
     this.refreshItems();
     this.commitItems(false);
+    if (direction === 'prepend' && previousTop > 0) {
+      this.target.scroller.scrollTop =
+        previousTop +
+        Math.max(0, this.target.scroller.scrollHeight - previousHeight);
+    }
   }
 
   private refreshItems(): void {
@@ -395,19 +405,13 @@ class TraceVirtualListController {
     footer.dataset.traceVirtualFooter = '';
     const count = footer.querySelector<HTMLElement>('[data-trace-count]');
     if (count) count.textContent = String(this.rows.length);
-    let scrollTop = footer.querySelector<HTMLButtonElement>(
+    const scrollTop = footer.querySelector<HTMLButtonElement>(
       '[data-trace-scroll-top]',
     );
-    if (!scrollTop) {
-      scrollTop = document.createElement('button');
-      scrollTop.type = 'button';
-      scrollTop.dataset.traceScrollTop = '';
-      scrollTop.textContent = 'Scroll to top';
-      scrollTop.setAttribute('aria-label', 'Scroll trace history to top');
-      footer.append(scrollTop);
+    if (scrollTop) {
+      scrollTop.hidden =
+        firstVisibleRootIndex === null || firstVisibleRootIndex < 100;
     }
-    scrollTop.hidden =
-      firstVisibleRootIndex === null || firstVisibleRootIndex < 100;
   }
 
   private firstVisibleRootIndex(
@@ -544,7 +548,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     clean(row.displayTime ?? row.time) || '—',
   );
   appendCell(button, 'trxToolCell', '', (cell) => {
-    cell.title = `${formatted.toolLabel} (stored as ${sourceTool})`;
+    setTraceTooltip(cell, `${formatted.toolLabel} · stored as ${sourceTool}`);
     const icon = document.createElement('span');
     icon.className = `trxToolIcon ${status}`;
     icon.textContent = '✤';
@@ -556,7 +560,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
   appendCell(button, 'trxTokens', formatCompact(totalTokens(row)));
   appendCell(button, 'trxBranch', stripTaskPrefix(branch), (cell) => {
-    cell.title = branch;
+    setTraceTooltip(cell, branch);
     cell.style.setProperty('--branch-color', branchColor(branch));
   });
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
@@ -601,7 +605,10 @@ function appendChildCells(
     const name = document.createElement('span');
     name.className = 'trxToolName';
     name.textContent = formatted.toolLabel;
-    cell.title = `${formatted.toolLabel} (batch step stored as ${sourceTool})`;
+    setTraceTooltip(
+      cell,
+      `${formatted.toolLabel} · batch step stored as ${sourceTool}`,
+    );
     cell.append(connector, name);
   });
   appendCell(
@@ -644,7 +651,6 @@ function setTraceTooltip(cell: HTMLElement, value: string): void {
   const text = value.trim();
   if (!text) return;
   cell.dataset.traceTooltip = text;
-  cell.title = text;
 }
 
 function ensureTraceTableControls(): void {
@@ -660,7 +666,7 @@ function ensureTraceTableControls(): void {
     panel = document.createElement('aside');
     panel.className = 'trxFilterPanel';
     panel.setAttribute('aria-label', 'Trace filters');
-    panel.innerHTML = `<header class="trxFilterHeader"><div><span>Filters</span><strong>Trace view</strong></div><div class="trxFilterHeaderActions"><button type="button" data-trace-font-toggle aria-label="Use original trace font" aria-pressed="true">Aa</button><button type="button" data-trace-filter-close aria-label="Close filters">×</button></div></header><label class="trxFilterSearch"><span aria-hidden="true">⌕</span><input type="search" data-filter-search placeholder="Search filter values" aria-label="Search filter values"></label><div class="trxFilterContent" data-trace-filter-content></div><footer><button type="button" data-clear-filters>Clear filters</button></footer>`;
+    panel.innerHTML = `<header class="trxFilterHeader"><div><span>Filters</span><strong>Trace view</strong></div><div class="trxFilterHeaderActions"><button type="button" data-trace-font-toggle aria-label="Use original trace font" aria-pressed="true">Aa</button><button type="button" data-trace-filter-close aria-label="Close filters">×</button></div></header><label class="trxFilterSearch"><span aria-hidden="true"><svg viewBox="0 0 16 16" width="13" height="13"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="m10.2 10.2 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></span><input type="search" data-filter-search placeholder="Search filter values" aria-label="Search filter values"></label><div class="trxFilterContent" data-trace-filter-content></div><footer><button type="button" data-clear-filters>Clear filters</button></footer>`;
     pane.append(panel);
   }
   panel.hidden = !filterPanelOpen;
@@ -856,7 +862,13 @@ function prepareTraceFooter(footer: HTMLElement): void {
   value.dataset.traceCount = '';
   value.textContent = '0';
   count.append(value, ' traces');
-  footer.append(filtersButton, count);
+  const scrollTop = document.createElement('button');
+  scrollTop.type = 'button';
+  scrollTop.dataset.traceScrollTop = '';
+  scrollTop.textContent = 'Scroll to top';
+  scrollTop.setAttribute('aria-label', 'Scroll trace history to top');
+  scrollTop.hidden = true;
+  footer.append(filtersButton, count, scrollTop);
   footer.dataset.traceFooterPrepared = 'true';
 }
 
@@ -974,6 +986,7 @@ function ensureTraceHoverCard(): HTMLElement {
   if (card) return card;
   card = document.createElement('div');
   card.className = 'trxHoverCard';
+  card.id = 'trace-hover-detail';
   card.setAttribute('role', 'tooltip');
   card.hidden = true;
   document.body.append(card);
@@ -985,6 +998,8 @@ function showTraceHoverCard(target: HTMLElement): void {
   if (!text) return;
   const card = ensureTraceHoverCard();
   card.textContent = text;
+  hoverTarget = target;
+  target.setAttribute('aria-describedby', card.id);
   card.hidden = false;
   const rect = target.getBoundingClientRect();
   const left = Math.max(
@@ -1003,6 +1018,21 @@ function showTraceHoverCard(target: HTMLElement): void {
 function hideTraceHoverCard(): void {
   const card = document.querySelector<HTMLElement>('.trxHoverCard');
   if (card) card.hidden = true;
+  hoverTarget?.removeAttribute('aria-describedby');
+  hoverTarget = null;
+}
+
+function scheduleTraceHoverOpen(target: HTMLElement): void {
+  window.clearTimeout(hoverOpenTimer);
+  window.clearTimeout(hoverCloseTimer);
+  if (hoverTarget === target && !ensureTraceHoverCard().hidden) return;
+  hoverOpenTimer = window.setTimeout(() => showTraceHoverCard(target), 1_000);
+}
+
+function scheduleTraceHoverClose(): void {
+  window.clearTimeout(hoverOpenTimer);
+  window.clearTimeout(hoverCloseTimer);
+  hoverCloseTimer = window.setTimeout(hideTraceHoverCard, 180);
 }
 
 export function installTraceVirtualList(): () => void {
@@ -1055,19 +1085,31 @@ export function installTraceVirtualList(): () => void {
   });
 
   const handlePointerOver = (event: PointerEvent) => {
+    if ((event.target as HTMLElement).closest('.trxHoverCard')) {
+      window.clearTimeout(hoverCloseTimer);
+      return;
+    }
     const target = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-trace-tooltip]',
     );
-    if (target) showTraceHoverCard(target);
+    if (target) scheduleTraceHoverOpen(target);
   };
   const handlePointerOut = (event: PointerEvent) => {
+    const card = (event.target as HTMLElement).closest('.trxHoverCard');
+    if (card) {
+      const related = event.relatedTarget;
+      if (related instanceof Node && card.contains(related)) return;
+      scheduleTraceHoverClose();
+      return;
+    }
     const target = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-trace-tooltip]',
     );
     if (!target) return;
     const related = event.relatedTarget;
     if (related instanceof Node && target.contains(related)) return;
-    hideTraceHoverCard();
+    if (related instanceof Element && related.closest('.trxHoverCard')) return;
+    scheduleTraceHoverClose();
   };
   document.addEventListener('pointerover', handlePointerOver);
   document.addEventListener('pointerout', handlePointerOut);
