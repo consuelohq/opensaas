@@ -321,8 +321,8 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       pointerEvents: getComputedStyle(footer).pointerEvents,
       inert: footer.hasAttribute('inert'),
     }));
-    assert.ok(earlyFooterState.opacity > 0.05);
-    assert.ok(earlyFooterState.opacity < 0.95);
+    assert.ok(earlyFooterState.opacity > 0.25);
+    assert.ok(earlyFooterState.opacity < 0.55);
     assert.equal(earlyFooterState.pointerEvents, 'none');
     assert.equal(earlyFooterState.inert, true);
 
@@ -354,17 +354,46 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       }
       const artBox = art.getBoundingClientRect();
       const badgeBox = badge.getBoundingClientRect();
+      const canvas = document.createElement('canvas');
+      canvas.width = art.naturalWidth;
+      canvas.height = art.naturalHeight;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) {
+        throw new Error('Expected canvas context for footer art inspection');
+      }
+      context.drawImage(art, 0, 0);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let bluePixels = 0;
+      let whitePixels = 0;
+      for (let index = 0; index < pixels.length; index += 16) {
+        const red = pixels[index];
+        const green = pixels[index + 1];
+        const blue = pixels[index + 2];
+        const alpha = pixels[index + 3];
+        if (alpha > 220 && red < 20 && green < 20 && blue > 220) {
+          bluePixels += 1;
+        }
+        if (alpha > 220 && red > 240 && green > 240 && blue > 240) {
+          whitePixels += 1;
+        }
+      }
       const titleLines = Array.from(
         document.querySelectorAll('[data-cloud-title-line]'),
       ).map((line) => Math.round(line.getBoundingClientRect().top));
 
       return {
+        artFilter: getComputedStyle(art).filter,
+        artSrc: art.getAttribute('src'),
         artTop: artBox.top,
         artBottom: artBox.bottom,
+        bluePixels,
+        whitePixels,
+        badgeDisplay: getComputedStyle(badge).display,
         badgeHeight: badgeBox.height,
         badgeWidth: badgeBox.width,
         signatureFontWeight: Number.parseInt(getComputedStyle(signature).fontWeight, 10),
         signatureJustifyItems: getComputedStyle(signature).justifyItems,
+        signatureLeft: signature.getBoundingClientRect().left,
         signatureTextAlign: getComputedStyle(signature).textAlign,
         titleLines,
         versionFontWeight: Number.parseInt(getComputedStyle(version).fontWeight, 10),
@@ -377,14 +406,19 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(new Set(mobileFooterContract.titleLines).size, 2);
     assert.ok(mobileFooterContract.artTop >= 0);
     assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
+    assert.equal(mobileFooterContract.artSrc, '/images/home/holding-world-editorial.png');
+    assert.equal(mobileFooterContract.artFilter, 'none');
+    assert.ok(mobileFooterContract.bluePixels > 1000);
+    assert.ok(mobileFooterContract.whitePixels > 1000);
     assert.equal(mobileFooterContract.wordmarkDisplay, 'none');
     assert.equal(mobileFooterContract.versionText, 'CONSUELO OS V0.10.3');
     assert.equal(mobileFooterContract.versionWhiteSpace, 'nowrap');
     assert.ok(mobileFooterContract.versionFontWeight <= 500);
     assert.ok(mobileFooterContract.signatureFontWeight <= 500);
-    assert.equal(mobileFooterContract.signatureJustifyItems, 'end');
-    assert.equal(mobileFooterContract.signatureTextAlign, 'right');
-    assert.ok(mobileFooterContract.badgeHeight > mobileFooterContract.badgeWidth * 1.15);
+    assert.equal(mobileFooterContract.signatureJustifyItems, 'start');
+    assert.equal(mobileFooterContract.signatureTextAlign, 'left');
+    assert.ok(mobileFooterContract.signatureLeft <= 20);
+    assert.equal(mobileFooterContract.badgeDisplay, 'none');
 
     const reducedMotionPage = await browser.newPage({
       viewport: { width: 390, height: 844 },
@@ -431,6 +465,154 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
         Number.parseFloat(getComputedStyle(element).fontSize),
       );
     assert.ok(desktopFaqFontSize <= 28);
+
+    await desktopPage.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await desktopPage.waitForFunction(() => {
+      const footer = document.querySelector('[data-cloud-reveal]');
+      return (
+        footer instanceof HTMLElement &&
+        Number.parseFloat(getComputedStyle(footer).opacity) >= 0.98
+      );
+    });
+
+    const desktopFooterContract = await desktopPage.evaluate(() => {
+      const heading = document.querySelector('.cloud-cta h2');
+      const copy = document.querySelector('.cloud-cta__copy');
+      const description = document.querySelector('.cloud-cta__description');
+      const button = document.querySelector('.cloud-cta__copy a');
+      const art = document.querySelector('.cloud-cta__art');
+      const wordLines = Array.from(document.querySelectorAll('[data-cloud-word-line]'));
+      const version = document.querySelector('.cloud-cta__version');
+      const signature = document.querySelector('.cloud-cta__signature');
+      const badge = document.querySelector('.cloud-cta__badge');
+      if (
+        !(heading instanceof HTMLElement) ||
+        !(copy instanceof HTMLElement) ||
+        !(description instanceof HTMLElement) ||
+        !(button instanceof HTMLElement) ||
+        !(art instanceof HTMLImageElement) ||
+        !(version instanceof HTMLElement) ||
+        !(signature instanceof HTMLElement) ||
+        !(badge instanceof HTMLElement) ||
+        wordLines.length !== 2
+      ) {
+        throw new Error('Expected complete desktop cloud poster composition');
+      }
+
+      const headingBox = heading.getBoundingClientRect();
+      const copyBox = copy.getBoundingClientRect();
+      const buttonBox = button.getBoundingClientRect();
+      const artBox = art.getBoundingClientRect();
+      const versionBox = version.getBoundingClientRect();
+      const signatureBox = signature.getBoundingClientRect();
+      const badgeBox = badge.getBoundingClientRect();
+      const firstWordStyle = getComputedStyle(wordLines[0]);
+      const secondWordStyle = getComputedStyle(wordLines[1]);
+
+      return {
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        titleWidth: headingBox.width,
+        titleTop: headingBox.top,
+        copyTop: copyBox.top,
+        buttonWidth: buttonBox.width,
+        descriptionText: description.textContent?.replace(/\s+/g, ' ').trim(),
+        descriptionFontFamily: getComputedStyle(description).fontFamily,
+        eyebrowFontFamily: getComputedStyle(document.querySelector('.cloud-cta__eyebrow')).fontFamily,
+        artTop: artBox.top,
+        artBottom: artBox.bottom,
+        artWidth: artBox.width,
+        wordLineDisplays: wordLines.map((line) => getComputedStyle(line).display),
+        firstWordSize: Number.parseFloat(firstWordStyle.fontSize),
+        secondWordSize: Number.parseFloat(secondWordStyle.fontSize),
+        versionLeft: versionBox.left,
+        signatureRightGap: window.innerWidth - signatureBox.right,
+        signatureTextAlign: getComputedStyle(signature).textAlign,
+        signatureJustifyItems: getComputedStyle(signature).justifyItems,
+        badgeDisplay: getComputedStyle(badge).display,
+        badgeRatio: badgeBox.height / badgeBox.width,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+
+    assert.ok(desktopFooterContract.titleWidth >= desktopFooterContract.viewportWidth * 0.35);
+    assert.ok(desktopFooterContract.titleWidth <= desktopFooterContract.viewportWidth * 0.52);
+    assert.ok(desktopFooterContract.titleTop <= desktopFooterContract.viewportHeight * 0.16);
+    assert.ok(desktopFooterContract.copyTop <= desktopFooterContract.viewportHeight * 0.08);
+    assert.ok(desktopFooterContract.buttonWidth >= 180);
+    assert.equal(
+      desktopFooterContract.descriptionText,
+      'KEEP THE SAME WORKSPACE AND LET CONSUELO RUN THE HOME NODE FOR YOU',
+    );
+    assert.equal(
+      desktopFooterContract.descriptionFontFamily,
+      desktopFooterContract.eyebrowFontFamily,
+    );
+    assert.ok(desktopFooterContract.artTop <= desktopFooterContract.viewportHeight * 0.38);
+    assert.ok(Math.abs(desktopFooterContract.artBottom - desktopFooterContract.viewportHeight) <= 1);
+    assert.ok(desktopFooterContract.artWidth >= desktopFooterContract.viewportWidth * 0.38);
+    assert.deepEqual(desktopFooterContract.wordLineDisplays, ['block', 'block']);
+    assert.ok(desktopFooterContract.secondWordSize < desktopFooterContract.firstWordSize);
+    assert.ok(desktopFooterContract.versionLeft >= desktopFooterContract.viewportWidth * 0.075);
+    assert.ok(desktopFooterContract.signatureRightGap >= desktopFooterContract.viewportWidth * 0.075);
+    assert.equal(desktopFooterContract.signatureTextAlign, 'right');
+    assert.equal(desktopFooterContract.signatureJustifyItems, 'end');
+    assert.notEqual(desktopFooterContract.badgeDisplay, 'none');
+    assert.ok(desktopFooterContract.badgeRatio >= 1.35);
+    assert.ok(desktopFooterContract.badgeRatio <= 1.5);
+    assert.equal(desktopFooterContract.overflow, 0);
+
+    const tabletPage = await browser.newPage({
+      viewport: { width: 768, height: 900 },
+    });
+    await tabletPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await tabletPage.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await tabletPage.waitForFunction(() => {
+      const footer = document.querySelector('[data-cloud-reveal]');
+      return (
+        footer instanceof HTMLElement &&
+        Number.parseFloat(getComputedStyle(footer).opacity) >= 0.98
+      );
+    });
+
+    const tabletFooterContract = await tabletPage.evaluate(() => {
+      const heading = document.querySelector('.cloud-cta h2');
+      const art = document.querySelector('.cloud-cta__art');
+      const wordmark = document.querySelector('.cloud-cta__wordmark');
+      const badge = document.querySelector('.cloud-cta__badge');
+      if (
+        !(heading instanceof HTMLElement) ||
+        !(art instanceof HTMLImageElement) ||
+        !(wordmark instanceof HTMLElement) ||
+        !(badge instanceof HTMLElement)
+      ) {
+        throw new Error('Expected tablet cloud poster composition');
+      }
+
+      const headingBox = heading.getBoundingClientRect();
+      const artBox = art.getBoundingClientRect();
+      return {
+        titleWidth: headingBox.width,
+        artAspect: artBox.width / artBox.height,
+        naturalArtAspect: art.naturalWidth / art.naturalHeight,
+        artTop: artBox.top,
+        artBottom: artBox.bottom,
+        wordmarkDisplay: getComputedStyle(wordmark).display,
+        badgeDisplay: getComputedStyle(badge).display,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+
+    assert.ok(tabletFooterContract.titleWidth >= 540);
+    assert.ok(
+      Math.abs(tabletFooterContract.artAspect - tabletFooterContract.naturalArtAspect) <= 0.01,
+    );
+    assert.ok(tabletFooterContract.artTop <= 320);
+    assert.ok(Math.abs(tabletFooterContract.artBottom - 900) <= 1);
+    assert.notEqual(tabletFooterContract.wordmarkDisplay, 'none');
+    assert.notEqual(tabletFooterContract.badgeDisplay, 'none');
+    assert.equal(tabletFooterContract.overflow, 0);
+    await tabletPage.close();
   } finally {
     await browser.close();
     await server.stop();

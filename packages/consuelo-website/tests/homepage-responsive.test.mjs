@@ -49,12 +49,26 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('CONSUELO OS <span>V0.10.3</span>');
     expect(footer).toContain('MIT LICENSE');
     expect(footer).toContain('bottom: 0;');
-    expect(footer).toContain('font: 500 0.62rem/1.45');
+    expect(footer).toContain('window.innerHeight * 1.4');
+    expect(footer).toContain('Math.pow(progress, 1.15)');
+  });
+
+  test('should compose the cloud footer as an illustration-led poster', async () => {
+    const footer = await readSource('src/components/home/HomeCloudCta.astro');
+
+    expect(footer).toContain("import { layout, prepare } from '@chenglou/pretext'");
+    expect(footer).toContain("heading.style.setProperty('--cloud-title-size'");
+    expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
+    expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
+    expect(footer).toContain('/images/home/holding-world-editorial.png');
+    expect(footer).not.toContain('filter: brightness(0) invert(1)');
+    expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
+    expect(footer).toContain('RUN THE HOME NODE FOR YOU');
+    expect(footer).toContain('--cloud-gutter: clamp(4.75rem, 8.5vw, 8rem);');
+    expect(footer).toContain('aspect-ratio: 121 / 173;');
     expect(footer).toContain('justify-items: end;');
     expect(footer).toContain('text-align: right;');
-    expect(footer).toContain('aspect-ratio: 4 / 5;');
-    expect(footer).toContain('window.innerHeight * 1.2');
-    expect(footer).toContain('Math.pow(progress, 1.5)');
+    expect(footer).toContain('.cloud-cta__badge {\n      display: none;');
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {
