@@ -101,6 +101,39 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await page.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await page.locator('.os-hero h1').waitFor({ state: 'attached' });
+
+    const captureHeadlineGeometry = () =>
+      page.evaluate(() => {
+        const hero = document.querySelector('.os-hero h1');
+        const cloud = document.querySelector('.cloud-cta h2');
+        if (!(hero instanceof HTMLElement) || !(cloud instanceof HTMLElement)) {
+          throw new Error('Expected hero and cloud headings');
+        }
+        const heroBox = hero.getBoundingClientRect();
+        const cloudBox = cloud.getBoundingClientRect();
+        return {
+          hero: {
+            fontSize: getComputedStyle(hero).fontSize,
+            height: heroBox.height,
+            top: heroBox.top,
+            inlineSize: hero.style.getPropertyValue('--hero-title-size'),
+          },
+          cloud: {
+            fontSize: getComputedStyle(cloud).fontSize,
+            height: cloudBox.height,
+            top: cloudBox.top,
+            inlineSize: cloud.style.getPropertyValue('--cloud-title-size'),
+          },
+        };
+      });
+
+    const firstHeadlineFrame = await captureHeadlineGeometry();
+    await page.waitForTimeout(350);
+    const settledHeadlineFrame = await captureHeadlineGeometry();
+    assert.deepEqual(settledHeadlineFrame, firstHeadlineFrame);
+    assert.equal(firstHeadlineFrame.hero.inlineSize, '');
+    assert.equal(firstHeadlineFrame.cloud.inlineSize, '');
     await page.locator('main').waitFor();
 
     const mobileHeader = page.locator('.os-header__mobile');
@@ -275,14 +308,42 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
         viewport: { width, height: 900 },
       });
       await responsivePage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
-      await responsivePage.waitForFunction(() => {
-        const heading = document.querySelector('.os-hero h1');
-        return (
-          document.fonts.status === 'loaded' &&
-          heading instanceof HTMLElement &&
-          heading.style.getPropertyValue('--hero-title-size') !== ''
-        );
+      await responsivePage.locator('.os-hero h1').waitFor({ state: 'attached' });
+
+      const firstFrame = await responsivePage.evaluate(() => {
+        const hero = document.querySelector('.os-hero h1');
+        const cloud = document.querySelector('.cloud-cta h2');
+        if (!(hero instanceof HTMLElement) || !(cloud instanceof HTMLElement)) {
+          throw new Error('Expected responsive headings');
+        }
+        return {
+          heroFont: getComputedStyle(hero).fontSize,
+          heroHeight: hero.getBoundingClientRect().height,
+          heroInline: hero.style.getPropertyValue('--hero-title-size'),
+          cloudFont: getComputedStyle(cloud).fontSize,
+          cloudHeight: cloud.getBoundingClientRect().height,
+          cloudInline: cloud.style.getPropertyValue('--cloud-title-size'),
+        };
       });
+      await responsivePage.waitForTimeout(350);
+      const settledFrame = await responsivePage.evaluate(() => {
+        const hero = document.querySelector('.os-hero h1');
+        const cloud = document.querySelector('.cloud-cta h2');
+        if (!(hero instanceof HTMLElement) || !(cloud instanceof HTMLElement)) {
+          throw new Error('Expected responsive headings');
+        }
+        return {
+          heroFont: getComputedStyle(hero).fontSize,
+          heroHeight: hero.getBoundingClientRect().height,
+          heroInline: hero.style.getPropertyValue('--hero-title-size'),
+          cloudFont: getComputedStyle(cloud).fontSize,
+          cloudHeight: cloud.getBoundingClientRect().height,
+          cloudInline: cloud.style.getPropertyValue('--cloud-title-size'),
+        };
+      });
+      assert.deepEqual(settledFrame, firstFrame);
+      assert.equal(firstFrame.heroInline, '');
+      assert.equal(firstFrame.cloudInline, '');
 
       const responsiveContract = await responsivePage.evaluate(() => ({
         lineTops: Array.from(document.querySelectorAll('.os-hero h1 [data-hero-line]')).map(
@@ -354,6 +415,10 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       }
       const artBox = art.getBoundingClientRect();
       const badgeBox = badge.getBoundingClientRect();
+      const badgeImage = badge.querySelector('img');
+      if (!(badgeImage instanceof HTMLImageElement)) {
+        throw new Error('Expected generated badge image');
+      }
       const canvas = document.createElement('canvas');
       canvas.width = art.naturalWidth;
       canvas.height = art.naturalHeight;
@@ -389,6 +454,9 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
         bluePixels,
         whitePixels,
         badgeDisplay: getComputedStyle(badge).display,
+        badgeSrc: badgeImage.getAttribute('src'),
+        badgeNaturalWidth: badgeImage.naturalWidth,
+        badgeNaturalHeight: badgeImage.naturalHeight,
         badgeHeight: badgeBox.height,
         badgeWidth: badgeBox.width,
         signatureFontWeight: Number.parseInt(getComputedStyle(signature).fontWeight, 10),
@@ -506,6 +574,10 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       const versionBox = version.getBoundingClientRect();
       const signatureBox = signature.getBoundingClientRect();
       const badgeBox = badge.getBoundingClientRect();
+      const badgeImage = badge.querySelector('img');
+      if (!(badgeImage instanceof HTMLImageElement)) {
+        throw new Error('Expected desktop badge image');
+      }
       const firstWordStyle = getComputedStyle(wordLines[0]);
       const secondWordStyle = getComputedStyle(wordLines[1]);
 
@@ -530,6 +602,9 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
         signatureTextAlign: getComputedStyle(signature).textAlign,
         signatureJustifyItems: getComputedStyle(signature).justifyItems,
         badgeDisplay: getComputedStyle(badge).display,
+        badgeSrc: badgeImage.getAttribute('src'),
+        badgeNaturalWidth: badgeImage.naturalWidth,
+        badgeNaturalHeight: badgeImage.naturalHeight,
         badgeRatio: badgeBox.height / badgeBox.width,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
@@ -558,6 +633,9 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(desktopFooterContract.signatureTextAlign, 'right');
     assert.equal(desktopFooterContract.signatureJustifyItems, 'end');
     assert.notEqual(desktopFooterContract.badgeDisplay, 'none');
+    assert.equal(desktopFooterContract.badgeSrc, '/images/home/consuelo-footer-badge.png');
+    assert.equal(desktopFooterContract.badgeNaturalWidth, 242);
+    assert.equal(desktopFooterContract.badgeNaturalHeight, 346);
     assert.ok(desktopFooterContract.badgeRatio >= 1.35);
     assert.ok(desktopFooterContract.badgeRatio <= 1.5);
     assert.equal(desktopFooterContract.overflow, 0);

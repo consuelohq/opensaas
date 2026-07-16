@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/website/stabilize-landing-typography-and-refine-footer-art/workpad.md",
+    "packages/consuelo-website/public/images/home/holding-world-editorial.png",
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/layouts/MarketingLayout.astro"
+  ],
+  "updatedAt": "2026-07-16T04:18:09.329Z"
+}
