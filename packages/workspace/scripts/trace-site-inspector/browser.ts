@@ -21,6 +21,7 @@ import {
   type InspectorSection,
 } from './inspector-state';
 import {
+  deriveTraceHistoryCursor,
   deriveTraceLiveCursor,
   installTracePaginationTransport,
   parseTraceLiveResponse,
@@ -55,6 +56,12 @@ let liveCursor = '';
 let livePollInFlight = false;
 let livePollTimer = 0;
 const INSPECTOR_WIDTH_KEY = 'consuelo.trace-inspector.width';
+const TRACE_CLOCK_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
@@ -80,6 +87,20 @@ function formatDuration(value: unknown): string {
   if (duration >= 60_000) return `${(duration / 60_000).toFixed(1)}m`;
   if (duration >= 1_000) return `${(duration / 1_000).toFixed(2)}s`;
   return `${Math.round(duration)}ms`;
+}
+
+function updateTraceClock(): void {
+  const node = document.querySelector<HTMLElement>('[data-trace-clock]');
+  if (!node) return;
+  const parts = TRACE_CLOCK_FORMATTER.formatToParts(new Date());
+  const hour = parts.find((part) => part.type === 'hour')?.value ?? '--';
+  const minute = parts.find((part) => part.type === 'minute')?.value ?? '--';
+  node.textContent = `${hour === '24' ? '00' : hour}:${minute}`;
+}
+
+function installTraceClock(): void {
+  updateTraceClock();
+  window.setInterval(updateTraceClock, 15_000);
 }
 
 function traceMap(): Map<string, TraceRecord> {
@@ -706,25 +727,29 @@ async function hydrateLiveSnapshot(): Promise<void> {
         : Array.isArray(payload.traces)
           ? payload.traces
           : [];
-    if (rows.length) {
-      (window as TraceWindow).__traceVirtualList?.prependRows(rows);
-      liveCursor = deriveTraceLiveCursor(rows);
-    }
+    if (!rows.length) return;
+    (window as TraceWindow).__traceVirtualList?.replaceRows(
+      rows,
+      deriveTraceHistoryCursor(rows),
+    );
+    liveCursor = deriveTraceLiveCursor(rows);
   } catch {
-    // The serialized seed is the offline fallback; cursor polling still retries.
+    // The serialized seed remains the offline fallback.
   }
 }
 
 function installLivePolling(): void {
   const refresh = () => void pollLiveRows();
-  liveCursor = deriveTraceLiveCursor(allRows());
   window.clearInterval(livePollTimer);
-  livePollTimer = window.setInterval(refresh, 1_000);
-  window.addEventListener('focus', refresh);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') refresh();
+  void hydrateLiveSnapshot().finally(() => {
+    if (!liveCursor) liveCursor = deriveTraceLiveCursor(allRows());
+    livePollTimer = window.setInterval(refresh, 1_000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') refresh();
+    });
+    refresh();
   });
-  void hydrateLiveSnapshot().finally(refresh);
 }
 
 document.addEventListener('click', async (event) => {
@@ -832,6 +857,7 @@ syncRowsFromMap();
 installTracePaginationTransport();
 installTraceVirtualList();
 hydrateInspectorWidth();
+installTraceClock();
 installLivePolling();
 document.addEventListener('trace:selection-change', scheduleRender);
 window.addEventListener('resize', applyLayout);

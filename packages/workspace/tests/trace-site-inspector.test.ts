@@ -1046,13 +1046,17 @@ describe('trace-site inspector state contract', () => {
 
 describe('trace-site inspector deployment contract', () => {
   test('should patch versioned overlay assets once when deployment runs repeatedly', () => {
-    const html =
-      '<!doctype html><html><head><title>Trace</title></head><body><main></main></body></html>';
+    const html = `<!doctype html><html><head><title>Trace</title></head><body><main></main>
+      <script type="module" src="/trace-burn-intelligence/_astro/index.astro_astro_type_script_index_0_lang.tracefix-v23.js"></script>
+      <script type="module" src="/trace-burn-intelligence/_astro/trace-table-overview-v22.js"></script>
+    </body></html>`;
     const once = patchTraceInspectorHtml(html);
     const twice = patchTraceInspectorHtml(once);
 
     expect(once).toContain(INSPECTOR_CSS_HREF);
     expect(once).toContain(INSPECTOR_SCRIPT_SRC);
+    expect(once).not.toContain('tracefix-v23.js');
+    expect(once).toContain('trace-table-overview-v22.js');
     expect(
       twice.match(new RegExp(INSPECTOR_CSS_HREF.replaceAll('/', '\\/'), 'g')),
     ).toHaveLength(1);
@@ -1092,8 +1096,8 @@ describe('trace-site inspector deployment contract', () => {
     async () => {
       const root = mkdtempSync(join(tmpdir(), 'trace-table-runtime-'));
       roots.push(root);
-      const scriptPath = join(root, 'trace-inspector-v37.js');
-      const cssPath = join(root, 'trace-inspector-v37.css');
+      const scriptPath = join(root, 'trace-inspector-v38.js');
+      const cssPath = join(root, 'trace-inspector-v38.css');
       execFileSync(
         'bun',
         [
@@ -1119,6 +1123,8 @@ describe('trace-site inspector deployment contract', () => {
           id: 'code-root',
           recordId: 'code-root',
           traceId: 'code-trace',
+          time: '2026-07-15T23:34:21.000Z',
+          displayTime: undefined,
           name: 'code.call',
           input: 'bun/read - read workpad.md',
           output: 'completed - no file changes',
@@ -1248,6 +1254,11 @@ describe('trace-site inspector deployment contract', () => {
             .locator('.trxRow[data-trace-key="code-root"] .trxInputCell')
             .textContent(),
         ).toBe('read workpad.md');
+        expect(
+          await page
+            .locator('.trxRow[data-trace-key="code-root"] .trxStart')
+            .textContent(),
+        ).toMatch(/^\d{2}:\d{2}:\d{2}$/);
         expect(
           await page
             .locator('.trxRow[data-trace-key="batch-child-trace"] .trxToolName')
@@ -1412,8 +1423,8 @@ describe('trace-site inspector deployment contract', () => {
     async () => {
       const root = mkdtempSync(join(tmpdir(), 'trace-inspector-selection-'));
       roots.push(root);
-      const scriptPath = join(root, 'trace-inspector-v37.js');
-      const cssPath = join(root, 'trace-inspector-v37.css');
+      const scriptPath = join(root, 'trace-inspector-v38.js');
+      const cssPath = join(root, 'trace-inspector-v38.css');
       execFileSync(
         'bun',
         [
@@ -1571,14 +1582,14 @@ describe('trace-site inspector deployment contract', () => {
         page.setDefaultTimeout(7_000);
         await page.route('http://trace.test/**', async (route) => {
           const pathname = new URL(route.request().url()).pathname;
-          if (pathname.endsWith('trace-inspector-v37.css')) {
+          if (pathname.endsWith('trace-inspector-v38.css')) {
             await route.fulfill({
               contentType: 'text/css',
               body: readFileSync(cssPath),
             });
             return;
           }
-          if (pathname.endsWith('trace-inspector-v37.js')) {
+          if (pathname.endsWith('trace-inspector-v38.js')) {
             await new Promise((resolve) => setTimeout(resolve, 180));
             await route.fulfill({
               contentType: 'text/javascript',
@@ -2131,8 +2142,8 @@ describe('trace-site inspector deployment contract', () => {
         </div>
         <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
       </body></html>`;
-      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v37.js');
-      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v37.css');
+      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v38.js');
+      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v38.css');
       execFileSync(
         'bun',
         [
@@ -2315,8 +2326,8 @@ describe('trace-site inspector deployment contract', () => {
         </div>
         <script id="trace-seed-data" type="application/json">${serializeTraceSeed({ meta: { nextCursor: 'cursor-2' }, rows: runtimeRows })}</script>
       </body></html>`;
-      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v37.js');
-      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v37.css');
+      const scriptPath = join(archiveRoot, '_astro', 'trace-inspector-v38.js');
+      const cssPath = join(archiveRoot, '_astro', 'trace-inspector-v38.css');
       execFileSync(
         'bun',
         [
@@ -2348,6 +2359,7 @@ describe('trace-site inspector deployment contract', () => {
           const target = window as Window & {
             __traceHistoryRequests?: string[];
             __traceLiveRequests?: string[];
+            __traceSnapshotRequests?: string[];
             __consueloTraceHistoryTransport?: {
               fetchJson: (url: string) => Promise<unknown>;
             };
@@ -2355,6 +2367,7 @@ describe('trace-site inspector deployment contract', () => {
           };
           target.__traceHistoryRequests = [];
           target.__traceLiveRequests = [];
+          target.__traceSnapshotRequests = [];
           target.__plainFetchCalls = 0;
           window.fetch = async () => {
             target.__plainFetchCalls = (target.__plainFetchCalls ?? 0) + 1;
@@ -2363,6 +2376,7 @@ describe('trace-site inspector deployment contract', () => {
           target.__consueloTraceHistoryTransport = {
             fetchJson: async (url: string) => {
               if (url === '/trace-burn-intelligence/live-traces.json') {
+                target.__traceSnapshotRequests!.push(url);
                 return { rows: [] };
               }
               if (url.includes('direction=newer')) {
@@ -2559,6 +2573,44 @@ describe('trace-site inspector deployment contract', () => {
         expect(appended.requestUrl).toContain(
           '/gateway/traces/recent?direction=older&cursor=cursor-2',
         );
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __traceSnapshotRequests?: string[] })
+                .__traceSnapshotRequests?.length ?? 0,
+          ),
+        ).toBe(1);
+
+        await page.evaluate((seedRows) => {
+          const map = new Map<string, Record<string, unknown>>();
+          for (const seedRow of seedRows) {
+            map.set(String(seedRow.recordId), seedRow);
+            map.set(String(seedRow.traceId), seedRow);
+          }
+          (
+            window as Window & {
+              __traceRowsByTraceId?: Map<string, Record<string, unknown>>;
+            }
+          ).__traceRowsByTraceId = map;
+        }, runtimeRows);
+        await page.waitForTimeout(2_200);
+        expect(
+          await page.evaluate(() => ({
+            total: Number(
+              document.querySelector<HTMLElement>('.trxTableScroll')?.dataset
+                .traceTotal ?? 0,
+            ),
+            selected: (window as Window & { __traceSelectedKey?: string })
+              .__traceSelectedKey,
+          })),
+        ).toEqual({ total: 326, selected: 'runtime-record-10' });
+        expect(
+          await page.evaluate(
+            () =>
+              (window as Window & { __traceSnapshotRequests?: string[] })
+                .__traceSnapshotRequests?.length ?? 0,
+          ),
+        ).toBe(1);
 
         await page.locator('[data-trace-scroll-top]').click();
         await page.waitForFunction(
@@ -2682,11 +2734,11 @@ describe('sanitized Cloudflare trace preview', () => {
     const outputRoot = join(root, 'public');
     mkdirSync(join(archiveRoot, '_astro'), { recursive: true });
     writeFileSync(
-      join(archiveRoot, '_astro', 'trace-inspector-v37.css'),
+      join(archiveRoot, '_astro', 'trace-inspector-v38.css'),
       'body{}',
     );
     writeFileSync(
-      join(archiveRoot, '_astro', 'trace-inspector-v37.js'),
+      join(archiveRoot, '_astro', 'trace-inspector-v38.js'),
       'export{}',
     );
 
