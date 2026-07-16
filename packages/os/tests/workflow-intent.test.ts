@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 import { createWorkflowIntentRuntime } from '../hooks/intent.js';
 import { getInputSchema } from '../scripts/lib/facade/schemas';
@@ -197,6 +198,28 @@ describe('OS workflow intent bundles', () => {
     for (const legacy of ['office', 'design', 'sites']) {
       expect(() => runtime.start({ workflow: legacy, taskSession: `tsk_${legacy}` })).toThrow(`unknown workflow: ${legacy}`);
     }
+  });
+
+  test('should reject workflow bundles disabled by the manifest overlay', () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-disabled-workflow-'));
+    const overlayPath = join(home, 'security', 'overrides', 'manifest.overlay.json');
+    mkdirSync(join(home, 'security', 'overrides'), { recursive: true });
+    writeFileSync(overlayPath, JSON.stringify({
+      version: 1,
+      disabledSkills: [],
+      disabledTools: [],
+      disabledWorkflows: ['task'],
+      updatedAt: '2026-07-16T00:00:00.000Z',
+    }), 'utf8');
+    const runtime = createWorkflowIntentRuntime({
+      manifest: readManifest(),
+      bundles: readBundles(),
+      overlayHome: home,
+    });
+
+    expect(() => runtime.start({ workflow: 'task', taskSession: 'tsk_disabled' }))
+      .toThrow('workflow disabled: task');
+    expect(() => runtime.bundleFor('task')).toThrow('workflow disabled: task');
   });
 
   test('should require taskSession when dispatching scoped hook events', () => {

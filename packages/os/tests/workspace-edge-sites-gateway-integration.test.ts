@@ -529,14 +529,22 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
 
     const snapshotPath = '/gateway/settings/snapshot';
     const overlayPath = '/gateway/settings/overlay';
+    const snapshotTimestamp = String(Date.now());
+    const snapshotNonce = 'settings-snapshot-nonce';
+    const overlayTimestamp = String(Date.now());
+    const overlayNonce = 'settings-overlay-nonce';
     const snapshotResponse = await router.fetch(new Request(`https://internal.consuelohq.com${snapshotPath}`, {
       headers: {
+        'x-consuelo-edge-timestamp': snapshotTimestamp,
+        'x-consuelo-edge-nonce': snapshotNonce,
         'x-consuelo-edge-signature': signInternalEdgeRequest({
           secret: 'edge-test-secret',
           method: 'GET',
           pathWithSearch: snapshotPath,
           workspaceId: 'workspace_internal',
           surface: 'sites',
+          timestamp: snapshotTimestamp,
+          nonce: snapshotNonce,
         }),
       },
     }));
@@ -544,12 +552,16 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     const overlayResponse = await router.fetch(new Request(`https://internal.consuelohq.com${overlayPath}`, {
       method: 'POST',
       headers: {
+        'x-consuelo-edge-timestamp': overlayTimestamp,
+        'x-consuelo-edge-nonce': overlayNonce,
         'x-consuelo-edge-signature': signInternalEdgeRequest({
           secret: 'edge-test-secret',
           method: 'POST',
           pathWithSearch: overlayPath,
           workspaceId: 'workspace_internal',
           surface: 'sites',
+          timestamp: overlayTimestamp,
+          nonce: overlayNonce,
         }),
       },
     }));

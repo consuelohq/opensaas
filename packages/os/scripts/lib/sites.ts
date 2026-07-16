@@ -14,8 +14,7 @@ import {
   renderLauncherOnboarding,
   type LauncherLocalAgent,
 } from './launcher-onboarding';
-import { buildSettingsSite } from './settings-site';
-import { buildSettingsSnapshot } from './settings-snapshot';
+import { materializeSettingsSite } from './settings-materialization';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -773,9 +772,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     refreshArtifactsSite(options.home, data);
     fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
-    const settingsSnapshot = buildSettingsSnapshot(options.home);
-    fs.writeFileSync(paths.settingsIndexPath, buildSettingsSite(options.home), { mode: 0o600 });
-    fs.writeFileSync(paths.settingsSnapshotPath, `${JSON.stringify(settingsSnapshot, null, 2)}\n`, { mode: 0o600 });
+    materializeSettingsSite(options.home);
   }
   return {
     sitesDir: paths.sitesDir,

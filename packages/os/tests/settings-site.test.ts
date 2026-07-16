@@ -8,9 +8,29 @@ import { buildSettingsSnapshot } from '../scripts/lib/settings-snapshot';
 import { renderSettingsSite } from '../scripts/lib/settings-site';
 
 describe('settings site', () => {
-  it('renders read-only settings shell with nav, cloud placeholders, and embedded snapshot JSON', () => {
-    const snapshot = buildSettingsSnapshot(path.join(os.homedir(), '.consuelo', 'os'));
-    const html = renderSettingsSite(snapshot);
+  it('renders a public shell without embedding private workspace state', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-public-shell-'));
+    fs.writeFileSync(
+      path.join(home, 'config.json'),
+      JSON.stringify({
+        version: 1,
+        mode: 'managed',
+        home,
+        port: 8787,
+        artifactStorage: 'local',
+        workspace: {
+          id: 'private_workspace_marker',
+          slug: 'private-workspace-marker',
+          host: 'private-workspace-marker.consuelohq.com',
+        },
+        agents: [],
+        createdAt: '2026-07-02T00:00:00.000Z',
+        updatedAt: '2026-07-02T00:00:00.000Z',
+      }),
+      'utf8',
+    );
+    const snapshot = buildSettingsSnapshot(home);
+    const html = renderSettingsSite();
 
     expect(html).toContain('<title>Settings - Consuelo OS</title>');
     expect(html).toContain('aria-label="Settings navigation"');
@@ -20,19 +40,19 @@ describe('settings site', () => {
     expect(html).toContain('href="#skills"');
     expect(html).toContain('href="#run-books"');
     expect(html).toContain('href="#capabilities"');
-    expect(html).toContain('ChatGPT');
-    expect(html).toContain('Grok');
-    expect(html).toContain('Coming soon');
-    expect(html).toContain('window.__CONSUELO_SETTINGS__');
     expect(html).toContain('/gateway/settings/snapshot');
-    expect(html).toContain('embedded snapshot');
-    expect(html).toContain('"version":1');
-    expect(html).toContain('"cloudConnectors"');
-    expect(html).toContain('"runBooks"');
-    expect(html).toContain('"overlay"');
-    expect(html).toContain('settings-toggle');
+    expect(html).toContain('Loading workspace settings');
+    expect(html).toContain('Settings unavailable');
     expect(html).toContain('/gateway/settings/overlay');
-    expect(html).toContain('manifest.overlay.json');
+    expect(html).not.toContain('window.__CONSUELO_SETTINGS__');
+    expect(html).not.toContain(snapshot.workspace.workspaceId ?? 'private_workspace_marker');
+    expect(html).not.toContain(snapshot.workspace.workspaceHost ?? 'private-workspace-marker.consuelohq.com');
+    expect(html).not.toContain(snapshot.overlay.path);
+    expect(html).not.toContain('"cloudConnectors"');
+    expect(html).not.toContain('"disabledTools"');
+    const script = html.match(/<script>([\s\S]*)<\/script>/)?.[1];
+    expect(script).toBeTruthy();
+    expect(() => new Function(script!)).not.toThrow();
   });
 
   it('marks ChatGPT connected when chatgpt-mcp.json exists', () => {
@@ -60,7 +80,7 @@ describe('settings site', () => {
     );
 
     const snapshot = buildSettingsSnapshot(home);
-    const html = renderSettingsSite(snapshot);
+    const html = renderSettingsSite();
 
     expect(snapshot.cloudConnectors.find((connector) => connector.id === 'chatgpt')).toMatchObject({
       status: 'connected',
@@ -71,7 +91,7 @@ describe('settings site', () => {
       status: 'not_configured',
       placeholder: true,
     });
-    expect(html).toContain('https://test.consuelohq.com/mcp');
-    expect(html).toContain('status-connected');
+    expect(html).not.toContain('https://test.consuelohq.com/mcp');
+    expect(html).toContain('Cloud agents');
   });
 });

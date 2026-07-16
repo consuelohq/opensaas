@@ -1,15 +1,12 @@
-import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
 
+import { applySettingsGatewayOverlayPatch } from './settings-gateway';
 import {
   manifestOverlayPath,
-  patchManifestOverlay,
   readManifestOverlay,
   type ManifestOverlayPatch,
 } from './manifest-overlay';
 import { ensureRuntimePaths } from './runtime-state';
-import { buildSettingsSnapshot } from './settings-snapshot';
-import { buildSettingsSite } from './settings-site';
-import { getSitesPaths } from './sites';
 
 export type SettingsOverlayCommandResult = {
   ok: boolean;
@@ -20,35 +17,41 @@ export type SettingsOverlayCommandResult = {
   message: string;
 };
 
-function refreshSettingsSite(home: string): void {
-  const paths = getSitesPaths(home);
-  fs.mkdirSync(paths.settingsDir, { recursive: true });
-  fs.mkdirSync(paths.settingsDataDir, { recursive: true });
-  const snapshot = buildSettingsSnapshot(home);
-  fs.writeFileSync(paths.settingsIndexPath, buildSettingsSite(home), { mode: 0o600 });
-  fs.writeFileSync(paths.settingsSnapshotPath, `${JSON.stringify(snapshot, null, 2)}\n`, { mode: 0o600 });
-}
-
-function patchFromCommand(
+async function patchFromCommand(
   home: string,
   patch: ManifestOverlayPatch,
-): SettingsOverlayCommandResult {
-  const overlay = patchManifestOverlay(home, patch);
-  refreshSettingsSite(home);
-  return {
-    ok: true,
-    command: 'settings',
-    home,
-    overlayPath: manifestOverlayPath(home),
-    overlay,
-    message: `${patch.enabled ? 'Enabled' : 'Disabled'} ${patch.kind} ${patch.name}.`,
-  };
+): Promise<SettingsOverlayCommandResult> {
+  try {
+    const result = await applySettingsGatewayOverlayPatch(
+      home,
+      JSON.stringify(patch),
+      {
+        actorType: 'user',
+        actorId: 'local-cli',
+        workspaceId: 'workspace-local',
+        correlationId: `settings_cli_${randomUUID()}`,
+      },
+    );
+    if (!result.ok) throw new Error(result.error.message);
+    return {
+      ok: true,
+      command: 'settings',
+      home,
+      overlayPath: manifestOverlayPath(home),
+      overlay: readManifestOverlay(home),
+      message: `${patch.enabled ? 'Enabled' : 'Disabled'} ${patch.kind} ${patch.name}.`,
+    };
+  } catch (cause: unknown) {
+    throw new Error(
+      cause instanceof Error ? cause.message.slice(0, 240) : 'Settings overlay command failed.',
+    );
+  }
 }
 
-export function runSettingsOverlayCommand(args: string[]): SettingsOverlayCommandResult {
+export async function runSettingsOverlayCommand(args: string[]): Promise<SettingsOverlayCommandResult> {
   const runtimePaths = ensureRuntimePaths();
   const home = runtimePaths.home;
-  const [action, kind, name] = args;
+  const [action, name] = args;
 
   if (action === 'status') {
     const overlay = readManifestOverlay(home);
