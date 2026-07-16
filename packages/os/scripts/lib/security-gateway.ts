@@ -529,6 +529,17 @@ const DANGEROUS_TOOL_NAMES = new Set([
 
 const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
 
+function resolveToolActionCategory(
+  toolName: string,
+  toolInput: unknown,
+): 'read' | 'write' | 'dangerous' | null {
+  if (toolName !== 'mac.process') return null;
+
+  return isJsonObject(toolInput) && toolInput.action === 'list'
+    ? 'read'
+    : 'dangerous';
+}
+
 function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
   const home = resolveOverlayHome();
   return fs.existsSync(path.join(home, 'config.json'))
@@ -536,7 +547,10 @@ function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
     : readFullToolManifest();
 }
 
-export function resolveToolScope(toolName: string): ToolScopeResolution {
+export function resolveToolScope(
+  toolName: string,
+  toolInput: unknown = {},
+): ToolScopeResolution {
   const entry = activeToolManifestForScope().tools.find((candidate) => candidate.name === toolName);
   if (!entry) {
     return {
@@ -549,17 +563,18 @@ export function resolveToolScope(toolName: string): ToolScopeResolution {
     };
   }
 
-  let category: 'read' | 'write' | 'dangerous' = 'read';
-  if (DANGEROUS_TOOL_NAMES.has(toolName)) {
+  const actionCategory = resolveToolActionCategory(toolName, toolInput);
+  let category: 'read' | 'write' | 'dangerous' = actionCategory ?? 'read';
+  if (!actionCategory && DANGEROUS_TOOL_NAMES.has(toolName)) {
     category = 'dangerous';
-  } else if (entry.kind === 'facade-tool') {
+  } else if (!actionCategory && entry.kind === 'facade-tool') {
     const capabilities = isJsonObject(entry.definition) && isJsonObject(entry.definition.capabilities)
       ? entry.definition.capabilities
       : null;
     const readOnly = capabilities?.readOnly === true;
     const mutating = capabilities?.mutating === true;
     category = readOnly && !mutating ? 'read' : 'write';
-  } else if (entry.kind === 'os-skill') {
+  } else if (!actionCategory && entry.kind === 'os-skill') {
     const definition = entry.definition;
     const permission = typeof definition.permission === 'string' ? definition.permission : 'read';
     if (ELEVATED_OS_PERMISSIONS.has(permission)) {
