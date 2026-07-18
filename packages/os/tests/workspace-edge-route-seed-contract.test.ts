@@ -105,6 +105,9 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/configuration',
       '/gateway/settings/overlay',
       '/gateway/settings',
+      '/gateway/environments/upsert',
+      '/gateway/environments/delete',
+      '/gateway/environments',
       '/gateway/artifacts',
       '/office',
       '/design-wiki',
@@ -181,6 +184,36 @@ contractDescribe('workspace edge route seed contract', () => {
           serviceName: 'configuration-sites-read-endpoints',
           gatewayRouteFamily: '/gateway/settings/*',
           publicSiteRouteFamily: '/settings/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/environments/upsert',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'environment-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/environments/*',
+          publicSiteRouteFamily: '/environments/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/environments/delete',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'environment-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/environments/*',
+          publicSiteRouteFamily: '/environments/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/environments',
+        auth: 'required',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'environment-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/environments/*',
+          publicSiteRouteFamily: '/environments/*',
         }),
       }),
       expect.objectContaining({
@@ -269,6 +302,8 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(osSql).toMatch(/trace-sites-live-endpoints/);
     expect(osSql).toMatch(/configuration-sites-read-endpoints/);
     expect(osSql).toMatch(/configuration-sites-write-endpoints/);
+    expect(osSql).toMatch(/environment-sites-read-endpoints/);
+    expect(osSql).toMatch(/environment-sites-write-endpoints/);
     expect(osSql).not.toMatch(/  connector_internal  /);
     expect(osSql).not.toMatch(/api[_-]?key|access[_-]?token|refresh[_-]?token|credential[_-]?value|secret[_-]?value/i);
     expect(osSql).not.toMatch(/"pathPrefix":"\/traces"[^}]+"kind":"os-connector"/);

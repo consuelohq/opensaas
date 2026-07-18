@@ -147,6 +147,18 @@ type ConfigurationAdapterContract = {
   }>;
 };
 
+type EnvironmentAdapterContract = {
+  CONSUELO_ENVIRONMENT_SITE_SERVICE_REGISTRATIONS: Array<{
+    site: string;
+    capability: string;
+    serviceName: string;
+    gatewayServiceName: string;
+    publicSiteRouteFamily: string;
+    gatewayRouteFamily: string;
+    publicBoundary: string;
+  }>;
+};
+
 type InstallPublisherContract = {
   createWorkspaceEdgeSnapshotPlan: (input: {
     home: string;
@@ -279,6 +291,24 @@ function gatewayLegacySettingsWriteTarget(): ConsueloGatewayServiceTarget {
   };
 }
 
+function gatewayEnvironmentReadTarget(): ConsueloGatewayServiceTarget {
+  return {
+    kind: 'consuelo-gateway-service',
+    serviceName: 'environment-sites-read-endpoints',
+    gatewayRouteFamily: '/gateway/environments/*',
+    publicSiteRouteFamily: '/environments/*',
+  };
+}
+
+function gatewayEnvironmentWriteTarget(): ConsueloGatewayServiceTarget {
+  return {
+    kind: 'consuelo-gateway-service',
+    serviceName: 'environment-sites-write-endpoints',
+    gatewayRouteFamily: '/gateway/environments/*',
+    publicSiteRouteFamily: '/environments/*',
+  };
+}
+
 function integratedRouteRecord(): WorkspaceRouteRecord {
   return {
     workspaceId: 'workspace_internal',
@@ -306,6 +336,9 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/gateway/configuration', auth: 'required', status: 'active', target: gatewayConfigurationReadTarget() },
       { surface: 'sites', pathPrefix: '/gateway/settings/overlay', auth: 'required', status: 'active', target: gatewayLegacySettingsWriteTarget() },
       { surface: 'sites', pathPrefix: '/gateway/settings', auth: 'required', status: 'active', target: gatewayLegacySettingsReadTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/environments/upsert', auth: 'required', status: 'active', target: gatewayEnvironmentWriteTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/environments/delete', auth: 'required', status: 'active', target: gatewayEnvironmentWriteTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/environments', auth: 'required', status: 'active', target: gatewayEnvironmentReadTarget() },
       {
         surface: 'os',
         pathPrefix: '/mcp',
@@ -375,6 +408,8 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       expect.objectContaining(gatewayConfigurationWriteTarget()),
       expect.objectContaining(gatewayLegacySettingsReadTarget()),
       expect.objectContaining(gatewayLegacySettingsWriteTarget()),
+      expect.objectContaining(gatewayEnvironmentReadTarget()),
+      expect.objectContaining(gatewayEnvironmentWriteTarget()),
     ]));
     expect(JSON.stringify(record.routes.filter((route) => route.target.kind !== 'os-connector'))).not.toMatch(forbiddenBrowserLeakPattern);
   });
@@ -633,6 +668,61 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(JSON.stringify([snapshotBody, overlayBody])).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
+  it('should protect and resolve signed /gateway/environments/* requests through environment service descriptors', async () => {
+    const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
+    const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
+    const db = d1.createInMemoryWorkspaceRouteD1();
+    await d1.migrateWorkspaceRouteD1(db);
+    await d1.upsertWorkspaceHostnameInD1(db, integratedRouteRecord());
+    const router = edge.createWorkspaceCloudflareEdgeRouter({
+      registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
+      internalSigningSecret: 'edge-test-secret',
+      fetchUpstream: async () => new Response('unexpected raw service route', { status: 599 }),
+    });
+
+    const unauthenticated = await router.fetch(new Request('https://internal.consuelohq.com/gateway/environments/snapshot'));
+    expect(unauthenticated.status).toBe(503);
+    await expect(unauthenticated.json()).resolves.toMatchObject({ error: { code: 'WORKSPACE_EDGE_AUTH_REQUIRED' } });
+
+    const cases = [
+      { method: 'GET', path: '/gateway/environments/snapshot', target: gatewayEnvironmentReadTarget() },
+      { method: 'POST', path: '/gateway/environments/upsert', target: gatewayEnvironmentWriteTarget() },
+      { method: 'POST', path: '/gateway/environments/delete', target: gatewayEnvironmentWriteTarget() },
+    ] as const;
+
+    for (const item of cases) {
+      const timestamp = String(Date.now());
+      const nonce = `environment-${item.method.toLowerCase()}-${item.path.split('/').at(-1)}-nonce`;
+      const response = await router.fetch(new Request(`https://internal.consuelohq.com${item.path}`, {
+        method: item.method,
+        headers: {
+          'x-consuelo-edge-timestamp': timestamp,
+          'x-consuelo-edge-nonce': nonce,
+          'x-consuelo-edge-signature': signInternalEdgeRequest({
+            secret: 'edge-test-secret',
+            method: item.method,
+            pathWithSearch: item.path,
+            workspaceId: 'workspace_internal',
+            surface: 'sites',
+            timestamp,
+            nonce,
+          }),
+        },
+      }));
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toMatchObject({
+        ok: true,
+        publicBoundary: 'consuelo-gateway',
+        route: {
+          serviceName: item.target.serviceName,
+          gatewayServiceName: item.target.serviceName,
+          gatewayRouteFamily: '/gateway/environments/*',
+          publicSiteRouteFamily: '/environments/*',
+        },
+      });
+    }
+  });
+
   it('should serve first-class Configuration routes from their published Site snapshots instead of the OS connector', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
@@ -738,6 +828,47 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       }),
     ]));
     for (const descriptor of configurationDescriptors) {
+      expect(edgeGatewayTargets).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          serviceName: descriptor.gatewayServiceName,
+          gatewayRouteFamily: descriptor.gatewayRouteFamily,
+          publicSiteRouteFamily: descriptor.publicSiteRouteFamily,
+        }),
+      ]));
+    }
+  });
+
+  it('should align Environment adapter descriptors with edge gateway route records', async () => {
+    const adapter = await importModule<EnvironmentAdapterContract>('scripts/lib/consuelo-sites-environment-adapter.ts');
+    const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      connectorId: 'connector_internal',
+      tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
+    });
+    const edgeGatewayTargets = record.routes
+      .map((route) => route.target)
+      .filter((target): target is ConsueloGatewayServiceTarget => target.kind === 'consuelo-gateway-service');
+    const environmentDescriptors = adapter.CONSUELO_ENVIRONMENT_SITE_SERVICE_REGISTRATIONS;
+
+    expect(environmentDescriptors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        site: 'environments',
+        capability: 'environments-read',
+        gatewayServiceName: 'environment-sites-read-endpoints',
+        publicSiteRouteFamily: '/environments/*',
+        gatewayRouteFamily: '/gateway/environments/*',
+        publicBoundary: 'consuelo-gateway',
+      }),
+      expect.objectContaining({
+        site: 'environments',
+        capability: 'environments-write',
+        gatewayServiceName: 'environment-sites-write-endpoints',
+        publicSiteRouteFamily: '/environments/*',
+        gatewayRouteFamily: '/gateway/environments/*',
+        publicBoundary: 'consuelo-gateway',
+      }),
+    ]));
+    for (const descriptor of environmentDescriptors) {
       expect(edgeGatewayTargets).toEqual(expect.arrayContaining([
         expect.objectContaining({
           serviceName: descriptor.gatewayServiceName,

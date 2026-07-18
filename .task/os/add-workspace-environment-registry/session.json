@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_35b952a667df",
+  "tmuxSession": "opensaas-os-add-workspace-environment-registry-35b952a6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-environment-registry",
+  "branch": "task/os/add-workspace-environment-registry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-environment-registry",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-environment-registry",
+  "prNumber": 1530,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1530",
+  "createdAt": "2026-07-18T16:40:56.096Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-environment-registry/.task/os/add-workspace-environment-registry/session.json"
+}
