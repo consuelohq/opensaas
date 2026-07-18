@@ -95,6 +95,9 @@ contractDescribe('workspace edge route seed contract', () => {
       '/diffs',
       '/docs',
       '/configuration',
+      '/tools',
+      '/environments',
+      '/secrets',
       '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
@@ -115,6 +118,9 @@ contractDescribe('workspace edge route seed contract', () => {
       expect.objectContaining({ pathPrefix: '/diffs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'diffs', manifestKey: 'sites/workspace_internal/diffs/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/docs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'docs', manifestKey: 'sites/workspace_internal/docs/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/configuration', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'configuration', manifestKey: 'sites/workspace_internal/configuration/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/tools', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'tools', manifestKey: 'sites/workspace_internal/tools/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/environments', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'environments', manifestKey: 'sites/workspace_internal/environments/seeded-workspace-site-shell/index.html' }) }),
+      expect.objectContaining({ pathPrefix: '/secrets', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'secrets', manifestKey: 'sites/workspace_internal/secrets/seeded-workspace-site-shell/index.html' }) }),
     ]));
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -237,7 +243,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(appOnlySql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(appOnlySql).toMatch(/internal\.consuelohq\.com/);
     expect(appOnlySql).not.toMatch(/workspace_connectors/i);
-    expect(appOnlySql).not.toMatch(/token|credential|secret/i);
+    expect(appOnlySql).not.toMatch(/api[_-]?key|access[_-]?token|refresh[_-]?token|credential[_-]?value|secret[_-]?value/i);
     expect(appOnlySql.split('\n')).toHaveLength(1);
     expect(appOnlySql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry \(\n/);
 
@@ -264,7 +270,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(osSql).toMatch(/configuration-sites-read-endpoints/);
     expect(osSql).toMatch(/configuration-sites-write-endpoints/);
     expect(osSql).not.toMatch(/  connector_internal  /);
-    expect(osSql).not.toMatch(/token|credential|secret/i);
+    expect(osSql).not.toMatch(/api[_-]?key|access[_-]?token|refresh[_-]?token|credential[_-]?value|secret[_-]?value/i);
     expect(osSql).not.toMatch(/"pathPrefix":"\/traces"[^}]+"kind":"os-connector"/);
   });
 

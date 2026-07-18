@@ -94,6 +94,12 @@ export type SitesPaths = {
   configurationDataDir: string;
   configurationIndexPath: string;
   configurationSnapshotPath: string;
+  toolsDir: string;
+  toolsIndexPath: string;
+  environmentsDir: string;
+  environmentsIndexPath: string;
+  secretsDir: string;
+  secretsIndexPath: string;
 };
 
 export type MaterializeSitesOptions = {
@@ -113,6 +119,9 @@ export type MaterializeSitesResult = {
   docsIndexPath: string;
   configurationIndexPath: string;
   configurationSnapshotPath: string;
+  toolsIndexPath: string;
+  environmentsIndexPath: string;
+  secretsIndexPath: string;
   data: ArtifactCatalog;
   actions: SitesAction[];
 };
@@ -727,6 +736,9 @@ export function getSitesPaths(home: string): SitesPaths {
   const docsDir = path.join(sitesDir, 'docs');
   const configurationDir = path.join(sitesDir, 'configuration');
   const configurationDataDir = path.join(sitesDir, '.data', 'configuration');
+  const toolsDir = path.join(sitesDir, 'tools');
+  const environmentsDir = path.join(sitesDir, 'environments');
+  const secretsDir = path.join(sitesDir, 'secrets');
   return {
     sitesDir,
     indexPath: path.join(sitesDir, 'index.html'),
@@ -748,13 +760,19 @@ export function getSitesPaths(home: string): SitesPaths {
     configurationDataDir,
     configurationIndexPath: path.join(configurationDir, 'index.html'),
     configurationSnapshotPath: path.join(configurationDataDir, 'snapshot.json'),
+    toolsDir,
+    toolsIndexPath: path.join(toolsDir, 'index.html'),
+    environmentsDir,
+    environmentsIndexPath: path.join(environmentsDir, 'index.html'),
+    secretsDir,
+    secretsIndexPath: path.join(secretsDir, 'index.html'),
   };
 }
 
 export function materializeSites(options: MaterializeSitesOptions): MaterializeSitesResult {
   const paths = getSitesPaths(options.home);
   const actions: SitesAction[] = [];
-  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir]) {
+  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir, paths.toolsDir, paths.environmentsDir, paths.secretsDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
   }
   const data = readArtifactCatalog(options.home);
@@ -765,6 +783,9 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.artifactsIndexPath, options.dryRun, 'Artifacts site generated');
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
   addFileAction(actions, paths.configurationIndexPath, options.dryRun, 'Configuration site generated');
+  addFileAction(actions, paths.toolsIndexPath, options.dryRun, 'Tools site generated');
+  addFileAction(actions, paths.environmentsIndexPath, options.dryRun, 'Environments site generated');
+  addFileAction(actions, paths.secretsIndexPath, options.dryRun, 'Secrets site generated');
   addFileAction(actions, paths.configurationSnapshotPath, options.dryRun, 'Configuration snapshot generated');
   if (!options.dryRun) {
     fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
@@ -784,6 +805,9 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     docsIndexPath: paths.docsIndexPath,
     configurationIndexPath: paths.configurationIndexPath,
     configurationSnapshotPath: paths.configurationSnapshotPath,
+    toolsIndexPath: paths.toolsIndexPath,
+    environmentsIndexPath: paths.environmentsIndexPath,
+    secretsIndexPath: paths.secretsIndexPath,
     data,
     actions,
   };

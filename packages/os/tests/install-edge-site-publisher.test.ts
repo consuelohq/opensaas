@@ -88,6 +88,9 @@ function makeHome(html = '<!doctype html><title>Internal workspace</title><main>
     ['diffs', 'index.html'],
     ['docs', 'index.html'],
     ['configuration', 'index.html'],
+    ['tools', 'index.html'],
+    ['environments', 'index.html'],
+    ['secrets', 'index.html'],
   ];
   for (const sitePath of sitePaths) {
     const filePath = path.join(home, 'sites', ...sitePath);
@@ -129,8 +132,11 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
+      'https://internal.consuelohq.com/tools',
+      'https://internal.consuelohq.com/environments',
+      'https://internal.consuelohq.com/secrets',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'diffs', 'docs', 'configuration']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
     expect(first.routeSql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
@@ -139,6 +145,9 @@ contractDescribe('install edge site publisher', () => {
     expect(first.routeSql).toContain('\"pathPrefix\":\"/diffs\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/docs\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/configuration\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/tools\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/environments\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/secrets\"');
     expect(first.routeSql).toContain('\"location\":\"/configuration\"');
     expect(first.routeSql).toMatch(/static-shell/);
   });
@@ -199,6 +208,9 @@ contractDescribe('install edge site publisher', () => {
         'https://internal.consuelohq.com/diffs',
         'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',
+        'https://internal.consuelohq.com/tools',
+        'https://internal.consuelohq.com/environments',
+        'https://internal.consuelohq.com/secrets',
       ],
     });
     expect(fs.existsSync(result.logPath)).toBe(true);

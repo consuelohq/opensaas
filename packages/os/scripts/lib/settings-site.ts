@@ -1,19 +1,41 @@
-export type ConfigurationSectionId =
+export type ConfigurationPageId =
   | 'configuration'
-  | 'connections'
   | 'tools'
-  | 'skills'
-  | 'run-books'
-  | 'capabilities';
+  | 'environments'
+  | 'secrets';
 
-const CONFIGURATION_SECTIONS: Array<{ id: ConfigurationSectionId; label: string }> = [
-  { id: 'configuration', label: 'Configuration' },
-  { id: 'connections', label: 'Connections' },
-  { id: 'tools', label: 'Tools' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'run-books', label: 'Run Books' },
-  { id: 'capabilities', label: 'Capabilities' },
+const CONFIGURATION_PAGES: Array<{
+  id: ConfigurationPageId;
+  label: string;
+  href: string;
+}> = [
+  { id: 'configuration', label: 'Overview', href: '/configuration' },
+  { id: 'tools', label: 'Tools', href: '/tools' },
+  { id: 'environments', label: 'Environments', href: '/environments' },
+  { id: 'secrets', label: 'Secrets', href: '/secrets' },
 ];
+
+const PAGE_COPY: Record<ConfigurationPageId, {
+  title: string;
+  description: string;
+}> = {
+  configuration: {
+    title: 'Configuration',
+    description: 'See what is connected to your workspace and what agents can use here.',
+  },
+  tools: {
+    title: 'Tools',
+    description: 'Control the tools, skills, and workflows available to agents in this workspace.',
+  },
+  environments: {
+    title: 'Environments',
+    description: 'Organize configuration by workspace, node, and runtime without exposing private values in the public shell.',
+  },
+  secrets: {
+    title: 'Secrets',
+    description: 'Connect credentials to the nodes and tools that need them without exposing secret values to agents.',
+  },
+};
 
 function escapeHtml(value: string): string {
   return value
@@ -24,10 +46,10 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function renderNav(activeSection: ConfigurationSectionId = 'configuration'): string {
-  return `<nav class="nav" aria-label="Configuration navigation">${CONFIGURATION_SECTIONS.map((section) => {
-    const active = section.id === activeSection ? ' class="is-active"' : '';
-    return `<a href="#${section.id}"${active}>${escapeHtml(section.label)}</a>`;
+function renderNav(activePage: ConfigurationPageId): string {
+  return `<nav class="nav" aria-label="Configuration navigation">${CONFIGURATION_PAGES.map((page) => {
+    const active = page.id === activePage ? ' class="is-active" aria-current="page"' : '';
+    return `<a href="${page.href}"${active}>${escapeHtml(page.label)}</a>`;
   }).join('')}</nav>`;
 }
 
@@ -72,7 +94,9 @@ function configurationStyles(): string {
     .nav { display: grid; gap: 8px; }
     .nav a { color: var(--site-color-muted); text-decoration: none; font-size: 14px; padding: 6px 8px; border-left: 2px solid transparent; }
     .nav a:hover, .nav a.is-active { color: var(--site-color-accent); border-left-color: var(--site-color-accent); }
-    .content { padding: clamp(24px, 4vw, 48px); display: grid; gap: 42px; }
+    .nav a:focus:not(:focus-visible) { outline: none; }
+    .nav a:focus-visible { outline: 2px solid var(--site-color-accent); outline-offset: 2px; }
+    .content { padding: clamp(24px, 4vw, 48px); display: grid; align-content: start; gap: 42px; }
     h1, h2, h3, p, dl, dd, dt, ul, li { margin: 0; }
     h1 { font-size: clamp(34px, 5vw, 56px); line-height: 0.95; font-weight: 500; }
     h2 { font-size: 24px; font-weight: 500; }
@@ -108,6 +132,9 @@ function configurationStyles(): string {
 function configurationClientScript(): string {
   return `
     const byId = (id) => document.getElementById(id);
+    const setHtml = (id, value) => { const element = byId(id); if (element) element.innerHTML = value; };
+    const setText = (id, value) => { const element = byId(id); if (element) element.textContent = value; };
+    const setHidden = (id, value) => { const element = byId(id); if (element) element.hidden = value; };
     const escapeHtml = (value) => String(value ?? '')
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')
@@ -143,20 +170,24 @@ function configurationClientScript(): string {
             const payload = await response.json();
             if (!payload || typeof payload !== 'object' || payload.ok === false || !payload.snapshot) throw new Error('invalid overlay response');
             renderSnapshot(payload.snapshot);
-            byId('toggle-status').textContent = 'Updated ' + kind + ' ' + name + '.';
+            setText('toggle-status', 'Updated ' + kind + ' ' + name + '.');
           } catch {
             target.checked = !requested;
             target.disabled = false;
-            byId('toggle-status').textContent = 'Update denied or unavailable. Use the signed gateway or local Configuration CLI.';
+            setText('toggle-status', 'Update denied or unavailable. Use the signed gateway or local Configuration CLI.');
           }
         });
       });
     }
 
+    function toggleRow(kind, name, enabled, category) {
+      return '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="' + escapeHtml(kind) + '" data-name="' + escapeHtml(name) + '" ' + (enabled ? 'checked' : '') + '> ' + escapeHtml(name) + '</label></td><td>' + escapeHtml(kind) + '</td><td>' + pill(enabled ? 'connected' : 'disabled') + '</td><td>' + (category ? '<code>' + escapeHtml(category) + '</code>' : '<span class="muted">—</span>') + '</td></tr>';
+    }
+
     function renderSnapshot(snapshot) {
       const workspace = snapshot.workspace || {};
       const overlay = snapshot.overlay || {};
-      byId('configuration-details').innerHTML = [
+      setHtml('configuration-details', [
         detail('Mode', workspace.mode || 'unknown'),
         detail('Workspace host', workspace.workspaceHost || 'not configured', true),
         detail('Workspace slug', workspace.workspaceSlug || 'not configured'),
@@ -165,36 +196,32 @@ function configurationClientScript(): string {
         detail('MCP URL', workspace.mcpUrl || 'not configured', true),
         detail('Generated', snapshot.generatedAt || 'unknown', true),
         detail('Overlay updated', overlay.updatedAt || 'never', true),
-      ].join('');
+      ].join(''));
 
       const cloud = Array.isArray(snapshot.cloudConnectors) ? snapshot.cloudConnectors : [];
-      byId('cloud-agent-rows').innerHTML = cloud.length ? cloud.map((connector) => '<tr><td>' + escapeHtml(connector.label) + '</td><td>' + escapeHtml(connector.kind) + '</td><td>' + pill(connector.status) + '</td><td>' + escapeHtml(connector.placeholder ? 'Coming soon' : 'Active connector') + '</td><td><code>' + escapeHtml(connector.mcpUrl || '—') + '</code></td></tr>').join('') : emptyRow(5, 'No cloud agents configured.');
+      setHtml('cloud-agent-rows', cloud.length ? cloud.map((connector) => '<tr><td>' + escapeHtml(connector.label) + '</td><td>' + escapeHtml(connector.kind) + '</td><td>' + pill(connector.status) + '</td><td>' + escapeHtml(connector.placeholder ? 'Coming soon' : 'Active connector') + '</td><td><code>' + escapeHtml(connector.mcpUrl || '—') + '</code></td></tr>').join('') : emptyRow(5, 'No cloud agents configured.'));
 
       const local = Array.isArray(snapshot.localAgents) ? snapshot.localAgents : [];
-      byId('local-agent-rows').innerHTML = local.length ? local.map((agent) => '<tr><td>' + escapeHtml(agent.label) + '</td><td>' + escapeHtml(agent.kind) + '</td><td>' + pill(agent.status) + '</td><td>' + escapeHtml(agent.detected ? 'Detected' : 'Not detected') + '</td><td>' + escapeHtml(agent.message || 'Connection not verified.') + '</td></tr>').join('') : emptyRow(5, 'No local agents detected on this node.');
+      setHtml('local-agent-rows', local.length ? local.map((agent) => '<tr><td>' + escapeHtml(agent.label) + '</td><td>' + escapeHtml(agent.kind) + '</td><td>' + pill(agent.status) + '</td><td>' + escapeHtml(agent.detected ? 'Detected' : 'Not detected') + '</td><td>' + escapeHtml(agent.message || 'Connection not verified.') + '</td></tr>').join('') : emptyRow(5, 'No local agents detected on this node.'));
 
       const tools = Array.isArray(snapshot.tools) ? snapshot.tools : [];
-      byId('tool-summary').innerHTML = detail('Enabled tools', String(tools.filter((tool) => tool.enabled).length)) + detail('Disabled tools', String((overlay.disabledTools || []).length));
-      byId('tool-rows').innerHTML = tools.length ? tools.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category)).join('') : emptyRow(4, 'No tools found.');
+      setHtml('tool-summary', detail('Enabled tools', String(tools.filter((tool) => tool.enabled).length)) + detail('Disabled tools', String((overlay.disabledTools || []).length)));
+      setHtml('tool-rows', tools.length ? tools.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category)).join('') : emptyRow(4, 'No tools found.'));
 
       const skills = Array.isArray(snapshot.skills) ? snapshot.skills : [];
-      byId('skill-summary').innerHTML = detail('Enabled skills', String(skills.filter((skill) => skill.enabled).length)) + detail('Disabled skills', String((overlay.disabledSkills || []).length));
-      byId('skill-rows').innerHTML = skills.length ? skills.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category)).join('') : emptyRow(4, 'No skills found.');
+      setHtml('skill-summary', detail('Enabled skills', String(skills.filter((skill) => skill.enabled).length)) + detail('Disabled skills', String((overlay.disabledSkills || []).length)));
+      setHtml('skill-rows', skills.length ? skills.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category)).join('') : emptyRow(4, 'No skills found.'));
 
       const workflows = Array.isArray(snapshot.runBooks) ? snapshot.runBooks : [];
-      byId('workflow-rows').innerHTML = workflows.length ? workflows.map((workflow) => '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="workflow" data-name="' + escapeHtml(workflow.id) + '" ' + (workflow.enabled ? 'checked' : '') + '> ' + escapeHtml(workflow.id) + '</label></td><td><code>' + escapeHtml((workflow.aliases || []).join(', ') || '—') + '</code></td><td>' + pill(workflow.enabled ? 'connected' : 'disabled') + '</td><td>' + escapeHtml(workflow.roleCount) + '</td><td>' + escapeHtml(workflow.toolCount) + '</td></tr>').join('') : emptyRow(5, 'No workflow bundles found.');
+      setHtml('workflow-rows', workflows.length ? workflows.map((workflow) => '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="workflow" data-name="' + escapeHtml(workflow.id) + '" ' + (workflow.enabled ? 'checked' : '') + '> ' + escapeHtml(workflow.id) + '</label></td><td><code>' + escapeHtml((workflow.aliases || []).join(', ') || '—') + '</code></td><td>' + pill(workflow.enabled ? 'connected' : 'disabled') + '</td><td>' + escapeHtml(workflow.roleCount) + '</td><td>' + escapeHtml(workflow.toolCount) + '</td></tr>').join('') : emptyRow(5, 'No workflow bundles found.'));
 
       const capabilities = Array.isArray(snapshot.capabilities) ? snapshot.capabilities : [];
-      byId('capability-rows').innerHTML = capabilities.length ? capabilities.map((capability) => '<tr><td>' + escapeHtml(capability.title) + '</td><td><code>' + escapeHtml(capability.id) + '</code></td><td>' + pill(capability.status) + '</td><td>' + escapeHtml(capability.message) + '</td></tr>').join('') : emptyRow(4, 'No capability checks returned.');
+      setHtml('capability-rows', capabilities.length ? capabilities.map((capability) => '<tr><td>' + escapeHtml(capability.title) + '</td><td><code>' + escapeHtml(capability.id) + '</code></td><td>' + pill(capability.status) + '</td><td>' + escapeHtml(capability.message) + '</td></tr>').join('') : emptyRow(4, 'No capability checks returned.'));
 
-      byId('configuration-loading').hidden = true;
-      byId('configuration-error').hidden = true;
-      byId('configuration-content').hidden = false;
+      setHidden('configuration-loading', true);
+      setHidden('configuration-error', true);
+      setHidden('configuration-content', false);
       bindToggles();
-    }
-
-    function toggleRow(kind, name, enabled, category) {
-      return '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="' + escapeHtml(kind) + '" data-name="' + escapeHtml(name) + '" ' + (enabled ? 'checked' : '') + '> ' + escapeHtml(name) + '</label></td><td>' + escapeHtml(kind) + '</td><td>' + pill(enabled ? 'connected' : 'disabled') + '</td><td>' + (category ? '<code>' + escapeHtml(category) + '</code>' : '<span class="muted">—</span>') + '</td></tr>';
     }
 
     async function loadConfiguration() {
@@ -205,9 +232,9 @@ function configurationClientScript(): string {
         if (!payload || typeof payload !== 'object' || payload.ok === false || !payload.snapshot) throw new Error('invalid gateway configuration snapshot');
         renderSnapshot(payload.snapshot);
       } catch {
-        byId('configuration-loading').hidden = true;
-        byId('configuration-content').hidden = true;
-        byId('configuration-error').hidden = false;
+        setHidden('configuration-loading', true);
+        setHidden('configuration-content', true);
+        setHidden('configuration-error', false);
       }
     }
 
@@ -215,36 +242,8 @@ function configurationClientScript(): string {
   `;
 }
 
-export function renderSettingsSite(): string {
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Configuration - Consuelo OS</title>
-  <style>${configurationStyles()}</style>
-</head>
-<body>
-  <div class="shell">
-    <aside class="sidebar" aria-label="Configuration sidebar">
-      <div class="identity">Consuelo OS</div>
-      ${renderNav()}
-      <p class="muted">Private workspace state loads through the authenticated Configuration gateway.</p>
-    </aside>
-    <main class="content">
-      <header class="hero">
-        <h1>Configuration</h1>
-        <p>See what is connected to your workspace and what agents can use here.</p>
-      </header>
-      <section id="configuration-loading" class="state-panel" aria-live="polite">
-        <strong>Loading workspace configuration</strong>
-        <p class="muted">Checking your workspace session and node connection.</p>
-      </section>
-      <section id="configuration-error" class="state-panel" aria-live="polite" hidden>
-        <strong>Configuration unavailable</strong>
-        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
-      </section>
-      <div id="configuration-content" hidden>
+function renderOverviewPanels(): string {
+  return `
         <section class="panel-section" id="configuration">
           <header class="panel-header"><h2>Configuration</h2><p>Workspace and node configuration loaded through the signed gateway.</p></header>
           <dl class="detail-grid" id="configuration-details"></dl>
@@ -255,6 +254,15 @@ export function renderSettingsSite(): string {
           <div class="subsection"><h3>Cloud agents</h3><div class="table-wrap"><table><thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Notes</th><th>MCP URL</th></tr></thead><tbody id="cloud-agent-rows"></tbody></table></div></div>
           <div class="subsection"><h3>Local agents</h3><div class="table-wrap"><table><thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Detection</th><th>Notes</th></tr></thead><tbody id="local-agent-rows"></tbody></table></div></div>
         </section>
+        ${renderToolPanels()}
+        <section class="panel-section" id="capabilities">
+          <header class="panel-header"><h2>Capabilities</h2><p>Node capability checks for this OS home.</p></header>
+          <div class="table-wrap"><table><thead><tr><th>Capability</th><th>ID</th><th>Status</th><th>Message</th></tr></thead><tbody id="capability-rows"></tbody></table></div>
+        </section>`;
+}
+
+function renderToolPanels(): string {
+  return `
         <section class="panel-section" id="tools">
           <header class="panel-header"><h2>Tools</h2><p>Enable or disable facade tools without editing generated manifests.</p></header>
           <dl class="detail-grid" id="tool-summary"></dl>
@@ -268,22 +276,85 @@ export function renderSettingsSite(): string {
         <section class="panel-section" id="run-books">
           <header class="panel-header"><h2>Run Books</h2><p>Disabled workflow bundles are rejected by workflow intent routing.</p></header>
           <div class="table-wrap"><table><thead><tr><th>Workflow</th><th>Aliases</th><th>Status</th><th>Roles</th><th>Tools</th></tr></thead><tbody id="workflow-rows"></tbody></table></div>
-        </section>
-        <section class="panel-section" id="capabilities">
-          <header class="panel-header"><h2>Capabilities</h2><p>Node capability checks for this OS home.</p></header>
-          <div class="table-wrap"><table><thead><tr><th>Capability</th><th>ID</th><th>Status</th><th>Message</th></tr></thead><tbody id="capability-rows"></tbody></table></div>
-        </section>
-      </div>
+        </section>`;
+}
+
+function renderPlannedPanel(page: 'environments' | 'secrets'): string {
+  if (page === 'environments') {
+    return `
+      <section class="state-panel" aria-live="polite">
+        <strong>Environment registry is not available yet</strong>
+        <p class="muted">This route is ready for the environment model. No environment values or private workspace state are embedded in this public shell.</p>
+      </section>`;
+  }
+
+  return `
+      <section class="state-panel" aria-live="polite">
+        <strong>Secret connections are not available yet</strong>
+        <p class="muted">This route is ready for the credential broker. Never paste a credential into an agent conversation.</p>
+      </section>`;
+}
+
+function renderHydratedContent(page: 'configuration' | 'tools'): string {
+  const panels = page === 'tools' ? renderToolPanels() : renderOverviewPanels();
+  return `
+      <section id="configuration-loading" class="state-panel" aria-live="polite">
+        <strong>Loading workspace configuration</strong>
+        <p class="muted">Checking your workspace session and node connection.</p>
+      </section>
+      <section id="configuration-error" class="state-panel" aria-live="polite" hidden>
+        <strong>Configuration unavailable</strong>
+        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
+      </section>
+      <div id="configuration-content" hidden>${panels}</div>`;
+}
+
+export function renderConfigurationSite(page: ConfigurationPageId = 'configuration'): string {
+  const copy = PAGE_COPY[page];
+  const requiresConfigurationSnapshot = page === 'configuration' || page === 'tools';
+  const content = requiresConfigurationSnapshot
+    ? renderHydratedContent(page)
+    : renderPlannedPanel(page);
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${copy.title} - Consuelo OS</title>
+  <style>${configurationStyles()}</style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Configuration sidebar">
+      <div class="identity">Consuelo OS</div>
+      ${renderNav(page)}
+      <p class="muted">Private workspace state loads through authenticated Configuration APIs.</p>
+    </aside>
+    <main class="content">
+      <header class="hero">
+        <h1>${copy.title}</h1>
+        <p>${copy.description}</p>
+      </header>
+      ${content}
     </main>
   </div>
-  <script>${configurationClientScript()}</script>
+  ${requiresConfigurationSnapshot ? `<script>${configurationClientScript()}</script>` : ''}
 </body>
 </html>`;
 }
 
-export function buildSettingsSite(_home?: string): string {
-  return renderSettingsSite();
+export function renderSettingsSite(): string {
+  return renderConfigurationSite('configuration');
 }
 
-export const renderConfigurationSite = renderSettingsSite;
-export const buildConfigurationSite = buildSettingsSite;
+export function buildConfigurationSite(
+  _home?: string,
+  page: ConfigurationPageId = 'configuration',
+): string {
+  return renderConfigurationSite(page);
+}
+
+export function buildSettingsSite(_home?: string): string {
+  return renderConfigurationSite('configuration');
+}

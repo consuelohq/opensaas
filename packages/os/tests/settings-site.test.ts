@@ -5,7 +5,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { buildSettingsSnapshot } from '../scripts/lib/settings-snapshot';
-import { renderSettingsSite } from '../scripts/lib/settings-site';
+import { renderConfigurationSite, renderSettingsSite } from '../scripts/lib/settings-site';
 
 describe('configuration site', () => {
   it('renders a public shell without embedding private workspace state', () => {
@@ -34,12 +34,10 @@ describe('configuration site', () => {
 
     expect(html).toContain('<title>Configuration - Consuelo OS</title>');
     expect(html).toContain('aria-label="Configuration navigation"');
-    expect(html).toContain('href="#configuration"');
-    expect(html).toContain('href="#connections"');
-    expect(html).toContain('href="#tools"');
-    expect(html).toContain('href="#skills"');
-    expect(html).toContain('href="#run-books"');
-    expect(html).toContain('href="#capabilities"');
+    expect(html).toContain('href="/configuration" class="is-active"');
+    expect(html).toContain('href="/tools"');
+    expect(html).toContain('href="/environments"');
+    expect(html).toContain('href="/secrets"');
     expect(html).toContain('/gateway/configuration/snapshot');
     expect(html).toContain('Loading workspace configuration');
     expect(html).toContain('Configuration unavailable');
@@ -55,6 +53,38 @@ describe('configuration site', () => {
     const script = html.match(/<script>([\s\S]*)<\/script>/)?.[1];
     expect(script).toBeTruthy();
     expect(() => new Function(script!)).not.toThrow();
+  });
+
+
+  it('renders route-aware Tools, Environments, and Secrets shells without private embedded data', () => {
+    const toolsHtml = renderConfigurationSite('tools');
+    const environmentsHtml = renderConfigurationSite('environments');
+    const secretsHtml = renderConfigurationSite('secrets');
+
+    expect(toolsHtml).toContain('<title>Tools - Consuelo OS</title>');
+    expect(toolsHtml).toContain('<h1>Tools</h1>');
+    expect(toolsHtml).toContain('href="/tools" class="is-active"');
+    expect(toolsHtml).toContain('/gateway/configuration/snapshot');
+    expect(toolsHtml).toContain('/gateway/configuration/overlay');
+    expect(toolsHtml).toContain('id="tools"');
+    expect(toolsHtml).toContain('id="skills"');
+    expect(toolsHtml).toContain('id="run-books"');
+    expect(toolsHtml).not.toContain('id="connections"');
+    expect(toolsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
+
+    expect(environmentsHtml).toContain('<title>Environments - Consuelo OS</title>');
+    expect(environmentsHtml).toContain('<h1>Environments</h1>');
+    expect(environmentsHtml).toContain('href="/environments" class="is-active"');
+    expect(environmentsHtml).toContain('Environment registry is not available yet');
+    expect(environmentsHtml).not.toContain('/gateway/configuration/snapshot');
+    expect(environmentsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
+
+    expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
+    expect(secretsHtml).toContain('<h1>Secrets</h1>');
+    expect(secretsHtml).toContain('href="/secrets" class="is-active"');
+    expect(secretsHtml).toContain('Secret connections are not available yet');
+    expect(secretsHtml).not.toContain('/gateway/configuration/snapshot');
+    expect(secretsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
   });
 
   it('marks ChatGPT connected when chatgpt-mcp.json exists', () => {

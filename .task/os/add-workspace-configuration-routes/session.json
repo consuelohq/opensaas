@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ba76bcbe8457",
+  "tmuxSession": "opensaas-os-add-workspace-configuration-routes-ba76bcbe",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-configuration-routes",
+  "branch": "task/os/add-workspace-configuration-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-configuration-routes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-configuration-routes",
+  "prNumber": 1529,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1529",
+  "createdAt": "2026-07-18T16:18:24.907Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-configuration-routes/.task/os/add-workspace-configuration-routes/session.json"
+}
