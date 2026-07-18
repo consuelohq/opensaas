@@ -5207,14 +5207,14 @@
     "sessionRequired": false
   },
   {
-    "name": "design.publish",
+    "name": "artifacts.publish",
     "methodPath": [
-      "design",
+      "artifacts",
       "publish"
     ],
-    "description": "publish a design artifact through private Tailscale Serve and update the design wiki archive",
-    "category": "office",
-    "underlying": "workspace office publish",
+    "description": "publish a design artifact through private Tailscale Serve and update the artifact catalog",
+    "category": "artifacts",
+    "underlying": "OS artifacts publish",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5222,10 +5222,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 120000,
-    "inputSchema": "DesignPublishInput",
+    "inputSchema": "ArtifactsPublishInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "publish",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5273,21 +5273,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.publish",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.publish",
+    "workflowAliases": []
   },
   {
-    "name": "design.refresh",
+    "name": "artifacts.refresh",
     "methodPath": [
-      "design",
+      "artifacts",
       "refresh"
     ],
-    "description": "regenerate and publish the existing Consuelo Wiki archive without adding an artifact",
-    "category": "office",
-    "underlying": "workspace office refresh",
+    "description": "regenerate and publish the existing Consuelo Artifacts archive without adding an artifact",
+    "category": "artifacts",
+    "underlying": "OS artifacts refresh",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5295,10 +5292,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 120000,
-    "inputSchema": "DesignArchiveRefreshInput",
+    "inputSchema": "ArtifactsRefreshInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "refresh",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5315,21 +5312,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.refresh",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.refresh",
+    "workflowAliases": []
   },
   {
-    "name": "office.run",
+    "name": "artifacts.run",
     "methodPath": [
-      "office",
+      "artifacts",
       "run"
     ],
     "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
-    "category": "office",
-    "underlying": "workspace office run",
+    "category": "artifacts",
+    "underlying": "OS artifacts run",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5337,10 +5331,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeUiInput",
+    "inputSchema": "ArtifactsUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "run",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5351,21 +5345,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.run",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.run",
+    "workflowAliases": []
   },
   {
-    "name": "office.getDesignSystem",
+    "name": "artifacts.getDesignSystem",
     "methodPath": [
-      "office",
+      "artifacts",
       "getDesignSystem"
     ],
-    "description": "return base Consuelo DESIGN.md and office AGENTS.md only",
-    "category": "office",
-    "underlying": "workspace office get-design-system",
+    "description": "return base Consuelo DESIGN.md and artifacts AGENTS.md only",
+    "category": "artifacts",
+    "underlying": "OS artifacts get-design-system",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5373,10 +5364,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "get-design-system",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5385,21 +5376,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.designSystem.get",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.designSystem.get",
+    "workflowAliases": []
   },
   {
-    "name": "office.listSkills",
+    "name": "artifacts.listSkills",
     "methodPath": [
-      "office",
+      "artifacts",
       "listSkills"
     ],
     "description": "list upstream Open Design skills and Consuelo workflow mappings",
-    "category": "office",
-    "underlying": "workspace office list-skills",
+    "category": "artifacts",
+    "underlying": "OS artifacts list-skills",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5407,10 +5395,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "list-skills",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5419,21 +5407,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.skills.list",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.skills.list",
+    "workflowAliases": []
   },
   {
-    "name": "office.listDesignSystems",
+    "name": "artifacts.listDesignSystems",
     "methodPath": [
-      "office",
+      "artifacts",
       "listDesignSystems"
     ],
     "description": "list Consuelo default design system and upstream reference systems",
-    "category": "office",
-    "underlying": "workspace office list-design-systems",
+    "category": "artifacts",
+    "underlying": "OS artifacts list-design-systems",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5441,10 +5426,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "list-design-systems",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5453,21 +5438,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.designSystems.list",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.designSystems.list",
+    "workflowAliases": []
   },
   {
-    "name": "office.upstreamStatus",
+    "name": "artifacts.upstreamStatus",
     "methodPath": [
-      "office",
+      "artifacts",
       "upstreamStatus"
     ],
     "description": "show vendored Open Design metadata and runtime requirements",
-    "category": "office",
-    "underlying": "workspace office upstream-status",
+    "category": "artifacts",
+    "underlying": "OS artifacts upstream-status",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5475,10 +5457,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "upstream-status",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5487,21 +5469,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.upstreamStatus",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.upstreamStatus",
+    "workflowAliases": []
   },
   {
-    "name": "office.railwayCheck",
+    "name": "artifacts.railwayCheck",
     "methodPath": [
-      "office",
+      "artifacts",
       "railwayCheck"
     ],
-    "description": "verify office is excluded from Railway deploy paths",
-    "category": "office",
-    "underlying": "workspace office railway:check",
+    "description": "verify artifacts is excluded from Railway deploy paths",
+    "category": "artifacts",
+    "underlying": "OS artifacts railway:check",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5509,10 +5488,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "railway:check",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5521,21 +5500,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.railwayCheck",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.railwayCheck",
+    "workflowAliases": []
   },
   {
-    "name": "office.check",
+    "name": "artifacts.check",
     "methodPath": [
-      "office",
+      "artifacts",
       "check"
     ],
-    "description": "run office package boundary and Railway checks",
-    "category": "office",
-    "underlying": "workspace office check",
+    "description": "run artifacts package boundary and Railway checks",
+    "category": "artifacts",
+    "underlying": "OS artifacts check",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -5543,10 +5519,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "check",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5555,21 +5531,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.check",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.check",
+    "workflowAliases": []
   },
   {
-    "name": "office.generateWebsite",
+    "name": "artifacts.generateWebsite",
     "methodPath": [
-      "office",
+      "artifacts",
       "generateWebsite"
     ],
     "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
-    "category": "office",
-    "underlying": "workspace office generate-website",
+    "category": "artifacts",
+    "underlying": "OS artifacts generate-website",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5577,10 +5550,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeSessionInput",
+    "inputSchema": "ArtifactsSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "generate-website",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5607,21 +5580,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.generate.website",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.generate.website",
+    "workflowAliases": []
   },
   {
-    "name": "office.generateDemo",
+    "name": "artifacts.generateDemo",
     "methodPath": [
-      "office",
+      "artifacts",
       "generateDemo"
     ],
     "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
-    "category": "office",
-    "underlying": "workspace office generate-demo",
+    "category": "artifacts",
+    "underlying": "OS artifacts generate-demo",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5629,10 +5599,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeSessionInput",
+    "inputSchema": "ArtifactsSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "generate-demo",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5659,21 +5629,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.generate.demo",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.generate.demo",
+    "workflowAliases": []
   },
   {
-    "name": "office.generateImageBrief",
+    "name": "artifacts.generateImageBrief",
     "methodPath": [
-      "office",
+      "artifacts",
       "generateImageBrief"
     ],
     "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
-    "category": "office",
-    "underlying": "workspace office generate-image-brief",
+    "category": "artifacts",
+    "underlying": "OS artifacts generate-image-brief",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5681,10 +5648,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeSessionInput",
+    "inputSchema": "ArtifactsSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "generate-image-brief",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5711,21 +5678,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.generate.imageBrief",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.generate.imageBrief",
+    "workflowAliases": []
   },
   {
-    "name": "office.generateDigitalEguide",
+    "name": "artifacts.generateDigitalEguide",
     "methodPath": [
-      "office",
+      "artifacts",
       "generateDigitalEguide"
     ],
     "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
-    "category": "office",
-    "underlying": "workspace office generate-digital-eguide",
+    "category": "artifacts",
+    "underlying": "OS artifacts generate-digital-eguide",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5733,10 +5697,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeDigitalEguideInput",
+    "inputSchema": "ArtifactsDigitalEguideInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "generate-digital-eguide",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5768,21 +5732,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.generate.digitalEguide",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.generate.digitalEguide",
+    "workflowAliases": []
   },
   {
-    "name": "office.generateEmail",
+    "name": "artifacts.generateEmail",
     "methodPath": [
-      "office",
+      "artifacts",
       "generateEmail"
     ],
     "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
-    "category": "office",
-    "underlying": "workspace office generate-email",
+    "category": "artifacts",
+    "underlying": "OS artifacts generate-email",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5790,10 +5751,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeSessionInput",
+    "inputSchema": "ArtifactsSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "generate-email",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5820,21 +5781,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.generate.email",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.generate.email",
+    "workflowAliases": []
   },
   {
-    "name": "office.generateMotionFrame",
+    "name": "artifacts.generateMotionFrame",
     "methodPath": [
-      "office",
+      "artifacts",
       "generateMotionFrame"
     ],
     "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
-    "category": "office",
-    "underlying": "workspace office generate-motion-frame",
+    "category": "artifacts",
+    "underlying": "OS artifacts generate-motion-frame",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5842,10 +5800,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeSessionInput",
+    "inputSchema": "ArtifactsSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "generate-motion-frame",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5872,21 +5830,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.generate.motionFrame",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.generate.motionFrame",
+    "workflowAliases": []
   },
   {
-    "name": "office.renderHyperframes",
+    "name": "artifacts.renderHyperframes",
     "methodPath": [
-      "office",
+      "artifacts",
       "renderHyperframes"
     ],
     "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
-    "category": "office",
-    "underlying": "workspace office render-hyperframes",
+    "category": "artifacts",
+    "underlying": "OS artifacts render-hyperframes",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5894,10 +5849,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "OfficeSessionInput",
+    "inputSchema": "ArtifactsSessionInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "render-hyperframes",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5924,21 +5879,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.render.hyperframes",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.render.hyperframes",
+    "workflowAliases": []
   },
   {
-    "name": "office.uiBg",
+    "name": "artifacts.uiBg",
     "methodPath": [
-      "office",
+      "artifacts",
       "uiBg"
     ],
     "description": "start Open Design managed runtimes in the background through the Bun facade",
-    "category": "office",
-    "underlying": "workspace office ui:bg",
+    "category": "artifacts",
+    "underlying": "OS artifacts ui:bg",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5946,10 +5898,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 300000,
-    "inputSchema": "OfficeUiInput",
+    "inputSchema": "ArtifactsUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "ui:bg",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5960,21 +5912,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.ui.background",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.ui.background",
+    "workflowAliases": []
   },
   {
-    "name": "office.uiStop",
+    "name": "artifacts.uiStop",
     "methodPath": [
-      "office",
+      "artifacts",
       "uiStop"
     ],
     "description": "stop Open Design managed runtimes through the Bun facade",
-    "category": "office",
-    "underlying": "workspace office ui:stop",
+    "category": "artifacts",
+    "underlying": "OS artifacts ui:stop",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -5982,10 +5931,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 120000,
-    "inputSchema": "OfficeUiInput",
+    "inputSchema": "ArtifactsUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "ui:stop",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -5996,21 +5945,18 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.ui.stop",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.ui.stop",
+    "workflowAliases": []
   },
   {
-    "name": "office.uiStatus",
+    "name": "artifacts.uiStatus",
     "methodPath": [
-      "office",
+      "artifacts",
       "uiStatus"
     ],
     "description": "show Open Design managed runtime status through the Bun facade",
-    "category": "office",
-    "underlying": "workspace office ui:status",
+    "category": "artifacts",
+    "underlying": "OS artifacts ui:status",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -6018,10 +5964,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "ui:status",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6030,21 +5976,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.ui.status",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.ui.status",
+    "workflowAliases": []
   },
   {
-    "name": "office.uiLogs",
+    "name": "artifacts.uiLogs",
     "methodPath": [
-      "office",
+      "artifacts",
       "uiLogs"
     ],
     "description": "show Open Design managed runtime logs through the Bun facade",
-    "category": "office",
-    "underlying": "workspace office ui:logs",
+    "category": "artifacts",
+    "underlying": "OS artifacts ui:logs",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -6052,10 +5995,10 @@
       "safeToRetry": true
     },
     "defaultTimeout": 30000,
-    "inputSchema": "OfficeInput",
+    "inputSchema": "ArtifactsInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "ui:logs",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6064,21 +6007,18 @@
     },
     "exampleInput": {},
     "sessionRequired": false,
-    "workflowRole": "office.ui.logs",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.ui.logs",
+    "workflowAliases": []
   },
   {
-    "name": "office.odBuild",
+    "name": "artifacts.odBuild",
     "methodPath": [
-      "office",
+      "artifacts",
       "odBuild"
     ],
     "description": "build the vendored Open Design daemon CLI through the Bun facade",
-    "category": "office",
-    "underlying": "workspace office od:build",
+    "category": "artifacts",
+    "underlying": "OS artifacts od:build",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -6086,10 +6026,10 @@
       "safeToRetry": false
     },
     "defaultTimeout": 300000,
-    "inputSchema": "OfficeUiInput",
+    "inputSchema": "ArtifactsUiInput",
     "outputSchema": "RawOutput",
     "command": {
-      "script": "office",
+      "script": "artifacts",
       "subcommand": "od:build",
       "branchMode": "none",
       "jsonFlag": "--json",
@@ -6100,10 +6040,7 @@
       "dryRun": true
     },
     "sessionRequired": false,
-    "workflowRole": "office.openDesign.build",
-    "workflowAliases": [
-      "design",
-      "sites"
-    ]
+    "workflowRole": "artifacts.openDesign.build",
+    "workflowAliases": []
   }
 ]

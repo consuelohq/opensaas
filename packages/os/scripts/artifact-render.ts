@@ -289,7 +289,7 @@ export function renderConsueloReader(content: ConsueloReaderContent): string {
   const shellId = `${content.template}:${slug(content.title)}`;
   const typedComponents = content.components?.map(renderTypedComponent) ?? [];
   const bodySections = [...content.sections.map(renderSection), ...typedComponents, renderLedger(content)].filter(Boolean).join('\n');
-  const footer = content.footer ?? `Artifact: ${content.title} · Template: ${content.template} · Generated with canonical Consuelo reader shell ${READER_SHELL_VERSION} · /design-wiki`;
+  const footer = content.footer ?? `Artifact: ${content.title} · Template: ${content.template} · Generated with canonical Consuelo reader shell ${READER_SHELL_VERSION} · /artifacts`;
 
   return `<!doctype html>
 <html lang="en">
@@ -329,7 +329,7 @@ export function renderConsueloReader(content: ConsueloReaderContent): string {
   </style>
 </head>
 <body data-reader-shell-version="${escapeHtml(READER_SHELL_VERSION)}" data-reader-shell-template="${escapeHtml(content.template)}">
-  <nav class="reader-nav" aria-label="Spec navigation" data-no-tap-scroll><div class="reader-nav-shell"><a class="reader-brand" href="/design-wiki" aria-label="${escapeHtml(content.title)}" title="${escapeHtml(content.title)}">${escapeHtml(brandTitle)}</a><div class="reader-links">${navLinks.map((item) => `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`).join('')}</div><a class="reader-nav-task" href="${escapeHtml(taskHref)}">Task</a></div></nav>
+  <nav class="reader-nav" aria-label="Spec navigation" data-no-tap-scroll><div class="reader-nav-shell"><a class="reader-brand" href="/artifacts" aria-label="${escapeHtml(content.title)}" title="${escapeHtml(content.title)}">${escapeHtml(brandTitle)}</a><div class="reader-links">${navLinks.map((item) => `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`).join('')}</div><a class="reader-nav-task" href="${escapeHtml(taskHref)}">Task</a></div></nav>
   <nav class="reader-section-rail" aria-label="Section progress" data-no-tap-scroll>${sectionRailLinks(map)}</nav>
   <div class="reader-resume" id="reader-resume" data-auto-dismiss-ms="10000" data-no-tap-scroll>Resume reading <button type="button" data-resume>Continue</button></div>
   <button class="reader-back-to-top" type="button" data-no-tap-scroll aria-label="Back to top"><span class="reader-back-to-top-progress" aria-hidden="true"></span><b>↑</b></button>

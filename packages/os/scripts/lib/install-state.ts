@@ -544,131 +544,6 @@ export function createDefaultConfig(
 }
 
 
-type InstalledSitesPaths = {
-  sitesDir: string;
-  indexPath: string;
-  pagesDir: string;
-  pagesDataDir: string;
-  pagesRegistryPath: string;
-  pagesLeasesPath: string;
-  officeDir: string;
-  officeDataDir: string;
-  officeAssetsDir: string;
-  officeIndexPath: string;
-  officeDataPath: string;
-  tracesDir: string;
-  tracesIndexPath: string;
-  diffsDir: string;
-  diffsIndexPath: string;
-};
-
-type InstalledOfficeSiteData = {
-  version: 1;
-  generatedAt: string;
-  artifacts: unknown[];
-};
-
-function getInstalledSitesPaths(home: string): InstalledSitesPaths {
-  const sitesDir = path.join(home, 'sites');
-  const pagesDir = path.join(sitesDir, 'pages');
-  const pagesDataDir = path.join(sitesDir, '.data', 'pages');
-  const officeDir = path.join(sitesDir, 'office');
-  const officeDataDir = path.join(officeDir, 'data');
-  const officeAssetsDir = path.join(officeDir, 'assets');
-  const tracesDir = path.join(sitesDir, 'traces');
-  const diffsDir = path.join(sitesDir, 'diffs');
-
-  return {
-    sitesDir,
-    indexPath: path.join(sitesDir, 'index.html'),
-    pagesDir,
-    pagesDataDir,
-    pagesRegistryPath: path.join(pagesDataDir, 'registry.json'),
-    pagesLeasesPath: path.join(pagesDataDir, 'leases.json'),
-    officeDir,
-    officeDataDir,
-    officeAssetsDir,
-    officeIndexPath: path.join(officeDir, 'index.html'),
-    officeDataPath: path.join(officeDataDir, 'artifacts.json'),
-    tracesDir,
-    tracesIndexPath: path.join(tracesDir, 'index.html'),
-    diffsDir,
-    diffsIndexPath: path.join(diffsDir, 'index.html'),
-  };
-}
-
-function addProvisionDirectoryAction(
-  actions: ProvisionAction[],
-  dirPath: string,
-  dryRun: boolean,
-): void {
-  const exists = fs.existsSync(dirPath);
-  actions.push({
-    type: 'create_dir',
-    path: dirPath,
-    status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
-    message: exists ? 'sites directory exists' : 'sites directory configured',
-  });
-  if (!dryRun) fs.mkdirSync(dirPath, { recursive: true });
-}
-
-function addProvisionFileAction(
-  actions: ProvisionAction[],
-  filePath: string,
-  dryRun: boolean,
-  message: string,
-): void {
-  const exists = fs.existsSync(filePath);
-  actions.push({
-    type: 'create_file',
-    path: filePath,
-    status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
-    message,
-  });
-}
-
-function buildInstalledSitesIndex(): string {
-  return [
-    '<!doctype html>',
-    '<html lang="en"><head><meta charset="utf-8"><title>Consuelo OS Sites</title></head>',
-    '<body><main><h1>Consuelo OS Sites</h1><nav>',
-    '<a href="/pages/">Pages</a><a href="/office/">Office</a>',
-    '<a href="/traces/">Traces</a><a href="/diffs/">Diffs</a>',
-    '</nav></main></body></html>',
-    '',
-  ].join('\n');
-}
-
-function buildInstalledPagesIndex(): string {
-  return [
-    '<!doctype html>',
-    '<html lang="en"><head><meta charset="utf-8"><title>Pages - Sites</title></head>',
-    '<body><main><h1>Pages</h1><p>No local Sites pages have been published yet.</p></main></body></html>',
-    '',
-  ].join('\n');
-}
-
-function buildInstalledOfficeIndex(data: InstalledOfficeSiteData): string {
-  return [
-    '<!doctype html>',
-    '<html lang="en"><head><meta charset="utf-8"><title>Office - Sites</title></head>',
-    `<body><main><h1>Office</h1><p>${data.artifacts.length} artifacts indexed.</p></main></body></html>`,
-    '',
-  ].join('\n');
-}
-
-function buildInstalledReservedSiteIndex(input: {
-  title: string;
-  description: string;
-}): string {
-  return [
-    '<!doctype html>',
-    `<html lang="en"><head><meta charset="utf-8"><title>${input.title} - Sites</title></head>`,
-    `<body><main><h1>${input.title}</h1><p>${input.description}</p></main></body></html>`,
-    '',
-  ].join('\n');
-}
-
 function materializeSites(input: {
   home: string;
   dbPath: string;
@@ -1028,9 +903,11 @@ function writeInstalledSkillsRegistry(skillsRoot: string, dryRun: boolean): Prov
   }];
 }
 
-function migrateSelectedSkillNames(selectedSkills: readonly string[]): string[] {
-  const migrated = selectedSkills.map((skillName) => skillName === 'office' ? 'sites' : skillName);
-  return [...new Set(migrated)];
+function normalizeSelectedSkillNames(selectedSkills: readonly string[]): string[] {
+  const bundledSkillNames = new Set(
+    listSkillDirs(BUNDLED_SKILLS_ROOT).map((skillDir) => getSkillName(skillDir)),
+  );
+  return [...new Set(selectedSkills.filter((skillName) => bundledSkillNames.has(skillName)))];
 }
 
 function seedBundledSkills(
@@ -1585,7 +1462,7 @@ export function provisionLocalOs(
       }),
     );
   }
-  config.selectedSkills = migrateSelectedSkillNames(
+  config.selectedSkills = normalizeSelectedSkillNames(
     options.selectedSkills ??
     config.selectedSkills ??
     getDefaultSelectedSkillNames(),

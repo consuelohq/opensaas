@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/define-workspace-control-plane-contract",
+  "events": [
+    {
+      "id": "eef57785-3b17-43b5-aa80-f80d57ea6f4f",
+      "occurred_at": "2026-07-16T15:53:58.731Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/senior-engineer.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/define-workspace-control-plane-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/define-workspace-control-plane-contract"
+      }
+    },
+    {
+      "id": "f5e453b6-7f07-4036-82f6-4cc932114848",
+      "occurred_at": "2026-07-16T15:54:39.502Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/define-workspace-control-plane-contract/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/define-workspace-control-plane-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/define-workspace-control-plane-contract"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-16T15:54:39.556Z"
+}

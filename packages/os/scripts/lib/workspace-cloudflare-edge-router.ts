@@ -30,11 +30,18 @@ export type WorkspaceCloudflareEdgeRouteTarget =
       serviceName:
         | 'trace-sites-read-layer'
         | 'trace-sites-live-endpoints'
+        | 'configuration-sites-read-endpoints'
+        | 'configuration-sites-write-endpoints'
         | 'settings-sites-read-endpoints'
         | 'settings-sites-write-endpoints'
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
+    }
+  | {
+      kind: 'redirect';
+      location: string;
+      statusCode: 301 | 302 | 307 | 308;
     };
 
 export type WorkspaceSitesEdgeCache = {
@@ -697,6 +704,19 @@ export const createWorkspaceCloudflareEdgeRouter = (
             status: resolution.status,
             code: resolution.errorCode,
             request,
+          });
+        }
+
+        if (resolution.target.kind === 'redirect') {
+          const suffix = inboundUrl.pathname.slice(resolution.route.length);
+          const location = `${resolution.target.location.replace(/\/$/, '')}${suffix}${inboundUrl.search}`;
+          return new Response(null, {
+            status: resolution.target.statusCode,
+            headers: {
+              location: location || '/',
+              'cache-control': 'public, max-age=86400',
+              'x-consuelo-edge-route-authority': 'legacy-redirect',
+            },
           });
         }
 

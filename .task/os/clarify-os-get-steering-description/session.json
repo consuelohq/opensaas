@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_28b135b88fa4",
+  "tmuxSession": "opensaas-os-clarify-os-get-steering-description-28b135b8",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/clarify-os-get-steering-description",
+  "branch": "task/os/clarify-os-get-steering-description",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-clarify-os-get-steering-description",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-clarify-os-get-steering-description",
+  "prNumber": 1514,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1514",
+  "createdAt": "2026-07-15T17:51:47.970Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-clarify-os-get-steering-description/.task/os/clarify-os-get-steering-description/session.json"
+}

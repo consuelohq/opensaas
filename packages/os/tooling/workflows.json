@@ -69,53 +69,50 @@
       ]
     },
     {
-      "id": "office",
-      "aliases": [
-        "design",
-        "sites"
-      ],
+      "id": "artifacts",
+      "aliases": [],
       "roles": [
-        "office.publish",
-        "office.refresh",
-        "office.run",
-        "office.designSystem.get",
-        "office.skills.list",
-        "office.designSystems.list",
-        "office.upstreamStatus",
-        "office.railwayCheck",
-        "office.check",
-        "office.generate.website",
-        "office.generate.demo",
-        "office.generate.imageBrief",
-        "office.generate.digitalEguide",
-        "office.generate.email",
-        "office.generate.motionFrame",
-        "office.render.hyperframes",
-        "office.ui.background",
-        "office.ui.stop",
-        "office.ui.status",
-        "office.ui.logs",
-        "office.openDesign.build"
+        "artifacts.publish",
+        "artifacts.refresh",
+        "artifacts.run",
+        "artifacts.designSystem.get",
+        "artifacts.skills.list",
+        "artifacts.designSystems.list",
+        "artifacts.upstreamStatus",
+        "artifacts.railwayCheck",
+        "artifacts.check",
+        "artifacts.generate.website",
+        "artifacts.generate.demo",
+        "artifacts.generate.imageBrief",
+        "artifacts.generate.digitalEguide",
+        "artifacts.generate.email",
+        "artifacts.generate.motionFrame",
+        "artifacts.render.hyperframes",
+        "artifacts.ui.background",
+        "artifacts.ui.stop",
+        "artifacts.ui.status",
+        "artifacts.ui.logs",
+        "artifacts.openDesign.build"
       ],
       "categories": [
-        "consuelo design"
+        "artifacts"
       ],
       "subscriptions": [
         {
-          "event": "workflow.intent.office.detected",
-          "workflow": "office"
+          "event": "workflow.intent.artifacts.detected",
+          "workflow": "artifacts"
         },
         {
           "event": "artifact.postRender",
-          "workflow": "office"
+          "workflow": "artifacts"
         },
         {
           "event": "artifact.prePublish",
-          "workflow": "office"
+          "workflow": "artifacts"
         },
         {
           "event": "artifact.postPublish",
-          "workflow": "office"
+          "workflow": "artifacts"
         }
       ]
     },

@@ -3,7 +3,6 @@
   "private": true,
   "scripts": {
     "os": "bun ./scripts/os.ts",
-    "office": "bun ./scripts/os.ts office",
     "get-steering": "bun ./scripts/os.ts get-steering",
     "call": "bun ./scripts/os.ts call",
     "install:local": "bun ./scripts/install.ts",
@@ -59,7 +58,6 @@
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
-    "consuelo-design": "bun ./scripts/os.ts office",
     "code-run": "bun ./scripts/code-run.ts",
     "code-call": "bun ./scripts/code-call.ts",
     "github": "bun ./scripts/github.js",
@@ -81,7 +79,7 @@
     "operator": "bun ./operator/operator.ts",
     "doctor:watch": "bun ./scripts/doctor-watch.ts",
     "artifact:render": "bun ./scripts/artifact-render.ts",
-    "artifact:publish": "bun ./scripts/os.ts sites publish",
+    "artifact:publish": "bun ./scripts/artifacts.ts publish",
     "artifact:validate": "bun ./scripts/artifact-validate.ts",
     "semantic:embeddings": "bun ./scripts/semantic-embeddings.js",
     "cloudflare:workspace-edge:dev": "wrangler dev --config cloudflare/workspace-edge/wrangler.toml",
@@ -107,7 +105,8 @@
     "media:test:handoff": "vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts",
     "media:test:ingest": "vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts",
     "media:test:svg": "vitest run tests/media/31-svg-convert.test.ts",
-    "media:svg": "python3 ./scripts/media-svg.py"
+    "media:svg": "python3 ./scripts/media-svg.py",
+    "trace:watch": "bun ./scripts/trace-watch.ts"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

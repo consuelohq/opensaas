@@ -8,6 +8,32 @@ const { createOsHookDispatcher } = require('./dispatcher.js');
 const DEFAULT_MANIFEST_PATH = path.join(__dirname, '..', 'tooling', 'dev-tool-manifest.json');
 const DEFAULT_BUNDLES_PATH = path.join(__dirname, '..', 'manifests', 'workflow-bundles.json');
 
+function expandHome(value) {
+  if (value === '~') return require('os').homedir();
+  if (value.startsWith('~/')) return path.join(require('os').homedir(), value.slice(2));
+  return value;
+}
+
+function disabledWorkflowIds(options = {}) {
+  const home = options.overlayHome
+    || process.env.CONSUELO_OS_HOME
+    || process.env.CONSUELO_HOME;
+  if (!home) return new Set();
+  const overlayPath = options.overlayPath
+    || path.join(expandHome(home), 'security', 'overrides', 'manifest.overlay.json');
+  if (!fs.existsSync(overlayPath)) return new Set();
+  let overlay;
+  try {
+    overlay = readJson(overlayPath);
+  } catch {
+    throw new Error('workflow overlay is invalid');
+  }
+  if (!overlay || overlay.version !== 1 || !Array.isArray(overlay.disabledWorkflows)) {
+    throw new Error('workflow overlay is invalid');
+  }
+  return new Set(overlay.disabledWorkflows.filter((value) => typeof value === 'string'));
+}
+
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
@@ -135,6 +161,9 @@ function createWorkflowIntentRuntime(options = {}) {
     const requested = requestedWorkflow || 'task';
     const workflow = lookup.get(requested);
     if (!workflow) throw new Error(`unknown workflow: ${requested}`);
+    if (disabledWorkflowIds(options).has(workflow.id)) {
+      throw new Error(`workflow disabled: ${workflow.id}`);
+    }
     return { requested, workflow };
   }
 

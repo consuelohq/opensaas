@@ -2,6 +2,26 @@
   "version": 1,
   "skills": [
     {
+      "name": "artifacts",
+      "title": "Artifacts",
+      "description": "Canonical orchestration skill for creating, validating, publishing, finding, and revising durable Consuelo artifacts such as sites, guides, specifications, plans, reports, demos, emails, images, and motion outputs.",
+      "trigger": "Invoke when the user asks to create, revise, publish, validate, inspect, search, or roll back a durable generated output through Consuelo Artifacts.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/artifacts/SKILL.md"
+      },
+      "permission": "draft",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "artifacts",
+        "artifact-generation",
+        "artifact-publishing",
+        "artifact-history"
+      ]
+    },
+    {
       "name": "browser",
       "title": "Browser",
       "description": "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.",
@@ -47,14 +67,14 @@
     {
       "name": "daily-revenue-brief",
       "title": "Daily Revenue Brief",
-      "description": "Builds a daily workspace revenue brief from approved structured context and writes a local artifact.",
+      "description": "Builds a daily workspace revenue brief from approved structured context and publishes a versioned Consuelo Artifact.",
       "trigger": "Invoke when the user asks for a daily revenue brief, revenue summary, or workspace revenue artifact.",
       "entrypoint": "skill.json",
       "load": {
         "type": "resource",
         "path": "packages/os/skills/daily-revenue-brief/skill.json"
       },
-      "permission": "read",
+      "permission": "draft",
       "requiresApproval": false,
       "status": "active",
       "capabilities": [
@@ -112,42 +132,6 @@
       "subskills": []
     },
     {
-      "name": "office",
-      "title": "Office",
-      "description": "Top-level orchestration skill for Office artifact work. Teaches agents how to chain existing workspace tools, design facade scripts, templates, browser validation, durable publishing, and Office verification.",
-      "trigger": "Invoke when the user asks for Office artifact work, Office publishing, website/spec/demo generation, or design workflow orchestration.",
-      "entrypoint": "SKILL.md",
-      "load": {
-        "type": "resource",
-        "path": "packages/os/skills/office/SKILL.md"
-      },
-      "permission": "draft",
-      "requiresApproval": false,
-      "status": "active",
-      "capabilities": [
-        "office",
-        "local-artifacts"
-      ]
-    },
-    {
-      "name": "office-landing-page",
-      "title": "Office Landing Page (compatibility alias)",
-      "description": "Deprecated compatibility alias for the landing-page subskill under the top-level office skill. Prefer office with subskill=landing-page for new design work.",
-      "trigger": "Invoke only for legacy calls that still reference the old office-landing-page skill name.",
-      "entrypoint": "skill.json",
-      "load": {
-        "type": "resource",
-        "path": "packages/os/skills/office-landing-page/skill.json"
-      },
-      "permission": "draft",
-      "requiresApproval": false,
-      "status": "deprecated",
-      "capabilities": [
-        "office",
-        "local-artifacts"
-      ]
-    },
-    {
       "name": "research-ingest",
       "title": "Research Ingest",
       "description": "use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to context, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable context, and follow-up analysis from ingested sources..",
@@ -198,8 +182,8 @@
     {
       "name": "sites",
       "title": "Sites",
-      "description": "Use this skill for Consuelo OS Sites: the user-facing local site system for generated docs, reports, files, pages, traces, diffs, and Office as one site category. Artifacts remain the internal durable provenance and storage records behind Sites.",
-      "trigger": "Invoke when the user asks about OS Sites, generated work surfaces, local Sites pages, the Office site, artifact-backed output, traces, diffs, or refreshing and finding local Sites.",
+      "description": "Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts.",
+      "trigger": "Invoke when the user asks about OS site delivery, local site materialization, launcher pages, typed page registries, traces, diffs, settings pages, or edge snapshot routing.",
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
@@ -210,9 +194,9 @@
       "status": "active",
       "capabilities": [
         "sites",
-        "office",
-        "artifacts",
-        "local-pages"
+        "artifact-delivery",
+        "local-pages",
+        "edge-snapshots"
       ],
       "tools": [
         "os.get_steering",

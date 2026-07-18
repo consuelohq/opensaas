@@ -47,7 +47,7 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
   {
     name: 'get_steering',
     title: 'Get OS steering',
-    description: 'Return current Consuelo OS steering and typed tool guidance. Call this once before using call.',
+    description: 'Return Consuelo OS steering and typed tool guidance. Call this once before using call.',
     inputSchema: {
       type: 'object',
       properties: {},

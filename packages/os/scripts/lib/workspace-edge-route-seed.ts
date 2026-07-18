@@ -33,13 +33,13 @@ const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_
 const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
 const SITE_SNAPSHOT_ROUTES = [
   { pathPrefix: '/', siteId: 'launcher' },
-  { pathPrefix: '/office', siteId: 'office' },
+  { pathPrefix: '/artifacts', siteId: 'artifacts' },
   { pathPrefix: '/observability', siteId: 'traces' },
   { pathPrefix: '/traces', siteId: 'traces' },
   { pathPrefix: '/tracing', siteId: 'traces' },
   { pathPrefix: '/diffs', siteId: 'diffs' },
   { pathPrefix: '/docs', siteId: 'docs' },
-  { pathPrefix: '/settings', siteId: 'settings' },
+  { pathPrefix: '/configuration', siteId: 'configuration' },
 ] as const;
 type SiteSnapshotRoute = typeof SITE_SNAPSHOT_ROUTES[number];
 
@@ -169,7 +169,31 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
-const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/configuration/overlay',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/configuration',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
   {
     surface: 'sites',
     pathPrefix: '/gateway/settings/overlay',
@@ -177,7 +201,7 @@ const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
-      serviceName: 'settings-sites-write-endpoints',
+      serviceName: 'configuration-sites-write-endpoints',
       gatewayRouteFamily: '/gateway/settings/*',
       publicSiteRouteFamily: '/settings/*',
     },
@@ -189,10 +213,52 @@ const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
-      serviceName: 'settings-sites-read-endpoints',
+      serviceName: 'configuration-sites-read-endpoints',
       gatewayRouteFamily: '/gateway/settings/*',
       publicSiteRouteFamily: '/settings/*',
     },
+  },
+];
+
+const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/artifacts',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'artifacts-sites-read-layer',
+      gatewayRouteFamily: '/gateway/artifacts/*',
+      publicSiteRouteFamily: '/artifacts/*',
+    },
+  },
+];
+
+const buildLegacyConfigurationRedirectRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/settings',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/configuration', statusCode: 308 },
+  },
+];
+
+const buildLegacyArtifactRedirectRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/office',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/design-wiki',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
   },
 ];
 
@@ -212,6 +278,7 @@ const getTargetOriginUrl = (target: WorkspaceRouteD1RouteTarget): string => {
   if (target.kind === 'service-upstream') return target.upstreamUrl;
   if (target.kind === 'os-connector') return target.tunnelOriginUrl;
   if (target.kind === 'site-snapshot') return `r2://consuelo-sites-snapshots/${target.manifestKey}`;
+  if (target.kind === 'redirect') return `redirect://${target.location}`;
   return `consuelo-gateway://${target.serviceName}`;
 };
 
@@ -243,8 +310,11 @@ export const createWorkspaceEdgeRouteSeedRecord = (
       siteSnapshotKey: input.siteSnapshotKey,
       siteVersionId: input.siteVersionId,
     })),
+    ...buildLegacyConfigurationRedirectRoutes(),
     ...buildTraceGatewayRoutes(),
-    ...buildSettingsGatewayRoutes(),
+    ...buildConfigurationGatewayRoutes(),
+    ...buildArtifactsGatewayRoutes(),
+    ...buildLegacyArtifactRedirectRoutes(),
   ];
 
   if (trimmedValue(input.appUpstreamUrl) !== undefined) {

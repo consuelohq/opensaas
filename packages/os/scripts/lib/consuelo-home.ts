@@ -96,6 +96,7 @@ export type ConsueloHomeLayout = {
   nodeCaddyfilePath: string;
   nodeDbDir: string;
   nodeDbPath: string;
+  nodeTraceDbPath: string;
   nodeLogsDir: string;
   nodeRunsDir: string;
   nodeCacheDir: string;
@@ -158,6 +159,7 @@ export function resolveConsueloHomeLayout(home?: string): ConsueloHomeLayout {
     nodeCaddyfilePath: path.join(nodeDir, 'caddy', 'Caddyfile'),
     nodeDbDir: path.join(nodeDir, 'db'),
     nodeDbPath: path.join(nodeDir, 'db', 'consuelo.db'),
+    nodeTraceDbPath: path.join(nodeDir, 'db', 'traces.db'),
     nodeLogsDir: path.join(nodeDir, 'logs'),
     nodeRunsDir: path.join(nodeDir, 'runs'),
     nodeCacheDir: path.join(nodeDir, 'cache'),

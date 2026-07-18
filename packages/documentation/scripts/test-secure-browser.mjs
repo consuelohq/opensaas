@@ -112,7 +112,7 @@ try {
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.getByRole('link', { name: 'Other secret managers', exact: true }).isVisible())) throw new Error('Credential navigation is unavailable on mobile');
+      if (!(await page.locator('#starlight__sidebar').getByRole('link', { name: 'Other secret managers', exact: true }).isVisible())) throw new Error('Credential navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });

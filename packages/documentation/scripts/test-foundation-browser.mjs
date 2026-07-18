@@ -129,16 +129,59 @@ try {
   for (const label of ['Build with OS', 'Tools', 'How tools work']) {
     if (!(await breadcrumbs.getByText(label, { exact: true }).isVisible())) throw new Error(`Missing breadcrumb: ${label}`);
   }
+  const siteFooter = page.locator('[data-docs-site-footer]');
+  if ((await siteFooter.count()) !== 1) throw new Error('Missing dedicated site footer');
+  const siteFooterPlacement = await siteFooter.evaluate((element) => ({
+    parentIsPage: element.parentElement?.classList.contains('page') ?? false,
+    previousIsMainFrame: element.previousElementSibling?.classList.contains('main-frame') ?? false,
+    rect: element.getBoundingClientRect(),
+    viewportWidth: document.documentElement.clientWidth,
+  }));
+  if (!siteFooterPlacement.parentIsPage || !siteFooterPlacement.previousIsMainFrame) {
+    throw new Error('Desktop site footer must be a page-level section after the documentation shell');
+  }
+  if (Math.abs(siteFooterPlacement.rect.left) > 1 || Math.abs(siteFooterPlacement.rect.width - siteFooterPlacement.viewportWidth) > 2) {
+    throw new Error(`Desktop site footer is not full width: ${JSON.stringify(siteFooterPlacement)}`);
+  }
+
+  const shellStyles = await page.evaluate(() => ({
+    headerPosition: getComputedStyle(document.querySelector('.header')).position,
+    leftPosition: getComputedStyle(document.querySelector('.sidebar-pane')).position,
+    rightPosition: getComputedStyle(document.querySelector('.right-sidebar')).position,
+    nestedGuideWidth: getComputedStyle(document.querySelector('#starlight__sidebar ul ul li')).borderInlineStartWidth,
+  }));
+  if (shellStyles.headerPosition !== 'fixed') throw new Error(`Header is ${shellStyles.headerPosition}, not fixed`);
+  if (shellStyles.leftPosition !== 'sticky') throw new Error(`Left sidebar is ${shellStyles.leftPosition}, not sticky`);
+  if (shellStyles.rightPosition !== 'sticky') throw new Error(`Right sidebar is ${shellStyles.rightPosition}, not sticky`);
+  if (shellStyles.nestedGuideWidth !== '0px') throw new Error(`Nested sidebar guide remains ${shellStyles.nestedGuideWidth}`);
+
   const registry = page.locator('.docs-registry-grid');
   if ((await registry.locator('.docs-registry-column').count()) !== 7) throw new Error('Footer registry must contain seven sections');
   const desktopColumns = await registry.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
-  if (desktopColumns < 4) throw new Error(`Footer registry only has ${desktopColumns} desktop columns`);
+  if (desktopColumns !== 7) throw new Error(`Footer registry must use seven desktop columns, found ${desktopColumns}`);
   const lastHeadingY = await page.locator('#tools-skills-and-scripts').evaluate(
     (element) => element.getBoundingClientRect().top + window.scrollY,
   );
   for (let scrollY = 0; scrollY <= lastHeadingY; scrollY += 200) {
     await page.evaluate((nextY) => window.scrollTo(0, nextY), scrollY);
     await page.waitForTimeout(60);
+  }
+  await page.evaluate((nextY) => window.scrollTo(0, nextY), lastHeadingY);
+  await page.waitForTimeout(250);
+  const siteFooterY = await siteFooter.evaluate((element) => element.getBoundingClientRect().top + window.scrollY);
+  await page.evaluate((nextY) => window.scrollTo(0, nextY), siteFooterY);
+  await page.waitForTimeout(250);
+  const footerBoundary = await page.evaluate(() => {
+    const footer = document.querySelector('[data-docs-site-footer]')?.getBoundingClientRect();
+    const left = document.querySelector('.sidebar-pane')?.getBoundingClientRect();
+    const right = document.querySelector('.right-sidebar')?.getBoundingClientRect();
+    return { footerTop: footer?.top, leftBottom: left?.bottom, rightBottom: right?.bottom };
+  });
+  if (footerBoundary.footerTop === undefined || footerBoundary.leftBottom === undefined || footerBoundary.rightBottom === undefined) {
+    throw new Error(`Could not measure footer boundary: ${JSON.stringify(footerBoundary)}`);
+  }
+  if (footerBoundary.leftBottom > footerBoundary.footerTop + 2 || footerBoundary.rightBottom > footerBoundary.footerTop + 2) {
+    throw new Error(`Sticky documentation navigation overlaps the site footer: ${JSON.stringify(footerBoundary)}`);
   }
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(250);
@@ -158,6 +201,10 @@ try {
     if ((await page.locator('main h1#_top').count()) !== 1) throw new Error(`Missing page title on ${viewport.name}`);
 
     if (viewport.name === 'mobile') {
+      const mobileFooterIsNested = await page.locator('[data-docs-site-footer]').evaluate(
+        (element) => element.parentElement?.hasAttribute('data-docs-site-footer-home') ?? false,
+      );
+      if (!mobileFooterIsNested) throw new Error('Mobile site footer must remain inside the page footer');
       const mobileColumns = await page.locator('.docs-registry-grid').evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
       if (mobileColumns !== 2) throw new Error(`Footer registry must use two mobile columns, found ${mobileColumns}`);
       const menuButton = page.locator('button[aria-controls="starlight__sidebar"]');

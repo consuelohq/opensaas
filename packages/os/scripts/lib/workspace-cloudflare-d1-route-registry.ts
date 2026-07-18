@@ -24,11 +24,18 @@ export type WorkspaceRouteD1RouteTarget =
       serviceName:
         | 'trace-sites-read-layer'
         | 'trace-sites-live-endpoints'
+        | 'configuration-sites-read-endpoints'
+        | 'configuration-sites-write-endpoints'
         | 'settings-sites-read-endpoints'
         | 'settings-sites-write-endpoints'
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
+    }
+  | {
+      kind: 'redirect';
+      location: string;
+      statusCode: 301 | 302 | 307 | 308;
     };
 
 export type WorkspaceRouteD1Route = {

@@ -50,7 +50,7 @@ export const BranchInput = z.object({
 });
 
 
-export const DesignPublishInput = z.object({
+export const ArtifactsPublishInput = z.object({
   ...requestFields,
   ...dryRunField,
   target: optionalString,
@@ -64,24 +64,24 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-export const OfficeInput = z.object({
+export const ArtifactsInput = z.object({
   ...requestFields,
   ...dryRunField,
 });
 
-export const OfficeUiInput = z.object({
+export const ArtifactsUiInput = z.object({
   ...requestFields,
   ...dryRunField,
   timeout: z.number().int().positive().optional(),
 });
 
-export const DesignArchiveRefreshInput = z.object({
+export const ArtifactsRefreshInput = z.object({
   ...requestFields,
   ...dryRunField,
   tailscaleBin: optionalString,
 });
 
-export const OfficeSessionInput = z.object({
+export const ArtifactsSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -89,7 +89,7 @@ export const OfficeSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-export const OfficeDigitalEguideInput = z.object({
+export const ArtifactsDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -219,7 +219,7 @@ export const WorkflowIntentInput = z.object({
   ...requestFields,
   ...dryRunField,
   action: z.enum(['start', 'dispatch']),
-  workflow: z.enum(['task', 'office', 'design', 'sites', 'media']).optional(),
+  workflow: z.enum(['task', 'artifacts', 'media']).optional(),
   area: optionalString,
   title: optionalString,
   eventFile: optionalString,
@@ -368,7 +368,7 @@ export const TaskStartInput = z.object({
   area: optionalString,
   stream: optionalString,
   title: optionalString,
-  workflow: z.enum(['task', 'office', 'design', 'sites', 'media']).optional(),
+  workflow: z.enum(['task', 'artifacts', 'media']).optional(),
   description: optionalString,
   pr: prRefInput.optional(),
   github: optionalString,
@@ -1137,12 +1137,12 @@ export const SubagentInput = z.object({
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
-  DesignPublishInput,
-  DesignArchiveRefreshInput,
-  OfficeInput,
-  OfficeUiInput,
-  OfficeSessionInput,
-  OfficeDigitalEguideInput,
+  ArtifactsPublishInput,
+  ArtifactsRefreshInput,
+  ArtifactsInput,
+  ArtifactsUiInput,
+  ArtifactsSessionInput,
+  ArtifactsDigitalEguideInput,
   MediaSvgInput,
   CodeRunInput,
   CodeCallInput,
@@ -1248,16 +1248,16 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  OfficeInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
-  OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  ArtifactsPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ArtifactsRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ArtifactsInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ArtifactsUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
+  ArtifactsSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  ArtifactsDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"artifacts\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
@@ -1268,7 +1268,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "office" | "design" | "sites" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPrInput: '{ branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

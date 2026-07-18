@@ -1,7 +1,7 @@
 {
   "name": "daily-revenue-brief",
   "title": "Daily Revenue Brief",
-  "description": "Builds a daily workspace revenue brief from approved structured context and writes a local artifact.",
+  "description": "Builds a daily workspace revenue brief from approved structured context and publishes a versioned Consuelo Artifact.",
   "trigger": "Invoke when the user asks for a daily revenue brief, revenue summary, or workspace revenue artifact.",
   "entrypoint": "skill.json",
   "load": {
@@ -9,7 +9,7 @@
     "path": "packages/os/skills/daily-revenue-brief/skill.json"
   },
   "script": "scripts/revenue/daily-revenue-brief.ts",
-  "permission": "read",
+  "permission": "draft",
   "requiresApproval": false,
   "status": "active",
   "artifactTypes": [

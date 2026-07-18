@@ -14,7 +14,7 @@ const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
 const launcherLinks = {
   sites: [
     { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-    { label: 'Artifacts', href: 'https://sites.consuelohq.com/office' },
+    { label: 'Artifacts', href: 'https://sites.consuelohq.com/artifacts' },
     { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
     { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
   ],
@@ -155,8 +155,8 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <p class="muted">ChatGPT is ready now.</p>
         </section>
         <section class="section">
-          <h2 class="section-title">Settings</h2>
-          ${navLinks([{ label: 'Configuration', href: '/settings' }])}
+          <h2 class="section-title">Configuration</h2>
+          ${navLinks([{ label: 'Configuration', href: '/configuration' }])}
         </section>
         <section class="section">
           <h2 class="section-title">Sites</h2>

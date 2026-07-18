@@ -83,14 +83,6 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/design/office-landing-page.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
-    "scripts/design/office.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
     "scripts/diff_cockpit.ts": {
       "status": "workspace-only-needs-port",
       "reason": "High-risk workspace-only diff cockpit entrypoint is not part of the OS runtime yet; porting needs focused review of branch and patch semantics.",
@@ -195,10 +187,6 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/lib/cli-ui.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
-    "scripts/lib/cloud-artifacts.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
@@ -554,10 +542,6 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/lib/office-pages.ts": {
-      "status": "os-only-intentional",
-      "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
     "scripts/lib/onboarding-skills.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -759,11 +743,6 @@
     "scripts/media.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
-    },
-    "scripts/office.ts": {
-      "status": "changed-needs-review",
-      "reason": "High-risk changed script: design orchestration owns publishing and package-boundary behavior, so later PRs must review drift before syncing bodies.",
-      "risk": "high"
     },
     "scripts/onboarding-flow.test.ts": {
       "status": "os-only-intentional",
@@ -1077,10 +1056,18 @@
     "scripts/lib/browser/types.ts": {
       "status": "same",
       "reason": "Byte-identical browser service module shared by workspace and OS to preserve lifecycle and persistent-session parity."
+    },
+    "scripts/design/artifacts.ts": {
+      "status": "os-only-intentional",
+      "reason": "Canonical OS Artifacts orchestration skill; workspace publishing fallbacks are intentionally unsupported."
+    },
+    "scripts/artifacts-design.ts": {
+      "status": "os-only-intentional",
+      "reason": "Canonical OS-local design generation facade behind bun run artifacts."
     }
   },
   "highRiskScripts": [
-    "scripts/office.ts",
+    "scripts/artifacts.ts",
     "scripts/context.js",
     "scripts/browser.js",
     "scripts/explore.js",

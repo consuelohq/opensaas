@@ -261,7 +261,7 @@ function releaseDefaultSiteSnapshots(
     const versionId = snapshotVersionId(rootHtml);
     const snapshots = [
       { siteId: 'launcher', filePath: paths.indexPath },
-      { siteId: 'office', filePath: paths.officeIndexPath },
+      { siteId: 'artifacts', filePath: paths.artifactsIndexPath },
       { siteId: 'traces', filePath: paths.tracesIndexPath },
       { siteId: 'diffs', filePath: paths.diffsIndexPath },
       { siteId: 'docs', filePath: paths.docsIndexPath },

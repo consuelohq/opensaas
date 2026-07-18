@@ -15,7 +15,6 @@ const branchField = {
 
 const optionalString = z.string().min(1).optional();
 const stringArray = z.array(z.string().min(1)).optional();
-const digitalEguideTemplate = z.enum(['research', 'spec', 'plan']).optional();
 
 const browserDeviceFlags = {
   preset: z.enum(['desktop', 'mobile', 'tablet', 'ipad', 'iphone']).optional(),
@@ -31,10 +30,6 @@ const requireCompleteBrowserViewport = (input: { width?: number; height?: number
 ) || (
   input.width !== undefined && input.height !== undefined
 );
-const liveField = {
-  live: z.boolean().optional(),
-};
-
 export const EmptyInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -46,55 +41,6 @@ export const BranchInput = z.object({
   ...branchField,
 });
 
-
-export const DesignPublishInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-  target: optionalString,
-  portlessName: optionalString,
-  path: optionalString,
-  name: optionalString,
-  category: optionalString,
-  template: digitalEguideTemplate,
-  tailscaleBin: optionalString,
-}).refine((input) => Boolean(input.target || input.portlessName), {
-  message: 'provide either target or portlessName',
-  path: ['target'],
-});
-export const OfficeInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-});
-
-export const OfficeUiInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-  timeout: z.number().int().positive().optional(),
-});
-
-export const DesignArchiveRefreshInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-  tailscaleBin: optionalString,
-});
-
-export const OfficeSessionInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-  ...liveField,
-  name: optionalString,
-  prompt: optionalString,
-  timeout: z.number().int().positive().optional(),
-});
-export const OfficeDigitalEguideInput = z.object({
-  ...requestFields,
-  ...dryRunField,
-  ...liveField,
-  name: optionalString,
-  prompt: optionalString,
-  template: digitalEguideTemplate,
-  timeout: z.number().int().positive().optional(),
-});
 
 const SvgRenderOptions = z.object({
   format: z.enum(['png']).optional(),
@@ -215,7 +161,7 @@ export const WorkflowIntentInput = z.object({
   ...requestFields,
   ...dryRunField,
   action: z.enum(['start', 'dispatch']),
-  workflow: z.enum(['task', 'office', 'design', 'sites']).optional(),
+  workflow: z.enum(['task']).optional(),
   area: optionalString,
   title: optionalString,
   eventFile: optionalString,
@@ -350,7 +296,7 @@ export const TaskStartInput = z.object({
   area: optionalString,
   stream: optionalString,
   title: z.string().min(1),
-  workflow: z.enum(['task', 'office', 'design', 'sites']).optional(),
+  workflow: z.enum(['task']).optional(),
   description: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
@@ -1083,12 +1029,6 @@ export const SubagentInput = z.object({
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
-  DesignPublishInput,
-  DesignArchiveRefreshInput,
-  OfficeInput,
-  OfficeUiInput,
-  OfficeSessionInput,
-  OfficeDigitalEguideInput,
   MediaSvgInput,
   CodeRunInput,
   CodeCallInput,
@@ -1192,16 +1132,10 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  OfficeInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
-  OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
@@ -1212,7 +1146,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskStartInput: '{ stream?: string; area?: string; title: string; workflow?: "task" | "office" | "design" | "sites"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskStartInput: '{ stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
