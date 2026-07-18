@@ -12,7 +12,6 @@ import {
   clean,
   dedupeTraceRows,
   isBatchChild,
-  isFailure,
   number,
   stableTraceKey,
   traceParentKey,
@@ -30,6 +29,13 @@ import {
   shouldPrefetchTracePage,
   type TracePageDirection,
 } from './trace-list';
+import {
+  formatTraceTableRow,
+  matchesTraceTableFilters,
+  traceFilterFacets,
+  type TraceFilterFacet,
+  type TraceFilterFacets,
+} from './table-formatters';
 
 const MAX_RETAINED_ROWS = 5_000;
 const PREFETCH_THRESHOLD = 25;
@@ -39,13 +45,6 @@ const OVERSCAN = 12;
 type TraceFeedPayload = {
   meta?: { nextCursor?: unknown };
   rows?: TraceRecord[];
-};
-
-type TraceFilterState = {
-  query: string;
-  branch: string | null;
-  tool: string | null;
-  status: string | null;
 };
 
 type TraceListTarget = {
@@ -89,11 +88,28 @@ type TraceWindow = Window & {
 
 type TraceVirtualizer = Virtualizer<HTMLElement, HTMLButtonElement>;
 
-const filters: TraceFilterState = {
+const NO_FILTER_MATCH = '__trace-none__';
+const FILTER_PREVIEW_COUNT = 10;
+type MutableTraceTableFilterState = {
+  query: string;
+  branches: Set<string>;
+  tools: Set<string>;
+  statuses: Set<string>;
+};
+const filters: MutableTraceTableFilterState = {
   query: '',
-  branch: null,
-  tool: null,
-  status: null,
+  branches: new Set(),
+  tools: new Set(),
+  statuses: new Set(),
+};
+const expandedFilterKinds = new Set<keyof TraceFilterFacets>();
+let filterSearch = '';
+let filterPanelOpen = false;
+let fontPreferenceInitialized = false;
+let currentFacets: TraceFilterFacets = {
+  tools: [],
+  branches: [],
+  statuses: [],
 };
 
 class TraceVirtualListController {
@@ -239,11 +255,15 @@ class TraceVirtualListController {
     shell?.classList.add('detail-open');
     const hash = `trace=${encodeURIComponent(key)}`;
     if (location.hash.slice(1) !== hash) {
-      history.replaceState(
-        null,
-        '',
-        `${location.pathname}${location.search}#${hash}`,
-      );
+      try {
+        history.replaceState(
+          null,
+          '',
+          `${location.pathname}${location.search}#${hash}`,
+        );
+      } catch {
+        location.hash = hash;
+      }
     }
     for (const row of this.target.content.querySelectorAll<HTMLElement>(
       '.trxRow',
@@ -298,6 +318,9 @@ class TraceVirtualListController {
   private replaceOwnedMap(): void {
     this.ownedMap = traceMapForRows(this.rows);
     this.ownedFingerprint = mapFingerprint(this.ownedMap);
+    currentFacets = traceFilterFacets(this.rows);
+    ensureTraceTableControls();
+    renderTraceFilterPanel();
     traceWindow().__traceRowsByTraceId = this.ownedMap;
     inspectorStore.dispatch({
       type: 'rows-replaced',
@@ -368,6 +391,7 @@ class TraceVirtualListController {
       .closest('.trxTablePane')
       ?.querySelector<HTMLElement>('.trxFooter');
     if (!footer) return;
+    prepareTraceFooter(footer);
     footer.dataset.traceVirtualFooter = '';
     const count = footer.querySelector<HTMLElement>('[data-trace-count]');
     if (count) count.textContent = String(this.rows.length);
@@ -489,6 +513,8 @@ function createTraceRow(
   button.dataset.rowKey = item.key;
   button.dataset.virtualIndex = String(virtualItem.index);
   if (item.child) button.dataset.operationPath = item.child.__tracePath;
+  const formatted = formatTraceTableRow(item.child ?? item.row);
+  button.classList.toggle('is-error', formatted.isError);
   button.setAttribute('aria-selected', String(item.traceKey === selectedKey));
   button.classList.toggle('selected', item.traceKey === selectedKey);
   button.style.transform = `translateY(${Math.round(
@@ -502,7 +528,9 @@ function createTraceRow(
 
 function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   const branch = clean(row.branch ?? row.taskSession) || 'no-branch';
-  const status = isFailure(row) ? 'error' : clean(row.status) || 'success';
+  const formatted = formatTraceTableRow(row);
+  const status = formatted.statusLabel;
+  const sourceTool = clean(row.name ?? row.traceName ?? row.tool) || 'trace';
   button.style.setProperty('--branch-color', branchColor(branch));
 
   appendCell(button, '', '', (cell) => {
@@ -516,13 +544,13 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     clean(row.displayTime ?? row.time) || '—',
   );
   appendCell(button, 'trxToolCell', '', (cell) => {
-    cell.title = clean(row.name ?? row.traceName);
+    cell.title = `${formatted.toolLabel} (stored as ${sourceTool})`;
     const icon = document.createElement('span');
     icon.className = `trxToolIcon ${status}`;
     icon.textContent = '✤';
     const name = document.createElement('span');
     name.className = 'trxToolName';
-    name.textContent = clean(row.name ?? row.traceName) || 'trace';
+    name.textContent = formatted.toolLabel;
     cell.append(icon, name);
   });
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
@@ -531,13 +559,13 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     cell.title = branch;
     cell.style.setProperty('--branch-color', branchColor(branch));
   });
-  appendCell(button, 'trxJson', clean(row.input), (cell) => {
-    cell.title = clean(row.input);
+  appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
+    setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
-  appendCell(button, 'trxJson', clean(row.output ?? row.summary), (cell) => {
-    cell.title = clean(row.output ?? row.summary);
-  });
-  appendCell(button, 'trxJson', itemTraceId(row));
+  appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
+    setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
+  );
+  appendCell(button, 'trxJson trxTraceCell', itemTraceId(row));
   appendCell(button, '', '', (cell) => {
     const badge = document.createElement('span');
     badge.className = `trxStatus ${status}`;
@@ -557,7 +585,9 @@ function appendChildCells(
   child: TraceChildRecord,
 ): void {
   const branch = clean(parent.branch ?? parent.taskSession) || 'no-branch';
-  const status = isFailure(child) ? 'error' : clean(child.status) || 'success';
+  const formatted = formatTraceTableRow(child);
+  const status = formatted.statusLabel;
+  const sourceTool = clean(child.tool ?? child.name ?? child.label) || 'child';
   button.style.setProperty('--depth', String(child.__traceDepth));
   button.style.setProperty('--branch-color', branchColor(branch));
 
@@ -570,8 +600,8 @@ function appendChildCells(
     connector.textContent = '->';
     const name = document.createElement('span');
     name.className = 'trxToolName';
-    name.textContent =
-      clean(child.tool ?? child.name ?? child.label) || 'child';
+    name.textContent = formatted.toolLabel;
+    cell.title = `${formatted.toolLabel} (batch step stored as ${sourceTool})`;
     cell.append(connector, name);
   });
   appendCell(
@@ -581,13 +611,13 @@ function appendChildCells(
   );
   appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
   appendCell(button, 'trxBranch', stripTaskPrefix(branch));
-  appendCell(button, 'trxJson', clean(child.input), (cell) => {
-    cell.title = clean(child.input);
+  appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
+    setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
-  appendCell(button, 'trxJson', clean(child.output), (cell) => {
-    cell.title = clean(child.output);
-  });
-  appendCell(button, 'trxJson', clean(child.traceId));
+  appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
+    setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
+  );
+  appendCell(button, 'trxJson trxTraceCell', clean(child.traceId));
   appendCell(button, '', '', (cell) => {
     const badge = document.createElement('span');
     badge.className = `trxStatus ${status}`;
@@ -610,34 +640,165 @@ function appendCell(
   row.append(cell);
 }
 
+function setTraceTooltip(cell: HTMLElement, value: string): void {
+  const text = value.trim();
+  if (!text) return;
+  cell.dataset.traceTooltip = text;
+  cell.title = text;
+}
+
+function ensureTraceTableControls(): void {
+  if (!fontPreferenceInitialized) {
+    document.documentElement.classList.add('trace-system-font');
+    fontPreferenceInitialized = true;
+  }
+
+  const pane = document.querySelector<HTMLElement>('.trxTablePane');
+  if (!pane) return;
+  let panel = pane.querySelector<HTMLElement>('.trxFilterPanel');
+  if (!panel) {
+    panel = document.createElement('aside');
+    panel.className = 'trxFilterPanel';
+    panel.setAttribute('aria-label', 'Trace filters');
+    panel.innerHTML = `<header class="trxFilterHeader"><div><span>Filters</span><strong>Trace view</strong></div><div class="trxFilterHeaderActions"><button type="button" data-trace-font-toggle aria-label="Use original trace font" aria-pressed="true">Aa</button><button type="button" data-trace-filter-close aria-label="Close filters">×</button></div></header><label class="trxFilterSearch"><span aria-hidden="true">⌕</span><input type="search" data-filter-search placeholder="Search filter values" aria-label="Search filter values"></label><div class="trxFilterContent" data-trace-filter-content></div><footer><button type="button" data-clear-filters>Clear filters</button></footer>`;
+    pane.append(panel);
+  }
+  panel.hidden = !filterPanelOpen;
+  pane.classList.toggle('trace-filters-open', filterPanelOpen);
+  const fontButton = panel.querySelector<HTMLButtonElement>(
+    '[data-trace-font-toggle]',
+  );
+  if (fontButton) {
+    const systemFont =
+      document.documentElement.classList.contains('trace-system-font');
+    fontButton.setAttribute('aria-pressed', String(systemFont));
+    fontButton.setAttribute(
+      'aria-label',
+      systemFont ? 'Use original trace font' : 'Use system font',
+    );
+    fontButton.title = fontButton.getAttribute('aria-label') ?? '';
+  }
+}
+
+function renderTraceFilterPanel(): void {
+  const panel = document.querySelector<HTMLElement>('.trxFilterPanel');
+  const content = panel?.querySelector<HTMLElement>(
+    '[data-trace-filter-content]',
+  );
+  if (!panel || !content) return;
+  const fragment = document.createDocumentFragment();
+  fragment.append(
+    createFilterSection('tools', 'Tools', currentFacets.tools),
+    createFilterSection('branches', 'Branches', currentFacets.branches),
+    createFilterSection('statuses', 'Status', currentFacets.statuses),
+  );
+  content.replaceChildren(fragment);
+  const input = panel.querySelector<HTMLInputElement>('[data-filter-search]');
+  if (input && input.value !== filterSearch) input.value = filterSearch;
+}
+
+function createFilterSection(
+  kind: keyof TraceFilterFacets,
+  title: string,
+  facets: TraceFilterFacet[],
+): HTMLElement {
+  const section = document.createElement('section');
+  section.className = 'trxFilterSection';
+  section.dataset.filterSection = kind;
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  section.append(heading);
+  const query = filterSearch.trim().toLowerCase();
+  const matching = query
+    ? facets.filter((facet) => facet.value.toLowerCase().includes(query))
+    : facets;
+  const expanded = expandedFilterKinds.has(kind) || Boolean(query);
+  const visible = expanded ? matching : matching.slice(0, FILTER_PREVIEW_COUNT);
+  const selected = filterSet(kind);
+  const allSelected = selected.size === 0;
+  const list = document.createElement('div');
+  list.className = 'trxFilterValues';
+  for (const facet of visible) {
+    const row = document.createElement('div');
+    row.className = 'trxFilterValue';
+    row.dataset.traceFilterValue = facet.value;
+    row.dataset.traceFilterKind = kind;
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.tabIndex = -1;
+    checkbox.checked = allSelected || selected.has(facet.value);
+    checkbox.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    label.textContent = facet.value;
+    const count = document.createElement('small');
+    count.textContent = String(facet.count);
+    const only = document.createElement('button');
+    only.type = 'button';
+    only.textContent = 'Only';
+    only.dataset.traceFilterOnly = facet.value;
+    only.dataset.traceFilterKind = kind;
+    only.setAttribute('aria-label', `Only show ${facet.value}`);
+    row.append(checkbox, label, only, count);
+    list.append(row);
+  }
+  section.append(list);
+  if (!visible.length) {
+    const empty = document.createElement('p');
+    empty.className = 'trxFilterEmpty';
+    empty.textContent = 'No matching values';
+    section.append(empty);
+  }
+  if (!query && matching.length > FILTER_PREVIEW_COUNT) {
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'trxFilterMore';
+    more.dataset.traceFilterMore = kind;
+    more.textContent = expanded
+      ? 'Show fewer'
+      : `Show ${matching.length - FILTER_PREVIEW_COUNT} more`;
+    section.append(more);
+  }
+  return section;
+}
+
+function filterSet(kind: keyof TraceFilterFacets): Set<string> {
+  return filters[kind];
+}
+
+function toggleFilterValue(kind: keyof TraceFilterFacets, value: string): void {
+  const selected = filterSet(kind);
+  const available = currentFacets[kind].map((facet) => facet.value);
+  if (selected.size === 0) {
+    for (const facetValue of available) selected.add(facetValue);
+    selected.delete(value);
+  } else if (selected.has(NO_FILTER_MATCH)) {
+    selected.clear();
+    selected.add(value);
+  } else if (selected.has(value)) {
+    selected.delete(value);
+  } else {
+    selected.add(value);
+  }
+  if (selected.size === 0) selected.add(NO_FILTER_MATCH);
+  if (
+    available.length &&
+    available.every((facetValue) => selected.has(facetValue))
+  ) {
+    selected.clear();
+  }
+}
+
+function showOnlyFilterValue(
+  kind: keyof TraceFilterFacets,
+  value: string,
+): void {
+  const selected = filterSet(kind);
+  selected.clear();
+  selected.add(value);
+}
+
 function matchesCurrentFilters(row: TraceRecord): boolean {
-  const branch = clean(row.branch ?? row.taskSession) || 'no-branch';
-  const tool = clean(row.name ?? row.traceName) || 'unknown';
-  const status = isFailure(row) ? 'error' : clean(row.status) || 'success';
-  if (filters.branch && branch !== filters.branch) return false;
-  if (filters.tool && tool !== filters.tool) return false;
-  if (filters.status && status !== filters.status) return false;
-  if (!filters.query) return true;
-  const haystack = [row, ...childTraceRecords(row)]
-    .flatMap((record) => [
-      record.displayTime,
-      record.time,
-      record.name,
-      record.traceName,
-      record.tool,
-      record.branch,
-      record.taskSession,
-      record.status,
-      record.code,
-      record.input,
-      record.output,
-      record.summary,
-      record.traceId,
-      stableTraceKey(record),
-    ])
-    .map((value) => clean(value).toLowerCase())
-    .join(' ');
-  return haystack.includes(filters.query);
+  return matchesTraceTableFilters(row, filters);
 }
 
 function formatCompact(value: unknown): string {
@@ -679,19 +840,24 @@ function traceWindow(): TraceWindow {
 }
 
 function currentSelectedKey(): string {
-  const owned = inspectorStore.getSnapshot().selectedKey;
-  if (owned) return owned;
-  const target = traceWindow();
-  const legacy =
-    target.__traceSelectedKey ??
-    document.querySelector<HTMLElement>(
-      '.trxRow.selected, .trxRow.isSelected, .trxRow[aria-selected="true"], .lfStep.active',
-    )?.dataset.traceKey ??
-    new URLSearchParams(location.hash.slice(1)).get('trace') ??
-    '';
-  if (legacy)
-    inspectorStore.dispatch({ type: 'hydrate-selection', key: legacy });
-  return legacy;
+  return inspectorStore.getSnapshot().selectedKey;
+}
+
+function prepareTraceFooter(footer: HTMLElement): void {
+  if (footer.dataset.traceFooterPrepared === 'true') return;
+  footer.replaceChildren();
+  const filtersButton = document.createElement('button');
+  filtersButton.type = 'button';
+  filtersButton.dataset.showFilters = '';
+  filtersButton.textContent = 'filters';
+  const count = document.createElement('span');
+  count.className = 'trxTraceTotal';
+  const value = document.createElement('b');
+  value.dataset.traceCount = '';
+  value.textContent = '0';
+  count.append(value, ' traces');
+  footer.append(filtersButton, count);
+  footer.dataset.traceFooterPrepared = 'true';
 }
 
 function currentSelectedRootKey(): string {
@@ -785,9 +951,58 @@ function findTraceListTarget(): TraceListTarget | null {
 
 function resetFilters(): void {
   filters.query = '';
-  filters.branch = null;
-  filters.tool = null;
-  filters.status = null;
+  filters.branches.clear();
+  filters.tools.clear();
+  filters.statuses.clear();
+  filterSearch = '';
+  expandedFilterKinds.clear();
+  for (const input of document.querySelectorAll<HTMLInputElement>(
+    '[data-search], [data-filter-search]',
+  )) {
+    input.value = '';
+  }
+}
+
+function filterKind(value: string | undefined): keyof TraceFilterFacets | null {
+  return value === 'tools' || value === 'branches' || value === 'statuses'
+    ? value
+    : null;
+}
+
+function ensureTraceHoverCard(): HTMLElement {
+  let card = document.querySelector<HTMLElement>('.trxHoverCard');
+  if (card) return card;
+  card = document.createElement('div');
+  card.className = 'trxHoverCard';
+  card.setAttribute('role', 'tooltip');
+  card.hidden = true;
+  document.body.append(card);
+  return card;
+}
+
+function showTraceHoverCard(target: HTMLElement): void {
+  const text = target.dataset.traceTooltip;
+  if (!text) return;
+  const card = ensureTraceHoverCard();
+  card.textContent = text;
+  card.hidden = false;
+  const rect = target.getBoundingClientRect();
+  const left = Math.max(
+    12,
+    Math.min(rect.left, window.innerWidth - card.offsetWidth - 12),
+  );
+  const below = rect.bottom + 8;
+  const top =
+    below + card.offsetHeight < window.innerHeight - 12
+      ? below
+      : Math.max(12, rect.top - card.offsetHeight - 8);
+  card.style.left = `${Math.round(left)}px`;
+  card.style.top = `${Math.round(top)}px`;
+}
+
+function hideTraceHoverCard(): void {
+  const card = document.querySelector<HTMLElement>('.trxHoverCard');
+  if (card) card.hidden = true;
 }
 
 export function installTraceVirtualList(): () => void {
@@ -839,13 +1054,33 @@ export function installTraceVirtualList(): () => void {
     subtree: true,
   });
 
+  const handlePointerOver = (event: PointerEvent) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>(
+      '[data-trace-tooltip]',
+    );
+    if (target) showTraceHoverCard(target);
+  };
+  const handlePointerOut = (event: PointerEvent) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>(
+      '[data-trace-tooltip]',
+    );
+    if (!target) return;
+    const related = event.relatedTarget;
+    if (related instanceof Node && target.contains(related)) return;
+    hideTraceHoverCard();
+  };
+  document.addEventListener('pointerover', handlePointerOver);
+  document.addEventListener('pointerout', handlePointerOut);
+
   document.addEventListener('input', (event) => {
     const target = event.target;
-    if (
-      !(target instanceof HTMLInputElement) ||
-      !target.matches('[data-search]')
-    )
+    if (!(target instanceof HTMLInputElement)) return;
+    if (target.matches('[data-filter-search]')) {
+      filterSearch = target.value;
+      renderTraceFilterPanel();
       return;
+    }
+    if (!target.matches('[data-search]')) return;
     filters.query = target.value.trim().toLowerCase();
     controller?.syncFilters();
   });
@@ -854,14 +1089,76 @@ export function installTraceVirtualList(): () => void {
     'click',
     (event) => {
       const target = event.target as HTMLElement;
+      if (target.closest('[data-show-filters], [data-trace-filter-toggle]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        filterPanelOpen = !filterPanelOpen;
+        ensureTraceTableControls();
+        renderTraceFilterPanel();
+        return;
+      }
+      if (target.closest('[data-trace-filter-close]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        filterPanelOpen = false;
+        ensureTraceTableControls();
+        return;
+      }
+      if (target.closest('[data-trace-font-toggle]')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        document.documentElement.classList.toggle('trace-system-font');
+        ensureTraceTableControls();
+        return;
+      }
+      const only = target.closest<HTMLElement>('[data-trace-filter-only]');
+      const filterValue = target.closest<HTMLElement>(
+        '[data-trace-filter-value]',
+      );
+      const more = target.closest<HTMLElement>('[data-trace-filter-more]');
+      if (only) {
+        const kind = filterKind(only.dataset.traceFilterKind);
+        const value = only.dataset.traceFilterOnly;
+        if (kind && value) showOnlyFilterValue(kind, value);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        renderTraceFilterPanel();
+        controller?.syncFilters();
+        return;
+      }
+      if (filterValue) {
+        const kind = filterKind(filterValue.dataset.traceFilterKind);
+        const value = filterValue.dataset.traceFilterValue;
+        if (kind && value) toggleFilterValue(kind, value);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        renderTraceFilterPanel();
+        controller?.syncFilters();
+        return;
+      }
+      if (more) {
+        const kind = filterKind(more.dataset.traceFilterMore);
+        if (kind) {
+          if (expandedFilterKinds.has(kind)) expandedFilterKinds.delete(kind);
+          else expandedFilterKinds.add(kind);
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        renderTraceFilterPanel();
+        return;
+      }
       const branch = target.closest<HTMLElement>('[data-filter-branch]');
       const tool = target.closest<HTMLElement>('[data-filter-tool]');
       const status = target.closest<HTMLElement>('[data-filter-status]');
-      if (branch) filters.branch = branch.dataset.filterBranch || null;
-      if (tool) filters.tool = tool.dataset.filterTool || null;
-      if (status) filters.status = status.dataset.filterStatus || null;
+      if (branch?.dataset.filterBranch)
+        showOnlyFilterValue('branches', branch.dataset.filterBranch);
+      if (tool?.dataset.filterTool)
+        showOnlyFilterValue('tools', tool.dataset.filterTool);
+      if (status?.dataset.filterStatus)
+        showOnlyFilterValue('statuses', status.dataset.filterStatus);
       if (target.closest('[data-clear-filters], [data-cockpit-page]')) {
         resetFilters();
+        renderTraceFilterPanel();
       }
       if (target.closest('[data-trace-scroll-top]')) {
         event.preventDefault();
@@ -908,6 +1205,9 @@ export function installTraceVirtualList(): () => void {
   return () => {
     window.clearInterval(interval);
     observer.disconnect();
+    document.removeEventListener('pointerover', handlePointerOver);
+    document.removeEventListener('pointerout', handlePointerOut);
+    document.querySelector('.trxHoverCard')?.remove();
     controller?.destroy();
     delete traceWindow().__traceVirtualList;
   };

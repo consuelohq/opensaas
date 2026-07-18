@@ -174,21 +174,43 @@ export function parseMaybeJson(value: unknown): unknown {
 
 const childTraceCache = new WeakMap<
   TraceRecord,
-  { source: unknown; children: TraceChildRecord[] }
+  { source: unknown; stepsSource: unknown; children: TraceChildRecord[] }
 >();
 
 export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
   const sourceValue = parent.batchResultsJson;
+  const stepsSourceValue =
+    parent.rawResolvedInputJson ??
+    parent.rawInputJson ??
+    parent.inputObj ??
+    parent.input;
   const cached = childTraceCache.get(parent);
-  if (cached && cached.source === sourceValue) return cached.children;
+  if (
+    cached &&
+    cached.source === sourceValue &&
+    cached.stepsSource === stepsSourceValue
+  ) {
+    return cached.children;
+  }
 
   const parsed = parseMaybeJson(sourceValue);
   const parsedRecord = asRecord(parsed);
   const source = Array.isArray(parsed)
     ? parsed
     : (parsedRecord?.children ?? parsedRecord?.results);
+  const parsedSteps = parseMaybeJson(stepsSourceValue);
+  const parsedStepsRecord = asRecord(parsedSteps);
+  const steps = Array.isArray(parsedSteps)
+    ? parsedSteps
+    : Array.isArray(parsedStepsRecord?.steps)
+      ? parsedStepsRecord.steps
+      : [];
   if (!Array.isArray(source)) {
-    childTraceCache.set(parent, { source: sourceValue, children: [] });
+    childTraceCache.set(parent, {
+      source: sourceValue,
+      stepsSource: stepsSourceValue,
+      children: [],
+    });
     return [];
   }
 
@@ -202,46 +224,84 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
   ): void => {
     const record = asRecord(value);
     if (!record) return;
-    const data = asRecord(record.data);
+    const stepRecord = depth === 1 ? asRecord(steps[siblingIndex]) : null;
+    const mergedRecord = stepRecord ? { ...stepRecord, ...record } : record;
+    const data = asRecord(mergedRecord.data);
     const label =
-      clean(record.tool ?? record.name ?? record.facadeTool ?? record.label) ||
-      'child';
+      clean(
+        mergedRecord.tool ??
+          mergedRecord.name ??
+          mergedRecord.facadeTool ??
+          mergedRecord.label,
+      ) || 'child';
     const segment = `${siblingIndex}:${label}`;
     const path = parentPath ? `${parentPath}/${segment}` : segment;
     const nativeKey = stableTraceKey(record);
     const selectionKey = nativeKey || `${parentKey}::child:${path}`;
     const status =
-      clean(record.status) ||
-      (record.ok === false ? 'error' : record.ok === true ? 'success' : '');
+      clean(mergedRecord.status) ||
+      (mergedRecord.ok === false
+        ? 'error'
+        : mergedRecord.ok === true
+          ? 'success'
+          : '');
     const child = {
-      ...record,
-      name: record.name ?? record.tool ?? record.facadeTool ?? record.label,
+      ...mergedRecord,
+      name:
+        mergedRecord.name ??
+        mergedRecord.tool ??
+        mergedRecord.facadeTool ??
+        mergedRecord.label,
       traceName:
-        record.traceName ?? record.name ?? record.tool ?? record.facadeTool,
-      traceId: record.traceId ?? record.trace_id,
-      branch: record.branch ?? parent.branch,
-      taskSession: record.taskSession ?? parent.taskSession,
-      worktree: record.worktree ?? parent.worktree,
-      startTime: record.startTime ?? parent.startTime,
-      displayTime: record.displayTime ?? parent.displayTime,
+        mergedRecord.traceName ??
+        mergedRecord.name ??
+        mergedRecord.tool ??
+        mergedRecord.facadeTool,
+      traceId: mergedRecord.traceId ?? mergedRecord.trace_id,
+      branch: mergedRecord.branch ?? parent.branch,
+      taskSession: mergedRecord.taskSession ?? parent.taskSession,
+      worktree: mergedRecord.worktree ?? parent.worktree,
+      startTime: mergedRecord.startTime ?? parent.startTime,
+      displayTime: mergedRecord.displayTime ?? parent.displayTime,
       status,
       durationMs:
-        record.durationMs ?? record.duration_ms ?? data?.durationMs ?? data?.duration_ms,
+        mergedRecord.durationMs ??
+        mergedRecord.duration_ms ??
+        data?.durationMs ??
+        data?.duration_ms,
       inputTokens:
-        record.inputTokens ?? record.input_tokens ?? data?.inputTokens ?? data?.input_tokens,
+        mergedRecord.inputTokens ??
+        mergedRecord.input_tokens ??
+        data?.inputTokens ??
+        data?.input_tokens,
       outputTokens:
-        record.outputTokens ?? record.output_tokens ?? data?.outputTokens ?? data?.output_tokens,
+        mergedRecord.outputTokens ??
+        mergedRecord.output_tokens ??
+        data?.outputTokens ??
+        data?.output_tokens,
       tokens:
-        record.tokens ?? record.totalTokens ?? record.total_tokens ?? data?.totalTokens,
+        mergedRecord.tokens ??
+        mergedRecord.totalTokens ??
+        mergedRecord.total_tokens ??
+        data?.totalTokens,
       input:
-        record.input ?? record.rawInputJson ?? record.inputObj ?? data?.input,
+        record.input ??
+        record.rawInputJson ??
+        record.inputObj ??
+        stepRecord?.input ??
+        data?.input,
+      rawInputJson:
+        record.rawInputJson ??
+        record.inputObj ??
+        stepRecord?.input ??
+        mergedRecord.rawInputJson,
       output:
-        record.output ??
-        record.message ??
+        mergedRecord.output ??
+        mergedRecord.message ??
         data?.output ??
         data?.stdout ??
         data?.message,
-      rawResultJson: record.rawResultJson ?? record,
+      rawResultJson: mergedRecord.rawResultJson ?? record,
       __traceSelectionKey: selectionKey,
       __traceParentKey: parentKey,
       __traceDepth: depth,
@@ -259,7 +319,11 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
     }
   };
   source.forEach((child, index) => walk(child, 1, '', index));
-  childTraceCache.set(parent, { source: sourceValue, children: result });
+  childTraceCache.set(parent, {
+    source: sourceValue,
+    stepsSource: stepsSourceValue,
+    children: result,
+  });
   return result;
 }
 
