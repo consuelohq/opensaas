@@ -17,6 +17,10 @@ type SitesCommandResult = {
   tracesIndexPath: string;
   diffsIndexPath: string;
   docsIndexPath: string;
+  configurationIndexPath: string;
+  toolsIndexPath: string;
+  environmentsIndexPath: string;
+  secretsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
@@ -26,6 +30,10 @@ type SitesCommandResult = {
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
   docsIndexExists: boolean;
+  configurationIndexExists: boolean;
+  toolsIndexExists: boolean;
+  environmentsIndexExists: boolean;
+  secretsIndexExists: boolean;
   message: string;
   pageId?: string;
   pagePath?: string;
@@ -110,6 +118,10 @@ describe('Sites CLI', () => {
     expect(pathResult.tracesIndexPath).toBe(join(tempHome, 'sites', 'traces', 'index.html'));
     expect(pathResult.diffsIndexPath).toBe(join(tempHome, 'sites', 'diffs', 'index.html'));
     expect(pathResult.docsIndexPath).toBe(join(tempHome, 'sites', 'docs', 'index.html'));
+    expect(pathResult.configurationIndexPath).toBe(join(tempHome, 'sites', 'configuration', 'index.html'));
+    expect(pathResult.toolsIndexPath).toBe(join(tempHome, 'sites', 'tools', 'index.html'));
+    expect(pathResult.environmentsIndexPath).toBe(join(tempHome, 'sites', 'environments', 'index.html'));
+    expect(pathResult.secretsIndexPath).toBe(join(tempHome, 'sites', 'secrets', 'index.html'));
     expect(pathResult).not.toHaveProperty('githubIndexPath');
     expect(pathResult.url.startsWith('file:')).toBe(true);
 
@@ -128,6 +140,13 @@ describe('Sites CLI', () => {
     expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
+    for (const route of ['configuration', 'tools', 'environments', 'secrets']) {
+      const routePath = join(tempHome, 'sites', route, 'index.html');
+      expect(existsSync(routePath)).toBe(true);
+      const routeHtml = readFileSync(routePath, 'utf8');
+      expect(routeHtml).not.toContain('window.__CONSUELO_SETTINGS__');
+      expect(routeHtml).not.toContain('private_workspace_marker');
+    }
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
     expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
     expect(JSON.parse(readFileSync(refreshResult.artifactsDataPath, 'utf8')).entries).toEqual([]);
@@ -143,6 +162,10 @@ describe('Sites CLI', () => {
       tracesIndexExists: true,
       diffsIndexExists: true,
       docsIndexExists: true,
+      configurationIndexExists: true,
+      toolsIndexExists: true,
+      environmentsIndexExists: true,
+      secretsIndexExists: true,
       artifacts: 0,
     });
 

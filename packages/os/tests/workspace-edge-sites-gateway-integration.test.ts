@@ -202,6 +202,9 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
     ['diffs', 'index.html'],
     ['docs', 'index.html'],
     ['configuration', 'index.html'],
+    ['tools', 'index.html'],
+    ['environments', 'index.html'],
+    ['secrets', 'index.html'],
   ];
   for (const sitePath of sitePaths) {
     const filePath = path.join(home, 'sites', ...sitePath);
@@ -211,7 +214,7 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
   return home;
 }
 
-function siteSnapshotTarget(siteId: 'launcher' | 'artifacts' | 'traces' | 'diffs' | 'docs' | 'configuration' = 'launcher'): SiteSnapshotTarget {
+function siteSnapshotTarget(siteId: 'launcher' | 'artifacts' | 'traces' | 'diffs' | 'docs' | 'configuration' | 'tools' | 'environments' | 'secrets' = 'launcher'): SiteSnapshotTarget {
   return {
     kind: 'site-snapshot',
     siteId,
@@ -293,6 +296,9 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/diffs', auth: 'public', status: 'active', target: siteSnapshotTarget('diffs') },
       { surface: 'sites', pathPrefix: '/docs', auth: 'public', status: 'active', target: siteSnapshotTarget('docs') },
       { surface: 'sites', pathPrefix: '/configuration', auth: 'public', status: 'active', target: siteSnapshotTarget('configuration') },
+      { surface: 'sites', pathPrefix: '/tools', auth: 'public', status: 'active', target: siteSnapshotTarget('tools') },
+      { surface: 'sites', pathPrefix: '/environments', auth: 'public', status: 'active', target: siteSnapshotTarget('environments') },
+      { surface: 'sites', pathPrefix: '/secrets', auth: 'public', status: 'active', target: siteSnapshotTarget('secrets') },
       { surface: 'sites', pathPrefix: '/settings', auth: 'public', status: 'active', target: { kind: 'redirect', location: '/configuration', statusCode: 308 } },
       { surface: 'sites', pathPrefix: '/gateway/traces/events', auth: 'required', status: 'active', target: gatewayLiveTarget() },
       { surface: 'sites', pathPrefix: '/gateway/traces', auth: 'required', status: 'active', target: gatewayReadTarget() },
@@ -352,6 +358,9 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       '/diffs',
       '/docs',
       '/configuration',
+      '/tools',
+      '/environments',
+      '/secrets',
     ]);
     expect(mcpRoute).toMatchObject({
       surface: 'os',
@@ -624,7 +633,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(JSON.stringify([snapshotBody, overlayBody])).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
-  it('should serve GET /configuration from the published Site snapshot shell instead of the OS connector', async () => {
+  it('should serve first-class Configuration routes from their published Site snapshots instead of the OS connector', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
     const db = d1.createInMemoryWorkspaceRouteD1();
@@ -637,7 +646,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       internalSigningSecret: 'edge-test-secret',
       siteSnapshots: {
         cache: { async match() { return null; }, async put() {} },
-        r2: { async get(key) { r2Reads.push(key); return { text: async () => '<!doctype html><title>Configuration shell</title><main>Hosted Configuration Site shell</main>' }; } },
+        r2: { async get(key) { r2Reads.push(key); return { text: async () => `<!doctype html><title>${key}</title><main>Hosted Configuration Site shell</main>` }; } },
       },
       fetchUpstream: async (request) => {
         upstreamRequests.push(request);
@@ -645,14 +654,22 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       },
     });
 
-    const response = await router.fetch(new Request('https://internal.consuelohq.com/configuration'));
-    const body = await response.text();
+    for (const route of ['configuration', 'tools', 'environments', 'secrets'] as const) {
+      const response = await router.fetch(new Request(`https://internal.consuelohq.com/${route}`));
+      const body = await response.text();
+      expect(response.status).toBe(200);
+      expect(body).toContain('Hosted Configuration Site shell');
+      expect(`${body}
+${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPattern);
+    }
 
-    expect(response.status).toBe(200);
-    expect(body).toContain('Hosted Configuration Site shell');
-    expect(r2Reads).toEqual(['sites/workspace_internal/configuration/version_trace_shell/index.html']);
+    expect(r2Reads).toEqual([
+      'sites/workspace_internal/configuration/version_trace_shell/index.html',
+      'sites/workspace_internal/tools/version_trace_shell/index.html',
+      'sites/workspace_internal/environments/version_trace_shell/index.html',
+      'sites/workspace_internal/secrets/version_trace_shell/index.html',
+    ]);
     expect(upstreamRequests).toHaveLength(0);
-    expect(`${body}\n${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
   it('should align Trace adapter descriptors with edge gateway route records', async () => {
@@ -770,6 +787,9 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/diffs"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/docs"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/configuration"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/tools"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/environments"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/secrets"');
     expect(expectedPlan.routeSql).toContain('"kind":"consuelo-gateway-service"');
     expect(verificationUrls).toEqual([
       'https://internal.consuelohq.com/',
@@ -779,6 +799,9 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
+      'https://internal.consuelohq.com/tools',
+      'https://internal.consuelohq.com/environments',
+      'https://internal.consuelohq.com/secrets',
     ]);
     expect(result).toMatchObject({
       status: 'succeeded',
@@ -791,6 +814,9 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
         'https://internal.consuelohq.com/diffs',
         'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',
+        'https://internal.consuelohq.com/tools',
+        'https://internal.consuelohq.com/environments',
+        'https://internal.consuelohq.com/secrets',
       ],
       versionId: expectedPlan.versionId,
     });

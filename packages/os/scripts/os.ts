@@ -120,6 +120,10 @@ export type SitesCommandResult = {
   tracesIndexPath: string;
   diffsIndexPath: string;
   docsIndexPath: string;
+  configurationIndexPath: string;
+  toolsIndexPath: string;
+  environmentsIndexPath: string;
+  secretsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
@@ -129,6 +133,10 @@ export type SitesCommandResult = {
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
   docsIndexExists: boolean;
+  configurationIndexExists: boolean;
+  toolsIndexExists: boolean;
+  environmentsIndexExists: boolean;
+  secretsIndexExists: boolean;
   message: string;
   pagesDir?: string;
   pagesRegistryPath?: string;
@@ -238,6 +246,10 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     tracesIndexPath: sitesPaths.tracesIndexPath,
     diffsIndexPath: sitesPaths.diffsIndexPath,
     docsIndexPath: sitesPaths.docsIndexPath,
+    configurationIndexPath: sitesPaths.configurationIndexPath,
+    toolsIndexPath: sitesPaths.toolsIndexPath,
+    environmentsIndexPath: sitesPaths.environmentsIndexPath,
+    secretsIndexPath: sitesPaths.secretsIndexPath,
     url: pathToFileURL(sitesPaths.indexPath).href,
     artifacts,
     generatedAt: currentData.updatedAt,
@@ -247,6 +259,10 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     tracesIndexExists: fs.existsSync(sitesPaths.tracesIndexPath),
     diffsIndexExists: fs.existsSync(sitesPaths.diffsIndexPath),
     docsIndexExists: fs.existsSync(sitesPaths.docsIndexPath),
+    configurationIndexExists: fs.existsSync(sitesPaths.configurationIndexPath),
+    toolsIndexExists: fs.existsSync(sitesPaths.toolsIndexPath),
+    environmentsIndexExists: fs.existsSync(sitesPaths.environmentsIndexPath),
+    secretsIndexExists: fs.existsSync(sitesPaths.secretsIndexPath),
     message: `Sites index: ${sitesPaths.indexPath}`,
   };
 }

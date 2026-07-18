@@ -30,7 +30,10 @@ describe('launcher onboarding', () => {
     expect(html).toContain('href="/careers/systems-engineer"');
     expect(html).toContain('Connect to your cloud agents');
     expect(html).toContain('<h2 class="section-title">Configuration</h2>');
-    expect(html).toContain('href="/configuration"');
+    expect(html).toContain('href="/tools"');
+    expect(html).toContain('href="/environments"');
+    expect(html).toContain('href="/secrets"');
+    expect(html).not.toContain('href="/configuration"');
     expect(html).not.toContain('<h2 class="section-title">Settings</h2>');
     expect(html).toContain('Sites');
     expect(html).toContain('Go to market');
@@ -43,6 +46,16 @@ describe('launcher onboarding', () => {
     expect(html).toContain('Documentation');
     expect(html).toContain('Writing');
     expect(html).toContain('Decision loops');
+    const sitesIndex = html.indexOf('<h2 class="section-title">Sites</h2>');
+    const guidesIndex = html.indexOf('<h2 class="section-title">Guides and Tips</h2>');
+    const writingIndex = html.indexOf('<h2 class="section-title">Writing</h2>');
+    const configurationIndex = html.indexOf('<h2 class="section-title">Configuration</h2>');
+    expect(sitesIndex).toBeGreaterThan(-1);
+    expect(guidesIndex).toBeGreaterThan(sitesIndex);
+    expect(writingIndex).toBeGreaterThan(guidesIndex);
+    expect(configurationIndex).toBeGreaterThan(writingIndex);
+    expect(html.indexOf('href="/tools"')).toBeLessThan(html.indexOf('href="/environments"'));
+    expect(html.indexOf('href="/environments"')).toBeLessThan(html.indexOf('href="/secrets"'));
     expect(html).toContain('Connected to 2 local agents');
     expect(html).toContain('Codex');
     expect(html).toContain('OpenCode');
