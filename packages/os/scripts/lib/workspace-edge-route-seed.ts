@@ -223,6 +223,45 @@ const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
+const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/environments/upsert',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'environment-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/environments/*',
+      publicSiteRouteFamily: '/environments/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/environments/delete',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'environment-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/environments/*',
+      publicSiteRouteFamily: '/environments/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/environments',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'environment-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/environments/*',
+      publicSiteRouteFamily: '/environments/*',
+    },
+  },
+];
+
 const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
@@ -316,6 +355,7 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     ...buildLegacyConfigurationRedirectRoutes(),
     ...buildTraceGatewayRoutes(),
     ...buildConfigurationGatewayRoutes(),
+    ...buildEnvironmentGatewayRoutes(),
     ...buildArtifactsGatewayRoutes(),
     ...buildLegacyArtifactRedirectRoutes(),
   ];

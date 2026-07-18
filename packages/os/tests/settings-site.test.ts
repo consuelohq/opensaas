@@ -5,7 +5,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { buildSettingsSnapshot } from '../scripts/lib/settings-snapshot';
-import { renderConfigurationSite, renderSettingsSite } from '../scripts/lib/settings-site';
+import { buildConfigurationSite, renderConfigurationSite, renderSettingsSite } from '../scripts/lib/settings-site';
 
 describe('configuration site', () => {
   it('renders a public shell without embedding private workspace state', () => {
@@ -75,9 +75,17 @@ describe('configuration site', () => {
     expect(environmentsHtml).toContain('<title>Environments - Consuelo OS</title>');
     expect(environmentsHtml).toContain('<h1>Environments</h1>');
     expect(environmentsHtml).toContain('href="/environments" class="is-active"');
-    expect(environmentsHtml).toContain('Environment registry is not available yet');
+    expect(environmentsHtml).toContain('id="environment-form"');
+    expect(environmentsHtml).toContain('id="environment-list"');
+    expect(environmentsHtml).toContain('/gateway/environments/snapshot');
+    expect(environmentsHtml).toContain('/gateway/environments/upsert');
+    expect(environmentsHtml).toContain('/gateway/environments/delete');
+    expect(environmentsHtml).not.toContain('Environment registry is not available yet');
     expect(environmentsHtml).not.toContain('/gateway/configuration/snapshot');
     expect(environmentsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
+    const environmentScript = environmentsHtml.match(/<script>([\s\S]*)<\/script>/)?.[1];
+    expect(environmentScript).toBeTruthy();
+    expect(() => new Function(environmentScript!)).not.toThrow();
 
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
     expect(secretsHtml).toContain('<h1>Secrets</h1>');
@@ -85,6 +93,35 @@ describe('configuration site', () => {
     expect(secretsHtml).toContain('Secret connections are not available yet');
     expect(secretsHtml).not.toContain('/gateway/configuration/snapshot');
     expect(secretsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
+  });
+
+  it('does not embed persisted environment records in the public environments shell', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-environments-public-shell-'));
+    fs.mkdirSync(path.join(home, 'config'), { recursive: true });
+    fs.writeFileSync(path.join(home, 'config', 'environments.json'), JSON.stringify({
+      version: 1,
+      workspaceId: 'private_workspace_environment',
+      environments: [{
+        environmentId: 'env_private_marker',
+        workspaceId: 'private_workspace_environment',
+        name: 'Private production marker',
+        slug: 'private-production-marker',
+        labels: ['private-label-marker'],
+        scope: { kind: 'workspace' },
+        status: 'active',
+        metadata: { PRIVATE_REGION_MARKER: 'private-value-marker' },
+        createdAt: '2026-07-18T00:00:00.000Z',
+        updatedAt: '2026-07-18T00:00:00.000Z',
+      }],
+    }));
+
+    const html = buildConfigurationSite(home, 'environments');
+    expect(html).toContain('/gateway/environments/snapshot');
+    expect(html).not.toContain('Private production marker');
+    expect(html).not.toContain('private-label-marker');
+    expect(html).not.toContain('PRIVATE_REGION_MARKER');
+    expect(html).not.toContain('private-value-marker');
+    expect(html).not.toContain('private_workspace_environment');
   });
 
   it('marks ChatGPT connected when chatgpt-mcp.json exists', () => {

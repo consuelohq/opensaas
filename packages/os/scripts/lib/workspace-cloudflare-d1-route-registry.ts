@@ -28,6 +28,8 @@ export type WorkspaceRouteD1RouteTarget =
         | 'configuration-sites-write-endpoints'
         | 'settings-sites-read-endpoints'
         | 'settings-sites-write-endpoints'
+        | 'environment-sites-read-endpoints'
+        | 'environment-sites-write-endpoints'
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
