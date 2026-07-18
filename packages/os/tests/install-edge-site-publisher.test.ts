@@ -83,11 +83,14 @@ function makeHome(html = '<!doctype html><title>Internal workspace</title><main>
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-install-edge-publish-'));
   const sitePaths = [
     ['index.html'],
-    ['office', 'index.html'],
+    ['artifacts', 'index.html'],
     ['traces', 'index.html'],
     ['diffs', 'index.html'],
     ['docs', 'index.html'],
-    ['settings', 'index.html'],
+    ['configuration', 'index.html'],
+    ['tools', 'index.html'],
+    ['environments', 'index.html'],
+    ['secrets', 'index.html'],
   ];
   for (const sitePath of sitePaths) {
     const filePath = path.join(home, 'sites', ...sitePath);
@@ -123,14 +126,17 @@ contractDescribe('install edge site publisher', () => {
     expect(first.verifyUrl).toBe('https://internal.consuelohq.com/');
     expect(first.verifiedUrls).toEqual([
       'https://internal.consuelohq.com/',
-      'https://internal.consuelohq.com/office',
+      'https://internal.consuelohq.com/artifacts',
       'https://internal.consuelohq.com/observability',
       'https://internal.consuelohq.com/traces',
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
-      'https://internal.consuelohq.com/settings',
+      'https://internal.consuelohq.com/configuration',
+      'https://internal.consuelohq.com/tools',
+      'https://internal.consuelohq.com/environments',
+      'https://internal.consuelohq.com/secrets',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'office', 'traces', 'traces', 'diffs', 'docs', 'settings']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
     expect(first.routeSql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
@@ -138,6 +144,11 @@ contractDescribe('install edge site publisher', () => {
     expect(first.routeSql).toContain('\"pathPrefix\":\"/office\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/diffs\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/docs\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/configuration\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/tools\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/environments\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/secrets\"');
+    expect(first.routeSql).toContain('\"location\":\"/configuration\"');
     expect(first.routeSql).toMatch(/static-shell/);
   });
 
@@ -191,12 +202,15 @@ contractDescribe('install edge site publisher', () => {
       verifyUrl: 'https://internal.consuelohq.com/',
       verifiedUrls: [
         'https://internal.consuelohq.com/',
-        'https://internal.consuelohq.com/office',
+        'https://internal.consuelohq.com/artifacts',
         'https://internal.consuelohq.com/observability',
         'https://internal.consuelohq.com/traces',
         'https://internal.consuelohq.com/diffs',
         'https://internal.consuelohq.com/docs',
-        'https://internal.consuelohq.com/settings',
+        'https://internal.consuelohq.com/configuration',
+        'https://internal.consuelohq.com/tools',
+        'https://internal.consuelohq.com/environments',
+        'https://internal.consuelohq.com/secrets',
       ],
     });
     expect(fs.existsSync(result.logPath)).toBe(true);

@@ -50,6 +50,8 @@ Call `workspace.get_steering` only once per conversation unless Ko explicitly as
 
 Procedural command details live in `packages/workspace/SCRIPTS.md`.
 
+Binary asset gotcha: the current task push path can UTF-8 re-encode raw binary files. Verify file signatures after a push; for small generated assets, prefer text/base64 sources that are materialized at runtime until binary-safe push is confirmed.
+
 ## First things first
 
 This file contains repo-specific knowledge for the Opensaas GTM site codebase. This is specific to our GTM/Dialer product not our main OS product. for those instructions It does not replace the task workflow skill or worker-agent engineering standards skill.

@@ -14,7 +14,7 @@ const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
 const launcherLinks = {
   sites: [
     { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-    { label: 'Artifacts', href: 'https://sites.consuelohq.com/office' },
+    { label: 'Artifacts', href: 'https://sites.consuelohq.com/artifacts' },
     { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
     { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
   ],
@@ -155,10 +155,6 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <p class="muted">ChatGPT is ready now.</p>
         </section>
         <section class="section">
-          <h2 class="section-title">Settings</h2>
-          ${navLinks([{ label: 'Configuration', href: '/settings' }])}
-        </section>
-        <section class="section">
           <h2 class="section-title">Sites</h2>
           ${navLinks(launcherLinks.sites)}
         </section>
@@ -169,6 +165,14 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         <section class="section">
           <h2 class="section-title">Writing</h2>
           ${navLinks(launcherLinks.writing)}
+        </section>
+        <section class="section">
+          <h2 class="section-title">Configuration</h2>
+          ${navLinks([
+            { label: 'Tools', href: '/tools' },
+            { label: 'Environments', href: '/environments' },
+            { label: 'Secrets', href: '/secrets' },
+          ])}
         </section>
       </div>
       <section class="status" aria-label="Local agents">

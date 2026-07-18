@@ -1,213 +1,229 @@
-import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-let tempHome: string;
+import {
+  importLegacyArtifactArchive,
+  publishArtifact,
+  readArtifactCatalog,
+  rollbackArtifact,
+} from '../scripts/lib/artifacts';
+
+let home = '';
 
 beforeEach(() => {
-  tempHome = mkdtempSync(join(tmpdir(), 'consuelo-os-artifacts-'));
+  home = mkdtempSync(join(tmpdir(), 'consuelo-artifacts-'));
 });
 
 afterEach(() => {
-  rmSync(tempHome, { recursive: true, force: true });
+  if (home) rmSync(home, { recursive: true, force: true });
+  home = '';
 });
 
-function runBunEval(code: string): string {
-  return execFileSync('bun', ['-e', code], {
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      CONSUELO_HOME: tempHome,
-    },
-    encoding: 'utf8',
-  });
+function writeHtml(name: string, body: string): string {
+  const filePath = join(home, name);
+  writeFileSync(filePath, `<!doctype html><html><body>${body}</body></html>`, 'utf8');
+  return filePath;
 }
 
-describe('createWorkspaceArtifact', () => {
-  it('writes artifact bytes, persists metadata, and refreshes the local Office site', () => {
-    const descriptor = JSON.parse(runBunEval(`
-      const { createWorkspaceArtifact } = await import('./scripts/lib/artifacts.ts');
-      const descriptor = createWorkspaceArtifact({
-        traceId: 'trc_test_artifact',
-        workspaceId: 'workspace-id',
-        createdByUserId: 'user-id',
-        skillName: 'daily-revenue-brief',
-        title: 'Daily Revenue Brief',
-        fileName: 'daily-revenue-brief.json',
-        type: 'brief',
-        format: 'json',
-        content: { ok: true },
-        inputSummary: { source: 'test' },
-      });
-      process.stdout.write(JSON.stringify(descriptor));
-    `)) as { id: string; localPath: string; path: string; storageMode: string; traceId: string; skillName: string; currentVersionId: string; versionCount: number };
+describe('Consuelo Artifacts', () => {
+  it('publishes route-addressed artifacts with immutable versions and a branded site', () => {
+    const sourceV1 = writeHtml('source-v1.html', '<h1>Version one</h1>');
+    const first = publishArtifact({
+      home,
+      target: sourceV1,
+      path: '/specs/os-artifacts',
+      title: 'OS Artifacts',
+      category: 'specs',
+      template: 'spec',
+      traceId: 'trc_artifact_v1',
+      skillName: 'artifacts',
+      now: '2026-07-15T00:00:00.000Z',
+    });
 
-    expect(descriptor.id).toMatch(/^art_/);
-    expect(descriptor.storageMode).toBe('local');
-    expect(descriptor.traceId).toBe('trc_test_artifact');
-    expect(descriptor.skillName).toBe('daily-revenue-brief');
-    expect(descriptor.path).toBe(`artifacts/${descriptor.id}/versions/000001/daily-revenue-brief.json`);
-    expect(descriptor.currentVersionId).toMatch(/^av_/);
-    expect(descriptor.versionCount).toBe(1);
-    expect(existsSync(descriptor.localPath)).toBe(true);
-    expect(JSON.parse(readFileSync(descriptor.localPath, 'utf8'))).toEqual({ ok: true });
+    expect(first.artifact.path).toBe('/specs/os-artifacts');
+    expect(first.artifact.currentVersionId).toBe('2026-07-15T00-00-00-000Z');
+    expect(first.artifact.versionCount).toBe(1);
+    expect(first.version.contentSha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(existsSync(join(home, 'artifacts', 'current', 'specs', 'os-artifacts', 'index.html'))).toBe(true);
+    expect(existsSync(join(home, 'artifacts', 'versions', 'specs', 'os-artifacts', first.artifact.currentVersionId, 'index.html'))).toBe(true);
 
-    const officeSiteIndexPath = join(tempHome, 'sites', 'office', 'index.html');
-    const officeSiteDataPath = join(tempHome, 'sites', 'office', 'data', 'artifacts.json');
-    expect(existsSync(officeSiteIndexPath)).toBe(true);
-    expect(existsSync(officeSiteDataPath)).toBe(true);
-    expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
-    expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
-    expect(readFileSync(officeSiteIndexPath, 'utf8')).toContain('Daily Revenue Brief');
-    const officeSiteData = JSON.parse(readFileSync(officeSiteDataPath, 'utf8')) as {
-      artifacts: Array<{ id: string; title: string; traceId: string }>;
-    };
-    expect(officeSiteData.artifacts).toContainEqual(expect.objectContaining({
-      id: descriptor.id,
-      title: 'Daily Revenue Brief',
-      traceId: 'trc_test_artifact',
+    const siteIndex = join(home, 'sites', 'artifacts', 'index.html');
+    expect(existsSync(siteIndex)).toBe(true);
+    const html = readFileSync(siteIndex, 'utf8');
+    expect(html).toContain('<title>Consuelo Artifacts</title>');
+    expect(html).toContain('<meta name="description"');
+    expect(html).toContain('<link rel="canonical" href="/artifacts"');
+    expect(html).toContain('data-consuelo-logo');
+    expect(html).toContain('<h1>Artifacts</h1>');
+    expect(html).toContain('Recently Updated');
+    expect(html).toContain('/artifacts/specs/os-artifacts');
+
+    const sourceV2 = writeHtml('source-v2.html', '<h1>Version two</h1>');
+    expect(() => publishArtifact({
+      home,
+      target: sourceV2,
+      path: '/specs/os-artifacts',
+      title: 'OS Artifacts',
+      category: 'specs',
+      template: 'spec',
+      now: '2026-07-15T01:00:00.000Z',
+    })).toThrow(`base version ${first.artifact.currentVersionId} is required`);
+
+    const second = publishArtifact({
+      home,
+      target: sourceV2,
+      path: '/specs/os-artifacts',
+      title: 'OS Artifacts',
+      category: 'specs',
+      template: 'spec',
+      baseVersion: first.artifact.currentVersionId,
+      traceId: 'trc_artifact_v2',
+      skillName: 'artifacts',
+      now: '2026-07-15T01:00:00.000Z',
+    });
+
+    expect(second.artifact.currentVersionId).toBe('2026-07-15T01-00-00-000Z');
+    expect(second.artifact.versionCount).toBe(2);
+    expect(readFileSync(first.version.localPath, 'utf8')).toContain('Version one');
+    expect(readFileSync(second.version.localPath, 'utf8')).toContain('Version two');
+
+    const catalog = readArtifactCatalog(home);
+    expect(catalog.version).toBe(3);
+    expect(catalog.entries).toHaveLength(1);
+    expect(catalog.artifacts[first.artifact.id]?.versions).toHaveLength(2);
+  });
+
+  it('rolls back by creating a new immutable version', () => {
+    const first = publishArtifact({
+      home,
+      target: writeHtml('rollback-v1.html', '<h1>Rollback one</h1>'),
+      path: '/guides/rollback',
+      title: 'Rollback Guide',
+      category: 'guides',
+      template: 'guide',
+      now: '2026-07-15T02:00:00.000Z',
+    });
+    publishArtifact({
+      home,
+      target: writeHtml('rollback-v2.html', '<h1>Rollback two</h1>'),
+      path: '/guides/rollback',
+      title: 'Rollback Guide',
+      category: 'guides',
+      template: 'guide',
+      baseVersion: first.artifact.currentVersionId,
+      now: '2026-07-15T03:00:00.000Z',
+    });
+
+    const rolledBack = rollbackArtifact({
+      home,
+      artifactId: first.artifact.id,
+      versionId: first.artifact.currentVersionId,
+      now: '2026-07-15T04:00:00.000Z',
+      reason: 'restore approved version',
+    });
+
+    expect(rolledBack.artifact.versionCount).toBe(3);
+    expect(rolledBack.version.restoredFromVersionId).toBe(first.artifact.currentVersionId);
+    expect(readFileSync(rolledBack.version.localPath, 'utf8')).toContain('Rollback one');
+  });
+
+  it('imports the legacy Office archive once with catalog and file parity', () => {
+    const legacyRoot = join(home, 'legacy-office');
+    const currentDir = join(legacyRoot, 'artifacts', 'current', 'specs', 'legacy');
+    const versionDir = join(legacyRoot, 'artifacts', 'versions', 'specs', 'legacy', '2026-06-01T00-00-00-000Z');
+    mkdirSync(currentDir, { recursive: true });
+    mkdirSync(versionDir, { recursive: true });
+    writeFileSync(join(currentDir, 'index.html'), '<!doctype html><h1>Legacy current</h1>');
+    writeFileSync(join(versionDir, 'index.html'), '<!doctype html><h1>Legacy current</h1>');
+    writeFileSync(join(legacyRoot, 'archive.json'), JSON.stringify({
+      version: 2,
+      updatedAt: '2026-06-01T00:00:00.000Z',
+      entries: [{
+        id: 'legacy-entry',
+        pageId: 'legacy-page',
+        title: 'Legacy Artifact',
+        url: 'https://sites.consuelohq.com/office/specs/legacy',
+        directUrl: 'http://100.0.0.1:53935/office/specs/legacy',
+        path: '/specs/legacy',
+        target: currentDir,
+        sourceTarget: '/tmp/legacy.html',
+        artifactPath: 'artifacts/current/specs/legacy',
+        template: 'spec',
+        category: 'specs',
+        publishedAt: '2026-06-01T00:00:00.000Z',
+        updatedAt: '2026-06-01T00:00:00.000Z',
+        currentVersionId: '2026-06-01T00-00-00-000Z',
+        versionCount: 1,
+      }],
+      pages: {
+        'legacy-page': {
+          id: 'legacy-page',
+          pageId: 'legacy-page',
+          title: 'Legacy Artifact',
+          path: '/specs/legacy',
+          currentVersionId: '2026-06-01T00-00-00-000Z',
+          versions: [{
+            id: 'legacy-page:2026-06-01T00-00-00-000Z',
+            pageId: 'legacy-page',
+            versionId: '2026-06-01T00-00-00-000Z',
+            previousVersionId: null,
+            title: 'Legacy Artifact',
+            url: 'https://sites.consuelohq.com/office/specs/legacy/versions/2026-06-01T00-00-00-000Z',
+            directUrl: 'http://100.0.0.1:53935/office/specs/legacy/versions/2026-06-01T00-00-00-000Z',
+            path: '/specs/legacy/versions/2026-06-01T00-00-00-000Z',
+            target: join(versionDir, 'index.html'),
+            sourceTarget: '/tmp/legacy.html',
+            artifactPath: 'artifacts/versions/specs/legacy/2026-06-01T00-00-00-000Z',
+            template: 'spec',
+            category: 'specs',
+            publishedAt: '2026-06-01T00:00:00.000Z',
+            updatedAt: '2026-06-01T00:00:00.000Z',
+          }],
+        },
+        'orphan-page': {
+          id: 'orphan-page',
+          pageId: 'orphan-page',
+          title: 'Hidden Orphan',
+          path: '/specs/hidden-orphan',
+          currentVersionId: '2026-05-01T00-00-00-000Z',
+          versions: [{
+            id: 'orphan-page:2026-05-01T00-00-00-000Z',
+            pageId: 'orphan-page',
+            versionId: '2026-05-01T00-00-00-000Z',
+            previousVersionId: null,
+            title: 'Hidden Orphan',
+            path: '/specs/hidden-orphan/versions/2026-05-01T00-00-00-000Z',
+            target: '/missing/orphan',
+            artifactPath: 'artifacts/versions/specs/hidden-orphan/2026-05-01T00-00-00-000Z',
+            template: 'spec',
+            category: 'specs',
+            publishedAt: '2026-05-01T00:00:00.000Z',
+            updatedAt: '2026-05-01T00:00:00.000Z',
+          }],
+        },
+      },
     }));
 
-    const row = JSON.parse(runBunEval(`
-      const { Database } = await import('bun:sqlite');
-      const db = new Database('${join(tempHome, 'node', 'db', 'consuelo.db')}');
-      const row = db.query('SELECT id, workspace_id, created_by_user_id, skill_execution_trace_id, skill_name, title, type, format, storage_mode, storage_key, current_version_id, version_count FROM artifacts WHERE id = ?').get('${descriptor.id}');
-      db.close();
-      process.stdout.write(JSON.stringify(row));
-    `));
-
-    expect(row).toMatchObject({
-      id: descriptor.id,
-      workspace_id: 'workspace-id',
-      created_by_user_id: 'user-id',
-      skill_execution_trace_id: 'trc_test_artifact',
-      skill_name: 'daily-revenue-brief',
-      title: 'Daily Revenue Brief',
-      type: 'brief',
-      format: 'json',
-      storage_mode: 'local',
-      storage_key: `artifacts/${descriptor.id}/versions/000001/daily-revenue-brief.json`,
-      current_version_id: descriptor.currentVersionId,
-      version_count: 1,
+    const result = importLegacyArtifactArchive({ home, sourceRoot: legacyRoot });
+    expect(result).toMatchObject({
+      entries: 1,
+      artifacts: 1,
+      versions: 1,
+      materializedVersions: 1,
+      externalVersions: 0,
+      files: 2,
+      orphanPages: [{
+        pageId: 'orphan-page',
+        path: '/specs/hidden-orphan',
+        reason: 'not-present-in-visible-archive',
+      }],
     });
-  });
-
-  it('should keep immutable versions when rolling back by version number or timestamp', () => {
-    const result = JSON.parse(runBunEval(`
-      const {
-        createWorkspaceArtifact,
-        getWorkspaceArtifactVersion,
-        listWorkspaceArtifactVersions,
-        rollbackWorkspaceArtifact,
-        updateWorkspaceArtifact,
-      } = await import('./scripts/lib/artifacts.ts');
-
-      const created = createWorkspaceArtifact({
-        traceId: 'trc_versions',
-        skillName: 'spec-editor',
-        title: 'StreamOS Spec',
-        fileName: 'streamos.json',
-        type: 'document',
-        format: 'json',
-        content: { body: 'v1' },
-      });
-      const firstCreatedAt = new Date().toISOString();
-      await new Promise((resolve) => setTimeout(resolve, 5));
-      const updated = updateWorkspaceArtifact({
-        artifactId: created.id,
-        traceId: 'trc_versions_update',
-        title: 'StreamOS Spec',
-        content: { body: 'v2' },
-        reason: 'edit',
-      });
-      const historyAfterUpdate = listWorkspaceArtifactVersions(created.id);
-      const beforeRollback = getWorkspaceArtifactVersion(created.id, { versionNumber: 1 });
-      const rolledBack = rollbackWorkspaceArtifact({ artifactId: created.id, versionNumber: 1, reason: 'restore v1' });
-      const historyAfterRollback = listWorkspaceArtifactVersions(created.id);
-      const rollbackByTime = rollbackWorkspaceArtifact({ artifactId: created.id, before: firstCreatedAt, reason: 'restore by time' });
-      const historyAfterTimeRollback = listWorkspaceArtifactVersions(created.id);
-
-      process.stdout.write(JSON.stringify({
-        created,
-        updated,
-        beforeRollback,
-        rolledBack,
-        rollbackByTime,
-        historyAfterUpdate,
-        historyAfterRollback,
-        historyAfterTimeRollback,
-      }));
-    `)) as {
-      created: { id: string; localPath: string; currentVersionId: string; versionCount: number };
-      updated: { localPath: string; currentVersionId: string; versionCount: number };
-      beforeRollback: { id: string; versionNumber: number; contentSha256: string; localPath: string };
-      rolledBack: { localPath: string; restoredFromVersionId: string; versionCount: number };
-      rollbackByTime: { localPath: string; versionCount: number };
-      historyAfterUpdate: Array<{ versionNumber: number; isCurrent: boolean; localPath: string; reason: string | null }>;
-      historyAfterRollback: Array<{ versionNumber: number; isCurrent: boolean; restoredFromVersionId: string | null }>;
-      historyAfterTimeRollback: Array<{ versionNumber: number; isCurrent: boolean }>;
-    };
-
-    expect(result.created.versionCount).toBe(1);
-    expect(result.updated.versionCount).toBe(2);
-    expect(result.created.currentVersionId).not.toBe(result.updated.currentVersionId);
-    expect(result.historyAfterUpdate.map((version) => version.versionNumber)).toEqual([1, 2]);
-    expect(result.historyAfterUpdate.map((version) => version.isCurrent)).toEqual([false, true]);
-    expect(result.historyAfterUpdate[0].localPath).not.toBe(result.historyAfterUpdate[1].localPath);
-    expect(JSON.parse(readFileSync(result.historyAfterUpdate[0].localPath, 'utf8'))).toEqual({ body: 'v1' });
-    expect(JSON.parse(readFileSync(result.historyAfterUpdate[1].localPath, 'utf8'))).toEqual({ body: 'v2' });
-
-    expect(result.beforeRollback.versionNumber).toBe(1);
-    expect(JSON.parse(readFileSync(result.rolledBack.localPath, 'utf8'))).toEqual({ body: 'v1' });
-    expect(result.rolledBack.versionCount).toBe(3);
-    expect(result.historyAfterRollback.map((version) => version.versionNumber)).toEqual([1, 2, 3]);
-    expect(result.historyAfterRollback[2].isCurrent).toBe(true);
-    expect(result.historyAfterRollback[2].restoredFromVersionId).toBe(result.beforeRollback.id);
-
-    expect(JSON.parse(readFileSync(result.rollbackByTime.localPath, 'utf8'))).toEqual({ body: 'v1' });
-    expect(result.rollbackByTime.versionCount).toBe(4);
-    expect(result.historyAfterTimeRollback.map((version) => version.versionNumber)).toEqual([1, 2, 3, 4]);
-    expect(result.historyAfterTimeRollback.at(-1)?.isCurrent).toBe(true);
-  });
-
-  it('should reject ambiguous or missing artifact version selectors when reading or rolling back', () => {
-    const result = JSON.parse(runBunEval(`
-      const { createWorkspaceArtifact, getWorkspaceArtifactVersion, rollbackWorkspaceArtifact } = await import('./scripts/lib/artifacts.ts');
-
-      const created = createWorkspaceArtifact({
-        traceId: 'trc_selector_guards',
-        skillName: 'spec-editor',
-        title: 'Selector Guard Spec',
-        fileName: 'selector-guard.json',
-        type: 'document',
-        format: 'json',
-        content: { body: 'v1' },
-      });
-
-      const ambiguous = (() => {
-        try {
-          getWorkspaceArtifactVersion(created.id, { versionId: created.currentVersionId, versionNumber: 1 });
-          return null;
-        } catch (error: unknown) {
-          return error instanceof Error ? error.message : String(error);
-        }
-      })();
-
-      const missingRollbackSelector = (() => {
-        try {
-          rollbackWorkspaceArtifact({ artifactId: created.id, reason: 'noop' });
-          return null;
-        } catch (error: unknown) {
-          return error instanceof Error ? error.message : String(error);
-        }
-      })();
-
-      process.stdout.write(JSON.stringify({ ambiguous, missingRollbackSelector }));
-    `)) as { ambiguous: string | null; missingRollbackSelector: string | null };
-
-    expect(result.ambiguous).toContain('Provide only one artifact version selector');
-    expect(result.missingRollbackSelector).toContain('Rollback requires versionId');
+    expect(JSON.parse(readFileSync(result.migrationReportPath, 'utf8')).orphanPages).toHaveLength(1);
+    expect(readArtifactCatalog(home).entries[0]?.title).toBe('Legacy Artifact');
+    expect(readFileSync(join(home, 'artifacts', 'current', 'specs', 'legacy', 'index.html'), 'utf8')).toContain('Legacy current');
+    expect(() => importLegacyArtifactArchive({ home, sourceRoot: legacyRoot })).toThrow('already initialized');
   });
 });

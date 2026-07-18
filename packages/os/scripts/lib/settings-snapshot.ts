@@ -277,3 +277,5 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
     capabilities: getCapabilityHealth(home),
   };
 }
+export type ConfigurationSnapshot = SettingsSnapshot;
+export const buildConfigurationSnapshot = buildSettingsSnapshot;

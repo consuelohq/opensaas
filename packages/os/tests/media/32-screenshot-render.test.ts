@@ -50,7 +50,7 @@ describe('media.screenshot.render', () => {
       height: 900,
       theme: 'dark',
       accent: '#0000F2',
-      background: '#0000F2',
+      background: '#08080A',
       padding: 120,
       fit: 'contain',
       pattern: 'none',
@@ -62,9 +62,10 @@ describe('media.screenshot.render', () => {
     expect(plan.args.join(' ')).toContain('cloud-1.png');
     expect(plan.args.join(' ')).toContain('cloud-4.png');
     expect(plan.args.join(' ')).toContain('[dots4]');
-    expect(plan.args.join(' ')).toMatch(/gblur/);
+    expect(plan.args.join(' ')).not.toContain('pad=iw+8');
+    expect(plan.args.join(' ')).not.toMatch(/gblur|shadowblur|withshadow/);
     expect(plan.args.join(' ')).toMatch(/overlay/);
-    expect(plan.args.join(' ')).toContain('0x0000F2');
+    expect(plan.args.join(' ')).toContain('0x08080A');
   });
 
   it('should satisfy media contract when it supports light and dark templates without changing screenshot pixels', async () => {
@@ -124,7 +125,7 @@ describe('media.screenshot.render', () => {
       id: 'screenshot_fixture_001',
       source: { path: 'fixtures/chatgpt.png' },
       output: { path: 'renders/chatgpt-x.png', width: 1600, height: 900, format: 'png', fileSizeBytes: 1024 },
-      template: { theme: 'dark', accent: '#0000F2', background: '#0000F2', padding: 120, fit: 'contain', pattern: 'none', dots: true },
+      template: { theme: 'dark', accent: '#0000F2', background: '#08080A', padding: 120, fit: 'contain', pattern: 'none', dots: true },
       toolVersions: { ffmpeg: 'fixture-ffmpeg' },
       deterministic: true,
     };

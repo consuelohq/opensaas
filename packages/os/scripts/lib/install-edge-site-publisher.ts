@@ -57,12 +57,15 @@ const writeLog = (file: string, entries: unknown[]) => { fs.mkdirSync(path.dirna
 
 const snapshotSites = [
   { siteId: 'launcher', pathPrefix: '/', relativePath: ['index.html'] },
-  { siteId: 'office', pathPrefix: '/office', relativePath: ['office', 'index.html'] },
+  { siteId: 'artifacts', pathPrefix: '/artifacts', relativePath: ['artifacts', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/observability', relativePath: ['traces', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/traces', relativePath: ['traces', 'index.html'] },
   { siteId: 'diffs', pathPrefix: '/diffs', relativePath: ['diffs', 'index.html'] },
   { siteId: 'docs', pathPrefix: '/docs', relativePath: ['docs', 'index.html'] },
-  { siteId: 'settings', pathPrefix: '/settings', relativePath: ['settings', 'index.html'] },
+  { siteId: 'configuration', pathPrefix: '/configuration', relativePath: ['configuration', 'index.html'] },
+  { siteId: 'tools', pathPrefix: '/tools', relativePath: ['tools', 'index.html'] },
+  { siteId: 'environments', pathPrefix: '/environments', relativePath: ['environments', 'index.html'] },
+  { siteId: 'secrets', pathPrefix: '/secrets', relativePath: ['secrets', 'index.html'] },
 ] as const;
 
 function readSnapshotHtml(snapshotPath: string, siteName: string): string {

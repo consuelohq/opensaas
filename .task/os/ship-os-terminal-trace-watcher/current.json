@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-os-terminal-trace-watcher",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1518,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1518",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1518",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1518/ship-os-terminal-trace-watcher",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1518",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1518/ship-os-terminal-trace-watcher",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-terminal-trace-watcher",
+  "taskSession": "tsk_4920af722e38",
+  "tmuxSession": "opensaas-os-ship-os-terminal-trace-watcher-4920af72",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-terminal-trace-watcher/.task/os/ship-os-terminal-trace-watcher/session.json",
+  "createdAt": "2026-07-15T23:26:54.964Z"
+}

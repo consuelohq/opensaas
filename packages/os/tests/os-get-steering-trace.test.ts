@@ -49,12 +49,13 @@ afterEach(() => {
 });
 
 describe('OS steering execution recording', () => {
-  it('loads local steering folder files and ignores legacy steering.md', () => {
+  it('loads supported local steering files while excluding decision and legacy steering', () => {
     const home = makeHome();
     const steeringDir = path.join(home, 'steering');
     fs.mkdirSync(steeringDir, { recursive: true });
     fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Local system prompt\n\nlocal system body\n');
     fs.writeFileSync(path.join(steeringDir, 'decision.md'), '# Local decision\n\nlocal decision body\n');
+    fs.writeFileSync(path.join(steeringDir, 'operator-notes.md'), '# Operator notes\n\noperator notes body\n');
     fs.writeFileSync(path.join(steeringDir, 'steering.md'), '# Legacy steering\n\nlegacy body must be ignored\n');
 
     const { first, second } = runOsSnippet<{ first: string; second: string }>(home, `
@@ -69,10 +70,12 @@ describe('OS steering execution recording', () => {
 
     expect(first).toContain('# system_prompt.md');
     expect(first).toContain('local system body');
-    expect(first).toContain('# decision.md');
-    expect(first).toContain('local decision body');
+    expect(first).toContain('# operator-notes.md');
+    expect(first).toContain('operator notes body');
+    expect(first).not.toContain('# decision.md');
+    expect(first).not.toContain('local decision body');
     expect(first).not.toContain('legacy body must be ignored');
-    expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# decision.md'));
+    expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# operator-notes.md'));
     expect(second).toContain('updated system body');
     expect(second).not.toContain('local system body');
   });
@@ -124,6 +127,7 @@ describe('OS steering execution recording', () => {
     expect(result.first).toBe('os steering payload');
     expect(result.second).toContain('GET_STEERING_LOOP_GUARD');
     expect(result.second).toContain('$CONSUELO_HOME/steering/system_prompt.md');
+    expect(result.second).not.toContain('$CONSUELO_HOME/steering/decision.md');
     expect(result.third).toContain('GET_STEERING_RATE_LIMITED');
     expect(result.fourth).toContain('GET_STEERING_COOLDOWN');
     expect(result.builds).toBe(1);

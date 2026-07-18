@@ -1,5 +1,5 @@
-import { Database } from 'bun:sqlite';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -44,6 +44,18 @@ export type CapabilityHealth = {
 type OsConfig = {
   agents?: Array<{ name: string; status?: string }>;
 };
+
+type ReadonlyDatabase = { close: () => void };
+type DatabaseConstructor = new (
+  filePath: string,
+  options: { readonly: boolean },
+) => ReadonlyDatabase;
+
+function openReadonlyDatabase(filePath: string): ReadonlyDatabase {
+  const require = createRequire(import.meta.url);
+  const sqlite = require('bun:sqlite') as { Database: DatabaseConstructor };
+  return new sqlite.Database(filePath, { readonly: true });
+}
 
 function expandHome(value: string): string {
   if (value === '~') return os.homedir();
@@ -128,7 +140,7 @@ export function getCapabilityHealth(home?: string): CapabilityHealth[] {
   );
 
   try {
-    const db = new Database(dbPath, { readonly: true });
+    const db = openReadonlyDatabase(dbPath);
     db.close();
     checks.push(connected('sqlite', 'SQLite', 'SQLite database opens'));
   } catch (error: unknown) {

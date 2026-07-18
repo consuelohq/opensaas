@@ -1,4 +1,5 @@
 import type { GatewaySecurityConfig } from '../../lib/security-gateway';
+import { recordGatewayAuthorizationTraceSafely } from '../../lib/trace-persistence';
 
 import { jsonResponse, unauthorized } from '../middleware/errors';
 
@@ -11,6 +12,25 @@ function scopeAllowed(scopes: string[], requiredScope: string): boolean {
     return true;
   }
   return scopes.includes('mcp:call') && (category === 'read' || category === 'write');
+}
+
+function authorizationFailure(input: {
+  config: GatewaySecurityConfig;
+  requiredScope: string;
+  status: number;
+  code: string;
+  message: string;
+  response: Response;
+}): Response {
+  recordGatewayAuthorizationTraceSafely({
+    workspaceId: input.config.workspaceId,
+    route: '/mcp',
+    requiredScope: input.requiredScope,
+    status: input.status,
+    code: input.code,
+    message: input.message,
+  });
+  return input.response;
 }
 
 export async function authorizeConsueloOAuthMcpRequest(input: {
@@ -38,32 +58,54 @@ export async function authorizeConsueloOAuthMcpRequest(input: {
       }).toString(),
     });
   } catch {
-    return unauthorized(
-      'OAUTH_INTROSPECTION_UNAVAILABLE',
-      'Consuelo OAuth introspection is unavailable.',
-    );
+    const code = 'OAUTH_INTROSPECTION_UNAVAILABLE';
+    const message = 'Consuelo OAuth introspection is unavailable.';
+    return authorizationFailure({
+      config: input.config,
+      requiredScope: input.requiredScope,
+      status: 401,
+      code,
+      message,
+      response: unauthorized(code, message),
+    });
   }
 
   const payload = await response.json().catch(() => null) as
     | Record<string, unknown>
     | null;
   if (!response.ok || !payload || payload.active !== true) {
-    return unauthorized(
-      'UNKNOWN_TOKEN',
-      'Gateway bearer token is not recognized.',
-    );
+    const code = 'UNKNOWN_TOKEN';
+    const message = 'Gateway bearer token is not recognized.';
+    return authorizationFailure({
+      config: input.config,
+      requiredScope: input.requiredScope,
+      status: 401,
+      code,
+      message,
+      response: unauthorized(code, message),
+    });
   }
 
   const workspaceHost = typeof payload.workspace_host === 'string'
     ? payload.workspace_host
     : '';
   if (workspaceHost !== input.config.workspaceHost) {
-    return jsonResponse({
+    const code = 'WORKSPACE_MISMATCH';
+    const message = 'OAuth token is not bound to this workspace.';
+    const response = jsonResponse({
       error: {
-        code: 'WORKSPACE_MISMATCH',
-        message: 'OAuth token is not bound to this workspace.',
+        code,
+        message,
       },
     }, 403);
+    return authorizationFailure({
+      config: input.config,
+      requiredScope: input.requiredScope,
+      status: 403,
+      code,
+      message,
+      response,
+    });
   }
 
   const scopes = Array.isArray(payload.scopes)
@@ -72,12 +114,22 @@ export async function authorizeConsueloOAuthMcpRequest(input: {
       ? payload.scope.split(/\s+/).filter(Boolean)
       : [];
   if (!scopeAllowed(scopes, input.requiredScope)) {
-    return jsonResponse({
+    const code = 'MISSING_SCOPE';
+    const message = 'OAuth token does not grant the required scope.';
+    const response = jsonResponse({
       error: {
-        code: 'MISSING_SCOPE',
-        message: 'OAuth token does not grant the required scope.',
+        code,
+        message,
       },
     }, 403);
+    return authorizationFailure({
+      config: input.config,
+      requiredScope: input.requiredScope,
+      status: 403,
+      code,
+      message,
+      response,
+    });
   }
 
   return null;

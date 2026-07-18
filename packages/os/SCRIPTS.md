@@ -1128,6 +1128,8 @@ bun run mac -- port find --json
 
 Use this command to inspect, start, stop, or restart the local Bun server. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
 
+The daemon sets `CONSUELO_TRACE_DB` to `$CONSUELO_HOME/node/db/traces.db` unless explicitly overridden. This trace sidecar stores high-volume `tool_traces`; `$CONSUELO_HOME/node/db/consuelo.db` remains the operational runtime database.
+
 ```bash
 bun run consuelo-reload -- status
 bun run consuelo-reload -- start
@@ -1168,9 +1170,9 @@ bun run office -- --help
 
 ---
 
-### media:screenshot — frame a local screenshot for social/X
+### media:screenshot — compose a local screenshot for social/X
 
-Uses the OS media CLI and the installed FFmpeg runtime. The default is a 1600×900 Consuelo blue (`#0000F2`) canvas with the website's subtle dither clouds in the corners, generous padding, a restrained frame, and a soft shadow. It writes one PNG and does not alter the source screenshot pixels.
+Uses the OS media CLI and the installed FFmpeg runtime. The default is a 1600×900 dark (`#08080A`) canvas with the website's subtle dither clouds in the corners and generous padding. The source screenshot is composited directly without an added frame or drop shadow. It writes one PNG and does not alter the source screenshot pixels.
 
 ```bash
 bun run media:screenshot -- --input ./shot.png --out ./social.png --json
@@ -1517,3 +1519,25 @@ Active leases are advisory but enforced by default. A different agent cannot pat
 
 
 
+
+## Trace watcher
+
+- `bun run trace:watch` follows the canonical OS `tool_traces` sidecar with readable timestamps, status, duration, token totals, branch coloring, nested operations, and compact result details.
+- The database path resolves in this order: `--db`, `CONSUELO_TRACE_DB`, `TRACE_DB`, then `$CONSUELO_HOME/node/db/traces.db`.
+- Use `--once --limit 50` for a bounded snapshot, or omit `--once` for live polling. Filters include `--errors`, `--since`, `--task`, `--branch`, `--worktree`, and `--tool`.
+
+## Configuration control plane
+
+Configuration overlay commands mutate the effective OS manifest without editing generated manifests:
+
+```bash
+bun ./scripts/os.ts configuration status --json
+bun ./scripts/os.ts configuration disable-tool <name> --json
+bun ./scripts/os.ts configuration enable-tool <name> --json
+bun ./scripts/os.ts configuration disable-skill <name> --json
+bun ./scripts/os.ts configuration enable-skill <name> --json
+bun ./scripts/os.ts configuration disable-workflow <name> --json
+bun ./scripts/os.ts configuration enable-workflow <name> --json
+```
+
+The legacy `settings` command remains an alias during migration. Mutations are serialized per OS home, materialize the public Configuration shell plus a private local snapshot, and append a redacted `configuration.overlay.changed` event to `logs/control-plane-audit.jsonl`. Disabled workflows are rejected by workflow intent routing. The public Configuration HTML contains no workspace snapshot; private state loads through the authenticated Configuration gateway at `/gateway/configuration/*`.

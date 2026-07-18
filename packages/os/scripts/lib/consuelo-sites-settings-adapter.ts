@@ -8,17 +8,45 @@ import {
   type ConsueloSiteServiceRegistry,
 } from './consuelo-sites-gateway-types';
 
-export const CONSUELO_SETTINGS_SITE_SERVICE_REGISTRATIONS: ConsueloGatewayServiceRegistration[] = [
+const sourceModes = ['local-networked', 'cloud-compute', 'local-off-network'] as const;
+
+export const CONSUELO_CONFIGURATION_SITE_SERVICE_REGISTRATIONS: ConsueloGatewayServiceRegistration[] = [
+  {
+    publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
+    site: 'configuration',
+    capability: 'configuration-read',
+    serviceName: 'configuration-sites-read-endpoints',
+    gatewayServiceName: 'configuration-sites-read-endpoints',
+    gatewayAdapterName: 'configuration-sites-read-endpoints',
+    publicSiteRouteFamily: '/configuration/*',
+    gatewayRouteFamily: '/gateway/configuration/*',
+    supportedSourceModes: [...sourceModes],
+    cachePolicy: { strategy: 'materialized-window', ttlSeconds: 10 },
+    circuitState: { state: 'closed', retryPolicy: 'normal' },
+  },
+  {
+    publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
+    site: 'configuration',
+    capability: 'configuration-write',
+    serviceName: 'configuration-sites-write-endpoints',
+    gatewayServiceName: 'configuration-sites-write-endpoints',
+    gatewayAdapterName: 'configuration-sites-write-endpoints',
+    publicSiteRouteFamily: '/configuration/*',
+    gatewayRouteFamily: '/gateway/configuration/*',
+    supportedSourceModes: [...sourceModes],
+    cachePolicy: { strategy: 'write-through', ttlSeconds: 0 },
+    circuitState: { state: 'closed', retryPolicy: 'normal' },
+  },
   {
     publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
     site: 'settings',
     capability: 'settings-read',
-    serviceName: 'settings-sites-read-endpoints',
-    gatewayServiceName: 'settings-sites-read-endpoints',
-    gatewayAdapterName: 'settings-sites-read-endpoints',
+    serviceName: 'configuration-sites-read-endpoints',
+    gatewayServiceName: 'configuration-sites-read-endpoints',
+    gatewayAdapterName: 'configuration-sites-read-endpoints',
     publicSiteRouteFamily: '/settings/*',
     gatewayRouteFamily: '/gateway/settings/*',
-    supportedSourceModes: ['local-networked', 'cloud-compute', 'local-off-network'],
+    supportedSourceModes: [...sourceModes],
     cachePolicy: { strategy: 'materialized-window', ttlSeconds: 10 },
     circuitState: { state: 'closed', retryPolicy: 'normal' },
   },
@@ -26,26 +54,30 @@ export const CONSUELO_SETTINGS_SITE_SERVICE_REGISTRATIONS: ConsueloGatewayServic
     publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
     site: 'settings',
     capability: 'settings-write',
-    serviceName: 'settings-sites-write-endpoints',
-    gatewayServiceName: 'settings-sites-write-endpoints',
-    gatewayAdapterName: 'settings-sites-write-endpoints',
+    serviceName: 'configuration-sites-write-endpoints',
+    gatewayServiceName: 'configuration-sites-write-endpoints',
+    gatewayAdapterName: 'configuration-sites-write-endpoints',
     publicSiteRouteFamily: '/settings/*',
     gatewayRouteFamily: '/gateway/settings/*',
-    supportedSourceModes: ['local-networked', 'cloud-compute', 'local-off-network'],
+    supportedSourceModes: [...sourceModes],
     cachePolicy: { strategy: 'write-through', ttlSeconds: 0 },
     circuitState: { state: 'closed', retryPolicy: 'normal' },
   },
 ];
 
-export function registerSettingsConsueloSiteServices(
+export function registerConfigurationConsueloSiteServices(
   registry: ConsueloSiteServiceRegistry,
 ): ConsueloSiteServiceRegistry {
-  return CONSUELO_SETTINGS_SITE_SERVICE_REGISTRATIONS.reduce(
+  return CONSUELO_CONFIGURATION_SITE_SERVICE_REGISTRATIONS.reduce(
     (nextRegistry, registration) => registerConsueloSiteService(nextRegistry, registration),
     registry,
   );
 }
 
-export function createSettingsConsueloSiteServiceRegistry(): ConsueloSiteServiceRegistry {
-  return registerSettingsConsueloSiteServices(createConsueloSiteServiceRegistry());
+export function createConfigurationConsueloSiteServiceRegistry(): ConsueloSiteServiceRegistry {
+  return registerConfigurationConsueloSiteServices(createConsueloSiteServiceRegistry());
 }
+
+export const CONSUELO_SETTINGS_SITE_SERVICE_REGISTRATIONS = CONSUELO_CONFIGURATION_SITE_SERVICE_REGISTRATIONS;
+export const registerSettingsConsueloSiteServices = registerConfigurationConsueloSiteServices;
+export const createSettingsConsueloSiteServiceRegistry = createConfigurationConsueloSiteServiceRegistry;
