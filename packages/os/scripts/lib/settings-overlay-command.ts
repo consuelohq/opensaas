@@ -35,7 +35,7 @@ async function patchFromCommand(
     if (!result.ok) throw new Error(result.error.message);
     return {
       ok: true,
-      command: 'settings',
+      command: 'configuration',
       home,
       overlayPath: manifestOverlayPath(home),
       overlay: readManifestOverlay(home),
@@ -43,7 +43,7 @@ async function patchFromCommand(
     };
   } catch (cause: unknown) {
     throw new Error(
-      cause instanceof Error ? cause.message.slice(0, 240) : 'Settings overlay command failed.',
+      cause instanceof Error ? cause.message.slice(0, 240) : 'Configuration overlay command failed.',
     );
   }
 }
@@ -57,18 +57,18 @@ export async function runSettingsOverlayCommand(args: string[]): Promise<Setting
     const overlay = readManifestOverlay(home);
     return {
       ok: true,
-      command: 'settings status',
+      command: 'configuration status',
       home,
       overlayPath: manifestOverlayPath(home),
       overlay,
-      message: 'Settings overlay status loaded.',
+      message: 'Configuration overlay status loaded.',
     };
   }
 
   const enabled = action === 'enable-tool' || action === 'enable-skill' || action === 'enable-workflow';
   const disabled = action === 'disable-tool' || action === 'disable-skill' || action === 'disable-workflow';
   if (!enabled && !disabled) {
-    throw new Error('settings requires enable-tool|disable-tool|enable-skill|disable-skill|enable-workflow|disable-workflow|status');
+    throw new Error('configuration requires enable-tool|disable-tool|enable-skill|disable-skill|enable-workflow|disable-workflow|status');
   }
 
   const patchKind = action.endsWith('-tool')
@@ -78,7 +78,7 @@ export async function runSettingsOverlayCommand(args: string[]): Promise<Setting
       : 'workflow';
 
   if (!name || name.trim().length === 0) {
-    throw new Error(`settings ${action} requires a name`);
+    throw new Error(`configuration ${action} requires a name`);
   }
 
   return patchFromCommand(home, {
@@ -87,3 +87,5 @@ export async function runSettingsOverlayCommand(args: string[]): Promise<Setting
     enabled,
   });
 }
+
+export const runConfigurationOverlayCommand = runSettingsOverlayCommand;

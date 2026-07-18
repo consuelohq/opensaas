@@ -271,7 +271,7 @@ const TRACE_SITES_ARCHITECTURE_MODES: Record<TraceSourceMode, TraceSitesArchitec
     requiresConsueloNetwork: false,
     emitsThroughGateway: false,
     implementedForTraceSites: false,
-    outOfScopeReason: 'Future installer/settings mode; hosted Sites require a configured bridge before hydration.',
+    outOfScopeReason: 'Future installer/configuration mode; hosted Sites require a configured bridge before hydration.',
   },
 };
 

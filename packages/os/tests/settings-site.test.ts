@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { buildSettingsSnapshot } from '../scripts/lib/settings-snapshot';
 import { renderSettingsSite } from '../scripts/lib/settings-site';
 
-describe('settings site', () => {
+describe('configuration site', () => {
   it('renders a public shell without embedding private workspace state', () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-public-shell-'));
     fs.writeFileSync(
@@ -32,18 +32,20 @@ describe('settings site', () => {
     const snapshot = buildSettingsSnapshot(home);
     const html = renderSettingsSite();
 
-    expect(html).toContain('<title>Settings - Consuelo OS</title>');
-    expect(html).toContain('aria-label="Settings navigation"');
+    expect(html).toContain('<title>Configuration - Consuelo OS</title>');
+    expect(html).toContain('aria-label="Configuration navigation"');
     expect(html).toContain('href="#configuration"');
     expect(html).toContain('href="#connections"');
     expect(html).toContain('href="#tools"');
     expect(html).toContain('href="#skills"');
     expect(html).toContain('href="#run-books"');
     expect(html).toContain('href="#capabilities"');
-    expect(html).toContain('/gateway/settings/snapshot');
-    expect(html).toContain('Loading workspace settings');
-    expect(html).toContain('Settings unavailable');
-    expect(html).toContain('/gateway/settings/overlay');
+    expect(html).toContain('/gateway/configuration/snapshot');
+    expect(html).toContain('Loading workspace configuration');
+    expect(html).toContain('Configuration unavailable');
+    expect(html).toContain('/gateway/configuration/overlay');
+    expect(html).not.toContain('/gateway/settings/');
+    expect(html).not.toContain('Settings');
     expect(html).not.toContain('window.__CONSUELO_SETTINGS__');
     expect(html).not.toContain(snapshot.workspace.workspaceId ?? 'private_workspace_marker');
     expect(html).not.toContain(snapshot.workspace.workspaceHost ?? 'private-workspace-marker.consuelohq.com');

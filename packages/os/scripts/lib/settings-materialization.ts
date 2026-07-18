@@ -4,37 +4,48 @@ import path from 'node:path';
 import { buildSettingsSnapshot, type SettingsSnapshot } from './settings-snapshot';
 import { renderSettingsSite } from './settings-site';
 
-export type SettingsMaterializationPaths = {
-  settingsDir: string;
-  settingsDataDir: string;
-  settingsIndexPath: string;
-  settingsSnapshotPath: string;
+export type ConfigurationMaterializationPaths = {
+  configurationDir: string;
+  configurationDataDir: string;
+  configurationIndexPath: string;
+  configurationSnapshotPath: string;
 };
 
-export type MaterializedSettingsSite = SettingsMaterializationPaths & {
+export type MaterializedConfigurationSite = ConfigurationMaterializationPaths & {
   snapshot: SettingsSnapshot;
 };
 
-export function getSettingsMaterializationPaths(home: string): SettingsMaterializationPaths {
+export function getConfigurationMaterializationPaths(
+  home: string,
+): ConfigurationMaterializationPaths {
   const sitesDir = path.join(home, 'sites');
-  const settingsDir = path.join(sitesDir, 'settings');
-  const settingsDataDir = path.join(sitesDir, '.data', 'settings');
+  const configurationDir = path.join(sitesDir, 'configuration');
+  const configurationDataDir = path.join(sitesDir, '.data', 'configuration');
   return {
-    settingsDir,
-    settingsDataDir,
-    settingsIndexPath: path.join(settingsDir, 'index.html'),
-    settingsSnapshotPath: path.join(settingsDataDir, 'snapshot.json'),
+    configurationDir,
+    configurationDataDir,
+    configurationIndexPath: path.join(configurationDir, 'index.html'),
+    configurationSnapshotPath: path.join(configurationDataDir, 'snapshot.json'),
   };
 }
 
-export function materializeSettingsSite(
+export function materializeConfigurationSite(
   home: string,
   snapshot: SettingsSnapshot = buildSettingsSnapshot(home),
-): MaterializedSettingsSite {
-  const paths = getSettingsMaterializationPaths(home);
-  fs.mkdirSync(paths.settingsDir, { recursive: true });
-  fs.mkdirSync(paths.settingsDataDir, { recursive: true });
-  fs.writeFileSync(paths.settingsIndexPath, renderSettingsSite(), { mode: 0o600 });
-  fs.writeFileSync(paths.settingsSnapshotPath, `${JSON.stringify(snapshot, null, 2)}\n`, { mode: 0o600 });
+): MaterializedConfigurationSite {
+  const paths = getConfigurationMaterializationPaths(home);
+  fs.mkdirSync(paths.configurationDir, { recursive: true });
+  fs.mkdirSync(paths.configurationDataDir, { recursive: true });
+  fs.writeFileSync(paths.configurationIndexPath, renderSettingsSite(), { mode: 0o600 });
+  fs.writeFileSync(
+    paths.configurationSnapshotPath,
+    `${JSON.stringify(snapshot, null, 2)}\n`,
+    { mode: 0o600 },
+  );
   return { ...paths, snapshot };
 }
+
+export type SettingsMaterializationPaths = ConfigurationMaterializationPaths;
+export type MaterializedSettingsSite = MaterializedConfigurationSite;
+export const getSettingsMaterializationPaths = getConfigurationMaterializationPaths;
+export const materializeSettingsSite = materializeConfigurationSite;

@@ -14,7 +14,7 @@ import {
   renderLauncherOnboarding,
   type LauncherLocalAgent,
 } from './launcher-onboarding';
-import { materializeSettingsSite } from './settings-materialization';
+import { materializeConfigurationSite } from './settings-materialization';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -90,10 +90,10 @@ export type SitesPaths = {
   diffsIndexPath: string;
   docsDir: string;
   docsIndexPath: string;
-  settingsDir: string;
-  settingsDataDir: string;
-  settingsIndexPath: string;
-  settingsSnapshotPath: string;
+  configurationDir: string;
+  configurationDataDir: string;
+  configurationIndexPath: string;
+  configurationSnapshotPath: string;
 };
 
 export type MaterializeSitesOptions = {
@@ -111,8 +111,8 @@ export type MaterializeSitesResult = {
   artifactsIndexPath: string;
   artifactsDataPath: string;
   docsIndexPath: string;
-  settingsIndexPath: string;
-  settingsSnapshotPath: string;
+  configurationIndexPath: string;
+  configurationSnapshotPath: string;
   data: ArtifactCatalog;
   actions: SitesAction[];
 };
@@ -725,8 +725,8 @@ export function getSitesPaths(home: string): SitesPaths {
   const tracesDir = path.join(sitesDir, 'traces');
   const diffsDir = path.join(sitesDir, 'diffs');
   const docsDir = path.join(sitesDir, 'docs');
-  const settingsDir = path.join(sitesDir, 'settings');
-  const settingsDataDir = path.join(sitesDir, '.data', 'settings');
+  const configurationDir = path.join(sitesDir, 'configuration');
+  const configurationDataDir = path.join(sitesDir, '.data', 'configuration');
   return {
     sitesDir,
     indexPath: path.join(sitesDir, 'index.html'),
@@ -744,17 +744,17 @@ export function getSitesPaths(home: string): SitesPaths {
     diffsIndexPath: path.join(diffsDir, 'index.html'),
     docsDir,
     docsIndexPath: path.join(docsDir, 'index.html'),
-    settingsDir,
-    settingsDataDir,
-    settingsIndexPath: path.join(settingsDir, 'index.html'),
-    settingsSnapshotPath: path.join(settingsDataDir, 'snapshot.json'),
+    configurationDir,
+    configurationDataDir,
+    configurationIndexPath: path.join(configurationDir, 'index.html'),
+    configurationSnapshotPath: path.join(configurationDataDir, 'snapshot.json'),
   };
 }
 
 export function materializeSites(options: MaterializeSitesOptions): MaterializeSitesResult {
   const paths = getSitesPaths(options.home);
   const actions: SitesAction[] = [];
-  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.settingsDir, paths.settingsDataDir]) {
+  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
   }
   const data = readArtifactCatalog(options.home);
@@ -764,15 +764,15 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.artifactsDataPath, options.dryRun, 'Artifacts catalog snapshot generated');
   addFileAction(actions, paths.artifactsIndexPath, options.dryRun, 'Artifacts site generated');
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
-  addFileAction(actions, paths.settingsIndexPath, options.dryRun, 'Settings site generated');
-  addFileAction(actions, paths.settingsSnapshotPath, options.dryRun, 'Settings snapshot generated');
+  addFileAction(actions, paths.configurationIndexPath, options.dryRun, 'Configuration site generated');
+  addFileAction(actions, paths.configurationSnapshotPath, options.dryRun, 'Configuration snapshot generated');
   if (!options.dryRun) {
     fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     refreshArtifactsSite(options.home, data);
     fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
-    materializeSettingsSite(options.home);
+    materializeConfigurationSite(options.home);
   }
   return {
     sitesDir: paths.sitesDir,
@@ -782,8 +782,8 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     artifactsIndexPath: paths.artifactsIndexPath,
     artifactsDataPath: paths.artifactsDataPath,
     docsIndexPath: paths.docsIndexPath,
-    settingsIndexPath: paths.settingsIndexPath,
-    settingsSnapshotPath: paths.settingsSnapshotPath,
+    configurationIndexPath: paths.configurationIndexPath,
+    configurationSnapshotPath: paths.configurationSnapshotPath,
     data,
     actions,
   };

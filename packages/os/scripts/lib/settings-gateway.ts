@@ -26,9 +26,9 @@ function errorCode(error: SettingsControlPlaneError): string {
     UnknownTool: 'UNKNOWN_TOOL',
     UnknownSkill: 'UNKNOWN_SKILL',
     UnknownWorkflow: 'UNKNOWN_WORKFLOW',
-    SnapshotFailure: 'SETTINGS_SNAPSHOT_FAILED',
-    PersistenceFailure: 'SETTINGS_PERSISTENCE_FAILED',
-    AuditFailure: 'SETTINGS_AUDIT_FAILED',
+    SnapshotFailure: 'CONFIGURATION_SNAPSHOT_FAILED',
+    PersistenceFailure: 'CONFIGURATION_PERSISTENCE_FAILED',
+    AuditFailure: 'CONFIGURATION_AUDIT_FAILED',
   };
   return codes[error.code];
 }
@@ -44,9 +44,9 @@ function gatewayFailure(error: SettingsControlPlaneError): SettingsGatewayResult
 function defaultActor(): ControlPlaneAuditActor {
   return {
     actorType: 'system',
-    actorId: 'settings-gateway',
+    actorId: 'configuration-gateway',
     workspaceId: 'workspace-local',
-    correlationId: `settings_${randomUUID()}`,
+    correlationId: `configuration_${randomUUID()}`,
   };
 }
 
@@ -58,7 +58,7 @@ export function parseSettingsOverlayPatch(body: string): ManifestOverlayPatch | 
     return {
       ok: false,
       status: 400,
-      error: { code: 'INVALID_JSON', message: 'Settings overlay patch requires JSON.' },
+      error: { code: 'INVALID_JSON', message: 'Configuration overlay patch requires JSON.' },
     };
   }
 
@@ -66,7 +66,7 @@ export function parseSettingsOverlayPatch(body: string): ManifestOverlayPatch | 
     return {
       ok: false,
       status: 400,
-      error: { code: 'INVALID_PATCH', message: 'Settings overlay patch must be a JSON object.' },
+      error: { code: 'INVALID_PATCH', message: 'Configuration overlay patch must be a JSON object.' },
     };
   }
 
@@ -78,7 +78,7 @@ export function parseSettingsOverlayPatch(body: string): ManifestOverlayPatch | 
     return {
       ok: false,
       status: 400,
-      error: { code: 'INVALID_PATCH_KIND', message: 'Settings overlay patch kind must be tool, skill, or workflow.' },
+      error: { code: 'INVALID_PATCH_KIND', message: 'Configuration overlay patch kind must be tool, skill, or workflow.' },
     };
   }
 
@@ -86,7 +86,7 @@ export function parseSettingsOverlayPatch(body: string): ManifestOverlayPatch | 
     return {
       ok: false,
       status: 400,
-      error: { code: 'INVALID_PATCH_NAME', message: 'Settings overlay patch requires a non-empty name.' },
+      error: { code: 'INVALID_PATCH_NAME', message: 'Configuration overlay patch requires a non-empty name.' },
     };
   }
 
@@ -94,7 +94,7 @@ export function parseSettingsOverlayPatch(body: string): ManifestOverlayPatch | 
     return {
       ok: false,
       status: 400,
-      error: { code: 'INVALID_PATCH_ENABLED', message: 'Settings overlay patch requires enabled: true|false.' },
+      error: { code: 'INVALID_PATCH_ENABLED', message: 'Configuration overlay patch requires enabled: true|false.' },
     };
   }
 
@@ -109,7 +109,7 @@ export async function readSettingsGatewaySnapshot(home: string): Promise<Setting
     return gatewayFailure({
       _tag: 'SettingsControlPlaneError',
       code: 'SnapshotFailure',
-      message: cause instanceof Error ? cause.message.slice(0, 240) : 'Settings snapshot could not be read.',
+      message: cause instanceof Error ? cause.message.slice(0, 240) : 'Configuration snapshot could not be read.',
       status: 500,
     });
   }
@@ -133,7 +133,7 @@ export async function applySettingsGatewayOverlayPatch(
     return gatewayFailure({
       _tag: 'SettingsControlPlaneError',
       code: 'PersistenceFailure',
-      message: cause instanceof Error ? cause.message.slice(0, 240) : 'Settings overlay could not be applied.',
+      message: cause instanceof Error ? cause.message.slice(0, 240) : 'Configuration overlay could not be applied.',
       status: 500,
     });
   }
@@ -145,5 +145,16 @@ export function resolveSettingsGatewayHome(): string {
 }
 
 export function isSettingsGatewayRoute(pathname: string): boolean {
-  return pathname === '/gateway/settings/snapshot' || pathname === '/gateway/settings/overlay';
+  return (
+    pathname === '/gateway/configuration/snapshot'
+    || pathname === '/gateway/configuration/overlay'
+    || pathname === '/gateway/settings/snapshot'
+    || pathname === '/gateway/settings/overlay'
+  );
 }
+
+export const parseConfigurationOverlayPatch = parseSettingsOverlayPatch;
+export const readConfigurationGatewaySnapshot = readSettingsGatewaySnapshot;
+export const applyConfigurationGatewayOverlayPatch = applySettingsGatewayOverlayPatch;
+export const resolveConfigurationGatewayHome = resolveSettingsGatewayHome;
+export const isConfigurationGatewayRoute = isSettingsGatewayRoute;

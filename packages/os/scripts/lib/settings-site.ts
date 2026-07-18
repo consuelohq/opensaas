@@ -1,4 +1,4 @@
-export type SettingsSectionId =
+export type ConfigurationSectionId =
   | 'configuration'
   | 'connections'
   | 'tools'
@@ -6,7 +6,7 @@ export type SettingsSectionId =
   | 'run-books'
   | 'capabilities';
 
-const SETTINGS_SECTIONS: Array<{ id: SettingsSectionId; label: string }> = [
+const CONFIGURATION_SECTIONS: Array<{ id: ConfigurationSectionId; label: string }> = [
   { id: 'configuration', label: 'Configuration' },
   { id: 'connections', label: 'Connections' },
   { id: 'tools', label: 'Tools' },
@@ -24,14 +24,14 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-function renderNav(activeSection: SettingsSectionId = 'configuration'): string {
-  return `<nav class="nav" aria-label="Settings navigation">${SETTINGS_SECTIONS.map((section) => {
+function renderNav(activeSection: ConfigurationSectionId = 'configuration'): string {
+  return `<nav class="nav" aria-label="Configuration navigation">${CONFIGURATION_SECTIONS.map((section) => {
     const active = section.id === activeSection ? ' class="is-active"' : '';
     return `<a href="#${section.id}"${active}>${escapeHtml(section.label)}</a>`;
   }).join('')}</nav>`;
 }
 
-function settingsStyles(): string {
+function configurationStyles(): string {
   return `
     :root {
       color-scheme: light dark;
@@ -94,7 +94,7 @@ function settingsStyles(): string {
     .status-connected { color: var(--site-color-secondary); }
     .status-muted { color: var(--site-color-muted); }
     .status-warning { color: var(--site-color-accent); }
-    .settings-toggle { margin-right: 8px; }
+    .configuration-toggle { margin-right: 8px; }
     label { cursor: pointer; }
     [hidden] { display: none !important; }
     @media (max-width: 900px) {
@@ -105,7 +105,7 @@ function settingsStyles(): string {
   `;
 }
 
-function settingsClientScript(): string {
+function configurationClientScript(): string {
   return `
     const byId = (id) => document.getElementById(id);
     const escapeHtml = (value) => String(value ?? '')
@@ -124,7 +124,7 @@ function settingsClientScript(): string {
     const detail = (label, value, code = false) => '<div><dt>' + escapeHtml(label) + '</dt><dd>' + (code ? '<code>' + escapeHtml(value) + '</code>' : escapeHtml(value)) + '</dd></div>';
 
     function bindToggles() {
-      document.querySelectorAll('.settings-toggle').forEach((input) => {
+      document.querySelectorAll('.configuration-toggle').forEach((input) => {
         input.addEventListener('change', async (event) => {
           const target = event.currentTarget;
           if (!(target instanceof HTMLInputElement)) return;
@@ -134,12 +134,12 @@ function settingsClientScript(): string {
           const requested = target.checked;
           target.disabled = true;
           try {
-            const response = await fetch('/gateway/settings/overlay', {
+            const response = await fetch('/gateway/configuration/overlay', {
               method: 'POST',
               headers: { accept: 'application/json', 'content-type': 'application/json' },
               body: JSON.stringify({ kind, name, enabled: requested }),
             });
-            if (!response.ok) throw new Error('gateway settings overlay returned ' + response.status);
+            if (!response.ok) throw new Error('gateway configuration overlay returned ' + response.status);
             const payload = await response.json();
             if (!payload || typeof payload !== 'object' || payload.ok === false || !payload.snapshot) throw new Error('invalid overlay response');
             renderSnapshot(payload.snapshot);
@@ -147,7 +147,7 @@ function settingsClientScript(): string {
           } catch {
             target.checked = !requested;
             target.disabled = false;
-            byId('toggle-status').textContent = 'Update denied or unavailable. Use the signed gateway or local Settings CLI.';
+            byId('toggle-status').textContent = 'Update denied or unavailable. Use the signed gateway or local Configuration CLI.';
           }
         });
       });
@@ -182,36 +182,36 @@ function settingsClientScript(): string {
       byId('skill-rows').innerHTML = skills.length ? skills.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category)).join('') : emptyRow(4, 'No skills found.');
 
       const workflows = Array.isArray(snapshot.runBooks) ? snapshot.runBooks : [];
-      byId('workflow-rows').innerHTML = workflows.length ? workflows.map((workflow) => '<tr><td><label><input type="checkbox" class="settings-toggle" data-kind="workflow" data-name="' + escapeHtml(workflow.id) + '" ' + (workflow.enabled ? 'checked' : '') + '> ' + escapeHtml(workflow.id) + '</label></td><td><code>' + escapeHtml((workflow.aliases || []).join(', ') || '—') + '</code></td><td>' + pill(workflow.enabled ? 'connected' : 'disabled') + '</td><td>' + escapeHtml(workflow.roleCount) + '</td><td>' + escapeHtml(workflow.toolCount) + '</td></tr>').join('') : emptyRow(5, 'No workflow bundles found.');
+      byId('workflow-rows').innerHTML = workflows.length ? workflows.map((workflow) => '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="workflow" data-name="' + escapeHtml(workflow.id) + '" ' + (workflow.enabled ? 'checked' : '') + '> ' + escapeHtml(workflow.id) + '</label></td><td><code>' + escapeHtml((workflow.aliases || []).join(', ') || '—') + '</code></td><td>' + pill(workflow.enabled ? 'connected' : 'disabled') + '</td><td>' + escapeHtml(workflow.roleCount) + '</td><td>' + escapeHtml(workflow.toolCount) + '</td></tr>').join('') : emptyRow(5, 'No workflow bundles found.');
 
       const capabilities = Array.isArray(snapshot.capabilities) ? snapshot.capabilities : [];
       byId('capability-rows').innerHTML = capabilities.length ? capabilities.map((capability) => '<tr><td>' + escapeHtml(capability.title) + '</td><td><code>' + escapeHtml(capability.id) + '</code></td><td>' + pill(capability.status) + '</td><td>' + escapeHtml(capability.message) + '</td></tr>').join('') : emptyRow(4, 'No capability checks returned.');
 
-      byId('settings-loading').hidden = true;
-      byId('settings-error').hidden = true;
-      byId('settings-content').hidden = false;
+      byId('configuration-loading').hidden = true;
+      byId('configuration-error').hidden = true;
+      byId('configuration-content').hidden = false;
       bindToggles();
     }
 
     function toggleRow(kind, name, enabled, category) {
-      return '<tr><td><label><input type="checkbox" class="settings-toggle" data-kind="' + escapeHtml(kind) + '" data-name="' + escapeHtml(name) + '" ' + (enabled ? 'checked' : '') + '> ' + escapeHtml(name) + '</label></td><td>' + escapeHtml(kind) + '</td><td>' + pill(enabled ? 'connected' : 'disabled') + '</td><td>' + (category ? '<code>' + escapeHtml(category) + '</code>' : '<span class="muted">—</span>') + '</td></tr>';
+      return '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="' + escapeHtml(kind) + '" data-name="' + escapeHtml(name) + '" ' + (enabled ? 'checked' : '') + '> ' + escapeHtml(name) + '</label></td><td>' + escapeHtml(kind) + '</td><td>' + pill(enabled ? 'connected' : 'disabled') + '</td><td>' + (category ? '<code>' + escapeHtml(category) + '</code>' : '<span class="muted">—</span>') + '</td></tr>';
     }
 
-    async function loadSettings() {
+    async function loadConfiguration() {
       try {
-        const response = await fetch('/gateway/settings/snapshot', { headers: { accept: 'application/json' } });
-        if (!response.ok) throw new Error('gateway settings snapshot returned ' + response.status);
+        const response = await fetch('/gateway/configuration/snapshot', { headers: { accept: 'application/json' } });
+        if (!response.ok) throw new Error('gateway configuration snapshot returned ' + response.status);
         const payload = await response.json();
-        if (!payload || typeof payload !== 'object' || payload.ok === false || !payload.snapshot) throw new Error('invalid gateway settings snapshot');
+        if (!payload || typeof payload !== 'object' || payload.ok === false || !payload.snapshot) throw new Error('invalid gateway configuration snapshot');
         renderSnapshot(payload.snapshot);
       } catch {
-        byId('settings-loading').hidden = true;
-        byId('settings-content').hidden = true;
-        byId('settings-error').hidden = false;
+        byId('configuration-loading').hidden = true;
+        byId('configuration-content').hidden = true;
+        byId('configuration-error').hidden = false;
       }
     }
 
-    void loadSettings();
+    void loadConfiguration();
   `;
 }
 
@@ -221,34 +221,34 @@ export function renderSettingsSite(): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Settings - Consuelo OS</title>
-  <style>${settingsStyles()}</style>
+  <title>Configuration - Consuelo OS</title>
+  <style>${configurationStyles()}</style>
 </head>
 <body>
   <div class="shell">
-    <aside class="sidebar" aria-label="Settings sidebar">
+    <aside class="sidebar" aria-label="Configuration sidebar">
       <div class="identity">Consuelo OS</div>
       ${renderNav()}
-      <p class="muted">Private workspace state loads through the authenticated Settings gateway.</p>
+      <p class="muted">Private workspace state loads through the authenticated Configuration gateway.</p>
     </aside>
     <main class="content">
       <header class="hero">
-        <h1>Settings</h1>
+        <h1>Configuration</h1>
         <p>See what is connected to your workspace and what agents can use here.</p>
       </header>
-      <section id="settings-loading" class="state-panel" aria-live="polite">
-        <strong>Loading workspace settings</strong>
+      <section id="configuration-loading" class="state-panel" aria-live="polite">
+        <strong>Loading workspace configuration</strong>
         <p class="muted">Checking your workspace session and node connection.</p>
       </section>
-      <section id="settings-error" class="state-panel" aria-live="polite" hidden>
-        <strong>Settings unavailable</strong>
+      <section id="configuration-error" class="state-panel" aria-live="polite" hidden>
+        <strong>Configuration unavailable</strong>
         <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
       </section>
-      <div id="settings-content" hidden>
+      <div id="configuration-content" hidden>
         <section class="panel-section" id="configuration">
           <header class="panel-header"><h2>Configuration</h2><p>Workspace and node configuration loaded through the signed gateway.</p></header>
           <dl class="detail-grid" id="configuration-details"></dl>
-          <p id="toggle-status" class="muted">Changes are authorized and written through /gateway/settings/overlay.</p>
+          <p id="toggle-status" class="muted">Changes are authorized and written through /gateway/configuration/overlay.</p>
         </section>
         <section class="panel-section" id="connections">
           <header class="panel-header"><h2>Connections</h2><p>Cloud and local agent connections for this workspace.</p></header>
@@ -276,7 +276,7 @@ export function renderSettingsSite(): string {
       </div>
     </main>
   </div>
-  <script>${settingsClientScript()}</script>
+  <script>${configurationClientScript()}</script>
 </body>
 </html>`;
 }
@@ -284,3 +284,6 @@ export function renderSettingsSite(): string {
 export function buildSettingsSite(_home?: string): string {
   return renderSettingsSite();
 }
+
+export const renderConfigurationSite = renderSettingsSite;
+export const buildConfigurationSite = buildSettingsSite;

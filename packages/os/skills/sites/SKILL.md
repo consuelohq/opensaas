@@ -17,7 +17,7 @@ Artifacts is the product domain for durable generated outputs. Sites must not cr
 <OS_HOME>/sites/traces/index.html
 <OS_HOME>/sites/diffs/index.html
 <OS_HOME>/sites/docs/index.html
-<OS_HOME>/sites/settings/index.html
+<OS_HOME>/sites/configuration/index.html
 ```
 
 The canonical artifact bytes and catalog live under:
@@ -51,5 +51,5 @@ bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <
 - Sites may serve or snapshot artifact output but must not own a separate artifact model.
 - Do not create retired artifact-site aliases, parallel archives, or fallback reads.
 - Typed collaborative pages remain separate because they have section leases and patch/rebase behavior.
-- Trace and Settings pages may hydrate from their signed Hono gateways.
+- Trace and Configuration pages may hydrate from their signed Hono gateways.
 - Public edge compatibility for historical URLs belongs in explicit redirects, not internal aliases.

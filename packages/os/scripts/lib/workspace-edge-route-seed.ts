@@ -39,7 +39,7 @@ const SITE_SNAPSHOT_ROUTES = [
   { pathPrefix: '/tracing', siteId: 'traces' },
   { pathPrefix: '/diffs', siteId: 'diffs' },
   { pathPrefix: '/docs', siteId: 'docs' },
-  { pathPrefix: '/settings', siteId: 'settings' },
+  { pathPrefix: '/configuration', siteId: 'configuration' },
 ] as const;
 type SiteSnapshotRoute = typeof SITE_SNAPSHOT_ROUTES[number];
 
@@ -169,7 +169,31 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
-const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/configuration/overlay',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/configuration',
+    auth: 'required',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
   {
     surface: 'sites',
     pathPrefix: '/gateway/settings/overlay',
@@ -177,7 +201,7 @@ const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
-      serviceName: 'settings-sites-write-endpoints',
+      serviceName: 'configuration-sites-write-endpoints',
       gatewayRouteFamily: '/gateway/settings/*',
       publicSiteRouteFamily: '/settings/*',
     },
@@ -189,7 +213,7 @@ const buildSettingsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
-      serviceName: 'settings-sites-read-endpoints',
+      serviceName: 'configuration-sites-read-endpoints',
       gatewayRouteFamily: '/gateway/settings/*',
       publicSiteRouteFamily: '/settings/*',
     },
@@ -208,6 +232,16 @@ const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
       gatewayRouteFamily: '/gateway/artifacts/*',
       publicSiteRouteFamily: '/artifacts/*',
     },
+  },
+];
+
+const buildLegacyConfigurationRedirectRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/settings',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/configuration', statusCode: 308 },
   },
 ];
 
@@ -276,8 +310,9 @@ export const createWorkspaceEdgeRouteSeedRecord = (
       siteSnapshotKey: input.siteSnapshotKey,
       siteVersionId: input.siteVersionId,
     })),
+    ...buildLegacyConfigurationRedirectRoutes(),
     ...buildTraceGatewayRoutes(),
-    ...buildSettingsGatewayRoutes(),
+    ...buildConfigurationGatewayRoutes(),
     ...buildArtifactsGatewayRoutes(),
     ...buildLegacyArtifactRedirectRoutes(),
   ];

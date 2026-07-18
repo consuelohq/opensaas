@@ -62,7 +62,7 @@ const snapshotSites = [
   { siteId: 'traces', pathPrefix: '/traces', relativePath: ['traces', 'index.html'] },
   { siteId: 'diffs', pathPrefix: '/diffs', relativePath: ['diffs', 'index.html'] },
   { siteId: 'docs', pathPrefix: '/docs', relativePath: ['docs', 'index.html'] },
-  { siteId: 'settings', pathPrefix: '/settings', relativePath: ['settings', 'index.html'] },
+  { siteId: 'configuration', pathPrefix: '/configuration', relativePath: ['configuration', 'index.html'] },
 ] as const;
 
 function readSnapshotHtml(snapshotPath: string, siteName: string): string {

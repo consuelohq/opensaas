@@ -30,7 +30,7 @@ function writeMinimalOsHome(home: string): void {
   fs.mkdirSync(path.join(home, 'security', 'overrides'), { recursive: true });
 }
 
-describe('settings gateway', () => {
+describe('configuration gateway', () => {
   it('rejects invalid overlay patch payloads', () => {
     const invalid = parseSettingsOverlayPatch('{');
     expect(invalid).toMatchObject({ ok: false, status: 400 });
@@ -52,6 +52,6 @@ describe('settings gateway', () => {
     );
     expect(patched.ok).toBe(true);
     expect(patched.snapshot.overlay.disabledTools).toContain(tool!.name);
-    expect(fs.existsSync(path.join(home, 'sites', 'settings', 'index.html'))).toBe(true);
+    expect(fs.existsSync(path.join(home, 'sites', 'configuration', 'index.html'))).toBe(true);
   });
 });

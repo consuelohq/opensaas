@@ -20,8 +20,25 @@ export type SettingsSitesGatewayEndpointOptions = {
   resolveScope: SettingsSitesGatewayScopeResolver;
 };
 
-const SETTINGS_READ_ROUTES = new Set(['/gateway/settings/snapshot']);
-const SETTINGS_WRITE_ROUTES = new Set(['/gateway/settings/overlay']);
+type ConfigurationVocabulary = 'configuration' | 'settings';
+type ConfigurationOperation = 'read' | 'write';
+
+const CONFIGURATION_READ_ROUTES = new Set([
+  '/gateway/configuration/snapshot',
+  '/gateway/settings/snapshot',
+]);
+const CONFIGURATION_WRITE_ROUTES = new Set([
+  '/gateway/configuration/overlay',
+  '/gateway/settings/overlay',
+]);
+
+function vocabularyForPath(pathname: string): ConfigurationVocabulary {
+  return pathname.startsWith('/gateway/settings/') ? 'settings' : 'configuration';
+}
+
+function requiredCapability(pathname: string, operation: ConfigurationOperation): string {
+  return `${vocabularyForPath(pathname)}-${operation}`;
+}
 
 export function createSettingsSitesGatewayEndpoints(
   options: SettingsSitesGatewayEndpointOptions,
@@ -33,7 +50,7 @@ export function createSettingsSitesGatewayEndpoints(
         return jsonResponse({
           ok: false,
           publicBoundary: 'consuelo-gateway',
-          error: { code: 'NOT_FOUND', message: 'Settings Sites gateway route not found.' },
+          error: { code: 'NOT_FOUND', message: 'Configuration gateway route not found.' },
         }, 404);
       }
 
@@ -46,66 +63,56 @@ export function createSettingsSitesGatewayEndpoints(
           publicBoundary: 'consuelo-gateway',
           error: {
             code: 'SCOPE_RESOLUTION_FAILED',
-            message: error instanceof Error ? error.message.slice(0, 240) : 'Settings Sites scope resolution failed.',
+            message: error instanceof Error
+              ? error.message.slice(0, 240)
+              : 'Configuration gateway scope resolution failed.',
           },
         }, 403);
       }
 
-      if (SETTINGS_READ_ROUTES.has(url.pathname)) {
+      if (CONFIGURATION_READ_ROUTES.has(url.pathname)) {
         if (request.method !== 'GET') {
           return jsonResponse({
             ok: false,
             publicBoundary: 'consuelo-gateway',
-            error: { code: 'METHOD_NOT_ALLOWED', message: 'Settings snapshot requires GET.' },
+            error: { code: 'METHOD_NOT_ALLOWED', message: 'Configuration snapshot requires GET.' },
           }, 405);
         }
-
-        if (!scope.capabilities.includes('settings-read')) {
+        if (!scope.capabilities.includes(requiredCapability(url.pathname, 'read'))) {
           return jsonResponse({
             ok: false,
             publicBoundary: 'consuelo-gateway',
-            error: { code: 'CAPABILITY_SCOPE_DENIED', message: 'Settings snapshot read is not allowed for this session.' },
+            error: { code: 'CAPABILITY_SCOPE_DENIED', message: 'Configuration snapshot read is not allowed for this session.' },
           }, 403);
         }
-
         const result = await readSettingsGatewaySnapshot(options.home);
         if (!result.ok) {
-          return jsonResponse({
-            ok: false,
-            publicBoundary: 'consuelo-gateway',
-            error: result.error,
-          }, result.status);
+          return jsonResponse({ ok: false, publicBoundary: 'consuelo-gateway', error: result.error }, result.status);
         }
-
         return jsonResponse({
           ok: true,
           publicBoundary: 'consuelo-gateway',
           route: url.pathname,
-          workspace: {
-            workspaceId: scope.workspaceId,
-            workspaceHost: scope.workspaceHost,
-          },
+          workspace: { workspaceId: scope.workspaceId, workspaceHost: scope.workspaceHost },
           snapshot: result.snapshot,
         });
       }
 
-      if (SETTINGS_WRITE_ROUTES.has(url.pathname)) {
+      if (CONFIGURATION_WRITE_ROUTES.has(url.pathname)) {
         if (request.method !== 'POST') {
           return jsonResponse({
             ok: false,
             publicBoundary: 'consuelo-gateway',
-            error: { code: 'METHOD_NOT_ALLOWED', message: 'Settings overlay writes require POST.' },
+            error: { code: 'METHOD_NOT_ALLOWED', message: 'Configuration overlay writes require POST.' },
           }, 405);
         }
-
-        if (!scope.capabilities.includes('settings-write')) {
+        if (!scope.capabilities.includes(requiredCapability(url.pathname, 'write'))) {
           return jsonResponse({
             ok: false,
             publicBoundary: 'consuelo-gateway',
-            error: { code: 'CAPABILITY_SCOPE_DENIED', message: 'Settings overlay writes are not allowed for this session.' },
+            error: { code: 'CAPABILITY_SCOPE_DENIED', message: 'Configuration overlay writes are not allowed for this session.' },
           }, 403);
         }
-
         const body = await request.clone().text();
         const result = await applySettingsGatewayOverlayPatch(options.home, body, {
           actorType: 'user',
@@ -121,15 +128,11 @@ export function createSettingsSitesGatewayEndpoints(
             error: result.error,
           }, result.status);
         }
-
         return jsonResponse({
           ok: true,
           publicBoundary: 'consuelo-gateway',
           route: url.pathname,
-          workspace: {
-            workspaceId: scope.workspaceId,
-            workspaceHost: scope.workspaceHost,
-          },
+          workspace: { workspaceId: scope.workspaceId, workspaceHost: scope.workspaceHost },
           snapshot: result.snapshot,
         });
       }
@@ -137,7 +140,7 @@ export function createSettingsSitesGatewayEndpoints(
       return jsonResponse({
         ok: false,
         publicBoundary: 'consuelo-gateway',
-        error: { code: 'NOT_FOUND', message: 'Settings Sites gateway route not found.' },
+        error: { code: 'NOT_FOUND', message: 'Configuration gateway route not found.' },
       }, 404);
     },
   };
@@ -153,21 +156,22 @@ export function settingsGatewayScopeFromHeaders(request: Request): ConsueloGatew
   const capabilities = splitHeader(headers.get('x-consuelo-capabilities'));
   const sourceModeValues = splitHeader(headers.get('x-consuelo-source-modes'));
   const sourceModes = sourceModeValues.filter(isSettingsSourceMode);
+  const vocabulary = vocabularyForPath(url.pathname);
 
   if (!userId || !workspaceId || !workspaceHost) {
-    throw new Error('Signed Settings gateway identity and workspace headers are required.');
+    throw new Error('Signed Configuration gateway identity and workspace headers are required.');
   }
   if (workspaceHost !== url.host) {
-    throw new Error('Signed Settings gateway workspace host does not match the request host.');
+    throw new Error('Signed Configuration gateway workspace host does not match the request host.');
   }
-  if (!allowedSites.includes('settings')) {
-    throw new Error('Signed Settings gateway scope does not allow the Settings site.');
+  if (!allowedSites.includes(vocabulary)) {
+    throw new Error(`Signed Configuration gateway scope does not allow the ${vocabulary} site.`);
   }
   if (capabilities.length === 0) {
-    throw new Error('Signed Settings gateway capabilities are required.');
+    throw new Error('Signed Configuration gateway capabilities are required.');
   }
   if (sourceModes.length === 0 || sourceModes.length !== sourceModeValues.length) {
-    throw new Error('Signed Settings gateway source modes are required and must be valid.');
+    throw new Error('Signed Configuration gateway source modes are required and must be valid.');
   }
 
   return {
@@ -181,6 +185,9 @@ export function settingsGatewayScopeFromHeaders(request: Request): ConsueloGatew
   };
 }
 
+export const configurationGatewayScopeFromHeaders = settingsGatewayScopeFromHeaders;
+export const createConfigurationSitesGatewayEndpoints = createSettingsSitesGatewayEndpoints;
+
 function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -189,10 +196,7 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
 }
 
 function splitHeader(value: string | null): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((part) => part.trim())
-    .filter(Boolean);
+  return (value ?? '').split(',').map((part) => part.trim()).filter(Boolean);
 }
 
 function isSettingsSourceMode(value: unknown): value is ConsueloGatewaySessionScope['sourceModesAllowed'][number] {

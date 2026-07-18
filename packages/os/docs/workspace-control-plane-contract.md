@@ -15,14 +15,8 @@ Every managed workspace receives one hostname and a stable set of routes:
 https://{workspace}.consuelohq.com/
   Public workspace launcher
 
-https://{workspace}.consuelohq.com/tools
-  Tool configuration
-
-https://{workspace}.consuelohq.com/environments
-  Environment values, credential references, and execution bindings
-
-https://{workspace}.consuelohq.com/secrets
-  Credential sources, setup, availability, bindings, and lifecycle status
+https://{workspace}.consuelohq.com/configuration
+  Workspace configuration control plane for Tools, Environments, and Secrets
 
 https://{workspace}.consuelohq.com/observability
   Live traces and observability product
@@ -37,7 +31,7 @@ https://{workspace}.consuelohq.com/mcp
   Workspace agent ingress
 ```
 
-`/settings` is a compatibility surface during migration. It must not remain the canonical user-facing route after `/tools`, `/environments`, and `/secrets` are available.
+`/configuration` is the canonical user-facing control-plane route. `/settings` is a compatibility redirect only. Canonical private APIs use `/gateway/configuration/*`; `/gateway/settings/*` remains a temporary compatibility alias.
 
 Route labels are capitalized in the UI. Route paths remain lowercase.
 
@@ -99,7 +93,7 @@ Private data must load only after a workspace-bound browser session is establish
 - last-used information;
 - authorization failures and audit activity.
 
-The current Settings shell embeds a complete `SettingsSnapshot` and silently falls back to it when hosted hydration fails. That behavior must not be extended. The hardening task must remove private embedded state before the control plane exposes nodes, credentials, grants, or activity.
+The Configuration shell contains no private embedded snapshot. It loads private state only through the authenticated Configuration gateway. This boundary must remain in place before the control plane exposes nodes, credentials, grants, or activity.
 
 ### Secret material
 
@@ -348,7 +342,7 @@ A CLI must not accept a credential as a normal argument because shell history an
 ### Provider OAuth
 
 ```text
-1. User starts the connection from Settings or CLI.
+1. User starts the connection from Configuration or CLI.
 2. OS creates provider-specific state bound to workspace, node, and scopes.
 3. The user completes provider consent in a browser.
 4. The callback validates state and intended destination.
@@ -404,7 +398,7 @@ Rendering-only functions may remain pure TypeScript. Control-plane behavior must
 Required boundaries:
 
 ```text
-SettingsSnapshotService
+ConfigurationSnapshotService
   reads effective, private configuration state
 
 ManifestOverlayRepository
@@ -500,31 +494,29 @@ approval.completed
 
 Audit events never include secret values, provider tokens, request bodies, raw authorization headers, nonces, or private tunnel origins.
 
-## Existing Settings baseline
+## Existing Configuration baseline
 
-The shipped Settings stack is a useful implementation baseline:
+The shipped Configuration stack is the implementation baseline:
 
 - `settings-snapshot.ts` aggregates current state;
-- `settings-site.ts` renders a shell and toggles;
+- `settings-site.ts` renders the public Configuration shell and toggles;
 - `manifest-overlay.ts` records tool, skill, and workflow disables;
-- `settings-gateway.ts` serves snapshot and overlay operations;
+- `settings-gateway.ts` serves canonical Configuration operations and legacy Settings aliases;
 - `settings-sites-gateway-endpoints.ts` bridges the Sites gateway;
-- `workspace-edge-route-seed.ts` registers the static and gateway routes.
+- `workspace-edge-route-seed.ts` registers `/configuration`, the canonical gateway routes, and the legacy redirect/aliases.
 
-It is not yet the completed control plane.
+The hardening stack has already established these invariants:
 
-The hardening task must address these known issues before Environments or Secrets build on it:
+1. Public Configuration HTML contains no private workspace snapshot.
+2. Hosted hydration failure produces a safe unavailable state rather than private fallback data.
+3. Missing gateway identity, workspace, site, capability, or source-mode headers fail closed.
+4. Overlay mutations are serialized per OS process and use collision-safe atomic files.
+5. Configuration materialization has one canonical implementation and storage location.
+6. Workflow disables are enforced by workflow intent routing.
+7. Snapshot and mutation behavior run behind Effect programs with typed control-plane failures.
+8. Successful mutations append metadata-only audit events.
 
-1. Static Settings snapshots are registered as public and currently embed private state.
-2. Hosted hydration failure silently falls back to the embedded snapshot.
-3. Missing Settings gateway scope headers default to read and write capabilities.
-4. Overlay mutation is synchronous read-modify-write and can lose concurrent changes.
-5. Settings materialization occurs in more than one path.
-6. Workflow disables are recorded and displayed but do not affect workflow routing.
-7. Application behavior is implemented with synchronous filesystem calls and ordinary exceptions rather than Effect services and typed failures.
-8. Existing tests do not fully prove browser -> edge -> signed connector -> local mutation behavior.
-
-Preserve the useful route, overlay, manifest-filtering, and signed-gateway foundations. Do not replace working components merely to satisfy this contract.
+The remaining browser-to-edge session and connector proof belongs to the workspace browser-session stack. Preserve the route, overlay, manifest-filtering, Effect, audit, and signed-gateway foundations.
 
 ## Non-goals
 
@@ -548,21 +540,19 @@ The first implementation stacks do not include:
 PR 0  Workspace control-plane contract
   |
   v
-PR 1  Harden existing Settings control plane
+PR 1  Harden existing control plane
   - Effect services and typed failures
   - private/public snapshot boundary
   - fail-closed scopes
   - serialized overlay writes
-  - workflow behavior decision
-  - end-to-end proof
+  - workflow enforcement and audit
   |
   v
-PR 2  Canonical workspace configuration routes
-  - /tools
-  - /environments
-  - /secrets
+PR 2  Canonical Configuration surface
+  - /configuration
+  - /gateway/configuration/*
   - launcher Configuration section last
-  - /settings compatibility
+  - /settings redirect and gateway aliases
   |
   v
 PR 3  Workspace browser session
@@ -604,12 +594,12 @@ The documentation task follows verified runtime behavior. It must not publish pl
 
 | Contract statement | Current evidence | Current status |
 | --- | --- | --- |
-| Workspace launcher and Settings are static Sites routes | `scripts/lib/workspace-edge-route-seed.ts`, `scripts/lib/install-edge-site-publisher.ts` | Shipped baseline |
-| Settings shell embeds a snapshot and hydrates from the gateway | `scripts/lib/settings-site.ts` | Shipped; privacy hardening required |
+| Workspace launcher and Configuration are static Sites routes | `scripts/lib/workspace-edge-route-seed.ts`, `scripts/lib/install-edge-site-publisher.ts` | Shipped |
+| Configuration shell contains no private embedded snapshot | `scripts/lib/settings-site.ts` | Shipped hardened boundary |
 | Overlay filters effective tools and skills | `scripts/lib/manifest-overlay.ts`, effective manifest readers | Shipped |
-| Workflow disables are not enforced by routing | `scripts/lib/settings-site.ts` and workflow call paths | Known mismatch |
-| Settings gateway supports snapshot and overlay routes | `scripts/lib/settings-gateway.ts`, server routes, Sites gateway endpoints | Shipped baseline |
-| Missing gateway headers default to read/write | `scripts/lib/settings-sites-gateway-endpoints.ts` | Must be removed |
+| Workflow disables are enforced by routing | `hooks/intent.js` and overlay readers | Shipped |
+| Configuration gateway supports canonical routes and Settings aliases | `scripts/lib/settings-gateway.ts`, server routes, Sites gateway endpoints | Shipped |
+| Missing gateway scope metadata fails closed | `scripts/lib/settings-sites-gateway-endpoints.ts` | Shipped |
 | Device authorization binds a human approval to a node key | Device Authority device routes and installer login client | Shipped security foundation |
 | Existing Google path can identify a human | Device Authority Google OAuth routes | Shipped identity foundation |
 | Edge and local layers independently authorize OS requests | workspace edge, security gateway, local Hono middleware | Shipped security foundation |

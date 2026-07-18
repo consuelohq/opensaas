@@ -35,7 +35,7 @@ import {
 import type { SitePageKind } from './lib/sites';
 import { readArtifactCatalog } from './lib/artifacts';
 import { loadOsConfig } from './lib/install-state';
-import { runSettingsOverlayCommand } from './lib/settings-overlay-command';
+import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -1085,9 +1085,9 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'settings') {
+  if (command === 'configuration' || command === 'settings') {
     try {
-      const result = await runSettingsOverlayCommand(args);
+      const result = await runConfigurationOverlayCommand(args);
       if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}\n`);
       else writeStdout(`${result.message}\n`);
       if (!result.ok) process.exitCode = 1;
@@ -1137,8 +1137,9 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|artifact|uncategorized] [--base-version <id>] [--force-publish] [--json]',
       '  bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>] [--json]',
       '  bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>] [--ttl-minutes 45] [--json]',
-      '  bun ./scripts/os.ts settings status [--json]',
-      '  bun ./scripts/os.ts settings disable-tool|enable-tool|disable-skill|enable-skill|disable-workflow|enable-workflow <name> [--json]',
+      '  bun ./scripts/os.ts configuration status [--json]',
+      '  bun ./scripts/os.ts configuration disable-tool|enable-tool|disable-skill|enable-skill|disable-workflow|enable-workflow <name> [--json]',
+      '  Legacy alias: settings',
       '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),

@@ -1526,18 +1526,18 @@ Active leases are advisory but enforced by default. A different agent cannot pat
 - The database path resolves in this order: `--db`, `CONSUELO_TRACE_DB`, `TRACE_DB`, then `$CONSUELO_HOME/node/db/traces.db`.
 - Use `--once --limit 50` for a bounded snapshot, or omit `--once` for live polling. Filters include `--errors`, `--since`, `--task`, `--branch`, `--worktree`, and `--tool`.
 
-## Settings control plane
+## Configuration control plane
 
-Settings overlay commands mutate the effective OS manifest without editing generated manifests:
+Configuration overlay commands mutate the effective OS manifest without editing generated manifests:
 
 ```bash
-bun ./scripts/os.ts settings status --json
-bun ./scripts/os.ts settings disable-tool <name> --json
-bun ./scripts/os.ts settings enable-tool <name> --json
-bun ./scripts/os.ts settings disable-skill <name> --json
-bun ./scripts/os.ts settings enable-skill <name> --json
-bun ./scripts/os.ts settings disable-workflow <name> --json
-bun ./scripts/os.ts settings enable-workflow <name> --json
+bun ./scripts/os.ts configuration status --json
+bun ./scripts/os.ts configuration disable-tool <name> --json
+bun ./scripts/os.ts configuration enable-tool <name> --json
+bun ./scripts/os.ts configuration disable-skill <name> --json
+bun ./scripts/os.ts configuration enable-skill <name> --json
+bun ./scripts/os.ts configuration disable-workflow <name> --json
+bun ./scripts/os.ts configuration enable-workflow <name> --json
 ```
 
-Mutations are serialized per OS home, materialize the public Settings shell plus a private local snapshot, and append a redacted `configuration.overlay.changed` event to `logs/control-plane-audit.jsonl`. Disabled workflows are rejected by workflow intent routing. The public Settings HTML contains no workspace snapshot; private state loads through the authenticated Settings gateway.
+The legacy `settings` command remains an alias during migration. Mutations are serialized per OS home, materialize the public Configuration shell plus a private local snapshot, and append a redacted `configuration.overlay.changed` event to `logs/control-plane-audit.jsonl`. Disabled workflows are rejected by workflow intent routing. The public Configuration HTML contains no workspace snapshot; private state loads through the authenticated Configuration gateway at `/gateway/configuration/*`.

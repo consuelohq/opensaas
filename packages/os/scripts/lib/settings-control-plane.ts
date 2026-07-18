@@ -10,7 +10,7 @@ import {
   validateManifestOverlayPatch,
   type ManifestOverlayPatch,
 } from './manifest-overlay';
-import { materializeSettingsSite } from './settings-materialization';
+import { materializeConfigurationSite } from './settings-materialization';
 import { buildSettingsSnapshot, type SettingsSnapshot } from './settings-snapshot';
 
 export type SettingsControlPlaneErrorCode =
@@ -85,7 +85,7 @@ export function readSettingsSnapshotEffect(input: {
     try: () => buildSettingsSnapshot(input.home),
     catch: (cause) => settingsError(
       'SnapshotFailure',
-      cause instanceof Error ? cause.message.slice(0, 240) : 'Settings snapshot could not be built.',
+      cause instanceof Error ? cause.message.slice(0, 240) : 'Configuration snapshot could not be built.',
     ),
   });
 }
@@ -99,7 +99,7 @@ export function applySettingsOverlayPatchEffect(
   return Effect.tryPromise({
     try: () => serializeMutation(manifestOverlayPath(input.home), async () => {
       patchManifestOverlay(input.home, input.patch);
-      const materialized = materializeSettingsSite(input.home);
+      const materialized = materializeConfigurationSite(input.home);
       try {
         recordControlPlaneAuditEvent({
           home: input.home,
@@ -111,7 +111,7 @@ export function applySettingsOverlayPatchEffect(
       } catch (cause: unknown) {
         throw settingsError(
           'AuditFailure',
-          cause instanceof Error ? cause.message.slice(0, 240) : 'Settings audit event could not be recorded.',
+          cause instanceof Error ? cause.message.slice(0, 240) : 'Configuration audit event could not be recorded.',
         );
       }
       return materialized.snapshot;
@@ -120,8 +120,14 @@ export function applySettingsOverlayPatchEffect(
       if (isSettingsControlPlaneError(cause)) return cause;
       return settingsError(
         'PersistenceFailure',
-        cause instanceof Error ? cause.message.slice(0, 240) : 'Settings overlay could not be persisted.',
+        cause instanceof Error ? cause.message.slice(0, 240) : 'Configuration overlay could not be persisted.',
       );
     },
   });
 }
+
+export type ConfigurationControlPlaneErrorCode = SettingsControlPlaneErrorCode;
+export type ConfigurationControlPlaneError = SettingsControlPlaneError;
+export type ConfigurationOverlayPatchInput = SettingsOverlayPatchInput;
+export const readConfigurationSnapshotEffect = readSettingsSnapshotEffect;
+export const applyConfigurationOverlayPatchEffect = applySettingsOverlayPatchEffect;
