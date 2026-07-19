@@ -44,6 +44,7 @@ describe('OS device authority architecture', () => {
       'google-oauth',
       'mcp-oauth',
       'mcp-proxy',
+      'workspace-agents',
     ]) {
       expect(
         existsSync(resolve(workerRoot, 'src/routes/' + route + '.ts')),
@@ -91,6 +92,12 @@ describe('OS device authority architecture', () => {
         method: 'POST',
         path: '/login/oauth/access_token',
         trust: 'device-proof',
+      },
+      { method: 'GET', path: '/workspace/agents', trust: 'public' },
+      {
+        method: 'POST',
+        path: '/workspace/agents',
+        trust: 'node-bootstrap',
       },
     ]);
   });

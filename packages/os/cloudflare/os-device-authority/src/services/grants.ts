@@ -9,10 +9,12 @@ import { redactWorkspaceRouteSetupFailure } from '../security/redaction';
 import type { Grant, Store, StrongerAuthMethod } from '../types';
 import {
   connectorIdFromNodeId,
+  hashHex,
   host,
   optionalNodeId,
   rand,
   slug,
+  workspaceIdFromSlug,
 } from '../utils';
 
 export function grantWorkspace(grant: Grant): {
@@ -119,6 +121,7 @@ export async function prepareGrantApproval(input: {
   accountId: string;
   authMethod: StrongerAuthMethod;
   nowMs: number;
+  connectorToken?: string;
 }): Promise<Grant> {
   try {
     grantWorkspace(input.grant);
@@ -130,7 +133,7 @@ export async function prepareGrantApproval(input: {
     });
     input.grant.accountId = input.accountId;
     input.grant.accountAuthMethod = input.authMethod;
-    input.grant.connectorToken = rand('cbt', 32);
+    input.grant.connectorToken = input.connectorToken ?? rand('cbt', 32);
     input.grant.connectorExpiresAt = input.nowMs + BOOTSTRAP_TTL_MS;
     return input.grant;
   } catch (error: unknown) {
@@ -147,6 +150,13 @@ export async function commitGrantApproval(input: {
   nowMs: number;
 }): Promise<Grant> {
   try {
+    const workspace = grantWorkspace(input.grant);
+    const connectorToken = input.grant.connectorToken;
+    const connectorExpiresAt = input.grant.connectorExpiresAt;
+    const nodeId = input.grant.nodeId;
+    if (!connectorToken || !connectorExpiresAt || !nodeId) {
+      throw new Error('approved grant is missing node bootstrap material');
+    }
     input.grant.status = 'approved';
     await input.store.put(input.grant);
     await rememberAccountWorkspace({
@@ -154,6 +164,14 @@ export async function commitGrantApproval(input: {
       grant: input.grant,
       accountId: input.accountId,
       nowMs: input.nowMs,
+    });
+    await input.store.putNodeBootstrapCredential({
+      tokenHash: await hashHex(connectorToken),
+      accountId: input.accountId,
+      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceHost: workspace.workspaceHost,
+      nodeId,
+      expiresAt: connectorExpiresAt,
     });
     return input.grant;
   } catch (error: unknown) {
@@ -192,7 +210,7 @@ export function approvedJson(g: Grant): Record<string, unknown> {
   return {
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
-    workspace_id: `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
+    workspace_id: workspaceIdFromSlug(workspace.workspaceSlug),
     workspace_slug: workspace.workspaceSlug,
     workspace_host: workspace.workspaceHost,
     node_id: nodeId,

@@ -5,6 +5,7 @@ import {
   attemptWorkspaceDeviceLogin,
   completeWorkspaceDeviceSelection,
   registerInstallerDiagnosticsLifecycleHooks,
+  syncVerifiedAgentsAfterInstall,
 } from './install';
 import type { InstallDiagnostics } from './lib/install-diagnostics';
 
@@ -96,6 +97,58 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).toContain("if (liveDeviceCode.status !== 'started')");
     expect(install).not.toContain('workspaceActivation');
     expect(install).not.toContain('app.consuelohq.com/os/activate');
+  });
+
+  test('verified local agents sync to the hosted launcher without making local install depend on the control plane', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const synced = await syncVerifiedAgentsAfterInstall({
+      workspaceBootstrap: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        workspaceHost: 'internal.consuelohq.com',
+        connectorId: 'connector_internal',
+        connectorTransport: 'cloudflare-tunnel',
+        connectorBootstrapToken: 'cbt_installer_sync',
+      },
+      agents: [
+        { name: 'codex', status: 'verified' },
+        { name: 'gemini', status: 'verified' },
+        { name: 'cursor', status: 'failed' },
+      ],
+      fetchImpl: async (url, init) => {
+        calls.push({ url: String(url), init });
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return { ok: true, connectedAgentCount: 2 };
+          },
+        };
+      },
+    });
+
+    expect(synced).toMatchObject({ status: 'synced', connectedAgentCount: 2 });
+    expect(calls).toHaveLength(1);
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({ agents: ['codex', 'gemini'] });
+
+    await expect(syncVerifiedAgentsAfterInstall({
+      workspaceBootstrap: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        workspaceHost: 'internal.consuelohq.com',
+        connectorId: 'connector_internal',
+        connectorTransport: 'cloudflare-tunnel',
+        connectorBootstrapToken: 'cbt_installer_sync',
+      },
+      agents: [{ name: 'codex', status: 'verified' }],
+      fetchImpl: async () => {
+        throw new Error('control plane unavailable');
+      },
+    })).resolves.toMatchObject({ status: 'unavailable' });
+
+    await expect(syncVerifiedAgentsAfterInstall({
+      agents: [{ name: 'codex', status: 'verified' }],
+    })).resolves.toEqual({ status: 'skipped', reason: 'bootstrap_credential_unavailable' });
   });
 
   test('local and cloud mode labels are plain choices', () => {

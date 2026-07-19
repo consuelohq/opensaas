@@ -57,6 +57,13 @@ describe('launcher onboarding', () => {
     expect(html.indexOf('href="/tools"')).toBeLessThan(html.indexOf('href="/environments"'));
     expect(html.indexOf('href="/environments"')).toBeLessThan(html.indexOf('href="/secrets"'));
     expect(html).toContain('Connected to 2 local agents');
+    expect(html).toContain('data-agent-count');
+    expect(html).toContain('data-agent-list');
+    expect(html).toContain('https://os.consuelohq.com/workspace/agents');
+    expect(html).toContain('workspace_host');
+    expect(html).toContain('window.location.hostname');
+    expect(html).toContain('.textContent =');
+    expect(html).not.toContain('.innerHTML =');
     expect(html).toContain('Codex');
     expect(html).toContain('OpenCode');
     expect(html).not.toContain('<li>Cursor</li>');
@@ -75,5 +82,6 @@ describe('launcher onboarding', () => {
     expect(html).toContain('Connected to 0 local agents');
     expect(html).toContain('No local agents connected to workspace yet.');
     expect(html).not.toContain('No local agents connected yet.');
+    expect(html).toContain('data-agent-fallback');
   });
 });

@@ -33,11 +33,11 @@ function escapeHtml(value: string): string {
 
 function connectedAgentItems(localAgents: LauncherLocalAgent[]): string {
   const connectedAgents = localAgents.filter((agent) => agent.status === 'verified');
-  if (connectedAgents.length === 0) {
-    return '<p class="muted">No local agents connected to workspace yet.</p>';
-  }
-
-  return `<ul class="agent-list">${connectedAgents.map((agent) => `<li>${escapeHtml(agent.label)}</li>`).join('')}</ul>`;
+  const items = connectedAgents
+    .map((agent) => `<li>${escapeHtml(agent.label)}</li>`)
+    .join('');
+  const hidden = connectedAgents.length > 0 ? ' hidden' : '';
+  return `<ul class="agent-list" data-agent-list>${items}</ul><p class="muted" data-agent-fallback${hidden}>No local agents connected to workspace yet.</p>`;
 }
 
 function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string {
@@ -176,7 +176,7 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         </section>
       </div>
       <section class="status" aria-label="Local agents">
-        <p>Connected to ${connectedLocalAgentCount} local ${localAgentNoun}</p>
+        <p data-agent-count>Connected to ${connectedLocalAgentCount} local ${localAgentNoun}</p>
         ${connectedAgentItems(localAgents)}
       </section>
     </aside>
@@ -190,6 +190,40 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         document.querySelector('[data-copy-target="mcp-url"]')?.setAttribute('data-copy-status', 'failed');
       }
     });
+
+    const workspaceHost = window.location.hostname.toLowerCase();
+    if (/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.consuelohq\.com$/.test(workspaceHost)) {
+      const agentStatusUrl = new URL('https://os.consuelohq.com/workspace/agents');
+      agentStatusUrl.searchParams.set('workspace_host', workspaceHost);
+      fetch(agentStatusUrl.toString(), {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      })
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error('agent status unavailable')))
+        .then((payload) => {
+          if (!payload || !Array.isArray(payload.agents)) return;
+          const agents = payload.agents.filter((agent) =>
+            agent && typeof agent.name === 'string' && typeof agent.label === 'string',
+          );
+          const countElement = document.querySelector('[data-agent-count]');
+          const listElement = document.querySelector('[data-agent-list]');
+          const fallbackElement = document.querySelector('[data-agent-fallback]');
+          if (!(countElement instanceof HTMLElement) || !(listElement instanceof HTMLElement) || !(fallbackElement instanceof HTMLElement)) return;
+
+          const count = agents.length;
+          countElement.textContent = 'Connected to ' + count + ' local ' + (count === 1 ? 'agent' : 'agents');
+          const fragment = document.createDocumentFragment();
+          for (const agent of agents) {
+            const item = document.createElement('li');
+            item.textContent = agent.label;
+            fragment.append(item);
+          }
+          listElement.replaceChildren(fragment);
+          fallbackElement.hidden = count > 0;
+          fallbackElement.textContent = 'No local agents connected to workspace yet.';
+        })
+        .catch(() => undefined);
+    }
   </script>
 </body>
 </html>
