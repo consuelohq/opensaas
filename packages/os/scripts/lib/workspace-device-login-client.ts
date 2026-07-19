@@ -5,9 +5,11 @@ import {
   CONSUELO_DEVICE_VERIFICATION_URL,
   CONSUELO_DEVICE_WORKSPACE_URL,
   CONSUELO_OAUTH_ACCESS_TOKEN_URL,
+  CONSUELO_WORKSPACE_AGENT_STATUS_URL,
   type WorkspaceDeviceAuthorizationPollResult,
   type WorkspaceDeviceAuthorizationSession,
 } from './workspace-device-authorization';
+import type { AgentName } from './local-agent-connectivity';
 
 export type DeviceLoginFetchResponse = {
   ok: boolean;
@@ -68,6 +70,16 @@ export type SelectWorkspaceForDeviceLoginInput = {
   devicePublicKeyThumbprint?: string;
   fetchImpl?: DeviceLoginFetch;
 };
+
+export type SyncWorkspaceAgentStatusInput = {
+  connectorBootstrapToken: string;
+  agentNames: AgentName[];
+  fetchImpl?: DeviceLoginFetch;
+};
+
+export type SyncWorkspaceAgentStatusResult =
+  | { status: 'synced'; connectedAgentCount: number }
+  | { status: 'unavailable'; message: string };
 
 const DEVICE_KEY_ALGORITHM = 'Ed25519';
 
@@ -392,6 +404,48 @@ export async function selectWorkspaceForDeviceLogin(
     if (error) return unavailable(errorWithMessage(json, error));
 
     return approvedDeviceGrantFromJson(json) ?? unavailable('approved workspace selection response was missing workspace bootstrap fields');
+  } catch (error: unknown) {
+    return unavailable(error instanceof Error ? error.message : String(error));
+  }
+}
+
+export async function syncWorkspaceAgentStatus(
+  input: SyncWorkspaceAgentStatusInput,
+): Promise<SyncWorkspaceAgentStatusResult> {
+  const connectorBootstrapToken = input.connectorBootstrapToken.trim();
+  if (!connectorBootstrapToken) {
+    return unavailable('connector bootstrap credential is required');
+  }
+  const agentNames = [...new Set(input.agentNames)].sort();
+
+  try {
+    const response = await (input.fetchImpl ?? defaultFetch)(
+      CONSUELO_WORKSPACE_AGENT_STATUS_URL,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${connectorBootstrapToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ agents: agentNames }),
+      },
+    );
+    const body = asRecord(await response.json());
+    if (!response.ok) {
+      const error = asRecord(body.error);
+      const message =
+        stringField(error, 'message') ??
+        stringField(error, 'code') ??
+        stringField(body, 'error') ??
+        `HTTP ${response.status}`;
+      return unavailable(message);
+    }
+    const connectedAgentCount = body.connectedAgentCount;
+    if (typeof connectedAgentCount !== 'number' || !Number.isInteger(connectedAgentCount)) {
+      return unavailable('agent status response was missing connectedAgentCount');
+    }
+    return { status: 'synced', connectedAgentCount };
   } catch (error: unknown) {
     return unavailable(error instanceof Error ? error.message : String(error));
   }

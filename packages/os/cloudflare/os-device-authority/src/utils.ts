@@ -38,6 +38,16 @@ export async function hash(value: string): Promise<string> {
     throw new Error('hash failed');
   }
 }
+export async function hashHex(value: string): Promise<string> {
+  try {
+    const digest = new Uint8Array(
+      await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)),
+    );
+    return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  } catch {
+    throw new Error('hash failed');
+  }
+}
 export async function hashChallenge(value: string): Promise<string> {
   return await hash(value);
 }
