@@ -147,6 +147,13 @@ type GatewayModule = {
     requiredScope: string;
     now: string;
   }) => VerificationResult | Promise<VerificationResult>;
+  verifyBearerMcpRequest: (input: {
+    config: GatewaySecurityConfig;
+    bearerToken: string;
+    path: string;
+    requiredScope: string;
+    now: string;
+  }) => VerificationResult;
   renderCaddyGatewayConfig: (input: {
     workspaceHost: string;
     upstream: { host: string; port: number };
@@ -233,6 +240,7 @@ async function loadGatewayModule(): Promise<GatewayModule> {
     'getAgentAppCredentialStatus',
     'signMachineRequest',
     'verifyMachineRequest',
+    'verifyBearerMcpRequest',
     'renderCaddyGatewayConfig',
     'createPublicRouteRegistry',
     'createOutboundConnectorConfig',
@@ -823,6 +831,53 @@ describe('Consuelo OS public gateway security contract', () => {
       status: 403,
       error: { code: 'UNKNOWN_TOOL_SCOPE' },
     });
+  });
+
+  it('authorizes signed and bearer task.push calls through the OS facade umbrella grant', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace_scope_umbrella',
+      workspaceSlug: 'scope-umbrella',
+      workspaceHost: 'scope-umbrella.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-mcp',
+      appId: 'chatgpt',
+      scopes: ['route:/mcp:read', 'os:tools'],
+      expiresInSeconds: 300,
+    });
+    const requiredScope = 'tool:task.push:dangerous';
+    const body = JSON.stringify({ name: 'task.push', input: { message: 'fix(os): example' } });
+    const timestamp = new Date().toISOString();
+    const signed = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/call',
+      body,
+      timestamp,
+      nonce: 'scope-umbrella-task-push',
+    });
+
+    expect(gateway.verifyMachineRequest({
+      config,
+      method: 'POST',
+      path: '/call',
+      body,
+      headers: signed.headers,
+      workspaceId: config.workspaceId,
+      requiredScope,
+      now: timestamp,
+    })).toMatchObject({ ok: true });
+    expect(gateway.verifyBearerMcpRequest({
+      config,
+      bearerToken: token.bearerToken ?? '',
+      path: '/mcp',
+      requiredScope,
+      now: timestamp,
+    })).toMatchObject({ ok: true });
   });
 
   it('renders deterministic Caddy config that proxies only to the private Bun server', async () => {

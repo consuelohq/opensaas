@@ -13,6 +13,10 @@ import path from 'node:path';
 
 import { readEffectiveFullManifest as readEffectiveFullToolManifest, readFullToolManifest } from './manifest';
 import { resolveOverlayHome } from './manifest-overlay';
+import {
+  grantsRequiredScope,
+  normalizeGrantedScopes,
+} from './tool-scope-authorization';
 
 type JsonObject = Record<string, unknown>;
 type SignatureAlgorithm = 'ed25519';
@@ -221,15 +225,6 @@ function bearerTokenHash(value: string): string {
 
 function generateOpaqueBearerToken(): string {
   return `cst_${randomBytes(32).toString('base64url')}`;
-}
-
-function hasGrantedScope(scopes: string[], requiredScope: string): boolean {
-  if (scopes.includes(requiredScope)) return true;
-  const parts = requiredScope.split(':');
-  if (parts.length === 3 && parts[0] === 'tool') {
-    return scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*');
-  }
-  return false;
 }
 
 function generateCredentialKeyPair(): { privateKey: string; publicKey: string } {
@@ -748,7 +743,7 @@ export function issueAgentAppToken(input: {
     connectionId: nonEmptyString(input.connectionId) ?? `connection:${randomUUID()}`,
     callerId: input.callerId,
     appId: input.appId,
-    scopes: [...input.scopes],
+    scopes: normalizeGrantedScopes(input.scopes),
     expiresAt: new Date(Date.now() + input.expiresInSeconds * 1000).toISOString(),
     signatureAlgorithm: SIGNATURE_ALGORITHM,
     publicKey: keyPair.publicKey,
@@ -840,6 +835,42 @@ export function getAgentAppCredentialStatus(input: {
   const stored = readStoredAuth(input.config);
   const token = stored.tokens[input.tokenId];
   return token ? credentialStatusFromStored(token) : null;
+}
+
+export function updateAgentAppTokenScopes(input: {
+  config: GatewaySecurityConfig;
+  tokenId: string;
+  scopes: string[];
+}): AgentAppCredentialStatus {
+  const stored = readStoredAuth(input.config);
+  const token = stored.tokens[input.tokenId];
+  if (!token) throw new Error('gateway token is not recognized');
+  if (token.status !== 'active') {
+    throw new Error('gateway token must be active before its scopes can be updated');
+  }
+
+  const scopes = normalizeGrantedScopes(input.scopes);
+  if (
+    token.scopes.length === scopes.length &&
+    token.scopes.every((scope, index) => scope === scopes[index])
+  ) {
+    return credentialStatusFromStored(token);
+  }
+
+  const updated: StoredToken = {
+    ...token,
+    scopes,
+    updatedAt: nowIso(),
+  };
+  recordCredentialAuditEvent(
+    input.config,
+    updated,
+    'gateway.credential.scopes_updated',
+    'scopes_updated',
+  );
+  stored.tokens[input.tokenId] = updated;
+  writeStoredAuth(input.config, stored);
+  return credentialStatusFromStored(updated);
 }
 
 export function signMachineRequest(input: {
@@ -1111,7 +1142,7 @@ export function verifyMachineRequest(input: {
     });
   }
 
-  if (!hasGrantedScope(token.scopes, input.requiredScope)) {
+  if (!grantsRequiredScope(token.scopes, input.requiredScope)) {
     return denyCredentialUse({
       config: input.config,
       token,
@@ -1174,7 +1205,7 @@ export function verifyBearerMcpRequest(input: {
   if (!Number.isFinite(nowTime) || !Number.isFinite(expiresAt) || expiresAt <= nowTime) {
     return denyCredentialUse({ config: input.config, token, status: 401, code: 'TOKEN_EXPIRED', message: 'Gateway token has expired.', decision: 'token_expired', route: input.path });
   }
-  if (!hasGrantedScope(token.scopes, input.requiredScope)) {
+  if (!grantsRequiredScope(token.scopes, input.requiredScope)) {
     return denyCredentialUse({ config: input.config, token, status: 403, code: 'MISSING_SCOPE', message: 'Gateway token does not grant the required scope.', decision: 'missing_scope', route: input.path });
   }
   const verifiedAt = new Date(nowTime).toISOString();
@@ -1280,7 +1311,7 @@ export function evaluateToolPolicy(input: {
   requestedScope: string;
   approvalGranted?: boolean;
 }): PolicyDecision {
-  const hasScope = input.token.scopes.includes(input.requestedScope);
+  const hasScope = grantsRequiredScope(input.token.scopes, input.requestedScope);
   if (input.category === 'dangerous') {
     return {
       allowed: hasScope && input.approvalGranted === true,
