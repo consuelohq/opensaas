@@ -3,6 +3,7 @@ import {
   CHATGPT_REDIRECT_PREFIX,
   MCP_OAUTH_SCOPES,
 } from './constants';
+import { grantsRequiredScope } from '../../../scripts/lib/tool-scope-authorization';
 
 export function b64(bytes: Uint8Array): string {
   let s = '';
@@ -134,7 +135,7 @@ export function normalizeScopes(value: string): string[] {
     .filter(Boolean);
   const allowed = requested.filter((scope) => MCP_OAUTH_SCOPES.includes(scope));
   const scopes =
-    allowed.length > 0 ? allowed : ['mcp:read', 'mcp:call', 'tool:*:read'];
+    allowed.length > 0 ? allowed : ['mcp:read', 'mcp:call', 'os:tools'];
   if (
     (scopes.includes('mcp:read') || scopes.includes('mcp:call')) &&
     !scopes.includes('route:/mcp:read')
@@ -147,13 +148,7 @@ export function hasGrantedScope(
   scopes: string[],
   requiredScope: string,
 ): boolean {
-  if (!requiredScope || scopes.includes(requiredScope)) return true;
-  const parts = requiredScope.split(':');
-  return (
-    parts.length === 3 &&
-    parts[0] === 'tool' &&
-    (scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*'))
-  );
+  return grantsRequiredScope(scopes, requiredScope);
 }
 export function validChatGptRedirectUri(value: string): boolean {
   try {
