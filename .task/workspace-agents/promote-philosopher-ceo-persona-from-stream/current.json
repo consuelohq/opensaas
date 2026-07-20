@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/promote-philosopher-ceo-persona-from-stream",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1538,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1538",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1538",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1538/promote-philosopher-ceo-persona-from-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1538",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1538/promote-philosopher-ceo-persona-from-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-promote-philosopher-ceo-persona-from-stream",
+  "taskSession": "tsk_ccf6cdc12334",
+  "tmuxSession": "opensaas-workspace-agents-promote-philosopher-ceo-persona-from-stream-ccf6cdc1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-promote-philosopher-ceo-persona-from-stream/.task/workspace-agents/promote-philosopher-ceo-persona-from-stream/session.json",
+  "createdAt": "2026-07-20T20:34:39.374Z"
+}
