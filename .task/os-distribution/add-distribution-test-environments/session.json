@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_19d81cae1eb6",
+  "tmuxSession": "opensaas-os-distribution-add-distribution-test-environments-19d81cae",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/add-distribution-test-environments",
+  "branch": "task/os-distribution/add-distribution-test-environments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-add-distribution-test-environments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-add-distribution-test-environments",
+  "prNumber": 1544,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1544",
+  "createdAt": "2026-07-21T08:12:24.736Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-add-distribution-test-environments/.task/os-distribution/add-distribution-test-environments/session.json"
+}
