@@ -922,7 +922,13 @@ function resolveBranchIfNeeded(
     candidates: options.candidates,
   });
 
-  if (branchMode === 'optional' && !resolution.ok && resolution.code === 'WORKTREE_NOT_FOUND') {
+  const hasExplicitRepoTarget = Boolean(explicitBranch);
+  if (
+    branchMode === 'optional'
+    && !hasExplicitRepoTarget
+    && !resolution.ok
+    && (resolution.code === 'WORKTREE_NOT_FOUND' || resolution.code === 'AMBIGUOUS_TASK_SELECTION')
+  ) {
     return { ok: true, branch: '', source: 'none' };
   }
 
