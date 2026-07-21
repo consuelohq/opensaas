@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-grok-subagent-executable-discovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1536,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1536",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1536",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1536/fix-grok-subagent-executable-discovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1536",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1536/fix-grok-subagent-executable-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-grok-subagent-executable-discovery",
+  "taskSession": "tsk_f2c5c63368ba",
+  "tmuxSession": "opensaas-os-fix-grok-subagent-executable-discovery-f2c5c633",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-grok-subagent-executable-discovery/.task/os/fix-grok-subagent-executable-discovery/session.json",
+  "createdAt": "2026-07-20T17:36:19.742Z"
+}

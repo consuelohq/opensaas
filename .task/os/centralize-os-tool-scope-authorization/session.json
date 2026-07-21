@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5d87350d817d",
+  "tmuxSession": "opensaas-os-centralize-os-tool-scope-authorization-5d87350d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/centralize-os-tool-scope-authorization",
+  "branch": "task/os/centralize-os-tool-scope-authorization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-centralize-os-tool-scope-authorization",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-centralize-os-tool-scope-authorization",
+  "prNumber": 1535,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1535",
+  "createdAt": "2026-07-19T17:15:04.543Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-centralize-os-tool-scope-authorization/.task/os/centralize-os-tool-scope-authorization/session.json"
+}
