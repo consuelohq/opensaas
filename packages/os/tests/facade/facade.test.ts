@@ -147,9 +147,9 @@ describe('typed facade executor', () => {
     expect(result.data).toBeNull();
   });
 
-  it('plans canonical context search through the context runtime', async () => {
+  it('plans canonical memory search through the memory runtime', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('context', {
+    const result = await executeTool('memory', {
       operation: 'search',
       keyword: 'workspace',
       limit: 1,
@@ -159,7 +159,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('OK');
     expect(plans).toHaveLength(1);
     expect(plans[0].args).toEqual(expect.arrayContaining([
-      'context',
+      'memory',
       '--',
       'search',
       'workspace',
@@ -169,9 +169,9 @@ describe('typed facade executor', () => {
     ]));
   });
 
-  it('plans canonical context trace through the context runtime', async () => {
+  it('plans canonical memory trace through the memory runtime', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('context', {
+    const result = await executeTool('memory', {
       operation: 'trace',
       status: 'error',
       limit: 1,
@@ -181,7 +181,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('OK');
     expect(plans).toHaveLength(1);
     expect(plans[0].args).toEqual(expect.arrayContaining([
-      'context',
+      'memory',
       '--',
       'trace',
       '--status',
@@ -192,14 +192,24 @@ describe('typed facade executor', () => {
     ]));
   });
 
-  it('rejects canonical context calls without an operation', async () => {
-    const result = await executeTool('context', {
+  it('rejects canonical memory calls without an operation', async () => {
+    const result = await executeTool('memory', {
       keyword: 'workspace',
     }, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('VALIDATION_ERROR');
     expect(result.message).toContain('operation');
+  });
+
+  it('does not expose the retired standalone context tool', async () => {
+    const result = await executeTool('context', {
+      operation: 'search',
+      keyword: 'workspace',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -1213,7 +1223,7 @@ describe('batch facade tool', () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('batch', {
       steps: [
-        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+        { tool: 'memory', input: { operation: 'find', keyword: 'workspace', limit: 1 } },
       ],
     }, stableOptions(successfulRunner(), plans));
 
@@ -1228,7 +1238,7 @@ describe('batch facade tool', () => {
 
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({
-      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+      steps: [{ tool: 'memory', input: { operation: 'find', keyword: 'workspace', limit: 1 } }],
     }).success).toBe(true);
     expect(schema?.safeParse({ steps: [] }).success).toBe(false);
     expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);

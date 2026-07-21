@@ -444,32 +444,32 @@ export const TaskExecInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
-export const ContextSearchInput = z.object({
+export const MemorySearchInput = z.object({
   ...requestFields,
   keyword: z.string().min(1),
   limit: z.number().int().positive().optional(),
   category: optionalString,
 });
 
-export const ContextFindInput = z.object({
+export const MemoryFindInput = z.object({
   ...requestFields,
   keyword: z.string().min(1),
   limit: z.number().int().positive().optional(),
 });
 
-export const ContextGetInput = z.object({
+export const MemoryGetInput = z.object({
   ...requestFields,
   index: z.number().int().positive(),
   keyword: z.string().min(1),
 });
 
-export const ContextListInput = z.object({
+export const MemoryListInput = z.object({
   ...requestFields,
   category: optionalString,
   limit: z.number().int().positive().optional(),
 });
 
-export const ContextSaveInput = z.object({
+export const MemorySaveInput = z.object({
   ...requestFields,
   ...dryRunField,
   title: z.string().min(1),
@@ -478,7 +478,7 @@ export const ContextSaveInput = z.object({
   category: optionalString,
 });
 
-export const ContextTraceInput = z.object({
+export const MemoryTraceInput = z.object({
   ...requestFields,
   traceId: optionalString,
   tool: optionalString,
@@ -493,7 +493,7 @@ export const ContextTraceInput = z.object({
   db: optionalString,
 });
 
-export const ContextInput = z.object({
+export const MemoryInput = z.object({
   ...requestFields,
   ...dryRunField,
   operation: z.enum(['search', 'find', 'get', 'list', 'save', 'categories', 'trace']),
@@ -511,7 +511,7 @@ export const ContextInput = z.object({
   since: optionalString,
   until: optionalString,
   contains: optionalString,
-  contextTaskSession: optionalString,
+  memoryTaskSession: optionalString,
   branch: optionalString,
   raw: z.boolean().optional(),
   db: optionalString,
@@ -1017,9 +1017,9 @@ export const ResearchIngestInput = z.object({
   keep: z.boolean().optional(),
   outDir: optionalString,
   summarizeBin: optionalString,
-  contextTitle: optionalString,
-  contextCategory: optionalString,
-  noContextSave: z.boolean().optional(),
+  memoryTitle: optionalString,
+  memoryCategory: optionalString,
+  noMemorySave: z.boolean().optional(),
 });
 
 export const RailwayLogsInput = z.object({
@@ -1164,13 +1164,13 @@ export const schemaRegistry = {
   TaskMergeInput,
   TaskCleanupInput,
   TaskExecInput,
-  ContextInput,
-  ContextSearchInput,
-  ContextFindInput,
-  ContextGetInput,
-  ContextListInput,
-  ContextSaveInput,
-  ContextTraceInput,
+  MemoryInput,
+  MemorySearchInput,
+  MemoryFindInput,
+  MemoryGetInput,
+  MemoryListInput,
+  MemorySaveInput,
+  MemoryTraceInput,
   ExploreInput,
   DecideNextInput,
   ExploitInput,
@@ -1275,13 +1275,13 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskMergeInput: '{ pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ContextInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
-  ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
-  ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
-  ContextListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
-  ContextSaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ContextTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
+  MemoryInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; memoryTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MemorySearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
+  MemoryFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
+  MemoryGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
+  MemoryListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
+  MemorySaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MemoryTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
   ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
@@ -1333,7 +1333,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgConvertInput: '{ input: string; out: string; strategy?: \"wrapper\" | \"trace\" | \"both\" | \"auto\"; traceEngine?: \"auto\" | \"color\" | \"mono\"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaScreenshotRenderInput: '{ input: string; out: string; width?: number; height?: number; theme?: \"dark\" | \"light\"; accent?: string; background?: string; padding?: number; fit?: \"contain\" | \"cover\"; pattern?: \"grid\" | \"lines\" | \"none\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; memoryTitle?: string; memoryCategory?: string; noMemorySave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
