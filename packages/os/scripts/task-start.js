@@ -36,6 +36,7 @@ const {
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
+const { compactTaskStartOutput } = require('./lib/task-start-output');
 const { renderHookResult } = require('../hooks/dispatcher.js');
 const { createWorkflowIntentRuntime } = require('../hooks/intent.js');
 
@@ -574,14 +575,14 @@ async function main() {
       worktreePath,
       taskResult,
     });
-    const combinedResult = {
+    const combinedResult = compactTaskStartOutput({
       ...taskResult,
       workflow: workflowStart.workflow,
       requestedWorkflow: workflowStart.requestedWorkflow,
       manifestBundle: workflowStart.manifestBundle,
       hookEvent: workflowStart.hookEvent,
       hookResult: workflowStart.hookResult,
-    };
+    });
 
     printResult(combinedResult, args.json);
 
