@@ -56,17 +56,21 @@ describe('local OS install state', () => {
   });
 
   it('rewrites existing ChatGPT MCP config to the central endpoint without rotating tokens', () => {
-    mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
-    writeFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), JSON.stringify({
-      version: 1,
-      kind: 'consuelo-chatgpt-mcp-connection',
-      auth: 'bearer',
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    const connectionPath = join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json');
+    const authPath = join(tempHome, 'node', 'security', 'generated', 'auth.json');
+    const before = JSON.parse(readFileSync(connectionPath, 'utf8'));
+    const storedAuth = JSON.parse(readFileSync(authPath, 'utf8'));
+    storedAuth.tokens[before.tokenId].scopes = ['route:/mcp:read', 'tool:*:read'];
+    writeFileSync(authPath, JSON.stringify(storedAuth, null, 2));
+    writeFileSync(connectionPath, JSON.stringify({
+      ...before,
       url: 'https://legacy-workspace.consuelohq.com/mcp',
-      localUrl: 'http://127.0.0.1:46321/mcp',
-      tokenId: 'token_existing',
-      bearerToken: 'cst_existing',
       scopes: ['route:/mcp:read', 'tool:*:read'],
-      createdAt: '2026-06-13T00:00:00.000Z',
     }, null, 2));
 
     const result = JSON.parse(runBunEval(`
@@ -75,13 +79,63 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
 
-    const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    const chatgptMcp = JSON.parse(readFileSync(connectionPath, 'utf8'));
+    const updatedAuth = JSON.parse(readFileSync(authPath, 'utf8'));
     expect(chatgptMcp).toMatchObject({
       url: 'https://os.consuelohq.com/mcp',
-      tokenId: 'token_existing',
-      bearerToken: 'cst_existing',
+      tokenId: before.tokenId,
+      bearerToken: before.bearerToken,
+      scopes: ['route:/mcp:read', 'mcp:call', 'os:tools'],
     });
+    expect(updatedAuth.tokens[before.tokenId].scopes).toEqual([
+      'route:/mcp:read',
+      'mcp:call',
+      'os:tools',
+    ]);
+    expect(JSON.stringify(updatedAuth)).not.toContain(before.bearerToken);
+    const auditLog = readFileSync(join(tempHome, 'node', 'logs', 'gateway-audit.jsonl'), 'utf8');
+    expect(auditLog).toContain('gateway.credential.scopes_updated');
+    expect(auditLog).not.toContain(before.bearerToken);
     expect(result.actions.some((action: { path: string; status: string }) => action.path.endsWith(join('security', 'generated', 'chatgpt-mcp.json')) && action.status === 'updated')).toBe(true);
+  });
+
+  it('replaces stale ChatGPT MCP metadata when its stored credential is missing', () => {
+    mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
+    const connectionPath = join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json');
+    writeFileSync(connectionPath, JSON.stringify({
+      version: 1,
+      kind: 'consuelo-chatgpt-mcp-connection',
+      auth: 'bearer',
+      url: 'https://os.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
+      tokenId: 'tok_missing',
+      bearerToken: 'cst_stale_fixture',
+      scopes: ['route:/mcp:read', 'tool:*:read'],
+      createdAt: '2026-06-13T00:00:00.000Z',
+    }, null, 2));
+
+    const result = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    const connection = JSON.parse(readFileSync(connectionPath, 'utf8'));
+    const auth = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'auth.json'), 'utf8'));
+    expect(connection.tokenId).not.toBe('tok_missing');
+    expect(connection.bearerToken).not.toBe('cst_stale_fixture');
+    expect(connection.scopes).toEqual(['route:/mcp:read', 'mcp:call', 'os:tools']);
+    expect(auth.tokens[connection.tokenId]).toMatchObject({
+      status: 'active',
+      scopes: ['route:/mcp:read', 'mcp:call', 'os:tools'],
+    });
+    expect(JSON.stringify(auth)).not.toContain(connection.bearerToken);
+    expect(result.actions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        path: connectionPath,
+        status: 'updated',
+        message: 'ChatGPT MCP connection credential replaced',
+      }),
+    ]));
   });
 
   it('reports existing generated security assets as existing on reprovision', () => {
@@ -269,7 +323,11 @@ describe('local OS install state', () => {
       localUrl: 'http://127.0.0.1:46321/mcp',
     });
     expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
-    expect(chatgptMcp.scopes).toEqual(expect.arrayContaining(['route:/mcp:read', 'tool:*:read']));
+    expect(chatgptMcp.scopes).toEqual([
+      'route:/mcp:read',
+      'mcp:call',
+      'os:tools',
+    ]);
     expect(existsSync(join(tempHome, 'operator', 'prompts', 'review.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'hooks', 'intent.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'hooks', 'dispatcher.js'))).toBe(true);

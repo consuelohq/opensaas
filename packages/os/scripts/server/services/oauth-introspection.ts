@@ -1,18 +1,8 @@
 import type { GatewaySecurityConfig } from '../../lib/security-gateway';
+import { grantsRequiredScope } from '../../lib/tool-scope-authorization';
 import { recordGatewayAuthorizationTraceSafely } from '../../lib/trace-persistence';
 
 import { jsonResponse, unauthorized } from '../middleware/errors';
-
-function scopeAllowed(scopes: string[], requiredScope: string): boolean {
-  if (scopes.includes(requiredScope)) return true;
-  const parts = requiredScope.split(':');
-  if (parts.length !== 3 || parts[0] !== 'tool') return false;
-  const category = parts[2];
-  if (scopes.includes(`tool:*:${category}`) || scopes.includes('tool:*:*')) {
-    return true;
-  }
-  return scopes.includes('mcp:call') && (category === 'read' || category === 'write');
-}
 
 function authorizationFailure(input: {
   config: GatewaySecurityConfig;
@@ -113,7 +103,7 @@ export async function authorizeConsueloOAuthMcpRequest(input: {
     : typeof payload.scope === 'string'
       ? payload.scope.split(/\s+/).filter(Boolean)
       : [];
-  if (!scopeAllowed(scopes, input.requiredScope)) {
+  if (!grantsRequiredScope(scopes, input.requiredScope)) {
     const code = 'MISSING_SCOPE';
     const message = 'OAuth token does not grant the required scope.';
     const response = jsonResponse({

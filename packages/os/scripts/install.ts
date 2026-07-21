@@ -28,6 +28,7 @@ import {
   provisionLocalOs,
   readLocalNodeIdentity,
   resolveOsHome,
+  type AgentConnectionStatus,
   type AgentName,
   type OsMode,
   type WorkspaceBootstrap,
@@ -38,6 +39,8 @@ import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
   selectWorkspaceForDeviceLogin,
+  syncWorkspaceAgentStatus,
+  type DeviceLoginFetch,
   type WorkspaceDeviceKeyPair,
 } from './lib/workspace-device-login-client';
 import {
@@ -484,6 +487,41 @@ function workspaceBootstrapFromApprovedDeviceGrant(input: {
       ? { cloudflareTunnelToken: input.cloudflareTunnelToken }
       : {}),
   };
+}
+
+export type VerifiedAgentStatusSyncResult =
+  | { status: 'synced'; connectedAgentCount: number }
+  | { status: 'unavailable'; message: string }
+  | {
+      status: 'skipped';
+      reason: 'bootstrap_credential_unavailable' | 'dry_run';
+    };
+
+export async function syncVerifiedAgentsAfterInstall(input: {
+  workspaceBootstrap?: WorkspaceBootstrap;
+  agents: Array<{ name: AgentName; status: AgentConnectionStatus }>;
+  fetchImpl?: DeviceLoginFetch;
+}): Promise<VerifiedAgentStatusSyncResult> {
+  const connectorBootstrapToken =
+    input.workspaceBootstrap?.connectorBootstrapToken?.trim();
+  if (!connectorBootstrapToken) {
+    return { status: 'skipped', reason: 'bootstrap_credential_unavailable' };
+  }
+
+  try {
+    return await syncWorkspaceAgentStatus({
+      connectorBootstrapToken,
+      agentNames: input.agents
+        .filter((agent) => agent.status === 'verified')
+        .map((agent) => agent.name),
+      fetchImpl: input.fetchImpl,
+    });
+  } catch (error: unknown) {
+    return {
+      status: 'unavailable',
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 function createInstallPlatformProvisioningPayload(input: {
@@ -1084,6 +1122,23 @@ async function main(): Promise<void> {
         failedCount: verification.agents.filter((agent) => agent.status === 'failed').length,
       });
     }
+    const agentStatusSync = options.dryRun
+      ? ({ status: 'skipped', reason: 'dry_run' } as const)
+      : await syncVerifiedAgentsAfterInstall({
+          workspaceBootstrap,
+          agents: result.agents,
+        });
+    recordInstallerStep(diagnostics, 'agent-status', agentStatusSync.status, {
+      ...(agentStatusSync.status === 'synced'
+        ? { hostedConnectedAgentCount: agentStatusSync.connectedAgentCount }
+        : {}),
+      ...(agentStatusSync.status === 'unavailable'
+        ? { hostedStatusMessage: agentStatusSync.message }
+        : {}),
+      ...(agentStatusSync.status === 'skipped'
+        ? { hostedStatusReason: agentStatusSync.reason }
+        : {}),
+    });
     const platformProvisioning = createInstallPlatformProvisioningPayload({
       dryRun: options.dryRun,
       workspaceBootstrap,

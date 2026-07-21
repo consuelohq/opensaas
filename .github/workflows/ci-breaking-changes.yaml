@@ -251,6 +251,12 @@ jobs:
             rm -f /tmp/current-server.pid
           fi
 
+      - name: Preserve API comparison build toolchain
+        run: |
+          mkdir -p /tmp/api-comparison-build-toolchain
+          cp packages/twenty-server/.swcrc /tmp/api-comparison-build-toolchain/.swcrc
+          cp packages/twenty-server/nest-cli.json /tmp/api-comparison-build-toolchain/nest-cli.json
+
       - name: Checkout main branch
         run: |
           git stash
@@ -258,6 +264,11 @@ jobs:
           git reset --hard
           git clean -xfd -ff
           rm -rf node_modules packages/*/node_modules packages/*/dist dist .nx/cache
+
+      - name: Restore API comparison build toolchain
+        run: |
+          cp /tmp/api-comparison-build-toolchain/.swcrc packages/twenty-server/.swcrc
+          cp /tmp/api-comparison-build-toolchain/nest-cli.json packages/twenty-server/nest-cli.json
 
       - name: Install dependencies for main branch
         uses: ./.github/actions/yarn-install

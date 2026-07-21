@@ -17,7 +17,7 @@ export type SyntheticTraceRow = Record<string, unknown>;
 const generatedAt = '2026-07-11T00:00:00.000Z';
 const branch = 'demo/trace-inspector';
 
-const rows: SyntheticTraceRow[] = [
+const featuredRows: SyntheticTraceRow[] = [
   {
     id: 'demo-trace-006',
     recordId: 'demo-record-006',
@@ -268,6 +268,62 @@ const rows: SyntheticTraceRow[] = [
   },
 ];
 
+const historyTools = [
+  'fs.read',
+  'code.call',
+  'tools.search',
+  'review.run',
+  'verify',
+];
+const historyRows: SyntheticTraceRow[] = Array.from(
+  { length: 5_000 - featuredRows.length },
+  (_, index) => {
+    const sequence = index + featuredRows.length + 1;
+    const startTime = new Date(
+      Date.parse('2026-07-10T23:59:59.000Z') - index * 1_000,
+    ).toISOString();
+    const tool = historyTools[index % historyTools.length] ?? 'trace';
+    const durationMs = 35 + (index % 1_200);
+    const inputTokens = 12 + (index % 180);
+    const outputTokens = 24 + (index % 360);
+    return {
+      id: `demo-trace-${String(sequence).padStart(5, '0')}`,
+      recordId: `demo-record-${String(sequence).padStart(5, '0')}`,
+      startTime,
+      time: startTime.slice(11, 19),
+      displayTime: startTime.slice(11, 19),
+      name: tool,
+      traceName: tool,
+      branch: `demo/history-${String(Math.floor(index / 20) + 1).padStart(3, '0')}`,
+      taskSession: `demo-history-${Math.floor(index / 20) + 1}`,
+      status: index % 97 === 0 ? 'error' : 'success',
+      ok: index % 97 !== 0,
+      code: index % 97 === 0 ? 'COMMAND_FAILED' : 'OK',
+      exitCode: index % 97 === 0 ? 1 : 0,
+      durationMs,
+      latency: `${durationMs}ms`,
+      tokens: inputTokens + outputTokens,
+      inputTokens,
+      outputTokens,
+      cost: 0,
+      costLabel: '$0.0000',
+      trace: `demo-trace-${String(sequence).padStart(5, '0')}`,
+      traceId: `demo-trace-${String(sequence).padStart(5, '0')}`,
+      input: `Synthetic history request ${sequence}`,
+      output:
+        index % 97 === 0
+          ? 'Synthetic bounded failure for virtual-list testing.'
+          : `Synthetic history result ${sequence}`,
+      summary: `${tool} · synthetic history row ${sequence}`,
+      rawStderr:
+        index % 97 === 0 ? 'synthetic preview failure: no private data' : '',
+      metadata: { source: 'synthetic-preview', sequence },
+    };
+  },
+);
+
+const rows: SyntheticTraceRow[] = [...featuredRows, ...historyRows];
+
 const totalTokens = rows.reduce((sum, row) => sum + Number(row.tokens ?? 0), 0);
 const totalCost = rows.reduce((sum, row) => sum + Number(row.cost ?? 0), 0);
 
@@ -280,6 +336,7 @@ export const SYNTHETIC_TRACE_FEED = {
     tokens: totalTokens,
     cost: totalCost,
     synthetic: true,
+    nextCursor: null,
   },
   rows,
   failures: rows.filter((row) => row.status === 'error'),
@@ -295,9 +352,17 @@ export const PRIVATE_MARKERS = [
   'trc_',
 ];
 
+export function serializeTraceSeed(value: unknown): string {
+  return JSON.stringify(value).replaceAll('<', '\\u003c');
+}
+
 export function sanitizeTracePreviewHtml(html: string): string {
-  const seed = JSON.stringify(SYNTHETIC_TRACE_FEED).replaceAll('<', '\u003c');
-  const replaced = html.replace(
+  const seed = serializeTraceSeed(SYNTHETIC_TRACE_FEED);
+  const withoutPrivateTransport = html.replace(
+    /<script[^>]*id=["']consuelo-trace-history-transport["'][^>]*>[\s\S]*?<\/script>\s*/gi,
+    '',
+  );
+  const replaced = withoutPrivateTransport.replace(
     /(<script[^>]*id=["']trace-seed-data["'][^>]*>)[\s\S]*?(<\/script>)/,
     `$1${seed}$2`,
   );
@@ -328,20 +393,7 @@ export function assertSanitizedTracePreview(
 }
 
 export function standaloneTracePreviewHtml(): string {
-  const seed = JSON.stringify(SYNTHETIC_TRACE_FEED).replaceAll('<', '\\u003c');
-  const rowMarkup = SYNTHETIC_TRACE_FEED.rows
-    .map((row) => {
-      const status = row.status === 'error' ? 'error' : 'success';
-      return `<button class="trxRow" type="button" data-trace-key="${escapeHtml(row.recordId)}" aria-selected="false">
-      <span class="preview-status ${status}">\u2724</span>
-      <span class="preview-time">${escapeHtml(row.displayTime)}</span>
-      <span class="preview-tool">${escapeHtml(row.name)}</span>
-      <span class="preview-branch">${escapeHtml(row.branch)}</span>
-      <span class="preview-tokens">${escapeHtml(row.tokens)} tok</span>
-      <span class="preview-latency">${escapeHtml(row.latency)}</span>
-    </button>`;
-    })
-    .join('');
+  const seed = serializeTraceSeed(SYNTHETIC_TRACE_FEED);
 
   return `<!doctype html>
 <html lang="en">
@@ -357,11 +409,11 @@ export function standaloneTracePreviewHtml(): string {
     .preview-top{min-height:68px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:0 2px 16px}.preview-top .eyebrow{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}.preview-top h1{margin:7px 0 0;font:700 clamp(24px,4vw,42px)/.95 Georgia,serif;letter-spacing:-.04em}.preview-note{max-width:470px;margin:0;color:var(--muted);font-size:11px;line-height:1.5;text-align:right}.cmdkMenuLaunch{border:1px solid var(--line);border-radius:999px;background:var(--panel);padding:8px 10px;color:var(--amber);font-size:10px}
     #tbmLiveTraceModal{min-height:0;display:block}.trxShell{height:calc(100dvh - 104px);min-height:560px;overflow:hidden;border:1px solid var(--line);border-radius:13px;background:#080706;box-shadow:0 28px 90px rgba(0,0,0,.46)}
     .preview-layout{height:100%;min-height:0;display:grid;grid-template-columns:minmax(380px,42%) minmax(0,1fr)}
-    .preview-list{min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);border-right:1px solid var(--line);background:#090806}.preview-list header{padding:15px;border-bottom:1px solid var(--line)}.preview-list header span{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.preview-list header h2{margin:6px 0 4px;font-size:15px}.preview-list header p{margin:0;color:var(--muted);font-size:10px;line-height:1.45}.preview-rows{min-height:0;overflow:auto}
-    .trxRow{width:100%;display:grid;grid-template-columns:22px 68px 92px minmax(0,1fr) 76px 62px;align-items:center;gap:7px;padding:10px 11px;border:0;border-bottom:1px solid rgba(243,234,211,.08);background:transparent;text-align:left;cursor:pointer}.trxRow:hover,.trxRow.selected{background:rgba(198,161,91,.09)}.trxRow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.preview-status.success{color:var(--green)}.preview-status.error{color:var(--red)}.preview-tool{color:var(--amber);font-weight:700}.preview-time,.preview-branch,.preview-tokens,.preview-latency{color:var(--muted)}
+    .preview-list{min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);border-right:1px solid var(--line);background:#090806}.preview-list header{padding:15px;border-bottom:1px solid var(--line)}.preview-list header span{display:block;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.preview-list header h2{margin:6px 0 4px;font-size:15px}.preview-list header p{margin:0;color:var(--muted);font-size:10px;line-height:1.45}.preview-rows{position:relative;min-height:0;overflow:auto;overscroll-behavior:contain;contain:strict}.preview-rows [data-trace-virtual-content]{position:relative;width:100%;min-height:100%}
+    .trxRow{width:100%;height:44px;min-width:1802px;display:grid;grid-template-columns:34px 112px 166px 78px 82px minmax(300px,.95fr) minmax(420px,1.3fr) minmax(360px,1.12fr) 180px 78px 92px;align-items:center;gap:7px;padding:10px 11px;border:0;border-bottom:1px solid rgba(243,234,211,.08);background:transparent;text-align:left;cursor:pointer}.trxRow:hover,.trxRow.selected{background:rgba(198,161,91,.09)}.trxRow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.preview-status.success{color:var(--green)}.preview-status.error{color:var(--red)}.preview-tool{color:var(--amber);font-weight:700}.preview-time,.preview-branch,.preview-tokens,.preview-latency{color:var(--muted)}
     .trxRail{min-width:0;min-height:0;height:100%;overflow:hidden}.trxRailInner{width:100%;height:100%;min-height:0;padding:0;overflow:hidden}
     .trace-synthetic-preview{position:fixed;right:14px;bottom:14px;z-index:10000;border:1px solid rgba(243,234,211,.2);border-radius:999px;background:#0b0907;color:#d8cdbb;padding:8px 11px;font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 12px 36px rgba(0,0,0,.4)}
-    @media(max-width:900px){.preview-page{padding:0}.preview-top{min-height:58px;align-items:center;padding:10px 12px}.preview-top h1{font-size:21px}.preview-top .eyebrow,.preview-note{display:none}.cmdkMenuLaunch{display:inline-flex!important}.trxShell{height:calc(100dvh - 58px);min-height:0;border:0;border-radius:0}.preview-layout{display:block}.preview-list{height:100%;border-right:0}.preview-list header{padding:13px}.trxRow{grid-template-columns:20px 58px 82px minmax(0,1fr) 62px}.preview-latency{display:none}.trxRail{display:none}.trxShell.detail-open .trxRail{display:block}.trace-synthetic-preview{right:8px;bottom:8px;font-size:9px}}
+    @media(max-width:900px){.preview-page{padding:0}.preview-top{min-height:58px;align-items:center;padding:10px 12px}.preview-top h1{font-size:21px}.preview-top .eyebrow,.preview-note{display:none}.cmdkMenuLaunch{display:inline-flex!important}.trxShell{height:calc(100dvh - 58px);min-height:0;border:0;border-radius:0}.preview-layout{display:block}.preview-list{height:100%;border-right:0}.preview-list header{padding:13px}.trxRow{min-width:1542px;grid-template-columns:34px 112px 176px 66px 68px 250px 290px 270px 140px 70px 78px}.preview-latency{display:block}.trxRail{display:none}.trxShell.detail-open .trxRail{display:block}.trace-synthetic-preview{right:8px;bottom:8px;font-size:9px}}
   </style>
 </head>
 <body data-trace-preview="synthetic">
@@ -376,7 +428,7 @@ export function standaloneTracePreviewHtml(): string {
         <div class="preview-layout">
           <section class="preview-list" aria-label="Synthetic trace list">
             <header><span>Trace stream</span><h2>Synthetic branch</h2><p>Select a call to inspect branch token totals, payloads, metadata, and actionable errors.</p></header>
-            <div class="preview-rows">${rowMarkup}</div>
+            <div class="preview-rows" data-trace-virtual-list data-trace-total="${SYNTHETIC_TRACE_FEED.rows.length}"><div data-trace-virtual-content></div></div>
           </section>
           <aside class="trxRail" aria-label="Trace detail"><div class="trxRailInner" data-inspector></div></aside>
         </div>
@@ -397,6 +449,9 @@ export function standaloneTracePreviewHtml(): string {
       const shell = document.querySelector('.trxShell');
       const inspector = document.querySelector('[data-inspector]');
       const select = (key) => {
+        window.__traceSelectedKey = key;
+        shell.classList.remove('closed');
+        shell.classList.add('detail-open');
         for (const button of document.querySelectorAll('.trxRow')) {
           const active = button.dataset.traceKey === key;
           button.classList.toggle('selected', active);
@@ -410,9 +465,7 @@ export function standaloneTracePreviewHtml(): string {
         if (row) select(row.dataset.traceKey || '');
         if (event.target.closest('[data-ti-back]')) {
           shell.classList.remove('detail-open');
-          for (const button of document.querySelectorAll('.trxRow')) button.classList.remove('selected');
-          if (inspector) inspector.innerHTML = '';
-          history.replaceState(null, '', location.pathname);
+          shell.classList.add('closed');
         }
       });
       select('demo-record-005');
@@ -438,7 +491,7 @@ export async function buildSanitizedTracePreview(input: {
 
     const html = standaloneTracePreviewHtml();
     assertSanitizedTracePreview(html, 'standalone sanitized preview');
-    const feed = JSON.stringify(SYNTHETIC_TRACE_FEED, null, 2) + '\\n';
+    const feed = JSON.stringify(SYNTHETIC_TRACE_FEED, null, 2) + '\n';
     assertSanitizedTracePreview(feed, 'synthetic feed');
     const assets = [
       basename(INSPECTOR_CSS_HREF),
@@ -455,11 +508,11 @@ export async function buildSanitizedTracePreview(input: {
     await writeFile(join(siteRoot, 'live-traces.json'), feed);
     await writeFile(
       join(outputRoot, 'index.html'),
-      '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/trace-burn-intelligence/"><title>Trace preview</title><a href="/trace-burn-intelligence/">Open sanitized trace preview</a>\\n',
+      '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/trace-burn-intelligence/"><title>Trace preview</title><a href="/trace-burn-intelligence/">Open sanitized trace preview</a>\n',
     );
     await writeFile(
       join(outputRoot, '_headers'),
-      '/trace-burn-intelligence/*\\n  Cache-Control: no-store\\n  X-Content-Type-Options: nosniff\\n  Referrer-Policy: no-referrer\\n',
+      '/trace-burn-intelligence/*\n  Cache-Control: no-store\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n',
     );
 
     return {
@@ -481,15 +534,6 @@ export async function buildSanitizedTracePreview(input: {
     );
   }
 }
-function escapeHtml(value: unknown): string {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
 function parseArgs(argv: string[]): {
   archiveRoot: string;
   outputRoot: string;

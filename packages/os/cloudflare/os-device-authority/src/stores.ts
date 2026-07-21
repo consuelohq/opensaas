@@ -5,10 +5,12 @@ import type {
   McpOAuthCode,
   McpOAuthRefreshToken,
   McpOAuthState,
+  NodeBootstrapCredential,
   OAuthState,
   StorageLike,
   Store,
   WorkspaceNode,
+  WorkspaceAgentStatus,
 } from './types';
 import { cleanCode } from './utils';
 
@@ -181,6 +183,41 @@ export class DurableStore implements Store {
       throw new Error('workspace node read failed');
     }
   }
+  async putNodeBootstrapCredential(credential: NodeBootstrapCredential) {
+    try {
+      await this.storage.put(`nbc:${credential.tokenHash}`, credential);
+    } catch {
+      throw new Error('node bootstrap credential write failed');
+    }
+  }
+  async byNodeBootstrapCredential(tokenHash: string) {
+    try {
+      return await this.storage.get<NodeBootstrapCredential>(`nbc:${tokenHash}`);
+    } catch {
+      throw new Error('node bootstrap credential read failed');
+    }
+  }
+  async delNodeBootstrapCredential(tokenHash: string) {
+    try {
+      await this.storage.delete(`nbc:${tokenHash}`);
+    } catch {
+      throw new Error('node bootstrap credential delete failed');
+    }
+  }
+  async putWorkspaceAgentStatus(status: WorkspaceAgentStatus) {
+    try {
+      await this.storage.put(`was:${status.workspaceHost}`, status);
+    } catch {
+      throw new Error('workspace agent status write failed');
+    }
+  }
+  async byWorkspaceAgentStatus(workspaceHost: string) {
+    try {
+      return await this.storage.get<WorkspaceAgentStatus>(`was:${workspaceHost}`);
+    } catch {
+      throw new Error('workspace agent status read failed');
+    }
+  }
 }
 
 export function createMemoryDeviceGrantStore(): Store {
@@ -192,6 +229,17 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpRefreshTokens = new Map<string, McpOAuthRefreshToken>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
   const workspaceNodes = new Map<string, WorkspaceNode>();
+  const nodeBootstrapCredentials = new Map<string, NodeBootstrapCredential>();
+  const workspaceAgentStatuses = new Map<string, WorkspaceAgentStatus>();
+  const cloneWorkspaceAgentStatus = (status: WorkspaceAgentStatus): WorkspaceAgentStatus => ({
+    ...status,
+    nodes: Object.fromEntries(
+      Object.entries(status.nodes).map(([nodeId, node]) => [
+        nodeId,
+        { ...node, agents: [...node.agents] },
+      ]),
+    ),
+  });
   return {
     put(g) {
       grants.set(g.hash, { ...g });
@@ -286,6 +334,26 @@ export function createMemoryDeviceGrantStore(): Store {
     byWorkspaceNode(accountId, nodeId) {
       const node = workspaceNodes.get(`${accountId}:${nodeId}`);
       return Promise.resolve(node ? { ...node } : undefined);
+    },
+    putNodeBootstrapCredential(credential) {
+      nodeBootstrapCredentials.set(credential.tokenHash, { ...credential });
+      return Promise.resolve();
+    },
+    byNodeBootstrapCredential(tokenHash) {
+      const credential = nodeBootstrapCredentials.get(tokenHash);
+      return Promise.resolve(credential ? { ...credential } : undefined);
+    },
+    delNodeBootstrapCredential(tokenHash) {
+      nodeBootstrapCredentials.delete(tokenHash);
+      return Promise.resolve();
+    },
+    putWorkspaceAgentStatus(status) {
+      workspaceAgentStatuses.set(status.workspaceHost, cloneWorkspaceAgentStatus(status));
+      return Promise.resolve();
+    },
+    byWorkspaceAgentStatus(workspaceHost) {
+      const status = workspaceAgentStatuses.get(workspaceHost);
+      return Promise.resolve(status ? cloneWorkspaceAgentStatus(status) : undefined);
     },
   };
 }

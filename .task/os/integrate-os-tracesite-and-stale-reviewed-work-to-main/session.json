@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4343c471b465",
+  "tmuxSession": "opensaas-os-integrate-os-tracesite-and-stale-reviewed-work-t-4343c471",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "branch": "task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "prNumber": 1545,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1545",
+  "createdAt": "2026-07-21T10:30:32.862Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-integrate-os-tracesite-and-stale-reviewed-work-to-main/.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/session.json"
+}
