@@ -305,16 +305,18 @@ describe('tool manifest generator', () => {
 
 
 
-  it('should model read-only fs read and search as session-optional when building manifests', () => {
+  it('should model read-only fs operations as session-optional when building manifests', () => {
     const registry = buildToolManifest({ write: false });
     const byName = new Map(registry.full.tools.map((entry) => [entry.name, entry]));
 
-    for (const toolName of ['fs.read', 'fs.search']) {
+    for (const toolName of ['fs.read', 'fs.search', 'fs.list']) {
       const entry = byName.get(toolName);
       expect(entry?.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
       expect(entry?.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
       expect(entry?.definition.sessionRequired).toBe(false);
     }
+
+    expect(byName.get('fs.read')?.definition.command.arguments).toContainEqual({ source: 'full', flag: '--full', kind: 'boolean' });
 
     expect(byName.get('fs.write')?.definition.sessionRequired).toBe(true);
     expect(byName.get('fs.apply_patch')?.definition.sessionRequired).toBe(true);

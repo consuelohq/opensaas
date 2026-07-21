@@ -129,14 +129,14 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "composed",
-      "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+      "description": "run a fixed list of workspace tool calls sequentially or in parallel with compact per-step results; step inputs cannot depend on earlier outputs, and parallel mode is for independent operations",
       "core": true,
       "definition": {
         "name": "batch",
         "methodPath": [
           "batch"
         ],
-        "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+        "description": "run a fixed list of workspace tool calls sequentially or in parallel with compact per-step results; step inputs cannot depend on earlier outputs, and parallel mode is for independent operations",
         "category": "composed",
         "underlying": "workspace batch",
         "capabilities": {
@@ -1718,7 +1718,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "codemode",
-      "description": "run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
+      "description": "execute one sandboxed JavaScript program that composes allowed typed workspace tools with loops, branching, filtering, dependent calls, and output shaping; intermediate tool results stay inside code mode and only the returned value enters agent context",
       "core": false,
       "definition": {
         "name": "code.run",
@@ -1726,7 +1726,7 @@
           "code",
           "run"
         ],
-        "description": "run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction",
+        "description": "execute one sandboxed JavaScript program that composes allowed typed workspace tools with loops, branching, filtering, dependent calls, and output shaping; intermediate tool results stay inside code mode and only the returned value enters agent context",
         "category": "codemode",
         "underlying": "workspace code.run",
         "capabilities": {
@@ -2632,7 +2632,7 @@
           "path": "packages/os/scripts",
           "depth": 1
         },
-        "sessionRequired": true
+        "sessionRequired": false
       }
     },
     {
@@ -2641,7 +2641,7 @@
       "source": "dev-tooling",
       "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
       "category": "filesystem",
-      "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
+      "description": "read exact full text or bounded text pages and supported media, with MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
       "core": false,
       "definition": {
         "name": "fs.read",
@@ -2649,7 +2649,7 @@
           "fs",
           "read"
         ],
-        "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
+        "description": "read exact full text or bounded text pages and supported media, with MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
         "category": "filesystem",
         "underlying": "workspace fs read, or task:fs read when a branch is resolved",
         "capabilities": {
@@ -2696,6 +2696,11 @@
               "source": "to",
               "flag": "--to",
               "kind": "value"
+            },
+            {
+              "source": "full",
+              "flag": "--full",
+              "kind": "boolean"
             }
           ]
         },
