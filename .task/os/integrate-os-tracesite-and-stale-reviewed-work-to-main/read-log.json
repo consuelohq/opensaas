@@ -1,5 +1,6 @@
 {
   "files": [
+    ".github/workflows/ci-breaking-changes.yaml",
     ".task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/evidence-log.json",
     ".task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md",
     "packages/os/SCRIPTS.md",
@@ -27,5 +28,5 @@
     "packages/workspace/tests/server_call_test.py",
     "packages/workspace/tests/trace-site-inspector.test.ts"
   ],
-  "updatedAt": "2026-07-21T09:21:22.858Z"
+  "updatedAt": "2026-07-21T10:18:12.829Z"
 }

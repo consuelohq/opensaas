@@ -4,14 +4,13 @@
   "mode": "full",
   "branch": "task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main",
   "base": "origin/task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main",
-  "headSha": "eb788637a86aa0978774ede86d3aa643806192bd",
-  "changeHash": "3e6cf07dff6621d2ec1de16d3e2cf1478c7fb9a107dddaf009db480fa304e7d3",
+  "headSha": "9ece39236a87d0d52ab7eda6ba0105c0dca4a73b",
+  "changeHash": "62e7100059c35cdf20d3e9d1526ee1d79a3abe208de539a408f016d6086ef2c0",
   "changedFiles": [
-    "packages/twenty-server/.swcrc",
-    "packages/twenty-server/nest-cli.json",
-    "packages/workspace/tests/twenty-server-email-build-contract.test.ts"
+    ".github/workflows/ci-breaking-changes.yaml",
+    "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts"
   ],
-  "verifiedAt": "2026-07-21T10:03:47.337Z",
+  "verifiedAt": "2026-07-21T10:20:26.816Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -25,99 +24,18 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
-        ".task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/verify.json",
+        ".github/workflows/ci-breaking-changes.yaml",
+        ".task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/evidence-log.json",
+        ".task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/read-log.json",
         ".task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md",
-        "packages/twenty-server/.swcrc",
-        "packages/twenty-server/nest-cli.json",
-        "packages/workspace/tests/twenty-server-email-build-contract.test.ts"
+        "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts"
       ],
-      "matchedRules": [
-        {
-          "id": "twenty-server-project",
-          "critical": true,
-          "reason": "Server changes have the broadest backend impact and should run the project test target.",
-          "matchedFiles": [
-            "packages/twenty-server/.swcrc",
-            "packages/twenty-server/nest-cli.json"
-          ],
-          "origin": "explicit"
-        },
-        {
-          "id": "auto:twenty-server:test",
-          "critical": false,
-          "reason": "Auto-discovered Nx test target for packages/twenty-server.",
-          "matchedFiles": [
-            "packages/twenty-server/.swcrc",
-            "packages/twenty-server/nest-cli.json"
-          ],
-          "origin": "auto"
-        }
-      ],
-      "selectedSuites": [
-        {
-          "name": "twenty-server affected test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ],
-          "ruleId": "twenty-server-project",
-          "critical": true
-        },
-        {
-          "name": "twenty-server test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server",
-            "--coverage=false"
-          ],
-          "ruleId": "auto:twenty-server:test",
-          "critical": false
-        }
-      ],
-      "level": "pass",
-      "zeroSuiteReason": null,
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
       "run": true,
-      "runResults": [
-        {
-          "name": "twenty-server affected test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ],
-          "ruleId": "twenty-server-project",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 558,
-          "outputTail": " \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/starting-after-parser-utils/__tests__/\u001b[22m\u001b[1mparse-starting-after-rest-request.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-subscription-event-to-database-subscription.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/secure-http-client/utils/__tests__/\u001b[22m\u001b[1mis-private-ip.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/contact-creation-manager/utils/__tests__/\u001b[22m\u001b[1mextract-domain-from-link.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/dashboard/tools/utils/__tests__/\u001b[22m\u001b[1mhumanize-sub-field-label.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/utils/__test__/\u001b[22m\u001b[1mis-snake-case-string.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/blocklist/utils/__tests__/\u001b[22m\u001b[1mis-email-blocklisted.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/lab/utils/\u001b[22m\u001b[1mis-public-feature-flag.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/utils/__test__/\u001b[22m\u001b[1mparse-email-body.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/sql-sanitization/utils/__tests__/\u001b[22m\u001b[1mvalidate-allowed-value.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-query-builder/utils/__tests__/\u001b[22m\u001b[1mstringify-without-key-quote.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/filter-parser-utils/__tests__/\u001b[22m\u001b[1mparse-filter-content.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/gmail/utils/__tests__/\u001b[22m\u001b[1mparse-gmail-message-list-fetch-error.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/utils/__tests__/\u001b[22m\u001b[1mbuild-logic-function-event.util.spec.ts\u001b[22m\n\n=============================== Coverage summary ===============================\n\u001b[33;1mStatements   : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mBranches     : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mFunctions    : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mLines        : Unknown% ( 0/0 )\u001b[0m\n================================================================================\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3512 passed\u001b[39m\u001b[22m, 3522 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        19.328 s, estimated 184 s\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n\n NX   Nx detected a flaky task\n\n  twenty-server:test\n\nFlaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks\n\n"
-        },
-        {
-          "name": "twenty-server test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server",
-            "--coverage=false"
-          ],
-          "ruleId": "auto:twenty-server:test",
-          "critical": false,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 545,
-          "outputTail": "rver/src/utils/version/__tests__/\u001b[22m\u001b[1mextract-version-major-minor-patch.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/ending-before-parser-utils/__tests__/\u001b[22m\u001b[1mparse-ending-before-rest-request.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/file/utils/__tests__/\u001b[22m\u001b[1mbuild-file-info.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mcreate-sql-where-tuple-in-clause.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/file/utils/__tests__/\u001b[22m\u001b[1mextract-file-info-from-request.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/starting-after-parser-utils/__tests__/\u001b[22m\u001b[1mparse-starting-after-rest-request.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-product-to-database-product.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing/utils/__tests__/\u001b[22m\u001b[1mnormalize-price-ref.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mgmail-mime-message.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/tool-provider/output-serialization/__tests__/\u001b[22m\u001b[1mstrip-empty-values.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-subscription-event-to-database-customer.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/search/utils/__tests__/\u001b[22m\u001b[1mformat-search-terms.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/gmail/utils/__tests__/\u001b[22m\u001b[1mfilter-out-gmail-excluded-folders.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/consuelo-api/services/\u001b[22m\u001b[1mretry-policy.spec.ts\u001b[22m (\u001b[0m\u001b[1m\u001b[41m13.064 s\u001b[49m\u001b[22m\u001b[0m)\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3512 passed\u001b[39m\u001b[22m, 3522 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        203.435 s, estimated 216 s\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n\n NX   Nx detected a flaky task\n\n  twenty-server:test\n\nFlaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks\n\n"
-        }
-      ],
+      "runResults": [],
       "failedSuites": []
     }
   },

@@ -56,12 +56,14 @@ This is primarily an integration and conflict-reconstruction task, so no single 
 
 - `packages/os/tests/stream-install-state.test.ts`
 - `packages/os/tests/stream-service.test.ts`
+- `packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts`
 - `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
 
 ## workspace-owned: files changed
 
 - `packages/os/tests/stream-install-state.test.ts`
 - `packages/os/tests/stream-service.test.ts`
+- `packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts`
 - `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
 
 ## workspace-owned: activity log
@@ -69,6 +71,7 @@ This is primarily an integration and conflict-reconstruction task, so no single 
 - 2026-07-21 09:05:12 fs.write: `packages/os/tests/stream-service.test.ts`
 - 2026-07-21 09:05:26 fs.write: `packages/os/tests/stream-install-state.test.ts`
 - 2026-07-21 09:49:21 fs.write: `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
+- 2026-07-21 10:19:21 fs.write: `packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts`
 - Added and proved the incremental newer-row prepend path with an observable `live-incremental` diagnostic.
 - Confirmed the active `batch` wrapper still drops the outer task session; all task-scoped work uses direct calls.
 - Recovered the exact pre-outage task worktree without copying or resetting it.
@@ -89,10 +92,12 @@ This is primarily an integration and conflict-reconstruction task, so no single 
 - Changed-diff review against `main`: zero owned, related, or pre-existing findings across 89 product files.
 - Repository verification: publish-valid, review passed, database guard passed, zero risks.
 - GitHub API-breaking CI initially failed before API comparison because Twenty could not require `clean-suspended-workspace.email`. The focused contract failed red, then passed after enabling SWC TSX parsing/React transforms and `.tsx` Nest compilation. `nx build twenty-server` compiled 4,888 files and produced the missing email module.
+- After that fix, the API workflow still failed while checking out and seeding the separate `main` baseline, because the first compiler-fix PR cannot make the already-checked-out baseline contain its own fix. The workflow now preserves only `.swcrc` and `nest-cli.json` from the PR, restores them after the `main` checkout, and continues comparing `main`'s actual API source and schema. A focused ordering contract failed red and now passes; the workflow parses as valid YAML.
 - 2026-07-21 09:30:26 `verify`: passed — OK
 - 2026-07-21 09:31:08 `verify`: passed — OK
 - 2026-07-21 09:59:23 `verify`: failed — COMMAND_FAILED
 - 2026-07-21 10:02:55 `verify`: failed — COMMAND_FAILED
+- 2026-07-21 10:20:26 `verify`: passed — OK
 
 ## key decisions
 
@@ -131,6 +136,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.github/workflows/ci-breaking-changes.yaml`
 - `packages/os/SCRIPTS.md`
 - `packages/os/manifests/core.manifest.json`
 - `packages/os/manifests/manifest.config.json`
@@ -156,13 +162,8 @@ bun run task:finish
 - `packages/workspace/tests/server_call_test.py`
 - `packages/workspace/tests/trace-site-inspector.test.ts`
 
-- 2026-07-21 09:21:31 apply-patch: `packages/os/scripts/lib/code-call/snapshot.ts`
+- 2026-07-21 10:19:21 write: `packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts`
 
-- 2026-07-21 09:30:55 apply-patch: `.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md`
+- 2026-07-21 10:19:39 apply-patch: `.github/workflows/ci-breaking-changes.yaml`
 
-- 2026-07-21 09:49:21 write: `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
-
-- 2026-07-21 09:49:36 apply-patch: `packages/twenty-server/.swcrc`
-- 2026-07-21 09:49:36 apply-patch: `packages/twenty-server/nest-cli.json`
-
-- 2026-07-21 09:50:09 apply-patch: `.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md`
+- 2026-07-21 10:19:59 apply-patch: `.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md`
