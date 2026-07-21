@@ -46,6 +46,7 @@ This is primarily an integration and conflict-reconstruction task, so no single 
 - Unique newer live rows use an incremental virtual-list path; duplicate/update pages and capacity edges retain the correctness-first full rebuild.
 - Focused status: 12/12 TraceSite gateway tests and 43/43 inspector tests pass.
 - PR #1478 is reconstructed OS-first from commit `9729706245bb`: the modular Effect service, `stream.create`, thin context/list CLIs, bundled stream instructions, install seeding, facade schema, manifest catalog, and service tests are present. Workspace mirrors, generated files, and stale task records from the old PR were excluded.
+- The required companion commit `8d94d629a8a2` is now included without its stale task metadata. Retargeting #1543 to `main` exposed the missing TSX email compilation in the API-breaking workflow; `.swcrc`, `nest-cli.json`, and a focused build-contract test now cover it.
 - Stream decisions in the imported service use the current local Consuelo memory database rather than the old Supabase decision path.
 - The active Python MCP transport now defaults to `consuelo-os`; its environment example and reload health expectation match the OS-native server identity.
 - The metadata audit removed 26 obsolete TraceSite task/session/workpad files while preserving the imported OS task provenance and the current integration record.
@@ -55,16 +56,19 @@ This is primarily an integration and conflict-reconstruction task, so no single 
 
 - `packages/os/tests/stream-install-state.test.ts`
 - `packages/os/tests/stream-service.test.ts`
+- `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
 
 ## workspace-owned: files changed
 
 - `packages/os/tests/stream-install-state.test.ts`
 - `packages/os/tests/stream-service.test.ts`
+- `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
 
 ## workspace-owned: activity log
 
 - 2026-07-21 09:05:12 fs.write: `packages/os/tests/stream-service.test.ts`
 - 2026-07-21 09:05:26 fs.write: `packages/os/tests/stream-install-state.test.ts`
+- 2026-07-21 09:49:21 fs.write: `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
 - Added and proved the incremental newer-row prepend path with an observable `live-incremental` diagnostic.
 - Confirmed the active `batch` wrapper still drops the outer task session; all task-scoped work uses direct calls.
 - Recovered the exact pre-outage task worktree without copying or resetting it.
@@ -84,8 +88,11 @@ This is primarily an integration and conflict-reconstruction task, so no single 
 - Static validation: `git diff --check`; 49 JSON files parsed; 2 Python files compiled; 8 changed JavaScript files passed the repository file checker.
 - Changed-diff review against `main`: zero owned, related, or pre-existing findings across 89 product files.
 - Repository verification: publish-valid, review passed, database guard passed, zero risks.
+- GitHub API-breaking CI initially failed before API comparison because Twenty could not require `clean-suspended-workspace.email`. The focused contract failed red, then passed after enabling SWC TSX parsing/React transforms and `.tsx` Nest compilation. `nx build twenty-server` compiled 4,888 files and produced the missing email module.
 - 2026-07-21 09:30:26 `verify`: passed — OK
 - 2026-07-21 09:31:08 `verify`: passed — OK
+- 2026-07-21 09:59:23 `verify`: failed — COMMAND_FAILED
+- 2026-07-21 10:02:55 `verify`: failed — COMMAND_FAILED
 
 ## key decisions
 
@@ -152,3 +159,10 @@ bun run task:finish
 - 2026-07-21 09:21:31 apply-patch: `packages/os/scripts/lib/code-call/snapshot.ts`
 
 - 2026-07-21 09:30:55 apply-patch: `.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md`
+
+- 2026-07-21 09:49:21 write: `packages/workspace/tests/twenty-server-email-build-contract.test.ts`
+
+- 2026-07-21 09:49:36 apply-patch: `packages/twenty-server/.swcrc`
+- 2026-07-21 09:49:36 apply-patch: `packages/twenty-server/nest-cli.json`
+
+- 2026-07-21 09:50:09 apply-patch: `.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md`
