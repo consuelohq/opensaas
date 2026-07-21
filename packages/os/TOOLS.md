@@ -30,7 +30,6 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | artifacts | 21 |
 | codemode | 2 |
 | composed | 3 |
-| context | 1 |
 | decision engine | 6 |
 | filesystem | 6 |
 | generation | 2 |
@@ -40,6 +39,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | linear | 8 |
 | mac | 8 |
 | media | 25 |
+| memory | 1 |
 | review | 4 |
 | sentry | 7 |
 | stream | 4 |
@@ -1358,7 +1358,7 @@ run a small JavaScript program over workspace APIs for control flow, filtering, 
 await workspace.call({
   "tool": "code.run",
   "input": {
-    "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
+    "code": "const traces = await workspace_call(\"memory\", { operation: \"trace\", contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
     "maxOperations": 25,
     "maxResultChars": 20000
   }
@@ -1423,8 +1423,9 @@ await workspace.call({
   "input": {
     "steps": [
       {
-        "tool": "context.find",
+        "tool": "memory",
         "input": {
+          "operation": "find",
           "keyword": "workspace",
           "limit": 1
         }
@@ -1560,69 +1561,6 @@ await workspace.call({
     "to": 1,
     "contentFile": "/tmp/new.ts",
     "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-## context
-
-### workspace.context
-
-search, read, save, list, and inspect project context and local workspace traces
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context({ operation: "search" &#124; "find" &#124; "get" &#124; "list" &#124; "save" &#124; "categories" &#124; "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" &#124; "ok" &#124; "error" &#124; "blocked" &#124; "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context",
-  "input": {
-    "operation": "search",
-    "keyword": "workspace",
-    "limit": 3
   }
 });
 ```
@@ -5207,6 +5145,69 @@ await workspace.call({
 }
 ```
 
+## memory
+
+### workspace.memory
+
+search, read, save, list, and inspect local project memory and workspace traces
+
+| Field | Value |
+| --- | --- |
+| Category | memory |
+| Signature | `workspace.memory({ operation: "search" &#124; "find" &#124; "get" &#124; "list" &#124; "save" &#124; "categories" &#124; "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" &#124; "ok" &#124; "error" &#124; "blocked" &#124; "timeout"; since?: string; until?: string; contains?: string; memoryTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace memory` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "memory",
+  "input": {
+    "operation": "search",
+    "keyword": "workspace",
+    "limit": 3
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## review
 
 ### workspace.aiReview
@@ -8584,12 +8585,12 @@ await workspace.call({
 
 ### workspace.research.ingest
 
-generate a local research packet and autosave its text bundle to context
+generate a local research packet and autosave its text bundle to memory
 
 | Field | Value |
 | --- | --- |
 | Category | utilities |
-| Signature | `workspace.research.ingest({ source: string; question?: string; mode?: "quick" &#124; "standard" &#124; "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" &#124; "transcript" &#124; "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.research.ingest({ source: string; question?: string; mode?: "quick" &#124; "standard" &#124; "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" &#124; "transcript" &#124; "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; memoryTitle?: string; memoryCategory?: string; noMemorySave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace research.ingest` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 600000ms |

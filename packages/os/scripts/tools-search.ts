@@ -411,7 +411,7 @@ const INTENT_PACKS: IntentPack[] = [
     label: 'search repo files',
     terms: ['grep', 'ripgrep', 'rg', 'search', 'find', 'pattern', 'contents', 'files', 'codebase'],
     requireAny: ['grep', 'ripgrep', 'rg', 'pattern', 'contents'],
-    boost: { 'fs.search': 105, 'tools.search': -35, 'mac.search': 12, 'context.search': -18, 'task.cleanup': -45 },
+    boost: { 'fs.search': 105, 'tools.search': -35, 'mac.search': 12, 'memory': -18, 'task.cleanup': -45 },
     safeDefault: 'fs.search is the read-only default for searching repository files.',
   },
   {

@@ -304,12 +304,12 @@ function printResult(result, useJson) {
   writeStdout('stream decisions:');
   if (result.decisions.length === 0) {
     writeStdout('  - none yet');
-    writeStdout(`  tip: bun run context -- save "dialer: description" --text --category stream-decision`);
+    writeStdout(`  tip: bun run memory -- save "dialer: description" --text --category stream-decision`);
   } else {
     for (const d of result.decisions) {
       writeStdout(`  - ${d.title}  (${d.date})`);
     }
-    writeStdout(`  tip: bun run context -- save "${result.area}: new decision" --text --category stream-decision`);
+    writeStdout(`  tip: bun run memory -- save "${result.area}: new decision" --text --category stream-decision`);
   }
 
   writeStdout('');
@@ -369,36 +369,40 @@ function printResult(result, useJson) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  try {
+    const args = parseArgs(process.argv.slice(2));
 
-  if (args.help) {
-    printHelp();
-    return;
+    if (args.help) {
+      printHelp();
+      return;
+    }
+
+    if (!args.area) {
+      throw new Error('missing required --area');
+    }
+
+    const area = normalizeArea(args.area);
+    const streamBranch = args.stream || getDefaultStreamBranch(area);
+    const repoRoot = resolveGitRoot(process.cwd());
+
+    assertStreamBranchName(streamBranch, area);
+    fetchOrigin(repoRoot);
+
+    const result = {
+      area,
+      stream: streamBranch,
+      decisions: await getStreamDecisions(area),
+      openTaskPullRequests: await getOpenTaskPullRequests(args, area, streamBranch),
+      recentCommits: getRecentCommits(repoRoot, streamBranch),
+      recentWorkpads: await getRecentWorkpads(area),
+      aheadBehind: getAheadBehind(repoRoot, streamBranch),
+      worktrees: getAreaWorktrees(repoRoot, area),
+    };
+
+    printResult(result, args.json);
+  } catch (error) {
+    throw error;
   }
-
-  if (!args.area) {
-    throw new Error('missing required --area');
-  }
-
-  const area = normalizeArea(args.area);
-  const streamBranch = args.stream || getDefaultStreamBranch(area);
-  const repoRoot = resolveGitRoot(process.cwd());
-
-  assertStreamBranchName(streamBranch, area);
-  fetchOrigin(repoRoot);
-
-  const result = {
-    area,
-    stream: streamBranch,
-    decisions: await getStreamDecisions(area),
-    openTaskPullRequests: await getOpenTaskPullRequests(args, area, streamBranch),
-    recentCommits: getRecentCommits(repoRoot, streamBranch),
-    recentWorkpads: await getRecentWorkpads(area),
-    aheadBehind: getAheadBehind(repoRoot, streamBranch),
-    worktrees: getAreaWorktrees(repoRoot, area),
-  };
-
-  printResult(result, args.json);
 }
 
 main().catch((error) => {

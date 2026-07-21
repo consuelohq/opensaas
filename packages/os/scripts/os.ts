@@ -671,7 +671,7 @@ Read only the specific file you need:
 
 Useful alternatives:
 - fs.read for exact files
-- context.search for repo/project context
+- memory for repo/project memory
 - tools.search for tool discovery
 
 If you truly need a fresh full steering snapshot, call refresh_steering with a concrete reason.

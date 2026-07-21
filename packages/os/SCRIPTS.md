@@ -119,7 +119,7 @@ every change — even tiny ones — follows this flow. no exceptions.
 10. bun run railway:logs -- --status                     # check deploy health + logs
 11. bun run browser -- consuelo                          # verify UI in production
 12. bun run task:finish                                  # remove worktree, delete branch
-13. bun run tmp -- save handoffs "description"           # save context for next agent
+13. bun run tmp -- save handoffs "description"           # save memory for next agent
 ```
 the verify → push dependency:
 ```text
@@ -821,24 +821,24 @@ bun run gh -- branches --task         # task/* branches only
 
 ---
 
-### context — search and save project memories
+### memory — search and save project memories
 
-search and save context from supabase memories. use this to find past decisions, architecture notes, and investigation results.
+search and save project memory in the local Consuelo SQLite database. use this to find past decisions, architecture notes, and investigation results.
 
 ```bash
-bun run context -- search dialer      # search memories by content
-bun run context -- search queue --category workpad  # filter by category
-bun run context -- find "queue handoff"  # search by title
-bun run context -- list workpad       # list recent workpad memories
-bun run context -- list --limit 5     # list recent memories
-bun run context -- save "dialer arch" ./notes.md  # save file as memory
-bun run context -- categories         # list available categories
+bun run memory -- search dialer      # search memories by content
+bun run memory -- search queue --category workpad  # filter by category
+bun run memory -- find "queue handoff"  # search by title
+bun run memory -- list workpad       # list recent workpad memories
+bun run memory -- list --limit 5     # list recent memories
+bun run memory -- save "dialer arch" ./notes.md  # save file as memory
+bun run memory -- categories         # list available categories
 ```
 
 **context failure modes**
 ```text
 bad: answering "what did we decide about X?" from memory alone
- → search first: bun run context -- search "X"
+ → search first: bun run memory -- search "X"
  (never answer architecture or decision questions without checking context first)
 ```
 
@@ -1002,7 +1002,7 @@ runs a single manifest-backed workspace tool through the typed facade. stdout is
 
 ```bash
 bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
-bun run tool-runner -- context.categories '{}'
+bun run tool-runner -- memory '{"operation":"categories"}'
 bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 ```
 

@@ -35,7 +35,7 @@
     "wait": "bun ./scripts/wait.js",
     "browser": "bun ./scripts/browser.js",
     "website:deploy": "bun ./scripts/website-deploy.js",
-    "context": "bun ./scripts/context.js",
+    "memory": "bun ./scripts/memory.js",
     "tmp": "bun ./scripts/tmp.js",
     "review": "bun ./scripts/review.js",
     "ai-review": "bun ./scripts/ai-review.js",

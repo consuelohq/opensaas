@@ -50,9 +50,9 @@ describe('skills registry generator', () => {
     const names = registry.skills.map((skill) => skill.name);
 
     expect(names).toContain('task');
-    expect(names).toContain('office');
     expect(names).toContain('consuelo-workspace-snapshot');
     expect(names).toContain('daily-revenue-brief');
+    expect(names).toContain('senior-engineer');
   });
 
   it('sorts skills by name', () => {
@@ -120,13 +120,17 @@ describe('skills registry generator', () => {
     const sitesSkill = bundledRegistry.skills.find((skill) => skill.name === 'sites');
 
     expect(skillNames).toContain('sites');
-    expect(skillNames).toContain('office');
     expect(sitesSkill).toMatchObject({
       name: 'sites',
       title: 'Sites',
       status: 'active',
       load: { path: 'packages/os/skills/sites/SKILL.md' },
     });
-    expect(sitesSkill?.capabilities).toEqual(expect.arrayContaining(['sites', 'office', 'artifacts', 'local-pages']));
+    expect(sitesSkill?.capabilities).toEqual([
+      'sites',
+      'artifact-delivery',
+      'local-pages',
+      'edge-snapshots',
+    ]);
   });
 });

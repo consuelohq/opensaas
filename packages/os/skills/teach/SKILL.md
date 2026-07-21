@@ -121,8 +121,8 @@ await os.call({
   input: {
     source: "<paper-url-or-pdf-url>",
     question: "What is the deep idea from this source, and how does it improve real-world intuition?",
-    contextTitle: "Research Bundle: <source title>",
-    contextCategory: "teach",
+    memoryTitle: "Research Bundle: <source title>",
+    memoryCategory: "teach",
     mode: "standard"
   },
   timeout: 900
