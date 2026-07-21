@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -53,6 +53,39 @@ describe('code.call mutation snapshots', () => {
       expect(result.data.detectedMistakeClass).toBe('mutation_in_read_mode');
       expect(result.data.filesChanged).toEqual(['dirty.txt']);
     } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('reports a retargeted already-dirty broken symlink in read mode', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-code-call-broken-symlink-'));
+
+    try {
+      const init = spawnSync('git', ['init'], { cwd: root, encoding: 'utf8' });
+      expect(init.status).toBe(0);
+      symlinkSync('missing-alpha', join(root, 'dirty-link'));
+
+      const result = await executeCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: [
+          'from pathlib import Path',
+          'link = Path("dirty-link")',
+          'link.unlink()',
+          'link.symlink_to("missing-bravo")',
+        ].join('\n'),
+      }, {
+        cwd: root,
+        now: () => 1000,
+        randomUUID: () => 'abc123def4567890abc123def4567890',
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('COMMAND_FAILED');
+      expect(result.data.detectedMistakeClass).toBe('mutation_in_read_mode');
+      expect(result.data.filesChanged).toEqual(['dirty-link']);
+    } finally {
+      try { unlinkSync(join(root, 'dirty-link')); } catch {}
       rmSync(root, { recursive: true, force: true });
     }
   });

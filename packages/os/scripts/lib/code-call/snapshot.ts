@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, lstatSync, readFileSync, readlinkSync, readdirSync, statSync } from 'node:fs';
+import { lstatSync, readFileSync, readlinkSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 import { Effect } from 'effect';
@@ -16,9 +16,15 @@ export type Snapshot =
 
 function gitContentMarker(root: string, relativePath: string, status: string): string {
   const absolutePath = path.join(root, relativePath);
-  if (!existsSync(absolutePath)) return `${status}:missing`;
-
-  const stat = lstatSync(absolutePath);
+  let stat;
+  try {
+    stat = lstatSync(absolutePath);
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
+      return `${status}:missing`;
+    }
+    throw error;
+  }
   if (stat.isSymbolicLink()) return `${status}:symlink:${readlinkSync(absolutePath)}`;
   if (!stat.isFile()) return `${status}:other:${stat.mode}:${stat.size}:${stat.mtimeMs}`;
 

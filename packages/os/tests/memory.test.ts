@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -139,6 +139,51 @@ describe('OS memory runtime', () => {
       dbPath: traceDbPath,
       count: 1,
       rows: [expect.objectContaining({ traceId: 'trc_memory_001', tool: 'memory', status: 'error' })],
+    });
+  });
+
+  it('uses the canonical Consuelo trace database when --db is omitted', () => {
+    const traceDbPath = join(consueloHome, 'node', 'db', 'traces.db');
+    mkdirSync(join(consueloHome, 'node', 'db'), { recursive: true });
+    const db = new Database(traceDbPath, { create: true });
+    try {
+      db.exec(`
+        CREATE TABLE tool_traces (
+          id TEXT PRIMARY KEY,
+          ts TEXT NOT NULL,
+          trace_id TEXT NOT NULL,
+          mcp_trace_id TEXT,
+          source TEXT NOT NULL,
+          tool TEXT NOT NULL,
+          task_session TEXT,
+          branch TEXT,
+          worktree TEXT,
+          status TEXT NOT NULL,
+          ok INTEGER NOT NULL,
+          code TEXT,
+          exit_code INTEGER,
+          duration_ms INTEGER,
+          input_json TEXT,
+          resolved_input_json TEXT,
+          result_json TEXT,
+          stderr TEXT,
+          input_tokens INTEGER,
+          output_tokens INTEGER,
+          total_tokens INTEGER
+        );
+      `);
+      db.query('INSERT INTO tool_traces (id, ts, trace_id, source, tool, status, ok) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .run('row-canonical', '2026-07-21T00:00:00.000Z', 'trc_canonical_001', 'facade', 'status', 'ok', 1);
+    } finally {
+      db.close();
+    }
+
+    const traced = runMemory(['trace', '--json']);
+    expect(traced.status, traced.stderr).toBe(0);
+    expect(JSON.parse(traced.stdout)).toMatchObject({
+      dbPath: traceDbPath,
+      count: 1,
+      rows: [expect.objectContaining({ traceId: 'trc_canonical_001', tool: 'status' })],
     });
   });
 });

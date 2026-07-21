@@ -6,6 +6,7 @@ const path = require('path');
 const { getToken, listPullRequests } = require('./lib/github');
 const { fetchOrigin, listWorktrees, refExists, runGit } = require('./lib/git');
 const { DEFAULT_REPO, resolveGitRoot } = require('./lib/paths');
+const { readLocalStreamDecisions } = require('./lib/stream-memory.ts');
 const {
   assertStreamBranchName,
   getDefaultStreamBranch,
@@ -150,31 +151,8 @@ async function getRecentWorkpads(area, limit = 3) {
   return { skipped: false, reason: null, workpads: [] };
 }
 
-async function getStreamDecisions(area, limit = 10) {
-  const env = loadEnv();
-  if (!env.url || !env.key) {
-    return [];
-  }
-
-  const url = new URL(`${env.url}/rest/v1/memories`);
-  url.searchParams.set('select', 'title,created_at');
-  url.searchParams.set('category', 'eq.stream-decision');
-  url.searchParams.set('title', `ilike.*${area}*`);
-  url.searchParams.set('order', 'created_at.desc');
-  url.searchParams.set('limit', String(limit));
-
-  try {
-    const resp = await fetch(url.toString(), {
-      headers: { apikey: env.key, Authorization: `Bearer ${env.key}` },
-    });
-    if (!resp.ok) return [];
-    return (await resp.json()).map((row) => ({
-      title: row.title,
-      date: row.created_at ? row.created_at.slice(0, 10) : '',
-    }));
-  } catch {
-    return [];
-  }
+function getStreamDecisions(area, limit = 10) {
+  return readLocalStreamDecisions(area, { limit });
 }
 
 function listAreaDocs(repoRoot, area) {

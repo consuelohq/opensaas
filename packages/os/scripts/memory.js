@@ -3,14 +3,12 @@
 // memory.js — search and save project memory in the local Consuelo runtime database.
 // usage: bun run memory -- <command> [options]
 
-const crypto = require('node:crypto');
-const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 const { Database } = require('bun:sqlite');
 
 const { ensureRuntimePaths } = require('./lib/runtime-state.ts');
+const { resolveCanonicalTraceDbPath } = require('./lib/trace-persistence.ts');
 
 function writeStdout(value = '') { process.stdout.write(String(value) + '\n'); }
 function writeStderr(value = '') { process.stderr.write(String(value) + '\n'); }
@@ -271,36 +269,8 @@ function cmdCategories(args) {
   }
 }
 
-function sha256(value) {
-  return crypto.createHash('sha256').update(value).digest('hex');
-}
-
-function packageRoot() {
-  return path.resolve(__dirname, '..');
-}
-
-function repoIdentifier() {
-  try {
-    const remote = execFileSync('git', ['remote', 'get-url', 'origin'], {
-      cwd: packageRoot(),
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 2000,
-    }).trim();
-    if (remote) return remote;
-  } catch {}
-  return packageRoot();
-}
-
-function defaultTraceDbPath() {
-  const root = process.platform === 'darwin'
-    ? path.join(os.homedir(), 'Library', 'Application Support', 'OpenWorkspace', 'traces')
-    : path.join(os.homedir(), '.local', 'share', 'openworkspace', 'traces');
-  return path.join(root, sha256(repoIdentifier()).slice(0, 24), 'traces.db');
-}
-
 function traceDbPath(args) {
-  return args.db || process.env.OPENWORKSPACE_TRACE_DB || defaultTraceDbPath();
+  return args.db ? path.resolve(args.db) : resolveCanonicalTraceDbPath();
 }
 
 function ensureTraceSchema(db) {
