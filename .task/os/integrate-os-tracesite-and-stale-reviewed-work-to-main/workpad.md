@@ -98,6 +98,9 @@ This is primarily an integration and conflict-reconstruction task, so no single 
 - 2026-07-21 09:59:23 `verify`: failed — COMMAND_FAILED
 - 2026-07-21 10:02:55 `verify`: failed — COMMAND_FAILED
 - 2026-07-21 10:20:26 `verify`: passed — OK
+- 2026-07-21 10:34:28 `review.run`: passed — OK
+- 2026-07-21 10:34:47 `verify`: passed — OK
+- 2026-07-21 10:35:02 `verify`: passed — OK
 
 ## key decisions
 
@@ -167,3 +170,15 @@ bun run task:finish
 - 2026-07-21 10:19:39 apply-patch: `.github/workflows/ci-breaking-changes.yaml`
 
 - 2026-07-21 10:19:59 apply-patch: `.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md`
+
+## release finalization follow-up — 2026-07-21
+
+- Acceptance: explicitly allowlist `.github/workflows/ci-breaking-changes.yaml` for its existing privileged permissions, add regression coverage, pass review/verify, merge PR #1543 to `main`, reload OS, and run live smoke checks.
+- Test-first red: `packages/workspace/tests/github-workflow-policy.test.js` failed because the workflow was absent from `writePermissionAllowlist`.
+- Green evidence: the focused policy test passes 4/4 and `check-github-workflows.cjs origin/main` reports zero findings.
+- Recovery: `task.start --pr 1543` reused the correct head branch but created duplicate PR #1545 and overwrote the task workpad; the committed workpad was restored before publish.
+- Review: zero owned, related, or pre-existing findings across the consolidated release diff.
+- Verify: publish-valid; database guard passed with zero risks.
+- Remaining: push final commit, wait for GitHub checks, merge PR #1543, reload OS, smoke runtime, close duplicate PR #1545.
+
+- 2026-07-21 10:34:55 apply-patch: `.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/workpad.md`
