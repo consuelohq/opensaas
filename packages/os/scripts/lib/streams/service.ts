@@ -1,5 +1,6 @@
 export { createStreamEffect } from './creation';
 export { discoverStreamAreas } from './inventory';
+export { fetchOriginWithFallback } from './list-runtime';
 export {
   DEFAULT_STREAM_INSTRUCTIONS,
   readStreamInstructionsEffect,

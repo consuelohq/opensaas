@@ -1,11 +1,12 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const packageRoot = join(import.meta.dirname, '..');
+const repoRoot = join(packageRoot, '..', '..');
 const researchScript = join(packageRoot, 'scripts', 'research-ingest.js');
 const tmpScript = join(packageRoot, 'scripts', 'tmp.js');
 const memoryScript = join(packageRoot, 'scripts', 'memory.js');
@@ -48,6 +49,46 @@ function run(script: string, args: string[]) {
 }
 
 describe('memory-adjacent OS workflows', () => {
+  it('routes root compatibility scripts to the current OS runtimes', () => {
+    const rootPackage = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')) as {
+      scripts: Record<string, string>;
+    };
+
+    expect(rootPackage.scripts.memory).toBe('bun packages/os/scripts/memory.js');
+    expect(rootPackage.scripts['research:ingest']).toBe('bun packages/os/scripts/research-ingest.js');
+    expect(rootPackage.scripts['stream:cleanup']).toBe('bun packages/workspace/scripts/stream-cleanup.js');
+    expect(rootPackage.scripts['stream:create']).toBe('bun packages/os/scripts/stream-create.js');
+
+    const memoryHelp = spawnSync('bun', ['run', 'memory', '--', '--help'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: cleanEnv(),
+    });
+    expect(memoryHelp.status, memoryHelp.stderr).toBe(0);
+    expect(memoryHelp.stdout).toContain('local Consuelo runtime database');
+
+    const research = spawnSync('bun', [
+      'run',
+      'research:ingest',
+      '--',
+      'https://example.com/paper',
+      '--dry-run',
+      '--json',
+      '--memory-title',
+      'Root memory route',
+      '--no-memory-save',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: cleanEnv(),
+    });
+    expect(research.status, research.stderr).toBe(0);
+    expect(JSON.parse(research.stdout).memorySave).toMatchObject({
+      enabled: false,
+      title: 'Root memory route',
+    });
+  });
+
   it('uses memory naming throughout research ingest planning', () => {
     const result = run(researchScript, [
       'https://example.com/paper',

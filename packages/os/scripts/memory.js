@@ -209,6 +209,10 @@ async function cmdSave(title, source, args) {
     throw new Error(`file not found: ${source}. use --text to read from stdin.`);
   }
 
+  if (!content.trim()) {
+    throw new Error('memory content is required');
+  }
+
   const category = args.category || 'observation';
   const createdAt = new Date().toISOString();
   const { db, dbPath } = openMemoryDatabase();

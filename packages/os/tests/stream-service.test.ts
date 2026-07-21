@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   DEFAULT_STREAM_INSTRUCTIONS,
+  fetchOriginWithFallback,
   createStreamEffect,
   discoverStreamAreas,
   filterRecentWorkpads,
@@ -77,6 +78,14 @@ function creationContext() {
 }
 
 describe('Effect stream service', () => {
+  it('continues with cached refs when origin fetch fails', () => {
+    const result = fetchOriginWithFallback(() => {
+      throw new Error('offline');
+    });
+
+    expect(result).toEqual({ skipped: false, success: false, reason: 'offline' });
+  });
+
   it('returns missing optional instructions without failure or fallback', async () => {
     const streamsRoot = join(tempRoot('stream-instructions-missing-'), 'streams');
     const result = await Effect.runPromise(

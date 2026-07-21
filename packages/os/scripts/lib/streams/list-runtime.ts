@@ -84,6 +84,19 @@ export type StreamListResult = {
   summary: { streamCount: number; warningCount: number };
 };
 
+export function fetchOriginWithFallback(fetcher: () => unknown): StreamListResult['fetch'] {
+  try {
+    fetcher();
+    return { skipped: false, success: true, reason: null };
+  } catch (cause: unknown) {
+    return {
+      skipped: false,
+      success: false,
+      reason: cause instanceof Error ? cause.message : String(cause),
+    };
+  }
+}
+
 function listRefs(repoRoot: string, refs: string[]): string[] {
   const output = runGitMaybe(['for-each-ref', '--format=%(refname:short)', ...refs], { cwd: repoRoot }) || '';
   return output.split('\n').map((value: string) => value.trim()).filter(Boolean);
@@ -164,14 +177,7 @@ export function buildStreamListEffect(input: { area?: string; repo?: string; all
     const repo = input.repo || DEFAULT_REPO;
     const repoRoot = resolveGitRoot(process.cwd());
     const requestedArea = input.area ? normalizeArea(input.area) : undefined;
-    let fetchResult = { skipped: false, success: true, reason: null as string | null };
-    yield* Effect.try({
-      try: () => fetchOrigin(repoRoot),
-      catch: (cause) => {
-        fetchResult = { skipped: false, success: false, reason: cause instanceof Error ? cause.message : String(cause) };
-        return undefined;
-      },
-    });
+    const fetchResult = yield* Effect.sync(() => fetchOriginWithFallback(() => fetchOrigin(repoRoot)));
     const localBranches = listRefs(repoRoot, ['refs/heads/stream']);
     const remoteRefs = listRefs(repoRoot, ['refs/remotes/origin/stream']);
     const remoteBranches = remoteRefs.map((branch) => branch.replace(/^origin\//, ''));

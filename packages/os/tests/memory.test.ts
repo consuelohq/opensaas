@@ -98,6 +98,14 @@ describe('OS memory runtime', () => {
     expect(JSON.parse(categories.stdout)).toEqual(['handoff']);
   });
 
+  it('rejects empty stdin when saving text memory', () => {
+    const saved = runMemory(['save', 'Empty memory', '--text', '--json'], '');
+
+    expect(saved.status).not.toBe(0);
+    expect(saved.stderr).toContain('memory content is required');
+    expect(existsSync(join(consueloHome, 'node', 'db', 'consuelo.db'))).toBe(false);
+  });
+
   it('queries an explicit local trace database through memory trace', () => {
     const traceDbPath = join(fixtureRoot, 'traces.db');
     const db = new Database(traceDbPath, { create: true });
