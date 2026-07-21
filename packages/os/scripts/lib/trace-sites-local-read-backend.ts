@@ -362,7 +362,12 @@ function resolveHistoryAfterRowid(
   const matched = db
     .query(TRACE_HISTORY_CURSOR_SQL)
     .get(recordId, recordId, recordId) as { rowid?: number } | null;
-  return matched?.rowid && matched.rowid > 0 ? matched.rowid : 0;
+  if (matched?.rowid && matched.rowid > 0) return matched.rowid;
+
+  const latest = db
+    .query('SELECT max(rowid) AS rowid FROM tool_traces')
+    .get() as { rowid?: number | null } | null;
+  return numberValue(latest?.rowid);
 }
 
 function resultMessageFromJson(value: string): string {

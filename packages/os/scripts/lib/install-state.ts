@@ -205,6 +205,7 @@ function resolveBundledOperatorRoot(): string {
 
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
 const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
+const BUNDLED_STREAMS_ROOT = path.join(PACKAGE_ROOT, 'streams');
 const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
 const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
@@ -434,6 +435,36 @@ function writeYamlConfigIfMissing(input: {
     message: input.message,
   });
   if (!exists) writeYamlConfig(input.path, input.value, input.dryRun);
+}
+
+function seedBundledStreams(
+  home: string,
+  dryRun: boolean,
+): ProvisionAction[] {
+  const sourcePath = path.join(BUNDLED_STREAMS_ROOT, 'tools', 'AGENTS.md');
+  const targetPath = path.join(home, 'streams', 'tools', 'AGENTS.md');
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(
+      `${sourcePath}: required Tools stream instructions are missing`,
+    );
+  }
+
+  const targetExists = fs.existsSync(targetPath);
+  const actions: ProvisionAction[] = [
+    {
+      type: 'seed_stream',
+      path: targetPath,
+      status: targetExists ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: targetExists
+        ? 'user stream instructions preserved'
+        : 'Tools stream instructions installed',
+    },
+  ];
+  if (!dryRun && !targetExists) {
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(sourcePath, targetPath);
+  }
+  return actions;
 }
 
 function samePath(left: string, right: string): boolean {
@@ -1276,6 +1307,7 @@ export function provisionLocalOs(
   actions.push(...materializeProductPackageRoot(home, dryRun));
   actions.push(...materializeOperator(home, dryRun));
   actions.push(...seedBundledSteering(home, dryRun));
+  actions.push(...seedBundledStreams(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {

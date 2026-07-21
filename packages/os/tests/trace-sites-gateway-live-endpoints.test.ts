@@ -173,6 +173,31 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(serialized).not.toContain(`raw-${'trace'}-service`);
   });
 
+  it('rejects unsupported history directions instead of falling through to the recent feed', async () => {
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: createFixtureTraceSitesReadBackend({
+        cursor: '00000001',
+        events: [event],
+      }),
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+
+    const response = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=sideways&cursor=00000000&sourceMode=local-networked',
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      ok: false,
+      route: '/gateway/traces/recent',
+      error: {
+        code: 'TRACE_HISTORY_DIRECTION_INVALID',
+      },
+    });
+  });
+
   it('serves summary and aggregate dashboard data through the same gateway read layer', async () => {
     const endpoints = createTraceSitesGatewayLiveEndpoints({
       backend: createFixtureTraceSitesReadBackend({
@@ -300,6 +325,81 @@ describe('Trace Sites gateway live endpoints', () => {
         direction: 'newer',
         nextCursor: '000000000004',
         rows: [{ recordId: 'row_4' }],
+      },
+    });
+  });
+
+  it('anchors an unknown newer cursor at the current high-water mark', async () => {
+    const dbPath = join(tempDir, 'unknown-newer-cursor.db');
+    await createHistoryFixtureDb(dbPath);
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: createLocalTraceSitesReadBackend({ dbPath }),
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+
+    const anchored = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=newer&cursor=id%3Amissing-row&limit=10&sourceMode=local-networked&includeRawPayload=true',
+      ),
+    );
+    expect(anchored.status).toBe(200);
+    expect(await anchored.json()).toMatchObject({
+      ok: true,
+      data: {
+        direction: 'newer',
+        nextCursor: '000000000004',
+        rows: [],
+      },
+    });
+
+    const { Database } = await import('bun:sqlite');
+    const db = new Database(dbPath);
+    try {
+      db.prepare(`
+        INSERT INTO tool_traces (
+          id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch,
+          worktree, status, ok, code, exit_code, duration_ms, input_json,
+          resolved_input_json, result_json, stderr, input_tokens, output_tokens,
+          total_tokens
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        'row_5',
+        '2026-07-11T00:00:05.000Z',
+        'trc_history_5',
+        'mcp_history_5',
+        'workspace',
+        'workspace.call',
+        'tsk_history',
+        'task/trace-site/connect-perpetual-trace-pagination',
+        '/tmp/history-worktree',
+        'ok',
+        1,
+        'OK',
+        0,
+        500,
+        JSON.stringify({ index: 5, original: true }),
+        JSON.stringify({ index: 5, resolved: true }),
+        JSON.stringify({ ok: true, message: 'history result 5', data: {} }),
+        '',
+        50,
+        100,
+        150,
+      );
+    } finally {
+      db.close();
+    }
+
+    const next = await endpoints.handle(
+      request(
+        '/gateway/traces/recent?direction=newer&cursor=000000000004&limit=10&sourceMode=local-networked&includeRawPayload=true',
+      ),
+    );
+    expect(await next.json()).toMatchObject({
+      ok: true,
+      data: {
+        direction: 'newer',
+        nextCursor: '000000000005',
+        rows: [{ recordId: 'row_5' }],
       },
     });
   });

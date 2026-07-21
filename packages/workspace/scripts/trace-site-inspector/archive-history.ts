@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+import { Database } from 'bun:sqlite';
 
 import { createLocalTraceSitesReadBackend } from '../../../os/scripts/lib/trace-sites-local-read-backend';
 import type {
@@ -35,17 +35,15 @@ export function enrichTracePayloadWithBatchResults<T>(
     .map((row) => clean(row.traceId ?? row.trace_id));
   if (!traceIds.length || !clean(dbPath)) return payload;
 
+  let db: Database | null = null;
   try {
-    const query = `SELECT trace_id, input_json, coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) AS batch_results_json FROM tool_traces WHERE tool='batch' AND trace_id IN (${traceIds.map(sqlQuote).join(',')})`;
-    const result = spawnSync(
-      'sqlite3',
-      ['-cmd', '.timeout 1000', '-json', dbPath, query],
-      { encoding: 'utf8' },
+    db = new Database(dbPath, { readonly: true });
+    const query = db.query(
+      "SELECT trace_id, input_json, coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) AS batch_results_json FROM tool_traces WHERE tool = 'batch' AND trace_id = ? LIMIT 1",
     );
-    if (result.status !== 0) return payload;
-    const text = result.stdout.trim();
-    if (!text) return payload;
-    const batchRows = JSON.parse(text) as Array<Record<string, unknown>>;
+    const batchRows = traceIds
+      .map((traceId) => query.get(traceId) as Record<string, unknown> | null)
+      .filter(isRecord);
     const byTrace = new Map<string, TraceRecord[]>();
     for (const batchRow of batchRows) {
       try {
@@ -89,6 +87,8 @@ export function enrichTracePayloadWithBatchResults<T>(
     return payload;
   } catch {
     return payload;
+  } finally {
+    db?.close();
   }
 }
 
@@ -293,10 +293,6 @@ function compactTraceValue(value: unknown, limit: number): unknown {
   } catch {
     return String(value).slice(0, limit);
   }
-}
-
-function sqlQuote(value: string): string {
-  return `'${value.replaceAll("'", "''")}'`;
 }
 
 function asRecord(value: unknown): TraceRecord | null {

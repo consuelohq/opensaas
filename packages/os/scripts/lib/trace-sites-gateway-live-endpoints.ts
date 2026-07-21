@@ -88,16 +88,29 @@ export function createTraceSitesGatewayLiveEndpoints(
         return sseLiveResponse(request, url, scope, readLayer);
       }
 
+      const historyDirection = url.searchParams.get('direction');
       if (
         url.pathname === '/gateway/traces/recent' &&
-        (url.searchParams.get('direction') === 'older' ||
-          url.searchParams.get('direction') === 'newer')
+        historyDirection !== null &&
+        historyDirection !== 'older' &&
+        historyDirection !== 'newer'
+      ) {
+        return historyFailureResponse(
+          'TRACE_HISTORY_DIRECTION_INVALID',
+          'Trace history direction must be older or newer.',
+          400,
+        );
+      }
+
+      if (
+        url.pathname === '/gateway/traces/recent' &&
+        (historyDirection === 'older' || historyDirection === 'newer')
       ) {
         return cursorPageResponse(
           url,
           scope,
           options.backend,
-          url.searchParams.get('direction') as 'older' | 'newer',
+          historyDirection,
         );
       }
 

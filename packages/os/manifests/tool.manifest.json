@@ -7451,55 +7451,6 @@
       }
     },
     {
-      "name": "stream.cleanup",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "stream",
-      "description": "preview or remove safe local stream refs that are fully backed by origin",
-      "core": false,
-      "definition": {
-        "name": "stream.cleanup",
-        "methodPath": [
-          "stream",
-          "cleanup"
-        ],
-        "description": "preview or remove safe local stream refs that are fully backed by origin",
-        "category": "stream",
-        "underlying": "workspace stream.cleanup",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "StreamCleanupInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "stream:cleanup",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "apply",
-              "flag": "--apply",
-              "kind": "boolean"
-            },
-            {
-              "source": "keep",
-              "flag": "--keep",
-              "kind": "array"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
       "name": "stream.context",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -7553,6 +7504,63 @@
         },
         "sessionRequired": false,
         "workflowRole": "stream.context"
+      }
+    },
+    {
+      "name": "stream.create",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "stream",
+      "description": "create a durable stream branch with OS and Workspace instruction files",
+      "core": false,
+      "definition": {
+        "name": "stream.create",
+        "methodPath": [
+          "stream",
+          "create"
+        ],
+        "description": "create a durable stream branch with OS and Workspace instruction files",
+        "category": "stream",
+        "underlying": "workspace stream.create",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "StreamCreateInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "stream:create",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "sourceBranch",
+              "flag": "--source-branch",
+              "kind": "value"
+            },
+            {
+              "source": "repo",
+              "flag": "--repo",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "area": "research",
+          "sourceBranch": "main"
+        },
+        "sessionRequired": false,
+        "workflowRole": "stream.create"
       }
     },
     {
@@ -8308,11 +8316,6 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
-            },
-            {
-              "source": "createStream",
-              "flag": "--create-stream",
-              "kind": "boolean"
             },
             {
               "source": "pr",

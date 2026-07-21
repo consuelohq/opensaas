@@ -66,12 +66,13 @@ type TraceListDiagnostics = {
   mounted: number;
   range: string;
   nextCursor: string | null;
+  lastMutation: 'initial' | 'live-incremental' | 'rebuild' | 'history' | 'replace';
 };
 
 type VirtualTraceItem = {
   key: string;
   traceKey: string;
-  rootIndex: number;
+  rootPosition: number;
   row: TraceRecord;
   child: TraceChildRecord | null;
 };
@@ -130,6 +131,9 @@ class TraceVirtualListController {
   private lastRequestedCursor: string | null = null;
   private fetching = false;
   private ownedMap = new Map<string, TraceRecord>();
+  private rootKeys = new Set<string>();
+  private firstFilteredPosition = 0;
+  private lastMutation: TraceListDiagnostics['lastMutation'] = 'initial';
   private mountedCount = 0;
   private range = 'empty';
   private readonly virtualizer: TraceVirtualizer;
@@ -190,7 +194,14 @@ class TraceVirtualListController {
   }
 
   prependRows(rows: TraceRecord[]): void {
-    this.setRows(rows, 'prepend');
+    const incoming = dedupeTraceRows(rows).filter((row) => !isBatchChild(row));
+    if (!incoming.length) return;
+    if (this.canIncrementallyPrepend(incoming)) {
+      this.prependUniqueRows(incoming);
+      return;
+    }
+    this.lastMutation = 'rebuild';
+    this.setRows(incoming, 'prepend');
   }
 
   replaceRows(rows: TraceRecord[], nextCursor = this.nextCursor): void {
@@ -202,6 +213,7 @@ class TraceVirtualListController {
       maxRows: MAX_RETAINED_ROWS,
       selectedKey: currentSelectedRootKey(),
     });
+    this.lastMutation = 'replace';
     this.refreshItems();
     this.commitItems(false);
   }
@@ -230,6 +242,7 @@ class TraceVirtualListController {
       mounted: this.mountedCount,
       range: this.range,
       nextCursor: this.nextCursor,
+      lastMutation: this.lastMutation,
     };
   }
 
@@ -292,6 +305,7 @@ class TraceVirtualListController {
       maxRows: MAX_RETAINED_ROWS,
       selectedKey: currentSelectedRootKey(),
     });
+    this.lastMutation = direction === 'history' ? 'history' : 'rebuild';
     this.refreshItems();
     this.commitItems(false);
     if (direction === 'prepend' && previousTop > 0) {
@@ -303,7 +317,8 @@ class TraceVirtualListController {
 
   private refreshItems(): void {
     this.filteredRows = this.rows.filter(matchesCurrentFilters);
-    this.items = flattenTraceItems(this.filteredRows);
+    this.firstFilteredPosition = 0;
+    this.items = flattenTraceItems(this.filteredRows, 0);
   }
 
   private commitItems(resetScroll: boolean): void {
@@ -317,6 +332,7 @@ class TraceVirtualListController {
 
   private replaceOwnedMap(): void {
     this.ownedMap = traceMapForRows(this.rows);
+    this.rootKeys = traceRootKeys(this.rows);
     currentFacets = traceFilterFacets(this.rows);
     ensureTraceTableControls();
     renderTraceFilterPanel();
@@ -325,6 +341,50 @@ class TraceVirtualListController {
       type: 'rows-replaced',
       rows: dedupeTraceRows(this.ownedMap.values()),
     });
+  }
+
+  private canIncrementallyPrepend(rows: TraceRecord[]): boolean {
+    if (this.rows.length + rows.length > MAX_RETAINED_ROWS) return false;
+    return rows.every((row) => {
+      const key = stableTraceKey(row);
+      return Boolean(key && !this.rootKeys.has(key));
+    });
+  }
+
+  private prependUniqueRows(rows: TraceRecord[]): void {
+    const previousHeight = this.target.scroller.scrollHeight;
+    const previousTop = this.target.scroller.scrollTop;
+    const matchingRows = rows.filter(matchesCurrentFilters);
+    const firstPosition = this.firstFilteredPosition - matchingRows.length;
+
+    this.rows = [...rows, ...this.rows];
+    this.filteredRows = [...matchingRows, ...this.filteredRows];
+    this.items = [
+      ...flattenTraceItems(matchingRows, firstPosition),
+      ...this.items,
+    ];
+    this.firstFilteredPosition = firstPosition;
+    for (const row of rows) this.rootKeys.add(stableTraceKey(row));
+    addTraceRowsToMap(this.ownedMap, rows);
+    currentFacets = mergeTraceFilterFacets(
+      currentFacets,
+      traceFilterFacets(rows),
+    );
+    ensureTraceTableControls();
+    renderTraceFilterPanel();
+    traceWindow().__traceRowsByTraceId = this.ownedMap;
+    inspectorStore.dispatch({ type: 'rows-added', rows });
+
+    this.lastMutation = 'live-incremental';
+    this.virtualizer.setOptions(this.virtualizerOptions());
+    this.virtualizer._willUpdate();
+    this.virtualizer.measure();
+    this.render(this.virtualizer);
+    if (previousTop > 0) {
+      this.target.scroller.scrollTop =
+        previousTop +
+        Math.max(0, this.target.scroller.scrollHeight - previousHeight);
+    }
   }
 
   private virtualizerOptions(): VirtualizerOptions<
@@ -409,16 +469,23 @@ class TraceVirtualListController {
     const scrollTop = this.target.scroller.scrollTop;
     const visible =
       virtualItems.find((item) => item.end > scrollTop) ?? virtualItems.at(0);
-    return visible ? (this.items[visible.index]?.rootIndex ?? null) : null;
+    const position = visible
+      ? this.items[visible.index]?.rootPosition
+      : undefined;
+    return position === undefined
+      ? null
+      : position - this.firstFilteredPosition;
   }
 
   private lastVisibleRootIndex(
     virtualItems = this.virtualizer.getVirtualItems(),
   ): number | null {
     const itemIndex = virtualItems.at(-1)?.index;
-    return itemIndex === undefined
+    const position =
+      itemIndex === undefined ? undefined : this.items[itemIndex]?.rootPosition;
+    return position === undefined
       ? null
-      : (this.items[itemIndex]?.rootIndex ?? null);
+      : position - this.firstFilteredPosition;
   }
 
   private maybeRequestNextPage(lastVirtualIndex: number | null): void {
@@ -467,14 +534,18 @@ class TraceVirtualListController {
   }
 }
 
-function flattenTraceItems(rows: TraceRecord[]): VirtualTraceItem[] {
+function flattenTraceItems(
+  rows: TraceRecord[],
+  startRootPosition = 0,
+): VirtualTraceItem[] {
   const items: VirtualTraceItem[] = [];
-  rows.forEach((row, rootIndex) => {
+  rows.forEach((row, index) => {
+    const rootPosition = startRootPosition + index;
     const traceKey = stableTraceKey(row);
     items.push({
       key: `${traceKey}::trace`,
       traceKey,
-      rootIndex,
+      rootPosition,
       row,
       child: null,
     });
@@ -482,7 +553,7 @@ function flattenTraceItems(rows: TraceRecord[]): VirtualTraceItem[] {
       items.push({
         key: `${traceKey}::${child.__tracePath}`,
         traceKey: stableTraceKey(child),
-        rootIndex,
+        rootPosition,
         row,
         child,
       });
@@ -913,6 +984,14 @@ function seedPayload(): TraceFeedPayload {
 
 function traceMapForRows(rows: TraceRecord[]): Map<string, TraceRecord> {
   const map = new Map<string, TraceRecord>();
+  addTraceRowsToMap(map, rows);
+  return map;
+}
+
+function addTraceRowsToMap(
+  map: Map<string, TraceRecord>,
+  rows: Iterable<TraceRecord>,
+): void {
   for (const row of rows) {
     const stableKey = stableTraceKey(row);
     if (stableKey) map.set(stableKey, row);
@@ -925,7 +1004,36 @@ function traceMapForRows(rows: TraceRecord[]): Map<string, TraceRecord> {
       if (childTraceId && !map.has(childTraceId)) map.set(childTraceId, child);
     }
   }
-  return map;
+}
+
+function traceRootKeys(rows: Iterable<TraceRecord>): Set<string> {
+  return new Set(
+    [...rows].map(stableTraceKey).filter((key): key is string => Boolean(key)),
+  );
+}
+
+function mergeTraceFilterFacets(
+  current: TraceFilterFacets,
+  incoming: TraceFilterFacets,
+): TraceFilterFacets {
+  return {
+    tools: mergeFacetList(current.tools, incoming.tools),
+    branches: mergeFacetList(current.branches, incoming.branches),
+    statuses: mergeFacetList(current.statuses, incoming.statuses),
+  };
+}
+
+function mergeFacetList(
+  current: TraceFilterFacet[],
+  incoming: TraceFilterFacet[],
+): TraceFilterFacet[] {
+  const counts = new Map(current.map(({ value, count }) => [value, count]));
+  for (const { value, count } of incoming) {
+    counts.set(value, (counts.get(value) ?? 0) + count);
+  }
+  return [...counts]
+    .map(([value, count]) => ({ value, count }))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 }
 
 function findTraceListTarget(): TraceListTarget | null {

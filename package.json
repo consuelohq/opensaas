@@ -232,7 +232,7 @@
     "doctor": "bun packages/workspace/scripts/doctor.js",
     "status": "bun packages/workspace/scripts/status.js",
     "stream:list": "bun packages/workspace/scripts/stream-list.js",
-    "stream:cleanup": "bun packages/workspace/scripts/stream-cleanup.js",
+    "stream:create": "bun packages/os/scripts/stream-create.js",
     "stream:sync": "bun packages/workspace/scripts/stream-sync.js",
     "stream:context": "bun packages/workspace/scripts/stream-context.js",
     "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'",

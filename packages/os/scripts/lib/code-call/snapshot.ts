@@ -16,15 +16,8 @@ export type Snapshot =
 
 function gitContentMarker(root: string, relativePath: string, status: string): string {
   const absolutePath = path.join(root, relativePath);
-  let stat;
-  try {
-    stat = lstatSync(absolutePath);
-  } catch (error: unknown) {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
-      return `${status}:missing`;
-    }
-    throw error;
-  }
+  const stat = lstatSync(absolutePath, { throwIfNoEntry: false });
+  if (!stat) return `${status}:missing`;
   if (stat.isSymbolicLink()) return `${status}:symlink:${readlinkSync(absolutePath)}`;
   if (!stat.isFile()) return `${status}:other:${stat.mode}:${stat.size}:${stat.mtimeMs}`;
 

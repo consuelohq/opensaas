@@ -31,6 +31,7 @@ export type InspectorEvent =
   | { type: 'hydrate-selection'; key: string }
   | { type: 'select'; key: string; row: TraceRecord }
   | { type: 'clear-selection' }
+  | { type: 'rows-added'; rows: TraceRecord[] }
   | { type: 'rows-replaced'; rows: TraceRecord[] }
   | { type: 'close' }
   | { type: 'toggle-collapse' }
@@ -73,6 +74,10 @@ export function reduceInspectorState(
         ...state,
         selectedKey: event.key,
         selectedRow: event.row,
+        displayMode:
+          state.displayMode === 'workpad' && !isWorkpadTrace(event.row)
+            ? 'formatted'
+            : state.displayMode,
         layout: state.layout === 'fullscreen' ? 'fullscreen' : 'split',
       };
     case 'clear-selection':
@@ -82,6 +87,13 @@ export function reduceInspectorState(
         selectedRow: null,
         layout: 'collapsed',
       };
+    case 'rows-added': {
+      if (!state.selectedKey) return state;
+      const refreshed = findSelectedRow(event.rows, state.selectedKey);
+      return refreshed
+        ? { ...state, selectedRow: refreshed }
+        : { ...state };
+    }
     case 'rows-replaced': {
       if (!state.selectedKey) return state;
       const refreshed = findSelectedRow(event.rows, state.selectedKey);
@@ -188,7 +200,10 @@ export function isWorkpadTrace(row: TraceRecord | null | undefined): boolean {
 }
 
 export function workpadTraceValue(row: TraceRecord): string {
-  const result = asRecord(parseMaybeJson(row.rawResultJson ?? row.outputObj));
+  const result =
+    asRecord(parseMaybeJson(row.rawResultJson)) ??
+    asRecord(parseMaybeJson(row.outputObj)) ??
+    asRecord(row.outputObj);
   const data = asRecord(result?.data);
   const nested = asRecord(data?.data);
   const candidates = [
@@ -206,6 +221,13 @@ export function workpadTraceValue(row: TraceRecord): string {
     if (value) return value;
   }
   return 'No workpad content was recorded for this call.';
+}
+
+export function inspectorContentSignature(
+  row: TraceRecord,
+  mode: InspectorDisplayMode,
+): string {
+  return `${mode}:${serializedText(row)}`;
 }
 
 export function normalizeBranchBreadcrumb(value: unknown): {

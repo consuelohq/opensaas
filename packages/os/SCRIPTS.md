@@ -599,7 +599,8 @@ bun run task:start -- --area dialer --title "normalize phone numbers"
 bun run task:start -- --area os --title "start scoped work" --workflow task
 bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
-bun run task:start -- --area new-area --title "first task" --create-stream  # explicit new durable stream
+bun run stream:create -- --area new-area --source-branch main  # create the durable stream first
+bun run task:start -- --area new-area --title "first task" --start-from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
 ```
@@ -714,20 +715,20 @@ bun run stream:list                   # show all streams with status, divergence
 
 ---
 
-### stream:cleanup — preview or remove safe local stream refs
+### stream:create — create a durable stream
 
-previews redundant local `stream/*` refs by default. a branch is removable only when `origin/<branch>` exists, the local branch has zero unique commits, and no worktree has it checked out. remote streams and task branches are never deleted.
+creates `stream/<area>` atomically from the selected source branch, commits the matching OS and Workspace `AGENTS.md` instruction files, fetches origin, and creates the local tracking branch. existing streams are rejected rather than overwritten.
 
 ```bash
-bun run stream:cleanup                         # preview only
-bun run stream:cleanup -- --keep stream/tooling
-bun run stream:cleanup -- --apply              # remove only the reviewed safe local refs
-bun run stream:cleanup -- --json
+bun run stream:create -- --area research
+bun run stream:create -- --area research --source-branch main
+bun run stream:create -- --area research --json
 ```
 
-**stream:cleanup failure modes**
-- local-only, diverged, current, checked-out, or explicitly kept branches are reported as protected
-- an origin fetch failure stops cleanup before classification or mutation
+**stream:create failure modes**
+- an existing remote stream is rejected without mutation
+- a missing source branch is rejected before committing instruction files
+- remote commit/branch failures stop before the local tracking branch is created
 
 ---
 

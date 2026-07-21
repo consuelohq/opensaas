@@ -13,6 +13,7 @@ import {
 } from './model';
 import {
   filterInspectorCalls,
+  inspectorContentSignature,
   inspectorSections,
   inspectorStore,
   isWorkpadTrace,
@@ -403,27 +404,11 @@ function selectedContentMarkup(
   return `${summaryMarkup(row, branch)}${inspectorSections(row).map(sectionMarkup).join('')}`;
 }
 
-function signatureValue(value: unknown): string {
-  if (typeof value === 'string') return value;
-  try {
-    return JSON.stringify(value) ?? '';
-  } catch {
-    return String(value ?? '');
-  }
-}
-
 function selectedContentSignature(row: TraceRecord): string {
-  return [
+  return inspectorContentSignature(
+    row,
     inspectorStore.getSnapshot().displayMode,
-    row.status,
-    row.code,
-    row.durationMs,
-    row.inputTokens,
-    row.outputTokens,
-    signatureValue(row.rawResolvedInputJson),
-    signatureValue(row.rawResultJson),
-    signatureValue(row.rawStderr),
-  ].join(':');
+  );
 }
 
 function inspectorMarkup(row: TraceRecord): string {

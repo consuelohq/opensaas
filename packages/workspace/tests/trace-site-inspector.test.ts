@@ -23,6 +23,18 @@ function playwrightChromiumAvailable(): boolean {
   }
 }
 
+async function waitForCondition(
+  condition: () => boolean,
+  timeoutMs = 5_000,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (condition()) return;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error(`Condition was not met within ${timeoutMs}ms.`);
+}
+
 import {
   branchSummary,
   extractTraceError,
@@ -41,6 +53,7 @@ import {
 import {
   INSPECTOR_CSS_HREF,
   INSPECTOR_SCRIPT_SRC,
+  TRACE_HISTORY_FETCH_TIMEOUT_MS,
   TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT,
   patchTraceInspectorHtml,
 } from '../scripts/trace-site-inspector/deploy';
@@ -62,6 +75,7 @@ import {
 import {
   createInspectorState,
   filterInspectorCalls,
+  inspectorContentSignature,
   inspectorSections,
   isWorkpadTrace,
   normalizeBranchBreadcrumb,
@@ -337,6 +351,27 @@ describe('trace-site semantic table formatting', () => {
         ).inputLabel,
       ).toBe(item.expected);
     }
+  });
+
+  test('should prefer browser JavaScript semantics over a generic action and preserve bracketed text', () => {
+    const browserEvaluation = formatTraceTableRow(
+      row({
+        name: 'browser',
+        rawResolvedInputJson: {
+          action: 'eval',
+          js: 'document.title',
+        },
+      }),
+    );
+    const bracketedMessage = formatTraceTableRow(
+      row({
+        name: 'custom.tool',
+        input: '[ERROR] connection refused',
+      }),
+    );
+
+    expect(browserEvaluation.inputLabel).toBe('evaluate page state');
+    expect(bracketedMessage.inputLabel).toBe('[ERROR] connection refused');
   });
 
   test('should identify workpad activity and replace raw source code with readable actions', () => {
@@ -825,6 +860,14 @@ describe('trace-site virtual list state', () => {
   });
 
   test('should enrich paginated batch children from their ordered batch steps', async () => {
+    const archiveSource = readFileSync(
+      new URL('../scripts/trace-site-inspector/archive-history.ts', import.meta.url),
+      'utf8',
+    );
+    expect(archiveSource).toContain("from 'bun:sqlite'");
+    expect(archiveSource).not.toContain('spawnSync');
+    expect(archiveSource).not.toContain("'sqlite3'");
+
     const root = mkdtempSync(join(tmpdir(), 'trace-history-batch-'));
     roots.push(root);
     const dbPath = join(root, 'traces.db');
@@ -1021,6 +1064,55 @@ describe('trace-site inspector state contract', () => {
     ).toBe('workpad');
     expect(isWorkpadTrace(row({ name: 'fs.read', input: 'README.md' }))).toBe(
       false,
+    );
+  });
+
+  test('should leave workpad mode when selecting a normal trace and parse output fallbacks independently', () => {
+    const workpad = row({
+      name: 'fs.read',
+      rawResolvedInputJson: { path: '.task/workspace/ship/workpad.md' },
+    });
+    const normal = row({ name: 'verify', input: 'current task' });
+    let state = reduceInspectorState(createInspectorState(), {
+      type: 'select',
+      key: stableTraceKey(workpad),
+      row: workpad,
+    });
+    state = reduceInspectorState(state, {
+      type: 'set-display-mode',
+      mode: 'workpad',
+    });
+    state = reduceInspectorState(state, {
+      type: 'select',
+      key: stableTraceKey(normal),
+      row: normal,
+    });
+
+    expect(state.displayMode).toBe('formatted');
+    expect(
+      workpadTraceValue(
+        row({
+          rawResultJson: '{malformed',
+          outputObj: { data: { stdout: '# Fallback workpad' } },
+        }),
+      ),
+    ).toContain('# Fallback workpad');
+  });
+
+  test('should invalidate selected content when any rendered row field changes', () => {
+    const initial = row({
+      id: 'signature-row',
+      summary: 'before',
+      outputObj: { ok: true, value: 1 },
+    });
+    const refreshed = row({
+      ...initial,
+      summary: 'after',
+      outputObj: { ok: true, value: 2 },
+    });
+
+    expect(inspectorContentSignature(initial, 'formatted')).not.toBe(
+      inspectorContentSignature(refreshed, 'formatted'),
     );
   });
 
@@ -1632,15 +1724,19 @@ describe('trace-site inspector deployment contract', () => {
           ),
         ).toEqual({ legacy: false, boot: true, firstSidebar: '' });
 
-        await expect
-          .poll(() =>
-            page.evaluate(() =>
-              [...document.querySelectorAll<HTMLElement>('.trxRow')].map(
-                (element) => element.dataset.traceKey,
-              ),
+        await page.waitForFunction(() => {
+          const keys = [
+            ...document.querySelectorAll<HTMLElement>('.trxRow'),
+          ].map((element) => element.dataset.traceKey);
+          return keys.includes('child-a') && keys.includes('child-b');
+        });
+        expect(
+          await page.evaluate(() =>
+            [...document.querySelectorAll<HTMLElement>('.trxRow')].map(
+              (element) => element.dataset.traceKey,
             ),
-          )
-          .toEqual(expect.arrayContaining(['child-a', 'child-b']));
+          ),
+        ).toEqual(expect.arrayContaining(['child-a', 'child-b']));
         expect(pageErrors).toEqual([]);
         expect(
           await page.evaluate(() => ({
@@ -1999,13 +2095,17 @@ describe('trace-site inspector deployment contract', () => {
           { steps: 5 },
         );
         await page.mouse.up();
-        await expect
-          .poll(() =>
-            page
-              .locator('.trxRail')
-              .evaluate((element) => element.getBoundingClientRect().width),
-          )
-          .toBeGreaterThan(widthBefore + 50);
+        await page.waitForFunction(
+          (minimumWidth) =>
+            (document.querySelector('.trxRail')?.getBoundingClientRect().width ??
+              0) > minimumWidth,
+          widthBefore + 50,
+        );
+        expect(
+          await page
+            .locator('.trxRail')
+            .evaluate((element) => element.getBoundingClientRect().width),
+        ).toBeGreaterThan(widthBefore + 50);
         const resizedLayout = await page.evaluate(() => ({
           tableWidth:
             document.querySelector('.trxTablePane')?.getBoundingClientRect()
@@ -2039,13 +2139,16 @@ describe('trace-site inspector deployment contract', () => {
         await page.mouse.down();
         await page.mouse.move(2, expandedDividerBox!.y + 20, { steps: 12 });
         await page.mouse.up();
-        await expect
-          .poll(() =>
-            page
-              .locator('.trxRail')
-              .evaluate((element) => element.getBoundingClientRect().width),
-          )
-          .toBeGreaterThan(1_330);
+        await page.waitForFunction(
+          () =>
+            (document.querySelector('.trxRail')?.getBoundingClientRect().width ??
+              0) > 1_330,
+        );
+        expect(
+          await page
+            .locator('.trxRail')
+            .evaluate((element) => element.getBoundingClientRect().width),
+        ).toBeGreaterThan(1_330);
         expect(
           await page.evaluate(() =>
             localStorage.getItem('consuelo.trace-inspector.width'),
@@ -2242,7 +2345,8 @@ describe('trace-site inspector deployment contract', () => {
               .querySelector<HTMLElement>('.trxTableScroll')
               ?.dataset.traceRange?.endsWith('499') ?? false,
         );
-        await expect.poll(() => prefetchCursor).toBe('cursor-2');
+        await waitForCondition(() => prefetchCursor === 'cursor-2');
+        expect(prefetchCursor).toBe('cursor-2');
 
         await page.setViewportSize({ width: 390, height: 844 });
         const mobile = await page.evaluate(() => ({
@@ -2482,6 +2586,13 @@ describe('trace-site inspector deployment contract', () => {
             inspectorIdentity:
               document.querySelector<HTMLElement>('.tiInspector')?.dataset
                 .testIdentity,
+            mutation: (
+              window as Window & {
+                __traceVirtualList?: {
+                  diagnostics: () => { lastMutation?: string } | null;
+                };
+              }
+            ).__traceVirtualList?.diagnostics()?.lastMutation,
             liveRequests:
               (window as Window & { __traceLiveRequests?: string[] })
                 .__traceLiveRequests?.length ?? 0,
@@ -2495,6 +2606,7 @@ describe('trace-site inspector deployment contract', () => {
           query: 'runtime',
           virtualDomText: false,
           inspectorIdentity: 'stable-live',
+          mutation: 'live-incremental',
         });
         expect(initial.liveRequests).toBeGreaterThanOrEqual(3);
 
@@ -2693,6 +2805,16 @@ describe('sanitized Cloudflare trace preview', () => {
 
     expect(TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT).toContain(
       '__consueloTraceHistoryTransport',
+    );
+    expect(TRACE_HISTORY_FETCH_TIMEOUT_MS).toBe(8_000);
+    expect(TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT).toContain(
+      'new AbortController()',
+    );
+    expect(TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT).toContain(
+      'signal:controller.signal',
+    );
+    expect(TRUSTED_TRACE_HISTORY_TRANSPORT_SCRIPT).toContain(
+      'finally(()=>clearTimeout(timeout))',
     );
     expect(patched).toContain('consuelo-trace-history-transport');
     expect(patched).toContain('__consueloTraceHistoryTransport');

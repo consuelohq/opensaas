@@ -17,7 +17,6 @@ const {
   getDefaultTaskBranch,
   normalizeArea,
 } = require('./lib/validation');
-const { resolveRemoteStreamAction } = require('./lib/stream-lifecycle');
 const {
   createBranch,
   createPullRequest,
@@ -61,7 +60,7 @@ function printHelp() {
   writeStdout('options:');
   writeStdout('  --workflow <value>    workflow bundle to return: task|artifacts|design|sites|media (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
-  writeStdout('  --create-stream        explicitly create the remote stream when it does not exist');
+  writeStdout('                         create missing streams first with stream.create');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
   writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
@@ -88,7 +87,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--create-stream';
+    const isBooleanFlag = flag === '--json' || flag === '--help';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -115,9 +114,6 @@ function parseArgs(argv) {
         break;
       case '--start-from':
         args.startFrom = value;
-        break;
-      case '--create-stream':
-        args.createStream = true;
         break;
       case '--branch':
         args.branch = value;
@@ -213,34 +209,19 @@ function resolveSourceBranch(startFrom, stream) {
   return DEFAULT_MAIN_BRANCH;
 }
 
-async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef, createStream }) {
+async function ensureRemoteStreamBranch({ token, repository, streamBranch }) {
   try {
-    let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
-    const action = resolveRemoteStreamAction({
-      streamBranch,
-      remoteExists: Boolean(streamRef),
-      createStream: Boolean(createStream),
-    });
-
-    if (action === 'reuse') {
-      return {
-        streamRef,
-        created: false,
-      };
-    }
-
-    writeStderr(`creating remote ${streamBranch} from ${DEFAULT_MAIN_BRANCH}...`);
-    streamRef = await createBranch({
+    const streamRef = await getBranchRef({
       token,
       repository,
       branch: streamBranch,
-      sha: mainRef.object.sha,
     });
-
-    return {
-      streamRef,
-      created: true,
-    };
+    if (!streamRef) {
+      throw new Error(
+        `remote stream ${streamBranch} does not exist. Create it first with stream.create.`,
+      );
+    }
+    return { streamRef, created: false };
   } catch (error) {
     throw new Error(`failed to ensure stream branch ${streamBranch}: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -314,23 +295,11 @@ async function main() {
 
     fetchOrigin(repoRoot);
 
-    const mainRef = await getBranchRef({ token, repository: args.repo, branch: DEFAULT_MAIN_BRANCH });
-
-    if (!mainRef) {
-      throw new Error(`remote ${DEFAULT_MAIN_BRANCH} branch not found in ${args.repo}`);
-    }
-
-    const streamDetails = await ensureRemoteStreamBranch({
+    await ensureRemoteStreamBranch({
       token,
       repository: args.repo,
       streamBranch: stream,
-      mainRef,
-      createStream: args.createStream,
     });
-
-    if (streamDetails.created) {
-      fetchOrigin(repoRoot);
-    }
 
     const sourceBranch = resolveSourceBranch(args.startFrom, stream);
     const sourceRef = `refs/remotes/origin/${sourceBranch}`;

@@ -255,13 +255,13 @@ function summarizeInput(
     return [base, head].filter(Boolean).join('…') || 'current changes';
   }
   if (tool.startsWith('browser')) {
-    const target = clean(
-      input?.url ?? input?.selector ?? input?.expression ?? input?.action,
-    );
+    const target = clean(input?.url ?? input?.selector ?? input?.expression);
     if (target) return target;
     if (clean(input?.js)) {
       return tool.includes('test') ? 'run browser test' : 'evaluate page state';
     }
+    const action = clean(input?.action);
+    if (action) return action;
     return humanPayload(row.input, 'browser request');
   }
   if (tool === 'stream.context') {
@@ -610,7 +610,13 @@ function humanErrorDetail(value: unknown): string {
 
 function isSerializedStructure(value: string): boolean {
   const trimmed = value.trim();
-  return Boolean(trimmed) && '[{'.includes(trimmed[0] ?? '');
+  if (!trimmed || !'[{'.includes(trimmed[0] ?? '')) return false;
+  try {
+    const parsed = JSON.parse(trimmed);
+    return typeof parsed === 'object' && parsed !== null;
+  } catch {
+    return /^\{\s*"[^"\\]+"\s*:/.test(trimmed);
+  }
 }
 
 function looksLikeSourceCode(value: string): boolean {
