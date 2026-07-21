@@ -19,12 +19,11 @@ const { sectionId = 'intro' } = Astro.props as Props;
   <div class="os-hero__content">
     <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
     <h1>
-      <span data-hero-line>YOUR WORKSPACE,</span>
-      <span data-hero-line>CONNECTED TO</span>
-      <span data-hero-line>EVERY AGENT</span>
+      <span data-hero-line>YOUR ASSISTANT</span>
+      <span data-hero-line>SHOULD COME PREPARED.</span>
     </h1>
     <p class="os-hero__subtitle">
-      Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
+      Cloud when you need it. Local where it matters. One agent runner for ChatGPT, Claude, Cursor, OpenCode, and Grok.
     </p>
 
     <div class="os-hero__actions">
@@ -114,10 +113,11 @@ const { sectionId = 'intro' } = Astro.props as Props;
     margin: 0;
     color: white;
     font-family: var(--site-font-display);
-    font-size: clamp(2.15rem, 9.25vw, 6.25rem);
+    font-size: clamp(1.55rem, 6.5vw, 6.25rem);
     font-weight: 430;
     letter-spacing: 0;
     line-height: 0.9;
+    text-wrap: pretty;
   }
 
   .os-hero h1 > span {
