@@ -194,6 +194,29 @@ describe('native lifecycle client', () => {
     expect(second).toEqual([8]);
   });
 
+
+  test('restores a retained offline snapshot from an equal-sequence successful refresh', async () => {
+    const retainedOfflineSnapshot: LifecycleSnapshot = {
+      ...healthySnapshot,
+      runtime: { ...healthySnapshot.runtime, state: 'offline' },
+      connection: { state: 'offline', reason: 'shell restarted while service was unavailable' },
+    };
+    const client = createNativeLifecycleClient({
+      initialSnapshot: retainedOfflineSnapshot,
+      transport: createTransport(),
+    });
+
+    await expect(client.refresh()).resolves.toMatchObject({
+      sequence: 7,
+      runtime: { state: 'running' },
+      connection: { state: 'online' },
+    });
+    expect(client.current()).toMatchObject({
+      sequence: 7,
+      runtime: { state: 'running' },
+      connection: { state: 'online' },
+    });
+  });
   test('keeps a newer subscribed snapshot when an older refresh resolves later', async () => {
     let resolveStatus: ((snapshot: LifecycleSnapshot) => void) | undefined;
     let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
