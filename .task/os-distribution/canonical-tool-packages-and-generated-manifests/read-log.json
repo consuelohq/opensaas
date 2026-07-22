@@ -22,6 +22,7 @@
     "packages/os/tests/artifacts-legacy-contract.test.ts",
     "packages/os/tests/artifacts-skill.test.ts",
     "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
     "packages/os/tests/doctor-logs.test.ts",
     "packages/os/tests/facade/facade.test.ts",
     "packages/os/tests/local-os-server-review-findings.test.ts",
@@ -33,5 +34,5 @@
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-22T22:23:02.379Z"
+  "updatedAt": "2026-07-22T22:28:42.216Z"
 }

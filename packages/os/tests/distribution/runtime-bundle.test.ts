@@ -19,6 +19,7 @@ import {
   buildRuntimeBundle,
   classifyRuntimeBundlePath,
   computeReleaseFingerprint,
+  containsMachineSpecificAbsolutePath,
   inspectRuntimeBundleArchive,
   verifyRuntimeBundleArchive,
   type RuntimeBundleBuildOptions,
@@ -287,6 +288,24 @@ describe('runtime bundle contract', () => {
     await expect(buildRuntimeBundle(buildOptions(root))).rejects.toThrow(
       'machine-specific absolute path found in scripts/lib/leak.ts',
     );
+  });
+
+  it('applies source-root boundaries consistently on Unix and Windows paths', () => {
+    const cases = [
+      { root: '/tmp/runtime-bundle', separator: '/' },
+      { root: 'C:\\Users\\runner\\AppData\\Local\\Temp\\runtime-bundle', separator: '\\' },
+    ];
+
+    for (const { root, separator } of cases) {
+      expect(containsMachineSpecificAbsolutePath(
+        `https://registry.example.test${root}-map`,
+        root,
+      )).toBe(false);
+      expect(containsMachineSpecificAbsolutePath(
+        `export const path = '${root}${separator}secret';`,
+        root,
+      )).toBe(true);
+    }
   });
 
   it('keeps the release fingerprint stable across allocated versions', async () => {

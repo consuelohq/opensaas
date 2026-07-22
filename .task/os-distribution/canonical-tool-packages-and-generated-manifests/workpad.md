@@ -21,11 +21,13 @@ started: 2026-07-22
 ## files changed
 
 - `.tmp/worker26-final-push-files.json` (deleted)
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/tests/artifacts-skill.test.ts`
 
 ## workspace-owned: files changed
 
 - `.tmp/worker26-final-push-files.json` (deleted)
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/tests/artifacts-skill.test.ts`
 
 ## workspace-owned: activity log
@@ -34,11 +36,15 @@ started: 2026-07-22
 - 2026-07-22 22:15:23 fs.write: `.task/os-distribution/canonical-tool-packages-and-generated-manifests/review-disposition-codex.json`
 - 2026-07-22 22:15:53 fs.trash: `.task/os-distribution/canonical-tool-packages-and-generated-manifests/review-disposition-codex.json`
 - 2026-07-22 22:24:18 fs.write: `.task/os-distribution/canonical-tool-packages-and-generated-manifests/workpad.md`
+- 2026-07-22 22:25:23 fs.write: `.task/os-distribution/canonical-tool-packages-and-generated-manifests/workpad.md`
+- 2026-07-22 22:29:27 fs.write: `.task/os-distribution/canonical-tool-packages-and-generated-manifests/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-07-22 22:24:33 `review.run`: passed — OK
 - 2026-07-22 22:24:48 `verify`: passed — OK
+- 2026-07-22 22:29:40 `review.run`: passed — OK
+- 2026-07-22 22:29:55 `verify`: passed — OK
 
 ## key decisions
 
@@ -69,10 +75,11 @@ bun run task:finish
 ## workspace-owned: files read
 
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/workspace/scripts/lib/git.js`
 - `packages/workspace/scripts/task-push.js`
 
-- 2026-07-22 22:23:17 apply-patch: `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- CI head `cbb9a40b` exposed a Linux-only runtime-bundle boundary failure in `Consuelo OS / native linux`: temporary source roots under `/tmp/<name>` contain two path segments, while `portableContent` enabled embedded-root detection only for three or more segments. The test therefore resolved instead of rejecting `${sourceRoot}/secret`. Changed the non-root guard from `>= 3` to `>= 2`; the exact runtime-bundle suite passed 14/14 (`trc_01a4a5fcb543`) and the complete worker matrix passed 46 files / 239 tests plus drift, syntax/typecheck, and raw steering (`trc_11de8691d38b`).
+- 2026-07-22 22:28:54 apply-patch: `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- CI head `77274ecd` cleared Linux but exposed the complementary Windows case: the generic `C:\\Users\\...` detector matched a source-root prefix inside the benign `${sourceRoot}-map` URL. Extracted `containsMachineSpecificAbsolutePath`, preserved foreign Windows absolute paths independent of host OS, tested native and normalized root candidates with explicit separator boundaries, removed already-evaluated source-root literals before generic machine-path scanning, and added Unix/Windows contract cases. Runtime-bundle suite passed 15/15 (`trc_fc78db3297cd`); complete worker matrix passed 46 files / 240 tests plus drift and syntax/typecheck (`trc_2bae22803a01`).
 
-- 2026-07-22 22:24:18 append: `.task/os-distribution/canonical-tool-packages-and-generated-manifests/workpad.md`
+- 2026-07-22 22:29:27 append: `.task/os-distribution/canonical-tool-packages-and-generated-manifests/workpad.md`

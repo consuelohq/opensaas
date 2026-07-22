@@ -673,8 +673,56 @@
         "source": "task:fs",
         "task_branch": "task/os-distribution/canonical-tool-packages-and-generated-manifests"
       }
+    },
+    {
+      "id": "5d818937-069e-4a6d-a554-e4ad177685b4",
+      "occurred_at": "2026-07-22T22:27:28.162Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/distribution/runtime-bundle.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/canonical-tool-packages-and-generated-manifests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/canonical-tool-packages-and-generated-manifests"
+      }
+    },
+    {
+      "id": "b3d842b6-db1f-4648-b286-f70a71d286e4",
+      "occurred_at": "2026-07-22T22:27:40.765Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/canonical-tool-packages-and-generated-manifests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/canonical-tool-packages-and-generated-manifests"
+      }
+    },
+    {
+      "id": "e533609c-c39c-4f99-a612-0de7119a7d77",
+      "occurred_at": "2026-07-22T22:28:42.274Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/canonical-tool-packages-and-generated-manifests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/canonical-tool-packages-and-generated-manifests"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-07-22T22:23:02.502Z"
+  "updated_at": "2026-07-22T22:28:42.331Z"
 }
