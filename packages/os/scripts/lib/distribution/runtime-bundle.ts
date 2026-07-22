@@ -381,13 +381,10 @@ export function containsMachineSpecificAbsolutePath(text: string, sourceRoot: st
     ? sourceRoot
     : resolve(sourceRoot);
   const normalizedRoot = resolvedRoot.replaceAll('\\', '/');
-  const sourceRootSegments = normalizedRoot.split('/').filter(Boolean);
   const rootCandidates = [...new Set([resolvedRoot, normalizedRoot])];
-  const embeddedSourceRoots = sourceRootSegments.length >= 2
-    ? rootCandidates.map((candidate) => new RegExp(
-        escapeRegExp(candidate) + '(?:\\\\|/|$|[\\s\"\'=,:;(){}\[\]])',
-      ))
-    : [];
+  const embeddedSourceRoots = rootCandidates.map((candidate) => new RegExp(
+    escapeRegExp(candidate) + '(?:\\\\|/|$|[\\s\"\'=,:;(){}\[\]])',
+  ));
   if (embeddedSourceRoots.some((pattern) => pattern.test(text))) return true;
 
   const textWithoutSourceRoot = rootCandidates.reduce(
@@ -699,6 +696,9 @@ export function inspectRuntimeBundleArchive(
 function assertManifestShape(manifest: RuntimeBundleManifest): void {
   if (manifest.schemaVersion !== RUNTIME_BUNDLE_SCHEMA_VERSION) {
     throw new Error(`unsupported runtime bundle schema version: ${String(manifest.schemaVersion)}`);
+  }
+  if (manifest.policyVersion !== RUNTIME_BUNDLE_POLICY_VERSION) {
+    throw new Error(`unsupported runtime bundle policy version: ${String(manifest.policyVersion)}`);
   }
   if (manifest.kind !== 'consuelo-runtime-bundle') throw new Error('invalid runtime bundle kind');
   if (!Array.isArray(manifest.files)) throw new Error('runtime bundle manifest files must be an array');
