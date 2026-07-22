@@ -89,6 +89,9 @@ xfs-*/
 # Temp upload dirs
 .tmp.driveupload/
 
+# Task-scoped, redacted Grok review prompts and responses.
+/packages/os/.tmp-reviews/
+
 .nx/polygraph
 .claude/worktrees
 .claude/settings.local.jsonesbuild-*
