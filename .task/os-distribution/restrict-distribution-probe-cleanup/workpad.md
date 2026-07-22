@@ -12,7 +12,7 @@ started: 2026-07-22
 - [x] Caller-supplied parent directories and unrelated sentinel files survive default cleanup.
 - [x] Parent paths containing `..`, home-like paths, and repo-like paths are covered by table-driven tests.
 - [x] Exact real `~/.consuelo` remains rejected.
-- [ ] Local distribution tests, strict review, full verify, and hosted cross-platform checks pass.
+- [x] Local distribution tests, strict review, full verify, and hosted cross-platform checks pass.
 
 ## plan
 
@@ -32,7 +32,7 @@ started: 2026-07-22
 
 ## current status
 
-- Implementation and all local validation are complete. Hosted cross-platform checks remain.
+- Implementation and validation are complete. The task is ready for stream and main promotion.
 
 ## files changed
 
@@ -59,6 +59,7 @@ started: 2026-07-22
 - Green: `bun packages/os/scripts/testing/distribution/local-container-runner.ts` passed on Apple Container with Linux arm64 and Bun 1.3.14.
 - Green: `bun run review -- --strict --base origin/stream/os-distribution --json` reported zero issues.
 - Green: `bun run verify -- --base origin/stream/os-distribution --json` passed and wrote a publish-valid stamp.
+- Green: PR #1550 passed clean OCI, native Linux, native macOS, native Windows, existing distribution regressions, OS contracts, full verify, workflow security, and repository checks.
 
 ## key decisions
 

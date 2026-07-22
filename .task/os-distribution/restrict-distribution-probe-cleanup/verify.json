@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/os-distribution/restrict-distribution-probe-cleanup",
   "base": "origin/stream/os-distribution",
-  "headSha": "a85ed411f7c8392c21690097af0c5e8b50f58fb0",
-  "changeHash": "6f4459dc600448173ca567b02156a12a36dea9fb0c6a27b62ebdf035db2a301d",
+  "headSha": "0dc5ff573cb777da24310cf448a5c78dcc5ed908",
+  "changeHash": "e4871e1746c46be6fa0d928d263b2a920b536f5766755fea4da5e18de3816ce8",
   "changedFiles": [
     "packages/os/scripts/testing/distribution/environment-probe.ts",
     "packages/os/tests/distribution/environment-probe.test.ts"
   ],
-  "verifiedAt": "2026-07-22T17:24:43.544Z",
+  "verifiedAt": "2026-07-22T17:35:22.497Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -26,6 +26,7 @@
       "changedFiles": [
         ".task/os-distribution/restrict-distribution-probe-cleanup/current.json",
         ".task/os-distribution/restrict-distribution-probe-cleanup/session.json",
+        ".task/os-distribution/restrict-distribution-probe-cleanup/verify.json",
         ".task/os-distribution/restrict-distribution-probe-cleanup/workpad.md",
         ".task/tasks/os-distribution/restrict-distribution-probe-cleanup.json",
         "packages/os/scripts/testing/distribution/environment-probe.ts",
