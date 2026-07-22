@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   chmodSync,
   existsSync,
@@ -16,6 +17,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   RUNTIME_BUNDLE_BUILDER_ENTRYPOINT,
   RUNTIME_BUNDLE_INTEGRATION_SCRIPT_KEYS,
+  RUNTIME_BUNDLE_MANIFEST_PATH,
   buildRuntimeBundle,
   classifyRuntimeBundlePath,
   computeReleaseFingerprint,
@@ -72,6 +74,24 @@ function buildOptions(sourceRoot: string, overrides: Partial<RuntimeBundleBuildO
     version: '1.2.3',
     ...overrides,
   };
+}
+
+function canonicalizeBundleValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalizeBundleValue);
+  if (value && typeof value === 'object') {
+    const output: Record<string, unknown> = {};
+    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+      const item = (value as Record<string, unknown>)[key];
+      if (item !== undefined) output[key] = canonicalizeBundleValue(item);
+    }
+    return output;
+  }
+  return value;
+}
+
+function bundleIdForFixtureManifest(manifest: unknown): string {
+  const canonicalJson = JSON.stringify(canonicalizeBundleValue(manifest));
+  return `sha256:${createHash('sha256').update(canonicalJson).digest('hex')}`;
 }
 
 afterEach(() => {
@@ -292,6 +312,7 @@ describe('runtime bundle contract', () => {
 
   it('applies source-root boundaries consistently on Unix and Windows paths', () => {
     const cases = [
+      { root: '/source', separator: '/' },
       { root: '/tmp/runtime-bundle', separator: '/' },
       { root: 'C:\\Users\\runner\\AppData\\Local\\Temp\\runtime-bundle', separator: '\\' },
     ];
@@ -367,6 +388,33 @@ describe('runtime bundle contract', () => {
     const missingEntries = inspected.entries.filter((entry) => entry.path !== 'hooks/dispatcher.js');
     expect(() => verifyRuntimeBundleArchive(missingEntries)).toThrow(
       'runtime bundle archive is missing hooks/dispatcher.js',
+    );
+  });
+
+  it('rejects unsupported policy versions even when the bundle ID is recomputed', async () => {
+    const root = createFixture();
+    const built = await buildRuntimeBundle(buildOptions(root));
+    const inspected = inspectRuntimeBundleArchive(built.archiveBytes);
+    const { bundleId: _bundleId, ...manifestWithoutBundleId } = inspected.manifest;
+    const unsupportedManifestWithoutBundleId = {
+      ...manifestWithoutBundleId,
+      policyVersion: 2,
+    };
+    const unsupportedManifest = {
+      ...unsupportedManifestWithoutBundleId,
+      bundleId: bundleIdForFixtureManifest(unsupportedManifestWithoutBundleId),
+    };
+    const unsupportedEntries = inspected.entries.map((entry) =>
+      entry.path === RUNTIME_BUNDLE_MANIFEST_PATH
+        ? {
+            ...entry,
+            bytes: Buffer.from(`${JSON.stringify(canonicalizeBundleValue(unsupportedManifest), null, 2)}\n`),
+          }
+        : entry,
+    );
+
+    expect(() => verifyRuntimeBundleArchive(unsupportedEntries)).toThrow(
+      'unsupported runtime bundle policy version: 2',
     );
   });
 
