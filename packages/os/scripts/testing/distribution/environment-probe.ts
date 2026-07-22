@@ -25,6 +25,8 @@ export type DistributionEnvironmentReport = {
   };
 };
 
+const PROBE_DIRECTORY_PREFIX = '.consuelo-os-environment-probe-';
+
 type DistributionEnvironmentProbeOptions = {
   arch?: string;
   cleanup?: boolean;
@@ -33,8 +35,8 @@ type DistributionEnvironmentProbeOptions = {
   platform?: string;
 };
 
-function isIsolatedConsueloHome(home: string): boolean {
-  return resolve(home) !== resolve(join(homedir(), '.consuelo'));
+function isRealConsueloHome(home: string): boolean {
+  return resolve(home) === resolve(join(homedir(), '.consuelo'));
 }
 
 export async function runDistributionEnvironmentProbe(
@@ -44,14 +46,16 @@ export async function runDistributionEnvironmentProbe(
     throw new Error('Distribution probe home must be an absolute path.');
   }
 
-  const isolated = isIsolatedConsueloHome(options.home);
-  if (!isolated) {
+  if (isRealConsueloHome(options.home)) {
     throw new Error('Distribution probe refuses to use the real Consuelo home.');
   }
 
   const cleanup = options.cleanup ?? true;
   const environment = options.environment ?? process.env;
-  const probeDirectory = join(options.home, 'node', 'tmp', 'environment-probe');
+  const probeParent = resolve(options.home);
+  await mkdir(probeParent, { recursive: true });
+  const probeHome = await mkdtemp(join(probeParent, PROBE_DIRECTORY_PREFIX));
+  const probeDirectory = join(probeHome, 'node', 'tmp', 'environment-probe');
   const currentPath = join(probeDirectory, 'current');
   const candidatePath = join(probeDirectory, 'candidate');
 
@@ -77,13 +81,13 @@ export async function runDistributionEnvironmentProbe(
       home: {
         atomicReplace: true,
         cleanup,
-        isolated,
+        isolated: true,
         writable: true,
       },
     };
   } finally {
     if (cleanup) {
-      await rm(options.home, { force: true, recursive: true });
+      await rm(probeHome, { force: true, recursive: true });
     }
   }
 }
@@ -95,9 +99,7 @@ function argumentValue(name: string): string | undefined {
 
 if (import.meta.main) {
   const suppliedHome = argumentValue('--home');
-  const home = suppliedHome
-    ? resolve(suppliedHome)
-    : await mkdtemp(join(tmpdir(), 'consuelo-os-distribution-'));
+  const home = suppliedHome ? resolve(suppliedHome) : tmpdir();
 
   try {
     const report = await runDistributionEnvironmentProbe({
