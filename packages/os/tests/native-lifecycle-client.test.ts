@@ -193,4 +193,37 @@ describe('native lifecycle client', () => {
     expect(first).toEqual([]);
     expect(second).toEqual([8]);
   });
+
+  test('keeps a newer subscribed snapshot when an older refresh resolves later', async () => {
+    let resolveStatus: ((snapshot: LifecycleSnapshot) => void) | undefined;
+    let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
+    const transport: NativeLifecycleTransport & { emit(snapshot: LifecycleSnapshot): void } = {
+      request(request) {
+        if (request.kind !== 'status.get') {
+          return Promise.resolve({ accepted: true, operationId: 'unexpected-operation' });
+        }
+        return new Promise<LifecycleSnapshot>((resolve) => {
+          resolveStatus = resolve;
+        });
+      },
+      subscribe(next) {
+        listener = next;
+        return () => {
+          if (listener === next) listener = undefined;
+        };
+      },
+      emit(snapshot) {
+        listener?.(snapshot);
+      },
+    };
+    const client = createNativeLifecycleClient({ initialSnapshot: healthySnapshot, transport });
+    client.connect(() => undefined);
+
+    const refresh = client.refresh();
+    transport.emit({ ...healthySnapshot, sequence: 9, runtime: { ...healthySnapshot.runtime, version: '1.9.0' } });
+    resolveStatus?.({ ...healthySnapshot, sequence: 8, runtime: { ...healthySnapshot.runtime, version: '1.8.0' } });
+
+    await expect(refresh).resolves.toMatchObject({ sequence: 9, runtime: { version: '1.9.0' } });
+    expect(client.current()).toMatchObject({ sequence: 9, runtime: { version: '1.9.0' } });
+  });
 });
