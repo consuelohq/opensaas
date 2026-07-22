@@ -33,6 +33,7 @@ Do not absorb provider, web-auth, or native-app work.
 - Eliminate customer-runtime assumptions about a specific Homebrew SQLite path or developer machine PATH.
 - Ensure Bun's executable path is resolved and persisted for non-interactive services.
 - Ensure the shipped runtime bundle includes every runtime directory required by current OS behavior, not only the narrow legacy Dockerfile copy list.
+- Enforce the flattened product root: new installs activate path-neutral bundles at `~/.consuelo/runtime/releases/<bundle-id>/`; `~/.consuelo/os/` is accepted only as legacy migration input and is never recreated as the final package root.
 - Remove `packages/os/tooling` after Worker 26's consumer proof; do not leave a competing manifest authority.
 - Preserve user-owned `~/Consuelo` content and steering without creating hidden editable duplicates.
 - Complete the `consuelo` OS lifecycle and `consuelo-dialer` split from Worker 30 without removing dialer behavior.
@@ -50,6 +51,7 @@ Use disposable homes and temporary release infrastructure where possible. Test:
 2. Empty host, existing Bun in a non-default path.
 3. Existing legacy `~/.consuelo/os` layout.
 4. Existing flattened `~/.consuelo/` layout.
+4a. Clean install proves no `~/.consuelo/os/` directory is created and the active release resolves through `~/.consuelo/runtime/current`.
 5. User-modified managed skill/tool/site.
 6. Unmodified managed component eligible for automatic update.
 7. Interrupted download.
