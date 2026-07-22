@@ -1,6 +1,6 @@
 # Consuelo OS typed tools
 
-This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.
+This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/generated/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.
 
 The workspace app exposes two MCP entrypoints:
 
@@ -5937,7 +5937,7 @@ create a durable stream branch with OS and Workspace instruction files
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.create({ area: string; sourceBranch?: string; repo?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.stream.create({ area: string; sourceBranch?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace stream.create` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |

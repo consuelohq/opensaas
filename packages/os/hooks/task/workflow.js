@@ -386,7 +386,7 @@ visit(root);
 process.stdout.write(JSON.stringify({ ok: true, label: 'Bun structured repo scanner', root, scanned, results: results.slice(0, 20) }, null, 2) + '\n');`;
   const pythonTargetedCode = `from pathlib import Path
 import json
-files = [Path(${JSON.stringify(`${root}/hooks/task/workflow.js`)}), Path(${JSON.stringify(`${root}/tests/workflow-intent.test.ts`)}), Path(${JSON.stringify(`${root}/manifests/manifest.config.json`)})]
+files = [Path(${JSON.stringify(`${root}/hooks/task/workflow.js`)}), Path(${JSON.stringify(`${root}/tests/workflow-intent.test.ts`)}), Path(${JSON.stringify(`${root}/manifests/manifest.config.ts`)})]
 terms = ['task.start', 'TaskStartInput', '--workflow', 'batch', 'code.call']
 report = []
 for file in files:

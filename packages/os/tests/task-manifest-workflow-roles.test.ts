@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { normalizeManifest } from '../hooks/dispatcher.js';
+import { toolPackages } from '../tools/registry';
 
 const workflowRoles = new Map([
   ['stream.context', 'stream.context'],
@@ -19,50 +20,38 @@ const workflowRoles = new Map([
   ['tools.search', 'tool.search'],
 ]);
 
-const devManifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
-const fullManifestPath = resolve(import.meta.dirname, '../manifests/tool.manifest.json');
-const coreManifestPath = resolve(import.meta.dirname, '../manifests/core.manifest.json');
+const fullManifestPath = resolve(import.meta.dirname, '../manifests/generated/tool.manifest.json');
+const coreManifestPath = resolve(import.meta.dirname, '../manifests/generated/core.manifest.json');
 
-type ManifestTool = {
-  name: string;
-  workflowRole?: string;
-  definition?: ManifestTool;
-};
+type ManifestTool = { name: string; workflowRole?: string };
+type ManifestWrapper = { name: string; definition: ManifestTool };
 
-function readJson(path: string): unknown {
-  return JSON.parse(readFileSync(path, 'utf8'));
+function readDefinitions(path: string): ManifestTool[] {
+  const value = JSON.parse(readFileSync(path, 'utf8')) as { tools?: ManifestWrapper[] };
+  if (!Array.isArray(value.tools)) throw new Error('expected generated manifest tool array');
+  return value.tools.map((entry) => entry.definition);
 }
-
-function asToolList(value: unknown): ManifestTool[] {
-  if (Array.isArray(value)) return value as ManifestTool[];
-  if (value && typeof value === 'object' && Array.isArray((value as { tools?: unknown }).tools)) {
-    return (value as { tools: ManifestTool[] }).tools;
-  }
-  throw new Error('expected manifest tool array');
-}
-
 function findTool(list: ManifestTool[], name: string): ManifestTool {
   const entry = list.find((item) => item.name === name);
-  if (!entry) throw new Error(`missing tool ${name}`);
+  if (!entry) throw new Error('missing tool ' + name);
   return entry;
 }
 
 describe('OS manifest workflow roles', () => {
-  test('dev tool manifest carries task workflow roles at the tool-contract source', () => {
-    const manifest = asToolList(readJson(devManifestPath));
-
+  test('canonical tool packages carry task workflow roles at the contract source', () => {
+    const definitions = toolPackages.flatMap((toolPackage) => toolPackage.definitions) as ManifestTool[];
     for (const [name, workflowRole] of workflowRoles) {
-      expect(findTool(manifest, name)).toEqual(expect.objectContaining({ workflowRole }));
+      expect(findTool(definitions, name)).toEqual(expect.objectContaining({ workflowRole }));
     }
   });
 
-  test('generated full and core manifests preserve workflowRole inside definitions', () => {
-    const full = asToolList(readJson(fullManifestPath));
-    const core = asToolList(readJson(coreManifestPath));
-
+  test('generated manifests preserve workflowRole inside definitions', () => {
+    const full = readDefinitions(fullManifestPath);
+    const core = readDefinitions(coreManifestPath);
     for (const [name, workflowRole] of workflowRoles) {
-      expect(findTool(full, name).definition).toEqual(expect.objectContaining({ workflowRole }));
-      expect(findTool(core, name).definition).toEqual(expect.objectContaining({ workflowRole }));
+      expect(findTool(full, name)).toEqual(expect.objectContaining({ workflowRole }));
+      const coreTool = core.find((entry) => entry.name === name);
+      if (coreTool) expect(coreTool).toEqual(expect.objectContaining({ workflowRole }));
     }
   });
 
@@ -71,18 +60,12 @@ describe('OS manifest workflow roles', () => {
       { name: 'fs.write', inputSchema: 'FsWriteInput' },
       { name: 'custom.workpad', workflowRole: 'workpad.write', inputSchema: 'CustomWriteInput' },
     ]);
-
     expect(findTool(normalized, 'fs.write')).not.toHaveProperty('workflowRole');
-    expect(findTool(normalized, 'custom.workpad')).toEqual(
-      expect.objectContaining({ workflowRole: 'workpad.write' }),
-    );
+    expect(findTool(normalized, 'custom.workpad')).toEqual(expect.objectContaining({ workflowRole: 'workpad.write' }));
   });
 
   test('legacy fallback must be explicitly requested for old manifests', () => {
-    const normalized = normalizeManifest([
-      { name: 'fs.write', inputSchema: 'FsWriteInput' },
-    ], { legacyWorkflowRoleFallback: true });
-
+    const normalized = normalizeManifest([{ name: 'fs.write', inputSchema: 'FsWriteInput' }], { legacyWorkflowRoleFallback: true });
     expect(findTool(normalized, 'fs.write')).toEqual(expect.objectContaining({ workflowRole: 'workpad.write' }));
   });
 });

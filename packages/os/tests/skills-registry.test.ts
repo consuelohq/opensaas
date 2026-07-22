@@ -45,13 +45,12 @@ function validSkill(name: string, overrides: Record<string, unknown> = {}): Reco
 }
 
 describe('skills registry generator', () => {
-  it('includes the new task skill and existing OS skills', () => {
+  it('includes the active task and OS skills', () => {
     const registry = buildSkillsRegistry();
     const names = registry.skills.map((skill) => skill.name);
 
     expect(names).toContain('task');
-    expect(names).toContain('consuelo-workspace-snapshot');
-    expect(names).toContain('daily-revenue-brief');
+    expect(names).toContain('artifacts');
     expect(names).toContain('senior-engineer');
   });
 

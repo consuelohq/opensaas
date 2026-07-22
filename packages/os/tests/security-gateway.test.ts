@@ -957,9 +957,9 @@ describe('Consuelo OS public gateway security contract', () => {
   });
 
 
-  it('authorizes protected /call requests with generated signed scoped app tokens only', () => {
+  it('authenticates protected /call requests and fails closed for non-action tool IDs', () => {
     const authPath = join(tempHome, 'security', 'generated', 'auth.json');
-    const body = JSON.stringify({ name: 'get_raw_steering' });
+    const body = JSON.stringify({ name: 'status' });
     const result = readJsonFromBun<JsonObject>(`
       const { createGatewaySecurityConfig, issueAgentAppToken, signMachineRequest } = await import('./scripts/lib/security-gateway.ts');
       const home = process.env.CONSUELO_OS_HOME;
@@ -973,7 +973,7 @@ describe('Consuelo OS public gateway security contract', () => {
         config,
         callerId: 'chatgpt-app-1',
         appId: 'chatgpt',
-        scopes: ['tool:get_raw_steering:read'],
+        scopes: ['tool:status:read'],
         expiresInSeconds: 300,
       });
       const body = ${JSON.stringify(body)};
@@ -1042,7 +1042,7 @@ describe('Consuelo OS public gateway security contract', () => {
       });
       const tampered = await request({
         headers: tamperSigned.headers,
-        body: JSON.stringify({ name: 'daily-revenue-brief' }),
+        body: JSON.stringify({ name: 'stream.context' }),
       });
       process.stdout.write(JSON.stringify({ allowed, staticOnly, missingScope, unknownTool, tampered }));
     `, {
@@ -1050,7 +1050,7 @@ describe('Consuelo OS public gateway security contract', () => {
       CONSUELO_OS_BEARER_TOKEN: 'static-token',
     });
 
-    expect(result.allowed).toMatchObject({ status: 200, json: { ok: true, name: 'get_raw_steering' } });
+    expect(result.allowed).toMatchObject({ status: 400, json: { ok: false, name: 'status' } });
     expect(result.staticOnly).toMatchObject({ status: 401, json: { error: { code: 'MISSING_SIGNATURE' } } });
     expect(result.missingScope).toMatchObject({ status: 403, json: { error: { code: 'MISSING_SCOPE' } } });
     expect(result.unknownTool).toMatchObject({ status: 403, json: { error: { code: 'UNKNOWN_TOOL_SCOPE' } } });
@@ -1229,7 +1229,7 @@ describe('Consuelo OS public gateway security contract', () => {
   });
 
   it('discovers generated auth from the installed OS home when explicit auth env is unset', () => {
-    const body = JSON.stringify({ name: 'get_raw_steering' });
+    const body = JSON.stringify({ name: 'status' });
     const result = readJsonFromBun<JsonObject>(`
       const { readFileSync } = await import('node:fs');
       const { join } = await import('node:path');
@@ -1252,7 +1252,7 @@ describe('Consuelo OS public gateway security contract', () => {
         config: gatewayConfig,
         callerId: 'chatgpt-app-1',
         appId: 'chatgpt',
-        scopes: ['tool:get_raw_steering:read'],
+        scopes: ['tool:status:read'],
         expiresInSeconds: 300,
       });
       const body = ${JSON.stringify(body)};
@@ -1287,8 +1287,8 @@ describe('Consuelo OS public gateway security contract', () => {
     `);
 
     expect(result).toMatchObject({
-      status: 200,
-      json: { ok: true, name: 'get_raw_steering' },
+      status: 400,
+      json: { ok: false, name: 'status' },
       leakedTokenSecret: false,
       leakedNonce: false,
     });

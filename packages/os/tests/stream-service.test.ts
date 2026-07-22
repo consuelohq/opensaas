@@ -220,12 +220,10 @@ describe('stream public surface', () => {
   it('exposes stream.create and removes stream.cleanup', () => {
     const manifestPath = resolve(
       import.meta.dirname,
-      '../tooling/dev-tool-manifest.json',
+      '../manifests/generated/tool.manifest.json',
     );
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Array<{
-      name: string;
-      inputSchema?: string;
-    }>;
+    const generated = JSON.parse(readFileSync(manifestPath, 'utf8')) as { tools: Array<{ definition: { name: string; inputSchema?: string } }> };
+    const manifest = generated.tools.map((entry) => entry.definition);
 
     expect(manifest.some((tool) => tool.name === 'stream.cleanup')).toBe(false);
     expect(manifest.find((tool) => tool.name === 'stream.create')?.inputSchema).toBe(

@@ -116,8 +116,8 @@ const REQUIRED_RUNTIME_INPUTS = [
   'scripts/os.ts',
   'scripts/server/main.ts',
   'scripts/lib/install-state.ts',
-  'manifests/tool.manifest.json',
-  'manifests/core.manifest.json',
+  'manifests/generated/tool.manifest.json',
+  'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
   'steering/decision.md',
@@ -131,8 +131,9 @@ const DEFAULT_DISCOVERY_PATHS = [
   'bun.lock',
   'scripts',
   'src',
-  'tooling',
+  'tools',
   'manifests',
+  'workflows',
   'hooks',
   'skills',
   'steering',
@@ -274,15 +275,21 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
     return 'test-only';
   }
   if (
-    filePath.startsWith('tooling/') ||
     filePath.startsWith('scripts/lib/distribution/') ||
+    filePath === 'manifests/manifest.config.ts' ||
+    filePath.startsWith('manifests/schemas/') ||
+    filePath === 'workflows/workflows.ts' ||
+    filePath === 'tools/package.ts' ||
+    filePath === 'tools/registry.ts' ||
+    /^tools\/[^/]+\/(?:manifest|schema)\.ts$/.test(filePath) ||
     SOURCE_ONLY_FILES.has(filePath)
   ) {
     return 'source-only';
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
   if (filePath.startsWith('skills/')) return 'managed-skill';
-  if (filePath.startsWith('manifests/') || filePath.startsWith('src/generated/')) {
+  if (/^tools\/[^/]+\/handler\.ts$/.test(filePath)) return 'managed-tool';
+  if (filePath.startsWith('manifests/generated/') || filePath.startsWith('workflows/generated/') || filePath.startsWith('src/generated/')) {
     return 'managed-tool';
   }
   if (filePath.startsWith('steering/') || filePath.startsWith('streams/')) return 'runtime';
@@ -747,7 +754,7 @@ export async function buildRuntimeBundle(
   const sourceRoot = resolve(options.sourceRoot);
   assertAuthoritativeToolManifestsAgree(
     sourceRoot,
-    options.authoritativeToolManifestPaths ?? ['manifests/tool.manifest.json'],
+    options.authoritativeToolManifestPaths ?? ['manifests/generated/tool.manifest.json'],
   );
   const collected = collectRuntimeFiles({
     sourceRoot,
