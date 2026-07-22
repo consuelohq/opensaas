@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-hosted-installer-device-login",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 995,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/995",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/995",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/995/wire-hosted-installer-device-login",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/995",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/995/wire-hosted-installer-device-login",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-hosted-installer-device-login",
+  "taskSession": "tsk_632e809f59d1",
+  "tmuxSession": "opensaas-os-wire-hosted-installer-device-login-632e809f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-hosted-installer-device-login/.task/os/wire-hosted-installer-device-login/session.json",
+  "createdAt": "2026-06-13T05:54:25.868Z"
+}

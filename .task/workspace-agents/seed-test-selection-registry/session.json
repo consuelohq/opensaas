@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_872edff37081",
+  "tmuxSession": "opensaas-workspace-agents-seed-test-selection-registry-872edff3",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/seed-test-selection-registry",
+  "branch": "task/workspace-agents/seed-test-selection-registry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-seed-test-selection-registry",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-seed-test-selection-registry",
+  "prNumber": 587,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/587",
+  "createdAt": "2026-05-24T08:50:03.023Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-seed-test-selection-registry/.task/workspace-agents/seed-test-selection-registry/session.json"
+}

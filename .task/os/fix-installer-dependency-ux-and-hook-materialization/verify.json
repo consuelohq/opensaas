@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-installer-dependency-ux-and-hook-materialization",
+  "base": "origin/stream/os",
+  "headSha": "600bc0963aaad8d2ea5cfb04cf5a798ee8e92740",
+  "changeHash": "8a0552438a08a1a17ff26c006f5db99ba833cc271aea9908cbf6db688ddfb23f",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/install-state.test.ts"
+  ],
+  "verifiedAt": "2026-06-12T20:05:01.358Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-installer-dependency-ux-and-hook-materialization/current.json",
+        ".task/os/fix-installer-dependency-ux-and-hook-materialization/evidence-log.json",
+        ".task/os/fix-installer-dependency-ux-and-hook-materialization/explore-state.json",
+        ".task/os/fix-installer-dependency-ux-and-hook-materialization/read-log.json",
+        ".task/os/fix-installer-dependency-ux-and-hook-materialization/session.json",
+        ".task/os/fix-installer-dependency-ux-and-hook-materialization/verify.json",
+        ".task/os/fix-installer-dependency-ux-and-hook-materialization/workpad.md",
+        ".task/tasks/os/fix-installer-dependency-ux-and-hook-materialization.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

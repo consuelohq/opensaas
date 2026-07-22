@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/migrate-office-artifacts-surface",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 767,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/767",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/767",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/767/migrate-office-artifacts-surface",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/767",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/767/migrate-office-artifacts-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-office-artifacts-surface",
+  "taskSession": "tsk_c796b57ce089",
+  "tmuxSession": "opensaas-os-migrate-office-artifacts-surface-c796b57c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-migrate-office-artifacts-surface/.task/os/migrate-office-artifacts-surface/session.json",
+  "createdAt": "2026-06-05T03:45:41.921Z"
+}

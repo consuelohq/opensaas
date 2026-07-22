@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/mobile-table-inbox",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 911,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/911",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/911",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/911/mobile-table-inbox",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/911",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/911/mobile-table-inbox",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-table-inbox",
+  "taskSession": "tsk_f5289e5d9ca4",
+  "tmuxSession": "opensaas-diff-cockpit-mobile-table-inbox-f5289e5d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-mobile-table-inbox/.task/diff-cockpit/mobile-table-inbox/session.json",
+  "createdAt": "2026-06-10T02:14:09.414Z"
+}

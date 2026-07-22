@@ -1,0 +1,13 @@
+{
+  "files": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/scripts/lib/fs/search.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-06-17T04:23:02.491Z"
+}

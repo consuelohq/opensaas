@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_915a987897aa",
+  "tmuxSession": "opensaas-os-add-device-approval-auth-hardening-contracts-915a9878",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-device-approval-auth-hardening-contracts",
+  "branch": "task/os/add-device-approval-auth-hardening-contracts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-device-approval-auth-hardening-contracts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-device-approval-auth-hardening-contracts",
+  "prNumber": 1006,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1006",
+  "createdAt": "2026-06-13T12:55:27.437Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-device-approval-auth-hardening-contracts/.task/os/add-device-approval-auth-hardening-contracts/session.json"
+}

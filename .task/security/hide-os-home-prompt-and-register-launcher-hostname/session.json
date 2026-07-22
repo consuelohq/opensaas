@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4c6d5e1fceb2",
+  "tmuxSession": "opensaas-security-hide-os-home-prompt-and-register-launcher-hostna-4c6d5e1f",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/hide-os-home-prompt-and-register-launcher-hostname",
+  "branch": "task/security/hide-os-home-prompt-and-register-launcher-hostname",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-hide-os-home-prompt-and-register-launcher-hostname",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-hide-os-home-prompt-and-register-launcher-hostname",
+  "prNumber": 1176,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1176",
+  "createdAt": "2026-06-23T02:06:16.832Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-hide-os-home-prompt-and-register-launcher-hostname/.task/security/hide-os-home-prompt-and-register-launcher-hostname/session.json"
+}

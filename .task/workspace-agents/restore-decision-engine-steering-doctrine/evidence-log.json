@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/restore-decision-engine-steering-doctrine",
+  "events": [
+    {
+      "id": "15644537-109e-4291-a54b-b82a7748263f",
+      "occurred_at": "2026-05-28T21:20:39.064Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/decision.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/restore-decision-engine-steering-doctrine",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/restore-decision-engine-steering-doctrine"
+      }
+    },
+    {
+      "id": "639475e3-f2e5-47cb-9167-48296928d0e7",
+      "occurred_at": "2026-05-28T21:20:39.384Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/decision.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/restore-decision-engine-steering-doctrine",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/restore-decision-engine-steering-doctrine"
+      }
+    },
+    {
+      "id": "61e9bdba-55e5-488b-a1fa-6cad923583ac",
+      "occurred_at": "2026-05-28T21:20:39.705Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/restore-decision-engine-steering-doctrine",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/restore-decision-engine-steering-doctrine"
+      }
+    },
+    {
+      "id": "c924173c-50ad-4984-8987-837a3b4f742d",
+      "occurred_at": "2026-05-28T21:20:40.055Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/restore-decision-engine-steering-doctrine",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/restore-decision-engine-steering-doctrine"
+      }
+    },
+    {
+      "id": "052f67cf-0f3b-4c3b-a3ac-1128cdc94234",
+      "occurred_at": "2026-05-28T21:31:15.537Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/STEERING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/restore-decision-engine-steering-doctrine",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/restore-decision-engine-steering-doctrine"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-28T21:31:15.592Z"
+}

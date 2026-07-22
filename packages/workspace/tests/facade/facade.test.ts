@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -8,8 +8,9 @@ import { describe, expect, it } from 'vitest';
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
+import { parseSubagentOutput, parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
-import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
+import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -116,8 +117,54 @@ function writeNamespacedTaskSession(tempRoot: string, taskSession: string, branc
   }, null, 2));
 }
 
+function writeInstruction(tempRoot: string, content = 'Do a safe read-only check.'): string {
+  const instructionPath = join(tempRoot, 'subagent-instructions.md');
+  writeFileSync(instructionPath, content);
+  return instructionPath;
+}
+
+function writeFakeCodex(tempRoot: string): string {
+  const binDir = join(tempRoot, 'bin');
+  mkdirSync(binDir, { recursive: true });
+  const bin = join(binDir, 'codex');
+  writeFileSync(bin, [
+    '#!/usr/bin/env bash',
+    'if [ "$1" = "exec" ] && [ "$2" = "--help" ]; then',
+    '  echo "Usage: codex exec [OPTIONS] [PROMPT]"',
+    '  echo "instructions are read from stdin"',
+    '  echo "--cd <DIR>"',
+    '  echo "--sandbox <SANDBOX_MODE>"',
+    '  echo "--ask-for-approval <APPROVAL_POLICY>"',
+    '  echo "--json"',
+    '  exit 0',
+    'fi',
+    'node -e \'process.stdout.write("x".repeat(9000)); process.stderr.write("e".repeat(9000));\'',
+    '',
+  ].join('\n'));
+  chmodSync(bin, 0o700);
+  return binDir;
+}
+
+
+function writeFakePi(tempRoot: string): string {
+  const binDir = join(tempRoot, 'bin');
+  mkdirSync(binDir, { recursive: true });
+  const bin = join(binDir, 'pi');
+  writeFileSync(bin, [
+    '#!/usr/bin/env bash',
+    'cat <<\'JSON\'',
+    '{"type":"message_end","message":{"role":"assistant","content":[{"type":"text","text":"pong"}],"usage":{"input":1,"output":1,"cacheRead":0}}}',
+    'JSON',
+    '',
+  ].join('\n'));
+  chmodSync(bin, 0o700);
+  return binDir;
+}
+
+const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search', 'tools.search']);
+
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
 }
 
 describe('typed facade executor', () => {
@@ -127,6 +174,151 @@ describe('typed facade executor', () => {
       .filter((name, index, names) => names.indexOf(name) === index)
       .filter((name) => !getInputSchema(name));
     expect(missing).toEqual([]);
+  });
+
+  it('exposes code.call as the language execution facade', () => {
+    const entry = getToolManifestEntry('code.call');
+
+    expect(entry?.methodPath).toEqual(['code', 'call']);
+    expect(entry?.inputSchema).toBe('CodeCallInput');
+    expect(entry?.outputSchema).toBe('CodeCallOutput');
+    expect(entry?.command.internal).toBe('code.call');
+    expect(getInputSchema('CodeCallInput')).toBeTruthy();
+  });
+
+  it('tools.search ranks intent keywords and returns usage guidance', async () => {
+    const toolsSearchScript = join(import.meta.dirname, '..', '..', 'scripts', 'tools-search.ts');
+    const packageRoot = join(import.meta.dirname, '..', '..');
+    const runSearch = (query: string, limit = 5) => {
+      const result = spawnSync('bun', [toolsSearchScript, query, '--limit', String(limit), '--json'], {
+        cwd: packageRoot,
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(0);
+      return JSON.parse(result.stdout);
+    };
+
+    const linearPayload = runSearch('linear issue');
+    const linearNames = linearPayload.matches.map((match: { name: string }) => match.name);
+    expect(linearNames.slice(0, 3)).toContain('linear.issue');
+    expect(linearNames).toContain('linear.search');
+    const linearIssue = linearPayload.matches.find((match: { name: string }) => match.name === 'linear.issue');
+    expect(linearIssue.inputSignature).toContain('identifier');
+    expect(linearIssue.usage.workspaceCall).toContain('workspace.call');
+
+    const ticketPayload = runSearch('ticket', 4);
+    const ticketNames = ticketPayload.matches.map((match: { name: string }) => match.name);
+    expect(ticketNames).toContain('linear.issue');
+
+    expect(runSearch('file search', 4).matches[0].name).toBe('fs.search');
+    expect(runSearch('railway-logs', 4).matches[0].name).toBe('railway.logs');
+    expect(runSearch('browser screenshot', 4).matches[0].name).toBe('browser.screenshot');
+    const codexSubagent = runSearch('codex subagent', 4).matches[0];
+    expect(codexSubagent.name).toBe('subagent');
+
+    const fileSearch = runSearch('file search', 4).matches[0];
+    expect(fileSearch.name).toBe('fs.search');
+    expect(fileSearch.usage.workspaceCall).toContain('fs.search');
+
+    const missingPayload = runSearch('no-such-made-up-tool', 4);
+    expect(missingPayload.totalMatches).toBe(0);
+    expect(missingPayload.matches).toEqual([]);
+    expect(missingPayload.guidance).toContain('No matching tools found');
+  }, 15000);
+  it('rejects contradictory tools.search capability filters', async () => {
+    const result = await executeTool('tools.search', { query: 'linear issue', readOnly: true, mutating: true }, stableOptions(successfulRunner()));
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('readOnly and mutating cannot both be true');
+  });
+
+  it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
+    const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toContain('fs.patch is not a workspace tool');
+    expect(result.message).toContain('fs.apply_patch');
+
+    const data = result.data as {
+      requestedTool?: string;
+      replacementTool?: string;
+      manifestEntry?: {
+        name?: string;
+        inputSchema?: string;
+        command?: { subcommand?: string };
+      };
+    };
+
+    expect(data.requestedTool).toBe('fs.patch');
+    expect(data.replacementTool).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.name).toBe('fs.apply_patch');
+    expect(data.manifestEntry?.inputSchema).toBe('FsApplyPatchInput');
+    expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
+  });
+
+  it('keeps generic unknown tool messages compact', async () => {
+    const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
+    expect(result.message).toBe('unknown tool: missing.tool');
+    expect(result.data).toBeNull();
+  });
+
+  it('plans canonical context search through the context runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('context', {
+      operation: 'search',
+      keyword: 'workspace',
+      limit: 1,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'context',
+      '--',
+      'search',
+      'workspace',
+      '--limit',
+      '1',
+      '--json',
+    ]));
+  });
+
+  it('plans canonical context trace through the context runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('context', {
+      operation: 'trace',
+      status: 'error',
+      limit: 1,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'context',
+      '--',
+      'trace',
+      '--status',
+      'error',
+      '--limit',
+      '1',
+      '--json',
+    ]));
+  });
+
+  it('rejects canonical context calls without an operation', async () => {
+    const result = await executeTool('context', {
+      keyword: 'workspace',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('operation');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -155,7 +347,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(manifestEntries.filter((entry) => !entry.command.internal && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
@@ -203,14 +395,12 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
+  it('writes multiline content through fs write content-file and rejects stale patch command', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
-    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     const writePayload = join(tempRoot, 'write-payload.txt');
-    const patchPayload = join(tempRoot, 'patch-payload.txt');
     try {
       writeFileSync(writePayload, 'line one\nline two\n');
-      writeFileSync(patchPayload, 'patched one\npatched two\n');
 
       const writeResult = spawnSync('bun', [scriptPath, 'write', 'nested/example.txt', '--content-file', writePayload, '--mkdirs'], {
         cwd: tempRoot,
@@ -219,19 +409,14 @@ describe('typed facade executor', () => {
       expect(writeResult.status).toBe(0);
       expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
 
-      const inlinePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad\npatch'], {
+      const stalePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad'], {
         cwd: tempRoot,
         encoding: 'utf8',
       });
-      expect(inlinePatchResult.status).toBe(1);
-      expect(inlinePatchResult.stderr).toContain('multiline --content is unsafe');
-
-      const patchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content-file', patchPayload], {
-        cwd: tempRoot,
-        encoding: 'utf8',
-      });
-      expect(patchResult.status).toBe(0);
-      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('patched one\npatched two\nline two\n');
+      expect(stalePatchResult.status).toBe(1);
+      expect(stalePatchResult.stderr).toContain('fs.patch has been removed');
+      expect(stalePatchResult.stderr).toContain('apply-patch');
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -239,7 +424,7 @@ describe('typed facade executor', () => {
 
   it('rejects fs write content-file directories', () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
-    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const scriptPath = join(process.cwd(), 'packages/workspace/scripts/fs.js');
     try {
       const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
         cwd: tempRoot,
@@ -262,30 +447,234 @@ describe('typed facade executor', () => {
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
-  it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
+  it('passes fs read page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_page');
     const plans: CommandPlan[] = [];
-    const result = await executeTool('fs.read', {
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_page',
+        path: 'packages/workspace/scripts/fs.js',
+        offset: 10,
+        limit: 5,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        'packages/workspace/scripts/fs.js',
+        '--offset',
+        '10',
+        '--limit',
+        '5',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('passes fs read multi-file page arguments to the CLI transport', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-files-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_files');
+    const plans: CommandPlan[] = [];
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_fs_read_files',
+        files: [
+          { path: 'src/a.ts', offset: 1, limit: 2 },
+          { path: 'src/b.ts', offset: 10, limit: 3 },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toEqual(expect.arrayContaining([
+        'read',
+        '--files-json',
+        '[{"path":"src/a.ts","offset":1,"limit":2},{"path":"src/b.ts","offset":10,"limit":3}]',
+        '--json',
+      ]));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects mixed fs read pagination modes', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-mixed-page-'));
+    writeTaskSession(tempRoot, 'tsk_fs_read_mixed_page');
+    const plans: CommandPlan[] = [];
+    try {
+      for (const topLevelPage of [{ offset: 10 }, { limit: 5 }, { from: 2 }, { to: 4 }]) {
+        const result = await executeTool('fs.read', {
+          taskSession: 'tsk_fs_read_mixed_page',
+          files: [{ path: 'src/a.ts', offset: 1, limit: 2 }],
+          ...topLevelPage,
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(false);
+        expect(result.code).toBe('VALIDATION_ERROR');
+        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+      }
+
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('plans fs.search path alias through paths argument', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+        include: '*.ts',
+        maxResults: 20,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('needle');
+      expect(plans[0].args).toContain('packages/workspace/scripts');
+      expect(plans[0].args).toContain('--include');
+      expect(plans[0].args).toContain('*.ts');
+      expect(plans[0].args).toContain('--max-results');
+      expect(plans[0].args).toContain('20');
+      expect(plans[0].args).toContain('--json');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('normalizes fs.search path alias without retaining path for downstream serialization', async () => {
+    const entry = manifestEntries.find((item) => item.name === 'fs.search');
+    if (!entry) throw new Error('missing fs.search manifest entry');
+    const originalArguments = entry.command.arguments;
+    const pathArgument: CommandArgument = { source: 'path', kind: 'value' };
+    entry.command.arguments = [...originalArguments, pathArgument];
+
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-canonical-path-'));
+    writeTaskSession(tempRoot, 'tsk_search_canonical_path');
+    const plans: CommandPlan[] = [];
+
+    try {
+      const result = await executeTool('fs.search', {
+        taskSession: 'tsk_search_canonical_path',
+        pattern: 'needle',
+        path: 'packages/workspace/scripts',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args.filter((arg) => arg === 'packages/workspace/scripts')).toHaveLength(1);
+    } finally {
+      entry.command.arguments = originalArguments;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs.search input with both path and paths', async () => {
+    const result = await executeTool('fs.search', {
+      taskSession: 'tsk_search_path_conflict',
+      pattern: 'needle',
+      path: 'packages/workspace/scripts',
+      paths: ['packages/workspace/tests'],
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('provide either path or paths, not both');
+  });
+
+  it('runs http without taskSession', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('http', {
+      method: 'get',
+      url: 'https://example.com',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toContain('https://example.com');
+  });
+
+  it('runs read-only fs tools without taskSession', async () => {
+    const plans: CommandPlan[] = [];
+
+    const readResult = await executeTool('fs.read', {
       path: 'AGENTS.md',
     }, {
       ...stableOptions(successfulRunner(), plans),
       branchResolver: () => ({
         ok: false,
         code: 'WORKTREE_NOT_FOUND',
-        message: 'no active task worktree found; run task:start first or pass branch',
+        message: 'no active task worktree found',
         candidates: [],
       }),
       currentTask: null,
       candidates: [],
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('TASK_SESSION_REQUIRED');
-    expect(plans).toHaveLength(0);
+    const searchResult = await executeTool('fs.search', {
+      pattern: 'workspace',
+      paths: ['AGENTS.md'],
+      maxResults: 3,
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'WORKTREE_NOT_FOUND',
+        message: 'no active task worktree found',
+        candidates: [],
+      }),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(readResult.ok).toBe(true);
+    expect(searchResult.ok).toBe(true);
+    expect(plans).toHaveLength(2);
+    expect(plans[0].args).not.toContain('--branch');
+    expect(plans[1].args).not.toContain('--branch');
   });
 
-  it('requires taskSession for sessionRequired tools', async () => {
-    const result = await executeTool('fs.read', {
-      path: 'AGENTS.md',
+  it('keeps mutating task tools fail-closed without unsafe finish hints', async () => {
+    const result = await executeTool('fs.write', {
+      path: 'tmp/example.txt',
+      content: 'hello',
     }, {
       ...stableOptions(successfulRunner()),
       currentTask: null,
@@ -294,6 +683,13 @@ describe('typed facade executor', () => {
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('TASK_SESSION_REQUIRED');
+    expect(result.data).toMatchObject({
+      tool: 'fs.write',
+      repoStateBound: true,
+      recovery: { action: 'start_task_session_then_retry' },
+    });
+    expect(JSON.stringify(result.data)).toContain('review.run');
+    expect(JSON.stringify(result.data).toLowerCase()).not.toContain('clean');
   });
 
   it('uses options.env worktree root for taskSession discovery', async () => {
@@ -573,15 +969,72 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('rejects calls that pass both taskSession and branch', async () => {
-    const result = await executeTool('fs.read', {
-      taskSession: 'tsk_conflict',
-      branch: TEST_BRANCH,
-      path: 'AGENTS.md',
-    }, stableOptions(successfulRunner()));
+  it('should accept taskSession when explicit branch matches session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-match-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_match',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+      const plans: CommandPlan[] = [];
 
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('VALIDATION_ERROR');
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_match',
+        branch: TEST_BRANCH,
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--branch');
+      expect(plans[0].args).toContain(TEST_BRANCH);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject taskSession when explicit branch conflicts with session metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-conflict-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_conflict',
+        tmuxSession: 'opensaas-test',
+        branch: TEST_BRANCH,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_conflict',
+        branch: 'task/workspace-agents/other',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('VALIDATION_ERROR');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('fails unknown taskSession handles deterministically', async () => {
@@ -608,6 +1061,49 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('runs neutral command aliases with legacy command semantics', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-alias-session-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      writeTaskSession(tempRoot, 'tsk_alias', 'task/workspace-agents/alias-session');
+      const taskCallPlans: CommandPlan[] = [];
+      const taskExecPlans: CommandPlan[] = [];
+      const macCallPlans: CommandPlan[] = [];
+      const macExecPlans: CommandPlan[] = [];
+
+      const taskInput = { command: exampleInput('task.call').command, taskSession: 'tsk_alias' };
+      const taskCall = await executeTool('task.call', taskInput, {
+        ...stableOptions(successfulRunner(), taskCallPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const taskExec = await executeTool('task.exec', { command: exampleInput('task.exec').command, taskSession: 'tsk_alias' }, {
+        ...stableOptions(successfulRunner(), taskExecPlans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+      const macCall = await executeTool('mac.call', exampleInput('mac.call'), stableOptions(successfulRunner(), macCallPlans));
+      const macExec = await executeTool('mac.exec', exampleInput('mac.exec'), stableOptions(successfulRunner(), macExecPlans));
+
+      expect(taskCall.ok).toBe(true);
+      expect(taskExec.ok).toBe(true);
+      expect(macCall.ok).toBe(true);
+      expect(macExec.ok).toBe(true);
+      expect(getToolManifestEntry('task.exec')?.description).toContain('legacy alias for task.call');
+      expect(getToolManifestEntry('mac.exec')?.description).toContain('legacy alias for mac.call');
+      expect(taskCallPlans[0].args).toEqual(taskExecPlans[0].args);
+      expect(taskCallPlans[0].env.TASK_BRANCH).toEqual(taskExecPlans[0].env.TASK_BRANCH);
+      expect(macCallPlans[0].args).toEqual(macExecPlans[0].args);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('passes request ids through nested tool envelopes', async () => {
     const result = await executeTool('mac.exec', {
       ...exampleInput('mac.exec'),
@@ -627,6 +1123,234 @@ describe('typed facade executor', () => {
     expect(getToolManifestEntry('decide-next')?.name).toBe('decideNext');
     expect(getToolManifestEntry('confidence-score')?.name).toBe('confidenceScore');
     expect(getToolManifestEntry('task:fs')).toBeNull();
+  });
+
+  it('rejects unknown subagent providers', async () => {
+    const result = await executeTool('subagent', {
+      provider: 'agent',
+      instructionPath: 'subagent-instructions.md',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('requires subagent instructionPath', async () => {
+    const result = await executeTool('subagent', {
+      provider: 'codex',
+      policy: 'read',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('requires taskSession for subagent edit policy', async () => {
+    const result = await executeTool('subagent', {
+      provider: 'codex',
+      policy: 'edit',
+      instructionPath: 'subagent-instructions.md',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TASK_SESSION_REQUIRED');
+  });
+
+  it('rejects unsupported subagent ship policy', async () => {
+    const result = await executeTool('subagent', {
+      provider: 'codex',
+      policy: 'ship',
+      instructionPath: 'subagent-instructions.md',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('returns not_configured when codex is unavailable', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-cdx-'));
+    try {
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('subagent', {
+        provider: 'codex',
+                policy: 'read',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: '' },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('not_configured');
+      expect(result.data.provider).toBe('codex');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('returns stable unavailable statuses for opencode and grok', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-unavailable-'));
+    try {
+      const instructionPath = writeInstruction(tempRoot);
+      const opencode = await executeTool('subagent', { provider: 'opencode', policy: 'read', instructionPath }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: '' },
+      });
+      const grok = await executeTool('subagent', { provider: 'grok', policy: 'read', instructionPath }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: '' },
+      });
+
+      expect(opencode.ok).toBe(true);
+      expect(opencode.data.status).toBe('not_configured');
+      expect(opencode.data.provider).toBe('opencode');
+      expect(grok.ok).toBe(true);
+      expect(grok.data.status).toBe('not_configured');
+      expect(grok.data.provider).toBe('grok');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs pi provider through the facade with configurable mini profile', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-pi-'));
+    try {
+      const binDir = writeFakePi(tempRoot);
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('subagent', {
+        provider: 'pi',
+                policy: 'read',
+        instructionPath,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.provider).toBe('pi');
+            expect(result.data.command[0]).toContain('/pi');
+      expect(result.data.command).toContain('--no-session');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('exposes a subagent Bun script wrapper over subagent', () => {
+    const tempRoot = mkdtempSync(join(process.cwd(), 'tmp-subagent-cli-'));
+    try {
+      const instructionPath = writeInstruction(tempRoot);
+      const fakePiPath = writeFakePi(tempRoot);
+      const run = spawnSync('bun', [
+        'packages/workspace/scripts/subagent.ts',
+        '--provider', 'pi',
+        '--policy', 'read',
+        '--instruction-path', instructionPath,
+        '--cwd', tempRoot,
+      ], {
+        cwd: process.cwd(),
+        env: { ...process.env, PATH: `${fakePiPath}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+        encoding: 'utf8',
+      });
+
+      expect(run.status).toBe(0);
+      const result = JSON.parse(run.stdout);
+      expect(result.ok).toBe(true);
+      expect(result.data.provider).toBe('pi');
+            expect(result.data.status).toBe('completed');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+
+  it('extracts compact final messages from codex json output', () => {
+    const huge = 's'.repeat(9000);
+    const stdout = [
+      JSON.stringify({ type: 'thread.started', thread_id: 'test' }),
+      JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: { content: [{ type: 'text', text: huge }] } } }),
+      JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: 'pong' } }),
+      JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, cached_input_tokens: 2, output_tokens: 1, reasoning_output_tokens: 0 } }),
+    ].join('\n');
+
+    const parsed = parseSubagentOutput('codex', stdout);
+
+    expect(parsed.finalMessage).toBe('pong');
+    expect(parsed.summaryText).toBe('pong');
+    expect(parsed.usage?.inputTokens).toBe(10);
+    expect(parsed.usage?.cachedInputTokens).toBe(2);
+    expect(parsed.usage?.outputTokens).toBe(1);
+  });
+  it('normalizes codex subagent tool calls into trace events', () => {
+    const stdout = [
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_0', type: 'mcp_tool_call', server: 'workspace', tool: 'get_steering', arguments: {}, result: { content: [{ type: 'text', text: 'steering' }] } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_1', type: 'mcp_tool_call', server: 'workspace', tool: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' } }, result: { ok: true, code: 'OK' } } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_2', type: 'command_execution', command: 'native-search README', exit_code: 0, aggregated_output: 'match' } }),
+      JSON.stringify({ type: 'item.completed', item: { id: 'item_3', type: 'agent_message', text: 'done' } }),
+      JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, output_tokens: 2, reasoning_output_tokens: 1 } }),
+    ].join('\n');
+
+    const events = parseSubagentTraceEvents('codex', stdout);
+
+    expect(events.map((event) => event.tool)).toEqual([
+      'codex.get_steering',
+      'codex.fs.read',
+      'codex.command_execution',
+      'codex.agent_message',
+      'codex.turn.completed',
+    ]);
+    expect(events[1].facadeTool).toBe('fs.read');
+    expect(events[2].eventType).toBe('command_execution');
+    expect(events[4].totalTokens).toBe(13);
+  });
+
+  it('extracts compact final messages from pi jsonl output', () => {
+    const huge = 't'.repeat(9000);
+    const stdout = [
+      JSON.stringify({ type: 'session', id: 'test' }),
+      JSON.stringify({ type: 'message_update', assistantMessageEvent: { type: 'thinking_delta', delta: huge } }),
+      JSON.stringify({ type: 'message_end', message: { role: 'assistant', content: [{ type: 'text', text: 'pong' }], api: 'openai-codex-responses', provider: 'openai-codex', model: 'gpt-5.4', usage: { input: 11, output: 2, cacheRead: 3, totalTokens: 13 } } }),
+    ].join('\n');
+    const parsed = parseSubagentOutput("pi", stdout);
+    expect(parsed.finalMessage).toBe('pong');
+    expect(parsed.summaryText).toBe('pong');
+    expect(parsed.usage?.inputTokens).toBe(11);
+    expect(parsed.usage?.outputTokens).toBe(2);
+    expect(parsed.usage?.cachedInputTokens).toBe(3);
+  });
+
+  it('bounds subagent output and includes audit metadata', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-subagent-output-'));
+    try {
+      const binDir = writeFakeCodex(tempRoot);
+      const instructionPath = writeInstruction(tempRoot);
+      const result = await executeTool('subagent', {
+        provider: 'codex',
+                policy: 'read',
+        instructionPath,
+        workspaceOnly: 'preferred',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        env: { ...process.env, PATH: `${binDir}${process.env.PATH ? `:${process.env.PATH}` : ''}` },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.stdout).toContain('truncated');
+      expect(result.data.stdout.length).toBeLessThan(1400);
+      expect(result.data.stdoutChars).toBeLessThanOrEqual(8200);
+      expect(result.data.stderr.length).toBeLessThan(8200);
+      expect(result.data.stderr).toContain('truncated');
+      expect(result.data.audit.workspaceOnly).toBe('preferred');
+      expect(result.data.audit.rawShellUsed).toBe(false);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 });
 
@@ -696,6 +1420,33 @@ describe('branch resolver', () => {
       area: 'workspace-agents',
       worktree: '/tmp/env',
     });
+  });
+});
+
+describe('batch facade tool', () => {
+  it('routes batch through the internal executor', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('batch', {
+      steps: [
+        { tool: 'fs.read', input: { path: 'AGENTS.md' } },
+      ],
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(result.data.completed).toBe(1);
+    expect(plans).toHaveLength(1);
+  });
+
+  it('validates BatchInput step shape', () => {
+    const schema = getInputSchema('BatchInput');
+
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({
+      steps: [{ tool: 'fs.read', input: { path: 'AGENTS.md' } }],
+    }).success).toBe(true);
+    expect(schema?.safeParse({ steps: [] }).success).toBe(false);
+    expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);
   });
 });
 
@@ -796,3 +1547,5 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('exec');
   });
 });
+
+

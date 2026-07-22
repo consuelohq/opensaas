@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_87fd108e2e7b",
+  "tmuxSession": "opensaas-os-fix-bun-tty-crash-87fd108e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-bun-tty-crash",
+  "branch": "task/os/fix-bun-tty-crash",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-bun-tty-crash",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-bun-tty-crash",
+  "prNumber": 733,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/733",
+  "createdAt": "2026-06-03T07:15:39.632Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-bun-tty-crash/.task/os/fix-bun-tty-crash/session.json"
+}

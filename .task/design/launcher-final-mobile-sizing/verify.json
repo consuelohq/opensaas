@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/launcher-final-mobile-sizing",
+  "base": "origin/task/design/launcher-final-mobile-sizing",
+  "headSha": "2f2c6ff502fdefdd17701ba83f8a370b8538783c",
+  "changeHash": "1358dfebb5906967fab7a939f1381b75a3b87f96cffffa96aa5f112fa33969ed",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-11T07:46:05.611Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/launcher-final-mobile-sizing/current.json",
+        ".task/design/launcher-final-mobile-sizing/evidence-log.json",
+        ".task/design/launcher-final-mobile-sizing/read-log.json",
+        ".task/design/launcher-final-mobile-sizing/session.json",
+        ".task/design/launcher-final-mobile-sizing/workpad.md",
+        ".task/tasks/design/launcher-final-mobile-sizing.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

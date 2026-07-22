@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0f6623c4b55e",
+  "tmuxSession": "opensaas-diff-cockpit-compact-review-dashboard-0f6623c4",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/compact-review-dashboard",
+  "branch": "task/diff-cockpit/compact-review-dashboard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-compact-review-dashboard",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-compact-review-dashboard",
+  "prNumber": 972,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/972",
+  "createdAt": "2026-06-11T18:40:52.080Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-compact-review-dashboard/.task/diff-cockpit/compact-review-dashboard/session.json"
+}

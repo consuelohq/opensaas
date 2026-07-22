@@ -1,0 +1,63 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/remove-website-cookie-consent",
+  "base": "origin/task/sites/remove-website-cookie-consent",
+  "headSha": "68b61f7d1ff80faf6d06b1a88de0d10bc75fa22c",
+  "changeHash": "c5fc949265727649f0ba180b6dc7905a9493b0d24d0782a1b5a08e36a93abe82",
+  "changedFiles": [
+    "packages/consuelo-website/src/components/CookieConsent.tsx",
+    "packages/consuelo-website/src/components/ui/Toast.astro",
+    "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+    "packages/consuelo-website/src/layouts/SiteLayout.astro",
+    "packages/consuelo-website/src/lib/analytics.ts",
+    "packages/consuelo-website/src/pages/login/device.astro",
+    "packages/consuelo-website/src/pages/privacy.astro",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-06-27T22:52:56.390Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/remove-website-cookie-consent/current.json",
+        ".task/sites/remove-website-cookie-consent/session.json",
+        ".task/sites/remove-website-cookie-consent/workpad.md",
+        ".task/tasks/sites/remove-website-cookie-consent.json",
+        "packages/consuelo-website/src/components/CookieConsent.tsx",
+        "packages/consuelo-website/src/components/ui/Toast.astro",
+        "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+        "packages/consuelo-website/src/layouts/SiteLayout.astro",
+        "packages/consuelo-website/src/lib/analytics.ts",
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/consuelo-website/src/pages/privacy.astro",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/redact-doctor-execution-logs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 588,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/588",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/588",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/588/redact-doctor-execution-logs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/588",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/588/redact-doctor-execution-logs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redact-doctor-execution-logs",
+  "taskSession": "tsk_7f0134e602a0",
+  "tmuxSession": "opensaas-os-redact-doctor-execution-logs-7f0134e6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redact-doctor-execution-logs/.task/os/redact-doctor-execution-logs/session.json",
+  "createdAt": "2026-05-24T09:01:01.557Z"
+}

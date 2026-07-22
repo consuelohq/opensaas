@@ -1,5 +1,6 @@
 # build output
 dist/
+.wrangler/
 # generated types
 .astro/
 
@@ -22,3 +23,10 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# dither asset generation (sources/previews are not committed)
+scripts/sources/
+scripts/preview-sheet.png
+
+# Generated from the committed SVG source during dev/build.
+public/generated/

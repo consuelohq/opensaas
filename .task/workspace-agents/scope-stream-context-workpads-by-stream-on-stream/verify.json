@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream",
+  "base": "origin/task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream",
+  "headSha": "302eb8d0eea02af709774ef140cf51be99f85d2b",
+  "changeHash": "aac3699f99d29f2dfc9e343bb76e8b249a9771ec9e9673e47f12abea0815042d",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/stream-workpads.js",
+    "packages/workspace/scripts/stream-context.js",
+    "packages/workspace/tests/stream-workpads.test.js"
+  ],
+  "verifiedAt": "2026-06-02T01:23:29.205Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/scope-stream-context-workpads-by-stream-on-stream.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream/current.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream/session.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream/verify.json",
+        ".task/workspace-agents/scope-stream-context-workpads-by-stream-on-stream/workpad.md",
+        "packages/workspace/scripts/lib/stream-workpads.js",
+        "packages/workspace/scripts/stream-context.js",
+        "packages/workspace/tests/stream-workpads.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

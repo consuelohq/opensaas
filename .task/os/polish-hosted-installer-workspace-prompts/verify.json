@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/polish-hosted-installer-workspace-prompts",
+  "base": "origin/stream/os",
+  "headSha": "9c558ce4a389192eec31564cd48684530bca0db5",
+  "changeHash": "61bd7802470baf4f9a7e438275548d7db1f623089345fa82a2d1d643cb736fa9",
+  "changedFiles": [
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/workspace-device-authorization.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/oauth-device-onboarding-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-13T05:24:23.585Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/polish-hosted-installer-workspace-prompts/current.json",
+        ".task/os/polish-hosted-installer-workspace-prompts/evidence-log.json",
+        ".task/os/polish-hosted-installer-workspace-prompts/read-log.json",
+        ".task/os/polish-hosted-installer-workspace-prompts/session.json",
+        ".task/os/polish-hosted-installer-workspace-prompts/workpad.md",
+        ".task/tasks/os/polish-hosted-installer-workspace-prompts.json",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/oauth-device-onboarding-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

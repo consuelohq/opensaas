@@ -19,6 +19,12 @@ import { type WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-membe
 
 import { ApprovedAccessDomainService } from './approved-access-domain.service';
 
+type ApprovedAccessDomainHashMockTarget = {
+  generateUniqueHash: (
+    approvedAccessDomain: ApprovedAccessDomainEntity,
+  ) => string;
+};
+
 // To avoid dynamic import issues in Jest
 jest.mock('@react-email/render', () => ({
   render: jest.fn().mockImplementation(async (template, options) => {
@@ -145,7 +151,7 @@ describe('ApprovedAccessDomainService', () => {
           } as WorkspaceMemberWorkspaceEntity,
           'user@gmail.com',
         ),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new ApprovedAccessDomainException(
           'Approved access domain must be a company domain',
           ApprovedAccessDomainExceptionCode.APPROVED_ACCESS_DOMAIN_MUST_BE_A_COMPANY_DOMAIN,
@@ -232,7 +238,7 @@ describe('ApprovedAccessDomainService', () => {
           workspace,
           approvedAccessDomain,
         ),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new ApprovedAccessDomainException(
           'Approved access domain has already been validated',
           ApprovedAccessDomainExceptionCode.APPROVED_ACCESS_DOMAIN_ALREADY_VERIFIED,
@@ -262,7 +268,7 @@ describe('ApprovedAccessDomainService', () => {
           workspace,
           approvedAccessDomain,
         ),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new ApprovedAccessDomainException(
           'Approved access domain does not match email domain',
           ApprovedAccessDomainExceptionCode.APPROVED_ACCESS_DOMAIN_DOES_NOT_MATCH_DOMAIN_EMAIL,
@@ -337,8 +343,11 @@ describe('ApprovedAccessDomainService', () => {
       jest
         .spyOn(approvedAccessDomainRepository, 'findOneBy')
         .mockResolvedValue(approvedAccessDomain);
-      jest
-        .spyOn(service as any, 'generateUniqueHash')
+      const serviceWithHash =
+        service as unknown as ApprovedAccessDomainHashMockTarget;
+
+      serviceWithHash.generateUniqueHash = jest
+        .fn()
         .mockReturnValue(validationToken);
       const saveSpy = jest.spyOn(approvedAccessDomainRepository, 'save');
 
@@ -368,7 +377,7 @@ describe('ApprovedAccessDomainService', () => {
           validationToken,
           approvedAccessDomainId: approvedAccessDomainId,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new ApprovedAccessDomainException(
           'Approved access domain not found',
           ApprovedAccessDomainExceptionCode.APPROVED_ACCESS_DOMAIN_NOT_FOUND,
@@ -388,8 +397,11 @@ describe('ApprovedAccessDomainService', () => {
       jest
         .spyOn(approvedAccessDomainRepository, 'findOneBy')
         .mockResolvedValue(approvedAccessDomain);
-      jest
-        .spyOn(service as any, 'generateUniqueHash')
+      const serviceWithHash =
+        service as unknown as ApprovedAccessDomainHashMockTarget;
+
+      serviceWithHash.generateUniqueHash = jest
+        .fn()
         .mockReturnValue('valid-token');
 
       await expect(
@@ -397,7 +409,7 @@ describe('ApprovedAccessDomainService', () => {
           validationToken,
           approvedAccessDomainId: approvedAccessDomainId,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new ApprovedAccessDomainException(
           'Invalid approved access domain validation token',
           ApprovedAccessDomainExceptionCode.APPROVED_ACCESS_DOMAIN_VALIDATION_TOKEN_INVALID,
@@ -423,7 +435,7 @@ describe('ApprovedAccessDomainService', () => {
           validationToken,
           approvedAccessDomainId: approvedAccessDomainId,
         }),
-      ).rejects.toThrowError(
+      ).rejects.toThrow(
         new ApprovedAccessDomainException(
           'Approved access domain has already been validated',
           ApprovedAccessDomainExceptionCode.APPROVED_ACCESS_DOMAIN_ALREADY_VALIDATED,

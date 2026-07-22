@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/terminal-style-sites-launcher",
+  "base": "origin/stream/os",
+  "headSha": "53a6e1d775f5fec098a0a9e0f6901a210fd542e1",
+  "changeHash": "95f3741d709fd8a0905d053069420735b6d1728121fc7ca7cd0774c5284dd6e1",
+  "changedFiles": [
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "verifiedAt": "2026-06-10T02:07:51.973Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/terminal-style-sites-launcher/current.json",
+        ".task/os/terminal-style-sites-launcher/evidence-log.json",
+        ".task/os/terminal-style-sites-launcher/read-log.json",
+        ".task/os/terminal-style-sites-launcher/session.json",
+        ".task/os/terminal-style-sites-launcher/verify.json",
+        ".task/os/terminal-style-sites-launcher/workpad.md",
+        ".task/tasks/os/terminal-style-sites-launcher.json",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/sites-cli.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,68 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-design-wiki-client-interactions",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "6897c25e76e8d381a376c21d98e9b805f1712307",
+  "changeHash": "d5083a2365685cbdead2306dccbf07772589317a370472642931577572362927",
+  "changedFiles": [
+    "packages/workspace/STEERING.md",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-05-29T01:39:58.314Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/add-workspace-tool-surface-recovery-steering.json",
+        ".task/tasks/workspace-agents/design-wiki-theme-refresh.json",
+        ".task/tasks/workspace-agents/fix-design-wiki-client-interactions.json",
+        ".task/workspace-agents/add-workspace-tool-surface-recovery-steering/current.json",
+        ".task/workspace-agents/add-workspace-tool-surface-recovery-steering/evidence-log.json",
+        ".task/workspace-agents/add-workspace-tool-surface-recovery-steering/read-log.json",
+        ".task/workspace-agents/add-workspace-tool-surface-recovery-steering/session.json",
+        ".task/workspace-agents/add-workspace-tool-surface-recovery-steering/workpad.md",
+        ".task/workspace-agents/design-wiki-theme-refresh/current.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/evidence-log.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/read-log.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/session.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/verify.json",
+        ".task/workspace-agents/design-wiki-theme-refresh/workpad.md",
+        ".task/workspace-agents/fix-design-wiki-client-interactions/current.json",
+        ".task/workspace-agents/fix-design-wiki-client-interactions/evidence-log.json",
+        ".task/workspace-agents/fix-design-wiki-client-interactions/read-log.json",
+        ".task/workspace-agents/fix-design-wiki-client-interactions/session.json",
+        ".task/workspace-agents/fix-design-wiki-client-interactions/workpad.md",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

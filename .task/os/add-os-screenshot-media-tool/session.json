@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_67c01cfe1944",
+  "tmuxSession": "opensaas-os-add-os-screenshot-media-tool-67c01cfe",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-screenshot-media-tool",
+  "branch": "task/os/add-os-screenshot-media-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-screenshot-media-tool",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-screenshot-media-tool",
+  "prNumber": 1482,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1482",
+  "createdAt": "2026-07-14T16:57:43.637Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-screenshot-media-tool/.task/os/add-os-screenshot-media-tool/session.json"
+}

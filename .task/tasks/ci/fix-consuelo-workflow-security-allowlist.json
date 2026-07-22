@@ -1,0 +1,19 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/fix-consuelo-workflow-security-allowlist",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "stream/ci",
+  "startFrom": "stream",
+  "prNumber": 1239,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1239",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1239",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1239/fix-consuelo-workflow-security-allowlist",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1239",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1239/fix-consuelo-workflow-security-allowlist",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workflow-security-allowlist",
+  "taskSession": "tsk_02f02e48ad12",
+  "tmuxSession": "opensaas-ci-fix-consuelo-workflow-security-allowlist-02f02e48",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workflow-security-allowlist/.task/ci/fix-consuelo-workflow-security-allowlist/session.json",
+  "createdAt": "2026-06-28T00:17:28.666Z"
+}

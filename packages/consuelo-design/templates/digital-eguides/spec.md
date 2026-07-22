@@ -2,6 +2,48 @@ spec
 
 Use for product specs, engineering specs, RFCs, architecture proposals, system designs, launch readiness specs, and high-stakes feature/product definition artifacts.
 
+
+render protocol
+
+Do not hand-author a new page shell for wiki artifacts.
+
+Run the commands from the repository root. The root package forwards to `packages/consuelo-design`, so agents should not `cd` or infer a package-local invocation.
+
+1. Read this template as the content/thinking contract.
+2. Produce structured content for this template.
+3. Render through the canonical Consuelo reader shell with one shared command:
+
+```bash
+bun run artifact:render -- --template spec --input <content.json> --out <index.html>
+```
+
+4. Validate the output before publishing:
+
+```bash
+bun run artifact:validate -- --input <index.html>
+```
+
+The Markdown template owns the section logic. The TypeScript renderer owns the repeatable UI/UX: top pill nav, section rail, resume reading, ScrollSmoother, back-to-top, favicon/theme-color, neutral dark mode, mobile responsiveness, cards, footer, and /design-wiki link.
+
+For roadmap or operating-plan artifacts, use `template: plan`. Do not create a separate roadmap template.
+
+optional typed section components
+
+When producing the structured content JSON, do not hand-write HTML for variety. Use optional typed section components. A section may include any mix of:
+
+- `body: string[]` for normal paragraphs.
+- `cards: { title, body, tag? }[]` for simple card grids.
+- `callout: { label?, title, body? }` for a large editorial emphasis block.
+- `metrics: { label, value, body? }[]` for scoreboard/stat cards.
+- `flow: { title, body?, tag? }[]` for process or system diagrams.
+- `table: { columns: string[], rows: string[][] | Record<string,string>[] }` for requirements, validation matrices, and comparison tables. The renderer adds mobile `data-label` cells so tables collapse instead of clipping on iPhone.
+- `timeline: { title, body?, tag?, items? }[]` for phases, rollout, and sequence sections.
+- `details: { summary, body, open? }[]` for dropdown/accordion decisions, risks, and explanations.
+- `ranges: { label, value, max?, note? }[]` for progress, confidence, readiness, or scoring bars.
+- `comparisons: { title, body, tag? }[]` for side-by-side alternatives.
+
+Prefer typed components over custom HTML. If a section needs a visual pattern not listed here, add it to the renderer as a typed component first so the shell stays deterministic.
+
 job
 
 Turn ambiguous product or engineering work into a durable specification that helps Ko and the team decide what to build, why it matters, how it should work, how it will be validated, and what must be true before it can ship.
@@ -786,7 +828,7 @@ required markup
 
 <header class="reader-header" data-no-tap-scroll>
   <nav class="reader-nav-shell" aria-label="Spec navigation">
-    <a class="reader-brand" href="/design-wiki" aria-label="Open Consuelo Wiki">
+    <a class="reader-brand" href="/design-wiki" aria-label="Open Consuelo Artifacts">
       Artifact Name
     </a>
     <div class="reader-links" aria-label="Main sections">
@@ -1023,3 +1065,17 @@ Before publishing, verify:
 * mobile width does not wrap the nav into two rows
 * window.__readerShell.gsapAnchorScroll === true
 
+
+reader shell v1.3 interaction contract
+
+Do not hand-author these behaviors inside a spec. Provide typed section titles, typed components, and checklist groups; the TypeScript renderer owns the interaction layer.
+
+The renderer now provides:
+
+* line-style section rail generated from every top-level section, typed component, and task ledger
+* mobile section drawer generated from the same section list, using each section title as the row text
+* automatic copy for selected text
+* Enter-to-next-occurrence behavior when the page can infer the selected search term
+* per-task copy buttons that copy the task/checklist group as Markdown
+
+Spec authors should make section titles short and useful because they appear in the mobile drawer. Task/checklist groups should be written as transferable agent work blocks: one clear group title, optional area/status tag, and checklist items with explicit completion state.

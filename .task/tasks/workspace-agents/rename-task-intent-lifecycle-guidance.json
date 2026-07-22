@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/rename-task-intent-lifecycle-guidance",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1151,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1151",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1151",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1151/rename-task-intent-lifecycle-guidance",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1151",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1151/rename-task-intent-lifecycle-guidance",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-task-intent-lifecycle-guidance",
+  "taskSession": "tsk_b2476de758bb",
+  "tmuxSession": "opensaas-workspace-agents-rename-task-intent-lifecycle-guidance-b2476de7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-rename-task-intent-lifecycle-guidance/.task/workspace-agents/rename-task-intent-lifecycle-guidance/session.json",
+  "createdAt": "2026-06-19T06:26:38.754Z"
+}

@@ -20,6 +20,7 @@ type TaskMeta = {
 
 export type ResolveTaskBranchOptions = {
   explicitBranch?: string;
+  explicitPrNumber?: number;
   cwd?: string;
   env?: NodeJS.ProcessEnv;
   currentTask?: TaskCandidate | null;
@@ -65,6 +66,28 @@ function listScopedCurrentPaths(worktreePath: string): string[] {
 export function resolveTaskBranch(options: ResolveTaskBranchOptions = {}): BranchResolution {
   if (options.explicitBranch) {
     return { ok: true, branch: options.explicitBranch, source: 'explicit' };
+  }
+
+  if (options.explicitPrNumber) {
+    const candidates = options.candidates || findActiveTaskCandidates(options.cwd || process.cwd());
+    const matches = candidates.filter((candidate) => candidate.prNumber === options.explicitPrNumber);
+    if (matches.length === 1) {
+      return { ok: true, branch: matches[0].branch, source: 'explicit-pr', candidates: matches };
+    }
+    if (matches.length > 1) {
+      return {
+        ok: false,
+        code: 'AMBIGUOUS_TASK_SELECTION',
+        message: `multiple active task worktrees found for PR #${options.explicitPrNumber}; pass taskSession or explicit branch/taskWorktree`,
+        candidates: matches,
+      };
+    }
+    return {
+      ok: false,
+      code: 'WORKTREE_NOT_FOUND',
+      message: `no active task worktree found for PR #${options.explicitPrNumber}; run task.start --github or pass explicit branch/taskWorktree`,
+      candidates,
+    };
   }
 
   const envBranch = options.env?.TASK_BRANCH;

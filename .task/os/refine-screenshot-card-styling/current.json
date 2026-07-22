@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-screenshot-card-styling",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1492,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1492",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1492",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1492/refine-screenshot-card-styling",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1492",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1492/refine-screenshot-card-styling",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-screenshot-card-styling",
+  "taskSession": "tsk_ee56b2384f2c",
+  "tmuxSession": "opensaas-os-refine-screenshot-card-styling-ee56b238",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-screenshot-card-styling/.task/os/refine-screenshot-card-styling/session.json",
+  "createdAt": "2026-07-14T18:47:57.923Z"
+}

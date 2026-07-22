@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { execSync } = require('child_process');
 
 const { writeTaskMeta, readTaskMeta } = require('./lib/task-meta');
@@ -24,7 +25,8 @@ function printHelp() {
   writeStdout('  --branch <name>        task branch (e.g. task/dialer/fix-thing)');
   writeStdout('');
   writeStdout('optional:');
-  writeStdout('  --pr <number>          PR number');
+  writeStdout('  --pr <number-or-url>  PR number or supported PR URL');
+  writeStdout('  --github <url>       GitHub, Graphite, or diffs PR URL');
   writeStdout('  --worktree <path>      worktree path (default: detect from git worktree list)');
   writeStdout('  --stream <branch>      stream branch (default: stream/<area>)');
   writeStdout('  --json                 json output');
@@ -43,7 +45,8 @@ function parseArgs(argv) {
     switch (flag) {
       case '--area': args.area = val; break;
       case '--branch': args.branch = val; break;
-      case '--pr': args.pr = parseInt(val, 10); break;
+      case '--pr':
+      case '--github': args.pr = resolvePrRefNumber(val); break;
       case '--worktree': args.worktree = val; break;
       case '--stream': args.stream = val; break;
       default: throw new Error(`unknown flag: ${flag}`);

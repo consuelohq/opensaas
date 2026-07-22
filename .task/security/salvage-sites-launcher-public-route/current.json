@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/salvage-sites-launcher-public-route",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1355,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1355",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1355",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1355/salvage-sites-launcher-public-route",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1355",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1355/salvage-sites-launcher-public-route",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-salvage-sites-launcher-public-route",
+  "taskSession": "tsk_51a94a10cb24",
+  "tmuxSession": "opensaas-security-salvage-sites-launcher-public-route-51a94a10",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-salvage-sites-launcher-public-route/.task/security/salvage-sites-launcher-public-route/session.json",
+  "createdAt": "2026-07-03T11:11:35.816Z"
+}

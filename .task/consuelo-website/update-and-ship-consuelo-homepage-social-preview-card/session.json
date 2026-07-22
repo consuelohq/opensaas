@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1c757e10c065",
+  "tmuxSession": "opensaas-consuelo-website-update-and-ship-consuelo-homepage-social-preview-1c757e10",
+  "area": "consuelo-website",
+  "stream": "stream/consuelo-website",
+  "taskBranch": "task/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card",
+  "branch": "task/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-update-and-ship-consuelo-homepage-social-preview-card",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-update-and-ship-consuelo-homepage-social-preview-card",
+  "prNumber": 1430,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1430",
+  "createdAt": "2026-07-12T23:50:39.899Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-update-and-ship-consuelo-homepage-social-preview-card/.task/consuelo-website/update-and-ship-consuelo-homepage-social-preview-card/session.json"
+}

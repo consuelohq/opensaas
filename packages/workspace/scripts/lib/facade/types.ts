@@ -1,6 +1,7 @@
 export type ErrorCode =
   | 'OK'
   | 'VALIDATION_ERROR'
+  | 'CODE_CALL_VALIDATION_ERROR'
   | 'AMBIGUOUS_TASK_SELECTION'
   | 'WORKTREE_NOT_FOUND'
   | 'COMMAND_FAILED'
@@ -37,7 +38,7 @@ export type ToolResult<TData = unknown> = {
   apiVersion: '1.0.0';
 };
 
-export type CommandArgumentKind = 'value' | 'boolean' | 'array' | 'record' | 'commandArray';
+export type CommandArgumentKind = 'value' | 'boolean' | 'array' | 'record' | 'commandArray' | 'readFileArray';
 
 export type CommandArgument = {
   source: string;

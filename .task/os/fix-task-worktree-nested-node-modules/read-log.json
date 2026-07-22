@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/task-session.test.js"
+  ],
+  "updatedAt": "2026-06-13T23:54:58.476Z"
+}

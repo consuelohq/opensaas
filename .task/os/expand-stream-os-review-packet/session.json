@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_283d5329e03a",
+  "tmuxSession": "opensaas-os-expand-stream-os-review-packet-283d5329",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/expand-stream-os-review-packet",
+  "branch": "task/os/expand-stream-os-review-packet",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expand-stream-os-review-packet",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expand-stream-os-review-packet",
+  "prNumber": 683,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/683",
+  "createdAt": "2026-06-02T00:42:36.657Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expand-stream-os-review-packet/.task/os/expand-stream-os-review-packet/session.json"
+}

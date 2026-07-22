@@ -1,0 +1,77 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/refactor-code-call-into-effect-backed-service",
+  "base": "origin/stream/os",
+  "headSha": "c36057d9736ced07479dd7faa89b86c70c9318fc",
+  "changeHash": "0423c161ee530c618811002d99278785868d0af0a8d54ba848140920feb80334",
+  "changedFiles": [
+    "packages/os/scripts/lib/code-call/errors.ts",
+    "packages/os/scripts/lib/code-call/location.ts",
+    "packages/os/scripts/lib/code-call/output.ts",
+    "packages/os/scripts/lib/code-call/policy.ts",
+    "packages/os/scripts/lib/code-call/process.ts",
+    "packages/os/scripts/lib/code-call/runtime.ts",
+    "packages/os/scripts/lib/code-call/runtimes.ts",
+    "packages/os/scripts/lib/code-call/schema.ts",
+    "packages/os/scripts/lib/code-call/service.ts",
+    "packages/os/scripts/lib/code-call/snapshot.ts",
+    "packages/os/scripts/lib/code-call/source.ts",
+    "packages/os/tests/code-call-parity.test.ts",
+    "packages/os/tests/code-call-service-architecture.test.ts",
+    "packages/os/tests/code-call.test.ts"
+  ],
+  "verifiedAt": "2026-06-18T02:40:37.775Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/refactor-code-call-into-effect-backed-service/current.json",
+        ".task/os/refactor-code-call-into-effect-backed-service/evidence-log.json",
+        ".task/os/refactor-code-call-into-effect-backed-service/read-log.json",
+        ".task/os/refactor-code-call-into-effect-backed-service/session.json",
+        ".task/os/refactor-code-call-into-effect-backed-service/workpad.md",
+        ".task/tasks/os/refactor-code-call-into-effect-backed-service.json",
+        "packages/os/scripts/lib/code-call/errors.ts",
+        "packages/os/scripts/lib/code-call/location.ts",
+        "packages/os/scripts/lib/code-call/output.ts",
+        "packages/os/scripts/lib/code-call/policy.ts",
+        "packages/os/scripts/lib/code-call/process.ts",
+        "packages/os/scripts/lib/code-call/runtime.ts",
+        "packages/os/scripts/lib/code-call/runtimes.ts",
+        "packages/os/scripts/lib/code-call/schema.ts",
+        "packages/os/scripts/lib/code-call/service.ts",
+        "packages/os/scripts/lib/code-call/snapshot.ts",
+        "packages/os/scripts/lib/code-call/source.ts",
+        "packages/os/tests/code-call-parity.test.ts",
+        "packages/os/tests/code-call-service-architecture.test.ts",
+        "packages/os/tests/code-call.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/ai-review-comments-sidebar",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 977,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/977",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/977",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/977/ai-review-comments-sidebar",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/977",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/977/ai-review-comments-sidebar",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-ai-review-comments-sidebar",
+  "taskSession": "tsk_11193ffe2d56",
+  "tmuxSession": "opensaas-diff-cockpit-ai-review-comments-sidebar-11193ffe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-ai-review-comments-sidebar/.task/diff-cockpit/ai-review-comments-sidebar/session.json",
+  "createdAt": "2026-06-11T19:31:47.722Z"
+}

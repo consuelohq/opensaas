@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/implement-hosted-embedding-gateway-default",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 966,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/966",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/966",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/966/implement-hosted-embedding-gateway-default",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/966",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/966/implement-hosted-embedding-gateway-default",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-hosted-embedding-gateway-default",
+  "taskSession": "tsk_effead14ac15",
+  "tmuxSession": "opensaas-os-implement-hosted-embedding-gateway-default-effead14",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-implement-hosted-embedding-gateway-default/.task/os/implement-hosted-embedding-gateway-default/session.json",
+  "createdAt": "2026-06-11T08:58:22.369Z"
+}

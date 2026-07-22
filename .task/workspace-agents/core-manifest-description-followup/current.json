@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/core-manifest-description-followup",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1120,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1120",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1120",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1120/core-manifest-description-followup",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1120",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1120/core-manifest-description-followup",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-core-manifest-description-followup",
+  "taskSession": "tsk_eb548ca66aca",
+  "tmuxSession": "opensaas-workspace-agents-core-manifest-description-followup-eb548ca6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-core-manifest-description-followup/.task/workspace-agents/core-manifest-description-followup/session.json",
+  "createdAt": "2026-06-18T01:45:58.775Z"
+}

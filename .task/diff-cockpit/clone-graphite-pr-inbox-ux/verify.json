@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/clone-graphite-pr-inbox-ux",
+  "base": "origin/task/diff-cockpit/clone-graphite-pr-inbox-ux",
+  "headSha": "3b2625bacfcdc749204ff6f4f7dcdce9dc0a4e5a",
+  "changeHash": "758ebb189585919ef95c42ebf23e44d1622ad22d26134af20ac620b497cea218",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-06-09T22:37:12.892Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/clone-graphite-pr-inbox-ux/current.json",
+        ".task/diff-cockpit/clone-graphite-pr-inbox-ux/evidence-log.json",
+        ".task/diff-cockpit/clone-graphite-pr-inbox-ux/read-log.json",
+        ".task/diff-cockpit/clone-graphite-pr-inbox-ux/session.json",
+        ".task/diff-cockpit/clone-graphite-pr-inbox-ux/verify.json",
+        ".task/diff-cockpit/clone-graphite-pr-inbox-ux/workpad.md",
+        ".task/tasks/diff-cockpit/clone-graphite-pr-inbox-ux.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

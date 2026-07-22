@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/consuelo-website/public/images/consuelo-integrations-hero.svg",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+    "packages/consuelo-website/src/lib/site-seo.ts",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "updatedAt": "2026-06-28T02:43:53.130Z"
+}

@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-workspace-platform-safety-block-page",
+  "base": "stream/os",
+  "headSha": "f1e825db022b2d62776cd2b3673e34e231871d86",
+  "changeHash": "a14379f831c20b7b612c04fa59425d813ba638cc8e0139d8371aaf6e2d932210",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/workspace-hostname-edge-router.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T04:57:00.220Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-workspace-platform-safety-block-page/current.json",
+        ".task/os/add-workspace-platform-safety-block-page/evidence-log.json",
+        ".task/os/add-workspace-platform-safety-block-page/read-log.json",
+        ".task/os/add-workspace-platform-safety-block-page/session.json",
+        ".task/os/add-workspace-platform-safety-block-page/workpad.md",
+        ".task/tasks/os/add-workspace-platform-safety-block-page.json",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/tests/workspace-hostname-edge-router.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

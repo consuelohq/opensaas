@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/docs-skills/generate-os-skill-docs-from-bundled-skills/workpad.md",
+    "packages/consuelo-docs/os/skills/daily-revenue-brief.mdx",
+    "packages/consuelo-docs/scripts/generate-os-skill-docs.ts",
+    "packages/consuelo-docs/scripts/validate-os-docs.ts"
+  ],
+  "updatedAt": "2026-06-04T19:47:37.855Z"
+}

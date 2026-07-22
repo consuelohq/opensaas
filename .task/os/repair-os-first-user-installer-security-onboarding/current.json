@@ -1,0 +1,12 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-os-first-user-installer-security-onboarding",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 983,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/983",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-os-first-user-installer-security-onboarding",
+  "createdAt": "2026-06-12T19:45:03.457Z"
+}

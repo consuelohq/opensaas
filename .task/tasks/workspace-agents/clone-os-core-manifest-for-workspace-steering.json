@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/clone-os-core-manifest-for-workspace-steering",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1109,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1109",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1109",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1109/clone-os-core-manifest-for-workspace-steering",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1109",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1109/clone-os-core-manifest-for-workspace-steering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clone-os-core-manifest-for-workspace-steering",
+  "taskSession": "tsk_0ce4d6f10abe",
+  "tmuxSession": "opensaas-workspace-agents-clone-os-core-manifest-for-workspace-steering-0ce4d6f1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-clone-os-core-manifest-for-workspace-steering/.task/workspace-agents/clone-os-core-manifest-for-workspace-steering/session.json",
+  "createdAt": "2026-06-17T05:45:41.001Z"
+}

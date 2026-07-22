@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e816ee264251",
+  "tmuxSession": "opensaas-workspace-agents-improve-missing-fs-alias-guidance-e816ee26",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/improve-missing-fs-alias-guidance",
+  "branch": "task/workspace-agents/improve-missing-fs-alias-guidance",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-missing-fs-alias-guidance",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-missing-fs-alias-guidance",
+  "prNumber": 1077,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1077",
+  "createdAt": "2026-06-16T04:32:04.202Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-missing-fs-alias-guidance/.task/workspace-agents/improve-missing-fs-alias-guidance/session.json"
+}

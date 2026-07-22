@@ -1,0 +1,9 @@
+{
+  "files": [
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/workspace/tests/trace-watch.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "updatedAt": "2026-06-18T05:35:39.744Z"
+}

@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".task/security/fix-os-google-oauth-redirect-uri-mismatch/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/index.ts"
+  ],
+  "updatedAt": "2026-06-30T23:42:53.796Z"
+}

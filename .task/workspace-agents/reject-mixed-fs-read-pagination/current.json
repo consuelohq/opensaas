@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/reject-mixed-fs-read-pagination",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1079,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1079",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1079",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1079/reject-mixed-fs-read-pagination",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1079",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1079/reject-mixed-fs-read-pagination",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reject-mixed-fs-read-pagination",
+  "taskSession": "tsk_57bcf5c183bd",
+  "tmuxSession": "opensaas-workspace-agents-reject-mixed-fs-read-pagination-57bcf5c1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-reject-mixed-fs-read-pagination/.task/workspace-agents/reject-mixed-fs-read-pagination/session.json",
+  "createdAt": "2026-06-16T07:24:38.449Z"
+}

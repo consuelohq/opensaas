@@ -1,0 +1,71 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway",
+  "base": "origin/task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway",
+  "headSha": "74e2cb671864665fcf365a55af5692f9d51dd872",
+  "changeHash": "a2c5f6dc7a26e67670a0c985c6f04ad0cac58219f05f69d5eb2bccb9373f146c",
+  "changedFiles": [
+    "packages/os/scripts/lib/consuelo-sites-gateway-registry.ts",
+    "packages/os/scripts/lib/install-edge-site-publisher.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+  ],
+  "verifiedAt": "2026-06-15T00:12:11.716Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway/current.json",
+        ".task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway/evidence-log.json",
+        ".task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway/read-log.json",
+        ".task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway/session.json",
+        ".task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway/verify.json",
+        ".task/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway/workpad.md",
+        ".task/tasks/sites/wire-edge-sites-snapshots-to-consuelo-sites-gateway.json",
+        "packages/os/scripts/lib/consuelo-sites-gateway-registry.ts",
+        "packages/os/scripts/lib/install-edge-site-publisher.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

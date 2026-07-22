@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { IsNull, type Repository } from 'typeorm';
+import { type Repository } from 'typeorm';
 
 import { RestApiExceptionFilter } from 'src/engine/api/rest/rest-api-exception.filter';
 import { AgentSkillEntity } from 'src/engine/core-modules/agent/entities/agent-skill.entity';
@@ -93,7 +93,7 @@ export class SkillController {
   @Get('folders')
   async listFolders(@AuthWorkspace() workspace: WorkspaceEntity) {
     const folders = await this.folderRepository.find({
-      where: { workspaceId: workspace.id, deletedAt: IsNull() },
+      where: { workspaceId: workspace.id },
       order: { name: 'ASC' },
     });
 

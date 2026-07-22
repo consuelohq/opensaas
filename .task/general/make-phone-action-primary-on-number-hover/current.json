@@ -1,0 +1,19 @@
+{
+  "area": "general",
+  "stream": "stream/general",
+  "taskBranch": "task/general/make-phone-action-primary-on-number-hover",
+  "baseBranch": "stream/general",
+  "sourceBranch": "stream/general",
+  "startFrom": "stream",
+  "prNumber": 598,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/598",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/598",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/598/make-phone-action-primary-on-number-hover",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/598",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/598/make-phone-action-primary-on-number-hover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-make-phone-action-primary-on-number-hover",
+  "taskSession": "tsk_5730f79cb892",
+  "tmuxSession": "opensaas-general-make-phone-action-primary-on-number-hover-5730f79c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-make-phone-action-primary-on-number-hover/.task/general/make-phone-action-primary-on-number-hover/session.json",
+  "createdAt": "2026-05-25T23:26:58.409Z"
+}

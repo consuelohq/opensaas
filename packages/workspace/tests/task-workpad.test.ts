@@ -129,7 +129,7 @@ describe('task workpad helpers', () => {
       '',
     ].join('\n'));
     try {
-      appendActivity(root, meta, { action: 'fs.patch', filePath: 'packages/workspace/scripts/foo.js' });
+      appendActivity(root, meta, { action: 'fs.apply_patch', filePath: 'packages/workspace/scripts/foo.js' });
       const readiness = checkWorkpadReady(root, meta);
       expect(readiness.ok).toBe(false);
       expect(readiness.message).toContain('Workpad update needed before publishing');

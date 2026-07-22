@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-semantic-index-repo-scoping",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 955,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/955",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/955",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/955/fix-os-semantic-index-repo-scoping",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/955",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/955/fix-os-semantic-index-repo-scoping",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-semantic-index-repo-scoping",
+  "taskSession": "tsk_4a1d71edc8d3",
+  "tmuxSession": "opensaas-os-fix-os-semantic-index-repo-scoping-4a1d71ed",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-semantic-index-repo-scoping/.task/os/fix-os-semantic-index-repo-scoping/session.json",
+  "createdAt": "2026-06-11T06:46:18.843Z"
+}

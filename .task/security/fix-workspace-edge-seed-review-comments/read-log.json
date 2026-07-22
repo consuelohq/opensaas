@@ -1,0 +1,8 @@
+{
+  "files": [
+    "CODING-STANDARDS.md",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/seed-workspace-edge-route.ts"
+  ],
+  "updatedAt": "2026-06-12T17:59:12.514Z"
+}

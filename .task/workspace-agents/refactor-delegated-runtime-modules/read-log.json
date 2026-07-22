@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/scripts/lib/worker/runtime.ts",
+    "packages/workspace/scripts/tool-runner.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-05-29T02:57:45.151Z"
+}

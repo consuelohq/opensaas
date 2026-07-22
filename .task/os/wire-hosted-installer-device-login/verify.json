@@ -1,0 +1,59 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/wire-hosted-installer-device-login",
+  "base": "origin/stream/os",
+  "headSha": "67785c570a82d0a1206fcaf3c7959119f7a5f0de",
+  "changeHash": "325857199097bd75206db4b0c164453d6d8fdc07ad457a020ca8c40ce667dd12",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/login/device.astro",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/oauth-device-http-client.test.ts"
+  ],
+  "verifiedAt": "2026-06-13T06:19:09.255Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/wire-hosted-installer-device-login/current.json",
+        ".task/os/wire-hosted-installer-device-login/evidence-log.json",
+        ".task/os/wire-hosted-installer-device-login/read-log.json",
+        ".task/os/wire-hosted-installer-device-login/session.json",
+        ".task/os/wire-hosted-installer-device-login/workpad.md",
+        ".task/tasks/os/wire-hosted-installer-device-login.json",
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/oauth-device-http-client.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/inspect-explore-embedding-ranking",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 641,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/641",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/641",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/641/inspect-explore-embedding-ranking",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/641",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/641/inspect-explore-embedding-ranking",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-inspect-explore-embedding-ranking",
+  "taskSession": "tsk_d15d1579faeb",
+  "tmuxSession": "opensaas-workspace-inspect-explore-embedding-ranking-d15d1579",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-inspect-explore-embedding-ranking/.task/workspace/inspect-explore-embedding-ranking/session.json",
+  "createdAt": "2026-05-29T02:29:41.960Z"
+}

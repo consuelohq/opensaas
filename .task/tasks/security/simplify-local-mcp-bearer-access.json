@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/simplify-local-mcp-bearer-access",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1201,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1201",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1201",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1201/simplify-local-mcp-bearer-access",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1201",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1201/simplify-local-mcp-bearer-access",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-simplify-local-mcp-bearer-access",
+  "taskSession": "tsk_bf514b3b491d",
+  "tmuxSession": "opensaas-security-simplify-local-mcp-bearer-access-bf514b3b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-simplify-local-mcp-bearer-access/.task/security/simplify-local-mcp-bearer-access/session.json",
+  "createdAt": "2026-06-24T00:40:20.323Z"
+}

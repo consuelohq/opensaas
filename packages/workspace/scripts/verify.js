@@ -312,6 +312,29 @@ function runReview(repoRoot, base, args) {
   };
 }
 
+
+function runTestSelection(repoRoot, base) {
+  const result = spawnSync('bun', ['packages/workspace/scripts/test-selection.js', 'check', '--base', base, '--run', '--json'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 1024 * 1024 * 8,
+  });
+  let data = null;
+  try {
+    data = JSON.parse(result.stdout || '{}');
+  } catch {
+    data = { passed: false, error: 'failed to parse test-selection JSON', stdout: result.stdout || '' };
+  }
+  return {
+    skipped: false,
+    passed: result.status === 0 && data.passed === true,
+    status: result.status,
+    data,
+    stderr: result.stderr || '',
+  };
+}
+
 function createDbResult(files, args) {
   if (!args.db) {
     return {
@@ -369,6 +392,19 @@ function createBecause(result) {
     }
   } else {
     lines.push('tests had no summary because review did not return test selection data');
+  }
+
+  if (result.testSelection) {
+    const selection = result.testSelection.data || {};
+    const suiteCount = Array.isArray(selection.selectedSuites) ? selection.selectedSuites.length : 0;
+    const matched = Array.isArray(selection.matchedRules) ? selection.matchedRules.map((rule) => rule.id).join(', ') : '';
+    if (suiteCount > 0) {
+      lines.push(`registry selected ${suiteCount} suite${suiteCount === 1 ? '' : 's'}${matched ? ` from ${matched}` : ''} and ${result.testSelection.passed ? 'passed' : 'failed'}`);
+    } else if (selection.zeroSuiteReason) {
+      lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
+    } else {
+      lines.push('registry selected 0 suites and gave no reason');
+    }
   }
 
   if (result.db.skipped) {
@@ -476,8 +512,9 @@ async function main() {
   const files = readChangedFiles(repoRoot, base);
   const headSha = getRefSha(repoRoot, 'HEAD');
   const review = runReview(repoRoot, base, args);
+  const testSelection = runTestSelection(repoRoot, base);
   const db = createDbResult(files, args);
-  const passed = review.passed && db.passed;
+  const passed = review.passed && testSelection.passed && db.passed;
   const mode = review.skipped || db.skipped || args.dbWarnOnly ? 'partial' : 'full';
   const publishValid = passed && mode === 'full';
   const verificationState = computeVerificationState(repoRoot, branch);
@@ -496,6 +533,12 @@ async function main() {
       skipped: review.skipped,
       passed: review.passed,
       status: review.status,
+    },
+    testSelection: {
+      skipped: testSelection.skipped,
+      passed: testSelection.passed,
+      status: testSelection.status,
+      data: testSelection.data,
     },
     db: {
       skipped: db.skipped,
@@ -519,6 +562,7 @@ async function main() {
     headSha,
     files,
     review,
+    testSelection,
     db,
     passed,
     publishValid,
@@ -545,6 +589,15 @@ async function main() {
         stderr: compactText(result.review.stderr).text,
         stderrChars: compactText(result.review.stderr).chars,
         stderrTruncated: compactText(result.review.stderr).truncated,
+      },
+      testSelection: {
+        skipped: result.testSelection.skipped,
+        passed: result.testSelection.passed,
+        status: result.testSelection.status,
+        data: result.testSelection.data,
+        stderr: compactText(result.testSelection.stderr).text,
+        stderrChars: compactText(result.testSelection.stderr).chars,
+        stderrTruncated: compactText(result.testSelection.stderr).truncated,
       },
       db: result.db,
       passed: result.passed,

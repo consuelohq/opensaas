@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f042848cfaab",
+  "tmuxSession": "opensaas-sites-hermes-inspired-hero-tune-f042848c",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/hermes-inspired-hero-tune",
+  "branch": "task/sites/hermes-inspired-hero-tune",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hermes-inspired-hero-tune",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hermes-inspired-hero-tune",
+  "prNumber": 1252,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1252",
+  "createdAt": "2026-06-28T03:37:26.831Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hermes-inspired-hero-tune/.task/sites/hermes-inspired-hero-tune/session.json"
+}

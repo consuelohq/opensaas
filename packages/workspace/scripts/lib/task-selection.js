@@ -1,5 +1,6 @@
 const { listWorktrees } = require('./git');
 const { readValidTaskMetaForWorktree } = require('./task-meta');
+const { resolvePrRefNumber } = require('./pr-ref');
 
 function parseTaskSelectorPrefix(rawArgs) {
   const selector = {
@@ -12,7 +13,7 @@ function parseTaskSelectorPrefix(rawArgs) {
   while (index < rawArgs.length) {
     const flag = rawArgs[index];
 
-    if (flag === '--area' || flag === '--branch' || flag === '--pr') {
+    if (flag === '--area' || flag === '--branch' || flag === '--pr' || flag === '--github') {
       const value = rawArgs[index + 1];
       if (!value || value.startsWith('--')) {
         throw new Error(`missing value for ${flag}`);
@@ -20,7 +21,7 @@ function parseTaskSelectorPrefix(rawArgs) {
 
       if (flag === '--area') selector.area = value;
       if (flag === '--branch') selector.branch = value;
-      if (flag === '--pr') selector.prNumber = Number.parseInt(value, 10);
+      if (flag === '--pr' || flag === '--github') selector.prNumber = resolvePrRefNumber(value);
       index += 2;
       continue;
     }
@@ -29,7 +30,7 @@ function parseTaskSelectorPrefix(rawArgs) {
   }
 
   if (selector.prNumber !== null && !Number.isInteger(selector.prNumber)) {
-    throw new Error('invalid --pr value');
+    throw new Error('invalid --pr/--github value');
   }
 
   return {
@@ -80,7 +81,7 @@ function selectTaskFromCandidatesResult(tasks, selector = {}) {
     const labels = matches.map(getTaskLabel).join(', ');
     return {
       task: null,
-      error: `multiple active tasks found (${labels}). use --branch <task-branch> or --pr <number> to select one.`,
+      error: `multiple active tasks found (${labels}). use --branch <task-branch>, --pr <number-or-url>, or --github <url> to select one.`,
     };
   }
 

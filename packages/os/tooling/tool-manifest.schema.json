@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://consuelohq.com/schemas/workspace-tool-manifest.schema.json",
+  "title": "Workspace tool manifest",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "name",
+      "methodPath",
+      "description",
+      "category",
+      "underlying",
+      "capabilities",
+      "defaultTimeout",
+      "inputSchema",
+      "outputSchema",
+      "command",
+      "exampleInput"
+    ],
+    "properties": {
+      "name": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$" },
+      "methodPath": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*$" }
+      },
+      "description": { "type": "string" },
+      "category": { "type": "string" },
+      "underlying": { "type": "string" },
+      "capabilities": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["readOnly", "mutating", "deterministic", "safeToRetry"],
+        "properties": {
+          "readOnly": { "type": "boolean" },
+          "mutating": { "type": "boolean" },
+          "deterministic": { "type": "boolean" },
+          "safeToRetry": { "type": "boolean" }
+        }
+      },
+      "defaultTimeout": { "type": "integer", "minimum": 1 },
+      "inputSchema": { "type": "string" },
+      "outputSchema": { "type": "string" },
+      "command": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["script", "arguments"],
+        "properties": {
+          "script": { "type": "string" },
+          "subcommand": { "type": "string" },
+          "branchMode": { "enum": ["none", "optional", "required"] },
+          "branchArgumentStyle": { "enum": ["flag", "prefix"] },
+          "jsonFlag": { "type": "string" },
+          "dryRunFlag": { "type": "string" },
+          "internal": { "type": "string" },
+          "arguments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source"],
+              "properties": {
+                "source": { "type": "string" },
+                "flag": { "type": "string" },
+                "kind": { "enum": ["value", "boolean", "array", "record", "commandArray"] },
+                "required": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      },
+      "exampleInput": { "type": "object" }
+    }
+  }
+}

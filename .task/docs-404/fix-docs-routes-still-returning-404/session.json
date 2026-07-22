@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_18b9380bf447",
+  "tmuxSession": "opensaas-docs-404-fix-docs-routes-still-returning-404-18b9380b",
+  "area": "docs-404",
+  "stream": "stream/docs-404",
+  "taskBranch": "task/docs-404/fix-docs-routes-still-returning-404",
+  "branch": "task/docs-404/fix-docs-routes-still-returning-404",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-404-fix-docs-routes-still-returning-404",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-404-fix-docs-routes-still-returning-404",
+  "prNumber": 758,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/758",
+  "createdAt": "2026-06-05T00:24:13.654Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-404-fix-docs-routes-still-returning-404/.task/docs-404/fix-docs-routes-still-returning-404/session.json"
+}

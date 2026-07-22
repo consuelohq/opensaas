@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+  "events": [
+    {
+      "id": "52649d94-c709-4ff3-aa0a-738f8c16316c",
+      "occurred_at": "2026-06-16T22:40:39.998Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "14fa5b27-b575-4b15-afaf-2fe184fec090",
+      "occurred_at": "2026-06-16T22:41:52.787Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "ee2bb0ff-f76e-4445-aa12-6dde04b3ca75",
+      "occurred_at": "2026-06-16T22:42:53.266Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "214acb68-6ff5-4c63-8682-08efd5d70b90",
+      "occurred_at": "2026-06-16T22:46:40.007Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "be42a3dc-9b8f-41e6-b574-46b7fcf60921",
+      "occurred_at": "2026-06-16T22:49:47.546Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tooling/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "37f87088-5e5f-4733-ab43-51b4d3b1c101",
+      "occurred_at": "2026-06-16T22:50:19.044Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "df64d31b-7203-473b-b4c0-303d23feaf3a",
+      "occurred_at": "2026-06-16T22:58:08.500Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "b6fc4769-6811-4584-922b-dcce939648b2",
+      "occurred_at": "2026-06-16T22:59:42.386Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "3d2ba31a-fc92-4676-a717-d20ec9105e61",
+      "occurred_at": "2026-06-16T23:00:46.569Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "455e1212-4d50-4afe-a434-342c309e1bf7",
+      "occurred_at": "2026-06-16T23:01:59.807Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "e37b55e9-46eb-46a7-8ff8-95d6e151118b",
+      "occurred_at": "2026-06-16T23:02:36.695Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    },
+    {
+      "id": "57b662d3-f7ab-4c2f-bdf2-fd74084c17d7",
+      "occurred_at": "2026-06-16T23:02:55.388Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-pr-1050-stream-os-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-pr-1050-stream-os-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-16T23:02:55.443Z"
+}

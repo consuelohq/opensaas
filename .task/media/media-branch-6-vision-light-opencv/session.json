@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_006b72d74905",
+  "tmuxSession": "opensaas-media-media-branch-6-vision-light-opencv-006b72d7",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/media-branch-6-vision-light-opencv",
+  "branch": "task/media/media-branch-6-vision-light-opencv",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-6-vision-light-opencv",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-6-vision-light-opencv",
+  "prNumber": 1203,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1203",
+  "createdAt": "2026-06-24T01:03:50.846Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-media-branch-6-vision-light-opencv/.task/media/media-branch-6-vision-light-opencv/session.json"
+}

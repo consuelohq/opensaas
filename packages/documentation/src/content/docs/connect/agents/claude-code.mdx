@@ -1,0 +1,44 @@
+---
+title: Claude Code
+description: Connect Claude Code to the local Consuelo OS MCP command.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: Claude Code native configuration and MCP verification behavior were exercised by focused tests on 2026-07-13.
+---
+Claude Code reads local MCP servers from `~/.claude.json`. Consuelo adds a `consuelo-os` entry under `mcpServers` and preserves the rest of the file.
+
+## Connect
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+cd "$CONSUELO_HOME"
+bun ./scripts/install.ts --yes --mode local --home "$CONSUELO_HOME" --connect-agent claude --skip-daemons
+```
+
+The generated server runs:
+
+```text
+~/.consuelo/bin/consuelo-os-mcp
+```
+
+with the Consuelo home as its working directory and `CONSUELO_HOME` in its environment.
+
+## Verify
+
+The installer reports `verified` only after a real MCP initialize and tool-list exchange succeeds. Restart Claude Code after setup, then confirm the `consuelo-os` server and its tools appear in Claude Code's MCP view.
+
+## Troubleshooting
+
+- Open Claude Code once so its normal configuration is present.
+- Repair invalid JSON before retrying; the installer does not replace malformed JSON.
+- If Claude Code still has an old command path, rerun the focused command against the active Consuelo home.
+- `configured` is not the same as `verified`; inspect the installer message for the failed probe.
+
+## Disconnect
+
+Delete only the `mcpServers.consuelo-os` entry from `~/.claude.json` and restart Claude Code. The key name is `consuelo-os` without the invisible spacing shown by some editors.

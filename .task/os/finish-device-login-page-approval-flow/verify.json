@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/finish-device-login-page-approval-flow",
+  "base": "origin/stream/os",
+  "headSha": "c301e6d1aacaff66dee8d168d8a47547e16feb03",
+  "changeHash": "967ce2cb2d3308efac420c427bd02930fe52da8166b58af69b62fb1b4ae94eb8",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/login/device.astro",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/oauth-device-page-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-13T06:54:58.124Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/finish-device-login-page-approval-flow/current.json",
+        ".task/os/finish-device-login-page-approval-flow/evidence-log.json",
+        ".task/os/finish-device-login-page-approval-flow/read-log.json",
+        ".task/os/finish-device-login-page-approval-flow/session.json",
+        ".task/os/finish-device-login-page-approval-flow/workpad.md",
+        ".task/tasks/os/finish-device-login-page-approval-flow.json",
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/oauth-device-page-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

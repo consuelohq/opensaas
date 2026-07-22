@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_02f02e48ad12",
+  "tmuxSession": "opensaas-ci-fix-consuelo-workflow-security-allowlist-02f02e48",
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/fix-consuelo-workflow-security-allowlist",
+  "branch": "task/ci/fix-consuelo-workflow-security-allowlist",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workflow-security-allowlist",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workflow-security-allowlist",
+  "prNumber": 1239,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1239",
+  "createdAt": "2026-06-28T00:17:28.664Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-ci-fix-consuelo-workflow-security-allowlist/.task/ci/fix-consuelo-workflow-security-allowlist/session.json"
+}

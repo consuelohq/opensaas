@@ -1,0 +1,6 @@
+[
+  {
+    "from": "workspace context -> OS context",
+    "to": "workspace memory -> OS memory"
+  }
+]

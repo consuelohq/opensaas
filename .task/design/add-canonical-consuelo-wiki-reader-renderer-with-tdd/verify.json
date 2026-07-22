@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd",
+  "base": "origin/task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd",
+  "headSha": "067d2ecb8ce4f715c314add870571d1681b62b23",
+  "changeHash": "18562f3e9959d0b4ed0d98714673f2f9a177a181ab7338d674f72f4b7e68c970",
+  "changedFiles": [
+    "packages/consuelo-design/package.json",
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+    "packages/consuelo-design/scripts/validate-consuelo-reader.ts",
+    "packages/consuelo-design/templates/digital-eguides/research.md",
+    "packages/consuelo-design/templates/digital-eguides/spec.md"
+  ],
+  "verifiedAt": "2026-05-31T10:51:16.742Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd/current.json",
+        ".task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd/evidence-log.json",
+        ".task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd/read-log.json",
+        ".task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd/session.json",
+        ".task/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd/workpad.md",
+        ".task/tasks/design/add-canonical-consuelo-wiki-reader-renderer-with-tdd.json",
+        "packages/consuelo-design/package.json",
+        "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+        "packages/consuelo-design/scripts/render-consuelo-reader.ts",
+        "packages/consuelo-design/scripts/validate-consuelo-reader.ts",
+        "packages/consuelo-design/templates/digital-eguides/research.md",
+        "packages/consuelo-design/templates/digital-eguides/spec.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

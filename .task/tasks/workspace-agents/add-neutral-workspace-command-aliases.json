@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-neutral-workspace-command-aliases",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 620,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/620",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/620",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/620/add-neutral-workspace-command-aliases",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/620",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/620/add-neutral-workspace-command-aliases",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-neutral-workspace-command-aliases",
+  "taskSession": "tsk_17454e4d0385",
+  "tmuxSession": "opensaas-workspace-agents-add-neutral-workspace-command-aliases-17454e4d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-neutral-workspace-command-aliases/.task/workspace-agents/add-neutral-workspace-command-aliases/session.json",
+  "createdAt": "2026-05-28T20:24:28.142Z"
+}

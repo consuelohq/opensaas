@@ -1,0 +1,91 @@
+---
+title: CLI
+description: Commands accepted by the installed Consuelo OS runtime.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/os-raw-steering.test.ts
+      - packages/os/tests/sites-cli.test.ts
+      - packages/os/tests/settings-gateway.test.ts
+    runtime: The no-argument usage output, steering commands, settings commands, and Sites JSON modes were exercised on 2026-07-13.
+---
+
+The current command entrypoint is the Bun script inside the installed OS home. There is not a separate public `consuelo` binary in this preview.
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+cd "$CONSUELO_HOME"
+bun ./scripts/os.ts
+```
+
+Running it without a recognized command prints the supported usage.
+
+## Steering
+
+```bash
+bun ./scripts/os.ts get-steering
+bun ./scripts/os.ts get-raw-steering
+```
+
+`get-steering` returns the workspace steering intended for normal agent startup. Repeated calls in a short window are guarded. `get-raw-steering` is the broader developer/operator view and includes the full manifest surface.
+
+## Call a skill
+
+```bash
+bun ./scripts/os.ts call '{"name":"daily-revenue-brief","input":{}}'
+```
+
+The argument is one JSON object with:
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `name` | yes | Installed OS skill name. |
+| `input` | no | Skill-specific structured input. |
+| `workspaceId` | no | Explicit workspace context. |
+| `userId` | no | Explicit user context. |
+| `traceId` | no | Caller-provided trace identifier. |
+
+The command writes a `CallOutput` JSON object. A skill failure sets a non-zero process exit code.
+
+## Sites
+
+```bash
+bun ./scripts/os.ts sites path [--json]
+bun ./scripts/os.ts sites status [--json]
+bun ./scripts/os.ts sites refresh [--json]
+bun ./scripts/os.ts sites open [--json]
+```
+
+Publishing and collaborative editing use:
+
+```bash
+bun ./scripts/os.ts sites publish   --target ./report.html   --path /pages/q3-report   --title "Q3 report"   --kind guide   --json
+
+bun ./scripts/os.ts sites patch   --page q3-report   --section summary   --input ./section.json   --base-version ver_123   --agent agent_123   --json
+
+bun ./scripts/os.ts sites lease acquire   --page q3-report   --section summary   --agent agent_123   --ttl-minutes 45   --json
+```
+
+`sites lease` also accepts `status` and `release`. See [Sites](/sites/) for the workflow rather than the command-only contract.
+
+## Settings overlays
+
+```bash
+bun ./scripts/os.ts settings status [--json]
+bun ./scripts/os.ts settings disable-tool fs.trash [--json]
+bun ./scripts/os.ts settings enable-tool fs.trash [--json]
+bun ./scripts/os.ts settings disable-skill browser [--json]
+bun ./scripts/os.ts settings enable-skill browser [--json]
+bun ./scripts/os.ts settings disable-workflow task [--json]
+bun ./scripts/os.ts settings enable-workflow task [--json]
+```
+
+Names are validated against the generated tool manifest or workflow bundle. An unknown name fails instead of creating a silent override.
+
+## Output modes
+
+`--json` applies to Sites and settings commands that expose it. It returns a structured result suitable for automation. Steering remains text; `call` already returns JSON.
+
+Treat non-zero exit status as failure even when standard output contains useful structured context.

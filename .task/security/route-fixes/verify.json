@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/route-fixes",
+  "base": "origin/stream/security",
+  "headSha": "30429617d38188be4e199a3a79fa6a4af0551acc",
+  "changeHash": "ce6737a670b971a6ed794538d241d14a4d7984aa5a77350cbe0ab44a65860126",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/tests/consuelo-sites-gateway.test.ts",
+    "packages/os/tests/consuelo-sites-trace-adapter.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-07-10T22:44:25.730Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/route-fixes/current.json",
+        ".task/security/route-fixes/evidence-log.json",
+        ".task/security/route-fixes/read-log.json",
+        ".task/security/route-fixes/session.json",
+        ".task/security/route-fixes/workpad.md",
+        ".task/tasks/security/route-fixes.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/tests/consuelo-sites-gateway.test.ts",
+        "packages/os/tests/consuelo-sites-trace-adapter.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

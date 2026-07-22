@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/route-fixes",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1385,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1385",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1385",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1385/route-fixes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1385",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1385/route-fixes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-route-fixes",
+  "taskSession": "tsk_8d43d598b2c4",
+  "tmuxSession": "opensaas-security-route-fixes-8d43d598",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-route-fixes/.task/security/route-fixes/session.json",
+  "createdAt": "2026-07-10T22:40:53.358Z"
+}

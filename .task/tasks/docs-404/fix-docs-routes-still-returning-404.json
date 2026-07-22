@@ -1,0 +1,19 @@
+{
+  "area": "docs-404",
+  "stream": "stream/docs-404",
+  "taskBranch": "task/docs-404/fix-docs-routes-still-returning-404",
+  "baseBranch": "stream/docs-404",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 758,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/758",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/758",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/758/fix-docs-routes-still-returning-404",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/758",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/758/fix-docs-routes-still-returning-404",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-404-fix-docs-routes-still-returning-404",
+  "taskSession": "tsk_18b9380bf447",
+  "tmuxSession": "opensaas-docs-404-fix-docs-routes-still-returning-404-18b9380b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-404-fix-docs-routes-still-returning-404/.task/docs-404/fix-docs-routes-still-returning-404/session.json",
+  "createdAt": "2026-06-05T00:24:13.656Z"
+}

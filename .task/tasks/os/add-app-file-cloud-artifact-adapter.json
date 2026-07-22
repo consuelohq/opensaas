@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-app-file-cloud-artifact-adapter",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 565,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/565",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/565",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/565/add-app-file-cloud-artifact-adapter",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/565",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/565/add-app-file-cloud-artifact-adapter",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-app-file-cloud-artifact-adapter",
+  "taskSession": "tsk_b128eefb40cf",
+  "tmuxSession": "opensaas-os-add-app-file-cloud-artifact-adapter-b128eefb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-app-file-cloud-artifact-adapter/.task/os/add-app-file-cloud-artifact-adapter/session.json",
+  "createdAt": "2026-05-24T05:05:23.604Z"
+}

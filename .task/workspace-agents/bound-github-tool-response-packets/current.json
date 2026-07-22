@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/bound-github-tool-response-packets",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1041,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1041",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1041",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1041/bound-github-tool-response-packets",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1041",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1041/bound-github-tool-response-packets",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-bound-github-tool-response-packets",
+  "taskSession": "tsk_a68dea3315e1",
+  "tmuxSession": "opensaas-workspace-agents-bound-github-tool-response-packets-a68dea33",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-bound-github-tool-response-packets/.task/workspace-agents/bound-github-tool-response-packets/session.json",
+  "createdAt": "2026-06-14T19:11:59.012Z"
+}

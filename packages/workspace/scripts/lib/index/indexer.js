@@ -3,7 +3,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const { chunkFile, contentHash } = require('./chunker');
-const { embedText } = require('./embedder');
+const { embedText, embedTexts } = require('./embedder');
 const { buildGraph } = require('./graph-builder');
 const { createStore, sha256 } = require('./store');
 const { getCurrentBranch, runGitMaybe } = require('../git');
@@ -136,7 +136,7 @@ function readFileContent(repoRoot, filePath) {
 }
 
 async function indexChunkEmbeddings(store, chunks, options) {
-  const batchSize = getEmbeddingConcurrency();
+  const batchSize = getEmbeddingBatchSize();
   let embeddedCount = 0;
   let skippedCount = 0;
   let processedCount = 0;
@@ -147,28 +147,51 @@ async function indexChunkEmbeddings(store, chunks, options) {
 
   for (let index = 0; index < chunks.length; index += batchSize) {
     const batch = chunks.slice(index, index + batchSize);
-    const results = await Promise.all(batch.map(async (chunk) => {
-      try {
-        let vector = store.getCachedEmbedding(chunk.contentHash);
-        if (!vector) {
-          vector = await embedText(chunk.content, { kind: 'document' });
-          store.setCachedEmbedding(chunk.contentHash, vector);
-        }
+    const uncached = [];
+    const vectorByHash = new Map();
 
-        store.insertChunkEmbedding(chunk.id, vector);
-        return { ok: true };
-      } catch {
-        if (!options.json) {
-          writeStderr(`warning: embedding failed for ${chunk.filePath}:${chunk.startLine}`);
-        }
-        return { ok: false };
-      }
-    }));
-
-    for (const result of results) {
-      if (result.ok) embeddedCount += 1;
-      else skippedCount += 1;
+    for (const chunk of batch) {
+      const cached = store.getCachedEmbedding(chunk.contentHash);
+      if (cached) vectorByHash.set(chunk.contentHash, cached);
+      else uncached.push(chunk);
     }
+
+    if (uncached.length > 0) {
+      try {
+        const vectors = await embedTexts(uncached.map((chunk) => chunk.content), { kind: 'document' });
+        for (let offset = 0; offset < uncached.length; offset += 1) {
+          const chunk = uncached[offset];
+          const vector = vectors[offset];
+          store.setCachedEmbedding(chunk.contentHash, vector);
+          vectorByHash.set(chunk.contentHash, vector);
+        }
+      } catch (error) {
+        if (!options.json) {
+          const details = error instanceof Error ? error.message : String(error);
+          writeStderr(`warning: batch embedding failed (${details}); falling back to per-chunk embedding`);
+        }
+        for (const chunk of uncached) {
+          try {
+            const vector = await embedText(chunk.content, { kind: 'document' });
+            store.setCachedEmbedding(chunk.contentHash, vector);
+            vectorByHash.set(chunk.contentHash, vector);
+          } catch {
+            if (!options.json) writeStderr(`warning: embedding failed for ${chunk.filePath}:${chunk.startLine}`);
+          }
+        }
+      }
+    }
+
+    for (const chunk of batch) {
+      const vector = vectorByHash.get(chunk.contentHash);
+      if (!vector) {
+        skippedCount += 1;
+        continue;
+      }
+      store.insertChunkEmbedding(chunk.id, vector);
+      embeddedCount += 1;
+    }
+
     processedCount += batch.length;
 
     if (processedCount % 100 < batchSize && !options.json) {
@@ -184,6 +207,12 @@ function getEmbeddingConcurrency() {
   if (!Number.isFinite(parsed) || parsed < 1) return 1;
 
   return Math.min(parsed, 2);
+}
+
+function getEmbeddingBatchSize() {
+  const parsed = Number.parseInt(process.env.WORKSPACE_EMBEDDING_BATCH_SIZE || '32', 10);
+  if (!Number.isFinite(parsed) || parsed < 1) return getEmbeddingConcurrency();
+  return Math.min(parsed, 128);
 }
 
 async function indexFiles(repoRoot, store, files, blobShaByPath, options) {

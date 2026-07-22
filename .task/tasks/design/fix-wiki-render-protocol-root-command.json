@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/fix-wiki-render-protocol-root-command",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 664,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/664",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/664",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/664/fix-wiki-render-protocol-root-command",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/664",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/664/fix-wiki-render-protocol-root-command",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-fix-wiki-render-protocol-root-command",
+  "taskSession": "tsk_9da4290aabb4",
+  "tmuxSession": "opensaas-design-fix-wiki-render-protocol-root-command-9da4290a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-fix-wiki-render-protocol-root-command/.task/design/fix-wiki-render-protocol-root-command/session.json",
+  "createdAt": "2026-05-31T11:35:20.966Z"
+}

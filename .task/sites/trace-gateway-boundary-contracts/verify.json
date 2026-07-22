@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/trace-gateway-boundary-contracts",
+  "base": "origin/stream/sites",
+  "headSha": "50dddbfe870580aa810d77001944294ebc257905",
+  "changeHash": "b7bef97eef7348dbb4e513245f690a6329fa4774e3d9195b4636562ffffe1bce",
+  "changedFiles": [
+    "packages/os/scripts/lib/trace-sites-gateway-contract.ts",
+    "packages/os/tests/trace-sites-gateway-contract.test.ts"
+  ],
+  "verifiedAt": "2026-06-13T13:02:41.825Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/trace-gateway-boundary-contracts/current.json",
+        ".task/sites/trace-gateway-boundary-contracts/evidence-log.json",
+        ".task/sites/trace-gateway-boundary-contracts/read-log.json",
+        ".task/sites/trace-gateway-boundary-contracts/session.json",
+        ".task/sites/trace-gateway-boundary-contracts/workpad.md",
+        ".task/tasks/sites/trace-gateway-boundary-contracts.json",
+        "packages/os/scripts/lib/trace-sites-gateway-contract.ts",
+        "packages/os/tests/trace-sites-gateway-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

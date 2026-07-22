@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-os-google-oauth-redirect-uri-mismatch",
+  "base": "origin/stream/security",
+  "headSha": "a501d3763844880520372035619e1ef585309a0b",
+  "changeHash": "f2a7478b93f0e094891ebd970cf9bb9b1e74ed918b4e6b821198cf4443622aa1",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-06-30T23:44:07.299Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-os-google-oauth-redirect-uri-mismatch/current.json",
+        ".task/security/fix-os-google-oauth-redirect-uri-mismatch/evidence-log.json",
+        ".task/security/fix-os-google-oauth-redirect-uri-mismatch/read-log.json",
+        ".task/security/fix-os-google-oauth-redirect-uri-mismatch/session.json",
+        ".task/security/fix-os-google-oauth-redirect-uri-mismatch/verify.json",
+        ".task/security/fix-os-google-oauth-redirect-uri-mismatch/workpad.md",
+        ".task/tasks/security/fix-os-google-oauth-redirect-uri-mismatch.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

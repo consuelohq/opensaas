@@ -1,0 +1,161 @@
+---
+type Heading = {
+	depth: number
+	slug: string
+	text: string
+}
+
+type Props = {
+	headings: Heading[]
+}
+
+const { headings = [] } = Astro.props
+const items = headings.filter(
+	(heading) => heading.depth === 2 && heading.slug && heading.text.trim()
+)
+---
+
+{
+	items.length > 0 && (
+		<nav class="article-toc" aria-label="Table of Contents" data-article-toc data-translate-ignore>
+			<div class="article-toc__title">Table of Contents</div>
+			<div class="article-toc__scroller" data-toc-scroller>
+				{items.map((heading, index) => (
+					<a
+						class="article-toc__item"
+						href={`#${heading.slug}`}
+						data-toc-link
+						data-target={heading.slug}
+						aria-current={index === 0 ? 'location' : undefined}
+					>
+						<span class="article-toc__label">{heading.text}</span>
+						<span class="article-toc__rail" aria-hidden="true" />
+					</a>
+				))}
+			</div>
+		</nav>
+	)
+}
+
+<script>
+	type TocWindow = Window & {
+		__articleTocCleanup?: () => void
+	}
+
+	const tocWindow = window as TocWindow
+
+	function initializeArticleToc() {
+		tocWindow.__articleTocCleanup?.()
+
+		const toc = document.querySelector('[data-article-toc]')
+		if (!(toc instanceof HTMLElement)) return
+
+		const links = Array.from(toc.querySelectorAll('[data-toc-link]')).filter(
+			(link): link is HTMLAnchorElement => link instanceof HTMLAnchorElement
+		)
+		const headings = links
+			.map((link) => document.getElementById(link.dataset.target ?? ''))
+			.filter((heading): heading is HTMLElement => heading instanceof HTMLElement)
+
+		if (links.length === 0 || headings.length === 0) return
+
+		let activeId = ''
+		let frame = 0
+		let pendingTargetId = ''
+		let pendingTimer = 0
+
+		const setActive = (id: string, centerOnCompact = false) => {
+			if (!id || id === activeId) return
+			activeId = id
+
+			links.forEach((link) => {
+				const active = link.dataset.target === id
+				link.toggleAttribute('data-active', active)
+				if (active) {
+					link.setAttribute('aria-current', 'location')
+					if (centerOnCompact && window.matchMedia('(max-width: 85.999rem)').matches) {
+						link.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+					}
+				} else {
+					link.removeAttribute('aria-current')
+				}
+			})
+		}
+
+		const updateFromScroll = () => {
+			if (pendingTargetId) return
+
+			cancelAnimationFrame(frame)
+			frame = requestAnimationFrame(() => {
+				const marker = Math.max(112, window.innerHeight * 0.24)
+				let current = headings[0]
+
+				for (const heading of headings) {
+					if (heading.getBoundingClientRect().top <= marker) {
+						current = heading
+					} else {
+						break
+					}
+				}
+
+				setActive(current.id, true)
+			})
+		}
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (pendingTargetId) return
+
+				const visible = entries
+					.filter((entry) => entry.isIntersecting)
+					.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+
+				if (visible[0]?.target instanceof HTMLElement) {
+					setActive(visible[0].target.id, true)
+				}
+			},
+			{ rootMargin: '-18% 0px -68% 0px', threshold: [0, 1] }
+		)
+
+		headings.forEach((heading) => observer.observe(heading))
+
+		const onClick = (event: Event) => {
+			const link = event.currentTarget
+			if (!(link instanceof HTMLAnchorElement)) return
+
+			const target = document.getElementById(link.dataset.target ?? '')
+			if (!target) return
+
+			event.preventDefault()
+			pendingTargetId = target.id
+			window.clearTimeout(pendingTimer)
+			target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+			history.replaceState(null, '', `#${target.id}`)
+			setActive(target.id, true)
+			pendingTimer = window.setTimeout(() => {
+				pendingTargetId = ''
+				updateFromScroll()
+			}, 750)
+		}
+
+		links.forEach((link) => link.addEventListener('click', onClick))
+		window.addEventListener('scroll', updateFromScroll, { passive: true })
+		window.addEventListener('resize', updateFromScroll, { passive: true })
+
+		const hashTarget = document.getElementById(location.hash.slice(1))
+		setActive(hashTarget?.id ?? headings[0].id, false)
+		updateFromScroll()
+
+		tocWindow.__articleTocCleanup = () => {
+			observer.disconnect()
+			cancelAnimationFrame(frame)
+			window.clearTimeout(pendingTimer)
+			links.forEach((link) => link.removeEventListener('click', onClick))
+			window.removeEventListener('scroll', updateFromScroll)
+			window.removeEventListener('resize', updateFromScroll)
+		}
+	}
+
+	initializeArticleToc()
+	document.addEventListener('astro:page-load', initializeArticleToc)
+</script>

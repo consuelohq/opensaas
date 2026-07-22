@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+  "base": "origin/stream/os",
+  "headSha": "c5a04d13e8bd255b8ff294833444ff5cddb702be",
+  "changeHash": "b86885dbafcaaf6025b63f7dd81ad45ffb0d4ea93492d7240f88ced547c02620",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-06-15T01:29:37.640Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-os-google-callback-fetch-binding-and-timeout/current.json",
+        ".task/os/fix-os-google-callback-fetch-binding-and-timeout/evidence-log.json",
+        ".task/os/fix-os-google-callback-fetch-binding-and-timeout/read-log.json",
+        ".task/os/fix-os-google-callback-fetch-binding-and-timeout/session.json",
+        ".task/os/fix-os-google-callback-fetch-binding-and-timeout/workpad.md",
+        ".task/tasks/os/fix-os-google-callback-fetch-binding-and-timeout.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

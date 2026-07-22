@@ -1,0 +1,49 @@
+---
+title: Apps and services
+description: Give agents access to the services where your work already lives.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'Current provider-specific tools and the absence of other native provider families were verified from the OS manifest on 2026-07-14.'
+---
+
+import Card from '../../../../components/mintlify/Card.astro';
+import CardGroup from '../../../../components/mintlify/CardGroup.astro';
+import Note from '../../../../components/mintlify/Note.astro';
+
+Apps and services are the systems an agent can work with after the agent itself is connected. A local credential, an official CLI, or an API gives the tool access; Consuelo scopes how the agent discovers and calls that tool.
+
+<Note>
+  A service can be useful today even when its native Consuelo tool is planned. Each page separates the current CLI or API path from built-in OS support.
+</Note>
+
+## Choose the outcome
+
+<CardGroup cols={2}>
+  <Card title="Productivity and communication" href="/connect/apps-and-services/google-workspace/">Work with Google Workspace, Slack, and Notion.</Card>
+  <Card title="Code and development" href="/connect/apps-and-services/github/">Work with GitHub and Linear.</Card>
+  <Card title="Deploy and infrastructure" href="/connect/apps-and-services/cloudflare/">Deploy through Cloudflare, Railway, or Vercel.</Card>
+  <Card title="Observe and monitor" href="/connect/apps-and-services/datadog/">Investigate Datadog and Sentry.</Card>
+  <Card title="Data and analytics" href="/connect/apps-and-services/snowflake/">Use Snowflake and Supabase.</Card>
+  <Card title="Sales and CRM" href="/connect/apps-and-services/gohighlevel/">Work with GoHighLevel, Salesforce, and HubSpot.</Card>
+  <Card title="Payments and communication" href="/connect/apps-and-services/stripe/">Use Stripe and Twilio with explicit approvals.</Card>
+  <Card title="Additional services" href="/connect/apps-and-services/additional-services/">Turn another official CLI or API into a focused OS tool.</Card>
+</CardGroup>
+
+## Read the status first
+
+Every service page answers two separate questions:
+
+- **Native Consuelo tool** — whether OS already provides a typed provider family.
+- **Available today** — whether your agent can use a verified official CLI or API while the native tool is being built.
+
+Current built-in examples include GitHub, Linear, Sentry, outbound Slack posting, and part of the Railway workflow. Other pages provide an external, user-facing implementation path rather than pretending the native wrapper already ships.
+
+## The safe default
+
+Keep authentication on the local node. Verify one read-only operation. Expose the smallest typed surface required. Require approval for writes, deployments, permission changes, billing actions, messages, and destructive operations.
+
+See [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) before adding a credential.

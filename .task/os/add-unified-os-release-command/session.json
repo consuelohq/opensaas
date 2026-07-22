@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_946809e71276",
+  "tmuxSession": "opensaas-os-add-unified-os-release-command-946809e7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-unified-os-release-command",
+  "branch": "task/os/add-unified-os-release-command",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-unified-os-release-command",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-unified-os-release-command",
+  "prNumber": 1019,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1019",
+  "createdAt": "2026-06-13T16:07:42.191Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-unified-os-release-command/.task/os/add-unified-os-release-command/session.json"
+}

@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "id": "code.run",
+      "ownerPackage": "workspace",
+      "surface": "workspace.code.run",
+      "scriptEntryId": "code-run",
+      "path": "packages/workspace/scripts/code-run.ts",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/code-run.ts",
+        "reason": "Code mode composes workspace facade tools inside task sessions."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "os.call",
+      "ownerPackage": "os",
+      "surface": "workspace.os.call",
+      "scriptEntryId": "os.call",
+      "path": "packages/os/scripts/os.ts",
+      "exposure": "runtime",
+      "migrationStatus": "os-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/os",
+        "commit": "7d79c8ad31",
+        "path": "packages/os/scripts/os.ts",
+        "reason": "OS call is the public runtime tool surface for local user/agent OS behavior."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/os/tests/facade"
+      ]
+    },
+    {
+      "id": "review.run",
+      "ownerPackage": "workspace",
+      "surface": "workspace.review.run",
+      "scriptEntryId": "review.run",
+      "path": "packages/workspace/scripts/review.js",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/review.js",
+        "reason": "Review remains task-session operator validation in workspace."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "task.start",
+      "ownerPackage": "workspace",
+      "surface": "workspace.task.start",
+      "scriptEntryId": "task.start",
+      "path": "packages/workspace/scripts/task-start.js",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/task-start.js",
+        "reason": "Task lifecycle creation remains workspace-owned while OS migration is incomplete."
+      },
+      "validation": [
+        "script-target-audit",
+        "ownership-guardrail"
+      ]
+    },
+    {
+      "id": "verify",
+      "ownerPackage": "workspace",
+      "surface": "workspace.verify",
+      "scriptEntryId": "verify",
+      "path": "packages/workspace/scripts/verify.js",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/main",
+        "commit": "16b8fb8612",
+        "path": "packages/workspace/scripts/verify.js",
+        "reason": "Verify is the workspace task-session final validation surface."
+      },
+      "validation": [
+        "script-target-audit",
+        "local-import-audit"
+      ]
+    },
+    {
+      "id": "diff_cockpit.open",
+      "ownerPackage": "diff-cockpit",
+      "surface": "workspace.diff_cockpit.open",
+      "scriptEntryId": "diff_cockpit",
+      "path": "packages/workspace/scripts/diff_cockpit.ts",
+      "exposure": "operator",
+      "migrationStatus": "workspace-owned",
+      "sourceOfTruth": {
+        "ref": "origin/stream/diff-cockpit",
+        "path": "packages/workspace/scripts/diff_cockpit.ts",
+        "reason": "Diff cockpit launcher is the operator surface for opening live PR review pages."
+      },
+      "validation": [
+        "script-target-audit",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-effect-backed-bounded-fs-read",
+  "base": "origin/task/os/add-effect-backed-bounded-fs-read",
+  "headSha": "6f29558bd3270204b325f54c9db4b1fa93a11d8d",
+  "changeHash": "10313c28962947c16b71d34576ea838f7dbfd7fe0970a6e971e432c9575ddec4",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/bun.lock",
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/package.json",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/fs/read.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/fs-read.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/script-parity-classifications.json"
+  ],
+  "verifiedAt": "2026-06-15T09:08:46.837Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-effect-backed-bounded-fs-read/current.json",
+        ".task/os/add-effect-backed-bounded-fs-read/evidence-log.json",
+        ".task/os/add-effect-backed-bounded-fs-read/read-log.json",
+        ".task/os/add-effect-backed-bounded-fs-read/session.json",
+        ".task/os/add-effect-backed-bounded-fs-read/workpad.md",
+        ".task/tasks/os/add-effect-backed-bounded-fs-read.json",
+        "packages/os/TOOLS.md",
+        "packages/os/bun.lock",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/package.json",
+        "packages/os/scripts/fs.js",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/fs/read.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/fs-read.test.ts",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/os/tooling/script-parity-classifications.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

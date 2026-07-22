@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3a727397e858",
+  "tmuxSession": "opensaas-workspace-upgrade-tools-search-discovery-3a727397",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/upgrade-tools-search-discovery",
+  "branch": "task/workspace/upgrade-tools-search-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-upgrade-tools-search-discovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-upgrade-tools-search-discovery",
+  "prNumber": 673,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/673",
+  "createdAt": "2026-05-31T19:18:11.939Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-upgrade-tools-search-discovery/.task/workspace/upgrade-tools-search-discovery/session.json"
+}

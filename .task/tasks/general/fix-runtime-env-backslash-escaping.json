@@ -1,0 +1,19 @@
+{
+  "area": "general",
+  "stream": "stream/general",
+  "taskBranch": "task/general/fix-runtime-env-backslash-escaping",
+  "baseBranch": "stream/general",
+  "sourceBranch": "stream/general",
+  "startFrom": "stream",
+  "prNumber": 603,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/603",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/603",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/603/fix-runtime-env-backslash-escaping",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/603",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/603/fix-runtime-env-backslash-escaping",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-fix-runtime-env-backslash-escaping",
+  "taskSession": "tsk_09cb93185bdc",
+  "tmuxSession": "opensaas-general-fix-runtime-env-backslash-escaping-09cb9318",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-fix-runtime-env-backslash-escaping/.task/general/fix-runtime-env-backslash-escaping/session.json",
+  "createdAt": "2026-05-26T17:13:15.012Z"
+}

@@ -1,0 +1,424 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+  "events": [
+    {
+      "id": "1b8de358-0dcd-4cfb-a98f-3749319525b9",
+      "occurred_at": "2026-06-11T02:32:57.104Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "5da5bfb3-9a74-4431-ada8-6c948b9b5367",
+      "occurred_at": "2026-06-11T02:33:06.841Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifacts.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "46d56ae1-74b6-4aec-9487-bafba352af47",
+      "occurred_at": "2026-06-11T02:34:20.832Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "17068ca9-8568-4b91-9eb4-caebeeec8041",
+      "occurred_at": "2026-06-11T02:35:36.304Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "b336d299-665c-40bd-952e-ffc28fc3dbb1",
+      "occurred_at": "2026-06-11T02:36:14.554Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "7b0988c9-9f0e-47d0-8439-25dd3fcba7f5",
+      "occurred_at": "2026-06-11T02:37:07.165Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "1a3f01a5-7b6f-4a87-8965-e758b6f86ec4",
+      "occurred_at": "2026-06-11T02:37:35.171Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "bcd750d4-5785-4df0-8f69-cdd457c268db",
+      "occurred_at": "2026-06-11T02:38:43.037Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifacts.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "ae5958f5-0950-43a2-8b66-36e93b81bf6c",
+      "occurred_at": "2026-06-11T02:38:56.478Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifacts.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "c7e122d9-8524-4c97-bfd0-7d6ee230d1fd",
+      "occurred_at": "2026-06-11T02:39:57.033Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifacts.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "200a7636-1ce3-4ac2-9a4e-c2d505c54e10",
+      "occurred_at": "2026-06-11T02:41:05.494Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "bc8ec4f6-2d54-4bd7-beed-946b7f90dbe5",
+      "occurred_at": "2026-06-11T02:42:34.415Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "427f2d12-dce6-4d2f-9077-e6b45305d7ae",
+      "occurred_at": "2026-06-11T02:43:30.544Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "e17892e5-e284-4de8-9b5e-ddc8846ff43a",
+      "occurred_at": "2026-06-11T02:44:42.624Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "153b341a-9d54-4dca-bce6-32f0ddcc78b6",
+      "occurred_at": "2026-06-11T02:45:26.569Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "4f6cdee8-1878-42ef-b7ec-73668c789cdb",
+      "occurred_at": "2026-06-11T02:45:38.953Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "f9025563-809d-45ef-9cf7-9c915c403614",
+      "occurred_at": "2026-06-11T02:46:15.708Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "b9cbfe44-32e6-4341-bca1-2f7cc04cebfb",
+      "occurred_at": "2026-06-11T02:46:24.904Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "0032e791-5b02-4562-a901-f854b7acf4ec",
+      "occurred_at": "2026-06-11T02:46:44.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "299b4ff5-0bee-4ae8-917d-a23d5e2ecd26",
+      "occurred_at": "2026-06-11T02:48:44.389Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "c5c43c8b-da96-4d16-be2b-dba1dcb748ed",
+      "occurred_at": "2026-06-11T02:49:13.713Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "fe141524-a656-454b-8ae2-cf43943904d7",
+      "occurred_at": "2026-06-11T02:50:18.735Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "bca0b49b-0a16-45d3-885a-7c5de3928a13",
+      "occurred_at": "2026-06-11T02:50:28.478Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "54cd539a-ce00-408c-a545-78e6f98308db",
+      "occurred_at": "2026-06-11T02:51:13.415Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "1a4e5acb-5c72-42d8-b6cc-231c80148307",
+      "occurred_at": "2026-06-11T02:51:59.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    },
+    {
+      "id": "88d32dde-0dc3-492d-a9dd-4a9c20ff6ad2",
+      "occurred_at": "2026-06-11T02:53:32.003Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-os-artifact-version-rollback-table",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-os-artifact-version-rollback-table"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T02:53:32.064Z"
+}

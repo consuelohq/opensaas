@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_29ae8e3d149b",
+  "tmuxSession": "opensaas-os-align-apply-patch-filesystem-tool-29ae8e3d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-apply-patch-filesystem-tool",
+  "branch": "task/os/align-apply-patch-filesystem-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-apply-patch-filesystem-tool",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-apply-patch-filesystem-tool",
+  "prNumber": 1034,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1034",
+  "createdAt": "2026-06-14T05:08:22.846Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-apply-patch-filesystem-tool/.task/os/align-apply-patch-filesystem-tool/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9d10c792c1f2",
+  "tmuxSession": "opensaas-security-fix-gateway-review-final-follow-up-9d10c792",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-gateway-review-final-follow-up",
+  "branch": "task/security/fix-gateway-review-final-follow-up",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-gateway-review-final-follow-up",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-gateway-review-final-follow-up",
+  "prNumber": 904,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/904",
+  "createdAt": "2026-06-10T01:08:53.479Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-gateway-review-final-follow-up/.task/security/fix-gateway-review-final-follow-up/session.json"
+}

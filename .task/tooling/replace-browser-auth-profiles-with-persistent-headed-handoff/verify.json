@@ -1,0 +1,202 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff",
+  "base": "origin/main",
+  "headSha": "fad8271393ed4c28e551266c83a32d7dd87e68f2",
+  "changeHash": "23c45aac898a9b772e8fa587f99414ff6f0ecaff8902511dc32cbc0cdcd81b70",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/os/tools/browser-tools.mdx",
+    "packages/os/SCRIPTS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/scripts/browser.js",
+    "packages/os/scripts/lib/browser/cli.ts",
+    "packages/os/scripts/lib/browser/config.ts",
+    "packages/os/scripts/lib/browser/errors.ts",
+    "packages/os/scripts/lib/browser/process.ts",
+    "packages/os/scripts/lib/browser/service.ts",
+    "packages/os/scripts/lib/browser/types.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/skills/browser/SKILL.md",
+    "packages/os/skills/skills.json",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/browser-service.test.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/fixtures/skills/browser-workspace.SKILL.md",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/script-parity-classifications.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/scripts/browser.js",
+    "packages/workspace/scripts/lib/browser/cli.ts",
+    "packages/workspace/scripts/lib/browser/config.ts",
+    "packages/workspace/scripts/lib/browser/errors.ts",
+    "packages/workspace/scripts/lib/browser/process.ts",
+    "packages/workspace/scripts/lib/browser/service.ts",
+    "packages/workspace/scripts/lib/browser/types.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/browser-service.test.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-07-10T23:27:51.984Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff.json",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/current.json",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/session.json",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/verify.json",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/workpad.md",
+        "packages/documentation/src/content/docs/os/tools/browser-tools.mdx",
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/scripts/browser.js",
+        "packages/os/scripts/lib/browser/cli.ts",
+        "packages/os/scripts/lib/browser/config.ts",
+        "packages/os/scripts/lib/browser/errors.ts",
+        "packages/os/scripts/lib/browser/process.ts",
+        "packages/os/scripts/lib/browser/service.ts",
+        "packages/os/scripts/lib/browser/types.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/skills/browser/SKILL.md",
+        "packages/os/skills/skills.json",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/skills/browser-workspace.SKILL.md",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/os/tooling/script-parity-classifications.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/lib/browser/cli.ts",
+        "packages/workspace/scripts/lib/browser/config.ts",
+        "packages/workspace/scripts/lib/browser/errors.ts",
+        "packages/workspace/scripts/lib/browser/process.ts",
+        "packages/workspace/scripts/lib/browser/service.ts",
+        "packages/workspace/scripts/lib/browser/types.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/tests/browser-service.test.ts",
+        "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/schemas.ts",
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md",
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 215,
+          "outputTail": "de\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.346Z\"}\n(pass) typed facade executor > validates input for stream.sync [0.13ms]\n(pass) typed facade executor > validates input for task.cleanup [0.13ms]\n(pass) typed facade executor > validates input for task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.06ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.346Z\"}\n(pass) typed facade executor > validates input for task.init [0.36ms]\n(pass) typed facade executor > validates input for task.merge [0.12ms]\n(pass) typed facade executor > validates input for task.pr [0.12ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.347Z\"}\n(pass) typed facade executor > validates input for task.push [0.28ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.347Z\"}\n(pass) typed facade executor > validates input for task.start [0.40ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.347Z\"}\n(pass) typed facade executor > validates input for tmp [0.29ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.348Z\"}\n(pass) typed facade executor > validates input for tools.search [0.29ms]\n(pass) typed facade executor > validates input for verify [0.09ms]\n(pass) typed facade executor > validates input for wait [0.16ms]\n(pass) typed facade executor > validates input for website.deploy [0.08ms]\n{\"level\":\"error\",\"tool\":\"worker.call\",\"command\":\"workspace worker.call\",\"implementationCommand\":\"workspace worker.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.348Z\"}\n(pass) typed facade executor > validates input for worker.call [0.40ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:27:51.349Z\"}\n(pass) typed facade executor > validates input for media.svg [0.36ms]\n\n 124 pass\n 433 filtered out\n 0 fail\n 56 expect() calls\nRan 124 tests across 1 file. [208.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 445,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-browser-auth-profiles-with-persistent-headed-handoff\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 110\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:27:51\n\u001b[2m   Duration \u001b[22m 228ms\u001b[2m (transform 52ms, setup 0ms, import 57ms, tests 110ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

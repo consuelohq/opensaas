@@ -1,0 +1,19 @@
+{
+  "area": "os-skills",
+  "stream": "stream/os-skills",
+  "taskBranch": "task/os-skills/install-full-os-tool-manifest-into-user-home",
+  "baseBranch": "stream/os-skills",
+  "sourceBranch": "stream/os-skills",
+  "startFrom": "stream",
+  "prNumber": 765,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/765",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/765",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/765/install-full-os-tool-manifest-into-user-home",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/765",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/765/install-full-os-tool-manifest-into-user-home",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-install-full-os-tool-manifest-into-user-home",
+  "taskSession": "tsk_2486f961a66f",
+  "tmuxSession": "opensaas-os-skills-install-full-os-tool-manifest-into-user-home-2486f961",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-skills-install-full-os-tool-manifest-into-user-home/.task/os-skills/install-full-os-tool-manifest-into-user-home/session.json",
+  "createdAt": "2026-06-05T03:12:23.816Z"
+}

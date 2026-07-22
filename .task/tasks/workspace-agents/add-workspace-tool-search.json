@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-workspace-tool-search",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 655,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/655",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/655",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/655/add-workspace-tool-search",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/655",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/655/add-workspace-tool-search",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-search",
+  "taskSession": "tsk_a05909fcdbf3",
+  "tmuxSession": "opensaas-workspace-agents-add-workspace-tool-search-a05909fc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-workspace-tool-search/.task/workspace-agents/add-workspace-tool-search/session.json",
+  "createdAt": "2026-05-30T19:42:18.566Z"
+}

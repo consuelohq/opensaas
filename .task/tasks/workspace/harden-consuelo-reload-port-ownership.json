@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/harden-consuelo-reload-port-ownership",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1104,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1104",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1104",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1104/harden-consuelo-reload-port-ownership",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1104",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1104/harden-consuelo-reload-port-ownership",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-harden-consuelo-reload-port-ownership",
+  "taskSession": "tsk_352b4c62f9e0",
+  "tmuxSession": "opensaas-workspace-harden-consuelo-reload-port-ownership-352b4c62",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-harden-consuelo-reload-port-ownership/.task/workspace/harden-consuelo-reload-port-ownership/session.json",
+  "createdAt": "2026-06-17T03:31:57.592Z"
+}

@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/design/recover-old-os-spec-and-document-shell-degradation",
+  "base": "origin/stream/design",
+  "headSha": "57c6be3eafb769847d539017aa72c8e18a4484c4",
+  "changeHash": "bd4f26fb0c97606c1f2b60f82197759c7ed2041a8073b981d54f7341ea24072a",
+  "changedFiles": [
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/tests/consuelo-design-theme.test.js"
+  ],
+  "verifiedAt": "2026-06-06T14:18:27.047Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/design/recover-old-os-spec-and-document-shell-degradation/current.json",
+        ".task/design/recover-old-os-spec-and-document-shell-degradation/evidence-log.json",
+        ".task/design/recover-old-os-spec-and-document-shell-degradation/read-log.json",
+        ".task/design/recover-old-os-spec-and-document-shell-degradation/session.json",
+        ".task/design/recover-old-os-spec-and-document-shell-degradation/workpad.md",
+        ".task/tasks/design/recover-old-os-spec-and-document-shell-degradation.json",
+        "packages/workspace/scripts/consuelo-design.ts",
+        "packages/workspace/tests/consuelo-design-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

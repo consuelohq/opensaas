@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7cba91f0f3b2",
+  "tmuxSession": "opensaas-security-release-harden-os-installer-runtime-dependencies-7cba91f0",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/release-harden-os-installer-runtime-dependencies",
+  "branch": "task/security/release-harden-os-installer-runtime-dependencies",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-harden-os-installer-runtime-dependencies",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-harden-os-installer-runtime-dependencies",
+  "prNumber": 1168,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1168",
+  "createdAt": "2026-06-21T00:58:07.796Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-harden-os-installer-runtime-dependencies/.task/security/release-harden-os-installer-runtime-dependencies/session.json"
+}

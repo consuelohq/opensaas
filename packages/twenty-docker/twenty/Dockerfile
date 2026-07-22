@@ -8,7 +8,6 @@ COPY ./package.json ./yarn.lock ./.yarnrc.yml ./tsconfig.base.json ./nx.json /ap
 COPY ./.yarn/releases /app/.yarn/releases
 COPY ./.yarn/patches /app/.yarn/patches
 
-COPY ./packages/twenty-emails/package.json /app/packages/twenty-emails/
 COPY ./packages/twenty-server/package.json /app/packages/twenty-server/
 COPY ./packages/twenty-server/patches /app/packages/twenty-server/patches
 COPY ./packages/twenty-ui/package.json /app/packages/twenty-ui/
@@ -36,7 +35,6 @@ RUN yarn && yarn cache clean && npx nx reset
 FROM common-deps AS twenty-server-build
 
 # Copy sourcecode after installing dependences to accelerate subsequents builds
-COPY ./packages/twenty-emails /app/packages/twenty-emails
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-server /app/packages/twenty-server
 
@@ -56,7 +54,7 @@ RUN cd /app/packages/contacts && npx tsc
 RUN cd /app/packages/dialer && npx tsc --declaration
 RUN cd /app/packages/api && npx tsc
 
-RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server @consuelo/agent @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
+RUN yarn workspaces focus --production twenty-shared twenty-server @consuelo/agent @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
 
 # Build the front
 FROM common-deps AS twenty-front-build
@@ -106,6 +104,7 @@ ENV APP_VERSION=$APP_VERSION
 COPY --chown=1000 --from=twenty-server-build /app /app
 COPY --chown=1000 --from=twenty-server-build /app/packages/twenty-server /app/packages/twenty-server
 COPY --chown=1000 --from=twenty-front-build /app/packages/twenty-front/build /app/packages/twenty-server/dist/front
+COPY --chown=1000 ./packages/os /app/packages/os
 
 # Set metadata and labels
 LABEL org.opencontainers.image.source=https://github.com/consuelohq/opensaas

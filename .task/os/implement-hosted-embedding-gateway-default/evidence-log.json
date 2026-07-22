@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+  "events": [
+    {
+      "id": "d4378ca1-590d-49c6-bda7-1c949954a945",
+      "occurred_at": "2026-06-11T08:58:35.576Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/embedder.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "ba3a94f3-7210-4770-8787-6fe1fec0cb15",
+      "occurred_at": "2026-06-11T08:58:35.608Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "9747dac7-b0be-42a8-b670-789fcd57df58",
+      "occurred_at": "2026-06-11T08:59:32.688Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "a1c98dff-e27f-4853-88ec-6d11e1addb6f",
+      "occurred_at": "2026-06-11T08:59:38.578Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "b5250c16-a691-4d12-b068-70affba11886",
+      "occurred_at": "2026-06-11T09:01:10.874Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "6039809e-f709-4698-afd1-d68f6723b1a2",
+      "occurred_at": "2026-06-11T09:01:31.021Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "c4cecc92-401b-4564-8819-fdc196e01a9d",
+      "occurred_at": "2026-06-11T09:02:02.341Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "0738bc32-743e-4642-a2e9-8297c131e5d2",
+      "occurred_at": "2026-06-11T09:02:27.922Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "d1288a88-a12c-4122-b1d4-7a5b929624cc",
+      "occurred_at": "2026-06-11T09:03:25.315Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "0ed544f9-cdb6-4292-b8d6-00c8d0a0db37",
+      "occurred_at": "2026-06-11T09:03:51.917Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    },
+    {
+      "id": "0bbd8d04-e8ad-4f90-866a-c4d49bb137f4",
+      "occurred_at": "2026-06-11T09:05:54.076Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/implement-hosted-embedding-gateway-default/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/implement-hosted-embedding-gateway-default",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/implement-hosted-embedding-gateway-default"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-11T09:05:54.128Z"
+}

@@ -1,0 +1,600 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/facade-recovery",
+  "events": [
+    {
+      "id": "bc25b60d-9bcc-42c3-b233-332efd3105df",
+      "occurred_at": "2026-05-28T21:06:14.883Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "ab79c56c-b22f-4219-9175-89455b3f1079",
+      "occurred_at": "2026-05-28T21:06:14.917Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "2c9c735d-8708-4562-b981-3a71802691c9",
+      "occurred_at": "2026-05-28T21:06:27.956Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "880d1b54-9a66-4da3-ae86-dbd5d4fc48c3",
+      "occurred_at": "2026-05-28T21:06:28.284Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "9c128e69-b9ea-40b4-a529-3d6b1422666f",
+      "occurred_at": "2026-05-28T21:06:28.611Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "5e7f28d7-a498-4cc7-b97b-7c551e339449",
+      "occurred_at": "2026-05-28T21:06:32.624Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "e98d3755-3d0a-477b-9f6c-df5fe74b858c",
+      "occurred_at": "2026-05-28T21:06:47.797Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "fce87303-a0f2-44dd-89df-a3118c2054ee",
+      "occurred_at": "2026-05-28T21:07:03.434Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "0b53cc71-fd69-484b-b269-02555220833e",
+      "occurred_at": "2026-05-28T21:07:11.588Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "2bfddded-ef63-49f6-b477-6706fcbd8c32",
+      "occurred_at": "2026-05-28T21:07:48.092Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "27a65097-b3d3-4ec6-98bb-cc7be0aa74db",
+      "occurred_at": "2026-05-28T21:08:30.146Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "f8a34e1a-609d-4894-a842-eacdea07e461",
+      "occurred_at": "2026-05-28T21:09:06.359Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "85726f33-4ca5-4696-9818-3e7cd29fee14",
+      "occurred_at": "2026-05-28T21:09:24.846Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "aa8f3b8d-5fbb-4595-a21f-2c6f03baefa8",
+      "occurred_at": "2026-05-28T21:09:54.172Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "fbb8ad52-5257-48e6-8514-d73a619f4185",
+      "occurred_at": "2026-05-28T21:10:42.820Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "e7bfb378-ad80-4f55-a788-4212faf3e025",
+      "occurred_at": "2026-05-28T21:11:50.606Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "2cf82315-5066-486e-9413-e74b3924193e",
+      "occurred_at": "2026-05-28T21:12:13.439Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "b059f2c6-3b62-4f89-9d17-f6b0cbee942c",
+      "occurred_at": "2026-05-28T21:12:55.709Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "ca327f04-7806-47df-98fe-a30216527d27",
+      "occurred_at": "2026-05-28T21:13:25.132Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "e292095c-6c4a-4165-a4e1-d65fe6ab5707",
+      "occurred_at": "2026-05-28T21:13:38.768Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "7a6a51a4-8b1b-4f5d-a09f-4d6d4c022ede",
+      "occurred_at": "2026-05-28T21:14:07.245Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "39ea6f8e-d245-4d6e-b26a-68edd36059ce",
+      "occurred_at": "2026-05-28T21:14:52.734Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "27957c39-d91b-4c10-8b3a-2bb6f23911b9",
+      "occurred_at": "2026-05-28T21:15:06.301Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "dac0656d-1231-48ce-8e75-28a6d42bf112",
+      "occurred_at": "2026-05-28T21:15:14.281Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "1b918b67-9513-4dba-a95a-2d29ce2bfe5b",
+      "occurred_at": "2026-05-28T21:15:20.355Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "be75920d-d348-45d0-97d7-f75e857a055a",
+      "occurred_at": "2026-05-28T21:15:40.917Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "6313dd72-f9e8-4c39-bd17-2ee275bfcbbc",
+      "occurred_at": "2026-05-28T21:16:04.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "d192a87d-7530-4904-94a0-2c84cc947a6b",
+      "occurred_at": "2026-05-28T21:16:34.547Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "27b5f14f-bea8-4a24-9380-2b172ee13689",
+      "occurred_at": "2026-05-28T21:16:53.250Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "c9c5e053-7a71-4628-8fa9-84a0377202b5",
+      "occurred_at": "2026-05-28T21:17:31.888Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "ba893946-829d-4b51-ac1c-cb5cd92eb9f0",
+      "occurred_at": "2026-05-28T21:18:13.681Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "1d6db66c-792e-432a-bdea-5233aa5126b2",
+      "occurred_at": "2026-05-28T21:18:51.054Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "0639beb5-c7ed-48d9-ac44-185c4dffba17",
+      "occurred_at": "2026-05-28T21:20:01.205Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "761bca00-4377-4c4a-bbd9-3bad1e2f4d6f",
+      "occurred_at": "2026-05-28T21:21:47.757Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "af2aa189-6755-40fb-ba8b-775c8395dfea",
+      "occurred_at": "2026-05-28T21:22:17.728Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "2c0ea421-9507-4c01-bac8-b77bbbc3b426",
+      "occurred_at": "2026-05-28T21:22:53.787Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    },
+    {
+      "id": "6fba99c4-a492-4f6e-b807-4f288d3bcd5e",
+      "occurred_at": "2026-05-28T21:23:13.498Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/facade-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/facade-recovery"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-28T21:23:13.560Z"
+}

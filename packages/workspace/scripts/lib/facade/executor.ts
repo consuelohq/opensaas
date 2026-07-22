@@ -6,10 +6,15 @@ import path from 'node:path';
 
 import manifestJson from '../../../tooling/tool-manifest.json';
 
+import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
 import { getInputSchema } from './schemas';
+import { executeCodeCall } from '../code-call/runtime';
+import type { CodeCallInput } from '../code-call/types';
+import { executeSubagent } from '../subagent/runtime';
+
 import type {
   BranchResolution,
   CommandArgument,
@@ -23,7 +28,8 @@ import type {
 } from './types';
 
 const require = createRequire(import.meta.url);
-const { syncValidationEvidence } = require('../task-workpad');
+const { resolvePrRefNumber } = require('../pr-ref');
+const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
@@ -35,7 +41,6 @@ type TaskSessionMetadata = {
   worktree?: string;
   worktreePath?: string;
 };
-
 type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
@@ -48,6 +53,36 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
 
   const scriptMatches = manifestEntries.filter((entry) => entry.command.script === toolName);
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
+}
+
+function buildUnknownToolGuidance(toolName: string): { message: string; data: unknown | null } {
+  if (toolName !== 'fs.patch') {
+    return { message: `unknown tool: ${toolName}`, data: null };
+  }
+
+  const manifestEntry = getToolManifestEntry('fs.apply_patch');
+  return {
+    message: [
+      'unknown tool: fs.patch.',
+      'fs.patch is not a workspace tool; use fs.apply_patch instead.',
+      'Call it with exactly one of patchText or patchFile.',
+      'The fs.apply_patch manifest entry is included at data.manifestEntry.',
+    ].join(' '),
+    data: {
+      requestedTool: 'fs.patch',
+      replacementTool: 'fs.apply_patch',
+      action: 'Call workspace fs.apply_patch with exactly one of patchText or patchFile.',
+      exampleCall: {
+        tool: 'fs.apply_patch',
+        input: {
+          taskSession: '<taskSession>',
+          patchFile: '/tmp/change.patch',
+          dryRun: true,
+        },
+      },
+      manifestEntry,
+    },
+  };
 }
 
 
@@ -100,11 +135,12 @@ export async function executeTool<TData = unknown>(
 
   try {
     if (!entry) {
+      const guidance = buildUnknownToolGuidance(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',
-        message: `unknown tool: ${toolName}`,
-        data: null,
+        message: guidance.message,
+        data: guidance.data,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
@@ -163,11 +199,12 @@ export async function executeTool<TData = unknown>(
       return result as ToolResult<TData>;
     }
     if (entry.sessionRequired === true && !taskSessionResolution?.ok) {
+      const recovery = buildTaskSessionRequiredRecovery(toolName, entry, normalizedInput);
       const result = createToolResult({
         ok: false,
         code: 'TASK_SESSION_REQUIRED',
-        message: `${toolName} requires taskSession. Start a task with task.start and pass data.taskSession; do not rely on task.pin or root .task/current.json.`,
-        data: null,
+        message: recovery.message,
+        data: recovery.data,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
@@ -356,6 +393,69 @@ function compactFacadeFinding(value: unknown, index: number, owner: 'your_change
   };
 }
 
+function sanitizeRecoveryInput(input: ToolInput): ToolInput {
+  const sensitivePattern = /(authorization|cookie|token|secret|password|passwd|api[_-]?key|credential|session)/i;
+  const sanitize = (value: unknown, key = ''): unknown => {
+    if (sensitivePattern.test(key)) return '[redacted]';
+    if (Array.isArray(value)) return value.map((item) => sanitize(item));
+    if (isRecord(value)) {
+      return Object.fromEntries(Object.entries(value).map(([entryKey, entryValue]) => [
+        entryKey,
+        sanitize(entryValue, entryKey),
+      ]));
+    }
+    return value;
+  };
+  return sanitize(input) as ToolInput;
+}
+
+function isRepoStateBound(entry: ToolManifestEntry): boolean {
+  if (entry.command.script === 'task:fs') return true;
+  if (entry.command.branchMode === 'required') return true;
+  return false;
+}
+
+function taskSessionRequiredReason(toolName: string, entry: ToolManifestEntry, repoStateBound: boolean): string {
+  if (repoStateBound && entry.capabilities.readOnly) {
+    return `${toolName} reads repository state through a task worktree so the result is branch-aware and fresh.`;
+  }
+  if (repoStateBound) {
+    return `${toolName} must run inside an isolated task worktree so durable repo changes do not touch main or another agent's work.`;
+  }
+  return `${toolName} requires taskSession because its manifest marks the tool as task-scoped.`;
+}
+
+function buildTaskSessionRequiredRecovery(toolName: string, entry: ToolManifestEntry, input: ToolInput): {
+  message: string;
+  data: Record<string, unknown>;
+} {
+  const safeInput = sanitizeRecoveryInput(input);
+  const repoStateBound = isRepoStateBound(entry);
+  const reason = taskSessionRequiredReason(toolName, entry, repoStateBound);
+  return {
+    message: `${toolName} requires taskSession. Start a task with task.start, capture data.taskSession, then rerun ${toolName} with the same input plus taskSession.`,
+    data: {
+      tool: toolName,
+      reason,
+      repoStateBound,
+      originalCall: {
+        tool: toolName,
+        input: safeInput,
+      },
+      recovery: {
+        action: 'start_task_session_then_retry',
+        steps: [
+          'Call task.start for the relevant area and capture data.taskSession.',
+          `Rerun ${toolName} with the same input plus that taskSession.`,
+          entry.capabilities.mutating
+            ? 'If files change, continue through review.run, verify, task.push, and task.pr.'
+            : 'For read-only investigation, report the result without creating durable repo changes.',
+        ],
+      },
+    },
+  };
+}
+
 function summarizeFacadeFindings(findings: JsonRecord[]): JsonRecord {
   const byRule = new Map<string, number>();
   const byFile = new Map<string, { file: string; count: number; rules: Set<string> }>();
@@ -455,16 +555,38 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  if (!['review.run', 'verify', 'checkFiles', 'audit', 'consueloDesign.check'].includes(toolName)) return;
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit'];
+  const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
+  if (!validationTools.includes(toolName) && !tddPhase) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
   const taskBranch = typeof input.branch === 'string' ? input.branch : '';
   if (!taskWorktree || !taskBranch.startsWith('task/')) return;
   try {
-    syncValidationEvidence(taskWorktree, { taskBranch }, {
-      command: toolName,
-      ok: result.ok,
-      detail: typeof result.code === 'string' ? result.code : undefined,
-    });
+    if (tddPhase) {
+      syncTddEvidence(taskWorktree, { taskBranch }, {
+        phase: tddPhase,
+        command: Array.isArray(input.command) ? input.command.join(' ') : toolName,
+        ok: result.ok,
+        exitCode: result.exitCode,
+        traceId: result.traceId,
+        output: typeof result.stderr === 'string' && result.stderr ? result.stderr : JSON.stringify(result.data || {}),
+      });
+    }
+
+    if (validationTools.includes(toolName)) {
+      syncValidationEvidence(taskWorktree, { taskBranch }, {
+        command: toolName,
+        ok: result.ok,
+        detail: typeof result.code === 'string' ? result.code : undefined,
+      });
+    }
+
+    if (toolName === 'verify' && isRecord(result.data) && isRecord(result.data.testSelection)) {
+      const testSelection = result.data.testSelection;
+      if (isRecord(testSelection.data)) {
+        syncTestSelectionEvidence(taskWorktree, { taskBranch }, testSelection.data);
+      }
+    }
   } catch {
     // Workpad sync is best-effort evidence; tool execution result remains authoritative.
   }
@@ -474,13 +596,29 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
   if (toolName === "task.start" && !input.area && typeof input.stream === "string") {
     return { ...input, area: input.stream.replace(/^stream\//, "") };
   }
-
   if (toolName === "fs.http" && !input.method) {
     return { ...input, method: "get" };
   }
 
+  if (toolName === "fs.search" && typeof input.path === "string" && !Array.isArray(input.paths)) {
+    const { path: searchPath, ...rest } = input;
+    return { ...rest, paths: [searchPath] };
+  }
+
+  if (toolName === "fs.read" && Array.isArray(input.files)) {
+    return { ...input, filesJson: JSON.stringify(input.files) };
+  }
+
   if (toolName === "review.run") {
     return { ...input, mine: true };
+  }
+
+  if (toolName === "media.svg") {
+    const normalized: ToolInput = { ...input };
+    for (const key of ["document", "operations", "checks", "render", "selectors"] as const) {
+      if (normalized[key] !== undefined) normalized[`${key}Json`] = JSON.stringify(normalized[key]);
+    }
+    return normalized;
   }
 
   return input;
@@ -500,6 +638,26 @@ async function executeInternalTool<TData>(
 ): Promise<ToolResult<TData> | null> {
   const internal = entry.command.internal;
   if (!internal) return null;
+
+  if (internal === 'batch') {
+    const steps = Array.isArray(input.steps) ? input.steps : [];
+    return runBatch(steps, context.options) as Promise<ToolResult<TData>>;
+  }
+
+  if (internal === 'code.call') {
+    return executeCodeCall(input as CodeCallInput, {
+      cwd: context.cwd,
+      env: context.env,
+      now: context.options.now,
+      randomUUID: context.options.randomUUID,
+      traceId: context.traceId,
+      requestId: context.requestId,
+    }) as Promise<ToolResult<TData>>;
+  }
+
+  if (internal === 'subagent') {
+    return executeSubagent(entry, input, context) as Promise<ToolResult<TData>>;
+  }
 
   if (internal === 'task.current') {
     const task = getCurrentTask({
@@ -590,14 +748,10 @@ async function executeInternalTool<TData>(
   return result as ToolResult<TData>;
 }
 
+
 function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   if (!taskSession) return null;
-  if (typeof input.branch === 'string') return {
-    ok: false,
-    code: 'VALIDATION_ERROR',
-    message: 'Pass either taskSession or explicit branch/taskWorktree, not both.',
-  };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
@@ -607,6 +761,12 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
   };
 
   const branch = metadata.branch || metadata.taskBranch;
+  if (typeof input.branch === 'string' && input.branch !== branch) return {
+    ok: false,
+    code: 'VALIDATION_ERROR',
+    message: 'Pass either taskSession or a matching explicit branch, not a conflicting branch.',
+  };
+
   return { ok: true, branch, metadata };
 }
 
@@ -683,8 +843,13 @@ function resolveBranchIfNeeded(
   if (branchMode === 'none') return { ok: true, branch: '', source: 'none' };
 
   const explicitBranch = typeof input.branch === 'string' ? input.branch : undefined;
+  const prReference = input.github ?? input.pr;
+  const explicitPrNumber = typeof prReference === 'string' || typeof prReference === 'number'
+    ? resolvePrRefNumber(String(prReference))
+    : undefined;
   const resolution = (options.branchResolver || resolveTaskBranch)({
     explicitBranch,
+    explicitPrNumber,
     cwd,
     env,
     currentTask: options.currentTask,
@@ -744,6 +909,24 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
 
   if (kind === 'boolean') {
     if (argument.flag && value === true) args.push(argument.flag);
+    return;
+  }
+
+  if (kind === 'readFileArray') {
+    if (!Array.isArray(value)) return;
+    for (const item of value) {
+      if (typeof item === 'string') {
+        args.push(item);
+        continue;
+      }
+      if (typeof item !== 'object' || item === null) continue;
+      const file = item as Record<string, unknown>;
+      if (typeof file.path !== 'string' || file.path.length === 0) continue;
+      args.push(file.path);
+      for (const [source, flag] of [['offset', '--offset'], ['limit', '--limit'], ['from', '--from'], ['to', '--to']] as const) {
+        if (typeof file[source] === 'number') args.push(flag, String(file[source]));
+      }
+    }
     return;
   }
 
@@ -882,7 +1065,7 @@ function resolveGitRoot(cwd: string): string {
 }
 
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
-  if (script === 'code-run' && typeof input?.taskWorktree === 'string') return input.taskWorktree;
+  if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
   return resolveControllerRoot(cwd) || cwd;
 }
@@ -930,4 +1113,3 @@ function logResult(
     },
   });
 }
-

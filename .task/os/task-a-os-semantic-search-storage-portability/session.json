@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5b559b6c58e4",
+  "tmuxSession": "opensaas-os-task-a-os-semantic-search-storage-portability-5b559b6c",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/task-a-os-semantic-search-storage-portability",
+  "branch": "task/os/task-a-os-semantic-search-storage-portability",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-a-os-semantic-search-storage-portability",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-a-os-semantic-search-storage-portability",
+  "prNumber": 953,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/953",
+  "createdAt": "2026-06-11T05:39:38.336Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-a-os-semantic-search-storage-portability/.task/os/task-a-os-semantic-search-storage-portability/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8cf72c565bc0",
+  "tmuxSession": "opensaas-design-launcher-final-mobile-sizing-8cf72c56",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/launcher-final-mobile-sizing",
+  "branch": "task/design/launcher-final-mobile-sizing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-launcher-final-mobile-sizing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-launcher-final-mobile-sizing",
+  "prNumber": 962,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/962",
+  "createdAt": "2026-06-11T07:42:30.007Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-launcher-final-mobile-sizing/.task/design/launcher-final-mobile-sizing/session.json"
+}

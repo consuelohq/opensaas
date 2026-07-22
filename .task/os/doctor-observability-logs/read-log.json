@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/doctor.ts",
+    "packages/os/scripts/lib/install-state.ts"
+  ],
+  "updatedAt": "2026-05-24T07:17:13.508Z"
+}

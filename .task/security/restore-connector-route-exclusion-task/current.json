@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/restore-connector-route-exclusion-task",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1467,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1467",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1467",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1467/restore-connector-route-exclusion-task",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1467",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1467/restore-connector-route-exclusion-task",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-restore-connector-route-exclusion-task",
+  "taskSession": "tsk_f70a39af5284",
+  "tmuxSession": "opensaas-security-restore-connector-route-exclusion-task-f70a39af",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-restore-connector-route-exclusion-task/.task/security/restore-connector-route-exclusion-task/session.json",
+  "createdAt": "2026-07-13T19:38:12.027Z"
+}

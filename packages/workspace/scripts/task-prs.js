@@ -4,6 +4,7 @@
 
 const { execFileSync } = require('child_process');
 const { resolveGitRoot } = require('./lib/paths');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const { findTaskMeta } = require('./lib/task-meta');
 const { getCurrentBranch } = require('./lib/git');
@@ -41,7 +42,8 @@ function parseArgs(argv) {
         args.branch = value;
         break;
       case '--pr':
-        args.prNumber = Number.parseInt(value, 10);
+      case '--github':
+        args.prNumber = resolvePrRefNumber(value);
         break;
       case '--json':
         args.json = true;
@@ -55,7 +57,7 @@ function parseArgs(argv) {
   }
 
   if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
-    throw new Error('invalid --pr value');
+    throw new Error('invalid --pr/--github value');
   }
 
   return args;
@@ -67,7 +69,7 @@ function printHelp() {
   writeStdout('options:');
   writeStdout('  --area <name>        select task by area');
   writeStdout('  --branch <name>      select exact task branch');
-  writeStdout('  --pr <number>        select task by pr number');
+  writeStdout('  --pr <number-or-url>        select task by pr number');
   writeStdout('  --json               output json');
   writeStdout('  --help               show this help');
 }

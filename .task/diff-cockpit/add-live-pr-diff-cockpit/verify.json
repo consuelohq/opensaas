@@ -1,0 +1,121 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/add-live-pr-diff-cockpit",
+  "base": "origin/task/diff-cockpit/add-live-pr-diff-cockpit",
+  "headSha": "9cca1ab529b1f34fb0c25c32f8b849c9905a901e",
+  "changeHash": "7268fd4ed2706f625aba03ee90ecdfd5876a6e9fd764bd2e222f0f078d33a6bc",
+  "changedFiles": [
+    "package.json",
+    "packages/consuelo-core/registry/packages.json",
+    "packages/consuelo-core/registry/scripts.json",
+    "packages/consuelo-core/registry/tools.json",
+    "packages/consuelo-core/src/registry/index.ts",
+    "packages/diff-cockpit/README.md",
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/src/worker.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/diff-cockpit/tsconfig.json",
+    "packages/diff-cockpit/wrangler.toml",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/diff_cockpit.ts"
+  ],
+  "verifiedAt": "2026-06-03T03:47:23.507Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/add-live-pr-diff-cockpit/current.json",
+        ".task/diff-cockpit/add-live-pr-diff-cockpit/evidence-log.json",
+        ".task/diff-cockpit/add-live-pr-diff-cockpit/read-log.json",
+        ".task/diff-cockpit/add-live-pr-diff-cockpit/session.json",
+        ".task/diff-cockpit/add-live-pr-diff-cockpit/workpad.md",
+        ".task/tasks/diff-cockpit/add-live-pr-diff-cockpit.json",
+        "package.json",
+        "packages/consuelo-core/registry/packages.json",
+        "packages/consuelo-core/registry/scripts.json",
+        "packages/consuelo-core/registry/tools.json",
+        "packages/consuelo-core/src/registry/index.ts",
+        "packages/diff-cockpit/README.md",
+        "packages/diff-cockpit/package.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/src/worker.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "packages/diff-cockpit/tsconfig.json",
+        "packages/diff-cockpit/wrangler.toml",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/diff_cockpit.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 356,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-add-live-pr-diff-cockpit\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 86\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:47:23\n\u001b[2m   Duration \u001b[22m 161ms\u001b[2m (transform 15ms, setup 0ms, import 20ms, tests 86ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

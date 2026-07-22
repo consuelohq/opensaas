@@ -1,0 +1,72 @@
+---
+title: Create a skill
+description: Build a small, testable skill around a real repeated workflow.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/skills/skill-creator/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+      - packages/os/tests/skill-migration.test.ts
+    runtime: The current skill-creator operating guide, fixture migrations, and registry validation were inspected on 2026-07-13.
+---
+
+Create a skill when a repeated job needs durable instructions—not merely because a command exists.
+
+## Start with the contract
+
+Write down:
+
+- the trigger: when an agent should load the skill;
+- the outcome: what successful work produces;
+- the tools and scripts it may use;
+- the permission tier and approval points;
+- the verification that proves the result;
+- the artifact types or handoff it creates.
+
+Keep `SKILL.md` procedural. Put execution in tools or scripts instead of embedding a second runtime inside the guidance file.
+
+## Minimal layout
+
+```text
+my-skill/
+  SKILL.md
+  skill.json
+```
+
+A small guidance entrypoint can follow this shape:
+
+```md
+# Purpose
+
+Use this skill when ...
+
+## Workflow
+
+1. Inspect ...
+2. Call ...
+3. Verify ...
+
+## Approval gates
+
+Ask before ...
+
+## Report
+
+Return ...
+```
+
+Create metadata that points to that entrypoint and declares only the capabilities the skill actually uses. See [Skill structure](/build/skills/skill-structure/) for the current fields.
+
+## Test before installing
+
+Validate that:
+
+- the entrypoint and load path exist;
+- the compact registry can be generated;
+- named tools exist in the current tool manifest;
+- permission and approval fields match any runtime manifest entry;
+- examples run against the current OS;
+- the guidance does not contain machine-specific secrets or paths.
+
+Prefer a focused skill over one large manual that activates for unrelated work.

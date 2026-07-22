@@ -1,0 +1,282 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "name": "artifacts",
+      "title": "Artifacts",
+      "description": "Canonical orchestration skill for creating, validating, publishing, finding, and revising durable Consuelo artifacts such as sites, guides, specifications, plans, reports, demos, emails, images, and motion outputs.",
+      "trigger": "Invoke when the user asks to create, revise, publish, validate, inspect, search, or roll back a durable generated output through Consuelo Artifacts.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/artifacts/SKILL.md"
+      },
+      "permission": "draft",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "artifacts",
+        "artifact-generation",
+        "artifact-publishing",
+        "artifact-history"
+      ]
+    },
+    {
+      "name": "browser",
+      "title": "Browser",
+      "description": "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.",
+      "trigger": "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/browser/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "browser",
+        "web",
+        "automation"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "consuelo-workspace-snapshot",
+      "title": "Consuelo Workspace Snapshot",
+      "description": "Reads a structured, read-only snapshot of Consuelo workspace objects, including Files and Attachments, through the configured Consuelo GraphQL/API facade.",
+      "trigger": "Invoke when the user asks an agent to inspect Consuelo workspace records, files, attachments, tasks, notes, dashboards, or GraphQL-backed workspace context.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/consuelo-workspace-snapshot/SKILL.md"
+      },
+      "permission": "read",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "workspace-graphql",
+        "consuelo-app",
+        "files"
+      ]
+    },
+    {
+      "name": "daily-revenue-brief",
+      "title": "Daily Revenue Brief",
+      "description": "Builds a daily workspace revenue brief from approved structured context and publishes a versioned Consuelo Artifact.",
+      "trigger": "Invoke when the user asks for a daily revenue brief, revenue summary, or workspace revenue artifact.",
+      "entrypoint": "skill.json",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/daily-revenue-brief/skill.json"
+      },
+      "permission": "draft",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "consuelo-graphql"
+      ]
+    },
+    {
+      "name": "debugger",
+      "title": "Debugger",
+      "description": "Use this OS skill for runtime debugging across browser behavior, deployment logs, error tracking, analytics, and code evidence. Invoke it for bug triage, incidents, post-merge validation, frontend regressions, worker or queue issues, telephony flows, observability checks, and reconciling runtime truth with code assumptions.",
+      "trigger": "Use this OS skill for runtime debugging across browser behavior, deployment logs, error tracking, analytics, and code evidence. Invoke it for bug triage, incidents, post-merge validation, frontend regressions, worker or queue issues, telephony flows, observability checks, and reconciling runtime truth with code assumptions.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/debugger/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "debugging",
+        "runtime",
+        "observability",
+        "browser",
+        "deployments"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "handoff",
+      "title": "Handoff",
+      "description": "Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely.",
+      "trigger": "Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/handoff/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "context",
+        "handoff",
+        "continuity"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "research-ingest",
+      "title": "Research Ingest",
+      "description": "use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to memory, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable memory, and follow-up analysis from ingested sources..",
+      "trigger": "use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to memory, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable memory, and follow-up analysis from ingested sources..",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/research-ingest/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "research",
+        "memory",
+        "ingestion"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "senior-engineer",
+      "title": "Senior Engineer",
+      "description": "Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR.",
+      "trigger": "Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/senior-engineer/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "repo",
+        "engineering",
+        "review"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "sites",
+      "title": "Sites",
+      "description": "Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts.",
+      "trigger": "Invoke when the user asks about OS site delivery, local site materialization, launcher pages, typed page registries, traces, diffs, settings pages, or edge snapshot routing.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/sites/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "sites",
+        "artifact-delivery",
+        "local-pages",
+        "edge-snapshots"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "skill-creator",
+      "title": "Skill Creator",
+      "description": "Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite.",
+      "trigger": "Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/skill-creator/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "skills",
+        "authoring",
+        "validation",
+        "migration"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "task",
+      "title": "Task Workflow",
+      "description": "Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.",
+      "trigger": "Invoke when the user asks to start, run, validate, publish, promote, inspect, recover, or finish repo/task-scoped work in a stream.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/task/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "workspace",
+        "repo",
+        "task-lifecycle"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "teach",
+      "title": "Teach",
+      "description": "Use this skill when the user asks the OS agent to teach them a daily deep idea, create an AI-seeded learning guide, ingest a research source for teaching, or publish a durable Sites guide that explains one transferable concept. It coordinates research ingest, typed guide rendering, Sites publishing, and optional teach state updates.",
+      "trigger": "Invoke when the user asks to teach, learn one idea, run Daily Deep Idea, create an AI learning guide, explain a paper/source as a durable lesson, or set up/swap an auto-teaching topic queue.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/teach/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "teaching",
+        "research",
+        "sites",
+        "guide-rendering"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    }
+  ]
+}

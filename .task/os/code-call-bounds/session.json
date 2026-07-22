@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_97271ffd09bc",
+  "tmuxSession": "opensaas-os-code-call-bounds-97271ffd",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/code-call-bounds",
+  "branch": "task/os/code-call-bounds",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-code-call-bounds",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-code-call-bounds",
+  "prNumber": 1173,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1173",
+  "createdAt": "2026-06-22T21:41:19.924Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-code-call-bounds/.task/os/code-call-bounds/session.json"
+}

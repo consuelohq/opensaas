@@ -42,6 +42,17 @@
       }
     },
     "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "cwd": "packages/twenty-server",
+        "command": "tsgo -p tsconfig.json --noEmit"
+      },
+      "configurations": {
+        "watch": {
+          "command": "tsgo -p tsconfig.json --noEmit --watch"
+        }
+      },
       "dependsOn": ["^build"]
     },
     "start": {
@@ -262,14 +273,22 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "{projectRoot}",
-        "command": "lingui extract --overwrite --clean"
+        "commands": [
+          "lingui extract --config lingui.config.ts --overwrite --clean",
+          "lingui extract --config lingui.email-templates.config.ts --overwrite --clean"
+        ],
+        "parallel": false
       }
     },
     "lingui:compile": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "{projectRoot}",
-        "command": "lingui compile --typescript"
+        "commands": [
+          "lingui compile --config lingui.config.ts --typescript",
+          "lingui compile --config lingui.email-templates.config.ts --typescript"
+        ],
+        "parallel": false
       }
     }
   }

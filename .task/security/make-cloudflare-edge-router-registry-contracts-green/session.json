@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d6a08865fc70",
+  "tmuxSession": "opensaas-security-make-cloudflare-edge-router-registry-contracts-g-d6a08865",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/make-cloudflare-edge-router-registry-contracts-green",
+  "branch": "task/security/make-cloudflare-edge-router-registry-contracts-green",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-cloudflare-edge-router-registry-contracts-green",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-cloudflare-edge-router-registry-contracts-green",
+  "prNumber": 952,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/952",
+  "createdAt": "2026-06-11T05:25:30.174Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-make-cloudflare-edge-router-registry-contracts-green/.task/security/make-cloudflare-edge-router-registry-contracts-green/session.json"
+}

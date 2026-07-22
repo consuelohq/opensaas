@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/explore-tdd-workpad-automation",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 649,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/649",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/649",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/649/explore-tdd-workpad-automation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/649",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/649/explore-tdd-workpad-automation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-explore-tdd-workpad-automation",
+  "taskSession": "tsk_4953767b7db9",
+  "tmuxSession": "opensaas-workspace-agents-explore-tdd-workpad-automation-4953767b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-explore-tdd-workpad-automation/.task/workspace-agents/explore-tdd-workpad-automation/session.json",
+  "createdAt": "2026-05-29T21:40:24.595Z"
+}

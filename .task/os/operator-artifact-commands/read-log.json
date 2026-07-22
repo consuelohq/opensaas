@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/os.ts"
+  ],
+  "updatedAt": "2026-06-11T07:35:13.175Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/trim-core-manifest-tool-surface",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1116,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1116",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1116",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1116/trim-core-manifest-tool-surface",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1116",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1116/trim-core-manifest-tool-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trim-core-manifest-tool-surface",
+  "taskSession": "tsk_4726e39266c2",
+  "tmuxSession": "opensaas-workspace-agents-trim-core-manifest-tool-surface-4726e392",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-trim-core-manifest-tool-surface/.task/workspace-agents/trim-core-manifest-tool-surface/session.json",
+  "createdAt": "2026-06-18T00:27:59.481Z"
+}

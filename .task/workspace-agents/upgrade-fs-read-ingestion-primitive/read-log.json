@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/workspace-agents/upgrade-fs-read-ingestion-primitive/workpad.md",
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-06-15T06:58:10.278Z"
+}

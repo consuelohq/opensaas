@@ -1,0 +1,12 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-script-parity-audit-tests",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 989,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/989",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-script-parity-audit-tests",
+  "createdAt": "2026-06-13T05:17:11.787Z"
+}

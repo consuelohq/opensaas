@@ -3,9 +3,10 @@ import { BadRequestException } from '@nestjs/common';
 import { type Request } from 'express';
 import { isDefined, isValidUuid } from 'twenty-shared/utils';
 
-export const parseCorePath = (
-  request: Request,
-): { object: string; id?: string } => {
+export function parseCorePath(request: Request): {
+  object: string;
+  id?: string;
+} {
   const queryAction = request.path
     .replace('/rest/', '')
     .replace('/rest', '')
@@ -63,4 +64,4 @@ export const parseCorePath = (
   }
 
   return { object: queryAction[0], id: recordId };
-};
+}

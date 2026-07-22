@@ -1,0 +1,10 @@
+[
+  {
+    "from": "contextTitle",
+    "to": "memoryTitle"
+  },
+  {
+    "from": "contextCategory",
+    "to": "memoryCategory"
+  }
+]

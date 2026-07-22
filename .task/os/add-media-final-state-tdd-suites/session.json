@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a6eb11929316",
+  "tmuxSession": "opensaas-os-add-media-final-state-tdd-suites-a6eb1192",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-media-final-state-tdd-suites",
+  "branch": "task/os/add-media-final-state-tdd-suites",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-media-final-state-tdd-suites",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-media-final-state-tdd-suites",
+  "prNumber": 1192,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1192",
+  "createdAt": "2026-06-23T17:12:52.590Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-media-final-state-tdd-suites/.task/os/add-media-final-state-tdd-suites/session.json"
+}

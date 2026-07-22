@@ -1,0 +1,82 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/os-observability-route-source-stabilization",
+  "base": "origin/task/workspace-agents/os-observability-route-source-stabilization",
+  "headSha": "759b4f78fc910e59e2fa4531f0dfe0aa5bd7683a",
+  "changeHash": "ab2ae5b39ad0ae3921103b0c2d656d980a8e53cc220c347763d5e35616b45679",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/os/launcher.astro",
+    "packages/os/scripts/lib/consuelo-sites-trace-adapter.ts",
+    "packages/os/scripts/lib/install-edge-site-publisher.ts",
+    "packages/os/scripts/lib/launcher-onboarding.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/tests/launcher-onboarding.test.ts",
+    "packages/os/tests/sites-cli.test.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+    "packages/os/tests/workspace-hostname-edge-router.test.ts",
+    "packages/workspace/scripts/office.ts",
+    "packages/workspace/tests/office-theme.test.js"
+  ],
+  "verifiedAt": "2026-07-01T18:21:12.200Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/os-observability-route-source-stabilization.json",
+        ".task/workspace-agents/os-observability-route-source-stabilization/current.json",
+        ".task/workspace-agents/os-observability-route-source-stabilization/session.json",
+        ".task/workspace-agents/os-observability-route-source-stabilization/workpad.md",
+        "packages/consuelo-website/src/pages/os/launcher.astro",
+        "packages/os/scripts/lib/consuelo-sites-trace-adapter.ts",
+        "packages/os/scripts/lib/install-edge-site-publisher.ts",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/launcher-onboarding.test.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+        "packages/os/tests/workspace-hostname-edge-router.test.ts",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/tests/office-theme.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

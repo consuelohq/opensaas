@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/rewrite-consuelo-os-landing-page-from-approved-hermes-reference",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1420,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1420",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1420",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1420/rewrite-consuelo-os-landing-page-from-approved-hermes-reference",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1420",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1420/rewrite-consuelo-os-landing-page-from-approved-hermes-reference",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-rewrite-consuelo-os-landing-page-from-approved-hermes-reference",
+  "taskSession": "tsk_0bb84d396042",
+  "tmuxSession": "opensaas-website-rewrite-consuelo-os-landing-page-from-approved-h-0bb84d39",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-rewrite-consuelo-os-landing-page-from-approved-hermes-reference/.task/website/rewrite-consuelo-os-landing-page-from-approved-hermes-reference/session.json",
+  "createdAt": "2026-07-11T19:13:52.629Z"
+}

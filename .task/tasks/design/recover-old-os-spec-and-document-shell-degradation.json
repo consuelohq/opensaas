@@ -1,0 +1,19 @@
+{
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/recover-old-os-spec-and-document-shell-degradation",
+  "baseBranch": "stream/design",
+  "sourceBranch": "stream/design",
+  "startFrom": "stream",
+  "prNumber": 816,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/816",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/816",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/816/recover-old-os-spec-and-document-shell-degradation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/816",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/816/recover-old-os-spec-and-document-shell-degradation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-recover-old-os-spec-and-document-shell-degradation",
+  "taskSession": "tsk_ffa3b8003697",
+  "tmuxSession": "opensaas-design-recover-old-os-spec-and-document-shell-degradati-ffa3b800",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-recover-old-os-spec-and-document-shell-degradation/.task/design/recover-old-os-spec-and-document-shell-degradation/session.json",
+  "createdAt": "2026-06-06T13:53:27.991Z"
+}

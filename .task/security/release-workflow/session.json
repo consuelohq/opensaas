@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_529ad2defd72",
+  "tmuxSession": "opensaas-security-release-workflow-529ad2de",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/release-workflow",
+  "branch": "task/security/release-workflow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-workflow",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-workflow",
+  "prNumber": 1386,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1386",
+  "createdAt": "2026-07-10T22:47:14.538Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-release-workflow/.task/security/release-workflow/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c16c960f97b7",
+  "tmuxSession": "opensaas-os-manifest-build-os-manifest-registry-and-core-manifest-c16c960f",
+  "area": "os-manifest",
+  "stream": "stream/os-manifest",
+  "taskBranch": "task/os-manifest/build-os-manifest-registry-and-core-manifest",
+  "branch": "task/os-manifest/build-os-manifest-registry-and-core-manifest",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-build-os-manifest-registry-and-core-manifest",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-build-os-manifest-registry-and-core-manifest",
+  "prNumber": 718,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/718",
+  "createdAt": "2026-06-03T01:54:06.038Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-manifest-build-os-manifest-registry-and-core-manifest/.task/os-manifest/build-os-manifest-registry-and-core-manifest/session.json"
+}

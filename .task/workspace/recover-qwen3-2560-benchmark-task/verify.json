@@ -1,0 +1,106 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace/recover-qwen3-2560-benchmark-task",
+  "base": "origin/main",
+  "headSha": "6726a8ab76a874b26e9d3efefe7e0eb2b712b232",
+  "changeHash": "047d569f43010f2a6ebf54d50e3c27e303f1f031838874b8156dc16c302fc74a",
+  "changedFiles": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/explore.js",
+    "packages/workspace/scripts/lib/index/embedder.js",
+    "packages/workspace/scripts/lib/index/embedding-config.js",
+    "packages/workspace/scripts/lib/index/indexer.js",
+    "packages/workspace/scripts/lib/index/store.js",
+    "packages/workspace/tests/embedding-config.test.js"
+  ],
+  "verifiedAt": "2026-05-28T22:40:05.841Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace/recover-qwen3-2560-benchmark-task.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/current.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/evidence-log.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/read-log.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/session.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/verify.json",
+        ".task/workspace/recover-qwen3-2560-benchmark-task/workpad.md",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/scripts/explore.js",
+        "packages/workspace/scripts/lib/index/embedder.js",
+        "packages/workspace/scripts/lib/index/embedding-config.js",
+        "packages/workspace/scripts/lib/index/indexer.js",
+        "packages/workspace/scripts/lib/index/store.js",
+        "packages/workspace/tests/embedding-config.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 365,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-recover-qwen3-2560-benchmark-task\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 84\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:40:05\n\u001b[2m   Duration \u001b[22m 162ms\u001b[2m (transform 16ms, setup 0ms, import 20ms, tests 84ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

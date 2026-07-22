@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "currency": "USD",
+  "default_model": "gpt-5.5",
+  "models": {
+    "gpt-5.5": {
+      "input_per_1m": 5.0,
+      "cached_input_per_1m": 0.5,
+      "output_per_1m": 30.0,
+      "source": "openai_api_pricing_2026-06-05"
+    },
+    "codex-5.5": {
+      "alias_of": "gpt-5.5"
+    },
+    "gpt-5.5-codex": {
+      "alias_of": "gpt-5.5"
+    }
+  },
+  "tool_defaults": {
+    "cdx.codex_apps.workspace": "codex-5.5",
+    "cdx.codex_apps": "codex-5.5",
+    "codex": "codex-5.5",
+    "prReview": "codex-5.5",
+    "review.run": "codex-5.5",
+    "*": "gpt-5.5"
+  },
+  "fixed_tool_costs": {
+    "web.search": {
+      "cost_per_1k_calls": 10.0,
+      "note": "Only use when a trace row represents a billed OpenAI web-search call."
+    }
+  },
+  "cache_policy": {
+    "mode": "actual_then_zero",
+    "min_cacheable_input_tokens": 1024,
+    "heuristic_cached_ratio": 0,
+    "max_retention_hours": 24
+  }
+}

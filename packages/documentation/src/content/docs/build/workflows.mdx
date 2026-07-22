@@ -1,0 +1,49 @@
+---
+title: Workflows
+description: Use manifest-backed workflow bundles for repeated, ordered work.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/manifests/workflow-bundles.json
+    tests:
+      - packages/os/tests/workflow-intent.test.ts
+    runtime: Task, Office, and media workflow bundles and their subscriptions were inspected and exercised by focused tests on 2026-07-13.
+---
+
+A **workflow bundle** maps a repeated kind of work to ordered roles, typed tools, and lifecycle events. It makes the same process available to different agents without turning the process into one giant command.
+
+Current bundles include:
+
+- **task** for repository work, with aliases such as `repo` and `code`;
+- **office** for design and Sites work;
+- **media** for media pipelines.
+
+## Task workflow
+
+The task workflow follows a guarded lifecycle:
+
+```text
+stream context
+  → task start
+  → scoped workpad and test contract
+  → research
+  → red test or documented waiver
+  → implementation
+  → focused verification
+  → review and full verify
+  → push
+  → stream PR
+  → finish
+```
+
+`task.start` is the public entrypoint. It returns a `taskSession` tied to an isolated branch and worktree. Pass that session to every task-scoped tool. The workflow's hooks add guidance at lifecycle events; they do not replace tool validation or Git review.
+
+## Office and media workflows
+
+The Office bundle groups generation, validation, publishing, and runtime tools. The media bundle groups inspect, compose, and quality operations. Aliases let intent resolve to the same canonical bundle.
+
+## Workflow versus skill
+
+A skill teaches the procedure and judgment. A workflow bundle exposes the ordered roles, tools, and subscriptions that implement a repeated process. They can be used together, but neither is a synonym for the other.
+
+Use the current manifest as the source of truth for available bundles. Do not invent a workflow by naming a sequence that is not registered.

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-os-task-metadata-history",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 702,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/702",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/702",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/702/restore-os-task-metadata-history",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/702",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/702/restore-os-task-metadata-history",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-os-task-metadata-history",
+  "taskSession": "tsk_34cda5226e45",
+  "tmuxSession": "opensaas-os-restore-os-task-metadata-history-34cda522",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-os-task-metadata-history/.task/os/restore-os-task-metadata-history/session.json",
+  "createdAt": "2026-06-02T19:13:24.980Z"
+}

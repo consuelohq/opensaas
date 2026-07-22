@@ -1,0 +1,73 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/organize-website-design-system-context",
+  "base": "origin/task/sites/organize-website-design-system-context",
+  "headSha": "9859abd6f816bd59639e7e7fb16d0e02905733d0",
+  "changeHash": "1ecc8794ea5559513c0aca2eabbe6bf04812817ae40e30a9f219517a93299bd3",
+  "changedFiles": [
+    "areas/consuelo-design/AGENTS.md",
+    "areas/website/AGENTS.md",
+    "packages/consuelo-design/design-system/manifest.json",
+    "packages/consuelo-design/scripts/consuelo-design.ts",
+    "packages/consuelo-website/AGENT-SPECS.md",
+    "packages/consuelo-website/AGENTS.md",
+    "packages/consuelo-website/COMPONENTS.md",
+    "packages/consuelo-website/DESIGN.md",
+    "packages/consuelo-website/animations.md",
+    "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+    "packages/consuelo-website/src/styles/primitives.css",
+    "packages/consuelo-website/src/styles/tokens.css",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-06-28T01:52:23.433Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/organize-website-design-system-context/current.json",
+        ".task/sites/organize-website-design-system-context/session.json",
+        ".task/sites/organize-website-design-system-context/workpad.md",
+        ".task/tasks/sites/organize-website-design-system-context.json",
+        "areas/consuelo-design/AGENTS.md",
+        "areas/website/AGENTS.md",
+        "packages/consuelo-design/design-system/manifest.json",
+        "packages/consuelo-design/scripts/consuelo-design.ts",
+        "packages/consuelo-website/AGENT-SPECS.md",
+        "packages/consuelo-website/AGENTS.md",
+        "packages/consuelo-website/COMPONENTS.md",
+        "packages/consuelo-website/DESIGN.md",
+        "packages/consuelo-website/animations.md",
+        "packages/consuelo-website/src/layouts/MarketingLayout.astro",
+        "packages/consuelo-website/src/styles/primitives.css",
+        "packages/consuelo-website/src/styles/tokens.css",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

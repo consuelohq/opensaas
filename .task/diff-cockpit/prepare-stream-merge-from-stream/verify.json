@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/diff-cockpit/prepare-stream-merge-from-stream",
+  "base": "origin/task/diff-cockpit/prepare-stream-merge-from-stream",
+  "headSha": "42940e30ef68c866f0bc28a5c18b8561f5e97b36",
+  "changeHash": "c464b2edf2acbac20f49445ab28c2c947d26763ef00499c9e23d8a38aaf49714",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+    "packages/workspace/scripts/diff_cockpit.ts"
+  ],
+  "verifiedAt": "2026-06-07T17:54:41.439Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/diff-cockpit/prepare-stream-merge-from-stream/current.json",
+        ".task/diff-cockpit/prepare-stream-merge-from-stream/evidence-log.json",
+        ".task/diff-cockpit/prepare-stream-merge-from-stream/read-log.json",
+        ".task/diff-cockpit/prepare-stream-merge-from-stream/session.json",
+        ".task/diff-cockpit/prepare-stream-merge-from-stream/workpad.md",
+        ".task/tasks/diff-cockpit/prepare-stream-merge-from-stream.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+        "packages/workspace/scripts/diff_cockpit.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

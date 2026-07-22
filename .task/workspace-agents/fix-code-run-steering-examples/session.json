@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c14a783e5c7c",
+  "tmuxSession": "opensaas-workspace-agents-fix-code-run-steering-examples-c14a783e",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-code-run-steering-examples",
+  "branch": "task/workspace-agents/fix-code-run-steering-examples",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-run-steering-examples",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-run-steering-examples",
+  "prNumber": 845,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/845",
+  "createdAt": "2026-06-08T02:44:16.249Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-code-run-steering-examples/.task/workspace-agents/fix-code-run-steering-examples/session.json"
+}

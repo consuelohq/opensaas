@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/tasks/workspace-agents/fix-trace-analytics-month-window.json",
+    ".task/workspace-agents/fix-trace-analytics-month-window/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/workspace/SCRIPTS.md",
+    "scripts/operator/trace-analytics.ts"
+  ],
+  "updatedAt": "2026-06-13T15:01:35.607Z"
+}

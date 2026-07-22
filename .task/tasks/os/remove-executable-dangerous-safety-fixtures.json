@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-executable-dangerous-safety-fixtures",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1071,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1071",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1071",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1071/remove-executable-dangerous-safety-fixtures",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1071",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1071/remove-executable-dangerous-safety-fixtures",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-executable-dangerous-safety-fixtures",
+  "taskSession": "tsk_9c4fffae4dd2",
+  "tmuxSession": "opensaas-os-remove-executable-dangerous-safety-fixtures-9c4fffae",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-executable-dangerous-safety-fixtures/.task/os/remove-executable-dangerous-safety-fixtures/session.json",
+  "createdAt": "2026-06-15T08:38:58.315Z"
+}

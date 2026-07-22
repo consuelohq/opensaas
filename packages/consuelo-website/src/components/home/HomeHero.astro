@@ -1,0 +1,500 @@
+---
+import { INSTALL_COMMAND } from '../../data/home-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'intro' } = Astro.props as Props;
+---
+
+<section class="os-hero" id={sectionId} data-section="hero">
+  <div class="os-hero__atmosphere" aria-hidden="true">
+    <img class="os-hero__cloud os-hero__cloud--1" src="/images/home/dither/cloud-1.png" alt="" width="900" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--2" src="/images/home/dither/cloud-2.png" alt="" width="1020" height="390" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--3" src="/images/home/dither/cloud-3.png" alt="" width="800" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--4" src="/images/home/dither/cloud-4.png" alt="" width="950" height="400" loading="eager" />
+  </div>
+
+  <div class="os-hero__content">
+    <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
+    <h1 data-hero-heading>
+      <span data-hero-desktop-line>YOUR ASSISTANT</span>
+      <span data-hero-desktop-line>SHOULD COME PREPARED.</span>
+      <span data-hero-mobile-line>YOUR</span>
+      <span data-hero-mobile-line>ASSISTANT</span>
+      <span data-hero-mobile-line>SHOULD COME</span>
+      <span data-hero-mobile-line>PREPARED.</span>
+    </h1>
+    <p class="os-hero__subtitle" data-hero-subtitle>
+      <span data-hero-subtitle-primary>Cloud when you need it. Local where it matters.</span>
+      <span>The agent runner for ChatGPT, Claude, Cursor, OpenCode, and Grok.</span>
+    </p>
+
+    <div class="os-hero__actions">
+      <a class="os-hero__button" href="https://os.consuelohq.com">
+        SIGN IN
+        <svg class="os-hero__button-arrow" viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
+          <rect x="0" y="0" width="1" height="9" />
+          <rect x="1" y="1" width="1" height="1" />
+          <rect x="2" y="2" width="1" height="1" />
+          <rect x="3" y="3" width="1" height="1" />
+          <rect x="4" y="4" width="1" height="1" />
+          <rect x="3" y="5" width="1" height="1" />
+          <rect x="2" y="6" width="1" height="1" />
+          <rect x="1" y="7" width="1" height="1" />
+        </svg>
+      </a>
+    </div>
+
+    <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
+      <code>{INSTALL_COMMAND}</code>
+      <span data-copy-label>COPY</span>
+    </button>
+  </div>
+</section>
+
+<script define:vars={{ INSTALL_COMMAND }}>
+  const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
+    (label) => label instanceof HTMLElement,
+  );
+  const defaultLabels = new Map(labels.map((label) => [label, label.textContent ?? '']));
+
+  document.querySelectorAll('[data-copy-install]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!navigator.clipboard) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(INSTALL_COMMAND);
+      } catch {
+        return;
+      }
+
+      labels.forEach((label) => {
+        label.textContent = 'COPIED';
+      });
+      window.setTimeout(() => {
+        labels.forEach((label) => {
+          label.textContent = defaultLabels.get(label) ?? '';
+        });
+      }, 1500);
+    });
+  });
+</script>
+
+<script>
+  import { measureNaturalWidth, prepareWithSegments } from '@chenglou/pretext';
+
+  const heading = document.querySelector('[data-hero-heading]');
+  const subtitle = document.querySelector('[data-hero-subtitle]');
+  const subtitlePrimary = document.querySelector('[data-hero-subtitle-primary]');
+  const mobileMedia = window.matchMedia('(max-width: 720px)');
+
+  type FitOptions = {
+    texts: string[];
+    availableWidth: number;
+    fontFamily: string;
+    fontWeight: string;
+    letterSpacing: number;
+    min: number;
+    max: number;
+  };
+
+  const measureAtSize = (
+    text: string,
+    fontFamily: string,
+    fontWeight: string,
+    letterSpacing: number,
+    size: number,
+  ) => {
+    const font = `${fontWeight} ${size}px ${fontFamily}`;
+    return measureNaturalWidth(
+      prepareWithSegments(text, font, letterSpacing === 0 ? undefined : { letterSpacing }),
+    );
+  };
+
+  const findLargestFittingSize = ({
+    texts,
+    availableWidth,
+    fontFamily,
+    fontWeight,
+    letterSpacing,
+    min,
+    max,
+  }: FitOptions) => {
+    let lower = min;
+    let upper = Math.max(min, max);
+
+    for (let index = 0; index < 12; index += 1) {
+      const candidate = (lower + upper) / 2;
+      const widestLine = Math.max(
+        ...texts.map((value) => measureAtSize(value, fontFamily, fontWeight, letterSpacing, candidate)),
+      );
+
+      if (widestLine <= availableWidth) {
+        lower = candidate;
+      } else {
+        upper = candidate;
+      }
+    }
+
+    return lower;
+  };
+
+  const fitHeroTypography = () => {
+    if (!(heading instanceof HTMLElement) || !(subtitle instanceof HTMLElement) || !(subtitlePrimary instanceof HTMLElement)) {
+      return;
+    }
+
+    const isMobile = mobileMedia.matches;
+    const headingStyle = window.getComputedStyle(heading);
+    const headingLines = Array.from(
+      heading.querySelectorAll(isMobile ? '[data-hero-mobile-line]' : '[data-hero-desktop-line]'),
+    )
+      .map((line) => line.textContent?.trim() ?? '')
+      .filter(Boolean);
+    const headingWidth = Math.max(1, heading.clientWidth - 2);
+    const headingSize = findLargestFittingSize({
+      texts: headingLines,
+      availableWidth: headingWidth,
+      fontFamily: headingStyle.fontFamily,
+      fontWeight: headingStyle.fontWeight,
+      letterSpacing: Number.parseFloat(headingStyle.letterSpacing) || 0,
+      min: isMobile ? 42 : 58,
+      max: isMobile ? Math.min(62, window.innerWidth * 0.145) : 108,
+    });
+    heading.style.setProperty('--hero-heading-size', `${headingSize.toFixed(2)}px`);
+
+    const subtitleStyle = window.getComputedStyle(subtitle);
+    const subtitleSize = findLargestFittingSize({
+      texts: [subtitlePrimary.textContent?.trim() ?? ''],
+      availableWidth: Math.max(1, subtitle.clientWidth - 2),
+      fontFamily: subtitleStyle.fontFamily,
+      fontWeight: subtitleStyle.fontWeight,
+      letterSpacing: Number.parseFloat(subtitleStyle.letterSpacing) || 0,
+      min: isMobile ? 13 : 16,
+      max: isMobile ? 17 : 20,
+    });
+    subtitle.style.setProperty('--hero-subtitle-size', `${subtitleSize.toFixed(2)}px`);
+  };
+
+  let frame = 0;
+  const queueFit = () => {
+    window.cancelAnimationFrame(frame);
+    frame = window.requestAnimationFrame(fitHeroTypography);
+  };
+
+  queueFit();
+  document.fonts.ready.then(queueFit);
+  mobileMedia.addEventListener('change', queueFit);
+  window.addEventListener('resize', queueFit, { passive: true });
+</script>
+
+<style>
+  .os-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 90svh;
+    place-items: center;
+    overflow: hidden;
+    background: var(--site-color-brand);
+    color: white;
+    padding: clamp(7rem, 10vw, 9rem) clamp(1.25rem, 4vw, 4rem) clamp(3rem, 5vw, 4.5rem);
+    text-align: center;
+  }
+
+  .os-hero__content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: min(100%, 80rem);
+    min-width: 0;
+    max-width: 100%;
+    justify-items: center;
+    gap: clamp(1rem, 1.55vw, 1.4rem);
+  }
+
+  .os-hero__eyebrow {
+    margin: 0 0 clamp(0.1rem, 0.45vw, 0.35rem);
+    font: 650 clamp(0.66rem, 0.85vw, 0.78rem)/1 var(--site-font-mono);
+    letter-spacing: 0.2em;
+  }
+
+  .os-hero h1 {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    color: white;
+    font-family: var(--site-font-display);
+    font-size: var(--hero-heading-size, clamp(3.75rem, 7.5vw, 6.75rem));
+    font-optical-sizing: auto;
+    font-weight: 400;
+    letter-spacing: 0.015em;
+    line-height: 1;
+    text-wrap: balance;
+  }
+
+  .os-hero h1 > span {
+    display: block;
+    white-space: nowrap;
+  }
+
+  [data-hero-mobile-line] {
+    display: none !important;
+  }
+
+  .os-hero__subtitle {
+    width: min(100%, 64rem);
+    min-width: 0;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--hero-subtitle-size, clamp(1rem, 1.4vw, 1.25rem));
+    line-height: 1.42;
+    text-wrap: pretty;
+  }
+
+  .os-hero__subtitle > span {
+    display: block;
+  }
+
+  .os-hero__subtitle > span:first-child {
+    white-space: nowrap;
+  }
+
+  .os-hero__subtitle > span:last-child {
+    text-wrap: balance;
+  }
+
+  .os-hero__actions {
+    display: grid;
+    width: min(100%, 34rem);
+    min-width: 0;
+    gap: 0.55rem;
+    margin-top: 0.45rem;
+  }
+
+  .os-hero__button,
+  .os-hero__command {
+    border: 1px solid white;
+    border-radius: 0;
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.72rem, 0.9vw, 0.8rem);
+    font-weight: 650;
+    letter-spacing: 0.09em;
+  }
+
+  .os-hero__button {
+    display: flex;
+    min-height: 3.15rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: white;
+    box-shadow: 0.22rem 0.22rem 0 rgba(0, 0, 92, 0.28);
+    color: var(--site-color-brand);
+    text-decoration: none;
+    transform: translate(-0.08rem, -0.08rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
+  }
+
+  .os-hero__button-arrow {
+    width: 0.58rem;
+    height: 0.82rem;
+    shape-rendering: crispEdges;
+  }
+
+  .os-hero__button:hover,
+  .os-hero__button:focus-visible {
+    background: white;
+    box-shadow: 0.1rem 0.1rem 0 rgba(0, 0, 92, 0.2);
+    color: var(--site-color-brand);
+    transform: translate(0, 0);
+  }
+
+  .os-hero__command {
+    display: flex;
+    width: min(100%, 34rem);
+    min-width: 0;
+    min-height: 3.05rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: 0.2rem 0.2rem 0 rgba(255, 255, 255, 0.32);
+    color: white;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    transform: translate(-0.06rem, -0.06rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
+  }
+
+  .os-hero__command code {
+    min-width: 0;
+    overflow: hidden;
+    font: inherit;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .os-hero__command span {
+    flex: 0 0 auto;
+    font-size: 0.68rem;
+  }
+
+  .os-hero__command:hover,
+  .os-hero__command:focus-visible {
+    background: white;
+    box-shadow: 0.08rem 0.08rem 0 rgba(255, 255, 255, 0.22);
+    color: var(--site-color-brand);
+    transform: translate(0, 0);
+  }
+
+  .os-hero__atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+  }
+
+  .os-hero__cloud {
+    position: absolute;
+    max-width: none;
+    image-rendering: pixelated;
+  }
+
+  .os-hero__cloud--1 {
+    top: 5%;
+    left: -10%;
+    opacity: 0.42;
+  }
+
+  .os-hero__cloud--2 {
+    bottom: 22%;
+    left: -12%;
+    opacity: 0.45;
+  }
+
+  .os-hero__cloud--3 {
+    top: 2%;
+    right: -16%;
+    opacity: 0.34;
+  }
+
+  .os-hero__cloud--4 {
+    bottom: 8%;
+    right: -14%;
+    opacity: 0.4;
+  }
+
+  .os-hero::after {
+    position: absolute;
+    z-index: 1;
+    inset: 18% 0 7%;
+    background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.64), transparent 54%);
+    content: '';
+    pointer-events: none;
+  }
+
+  @media (max-width: 720px) {
+    .os-hero {
+      min-height: 90svh;
+      padding: 6.1rem 0.9rem 2.5rem;
+    }
+
+    .os-hero__content {
+      width: 100%;
+      gap: 0.95rem;
+      transform: translateY(-3.5svh);
+    }
+
+    .os-hero__eyebrow {
+      margin-bottom: 0.2rem;
+      font-size: 0.67rem;
+    }
+
+    [data-hero-desktop-line] {
+      display: none !important;
+    }
+
+    [data-hero-mobile-line] {
+      display: block !important;
+    }
+
+    .os-hero h1 {
+      font-size: var(--hero-heading-size, 13.75vw);
+      letter-spacing: 0.01em;
+      line-height: 0.98;
+    }
+
+    .os-hero__subtitle {
+      width: 100%;
+      max-width: 100%;
+      font-size: var(--hero-subtitle-size, 0.92rem);
+      line-height: 1.45;
+    }
+
+    .os-hero__actions,
+    .os-hero__command {
+      width: min(100%, 32rem);
+    }
+
+    .os-hero__button {
+      min-height: 3rem;
+    }
+
+    .os-hero__command {
+      min-height: 2.85rem;
+      font-size: 0.64rem;
+    }
+
+    .os-hero__cloud--1 {
+      top: 3%;
+      left: -30%;
+      width: 480px;
+      height: 240px;
+    }
+
+    .os-hero::after {
+      inset: 16% -25% 8%;
+      background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.74), transparent 58%);
+    }
+
+    .os-hero__cloud--3 {
+      top: 8%;
+      right: -34%;
+      width: 400px;
+      height: 225px;
+    }
+
+    .os-hero__cloud--2,
+    .os-hero__cloud--4 {
+      display: none;
+    }
+  }
+
+  @media (min-width: 721px) and (max-width: 1100px) {
+    .os-hero {
+      min-height: 88svh;
+      padding-top: 8rem;
+    }
+
+    .os-hero__content {
+      transform: translateY(-1.5svh);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .os-hero__button {
+      transition: none;
+    }
+  }
+</style>

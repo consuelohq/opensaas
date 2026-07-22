@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f559fea80ce6",
+  "tmuxSession": "opensaas-os-add-script-parity-audit-tests-f559fea8",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-script-parity-audit-tests",
+  "branch": "task/os/add-script-parity-audit-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-script-parity-audit-tests",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-script-parity-audit-tests",
+  "prNumber": 989,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/989",
+  "createdAt": "2026-06-13T04:33:06.324Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-script-parity-audit-tests/.task/os/add-script-parity-audit-tests/session.json"
+}

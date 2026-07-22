@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8cf3777fd90d",
+  "tmuxSession": "opensaas-general-repair-stream-general-metadata-8cf3777f",
+  "area": "general",
+  "stream": "stream/general",
+  "taskBranch": "task/general/repair-stream-general-metadata",
+  "branch": "task/general/repair-stream-general-metadata",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-repair-stream-general-metadata",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-repair-stream-general-metadata",
+  "prNumber": 600,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/600",
+  "createdAt": "2026-05-26T00:28:27.409Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-general-repair-stream-general-metadata/.task/general/repair-stream-general-metadata/session.json"
+}

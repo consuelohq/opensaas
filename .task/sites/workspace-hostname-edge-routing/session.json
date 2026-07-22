@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1b4a8005bff8",
+  "tmuxSession": "opensaas-sites-workspace-hostname-edge-routing-1b4a8005",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/workspace-hostname-edge-routing",
+  "branch": "task/sites/workspace-hostname-edge-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-workspace-hostname-edge-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-workspace-hostname-edge-routing",
+  "prNumber": 1028,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1028",
+  "createdAt": "2026-06-14T00:44:04.019Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-workspace-hostname-edge-routing/.task/sites/workspace-hostname-edge-routing/session.json"
+}

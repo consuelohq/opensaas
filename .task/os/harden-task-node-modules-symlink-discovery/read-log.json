@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/workspace/scripts/lib/task-node-modules.js",
+    "packages/workspace/tests/task-node-modules.test.js"
+  ],
+  "updatedAt": "2026-06-14T01:08:41.239Z"
+}

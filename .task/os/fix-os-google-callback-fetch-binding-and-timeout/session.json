@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fe0b78a38c66",
+  "tmuxSession": "opensaas-os-fix-os-google-callback-fetch-binding-and-timeout-fe0b78a3",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+  "branch": "task/os/fix-os-google-callback-fetch-binding-and-timeout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-fetch-binding-and-timeout",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-fetch-binding-and-timeout",
+  "prNumber": 1056,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1056",
+  "createdAt": "2026-06-15T01:24:04.824Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-os-google-callback-fetch-binding-and-timeout/.task/os/fix-os-google-callback-fetch-binding-and-timeout/session.json"
+}

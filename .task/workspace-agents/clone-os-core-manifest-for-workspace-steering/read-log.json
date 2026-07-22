@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/workspace-agents/clone-os-core-manifest-for-workspace-steering/workpad.md",
+    "packages/os/manifests/manifest.config.json",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/generate-tool-manifest.ts",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "updatedAt": "2026-06-17T05:54:24.690Z"
+}

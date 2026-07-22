@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/main-packages-code-browser",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 773,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/773",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/773",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/773/main-packages-code-browser",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/773",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/773/main-packages-code-browser",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-main-packages-code-browser",
+  "taskSession": "tsk_fd77d8cfb25e",
+  "tmuxSession": "opensaas-diff-cockpit-main-packages-code-browser-fd77d8cf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-main-packages-code-browser/.task/diff-cockpit/main-packages-code-browser/session.json",
+  "createdAt": "2026-06-05T05:02:37.828Z"
+}

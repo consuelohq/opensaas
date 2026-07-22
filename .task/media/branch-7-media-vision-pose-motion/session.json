@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_244fa6b99f83",
+  "tmuxSession": "opensaas-media-branch-7-media-vision-pose-motion-244fa6b9",
+  "area": "media",
+  "stream": "stream/media",
+  "taskBranch": "task/media/branch-7-media-vision-pose-motion",
+  "branch": "task/media/branch-7-media-vision-pose-motion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-branch-7-media-vision-pose-motion",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-branch-7-media-vision-pose-motion",
+  "prNumber": 1204,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1204",
+  "createdAt": "2026-06-24T01:13:51.113Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-media-branch-7-media-vision-pose-motion/.task/media/branch-7-media-vision-pose-motion/session.json"
+}

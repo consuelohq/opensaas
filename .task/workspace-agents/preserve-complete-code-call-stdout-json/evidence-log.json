@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+  "events": [
+    {
+      "id": "f907d828-9f0c-46b5-bbec-de4db129bee2",
+      "occurred_at": "2026-06-18T05:35:02.976Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "scripts/operator/trace-watch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-complete-code-call-stdout-json"
+      }
+    },
+    {
+      "id": "2e1d230e-e692-4acf-9708-ad8fdb802669",
+      "occurred_at": "2026-06-18T05:35:07.992Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/trace-watch.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-complete-code-call-stdout-json"
+      }
+    },
+    {
+      "id": "b4b333e7-6f5a-4ecf-a863-b12f0a11382f",
+      "occurred_at": "2026-06-18T05:35:15.968Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-complete-code-call-stdout-json"
+      }
+    },
+    {
+      "id": "6bb1a842-9ebf-467e-a1bd-074b1dbfcf39",
+      "occurred_at": "2026-06-18T05:35:30.550Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-complete-code-call-stdout-json"
+      }
+    },
+    {
+      "id": "07853a14-eed7-4f47-a083-d72c7d80a501",
+      "occurred_at": "2026-06-18T05:35:39.798Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-complete-code-call-stdout-json",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-complete-code-call-stdout-json"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-18T05:35:39.849Z"
+}

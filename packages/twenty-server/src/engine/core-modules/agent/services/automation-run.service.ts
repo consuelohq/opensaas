@@ -51,12 +51,12 @@ export class AutomationRunService {
       ? now.getTime() - run.startedAt.getTime()
       : null;
 
-    await this.runRepository.update(runId, {
-      status: 'success',
-      completedAt: now,
-      durationMs,
-      result: result ?? null,
-    });
+    run.status = 'success';
+    run.completedAt = now;
+    run.durationMs = durationMs;
+    run.result = result ?? null;
+
+    await this.runRepository.save(run);
   }
 
   async fail(runId: string, error: string): Promise<void> {

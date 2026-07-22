@@ -1,0 +1,102 @@
+[
+  {
+    "from": "workspace.get_steering",
+    "to": "os.get_steering"
+  },
+  {
+    "from": "workspace.call",
+    "to": "os.call"
+  },
+  {
+    "from": "Workspace Tool Surface",
+    "to": "OS Tool Surface"
+  },
+  {
+    "from": "workspace tool",
+    "to": "OS tool"
+  },
+  {
+    "from": "workspace tools",
+    "to": "OS tools"
+  },
+  {
+    "from": "workspace context",
+    "to": "OS context"
+  },
+  {
+    "from": "workspace handoff",
+    "to": "OS handoff"
+  },
+  {
+    "from": "The workspace app exposes exactly two MCP tools:",
+    "to": "The OS app exposes exactly two MCP tools:"
+  },
+  {
+    "from": "Normal workspace calls should be task-session scoped instead of branch-threaded.",
+    "to": "Normal OS calls should be task-session scoped instead of branch-threaded."
+  },
+  {
+    "from": "context.search",
+    "to": "memory.search"
+  },
+  {
+    "from": "context.save",
+    "to": "memory.save"
+  },
+  {
+    "from": "packages/workspace/scripts/context.js",
+    "to": "packages/os/scripts/memory.js"
+  },
+  {
+    "from": "direct context save",
+    "to": "direct memory save"
+  },
+  {
+    "from": "save to context",
+    "to": "save to memory"
+  },
+  {
+    "from": "saving context via",
+    "to": "saving memory via"
+  },
+  {
+    "from": "descriptive context title",
+    "to": "descriptive memory title"
+  },
+  {
+    "from": "tool: \"memory.save\",\n  input: {",
+    "to": "tool: \"memory\",\n  input: {\n    operation: \"save\","
+  },
+  {
+    "from": "tool: \"memory.search\",\n  input: {",
+    "to": "tool: \"memory\",\n  input: {\n    operation: \"search\","
+  },
+  {
+    "from": "os.call({ tool: \"memory.save\", ... })",
+    "to": "os.call({ tool: \"memory\", input: { operation: \"save\", ... } })"
+  },
+  {
+    "from": "save the handoff to context",
+    "to": "save the handoff to memory"
+  },
+  {
+    "from": "Save the tmp file to context",
+    "to": "Save the tmp file to memory"
+  },
+  {
+    "from": "Save that tmp file to context",
+    "to": "Save that tmp file to memory"
+  },
+  {
+    "from": "save directly to context",
+    "to": "save directly to memory"
+  },
+  {
+    "from": "context title/id",
+    "to": "memory title/id"
+  },
+  {
+    "from": "CLI bun ... context.js ... command",
+    "to": "CLI bun ... memory.js ... command"
+  }
+]

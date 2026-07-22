@@ -2,9 +2,9 @@
 
 the following scripts are available via `bun run <name>`. use the script name as the command and pass arguments after `--`.
 
-all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` — running `bun run <anything>` from inside a worktree fails with `Script not found`.
+all scripts run from the repo root: `/Users/kokayi/Dev/opensaas`. worktrees do not have `package.json` - running `bun run <anything>` from inside a worktree fails with `Script not found`.
 
-**why:** worktrees are lightweight git checkouts that share `node_modules` via symlink from repo root. they have source files but no installed deps — that's why all scripts must run from repo root.
+**why:** task worktrees are lightweight git checkouts. `task:start` links the root `node_modules` from the main worktree, and it also links package-scoped `node_modules` directories that Yarn creates under `packages/*`. Those package-scoped links matter for Nx/TypeScript resolution because dependencies can be installed under a package directory rather than only at repo root.
 
 every script supports `--help` and `--json`.
 
@@ -38,6 +38,92 @@ when answering questions or reporting results, use this format:
 do not answer architecture questions from memory. search memory, read files, then answer with citations and paths.
 
 
+
+
+### diff_cockpit — open the live PR review cockpit
+
+Operator launcher for the Cloudflare-hosted live PR review cockpit. The script opens a canonical `diffs.consuelohq.com` URL in Arc and does not generate a static tmp review page. The first phase supports a single PR route with live GitHub data, a file tree, a diff/code review surface, and a right review drawer that stays closed by default.
+
+```bash
+bun run diff_cockpit -- 708
+bun run diff_cockpit -- 708 --print --no-open
+bun run diff_cockpit -- https://github.com/consuelohq/opensaas/pull/708
+bun run diff_cockpit -- consuelohq/opensaas/pull/708
+```
+
+Default repo for bare PR numbers: `consuelohq/opensaas`. Override it with `--repo owner/repo`.
+
+Related package commands:
+
+```bash
+cd packages/diff-cockpit && bun run dev
+cd packages/diff-cockpit && bun run deploy
+cd packages/diff-cockpit && bun run test
+```
+
+Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
+
+### os:release — release all public Consuelo OS surfaces
+
+Operator-only release wrapper for publishing every public OS surface that the hosted installer depends on. Use this as the default OS release command after OS installer or device approval changes.
+
+```bash
+bun run os:release -- --dry-run
+bun run os:release
+bun run os:release -- --install-only
+bun run os:release -- --device-auth-only
+```
+
+Default release order:
+
+1. `install.consuelohq.com/os` via `os:release-install`
+2. `os.consuelohq.com` device approval authority via `os:release-device-auth`
+
+### os:release-install — release the hosted Consuelo OS curl installer
+
+Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
+
+```bash
+bun run os:release-install -- --dry-run
+bun run os:release-install
+bun run os:release-install -- --verify-only
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-install`
+- Custom domain: `install.consuelohq.com`
+- Installer path: `/os`
+- Bootstrap source: `packages/os/scripts/bootstrap.sh`
+
+### os:release-device-auth — release the OS device approval authority
+
+Operator-only release script for publishing the Cloudflare Worker under `packages/os/cloudflare/os-device-authority` to `os.consuelohq.com`. Before any snapshot upload or Worker deploy, the release verifies that the remote Worker has the required server-side `CLOUDFLARE_API_TOKEN` secret. The release then verifies `/health`, including connector-provisioning readiness, and the fail-closed device-public-key requirement after deploy.
+
+```bash
+bun run os:release-device-auth -- --dry-run
+bun run os:release-device-auth
+bun run os:release-device-auth -- --verify-only
+bun run os:release-device-auth -- --no-verify
+```
+
+Defaults:
+
+- Worker name: `consuelo-os-device-authority`
+- Route: `os.consuelohq.com/*`
+- Worker config: `packages/os/cloudflare/os-device-authority/wrangler.toml`
+
+### Trace analytics notes — inspect local workspace trace token and error usage
+
+Operator-only report for the local OpenWorkspace trace database. It shows cumulative windows for the past day, week, and month, plus top tools, branches, errors, slow calls, and high-output calls.
+
+```bash
+bun run trace:analytics
+bun run trace:analytics -- --db=/path/to/traces.db
+```
+
+The `Trace history` section explains the retention horizon for the selected database. When `rows_older_than_week` is `0`, the `past_week` and `past_month` windows are expected to match because the trace database has no rows before the 7-day cutoff.
+
 ---
 
 ## code.run / code mode
@@ -67,6 +153,9 @@ Use direct outer tool calls for single-step operations and final durable transit
 
 every change — even tiny ones — follows this flow. no exceptions.
 
+Always pass `taskSession` when task work is involved. The facade resolves the task branch and worktree; do not reconstruct task paths manually.
+
+Task-scoped repo tools fail with `TASK_SESSION_REQUIRED` when called without a session. The error includes the reason, whether the tool is repo-state-bound, a safe echo of the original tool/input, and a recovery action: start a task, capture `data.taskSession`, then rerun the same tool call with that session. Read-only HTTP checks use the `http` tool without a task session because they do not read repo state or need a task worktree.
 ```bash
  1. bun run stream:context -- --area <area>              # understand the stream state
  2. bun run stream:sync -- --area <area>                 # sync stream with latest main
@@ -103,7 +192,7 @@ bun run task:init -- --area <area> --branch <branch> --pr <N>
 
 do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/<area>/<slug>/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
 
-**never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `task:exec` from repo root.
+**never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `code.call` from repo root.
 
 **when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/<area>/<slug>/current.json`, `.task/<area>/<slug>/workpad.md`, or legacy root `.task/current.json` / `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
 
@@ -132,7 +221,7 @@ recovery patterns for common failures. don't panic — diagnose first.
 | worktree exists but task is done | `bun run task:finish` or `bun run task:cleanup -- --merged` |
 | pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
 | stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
-| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
+| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `code.call` with `--branch` or `--pr` |
 | task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --branch <task-branch> read .task/<area>/<slug>/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
 | task:push rejects — no publish-valid verify stamp | run `bun run verify` first. only use `--approved --reason "Ko approved: ..."` with explicit Ko approval. |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
@@ -152,7 +241,7 @@ check for:
 - verbose variable names that don't match the codebase conventions
 
 ```bash
-bun run task:exec -- --branch <task-branch> git diff   # review your changes
+bun run git:diff -- --branch <task-branch> --stat --files --hunks --json   # review your changes
 ```
 
 if you see slop, fix it before pushing. a clean diff is a fast review.
@@ -183,16 +272,18 @@ every script below follows this format: purpose → usage → helpers → failur
 
 ### fs — safe file operations
 
-wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
+provides bounded file reads plus search, list, write/apply-patch, http, and trash helpers. no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
 ```bash
-bun run fs -- read src/foo.ts                          # full file, syntax highlighted, line numbers
-bun run fs -- read src/foo.ts --from 120 --to 180      # specific line range
-bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts  # multiple files
-bun run fs -- read src/foo.ts --plain                   # no decoration (best for piping)
-bun run fs -- read src/foo.ts --json                    # structured json (automation-safe)
+bun run fs -- read src/foo.ts --offset 1 --limit 120              # bounded text page
+bun run fs -- read src/foo.ts --from 120 --to 180                 # range aliases for page semantics
+bun run fs -- read src/a.ts --limit 50 src/b.ts --offset 100      # multiple files
+bun run fs -- read src/foo.ts --plain                             # text content only in human mode
+bun run fs -- read src/foo.ts --json                              # text-page/media/binary/error json
 ```
+
+`read --json` is the agent-safe ingestion path. it returns MIME metadata, UTF-8 text pages with `offset`/`limit`/`truncated`/`next`, supported media descriptors, binary descriptors, or typed errors. it does not use terminal decoration or dump arbitrary binary as text.
 
 **search**
 ```bash
@@ -222,14 +313,15 @@ bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwri
 bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-**patch**
+
+**apply_patch**
 ```bash
-printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
-bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
+bun run fs -- apply-patch --patch-file /tmp/change.patch
+cat /tmp/change.patch | bun run fs -- apply-patch --stdin
+bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 ```
 
-Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
 ```bash
@@ -248,11 +340,11 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
- (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
+ (always read the file first, then decide: --force to overwrite, or apply-patch for anchored edits)
 
-bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
- → replaced wrong lines because you didn't read the range first
- (always: read --from N --to M → verify → then patch the same range)
+bad: bun run fs -- apply-patch --patch-text "$(cat /tmp/change.patch)"
+ → multiline patch text can be corrupted by shell/argv transport
+ (use --patch-file /tmp/change.patch or pipe the patch with --stdin)
 
 bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist
@@ -273,14 +365,14 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 
 **tips**
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
-- before `write --force` or `patch`, always read the target first
+- before `write --force` or `apply-patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
 - `write --content-file` is the safe path for multiline or large whole-file writes
 - `write --append` is exact — include `\n` yourself
-- `patch --from N --to N` replaces line N. always read the range first
+- `fs.patch` is not a workspace tool. use `fs.apply_patch` / `bun run fs -- apply-patch` with `--patch-file` or stdin
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
-- write and patch log touched files to `.task/<area>/<slug>/workpad.md`
-- after any write or patch, immediately verify: read the changed range, `node --check`, `git status`
+- write and apply-patch log touched files to `.task/<area>/<slug>/workpad.md`
+- after any write or apply-patch, immediately verify: read the changed range, `node --check`, `git status`
 
 ---
 
@@ -327,30 +419,35 @@ bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.t
 
 ---
 
-### task:exec — run commands inside the task worktree
+### Task worktree command notes — run commands inside the task worktree
 
-runs any command with cwd set to the selected task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree. like `task:fs`, it ignores stale metadata whose `taskBranch` does not match the worktree branch. when more than one task exists in an area, select with `--branch` or `--pr`; `--area` is intentionally not enough.
+Use typed workspace tools from the chat facade. For routine Git inspection, prefer `git.diff` and `status`. For focused package, build, or test commands that really must execute in the selected task worktree, use task-scoped `code.call` through `workspace.call`. Always select with `taskSession`; when a CLI selector is required elsewhere, use `--branch` or `--pr` rather than an area-only selector.
 
-```bash
-bun run task:exec -- --area dialer git diff
-bun run task:exec -- --branch task/dialer/fix-thing git status --short
-bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
-bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
-bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
-bun run task:exec -- --branch task/dialer/fix-thing bun run review
-bun run task:exec -- --branch task/dialer/fix-thing git diff --check
+```ts
+await workspace.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "verify",
+    code: `
+const proc = Bun.spawnSync({
+  cmd: ["bun", "test", "packages/dialer/src/queue.test.ts"],
+  stdout: "pipe",
+  stderr: "pipe",
+})
+console.log(new TextDecoder().decode(proc.stdout))
+console.error(new TextDecoder().decode(proc.stderr))
+process.exit(proc.exitCode ?? 1)
+`.trim(),
+  },
+  timeout: 600,
+})
 ```
 
-**task:exec failure modes**
-```bash
-bad: bun run task:exec -- --area workspace-agents git status
- → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
- (always use --branch or --pr when the same area has multiple active tasks)
+**code.call failure modes**
 
-bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
- → works but you left the repo root. now bun run <anything> will fail.
- (use: bun run task:exec -- --branch task/dialer/fix-thing git diff)
-```
+`code.call` is for focused runtime evidence. Do not use it for GitHub PR state, branch discovery, broad repo file reads, source transport, or chained recovery commands when a typed tool can express the same intent. If multiple active tasks exist, use the task session or exact branch/PR selector supplied by the task workflow.
 
 ---
 
@@ -392,12 +489,48 @@ bad: review fails on a file you didn't touch
 
 ---
 
-### verify — full task safety gate
 
+
+### test-selection:generate — generate test registry
+
+writes `packages/workspace/test-selection.registry.json` from repo test discovery plus explicit rules.
+
+---
+
+### test-selection:check — check affected test selection
+
+selects registry-owned suites for changed files and can run them with `--run`. `verify` uses this command internally.
+
+---
+
+### test-selection:nightly — write test registry report
+
+writes `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+
+---
+
+### test-selection — affected test registry
+
+`test-selection:generate` scans repo-relative test files, project targets, package test scripts, and `packages/workspace/test-selection.rules.json`, then writes `packages/workspace/test-selection.registry.json`. The registry is generated and should not be hand-edited. Add explicit rules when a source area has non-obvious test ownership.
+
+```bash
+bun run test-selection:generate -- --json
+bun run test-selection:check -- --base origin/main --json
+bun run test-selection:check -- --base origin/main --run --json
+bun run test-selection:nightly -- --json
+```
+
+`verify` runs the registry check with `--run`. If changed code selects zero suites, verify reports the reason. Critical surfaces such as workspace gate scripts, task routing, trace rendering, API, dialer, and server code must have mapped tests. Nightly reports are written to `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+
+---
+
+### verify — full task safety gate
 runs `bun run review` + db/migration/graphql guardrails. writes a publish-valid `.task/<area>/<slug>/verify.json` stamp only when the full gate passes. `task:push` requires this publish-valid stamp by default. `review.run` is optional preflight; `verify` is the formal publish gate.
 
+Structured review runs are durable and keyed by branch/base/change hash plus review output mode. This makes `workspace review.run` and `verify` share the same underlying review state: an equivalent completed summary can be replayed, an active equivalent run is waited on, and orphaned state is treated conservatively. Review attach/replay notes go to stderr so `verify` can continue parsing stdout summary JSON safely.
 When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/<area>/<slug>/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
 
+```bash
 ```bash
 bun run verify                          # formal publish gate (review + db guards + publish-valid stamp)
 bun run verify -- --json                # structured formal gate output
@@ -435,6 +568,20 @@ bun run explore -- "how does the dialer queue work?"
 bun run explore -- "where is task metadata verified?" --budget 5
 bun run explore -- "recent workspace changes" --changed-only --json
 bun run explore -- "refresh everything" --reindex
+
+#### Embedding dimension benchmark
+
+The default workspace index keeps the existing 1024-dimensional Qwen3-Embedding-4B cache so agents can fall back instantly. To build a separate non-destructive 2560-dimensional benchmark index, run explore with explicit embedding env vars:
+
+```bash
+WORKSPACE_EMBEDDING_API=1 \
+WORKSPACE_EMBEDDING_DIMENSIONS=2560 \
+WORKSPACE_EMBEDDING_BATCH_SIZE=96 \
+bun run explore -- "Open Design Electron desktop app tools-dev electron app packaging mac consuelo design upstream open-design" --budget 8 --json
+```
+
+The 2560 index writes under a config-specific cache directory and does not overwrite the legacy 1024 cache. Re-run the same command to resume a partial build. Do not promote a higher-dimensional index as default until the scenario matrix beats the 1024 baseline.
+
 ```
 
 **explore failure modes**
@@ -536,13 +683,15 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ---
 
-### task:start — create task branch + worktree + PR
+### task:start — start scoped work and return workflow guidance
 
-creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
+Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Workspace task orchestration supports the `task` workflow; Artifacts orchestration belongs to the OS facade.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
+bun run task:start -- --area workspace-agents --title "start scoped work" --workflow task
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
+bun run task:start -- --area new-area --title "first task" --create-stream  # explicit new durable stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
 ```
@@ -657,6 +806,23 @@ bun run stream:list                   # show all streams with status, divergence
 
 ---
 
+### stream:cleanup — preview or remove safe local stream refs
+
+previews redundant local `stream/*` refs by default. a branch is removable only when `origin/<branch>` exists, the local branch has zero unique commits, and no worktree has it checked out. remote streams and task branches are never deleted.
+
+```bash
+bun run stream:cleanup                         # preview only
+bun run stream:cleanup -- --keep stream/tooling
+bun run stream:cleanup -- --apply              # remove only the reviewed safe local refs
+bun run stream:cleanup -- --json
+```
+
+**stream:cleanup failure modes**
+- local-only, diverged, current, checked-out, or explicitly kept branches are reported as protected
+- an origin fetch failure stops cleanup before classification or mutation
+
+---
+
 ### stream:sync — sync stream with latest main
 
 syncs the stream branch with latest main, runs stream checks, and pushes the stream branch when checks pass.
@@ -756,6 +922,7 @@ bun run context -- search dialer      # search memories by content
 bun run context -- search queue --category workpad  # filter by category
 bun run context -- find "queue handoff"  # search by title
 bun run context -- list workpad       # list recent workpad memories
+bun run context -- list --category workpad  # equivalent category flag form used by the facade
 bun run context -- list --limit 5     # list recent memories
 bun run context -- save "dialer arch" ./notes.md  # save file as memory
 bun run context -- categories         # list available categories
@@ -790,31 +957,26 @@ bun run linear -- query "{ viewer { id name } }"
 
 ### browser — test and interact with web pages
 
-opens agent-browser with ko's authenticated profile at `/Users/kokayi/.agent-browser-ko`. use for production verification after deploys.
+uses one persistent agent-browser home at `~/.agent-browser-ko` (or `AGENT_BROWSER_PROFILE`). logins completed in a headed window remain available to later agents and non-headed browser calls. screenshots default to `/tmp/opensaas-screenshots` unless `AGENT_SCREENSHOT_DIR` is set.
 
 ```bash
-bun run browser -- consuelo                 # open consuelo CRM (internal)
-bun run browser -- app                      # open app.consuelohq.com
-bun run browser -- open https://example.com # open any URL
-bun run browser -- open https://example.com --preset mobile --full
-bun run browser -- open https://example.com --preset tablet --full
-bun run browser -- open https://example.com --width 390 --height 844 --full
-bun run browser -- screenshot after-login   # take screenshot
-bun run browser -- screenshot mobile-check --preset mobile --full
-bun run browser -- snapshot                 # get accessibility tree
-bun run browser -- login consuelo --headed  # run saved login profile visibly
-bun run browser -- reauth consuelo --headed # close daemon, restart profile, login
+bun run browser -- consuelo                         # open consuelo CRM
+bun run browser -- app                              # open app.consuelohq.com
+bun run browser -- open https://example.com         # open and capture evidence
+bun run browser -- headed https://dash.cloudflare.com # visible handoff for login/MFA/CAPTCHA/passkeys
+bun run browser -- status                           # safe daemon/page status
+bun run browser -- screenshot after-login
+bun run browser -- snapshot
+bun run browser -- close                            # explicit reset only
 ```
 
-available browser flags for responsive checks: `preset` (`desktop`, `mobile`, `tablet`, `ipad`, `iphone`), `device` (agent-browser device name), `provider` (for example `ios`), `width` + `height`, and `colorScheme` (`dark`, `light`, `no-preference`). use flags on existing browser tools instead of adding device-specific tool names. for Google SSO persistence, open `https://accounts.google.com` with `--headed` and sign in manually; the persistent profile keeps the session.
-
-facade aliases are also registered for agent use:
+facade aliases are registered for agent use:
 
 ```bash
 workspace browser.test '{"url":"https://example.com","preset":"mobile","full":true}'
-workspace browser.consuelo '{"headed":true}'
-workspace browser.login '{"name":"consuelo","headed":true}'
-workspace browser.reauth '{"name":"consuelo","headed":true}'
+workspace browser.headed '{"url":"https://dash.cloudflare.com"}'
+workspace browser.status '{}'
+workspace browser.consuelo '{}'
 workspace browser.snap
 workspace browser.screenshot '{"name":"after-login","preset":"tablet","full":true}'
 workspace browser.get '{"target":"title"}'
@@ -822,17 +984,13 @@ workspace browser.find '{"by":"role","value":"button","action":"click","name":"S
 workspace browser.wait '{"load":"networkidle"}'
 workspace browser.download '{"ref":"@e1","path":"/tmp/download.bin"}'
 workspace browser.tabs '{"action":"list"}'
-workspace browser.cookies '{"action":"list"}'
 workspace browser.network '{"args":["requests"]}'
 workspace browser.dialog '{"action":"dismiss"}'
 workspace browser.trace '{"action":"start"}'
 workspace browser.clipboard '{"action":"read"}'
 ```
 
-
-Typed browser aliases should cover repeated primitives. Use `workspace browser.raw '{"args":[...]}'` only when an upstream `agent-browser` command is not yet represented by a typed facade alias.
-
-when Google or another provider requires password re-auth, use `browser.reauth` or `bun run browser -- reauth consuelo --headed`. this closes the active daemon first because `agent-browser` ignores new `--profile` flags while a daemon is already running.
+Use `browser.headed` whenever Ko must complete a human-only authentication step. It restarts an incompatible daemon in visible mode, opens the requested URL with the same persistent browser home, and leaves the window running. Continue afterward with `browser.status`, `browser.snap`, `browser.open`, or other typed browser tools. Do not create site-specific auth profiles. Use `browser.raw` only when an upstream agent-browser command has no typed facade alias.
 
 ---
 
@@ -885,12 +1043,12 @@ bun run railway:redeploy -- --json
 
 ---
 
-### wait — sleep or wait for deploy
+### wait — sleep, detached checkpoints, or wait for deploy
 
 ```bash
-bun run wait -- 300                   # sleep 300 seconds (5 min)
-bun run wait -- --deploy              # wait for railway deploy to complete
-bun run wait -- --pr 173              # wait for PR checks to pass
+bun run wait -- --detach --duration 24h --reason overnight    # create a non-blocking long wait
+bun run wait -- --status wait_<id>                            # check whether a detached wait is complete
+bun run wait -- --deploy                                      # wait for railway deploy to complete
 ```
 
 ---
@@ -939,7 +1097,7 @@ routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the l
 ```bash
 bun run workspace -- status
 bun run workspace -- stream.context '{"area":"workspace-agents"}'
-bun run workspace -- fs.read '{"path":"AGENTS.md"}'
+bun run workspace -- fs.read '{"path":"AGENTS.md","offset":1,"limit":80}'
 bun run workspace -- batch '[{"tool":"status","input":{}}]'
 ```
 
@@ -967,6 +1125,21 @@ printf '{"code":"return 1 + 1"}' | bun run code-run -- --stdin
 
 Use `workspace_call("tool.name", input)` for generic facade calls, sanitized helpers like `fs_read` or `task_current`, and friendly aliases like `readFile`, `grep`, and `readDir`. Always pass `taskSession` when task work is involved. Use direct outer tool calls for final durable transitions such as push, PR, merge, deploy, and publish.
 
+
+---
+
+### code-call - staged language-specific code execution
+
+Runs short Python, Bun, or Bash programs from a staged file instead of shell-escaped `-c` or heredoc transport. Use this for bounded calculations, parsers, and verification snippets that need language runtimes directly.
+
+```bash
+bun run code-call -- '{"language":"python","mode":"read","code":"print(1 + 1)"}'
+bun run code-call -- --input-file /tmp/code-call-input.json
+printf '{"language":"bash","mode":"verify","code":"printf ok"}' | bun run code-call -- --stdin
+```
+
+`mode=read` and `mode=verify` fail if repository files change. `mode=edit` is accepted by the schema but intentionally blocked until task-worktree mutation enforcement is implemented.
+
 ---
 
 ### github — typed GitHub facade
@@ -981,6 +1154,8 @@ bun run github -- branch.compare --base main --head stream/workspace-agents
 
 Use `raw` only when the typed operation is missing, and include `--reason` so the gap can become a future typed operation.
 
+GitHub output is intentionally bounded. The script returns a `github.packet.v1` envelope with operation metadata, command, counts, summaries, representative samples, and raw-size omission stats. It does not echo full raw GitHub `data` or `stdout` payloads into the workspace response. For large PRs, use packet counts and samples first, then request narrower typed operations when more detail is needed.
+
 ---
 
 ### tool-runner — run one typed workspace tool
@@ -988,7 +1163,7 @@ Use `raw` only when the typed operation is missing, and include `--reason` so th
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
 
 ```bash
-bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
+bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}'
 bun run tool-runner -- context.categories '{}'
 bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 ```
@@ -1000,8 +1175,24 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
-bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}}]'
 bun run tool-batch -- --file /tmp/workspace-batch.json
+```
+
+
+---
+
+
+---
+
+### tools:search — search typed workspace tools by intent
+
+searches the workspace tool manifest and generated docs, then returns ranked tool matches with signatures, example input, capability metadata, and usage guidance. use it when an agent knows what it is trying to do but does not know the exact workspace tool name.
+
+```bash
+bun run tools:search -- "linear issue" --limit 5 --json
+bun run tools:search -- "github pr checks" --read-only --json
+bun run tools:search -- "file search" --category filesystem --json
 ```
 
 ---
@@ -1072,7 +1263,7 @@ bun run generate-types
 
 ### check-files — batch syntax check
 
-runs `node --check` for each provided file through `task:exec`, returning structured per-file results.
+runs `node --check` for each provided file through `code.call`, returning structured per-file results.
 
 ```bash
 bun run check-files -- --branch task/workspace-agents/example --files packages/workspace/scripts/fs.js --json
@@ -1142,14 +1333,7 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 
 ---
 
-### consuelo-design — run local design tooling
-
-```bash
-bun run consuelo-design -- --help
-```
-
 ---
-
 ### doctor — workspace diagnostics
 
 checks local workspace prerequisites, server health, git state, and related command availability.
@@ -1265,7 +1449,7 @@ cat /tmp/input.txt | bun run agent -- "clean this transcript"
 - use `bun run agent --` from `/Users/kokayi/Dev/opensaas`; do not call the pi proxy directly from random scripts unless the script owns that integration
 - treat sub-agent output as a draft until verified against files, tests, or logs
 - never send secrets, api keys, auth tokens, customer pii, full phone numbers, or private credentials
-- do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `task:exec`) and verify after writes
+- do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `code.call`) and verify after writes
 
 **good vs bad**
 
@@ -1283,7 +1467,7 @@ bad: bun run agent -- "here is the production api key: ... now debug this"
 -> never send secrets to a model
 
 bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
--> sub-agent output is text only. use task:fs/task:exec for repo mutations and verify the diff
+-> sub-agent output is text only. use task:fs and code.call for repo mutations and verify the diff
 ```
 
 **failure modes**
@@ -1319,23 +1503,6 @@ always reread SCRIPTS.md when adding or changing scripts. if you add a new scrip
 
 ---
 
-## Design publish
-
-`design.publish` publishes a local design artifact URL, file, directory, or named `portless` service through private Tailscale Serve. It uses one persistent private tailnet host and a unique per-artifact path. It does not use Tailscale Funnel or create a public internet URL.
-
-Recommended Open Design target name: `design.localhost`.
-
-```bash
-bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
-bun run consuelo-design publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
-bun run consuelo-design publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
-bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
-```
-
-Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
-
----
-
 ## CLI tools — fallbacks only
 
 these are installed globally. do not use them if a `bun run` script exists for the same operation. if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.
@@ -1344,7 +1511,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 
 | tool | what it does | use the script instead |
 |------|-------------|----------------------|
-| `bat` | syntax-highlighted file reading | `bun run fs -- read` |
+| `bat` | terminal-only file decoration | `bun run fs -- read` |
 | `rg` | fast regex search | `bun run fs -- search` |
 | `eza` | modern ls with tree view | `bun run fs -- list` |
 | `fd` | fast file finder | `bun run fs -- list --find` |
@@ -1360,7 +1527,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 **when raw CLI tools are not acceptable:**
 - reading, searching, or listing repo files (use `fs`)
 - reading or writing worktree files (use `task:fs`)
-- running commands in a worktree (use `task:exec`)
+- running commands in a worktree (use `code.call`)
 - github operations (use `gh` script or `pr-review`)
 
 ```text
@@ -1412,44 +1579,10 @@ workspace linear.projects '{"first":50}'
 
 ---
 
-## consuelo design e-guide templates
-
-Use `consueloDesign.generateDigitalEguide` or `bun run consuelo-design generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
-
-```bash
-bun run consuelo-design generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
-bun run consuelo-design generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
-bun run consuelo-design generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
-```
-
-Typed facade equivalent:
-
-```ts
-await workspace.call({
-  tool: "consueloDesign.generateDigitalEguide",
-  input: { name: "Workspace agent spec", template: "spec", prompt: "Create the spec..." },
-  timeout: 600,
-})
-```
-
-Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/consuelo-design/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
-
-
-## Design wiki archive
-
-Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/design-wiki`, sorted by `updatedAt` so republished artifacts return to the top.
-
-`design.publish` also rebuilds the Pagefind search bundle for the managed archive. Search stays inside the same text-card wiki UI: the top search control reveals an inline search input, results update as Ko types, and matching cards keep the same title/date/path presentation as the normal archive list.
-
-The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
-
-
-
-
 
 ### git:diff — structured git diff for agents
 
-Structured, bounded diff inspection for agents. Prefer this over raw `git diff` through `task.exec`.
+Structured, bounded diff inspection for agents. Prefer this over raw `git diff` through `code.call`; command execution stays on the typed `code.call` surface when no more specific tool exists.
 
 ```bash
 bun run git:diff -- --branch task/workspace-agents/example --base origin/main --stat --files --hunks --json
@@ -1467,8 +1600,37 @@ Default behavior:
 
 ## Workpad readiness gate
 
-Task workpads have agent-owned context and workspace-owned evidence. Workspace tooling updates human-readable files changed and activity sections from existing task metadata and file operations. Agents still need to write at least one meaningful task note beyond the starter scaffold before publishing.
+Task workpads have agent-owned context and workspace-owned evidence. Workspace tooling updates human-readable files changed, files read, activity, validation, TDD evidence, and test-selection sections from existing task metadata, file operations, and validation tool output. Agents still need to write the agent-owned task intent and `Test-first contract` sections before publishing.
 
 `task.push` and `task.pr` block scaffold-only workpads with a `Workpad update needed before publishing` message. Update the scoped workpad with what changed, why it changed, validation run, and issues or follow-ups, then rerun the command.
 
+Use `tddPhase: "red" | "green" | "post"` on task-scoped command validation when a focused test run should be copied into the corresponding workspace-owned TDD evidence section.
+
 Use `--ack-workpad-incomplete` only for emergency repair tasks or when Ko explicitly approved publishing without a complete workpad.
+
+## trace:home — OpenTUI trace homebase
+
+`trace:home` opens a full-screen OpenTUI dashboard over the local workspace trace SQLite store. Use it when `trace:watch` is too compact and Ko needs a homebase view with live rows, nested `batch` / `code.run` children, summary panels, top tools by tokens, raw-shell command-quality counts, selected trace inspection, a tree pane, and compact sanitized JSON.
+
+```bash
+bun run trace:home
+bun run trace:home -- --once --limit 40 --no-color
+bun run trace:home -- --trace-id trc_example --limit 100
+```
+
+Live mode uses OpenTUI alternate-screen rendering, so it updates in place rather than printing repeated dashboards into scrollback. `--once` keeps deterministic text output for tests and CI. The default JSON/inspect views sanitize wrapper internals; use `--raw-json` only when raw selected-row payloads are explicitly needed.
+
+Use `trace:watch` for the lightweight live receipt stream. Use `trace:home` for inspection and command-quality triage. `trace:home` classifies both `code.call` and `code.call` rows as `good`, `suspect`, or `bad`; `suspect` usually means shell-based repo inspection that should have used `fs.read`, `fs.search`, or `git.diff`, while `good` includes intended package, test, and runtime commands.
+
+
+## consuelo-core registry audits
+
+`packages/consuelo-core` owns the shared migration registry for workspace, OS, and future Consuelo packages. Use it before copying or moving scripts/helpers between `packages/workspace` and `packages/os`.
+
+```bash
+bun --cwd packages/consuelo-core audit:registry
+bun --cwd packages/consuelo-core drift:registry
+bun --cwd packages/consuelo-core test tests/registry.test.ts
+```
+
+`audit:registry` checks root/workspace/OS script targets, local script imports, and workspace-owned source guardrails. `drift:registry` prints JSON for duplicate workspace/OS script paths with hashes and ownership hints; it is informational unless a follow-up task promotes a duplicate into shared core.

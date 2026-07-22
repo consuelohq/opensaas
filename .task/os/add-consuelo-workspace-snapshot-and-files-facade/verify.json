@@ -1,0 +1,35 @@
+{
+  "result": "pass",
+  "branch": "task/os/add-consuelo-workspace-snapshot-and-files-facade",
+  "base": "origin/stream/os",
+  "headSha": "2ce7771b4d94663fb27bf64bc1faa1c73f6b0e7e",
+  "changeHash": "ac63b8e10c2cd27505afcda13c46bfeda3ec1920749bc7881ab038b87b00473a",
+  "changedFiles": [
+    "packages/os/README.md",
+    "packages/os/data-model.md",
+    "packages/os/decision.md",
+    "packages/os/docs/env-capability-matrix.md",
+    "packages/os/docs/skills.md",
+    "packages/os/integrations.md",
+    "packages/os/scripts/lib/consuelo-workspace-client.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/workspace/consuelo-workspace-snapshot.ts",
+    "packages/os/skills.md",
+    "packages/os/skills/consuelo-workspace-snapshot/SKILL.md",
+    "packages/os/skills/consuelo-workspace-snapshot/skill.json",
+    "packages/os/tests/consuelo-workspace-snapshot.test.ts",
+    "packages/os/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-24T03:37:40.509Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

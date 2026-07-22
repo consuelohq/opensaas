@@ -1,0 +1,10 @@
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/files?per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/files?per_page=100&page=2');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/reviews?per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/reviews?per_page=100&page=2');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/issues/708/comments?per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/issues/708/comments?per_page=100&page=2');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/comments?per_page=100&page=1');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/pulls/708/comments?per_page=100&page=2');
+    expect(calls).toContain('https://api.github.com/repos/consuelohq/opensaas/commits?sha=stream%2Fos&per_page=10');

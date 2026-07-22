@@ -1,0 +1,82 @@
+---
+title: Hosted MCP ingress
+description: Follow a cloud agent through OAuth, workspace resolution, signed connector transport, and local MCP authorization.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts
+    tests:
+      - packages/os/tests/os-device-authority-worker.test.ts
+    runtime: OAuth discovery, authorization-code exchange, PKCE, workspace membership, token introspection, and central MCP flows were exercised on 2026-07-13.
+  - source: packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts
+    tests:
+      - packages/os/tests/os-device-authority-worker.test.ts
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: Scoped bearer checks, route resolution, signed connector proxying, and local MCP tool-scope denial were exercised on 2026-07-13.
+---
+
+Hosted MCP gives cloud agents an HTTPS entrypoint without exposing the local Bun server directly. Authentication at the public edge and authorization at the local OS remain separate.
+
+## Request path
+
+```text
+cloud agent
+  → OAuth authorization server
+  → verified account and workspace
+  → scoped bearer token
+  → workspace route registry
+  → signed connector request
+  → local MCP scope and tool policy
+```
+
+The central MCP resource and eligible workspace MCP routes advertise OAuth metadata. The current flow uses the authorization-code grant and requires **PKCE S256**.
+
+## 1. Authenticate the user
+
+The agent follows OAuth discovery to the Consuelo authorization server. The user completes the configured stronger-auth approval. The service resolves the approved account to a workspace and rejects a requested workspace that is not connected to that account.
+
+If the account has more than one possible workspace and none was supplied safely, the flow asks for workspace selection rather than guessing.
+
+## 2. Issue a scoped token
+
+The access token is stored by hash and bound to its MCP resource, workspace, client, user, scopes, and expiry. The hosted proxy requires a bearer token and at least:
+
+```text
+route:/mcp:read
+```
+
+A token for the wrong resource, workspace, or missing scope is denied before proxying.
+
+## 3. Resolve the route
+
+The edge resolves the registered workspace hostname and `/mcp` route. A missing route registry, unknown route, offline connector, or auth-mode mismatch fails closed with a safe error.
+
+Inbound callers cannot choose the local connector origin. Internal workspace and signing headers supplied by the caller are removed and replaced with trusted values from route resolution.
+
+## 4. Sign the connector hop
+
+The edge signs the method, path, body digest, workspace, timestamp, and nonce before sending the request through the approved connector. The local gateway rejects body changes, stale timestamps, replayed nonces, bad signatures, and identity mismatches.
+
+The local MCP adapter then resolves the JSON-RPC operation and required tool scope. OAuth route access alone does not authorize every tool call.
+
+## Provider IP controls
+
+Managed Cloudflare rules and provider IP lists can reduce unwanted traffic and protect the public edge. They are platform defense in depth, not user identity, OAuth, workspace membership, request signing, or tool authorization.
+
+A provider IP being allowed does not grant workspace access. A valid OAuth token still needs the correct resource and scope, and the connector hop still needs fresh signed proof.
+
+## What is not supported
+
+- Direct public access to the loopback Bun service
+- A shared generic `MCP_BEARER_TOKEN` fallback
+- Trusting caller-supplied workspace or connector headers
+- Treating `/mcp` reachability as permission to call every exposed tool
+
+## Diagnose a failed connection
+
+1. Check OAuth discovery and the protected-resource metadata.
+2. Confirm the approved account is connected to the intended workspace.
+3. Confirm the token grants `route:/mcp:read` for that resource.
+4. Confirm the workspace MCP route exists and the connector is online.
+5. Read the safe error code before rotating credentials or changing route policy.
+6. Inspect local scope denial only after the hosted route succeeds.

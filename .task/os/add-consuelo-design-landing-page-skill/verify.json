@@ -1,0 +1,26 @@
+{
+  "result": "pass",
+  "branch": "task/os/add-consuelo-design-landing-page-skill",
+  "base": "origin/stream/os",
+  "headSha": "33f9825148a63b5d74cc6294e595169180acb5eb",
+  "changeHash": "8f72218b62065b12b6a5f44d7190ea3df055661ca8cb20c7b5b5f70556da6cb8",
+  "changedFiles": [
+    "packages/os/scripts/design/consuelo-design-landing-page.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/consuelo-design-landing-page/skill.json",
+    "packages/os/tests/consuelo-design-landing-page.test.ts",
+    "packages/os/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-05-23T11:08:11.905Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": true,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

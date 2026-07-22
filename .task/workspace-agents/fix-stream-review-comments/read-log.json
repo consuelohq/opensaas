@@ -1,0 +1,13 @@
+{
+  "files": [
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/lib/review-run-state.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-05-26T18:48:48.012Z"
+}

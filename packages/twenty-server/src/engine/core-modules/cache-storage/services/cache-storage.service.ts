@@ -6,6 +6,8 @@ import { type RedisCache } from 'cache-manager-redis-yet';
 // cache-manager v7 does not export Milliseconds — define locally
 type Milliseconds = number;
 
+type ClearableCache = Cache & { clear: () => Promise<void> };
+
 import { CacheStorageNamespace } from 'src/engine/core-modules/cache-storage/types/cache-storage-namespace.enum';
 
 @Injectable()
@@ -184,7 +186,7 @@ export class CacheStorageService {
   }
 
   async flush() {
-    return this.cache.clear();
+    return (this.cache as ClearableCache).clear();
   }
 
   async flushByPattern(scanPattern: string): Promise<void> {

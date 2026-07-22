@@ -28,6 +28,7 @@ const {
 const { fetchOrigin, getCurrentBranch, runGit } = require('./lib/git');
 const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { resolveGitRoot } = require('./lib/paths');
+const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const {
   assertTaskBranchName,
@@ -64,7 +65,7 @@ function printHelp() {
   writeStdout('options:');
   writeStdout('  --area <name>            select task by area');
   writeStdout('  --branch <name>          select exact task branch');
-  writeStdout('  --pr <number>            select task by pr number');
+  writeStdout('  --pr <number-or-url>            select task by pr number');
   writeStdout('  --title <value>          final review pr title (default: Stream/<area>)');
   writeStdout(`  --base <branch>          final review base branch (default: ${DEFAULT_REVIEW_BASE})`);
   writeStdout('  --body <text>            final review pr body text');
@@ -122,7 +123,8 @@ function parseArgs(argv) {
         args.branch = value;
         break;
       case '--pr':
-        args.prNumber = Number.parseInt(value, 10);
+      case '--github':
+        args.prNumber = resolvePrRefNumber(value);
         break;
       case '--title':
         args.title = value;
@@ -169,7 +171,7 @@ function parseArgs(argv) {
   }
 
   if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
-    throw new Error('invalid --pr value');
+    throw new Error('invalid --pr/--github value');
   }
 
   if (args.body && args.bodyFile) {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9acaabb63478",
+  "tmuxSession": "opensaas-design-improve-canonical-reader-renderer-components-9acaabb6",
+  "area": "design",
+  "stream": "stream/design",
+  "taskBranch": "task/design/improve-canonical-reader-renderer-components",
+  "branch": "task/design/improve-canonical-reader-renderer-components",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-improve-canonical-reader-renderer-components",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-improve-canonical-reader-renderer-components",
+  "prNumber": 666,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/666",
+  "createdAt": "2026-05-31T12:14:59.858Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-design-improve-canonical-reader-renderer-components/.task/design/improve-canonical-reader-renderer-components/session.json"
+}

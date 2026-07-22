@@ -1,0 +1,19 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/upgrade-tools-search-discovery",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 673,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/673",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/673",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/673/upgrade-tools-search-discovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/673",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/673/upgrade-tools-search-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-upgrade-tools-search-discovery",
+  "taskSession": "tsk_3a727397e858",
+  "tmuxSession": "opensaas-workspace-upgrade-tools-search-discovery-3a727397",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-upgrade-tools-search-discovery/.task/workspace/upgrade-tools-search-discovery/session.json",
+  "createdAt": "2026-05-31T19:18:11.941Z"
+}

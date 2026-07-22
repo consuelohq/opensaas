@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workflow-intent-bundles",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 978,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/978",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/978",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/978/add-workflow-intent-bundles",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/978",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/978/add-workflow-intent-bundles",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workflow-intent-bundles",
+  "taskSession": "tsk_8067d84ba234",
+  "tmuxSession": "opensaas-os-add-workflow-intent-bundles-8067d84b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workflow-intent-bundles/.task/os/add-workflow-intent-bundles/session.json",
+  "createdAt": "2026-06-11T21:15:20.649Z"
+}

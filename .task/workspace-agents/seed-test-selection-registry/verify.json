@@ -1,0 +1,170 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/seed-test-selection-registry",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "fe4f8495e9a1fcd0168f63cc0c8f2a3ff6bd6038",
+  "changeHash": "5a1a061063f8ce4a23897193a6b05a68a368b9bffe7eb76886d63ef007b8ff7d",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-05-24T09:04:00.038Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/seed-test-selection-registry.json",
+        ".task/workspace-agents/seed-test-selection-registry/current.json",
+        ".task/workspace-agents/seed-test-selection-registry/evidence-log.json",
+        ".task/workspace-agents/seed-test-selection-registry/explore-state.json",
+        ".task/workspace-agents/seed-test-selection-registry/read-log.json",
+        ".task/workspace-agents/seed-test-selection-registry/session.json",
+        ".task/workspace-agents/seed-test-selection-registry/verify.json",
+        ".task/workspace-agents/seed-test-selection-registry/workpad.md",
+        "package.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/scripts/test-selection.js",
+        "packages/workspace/scripts/verify.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/verify.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/scripts/test-selection.js",
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "durationMs": 346,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/verification.test.js:\n(pass) publish-valid full verify stamp satisfies task push verification [75.82ms]\n(pass) verify stamp without publishValid is rejected [55.59ms]\n(pass) partial or skipped gates are rejected [77.59ms]\n\n 3 pass\n 0 fail\n 5 expect() calls\nRan 3 tests across 1 file. [340.00ms]\n"
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "durationMs": 779,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/test-selection.test.js:\n(pass) test selection registry > discovers and seeds the existing test inventory [595.47ms]\n(pass) test selection registry > selects publish-gate tests for verify changes [23.23ms]\n(pass) test selection registry > reports zero-suite warnings for unmapped code [22.55ms]\n\n 3 pass\n 0 fail\n 16 expect() calls\nRan 3 tests across 1 file. [772.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "durationMs": 175,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/audit/audit.test.ts:\n(pass) workspace audit > runs scripts JSON audit without loading index-only tree-sitter dependencies [71.98ms]\n\n 1 pass\n 0 fail\n 6 expect() calls\nRan 1 test across 1 file. [169.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

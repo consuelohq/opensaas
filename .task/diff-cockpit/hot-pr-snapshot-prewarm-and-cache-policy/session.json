@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9b164d7afe9a",
+  "tmuxSession": "opensaas-diff-cockpit-hot-pr-snapshot-prewarm-and-cache-policy-9b164d7a",
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy",
+  "branch": "task/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hot-pr-snapshot-prewarm-and-cache-policy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hot-pr-snapshot-prewarm-and-cache-policy",
+  "prNumber": 1177,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1177",
+  "createdAt": "2026-06-23T02:24:54.120Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-hot-pr-snapshot-prewarm-and-cache-policy/.task/diff-cockpit/hot-pr-snapshot-prewarm-and-cache-policy/session.json"
+}

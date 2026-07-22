@@ -14,6 +14,7 @@ import { ParallelController } from 'src/engine/core-modules/consuelo-api/control
 import { QueuesController } from 'src/engine/core-modules/consuelo-api/controllers/queues.controller';
 import { VoiceController } from 'src/engine/core-modules/consuelo-api/controllers/voice.controller';
 import { CsvMappingController } from 'src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller';
+import { OsInstallController } from 'src/engine/core-modules/consuelo-api/controllers/os-install.controller';
 import { TwilioSignatureGuard } from 'src/engine/core-modules/consuelo-api/guards/twilio-signature.guard';
 import { DialerCallPermissionGuard } from 'src/engine/core-modules/consuelo-api/guards/dialer-call-permission.guard';
 import { DialerCallStartResolver } from 'src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver';
@@ -40,6 +41,7 @@ import { CsvMappingService } from 'src/engine/core-modules/consuelo-api/services
     ParallelController,
     VoiceController,
     CsvMappingController,
+    OsInstallController,
   ],
   providers: [
     QueuesService,

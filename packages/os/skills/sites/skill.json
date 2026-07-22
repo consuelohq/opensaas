@@ -1,0 +1,25 @@
+{
+  "name": "sites",
+  "title": "Sites",
+  "description": "Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts.",
+  "trigger": "Invoke when the user asks about OS site delivery, local site materialization, launcher pages, typed page registries, traces, diffs, settings pages, or edge snapshot routing.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/sites/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "status": "active",
+  "capabilities": [
+    "sites",
+    "artifact-delivery",
+    "local-pages",
+    "edge-snapshots"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "subskills": []
+}

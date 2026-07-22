@@ -1,0 +1,10 @@
+{
+  "files": [
+    "AGENTS.md",
+    "packages/api/src/routes/index.ts",
+    "packages/consuelo-website/src/pages/login/device.astro",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts"
+  ],
+  "updatedAt": "2026-06-13T06:49:04.845Z"
+}

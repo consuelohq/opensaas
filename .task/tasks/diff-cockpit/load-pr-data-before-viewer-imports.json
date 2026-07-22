@@ -1,0 +1,19 @@
+{
+  "area": "diff-cockpit",
+  "stream": "stream/diff-cockpit",
+  "taskBranch": "task/diff-cockpit/load-pr-data-before-viewer-imports",
+  "baseBranch": "stream/diff-cockpit",
+  "sourceBranch": "stream/diff-cockpit",
+  "startFrom": "stream",
+  "prNumber": 730,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/730",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/730",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/730/load-pr-data-before-viewer-imports",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/730",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/730/load-pr-data-before-viewer-imports",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-load-pr-data-before-viewer-imports",
+  "taskSession": "tsk_25ba34672ba7",
+  "tmuxSession": "opensaas-diff-cockpit-load-pr-data-before-viewer-imports-25ba3467",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-diff-cockpit-load-pr-data-before-viewer-imports/.task/diff-cockpit/load-pr-data-before-viewer-imports/session.json",
+  "createdAt": "2026-06-03T06:43:52.391Z"
+}

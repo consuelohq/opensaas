@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f734baf93e26",
+  "tmuxSession": "opensaas-security-address-cloudflare-edge-provisioning-nits-f734baf9",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/address-cloudflare-edge-provisioning-nits",
+  "branch": "task/security/address-cloudflare-edge-provisioning-nits",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-cloudflare-edge-provisioning-nits",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-cloudflare-edge-provisioning-nits",
+  "prNumber": 956,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/956",
+  "createdAt": "2026-06-11T06:46:48.228Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-cloudflare-edge-provisioning-nits/.task/security/address-cloudflare-edge-provisioning-nits/session.json"
+}

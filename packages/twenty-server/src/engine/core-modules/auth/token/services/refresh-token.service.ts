@@ -160,7 +160,7 @@ export class RefreshTokenService {
         },
         {
           secret,
-          expiresIn: ms(expiresIn),
+          expiresIn,
           jwtid: refreshToken.id,
         },
       ),

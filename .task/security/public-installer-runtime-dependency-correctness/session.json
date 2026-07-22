@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_30ca963fa7ae",
+  "tmuxSession": "opensaas-security-public-installer-runtime-dependency-correctness-30ca963f",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/public-installer-runtime-dependency-correctness",
+  "branch": "task/security/public-installer-runtime-dependency-correctness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-public-installer-runtime-dependency-correctness",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-public-installer-runtime-dependency-correctness",
+  "prNumber": 1159,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1159",
+  "createdAt": "2026-06-20T03:00:40.601Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-public-installer-runtime-dependency-correctness/.task/security/public-installer-runtime-dependency-correctness/session.json"
+}

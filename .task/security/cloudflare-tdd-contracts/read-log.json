@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/diff-cockpit/package.json",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/oauth-device-onboarding-contract.test.ts"
+  ],
+  "updatedAt": "2026-06-11T18:01:00.094Z"
+}

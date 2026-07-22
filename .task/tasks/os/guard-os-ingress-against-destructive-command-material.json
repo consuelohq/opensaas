@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guard-os-ingress-against-destructive-command-material",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1095,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1095",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1095",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1095/guard-os-ingress-against-destructive-command-material",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1095",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1095/guard-os-ingress-against-destructive-command-material",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-os-ingress-against-destructive-command-material",
+  "taskSession": "tsk_82b31259580c",
+  "tmuxSession": "opensaas-os-guard-os-ingress-against-destructive-command-mat-82b31259",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-os-ingress-against-destructive-command-material/.task/os/guard-os-ingress-against-destructive-command-material/session.json",
+  "createdAt": "2026-06-16T21:23:33.841Z"
+}

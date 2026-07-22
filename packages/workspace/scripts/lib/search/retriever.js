@@ -1,7 +1,7 @@
 const { execFileSync } = require('child_process');
 
 const { embedText } = require('../index/embedder');
-const { scoreCandidate, getReason } = require('./ranker');
+const { scoreCandidate, getReason, getQuerySignals } = require('./ranker');
 
 function distanceToSimilarity(distance) {
   const parsed = Number(distance);
@@ -85,7 +85,9 @@ function mergeSearchRows(rows) {
   const candidates = new Map();
 
   for (const row of rows) {
-    const similarity = distanceToSimilarity(row.distance);
+    const similarity = row.retrievalType === 'lexical'
+      ? Math.max(0.72, distanceToSimilarity(row.distance))
+      : distanceToSimilarity(row.distance);
     const bestChunk = buildBestChunk(row, similarity);
     const existing = candidates.get(row.filePath);
 
@@ -100,13 +102,17 @@ function mergeSearchRows(rows) {
         startLine: bestChunk.lines.start,
         endLine: bestChunk.lines.end,
         graphConnections: [],
-        includedBy: 'semantic',
+        includedBy: row.retrievalType || 'semantic',
         reasonSimilarity: similarity,
+        retrievalTypes: new Set([row.retrievalType || 'semantic']),
       });
       continue;
     }
 
     existing.embeddingSimilarity = Math.max(existing.embeddingSimilarity, similarity);
+    existing.retrievalTypes = existing.retrievalTypes || new Set([existing.includedBy || 'semantic']);
+    existing.retrievalTypes.add(row.retrievalType || 'semantic');
+    if (existing.includedBy !== 'lexical' && row.retrievalType === 'lexical') existing.includedBy = 'lexical';
     if (shouldReplaceBestChunk(row, similarity, existing)) {
       applyBestChunk(existing, bestChunk);
     }
@@ -270,6 +276,21 @@ function pathMatchesQuery(filePath, queryTokens) {
   return queryTokens.length === 0 || queryTokens.some((token) => normalizedPath.includes(token));
 }
 
+function getLexicalSearchTerms(querySignals) {
+  const weakTerms = new Set(['code', 'file', 'files', 'test', 'tests', 'changed', 'package', 'packages', 'work', 'works']);
+  const adjacentPairs = [];
+  for (let index = 0; index < querySignals.tokens.length - 1; index += 1) {
+    adjacentPairs.push(`${querySignals.tokens[index]}-${querySignals.tokens[index + 1]}`);
+  }
+
+  return Array.from(new Set([
+    ...querySignals.hardAnchors,
+    ...querySignals.softAnchors,
+    ...adjacentPairs,
+    ...querySignals.tokens.filter((token) => token.length >= 5 && !weakTerms.has(token)),
+  ])).slice(0, 24);
+}
+
 function getClusterConnectedPaths(scoredCandidates, query) {
   const queryTokens = tokenizeQuery(query);
   const topPaths = new Set(scoredCandidates
@@ -327,9 +348,16 @@ async function retrieve(store, repoRoot, query, options = {}) {
   const budget = options.budget || 10;
   const depth = options.depth ?? 2;
   let rows;
+  const querySignals = getQuerySignals(query);
   try {
     const queryVector = await embedText(query, { kind: 'query' });
-    rows = store.searchChunks(queryVector, budget * 3);
+    const semanticRows = store.searchChunks(queryVector, budget * 3)
+      .map((row) => ({ ...row, retrievalType: 'semantic' }));
+    const lexicalRows = typeof store.searchChunksByText === 'function'
+      ? store.searchChunksByText(getLexicalSearchTerms(querySignals), budget * 24)
+        .map((row) => ({ ...row, retrievalType: 'lexical' }))
+      : [];
+    rows = [...semanticRows, ...lexicalRows];
   } catch (error /* unknown */) {
     const details = error instanceof Error ? error.stack || error.message : String(error);
     throw new Error(`retrieval failed: ${details}`, { cause: error });
@@ -359,11 +387,12 @@ async function retrieve(store, repoRoot, query, options = {}) {
       edgeCounts,
       graphQualityScores,
       query,
+      querySignals,
       recentPaths,
       recencyByPath,
     })
     .map((candidate) => {
-    const { reasonSimilarity, ...outputCandidate } = candidate;
+    const { reasonSimilarity, retrievalTypes, ...outputCandidate } = candidate;
 
     return {
       ...outputCandidate,
@@ -372,6 +401,7 @@ async function retrieve(store, repoRoot, query, options = {}) {
       score: candidate.score,
       scoreParts: candidate.scoreParts,
       reason: getReason(candidate),
+      retrievalTypes: Array.from(candidate.retrievalTypes || [candidate.includedBy || 'semantic']),
     };
   }).sort((left, right) => (right.rankingScore || right.score) - (left.rankingScore || left.score)).slice(0, budget);
 

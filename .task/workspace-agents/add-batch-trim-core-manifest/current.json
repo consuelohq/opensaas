@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-batch-trim-core-manifest",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1118,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1118",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1118",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1118/add-batch-trim-core-manifest",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1118",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1118/add-batch-trim-core-manifest",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-batch-trim-core-manifest",
+  "taskSession": "tsk_d6bf2739ca56",
+  "tmuxSession": "opensaas-workspace-agents-add-batch-trim-core-manifest-d6bf2739",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-batch-trim-core-manifest/.task/workspace-agents/add-batch-trim-core-manifest/session.json",
+  "createdAt": "2026-06-18T00:51:31.143Z"
+}

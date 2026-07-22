@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d2f4ca891df6",
+  "tmuxSession": "opensaas-security-probe-configured-daemon-port-during-cutover-d2f4ca89",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/probe-configured-daemon-port-during-cutover",
+  "branch": "task/security/probe-configured-daemon-port-during-cutover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-probe-configured-daemon-port-during-cutover",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-probe-configured-daemon-port-during-cutover",
+  "prNumber": 1418,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1418",
+  "createdAt": "2026-07-11T18:42:04.105Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-probe-configured-daemon-port-during-cutover/.task/security/probe-configured-daemon-port-during-cutover/session.json"
+}

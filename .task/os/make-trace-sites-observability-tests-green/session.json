@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bef3bcd7e8d5",
+  "tmuxSession": "opensaas-os-make-trace-sites-observability-tests-green-bef3bcd7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-trace-sites-observability-tests-green",
+  "branch": "task/os/make-trace-sites-observability-tests-green",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-trace-sites-observability-tests-green",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-trace-sites-observability-tests-green",
+  "prNumber": 1101,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1101",
+  "createdAt": "2026-06-17T03:23:59.343Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-trace-sites-observability-tests-green/.task/os/make-trace-sites-observability-tests-green/session.json"
+}

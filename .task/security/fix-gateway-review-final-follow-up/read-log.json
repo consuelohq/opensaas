@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/security/fix-gateway-review-final-follow-up/workpad.md",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/security-gateway.test.ts"
+  ],
+  "updatedAt": "2026-06-10T01:31:08.379Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-task-worktree-nested-node-modules",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1027,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1027",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1027",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1027/fix-task-worktree-nested-node-modules",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1027",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1027/fix-task-worktree-nested-node-modules",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-task-worktree-nested-node-modules",
+  "taskSession": "tsk_ae2ac08751a7",
+  "tmuxSession": "opensaas-os-fix-task-worktree-nested-node-modules-ae2ac087",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-task-worktree-nested-node-modules/.task/os/fix-task-worktree-nested-node-modules/session.json",
+  "createdAt": "2026-06-13T23:39:56.035Z"
+}
