@@ -189,9 +189,11 @@ const coverage = {
     /\/packages\/os\/\.tmp-reviews\//.test(gitignore) &&
     !/--instruction-path \/tmp\//.test(corpus),
   grokReadPolicyEnforced:
-    /--permission-mode plan/.test(corpus) &&
+    /--permission-mode auto/.test(corpus) &&
+    /den(?:y|ies).*edit.*write.*(?:shell|Bash)/is.test(corpus) &&
+    /cancelled.*(?:incomplete|empty).*fail closed/is.test(corpus) &&
     /bounded turns/i.test(corpus) &&
-    /memory (?:disabled|and subagents disabled)/i.test(corpus) &&
+    /(?:disables? memory.*subagents|memory (?:disabled|and subagents disabled))/i.test(corpus) &&
     /--workspace-only preferred/.test(corpus) &&
     !/--workspace-only strict/.test(corpus),
   githubReviewAuthority:

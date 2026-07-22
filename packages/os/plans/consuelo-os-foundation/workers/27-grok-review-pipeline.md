@@ -12,7 +12,7 @@ Use the existing OS subagent wrapper to run an independent, read-only Grok 4.5 t
 
 ## Existing execution surface
 
-The implementation already exists at `packages/os/scripts/subagent.ts` and is exposed by the OS package's `subagent` Bun script. It accepts the provider, model, read policy, instruction path, working directory, task session, timeout, output format, and workspace-first routing required here. Read policy maps to Grok `--permission-mode plan`, uses bounded turns, and disables memory and subagents.
+The implementation already exists at `packages/os/scripts/subagent.ts` and is exposed by the OS package's `subagent` Bun script. It accepts the provider, model, read policy, instruction path, working directory, task session, timeout, output format, and workspace-first routing required here. Read policy maps to Grok `--permission-mode auto`, uses bounded turns, disables memory and subagents, and denies built-in edit, write, and shell tools while keeping workspace MCP reads available. Cancelled, incomplete, and empty Grok runs fail closed.
 
 For each task, the implementation worker:
 
@@ -69,7 +69,7 @@ The output follows the complete schema and severity/category rules in `grok-revi
 - The plan validator proves the review template contains the structured schema, inline-comment contract, agent-fix prompt, exact signoffs, GitHub authority, environment stop rule, and existing-wrapper command.
 - Smoke the exact existing wrapper with a temporary read-only prompt and explicit `grok-4.5` model before dispatching Wave 0.
 - Confirm stdout contains a model response while diagnostics remain outside the review object.
-- Confirm empty, unauthenticated, model-unavailable, or non-JSON output does not count as a completed review.
+- Confirm cancelled, incomplete, empty, unauthenticated, model-unavailable, or non-JSON output does not count as a completed review.
 - Confirm no secret-bearing prompt or generated review artifact is staged or committed.
 
 ## Acceptance gates
