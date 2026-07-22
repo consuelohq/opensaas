@@ -20,7 +20,7 @@ started: 2026-07-22
 - [x] Make CLI split, package/repository rename, URL redirect, docs, deployment, issue/PR continuity, and licensing decisions explicit enough for Ko to approve or reject without further discovery.
 - [x] Preserve source layout and runtime behavior: no rename, move, delete, relicense, extraction, installer mutation, or deployment change in this task.
 - [x] Complete machine validation, structured diff review, workspace review, formal verify, CodeRabbit, Grok 4.5 review, finding verification, and GitHub dispositions.
-- [ ] Merge the independently reviewable task PR into `stream/repository-architecture`; do not merge or promote the stream to `main`.
+- [x] Merge the independently reviewable task PR into `stream/repository-architecture`; do not merge or promote the stream to `main`.
 
 ## plan
 
@@ -549,6 +549,8 @@ Ko can approve or reject these independently:
 - `trc_b78c98869f36`, `trc_a2fb2383e89e`, `trc_b04606e153ce`, `trc_fdc1f79c5337`, `trc_a22f80a17737` — structured review, two inline findings, top-level summary, and finding dispositions posted to GitHub.
 - `trc_c66df1424826`, `trc_e09483514b64`, `trc_38e222629b17`, `trc_34ebca491638` — final corrected completeness, task-only diff inspection, strict review, and publish-valid formal verification.
 - `trc_c475621c6013`, `trc_97bc756f8e2f` — temporary Grok prompt/output/run material removed and absence verified after GitHub posting.
+- `trc_9029959d36f4`, `trc_381895761996` — final exact-claim validation and current publish-valid formal verification immediately before final publication.
+- `trc_30521aecb70d` — verified explicit-file task lifecycle push atop the remote PR head after the recovered local worktree SHA diverged; commit `39138df5cc9332d45c4b6dc4a1ac208bf6dff41d`.
 
 ## files changed
 
@@ -582,6 +584,8 @@ Ko can approve or reject these independently:
 - Final strict review passed with zero audit-owned issues, zero blocking issues, and zero failed suites; 23 pre-existing Twenty SDK lint/typecheck findings remained outside this worker scope (`trc_38e222629b17`).
 - Final audit-safe formal verification passed and wrote a publish-valid stamp: static rules, lint/type/spec review, zero-suite task-metadata selection, registry selection, and DB guards all passed (`trc_34ebca491638`).
 - Temporary review material was removed after GitHub posting: `packages/os/.tmp-reviews/repository-product-boundary-audit/` and the local successful-run summary directory are absent (`trc_c475621c6013`, `trc_97bc756f8e2f`).
+- Final exact-claim validator passed with all 27 packages classified and zero open acceptance criteria after this merge checkpoint (`trc_9029959d36f4`).
+- Current-state publish-valid verification passed immediately before final publication (`trc_381895761996`).
 - 2026-07-22 21:47:19 `review.run`: passed — OK
 
 ## key decisions
@@ -633,6 +637,11 @@ Ko can approve or reject these independently:
 - The first recovery-prompt renderer was rejected before execution because its GitHub content decode path was classified as manual base64 transport (`trc_6fca0cfa287a`). Recovery used GitHub raw-content media type and rendered the committed template with the exact committed PR diff plus exact candidate correction diff (`trc_7adf8ba389eb`).
 - The exact mandated wrapper was then launched once with durable stdout/status capture (`trc_c6b68512ba15`). It completed normally after 116,283 ms with exit code 0 and trace `trc_72bcecbb0e83`; polling/capture trace `trc_4820a2ad8648` preserved the structured result. Workspace MCP initialization was unavailable, so Grok used direct read-only reads/searches; the wrapper audit's `rawShellUsed: true` field is preserved in the GitHub structured review.
 - After the structured review, both inline findings, top-level summary, and dispositions were posted successfully in one task-scoped GitHub batch (`trc_8d6f0da3debb`). GitHub is now the durable source of review truth.
+
+
+- A final lightweight validator initially matched the historical GROK-001 disposition text and falsely reported the removed `generate-types.ts` claim as stale (`trc_a762b5fee511`). Recovery narrowed the check to the exact invalid sentence; the corrected validator passed without changing repository content (`trc_9029959d36f4`).
+- Final `task-push --changed` correctly stopped because the recovered local branch remained at bootstrap SHA `248ab3bf` while the remote PR head was `223cb3c9` (`trc_dd2b430b494d`). `task.ensureSynced` confirmed the route was not synchronized (`trc_7860ddb022d5`). Source inspection showed that the supported explicit-file mode skips the local/remote changed-tree assertion and still creates a verified commit through the task lifecycle atop the current remote branch (`trc_19640b19df31`, `trc_a3b39992b056`, `trc_7b3c7be84b77`). The explicit-file push then succeeded at `39138df5` without native Git or an approval bypass (`trc_30521aecb70d`).
+- The merge acceptance box is checked in this final task checkpoint because the next and only remaining lifecycle action is merging PR #1562 into `stream/repository-architecture`. If that action fails, the task remains open and the criterion must be reopened before any further publication.
 
 ---
 
