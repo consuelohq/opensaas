@@ -97,6 +97,8 @@ const createService = () => {
   const strategy = buildStrategy();
   const mockLockService = {
     acquireLock: jest.fn().mockResolvedValue(true),
+    transferLock: jest.fn().mockResolvedValue(true),
+    refreshLock: jest.fn().mockResolvedValue(true),
     releaseLockByNumber: jest.fn().mockResolvedValue(undefined),
   };
   const mockDialer = {
@@ -173,8 +175,13 @@ const createService = () => {
 
 describe('ParallelService initiateParallelDial', () => {
   it('should create a real parallel group through the legacy dialer bridge', async () => {
-    const { service, group, mockDialer, mockParallelStrategyResolver } =
-      createService();
+    const {
+      service,
+      group,
+      mockDialer,
+      mockLockService,
+      mockParallelStrategyResolver,
+    } = createService();
 
     const result = await service.initiateParallelDial({
       userId: 'user-1',
@@ -203,6 +210,16 @@ describe('ParallelService initiateParallelDial', () => {
         statusCallbackUrl: '/api/v1/calls/parallel/status-callback',
         customerTwimlUrl: '/api/v1/calls/parallel/customer-twiml',
       }),
+    );
+    expect(mockLockService.transferLock).toHaveBeenCalledWith(
+      '+12025550123',
+      'parallel-queue-1-0',
+      'CA_WINNER',
+    );
+    expect(mockLockService.transferLock).toHaveBeenCalledWith(
+      '+12125550123',
+      'parallel-queue-1-1',
+      'CA_LOSER',
     );
     expect(result.groupId).toBe(group.groupId);
   });
@@ -504,10 +521,84 @@ describe('ParallelService group lifecycle', () => {
   });
 
   it('should return customer twiml from the migrated route', async () => {
-    const { service } = createService();
+    const { service, mockLockService } = createService();
 
     await expect(service.customerTwiml({ CallSid: 'CA_WINNER' })).resolves.toBe(
       '<?xml version="1.0"?><Response />',
+    );
+
+    expect(mockLockService.refreshLock).toHaveBeenCalledWith(
+      '+12025550123',
+      'CA_WINNER',
+    );
+  });
+
+  it('should route synchronous machine AMD from customer TwiML through lifecycle handling', async () => {
+    const { service, mockDialer, mockLockService } = createService();
+    const machineGroup = buildGroup();
+
+    machineGroup.status = 'completed';
+    machineGroup.winnerSid = null;
+    machineGroup.calls = [
+      {
+        ...machineGroup.calls[0],
+        callSid: 'CA_MACHINE',
+        status: 'completed',
+        amdResult: 'machine',
+      },
+    ];
+    mockDialer.parallel.getGroup.mockResolvedValue(machineGroup);
+
+    await service.customerTwiml({
+      CallSid: 'CA_MACHINE',
+      AnsweredBy: 'machine_start',
+    });
+
+    expect(mockDialer.parallel.handleStatusCallback).toHaveBeenCalledWith(
+      'CA_MACHINE',
+      'in-progress',
+      'machine_start',
+    );
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+12025550123',
+    );
+    expect(mockLockService.refreshLock).not.toHaveBeenCalledWith(
+      '+12025550123',
+      'CA_MACHINE',
+    );
+  });
+
+  it('should route synchronous human AMD and refresh the active winner lock', async () => {
+    const { service, mockDialer, mockLockService } = createService();
+
+    await service.customerTwiml({
+      CallSid: 'CA_WINNER',
+      AnsweredBy: 'human',
+    });
+
+    expect(mockDialer.parallel.handleStatusCallback).toHaveBeenCalledWith(
+      'CA_WINNER',
+      'in-progress',
+      'human',
+    );
+    expect(mockLockService.refreshLock).toHaveBeenCalledWith(
+      '+12025550123',
+      'CA_WINNER',
+    );
+  });
+
+  it('should refresh active locks on non-terminal status callbacks', async () => {
+    const { service, mockLockService } = createService();
+
+    await service.statusCallback({
+      CallSid: 'CA_WINNER',
+      CallStatus: 'in-progress',
+      AnsweredBy: 'human',
+    });
+
+    expect(mockLockService.refreshLock).toHaveBeenCalledWith(
+      '+12025550123',
+      'CA_WINNER',
     );
   });
 

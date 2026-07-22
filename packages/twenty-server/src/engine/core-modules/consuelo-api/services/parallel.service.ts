@@ -50,6 +50,10 @@ type ValidateParallelDialInput = {
   workspaceId: string;
 };
 
+type ActiveCallerIdLockService = {
+  refreshLock(phoneNumber: string, expectedCallSid: string): Promise<boolean>;
+};
+
 type GroupStatusInput = {
   groupId: string;
   workspaceId: string;
@@ -192,6 +196,28 @@ export class ParallelService {
           campaignSegment,
         });
 
+        for (const [index, fromNumber] of acquiredFromNumbers.entries()) {
+          const call = result.calls.find(
+            (candidate) => candidate.fromNumber === fromNumber,
+          );
+          const transferred =
+            call &&
+            (await this.legacyDialerService
+              .getCallerIdLockService()
+              .transferLock(
+                fromNumber,
+                `parallel-${queueId}-${index}`,
+                call.callSid,
+              ));
+
+          if (!transferred) {
+            await dialer.parallel.terminateGroup(result.groupId);
+            throw new Error(
+              'Caller ID lock transfer failed after call creation',
+            );
+          }
+        }
+
         this.logger.log('parallel dial created', {
           queueId,
           workspaceId: input.workspaceId,
@@ -324,83 +350,115 @@ export class ParallelService {
   }
 
   async statusCallback(body: Record<string, string | undefined>) {
-    const callSid = body.CallSid;
-    const callStatus = body.CallStatus;
-    const answeredBy = body.AnsweredBy;
+    await this.processCallLifecycle(body);
 
-    if (!callSid || !callStatus) {
-      throw new BadRequestException('Missing CallSid or CallStatus');
-    }
+    return { received: true };
+  }
 
-    const dialer = this.legacyDialerService.getDialer();
-    await dialer.parallel.handleStatusCallback(callSid, callStatus, answeredBy);
+  private async processCallLifecycle(
+    body: Record<string, string | undefined>,
+  ): Promise<void> {
+    try {
+      const callSid = body.CallSid;
+      const callStatus = body.CallStatus;
+      const answeredBy = body.AnsweredBy;
 
-    const groupId = await dialer.parallel.getGroupIdForCall(callSid);
-    if (!groupId) {
-      return { received: true };
-    }
+      if (!callSid || !callStatus) {
+        throw new BadRequestException('Missing CallSid or CallStatus');
+      }
 
-    const group = await dialer.parallel.getGroup(groupId);
-    if (!group) {
-      return { received: true };
-    }
+      const dialer = this.legacyDialerService.getDialer();
+      await dialer.parallel.handleStatusCallback(
+        callSid,
+        callStatus,
+        answeredBy,
+      );
 
-    const isTerminalCallback = TERMINAL_STATUSES.has(callStatus);
-    const isWinnerCallback = callSid === group.winnerSid;
-    const groupHasWinner = group.winnerSid !== null;
-    const shouldReleaseAllCallerIdLocks =
-      group.status === 'completed' ||
-      (isTerminalCallback && isWinnerCallback && groupHasWinner);
+      const groupId = await dialer.parallel.getGroupIdForCall(callSid);
+      if (!groupId) {
+        return;
+      }
 
-    if (shouldReleaseAllCallerIdLocks) {
-      await this.releaseCallerIdLocks(this.getGroupFromNumbers(group));
-    } else if (group.status === 'connected') {
-      const releasableNumbers = dialer.parallel.getReleasableNumbers(group);
-      await this.releaseCallerIdLocks(releasableNumbers);
-    }
+      const group = await dialer.parallel.getGroup(groupId);
+      if (!group) {
+        return;
+      }
 
-    if (isTerminalCallback && isWinnerCallback && groupHasWinner) {
-      const claimed =
-        await dialer.parallel.markTelemetryEmittedIfAbsent(groupId);
+      const call = group.calls.find((item) => item.callSid === callSid);
 
-      if (claimed) {
-        const telemetry = dialer.parallel.computeTelemetry(group);
+      if (call && !TERMINAL_STATUSES.has(call.status)) {
+        await this.refreshCallerIdLock(call);
+      }
 
-        this.logger.log('parallel telemetry emitted', {
-          groupId,
-          queueId: group.queueId,
-          profileId: group.profile.id,
-          winnerRate: telemetry.winnerRate,
-          wastedLegs: telemetry.wastedLegs,
-          connectLatencyMs: telemetry.connectLatencyMs,
-        });
+      const isTerminalCallback = TERMINAL_STATUSES.has(callStatus);
+      const isWinnerCallback = callSid === group.winnerSid;
+      const groupHasWinner = group.winnerSid !== null;
+      const shouldReleaseAllCallerIdLocks =
+        group.status === 'completed' ||
+        (isTerminalCallback && isWinnerCallback && groupHasWinner);
 
-        const success = this.isSuccessfulCompletion(group, body, new Date());
+      if (shouldReleaseAllCallerIdLocks) {
+        await this.releaseCallerIdLocks(this.getGroupFromNumbers(group));
+      } else if (group.status === 'connected') {
+        const releasableNumbers = dialer.parallel.getReleasableNumbers(group);
+        await this.releaseCallerIdLocks(releasableNumbers);
+      }
 
-        try {
-          await this.parallelPosteriorStore.updatePosterior(
-            group.profile.id,
-            success,
-          );
-        } catch (err: unknown) {
-          this.logger.error('parallel posterior update failed', {
+      if (isTerminalCallback && isWinnerCallback && groupHasWinner) {
+        const claimed =
+          await dialer.parallel.markTelemetryEmittedIfAbsent(groupId);
+
+        if (claimed) {
+          const telemetry = dialer.parallel.computeTelemetry(group);
+
+          this.logger.log('parallel telemetry emitted', {
             groupId,
+            queueId: group.queueId,
             profileId: group.profile.id,
-            success,
+            winnerRate: telemetry.winnerRate,
+            wastedLegs: telemetry.wastedLegs,
+            connectLatencyMs: telemetry.connectLatencyMs,
           });
-          Sentry.captureException(err, {
-            extra: {
-              context: 'parallel_status_callback.posterior_update',
+
+          const success = this.isSuccessfulCompletion(group, body, new Date());
+
+          try {
+            await this.parallelPosteriorStore.updatePosterior(
+              group.profile.id,
+              success,
+            );
+          } catch (err: unknown) {
+            this.logger.error('parallel posterior update failed', {
               groupId,
               profileId: group.profile.id,
               success,
-            },
-          });
+            });
+            Sentry.captureException(err, {
+              extra: {
+                context: 'parallel_status_callback.posterior_update',
+                groupId,
+                profileId: group.profile.id,
+                success,
+              },
+            });
+          }
         }
       }
+    } catch (err: unknown) {
+      this.logger.error('parallel callback lifecycle failed', {
+        callSid: body.CallSid ?? null,
+        callStatus: body.CallStatus ?? null,
+        errorMessage: getErrorMessage(err, 'Callback lifecycle failed'),
+      });
+      Sentry.captureException(err, {
+        extra: {
+          context: 'parallel_callback.lifecycle',
+          callSid: body.CallSid ?? null,
+          callStatus: body.CallStatus ?? null,
+        },
+      });
+      throw err;
     }
-
-    return { received: true };
   }
 
   async customerTwiml(
@@ -410,6 +468,15 @@ export class ParallelService {
 
     if (!callSid) {
       throw new BadRequestException('Missing CallSid');
+    }
+
+    if (body.AnsweredBy) {
+      await this.processCallLifecycle({
+        ...body,
+        CallStatus: body.CallStatus ?? 'in-progress',
+      });
+    } else {
+      await this.refreshCallerIdLockForCall(callSid);
     }
 
     try {
@@ -651,25 +718,39 @@ export class ParallelService {
     customerNumbers: string[],
     pool: NumberPool,
   ): Promise<string[]> {
-    const dialer = this.legacyDialerService.getDialer();
-    const fromNumbers: string[] = [];
+    try {
+      const dialer = this.legacyDialerService.getDialer();
+      const fromNumbers: string[] = [];
 
-    for (const customerNumber of customerNumbers) {
-      const resolution = await dialer.resolveCallerId(
-        {
-          to: customerNumber,
-          from: '',
-          localPresence: true,
+      for (const customerNumber of customerNumbers) {
+        const resolution = await dialer.resolveCallerId(
+          {
+            to: customerNumber,
+            from: '',
+            localPresence: true,
+          },
+          pool,
+        );
+
+        fromNumbers.push(
+          resolution.callerIdNumber ?? process.env.TWILIO_DEFAULT_NUMBER ?? '',
+        );
+      }
+
+      return fromNumbers;
+    } catch (err: unknown) {
+      this.logger.error('parallel caller id resolution failed', {
+        customerNumberCount: customerNumbers.length,
+        errorMessage: getErrorMessage(err, 'Caller ID resolution failed'),
+      });
+      Sentry.captureException(err, {
+        extra: {
+          context: 'parallel_dial.caller_id_resolution',
+          customerNumberCount: customerNumbers.length,
         },
-        pool,
-      );
-
-      fromNumbers.push(
-        resolution.callerIdNumber ?? process.env.TWILIO_DEFAULT_NUMBER ?? '',
-      );
+      });
+      throw err;
     }
-
-    return fromNumbers;
   }
 
   private async acquireCallerIdLocks(input: {
@@ -682,33 +763,37 @@ export class ParallelService {
     );
     const acquiredFromNumbers: string[] = [];
 
-    for (const [index, fromNumber] of lockableFromNumbers.entries()) {
-      const locked = await this.legacyDialerService
-        .getCallerIdLockService()
-        .acquireLock(
-          fromNumber,
-          input.userId,
-          `parallel-${input.queueId}-${index}`,
-        );
+    try {
+      for (const [index, fromNumber] of lockableFromNumbers.entries()) {
+        const locked = await this.legacyDialerService
+          .getCallerIdLockService()
+          .acquireLock(
+            fromNumber,
+            input.userId,
+            `parallel-${input.queueId}-${index}`,
+          );
 
-      if (!locked) {
-        await this.releaseCallerIdLocks(acquiredFromNumbers);
-        this.logger.warn('parallel dial blocked by caller id lock', {
-          queueId: input.queueId,
-          userId: input.userId,
-          lockedFromNumberSuffix: fromNumber.slice(-4),
-        });
-        throw new ConflictException({
-          code: 'CALLER_ID_LOCKED',
-          message: 'Caller ID is in use',
-          retryAfterMs: 5000,
-        });
+        if (!locked) {
+          this.logger.warn('parallel dial blocked by caller id lock', {
+            queueId: input.queueId,
+            userId: input.userId,
+            lockedFromNumberSuffix: fromNumber.slice(-4),
+          });
+          throw new ConflictException({
+            code: 'CALLER_ID_LOCKED',
+            message: 'Caller ID is in use',
+            retryAfterMs: 5000,
+          });
+        }
+
+        acquiredFromNumbers.push(fromNumber);
       }
 
-      acquiredFromNumbers.push(fromNumber);
+      return acquiredFromNumbers;
+    } catch (err: unknown) {
+      await this.releaseCallerIdLocks(acquiredFromNumbers);
+      throw err;
     }
-
-    return acquiredFromNumbers;
   }
 
   private async releaseCallerIdLocks(fromNumbers: string[]) {
@@ -716,6 +801,67 @@ export class ParallelService {
       await this.legacyDialerService
         .getCallerIdLockService()
         .releaseLockByNumber(fromNumber);
+    }
+  }
+
+  private async refreshCallerIdLock(call: ParallelCall): Promise<void> {
+    try {
+      const lockService = this.legacyDialerService.getCallerIdLockService() as
+        | (ReturnType<LegacyDialerService['getCallerIdLockService']> &
+            ActiveCallerIdLockService)
+        | ActiveCallerIdLockService;
+      const refreshed = await lockService.refreshLock(
+        call.fromNumber,
+        call.callSid,
+      );
+
+      if (!refreshed) {
+        this.logger.warn('caller id lock refresh skipped', {
+          callSid: call.callSid,
+          fromNumberSuffix: call.fromNumber.slice(-4),
+        });
+      }
+    } catch (err: unknown) {
+      this.logger.error('caller id lock refresh failed', {
+        callSid: call.callSid,
+        fromNumberSuffix: call.fromNumber.slice(-4),
+        errorMessage: getErrorMessage(err, 'Caller ID lock refresh failed'),
+      });
+      Sentry.captureException(err, {
+        extra: {
+          context: 'parallel_callback.lock_refresh',
+          callSid: call.callSid,
+          fromNumberSuffix: call.fromNumber.slice(-4),
+        },
+      });
+      throw err;
+    }
+  }
+
+  private async refreshCallerIdLockForCall(callSid: string): Promise<void> {
+    try {
+      const dialer = this.legacyDialerService.getDialer();
+      const groupId = await dialer.parallel.getGroupIdForCall(callSid);
+      if (!groupId) return;
+
+      const group = await dialer.parallel.getGroup(groupId);
+      const call = group?.calls.find((item) => item.callSid === callSid);
+
+      if (!call || TERMINAL_STATUSES.has(call.status)) return;
+
+      await this.refreshCallerIdLock(call);
+    } catch (err: unknown) {
+      this.logger.error('caller id lock lookup refresh failed', {
+        callSid,
+        errorMessage: getErrorMessage(err, 'Caller ID lock lookup failed'),
+      });
+      Sentry.captureException(err, {
+        extra: {
+          context: 'parallel_twiml.lock_refresh',
+          callSid,
+        },
+      });
+      throw err;
     }
   }
 

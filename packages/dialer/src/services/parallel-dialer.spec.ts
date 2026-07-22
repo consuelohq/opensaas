@@ -173,8 +173,9 @@ describe('ParallelDialerService', () => {
       );
 
       const group = await service.getGroup(result.groupId);
-      // unknown is classified as 'unknown', not 'human', so human-only rejects
       expect(group!.winnerSid).toBeNull();
+      expect(group!.calls[0].status).toBe('completed');
+      expect(mockCallUpdate).toHaveBeenCalledWith({ status: 'completed' });
     });
 
     it('should terminate machine-detected calls', async () => {
@@ -182,12 +183,35 @@ describe('ParallelDialerService', () => {
       await service.handleStatusCallback(
         result.calls[0].callSid,
         'in-progress',
-        'machine',
+        'machine_start',
       );
 
       const group = await service.getGroup(result.groupId);
       expect(group!.winnerSid).toBeNull();
+      expect(group!.calls[0].status).toBe('completed');
       expect(mockCallUpdate).toHaveBeenCalledWith({ status: 'completed' });
+    });
+
+    it('should keep duplicate winner callbacks idempotent', async () => {
+      const result = await service.initiateGroup(baseOpts);
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'human',
+      );
+      mockCallUpdate.mockClear();
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'human',
+      );
+
+      const group = await service.getGroup(result.groupId);
+      expect(group!.winnerSid).toBe(result.calls[0].callSid);
+      expect(group!.calls[0].status).toBe('in-progress');
+      expect(mockCallUpdate).not.toHaveBeenCalled();
     });
 
     it('should reject second answerer (race condition)', async () => {
@@ -282,6 +306,29 @@ describe('ParallelDialerService', () => {
   });
 
   describe('TTL expiry', () => {
+    it('should retain connected callback state beyond five minutes', async () => {
+      jest.useFakeTimers();
+      try {
+        const result = await service.initiateGroup({
+          ...baseOpts,
+          customerNumbers: ['+15551111111'],
+          fromNumbers: ['+15554444444'],
+          profile: { ...baseProfile, fanout: 1 },
+        });
+        const callSid = result.calls[0].callSid;
+
+        await service.handleStatusCallback(callSid, 'in-progress', 'human');
+        jest.advanceTimersByTime(6 * 60 * 1000);
+
+        await expect(service.getGroup(result.groupId)).resolves.not.toBeNull();
+        await expect(service.getGroupIdForCall(callSid)).resolves.toBe(
+          result.groupId,
+        );
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     it('should return null for expired group', async () => {
       // manually set a group with past expiry
       await store.setGroup('pg_expired', '{"status":"dialing"}', 0);
@@ -309,6 +356,39 @@ describe('ParallelDialerService', () => {
       expect(twiml).toContain('muted="true"');
       expect(twiml).toContain('beep="false"');
       expect(twiml).toContain('startConferenceOnEnter="true"');
+    });
+
+    it('should join the selected winner unmuted', async () => {
+      const result = await service.initiateGroup(baseOpts);
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'human',
+      );
+
+      const twiml = await service.generateCustomerTwiml(
+        result.calls[0].callSid,
+      );
+
+      expect(twiml).toContain('muted="false"');
+    });
+
+    it('should return empty TwiML for an AMD-rejected terminal leg', async () => {
+      const result = await service.initiateGroup(baseOpts);
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'machine_start',
+      );
+
+      const twiml = await service.generateCustomerTwiml(
+        result.calls[0].callSid,
+      );
+
+      expect(twiml).toContain('<Response />');
+      expect(twiml).not.toContain('<Conference');
     });
   });
 
