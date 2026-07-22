@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/restore-dialer-validation-environment-and-runbook",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1551,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1551",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1551",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1551/restore-dialer-validation-environment-and-runbook",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1551",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1551/restore-dialer-validation-environment-and-runbook",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-restore-dialer-validation-environment-and-runbook",
+  "taskSession": "tsk_9b39a5da7a4a",
+  "tmuxSession": "opensaas-dialer-restore-dialer-validation-environment-and-runboo-9b39a5da",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-restore-dialer-validation-environment-and-runbook/.task/dialer/restore-dialer-validation-environment-and-runbook/session.json",
+  "createdAt": "2026-07-22T18:05:46.670Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9b39a5da7a4a",
+  "tmuxSession": "opensaas-dialer-restore-dialer-validation-environment-and-runboo-9b39a5da",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/restore-dialer-validation-environment-and-runbook",
+  "branch": "task/dialer/restore-dialer-validation-environment-and-runbook",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-restore-dialer-validation-environment-and-runbook",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-restore-dialer-validation-environment-and-runbook",
+  "prNumber": 1551,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1551",
+  "createdAt": "2026-07-22T18:05:46.668Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-restore-dialer-validation-environment-and-runbook/.task/dialer/restore-dialer-validation-environment-and-runbook/session.json"
+}
