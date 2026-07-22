@@ -387,7 +387,7 @@ function portableContent(filePath: string, bytes: Buffer, sourceRoot: string): B
     : originalText;
   const normalizedRoot = resolve(sourceRoot).split(sep).join('/');
   const sourceRootSegments = normalizedRoot.split('/').filter(Boolean);
-  const embeddedSourceRoot = sourceRootSegments.length >= 3
+  const embeddedSourceRoot = sourceRootSegments.length >= 2
     ? new RegExp(`${escapeRegExp(normalizedRoot)}(?:/|$|[\\s\\"'=,:;(){}\\[\\]])`)
     : null;
   const machinePathPatterns = [

@@ -657,8 +657,24 @@
         "source": "task:fs",
         "task_branch": "task/os-distribution/canonical-tool-packages-and-generated-manifests"
       }
+    },
+    {
+      "id": "442d8724-8e30-480a-b4c7-841c161c3516",
+      "occurred_at": "2026-07-22T22:23:02.439Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/canonical-tool-packages-and-generated-manifests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/canonical-tool-packages-and-generated-manifests"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-07-22T22:13:45.279Z"
+  "updated_at": "2026-07-22T22:23:02.502Z"
 }
