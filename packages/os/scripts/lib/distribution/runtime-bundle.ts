@@ -377,7 +377,9 @@ function isTextFile(filePath: string, bytes: Buffer): boolean {
 }
 
 export function containsMachineSpecificAbsolutePath(text: string, sourceRoot: string): boolean {
-  const resolvedRoot = /^[A-Za-z]:[\\/]/.test(sourceRoot) ? sourceRoot : resolve(sourceRoot);
+  const resolvedRoot = sourceRoot.startsWith('/') || /^[A-Za-z]:[\\/]/.test(sourceRoot)
+    ? sourceRoot
+    : resolve(sourceRoot);
   const normalizedRoot = resolvedRoot.replaceAll('\\', '/');
   const sourceRootSegments = normalizedRoot.split('/').filter(Boolean);
   const rootCandidates = [...new Set([resolvedRoot, normalizedRoot])];
