@@ -1,0 +1,181 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/repair-live-amd-and-caller-id-lock-lifecycle",
+  "base": "origin/stream/dialer",
+  "headSha": "bb27a911899f5419cccb0f902fab4a18e46d0ce5",
+  "changeHash": "4d38bebd62d74fe07e40b40e6e8d9f76df51f15e08a00a40713603fc5c17fb1c",
+  "changedFiles": [
+    "packages/dialer/src/services/caller-id.spec.ts",
+    "packages/dialer/src/services/caller-id.ts",
+    "packages/dialer/src/services/parallel-dialer.spec.ts",
+    "packages/dialer/src/services/parallel-dialer.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+  ],
+  "verifiedAt": "2026-07-22T20:19:36.697Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/current.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/evidence-log.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/read-log.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/session.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/verify.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/workpad.md",
+        ".task/tasks/dialer/repair-live-amd-and-caller-id-lock-lifecycle.json",
+        "packages/dialer/src/services/caller-id.spec.ts",
+        "packages/dialer/src/services/caller-id.ts",
+        "packages/dialer/src/services/parallel-dialer.spec.ts",
+        "packages/dialer/src/services/parallel-dialer.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/services/caller-id.spec.ts",
+            "packages/dialer/src/services/caller-id.ts",
+            "packages/dialer/src/services/parallel-dialer.spec.ts",
+            "packages/dialer/src/services/parallel-dialer.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "twenty-server-project",
+          "critical": true,
+          "reason": "Server changes have the broadest backend impact and should run the project test target.",
+          "matchedFiles": [
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:twenty-server:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/twenty-server.",
+          "matchedFiles": [
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "twenty-server affected test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ],
+          "ruleId": "twenty-server-project",
+          "critical": true
+        },
+        {
+          "name": "twenty-server test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-server:test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 8501,
+          "outputTail": "up > should complete stale dialing groups on lookup [2.40ms]\n(pass) ParallelDialerService > terminateGroup > should handle non-existent group gracefully [0.03ms]\n(pass) ParallelDialerService > getReleasableNumbers > should return non-winner from numbers [2.40ms]\n(pass) ParallelDialerService > getReleasableNumbers > should return all numbers when no winner [2.34ms]\n(pass) ParallelDialerService > validateRequirements > should pass with exact number of required numbers [0.05ms]\n(pass) ParallelDialerService > validateRequirements > should pass with more than required [0.01ms]\n(pass) ParallelDialerService > validateRequirements > should fail with fewer than required [0.01ms]\n(pass) ParallelDialerService > validateRequirements > should default fanout to 3 [0.01ms]\n(pass) ParallelDialerService > computeTelemetry > should compute metrics with a winner [2.37ms]\n(pass) ParallelDialerService > computeTelemetry > should compute metrics with no winner [2.36ms]\n(pass) ParallelDialerService > computeTelemetry > should complete one-leg groups on terminal callback [0.06ms]\n(pass) ParallelDialerService > markTelemetryEmitted > should set telemetryEmittedAt on the group [2.40ms]\n(pass) ParallelDialerService > markTelemetryEmitted > should not throw for non-existent group [0.03ms]\n(pass) ParallelDialerService > generateCustomerTwiml > should return TwiML for a known call [2.33ms]\n(pass) ParallelDialerService > generateCustomerTwiml > should return null for unknown call [0.02ms]\n(pass) ParallelDialerService > InMemoryParallelStore > should support setWinnerIfAbsent atomicity [0.05ms]\n(pass) ParallelDialerService > InMemoryParallelStore > should delete group and winner together [0.04ms]\n\npackages/dialer/src/services/parallel-strategy-resolver.spec.ts:\n(pass) ParallelStrategyResolver > explicit profile selection > should use explicit profileId when provided and bypass sampling [0.13ms]\n(pass) ParallelStrategyResolver > thompson sampling > should deterministically pick aggressive when it samples highest [0.08ms]\n(pass) ParallelStrategyResolver > thompson sampling > should use informed default priors on cold start when no posteriors are returned [0.06ms]\n(pass) ParallelStrategyResolver > thompson sampling > should merge loaded posterior values instead of using defaults [0.04ms]\n(pass) ParallelStrategyResolver > thompson sampling > should sample all profiles exactly once when no explicit profileId is set [0.03ms]\n(pass) ParallelStrategyResolver > fallback behavior > should fallback to balanced when posterior loading fails without throwing [3.27ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return profile by id [0.02ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return all profiles [0.02ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.04ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.01ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.01ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.01ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.05ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.08ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n\n 132 pass\n 0 fail\n 238 expect() calls\nRan 132 tests across 10 files. [8.49s]\n"
+        },
+        {
+          "name": "twenty-server affected test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ],
+          "ruleId": "twenty-server-project",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1138,
+          "outputTail": "d-value.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/twenty-config/decorators/__tests__/\u001b[22m\u001b[1mcast-to-log-level-array.decorator.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/consuelo-api/services/\u001b[22m\u001b[1mretry-policy.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/transformer-utils/__tests__/\u001b[22m\u001b[1mtransform-array-field.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/microsoft/utils/__tests__/\u001b[22m\u001b[1mis-temporary-error.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/lab/utils/\u001b[22m\u001b[1mis-public-feature-flag.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/file/utils/__tests__/\u001b[22m\u001b[1mbuild-file-info.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mto-microsoft-recipients.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-folder-manager/drivers/gmail/utils/__tests__/\u001b[22m\u001b[1mextract-gmail-folder-name.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/logic-function/logic-function-executor/utils/__tests__/\u001b[22m\u001b[1mbuild-env-var.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/auth/services/\u001b[22m\u001b[1mgoogle-apis-scopes.service.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-product-event-to-database-product.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/tool-provider/output-serialization/__tests__/\u001b[22m\u001b[1mstrip-empty-values.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/user/user-vars/utils/__tests__/\u001b[22m\u001b[1mmerge-user-vars.spec.ts\u001b[22m\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\n=============================== Coverage summary ===============================\n\u001b[33;1mStatements   : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mBranches     : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mFunctions    : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mLines        : Unknown% ( 0/0 )\u001b[0m\n================================================================================\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3515 passed\u001b[39m\u001b[22m, 3525 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        36.664 s\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n"
+        },
+        {
+          "name": "twenty-server test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-server:test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 501,
+          "outputTail": " \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/auth/services/\u001b[22m\u001b[1mgoogle-apis-scopes.service.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/lab/utils/\u001b[22m\u001b[1mis-public-feature-flag.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-relation-connect-input-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/ending-before-parser-utils/__tests__/\u001b[22m\u001b[1mparse-ending-before-rest-request.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/domain/subdomain-manager/utils/__test__/\u001b[22m\u001b[1mgenerate-random-subdomain.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/transformer-utils/__tests__/\u001b[22m\u001b[1mtransform-array-field.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/transformer-utils/__tests__/\u001b[22m\u001b[1mtransform-numeric-field.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-subscription-event-to-database-customer.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/field-operations/relation-nested-queries/utils/__tests__/\u001b[22m\u001b[1mformatConnectRecordNotFoundErrorMessage.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mget-record-to-connect-fields.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/metadata-modules/flat-entity/utils/__tests__/\u001b[22m\u001b[1morder-object-properties.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/user/user-vars/utils/__tests__/\u001b[22m\u001b[1mmerge-user-vars.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-cleaner/utils/__tests__/\u001b[22m\u001b[1mdelete-using-pagination.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/workspace-schema-manager/utils/__tests__/\u001b[22m\u001b[1msanitize-default-value.util.spec.ts\u001b[22m\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3515 passed\u001b[39m\u001b[22m, 3525 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        27.786 s, estimated 34 s\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/dialer/package.json",
+    "packages/dialer/src/services/parallel-dialer.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+  ],
+  "updatedAt": "2026-07-22T20:14:21.615Z"
+}

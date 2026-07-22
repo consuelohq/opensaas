@@ -8,10 +8,12 @@ import type {
   ParallelCall,
   ParallelTelemetry,
 } from '../types.js';
-import type TwilioClient from 'twilio';
+
+type TwilioClientInstance = import('twilio').Twilio;
 
 const GROUP_TTL_SECONDS = 300;
 const GROUP_DIALING_TIMEOUT_MS = 60_000;
+const EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response />';
 const TERMINAL_CALL_STATUSES = new Set([
   'completed',
   'failed',
@@ -24,7 +26,7 @@ const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 export class ParallelDialerService {
-  private client: ReturnType<typeof TwilioClient> | null = null;
+  private client: TwilioClientInstance | null = null;
   private credentials: TwilioCredentials;
   private store: ParallelStore;
 
@@ -40,7 +42,7 @@ export class ParallelDialerService {
     this.store = store;
   }
 
-  private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
+  private async getClient(): Promise<TwilioClientInstance> {
     if (this.client) return this.client;
     try {
       const twilio = await import('twilio');
@@ -171,6 +173,10 @@ export class ParallelDialerService {
       const call = group.calls.find((item) => item.callSid === callSid);
       if (!call) return;
 
+      if (TERMINAL_CALL_STATUSES.has(call.status)) {
+        return;
+      }
+
       call.status = callStatus;
       if (answeredBy) {
         call.amdResult =
@@ -191,25 +197,42 @@ export class ParallelDialerService {
           call.amdResult === 'unknown');
 
       if (callStatus === 'in-progress' && isHumanLikeAnswer) {
-        const won = await this.store.setWinnerIfAbsent(
-          groupId,
-          callSid,
-          GROUP_TTL_SECONDS,
-        );
-        if (won) {
-          group.winnerSid = callSid;
+        if (group.winnerSid === callSid) {
           group.status = 'connected';
-          group.connectedAt = call.answeredAt ?? new Date().toISOString();
-          if (group.profile.terminationPolicy === 'winner-take-all') {
-            await this.terminateLosingCalls(group, callSid);
-          }
-          await this.unmuteConferenceParticipant(group.conferenceName, callSid);
-        } else {
+          group.connectedAt ??= call.answeredAt ?? new Date().toISOString();
+        } else if (group.winnerSid) {
           await this.terminateCall(callSid);
           call.status = 'completed';
           call.terminatedAt = new Date().toISOString();
+        } else {
+          const won = await this.store.setWinnerIfAbsent(
+            groupId,
+            callSid,
+            GROUP_TTL_SECONDS,
+          );
+
+          if (!won) {
+            await this.terminateCall(callSid);
+            call.status = 'completed';
+            call.terminatedAt = new Date().toISOString();
+          } else {
+            group.winnerSid = callSid;
+            group.status = 'connected';
+            group.connectedAt = call.answeredAt ?? new Date().toISOString();
+            if (group.profile.terminationPolicy === 'winner-take-all') {
+              await this.terminateLosingCalls(group, callSid);
+            }
+            await this.unmuteConferenceParticipant(
+              group.conferenceName,
+              callSid,
+            );
+          }
         }
-      } else if (callStatus === 'in-progress' && call.amdResult === 'machine') {
+      } else if (
+        callStatus === 'in-progress' &&
+        call.amdResult !== undefined &&
+        !isHumanLikeAnswer
+      ) {
         await this.terminateCall(callSid);
         call.status = 'completed';
         call.terminatedAt = new Date().toISOString();
@@ -297,11 +320,19 @@ export class ParallelDialerService {
       if (!raw) return null;
 
       const group: ParallelGroup = JSON.parse(raw);
+      const call = group.calls.find((item) => item.callSid === callSid);
+
+      if (!call || TERMINAL_CALL_STATUSES.has(call.status)) {
+        return EMPTY_TWIML;
+      }
+
+      const muted = group.winnerSid === callSid ? 'false' : 'true';
+
       return [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<Response>',
         '<Dial>',
-        `<Conference beep="false" muted="true" startConferenceOnEnter="true" endConferenceOnExit="false">${group.conferenceName}</Conference>`,
+        `<Conference beep="false" muted="${muted}" startConferenceOnEnter="true" endConferenceOnExit="false">${group.conferenceName}</Conference>`,
         '</Dial>',
         '</Response>',
       ].join('');
@@ -369,33 +400,45 @@ export class ParallelDialerService {
   }
 
   async markTelemetryEmitted(groupId: string): Promise<void> {
-    const raw = await this.store.getGroup(groupId);
-    if (!raw) return;
-    const group: ParallelGroup = JSON.parse(raw);
-    group.telemetryEmittedAt = new Date().toISOString();
-    await this.store.setGroup(
-      groupId,
-      JSON.stringify(group),
-      GROUP_TTL_SECONDS,
-    );
+    try {
+      const raw = await this.store.getGroup(groupId);
+      if (!raw) return;
+      const group: ParallelGroup = JSON.parse(raw);
+      group.telemetryEmittedAt = new Date().toISOString();
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Unknown telemetry store error';
+      throw new Error(`Failed to mark parallel telemetry emitted: ${message}`);
+    }
   }
 
   async markTelemetryEmittedIfAbsent(groupId: string): Promise<boolean> {
-    const raw = await this.store.getGroup(groupId);
-    if (!raw) return false;
-    const group: ParallelGroup = JSON.parse(raw);
+    try {
+      const raw = await this.store.getGroup(groupId);
+      if (!raw) return false;
+      const group: ParallelGroup = JSON.parse(raw);
 
-    if (group.telemetryEmittedAt) {
-      return false;
+      if (group.telemetryEmittedAt) {
+        return false;
+      }
+
+      group.telemetryEmittedAt = new Date().toISOString();
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
+      return true;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Unknown telemetry store error';
+      throw new Error(`Failed to claim parallel telemetry emission: ${message}`);
     }
-
-    group.telemetryEmittedAt = new Date().toISOString();
-    await this.store.setGroup(
-      groupId,
-      JSON.stringify(group),
-      GROUP_TTL_SECONDS,
-    );
-    return true;
   }
 
   private isStaleDialingGroup(group: ParallelGroup, now: Date): boolean {
