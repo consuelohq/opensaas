@@ -108,9 +108,8 @@ export function createNativeLifecycleClient(input: {
         if (!isSnapshot(response)) {
           throw new Error('unexpected lifecycle response for status.get');
         }
-        snapshot = { ...response, connection: { state: 'online' } };
-        hasLocalOfflineProjection = false;
-        return snapshot;
+        acceptSnapshot(response);
+        return snapshot!;
       } catch (error: unknown) {
         if (!snapshot) throw error;
         snapshot = {
