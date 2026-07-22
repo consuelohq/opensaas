@@ -1,6 +1,10 @@
 {
   "files": [
+    ".task/repository-architecture/repository-product-boundary-audit/workpad.md",
+    "packages/os/plans/consuelo-os-foundation/workers/28-repository-product-boundary-audit.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/scripts/verify.js"
   ],
-  "updatedAt": "2026-07-22T21:25:37.100Z"
+  "updatedAt": "2026-07-22T21:49:08.766Z"
 }

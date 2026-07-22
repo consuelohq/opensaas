@@ -19,7 +19,7 @@ started: 2026-07-22
 - [x] Recommend a staged migration with bounded phases, acceptance gates, rollback points, and an exact proposed repository tree.
 - [x] Make CLI split, package/repository rename, URL redirect, docs, deployment, issue/PR continuity, and licensing decisions explicit enough for Ko to approve or reject without further discovery.
 - [x] Preserve source layout and runtime behavior: no rename, move, delete, relicense, extraction, installer mutation, or deployment change in this task.
-- [ ] Complete machine validation, structured diff review, workspace review, formal verify, CodeRabbit, Grok 4.5 review, finding verification, and GitHub dispositions.
+- [x] Complete machine validation, structured diff review, workspace review, formal verify, CodeRabbit, Grok 4.5 review, finding verification, and GitHub dispositions.
 - [ ] Merge the independently reviewable task PR into `stream/repository-architecture`; do not merge or promote the stream to `main`.
 
 ## plan
@@ -46,7 +46,7 @@ started: 2026-07-22
 - Exact task branch and PR were created from fresh `main` at `a7a3265b2f54d74ff5416c5a9d92659dde6e8fc3`.
 - An OS gateway restart removed the initial managed worktree and in-memory session. The exact existing branch and PR were recovered without duplication; the restored route uses the same session identifier `tsk_f12a69bd127e` and PR #1562.
 - Package census, manifest dependency graph, source-import boundary scan, workflow/deployment scan, root tooling scan, and core legal reads are complete.
-- Repository discovery is complete, including bounded GitHub history/contributor samples. No source, package, deployment, installer, license, or runtime file has been changed.
+- Repository discovery is complete, including bounded GitHub history/contributor samples. No source, package, deployment, installer, license, or runtime file has been changed. External review, finding correction, dispositions, and final validation are complete; only the task-to-stream merge remains.
 
 ## executive finding
 
@@ -58,7 +58,7 @@ The repository is not one product with one build system or one legal boundary. I
 4. Internal operator infrastructure (`packages/workspace`, `packages/diff-cockpit`) that currently acts as both OS development substrate and repository control plane.
 5. A vendored Open Design source tree with its own Apache-2.0 license, pnpm workspace, package names, generated artifacts, and upstream provenance.
 
-Immediate extraction is unsafe because the physical package boundary is cleaner than the operational boundary. `packages/os` has no first-party package-manifest dependency on other top-level packages, but it imports root/workspace implementation details; workspace and documentation import OS internals; root scripts dispatch into both OS and workspace; the published `consuelo` CLI combines OS, GTM/dialer, Twenty, deployment, and self-update commands; CI and release workflows dispatch by path across all products; and public installer/image/repository names still encode `opensaas`.
+Immediate extraction is unsafe because the physical package boundary is cleaner than the operational boundary. `packages/os` has no first-party package-manifest dependency on other top-level packages, but one OS test imports a workspace helper; workspace scripts deep-import OS internals; documentation consumes the public OS package; root scripts dispatch into both OS and workspace; the published `consuelo` CLI combines OS, GTM/dialer, Twenty, deployment, and self-update commands; CI and release workflows dispatch by path across all products; and public installer/image/repository names still encode `opensaas`.
 
 **Recommendation: staged hybrid.** First formalize and enforce explicit ownership inside the current repository, split public interfaces from deep relative imports, split the CLI and release surfaces, make OS independently buildable/distributable, and only then decide whether to extract OS to a dedicated repository. This retains Git history, issue/PR continuity, and rollback while removing the coupling that makes extraction risky.
 
@@ -72,7 +72,7 @@ The deterministic scanner found **27 active top-level directories under `package
 | 2 | `analytics` | GTM/dialer | GTM SDK | `@consuelo/analytics`, MIT manifest; consumed by CLI and SDK. MIT metadata is not treated as proof of relicensing authority. |
 | 3 | `api` | GTM/dialer | GTM API | `@consuelo/api`, MIT manifest; composes coaching, contacts, dialer, and logger. |
 | 4 | `chat-bot` | GTM/dialer | GTM integration | `@consuelo/chat-bot`, MIT manifest; depends on logger. |
-| 5 | `cli` | GTM/dialer, mixed today | GTM product; OS commands must split | `@consuelo/cli`, MIT manifest. Registers GTM/dialer commands, `consuelo os`, Twenty development, deployment, and npm self-update in one binary. |
+| 5 | `cli` | shared, mixed today | Temporary mixed boundary; split ownership is mandatory | `@consuelo/cli`, MIT manifest. Registers GTM/dialer commands, `consuelo os`, Twenty development, deployment, and npm self-update in one binary. The approved target gives the `consuelo` binary to OS lifecycle and preserves the sales/dialer surface as `consuelo-dialer`. |
 | 6 | `coaching` | GTM/dialer | GTM coaching | MIT manifest; consumed by API and CLI. |
 | 7 | `consuelo-core` | shared | Shared contracts | Explicit README: shared Consuelo contracts and migration guardrails; registry owns package/script/tool/skill ownership records and workspace-to-OS migration state. |
 | 8 | `consuelo-design` | OS | OS Artifacts/design | Package description says OS Artifacts domain. First-party package declares AGPL-3.0; contains vendored `upstream/open-design` Apache-2.0/pnpm enclave. |
@@ -133,8 +133,9 @@ twenty-ui -> twenty-shared
 
 OS importing outside its package:
 
-- `packages/os/scripts/generate-types.ts` imports root `scripts/lib/facade/client` and `scripts/lib/facade/types`.
-- `packages/os/tests/repo-default-config.test.ts` imports `packages/workspace/scripts/lib/paths.js`.
+- `packages/os/tests/repo-default-config.test.ts` imports `packages/workspace/scripts/lib/paths.js`. This is test-only coupling, not an OS runtime or distribution dependency.
+
+Scanner correction: `packages/os/scripts/generate-types.ts` was initially reported as importing root facade modules. Direct inspection shows it imports OS-local `./lib/facade/*` modules and merely emits string templates whose paths resolve from the generated OS file. It is not an OS-to-root source crossing.
 
 Outside importing OS internals:
 
@@ -156,7 +157,7 @@ Before extraction, all cross-boundary imports must be one of:
 2. a generated protocol/schema artifact with an owning source and compatibility test; or
 3. a process/API boundary.
 
-Deep relative imports between `workspace`, root scripts, docs, and OS are extraction blockers. Copying another helper is not an acceptable long-term boundary.
+Workspace deep imports into OS and the OS test import into workspace are extraction blockers until replaced by public contracts or isolated fixtures. Documentation's `@consuelo/os` import is a package-level consumer and should remain on documented exports. Root script dispatch is operational coupling rather than a source-import edge. Copying another helper is not an acceptable long-term boundary.
 
 ## CLI ownership audit
 
@@ -173,11 +174,11 @@ The current `packages/cli` binary is a hard extraction blocker:
 
 Decision: split the public surfaces before any repository split.
 
-- `@consuelo/cli` / `consuelo` remains the GTM/dialer application CLI unless Ko explicitly chooses a broader umbrella brand.
-- Create an OS-owned package such as `@consuelo/os-cli` with executable `consuelo-os` as the stable extraction-ready boundary.
-- Preserve `consuelo os ...` temporarily as a compatibility shim that shells to or imports the OS CLI public entrypoint; publish a deprecation window before removal.
+- Follow the approved foundation plan: `consuelo` becomes the OS lifecycle CLI for install, status, restart, update, repair, rollback, channel, node, and uninstall.
+- Preserve and rename the existing sales/dialer CLI to `consuelo-dialer`; do not delete or redesign its GTM behavior in this initiative.
+- Create an OS-owned package such as `@consuelo/os-cli` that publishes the `consuelo` executable. The exact npm package name remains an approval item; the executable ownership does not.
+- Introduce `consuelo-dialer` before the `consuelo` cutover. During one supported transition window, legacy sales subcommands invoked through `consuelo` may forward to `consuelo-dialer` with a deprecation notice, while `consuelo os ...` forwards to the OS lifecycle entrypoint.
 - The OS CLI must never discover OS by hard-coded repository-relative path in a published installation.
-- Final package name and executable are approval items; this audit recommends the boundary, not an unapproved rename.
 
 ## workflow, build, and deployment ownership
 
@@ -339,7 +340,7 @@ consuelohq/opensaas
 │   │   ├── analytics
 │   │   ├── api
 │   │   ├── chat-bot
-│   │   ├── cli                 # GTM command surface only
+│   │   ├── cli                 # preserved consuelo-dialer command surface
 │   │   ├── coaching
 │   │   ├── contacts
 │   │   ├── dialer
@@ -358,7 +359,7 @@ consuelohq/opensaas
 ├── platform
 │   ├── os
 │   │   ├── runtime             # current packages/os public runtime
-│   │   ├── cli                 # future @consuelo/os-cli
+│   │   ├── cli                 # future @consuelo/os-cli; publishes consuelo
 │   │   ├── contracts           # explicit exported schemas/protocols
 │   │   ├── distribution        # native/OCI/install manifests
 │   │   └── cloudflare          # hosted OS edge workers
@@ -394,7 +395,7 @@ consuelohq/consuelo-os              # final name requires Ko approval
 ├── README.md
 ├── packages
 │   ├── runtime                     # @consuelo/os
-│   ├── cli                         # @consuelo/os-cli, consuelo-os binary
+│   ├── cli                         # @consuelo/os-cli, consuelo binary
 │   ├── contracts                   # schemas, manifest types, public client
 │   ├── design                      # first-party OS design adapter only
 │   └── testing                     # public contract fixtures/harness
@@ -454,15 +455,15 @@ Rollback: retain temporary adapter modules at old paths that forward to the new 
 
 Actions:
 
-- Introduce `@consuelo/os-cli` / `consuelo-os`.
+- Introduce an OS-owned package such as `@consuelo/os-cli` that publishes the `consuelo` executable.
 - Move only OS lifecycle commands behind the OS package’s public entrypoint.
-- Keep GTM/dialer, Twenty dev/deploy, and app authentication in `@consuelo/cli`.
-- Keep `consuelo os` as a measured compatibility shim.
+- Preserve the existing sales/dialer behavior in a renamed package/binary boundary, proposed `@consuelo/dialer-cli` with executable `consuelo-dialer`; the exact npm package name requires approval.
+- Keep `consuelo os` forwarding to the OS entrypoint during migration, and provide a bounded deprecation shim for legacy sales subcommands invoked through `consuelo`.
 - Classify every workspace tool as public OS, repository-only operator, or shared contract.
 
-Gate: OS CLI installs and runs outside a repository checkout; GTM CLI has no OS source-path discovery; compatibility telemetry/deprecation plan approved.
+Gate: `consuelo` installs and runs OS lifecycle outside a repository checkout; `consuelo-dialer` preserves existing sales/dialer behavior without OS source-path discovery; compatibility telemetry/deprecation plan approved.
 
-Rollback: route the shim back to the existing command implementation while preserving the new package name.
+Rollback: retain the current mixed binary as a temporary dispatcher to the two new public entrypoints while preserving both target command names.
 
 ### Phase 3 — independent OS build, test, and release
 
@@ -513,14 +514,22 @@ Ko can approve or reject these independently:
 2. **Target repository name:** proposed `consuelohq/consuelo-os`; alternatives require a redirect/package impact pass.
 3. **Brand:** user-facing `Consuelo OS`; decide whether company/legal references should be `Consuelo`, `Consuelo HQ`, `Consuelo Inc.`, or `Consuelohq.com, PBC` by context.
 4. **OS package:** retain `@consuelo/os` unless registry availability or product strategy requires a rename.
-5. **OS CLI:** proposed package `@consuelo/os-cli`, executable `consuelo-os`, temporary `consuelo os` shim.
-6. **GTM CLI:** retain `@consuelo/cli` / `consuelo` for app/dialer/CRM commands.
+5. **OS CLI package:** the approved executable is `consuelo`; proposed npm package `@consuelo/os-cli` still requires approval.
+6. **GTM CLI package:** the approved executable is `consuelo-dialer`; proposed npm package `@consuelo/dialer-cli` (or retention of `@consuelo/cli` with the renamed bin) requires approval.
 7. **License:** no MIT approval is inferred. Resolve intended Apache-2.0 package license versus root AGPL/commercial context and README MIT claim with legal/copyright-holder evidence.
 8. **Docs/site location:** keep docs/site in current repository through Phase 3; optionally move documentation after versioned OS contracts exist. Website stays a separate brand surface.
 9. **Operator tooling:** keep repository task/stream/GitHub/review tooling in `packages/workspace`; promote only intentionally public OS tools.
 10. **Issue/PR continuity:** preserve old PR history; migrate only open issues with backlinks rather than moving/recreating historical PRs.
 11. **Yarn/Bun:** approve mixed package-manager boundaries; do not bundle a Twenty Yarn-to-Bun migration with OS extraction.
 12. **Upstream names:** preserve Twenty and Open Design provenance names; no mass rename.
+
+## Grok review findings and dispositions
+
+- **GROK-001 — high — fixed and verified.** The audit claimed `packages/os/scripts/generate-types.ts` imports root facade code. Direct file inspection shows executable imports are OS-local; strings emitted for `src/generated/tool-client.ts` also resolve to OS-local facade modules. The source-crossing section and executive summary now distinguish the actual test-only OS→workspace import. Verification: `trc_708ecaa75c3e`, `trc_795120eacc08`, `trc_4594b78e752f`. Inline finding: https://github.com/consuelohq/opensaas/pull/1562#discussion_r3634042257.
+- **GROK-002 — high — fixed and verified.** The audit proposed retaining `consuelo` for GTM/dialer and using `consuelo-os` for OS. The authoritative foundation plan states the opposite: `consuelo` owns OS lifecycle and the existing sales/dialer CLI is preserved as `consuelo-dialer`. All CLI decisions, trees, phases, rollback, approval items, and key-decision text now align with plan lines 189–193 and 665–666. Verification: `trc_5bc71a8248af`, `trc_36d5c6019c2d`. Inline finding: https://github.com/consuelohq/opensaas/pull/1562#discussion_r3634042395.
+- The fail-closed Grok recovery wrapper completed with exit code 0, outcome `approved`, confidence `high`, and `findings: []` (wrapper trace `trc_72bcecbb0e83`; durable-output recovery trace `trc_4820a2ad8648`). It verified both corrections and the core acceptance coverage. Workspace MCP initialization was unavailable; the review used direct read-only file reads/searches. The wrapper audit reported fallback execution as `rawShellUsed: true`, which is recorded transparently rather than treated as an unqualified workspace-MCP success.
+- Structured review: https://github.com/consuelohq/opensaas/pull/1562#issuecomment-5051934462. Top-level summary: https://github.com/consuelohq/opensaas/pull/1562#issuecomment-5051935203. Dispositions: https://github.com/consuelohq/opensaas/pull/1562#issuecomment-5051935448.
+- CodeRabbit was requested and completed, but configured path filters skipped all seven `.task/**` files and it produced no inline findings. This is recorded as a zero-finding, non-substantive review result rather than an approval signal; Grok supplied the independent substantive review.
 
 ## evidence ledger
 
@@ -535,6 +544,11 @@ Ko can approve or reject these independently:
 - `trc_3036f633c385`, `trc_1545603790be`, `trc_1173fa99a2b7` — root Yarn/Nx/workspace/resolution/tooling coupling.
 - `trc_95197e3c8428`, `trc_5f46af72d283` — shared Consuelo Core registry ownership and migration guardrails.
 - `trc_37e504a21c08`, `trc_a2997aca9a18` — GitHub repository metadata, contributor population, and flattened path-history/provenance samples.
+- `trc_3c18a2d7da1a` — candidate corrections for GROK-001 and GROK-002 across every affected audit decision surface.
+- `trc_72bcecbb0e83`, `trc_4820a2ad8648` — successful bounded Grok 4.5 recovery review and durable captured result: approved/high confidence/no remaining findings.
+- `trc_b78c98869f36`, `trc_a2fb2383e89e`, `trc_b04606e153ce`, `trc_fdc1f79c5337`, `trc_a22f80a17737` — structured review, two inline findings, top-level summary, and finding dispositions posted to GitHub.
+- `trc_c66df1424826`, `trc_e09483514b64`, `trc_38e222629b17`, `trc_34ebca491638` — final corrected completeness, task-only diff inspection, strict review, and publish-valid formal verification.
+- `trc_c475621c6013`, `trc_97bc756f8e2f` — temporary Grok prompt/output/run material removed and absence verified after GitHub posting.
 
 ## files changed
 
@@ -559,8 +573,16 @@ Ko can approve or reject these independently:
 - `trc_73ba271d14ec` — working-tree diff inspection: six task-lifecycle artifacts, 771 insertions, zero deletions, and no product file changes.
 - `trc_d60d372a0bf8` — strict workspace review with tests waived for the audit: zero audit-owned issues, zero blocking issues, zero failed suites; 23 pre-existing Twenty SDK/typecheck issues were classified as pre-existing.
 - 2026-07-22 21:22:23 `review.run`: passed — OK.
-- Formal `verify`, CodeRabbit, and Grok 4.5: pending after the first durable push.
-- 2026-07-22 21:25:24 `verify`: failed — COMMAND_FAILED
+- Default formal `verify` exposed only pre-existing repository failures: 23 Twenty SDK lint/typecheck findings and three unrelated API test files (`trc_0305ba03b585`).
+- Audit-safe formal verification passed and wrote a publish-valid stamp: static rules, lint/type/spec classification, zero affected suites with the documented task-metadata waiver, registry selection, and DB guards all passed (`trc_3a9f580c3164`).
+- CodeRabbit completed with no findings after path-filtering all `.task/**` changes; result inspected through `trc_d24ef368dbf15`.
+- Grok 4.5 recovery review completed with exit code 0, approved/high confidence/no remaining findings (`trc_72bcecbb0e83`, `trc_4820a2ad8648`). GROK-001 and GROK-002 were corrected and verified.
+- Final post-correction completeness passed: 27 actual packages, 27 unique inventory rows, zero missing/extra classifications, no stale inverse CLI claims, no false import claim, balanced Markdown, and both temporary Grok paths absent (`trc_c66df1424826`).
+- Final structured working-tree inspection found only seven task-lifecycle/audit artifacts and no product source changes (`trc_e09483514b64`).
+- Final strict review passed with zero audit-owned issues, zero blocking issues, and zero failed suites; 23 pre-existing Twenty SDK lint/typecheck findings remained outside this worker scope (`trc_38e222629b17`).
+- Final audit-safe formal verification passed and wrote a publish-valid stamp: static rules, lint/type/spec review, zero-suite task-metadata selection, registry selection, and DB guards all passed (`trc_34ebca491638`).
+- Temporary review material was removed after GitHub posting: `packages/os/.tmp-reviews/repository-product-boundary-audit/` and the local successful-run summary directory are absent (`trc_c475621c6013`, `trc_97bc756f8e2f`).
+- 2026-07-22 21:47:19 `review.run`: passed — OK
 
 ## key decisions
 
@@ -568,14 +590,14 @@ Ko can approve or reject these independently:
 - Recommend staged hybrid; reject immediate extraction at the present boundary state.
 - No package or repository is presumed eligible for MIT. Current license text, package metadata, inherited provenance, copyright holders, contributor history, and legal approval control any future relicensing decision.
 - Upstream/vendor/generated Twenty and Open Design naming is evidence and provenance, not cleanup scope; mass renaming is explicitly prohibited.
-- Split public OS CLI/runtime contracts from GTM/dialer and repository operator tooling before extraction.
+- Split public OS CLI/runtime contracts from GTM/dialer and repository operator tooling before extraction; per the approved plan, `consuelo` belongs to OS lifecycle and `consuelo-dialer` preserves the existing sales/dialer surface.
 - Preserve root Yarn/Nx for Twenty, Bun for OS-owned release units, and pnpm for Open Design vendor; no one-shot package-manager migration.
 - `Consuelo` versus `Consuelo HQ` and current legal entity naming remain Ko/legal approval decisions.
 
 ## notes for ko
 
 - PR #1562 is the durable audit record. No live environment or local Consuelo OS installation is being mutated.
-- The strongest positive signal for eventual extraction is that `packages/os` has no internal package-manifest dependency. The strongest negative signal is that runtime build independence is undermined by deep source imports, duplicated operator tooling, mixed CLI ownership, installer hosting, legal inconsistency, and cross-product workflows.
+- The strongest positive signal for eventual extraction is that `packages/os` has no internal package-manifest dependency and no confirmed runtime import into another top-level package. The strongest negative signal is operator/test coupling, workspace deep imports into OS, duplicated operator tooling, mixed CLI ownership, installer hosting, legal inconsistency, and cross-product workflows.
 - The root README’s MIT claim should not be repeated in release material until resolved.
 
 ## improvements noticed
@@ -605,6 +627,13 @@ Ko can approve or reject these independently:
 - The typed `task.push` route failed twice because the generated adapter appended an unsupported `--task-session` flag (`trc_6fa615cc398a`, `trc_d5e8766b5878`). A task-scoped invocation of the same underlying script then failed because the backend restart had left no root active-task pointer even though the worktree and PR existed (`trc_5a4cd1e9aef1`).
 - `task.current` and root status confirmed the missing pointer while `stream.list` confirmed the exact worktree, branch, stream, and PR remained healthy (`trc_b26d27d36849`). Recovery: re-register the existing task metadata with `task.init` against the same worktree and PR, without creating a duplicate or changing source state (`trc_05df2a0caf18`).
 
+
+- The initial mandated Grok wrapper exceeded the outer transport window while the read-only process continued. Execution-layer retries created redundant identical process trees; none returned terminal JSON, so all were treated fail closed. Read-only process/session inspection confirmed no product files changed. The unavailable `context` facade route was attempted and recorded (`trc_6756e3ecab70`); bounded OS waits and direct session-log reads recovered two substantive candidate findings without treating incomplete output as approval.
+- The first Grok attempts identified GROK-001 (false `generate-types.ts` root crossing) and GROK-002 (CLI ownership reversed from the approved plan). Both were verified directly and corrected throughout the workpad (`trc_4594b78e752f`, `trc_36d5c6019c2d`, `trc_3c18a2d7da1a`).
+- The first recovery-prompt renderer was rejected before execution because its GitHub content decode path was classified as manual base64 transport (`trc_6fca0cfa287a`). Recovery used GitHub raw-content media type and rendered the committed template with the exact committed PR diff plus exact candidate correction diff (`trc_7adf8ba389eb`).
+- The exact mandated wrapper was then launched once with durable stdout/status capture (`trc_c6b68512ba15`). It completed normally after 116,283 ms with exit code 0 and trace `trc_72bcecbb0e83`; polling/capture trace `trc_4820a2ad8648` preserved the structured result. Workspace MCP initialization was unavailable, so Grok used direct read-only reads/searches; the wrapper audit's `rawShellUsed: true` field is preserved in the GitHub structured review.
+- After the structured review, both inline findings, top-level summary, and dispositions were posted successfully in one task-scoped GitHub batch (`trc_8d6f0da3debb`). GitHub is now the durable source of review truth.
+
 ---
 
 ## publish checklist
@@ -618,6 +647,10 @@ bun run task:pr -- --task-only
 
 ## workspace-owned: files read
 
+- `packages/os/plans/consuelo-os-foundation/workers/28-repository-product-boundary-audit.md`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
+- `packages/os/scripts/generate-types.ts`
+- `packages/os/tests/repo-default-config.test.ts`
 - `packages/workspace/scripts/lib/task-context.js`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/scripts/verify.js`
