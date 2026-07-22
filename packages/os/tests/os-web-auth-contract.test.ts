@@ -97,6 +97,15 @@ describe('OS web authentication contract', () => {
     ]));
   });
 
+  it('preserves public authority health and OAuth metadata routes', () => {
+    expect(UNIVERSAL_AUTH_ROUTE_MATRIX).toEqual(expect.arrayContaining([
+      { method: 'ALL', path: '/health', access: 'public-health', owner: 'existing' },
+      { method: 'ALL', path: '/.well-known/oauth-authorization-server', access: 'public-oauth-metadata', owner: 'existing' },
+      { method: 'ALL', path: '/.well-known/oauth-protected-resource', access: 'public-oauth-metadata', owner: 'existing' },
+      { method: 'ALL', path: '/.well-known/oauth-protected-resource/mcp', access: 'public-oauth-metadata', owner: 'existing' },
+    ]));
+  });
+
   it('documents preserved MCP, bearer, and workspace-agent routes', () => {
     expect(UNIVERSAL_AUTH_ROUTE_MATRIX).toEqual(expect.arrayContaining([
       expect.objectContaining({ method: 'GET', path: '/login/google/start', access: 'public-oauth' }),
