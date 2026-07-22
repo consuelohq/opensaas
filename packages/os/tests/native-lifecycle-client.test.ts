@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
   createNativeLifecycleClient,
+  releaseChannels,
   type LifecycleSnapshot,
   type NativeLifecycleTransport,
 } from '../scripts/lib/native-lifecycle-client';
@@ -125,5 +126,71 @@ describe('native lifecycle client', () => {
     transport.emit({ ...healthySnapshot, sequence: 8 });
 
     expect(observed).toEqual([8]);
+  });
+
+  test('supports every existing distribution channel plus nightly', () => {
+    expect(releaseChannels).toEqual(['stable', 'beta', 'canary', 'dev', 'nightly']);
+  });
+
+  test('accepts an equal-sequence online event after a local offline projection', async () => {
+    let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
+    const transport: NativeLifecycleTransport & { emit(snapshot: LifecycleSnapshot): void } = {
+      async request() {
+        throw new Error('socket unavailable');
+      },
+      subscribe(next) {
+        listener = next;
+        return () => {
+          if (listener === next) listener = undefined;
+        };
+      },
+      emit(next) {
+        listener?.(next);
+      },
+    };
+    const client = createNativeLifecycleClient({ initialSnapshot: healthySnapshot, transport });
+    const observed: LifecycleSnapshot[] = [];
+
+    await client.refresh();
+    client.connect((snapshot) => observed.push(snapshot));
+    transport.emit(healthySnapshot);
+
+    expect(observed).toHaveLength(1);
+    expect(observed[0]).toMatchObject({
+      sequence: 7,
+      runtime: { state: 'running' },
+      connection: { state: 'online' },
+    });
+  });
+
+  test('a stale cleanup cannot unsubscribe a replacement connection', () => {
+    const listeners = new Map<number, (snapshot: LifecycleSnapshot) => void>();
+    let nextId = 0;
+    const transport: NativeLifecycleTransport & { emit(snapshot: LifecycleSnapshot): void } = {
+      async request() {
+        return healthySnapshot;
+      },
+      subscribe(listener) {
+        const id = ++nextId;
+        listeners.set(id, listener);
+        return () => {
+          listeners.delete(id);
+        };
+      },
+      emit(snapshot) {
+        for (const listener of listeners.values()) listener(snapshot);
+      },
+    };
+    const client = createNativeLifecycleClient({ initialSnapshot: healthySnapshot, transport });
+    const first: number[] = [];
+    const second: number[] = [];
+
+    const cleanupFirst = client.connect((snapshot) => first.push(snapshot.sequence));
+    client.connect((snapshot) => second.push(snapshot.sequence));
+    cleanupFirst();
+    transport.emit({ ...healthySnapshot, sequence: 8 });
+
+    expect(first).toEqual([]);
+    expect(second).toEqual([8]);
   });
 });

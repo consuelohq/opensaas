@@ -1,4 +1,5 @@
-export type ReleaseChannel = 'stable' | 'beta' | 'nightly';
+export const releaseChannels = ['stable', 'beta', 'canary', 'dev', 'nightly'] as const;
+export type ReleaseChannel = (typeof releaseChannels)[number];
 export type RuntimeState = 'starting' | 'running' | 'stopping' | 'stopped' | 'offline' | 'failed';
 export type ServiceState = 'healthy' | 'degraded' | 'stopped' | 'failed' | 'unknown';
 export type ServiceManager = 'launchd' | 'windows-service-manager' | 'systemd';
@@ -70,11 +71,23 @@ export function createNativeLifecycleClient(input: {
   initialSnapshot?: LifecycleSnapshot;
 }): NativeLifecycleClient {
   let snapshot = input.initialSnapshot;
-  let unsubscribe: (() => void) | undefined;
+  let hasLocalOfflineProjection = false;
+  let subscription:
+    | { close: () => void; closed: boolean }
+    | undefined;
+
+  const closeSubscription = (current: { close: () => void; closed: boolean }): void => {
+    if (current.closed) return;
+    current.closed = true;
+    current.close();
+    if (subscription === current) subscription = undefined;
+  };
 
   const acceptSnapshot = (next: LifecycleSnapshot): boolean => {
-    if (snapshot && next.sequence <= snapshot.sequence) return false;
+    if (snapshot && next.sequence < snapshot.sequence) return false;
+    if (snapshot && next.sequence === snapshot.sequence && !hasLocalOfflineProjection) return false;
     snapshot = { ...next, connection: { state: 'online' } };
+    hasLocalOfflineProjection = false;
     return true;
   };
 
@@ -96,6 +109,7 @@ export function createNativeLifecycleClient(input: {
           throw new Error('unexpected lifecycle response for status.get');
         }
         snapshot = { ...response, connection: { state: 'online' } };
+        hasLocalOfflineProjection = false;
         return snapshot;
       } catch (error: unknown) {
         if (!snapshot) throw error;
@@ -104,6 +118,7 @@ export function createNativeLifecycleClient(input: {
           runtime: { ...snapshot.runtime, state: 'offline' },
           connection: { state: 'offline', reason: errorMessage(error) },
         };
+        hasLocalOfflineProjection = true;
         return snapshot;
       }
     },
@@ -114,18 +129,18 @@ export function createNativeLifecycleClient(input: {
       return operation({ kind: 'update.rollback', targetVersion });
     },
     connect(listener) {
-      unsubscribe?.();
-      unsubscribe = input.transport.subscribe((next) => {
-        if (acceptSnapshot(next)) listener(snapshot!);
-      });
-      return () => {
-        unsubscribe?.();
-        unsubscribe = undefined;
+      if (subscription) closeSubscription(subscription);
+      const current = {
+        close: input.transport.subscribe((next) => {
+          if (acceptSnapshot(next)) listener(snapshot!);
+        }),
+        closed: false,
       };
+      subscription = current;
+      return () => closeSubscription(current);
     },
     closeShell() {
-      unsubscribe?.();
-      unsubscribe = undefined;
+      if (subscription) closeSubscription(subscription);
     },
     current() {
       return snapshot;
