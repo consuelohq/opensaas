@@ -218,18 +218,18 @@ const QUERY_ALIASES: Record<string, string[]> = {
 
 const INTENT_PACKS: IntentPack[] = [
   {
-    id: 'stream-cleanup',
-    label: 'preview or remove safe local stream branches',
-    terms: ['stream', 'cleanup', 'clean', 'prune', 'delete', 'remove', 'local', 'branch'],
+    id: 'stream-create',
+    label: 'create a durable stream branch with instructions',
+    terms: ['stream', 'create', 'initialize', 'new', 'branch', 'instructions'],
     requireAll: ['stream'],
-    requireAny: ['cleanup', 'clean', 'prune', 'delete', 'remove'],
-    boost: { 'stream.cleanup': 120, 'stream.list': 18, 'task.cleanup': -55, 'fs.trash': -35 },
+    requireAny: ['create', 'initialize', 'new'],
+    boost: { 'stream.create': 120, 'stream.list': 18, 'task.start': -25 },
     alternatives: [
-      { intent: 'inspect stream branches', tools: ['stream.list'] },
-      { intent: 'clean up a task branch/worktree', tools: ['task.cleanup'] },
+      { intent: 'inspect existing stream branches', tools: ['stream.list'] },
+      { intent: 'start work on an existing stream', tools: ['task.start'] },
     ],
-    safeDefault: 'stream.cleanup previews by default; set apply=true only after reviewing the removable and protected lists.',
-    mutatingGuidance: 'stream.cleanup only deletes local stream refs with an origin backup and zero unique local commits.',
+    safeDefault: 'Use stream.list to confirm whether the stream already exists before creating it.',
+    mutatingGuidance: 'stream.create atomically creates the remote stream, instruction files, and local tracking branch.',
   },
   {
     id: 'task-cleanup',
@@ -411,7 +411,7 @@ const INTENT_PACKS: IntentPack[] = [
     label: 'search repo files',
     terms: ['grep', 'ripgrep', 'rg', 'search', 'find', 'pattern', 'contents', 'files', 'codebase'],
     requireAny: ['grep', 'ripgrep', 'rg', 'pattern', 'contents'],
-    boost: { 'fs.search': 105, 'tools.search': -35, 'mac.search': 12, 'context.search': -18, 'task.cleanup': -45 },
+    boost: { 'fs.search': 105, 'tools.search': -35, 'mac.search': 12, 'memory': -18, 'task.cleanup': -45 },
     safeDefault: 'fs.search is the read-only default for searching repository files.',
   },
   {

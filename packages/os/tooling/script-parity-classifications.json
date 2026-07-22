@@ -70,11 +70,6 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
-    "scripts/context.js": {
-      "status": "changed-needs-review",
-      "reason": "High-risk changed script: context storage is the backend portability seam; later PRs must preserve SQLite standalone defaults and optional Supabase sync.",
-      "risk": "high"
-    },
     "scripts/decide-next.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -1064,11 +1059,16 @@
     "scripts/artifacts-design.ts": {
       "status": "os-only-intentional",
       "reason": "Canonical OS-local design generation facade behind bun run artifacts."
+    },
+    "scripts/memory.js": {
+      "status": "os-only-intentional",
+      "reason": "Canonical OS-local memory runtime backed by the Consuelo SQLite database; the legacy Workspace Supabase context script is intentionally not mirrored.",
+      "risk": "high"
     }
   },
   "highRiskScripts": [
     "scripts/artifacts.ts",
-    "scripts/context.js",
+    "scripts/memory.js",
     "scripts/browser.js",
     "scripts/explore.js",
     "scripts/generate-docs.ts",

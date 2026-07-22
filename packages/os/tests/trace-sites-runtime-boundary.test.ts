@@ -39,7 +39,7 @@ describe("OS TraceStore and TraceObservation runtime boundary", () => {
     await observations.recordFacadeToolExecution({
       traceId: "trc_facade_001",
       workspaceId: "wrk_trace_sites_tdd",
-      toolName: "workspace.context.search",
+      toolName: "workspace.memory",
       taskSession: "tsk_001",
       branch: "task/os/trace-sites-tdd",
       status: "ok",

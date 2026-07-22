@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/refine-homepage-hero-against-hermes",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1547,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1547",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1547",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1547/refine-homepage-hero-against-hermes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1547",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1547/refine-homepage-hero-against-hermes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-refine-homepage-hero-against-hermes",
+  "taskSession": "tsk_fc45d8a59ea1",
+  "tmuxSession": "opensaas-website-refine-homepage-hero-against-hermes-fc45d8a5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-refine-homepage-hero-against-hermes/.task/website/refine-homepage-hero-against-hermes/session.json",
+  "createdAt": "2026-07-21T11:30:54.069Z"
+}

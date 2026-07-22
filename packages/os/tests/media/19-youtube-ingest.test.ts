@@ -44,7 +44,7 @@ describe('media.ingest YouTube provenance', () => {
       'media-asset.json',
       'ingest-manifest.json',
     ]);
-    expect(JSON.stringify(module)).not.toMatch(/packet\.md|context-bundle\.md|research:ingest|rights.*safe/i);
+    expect(JSON.stringify(module)).not.toMatch(/packet\.md|(?:context|memory)-bundle\.md|research:ingest|rights.*safe/i);
   });
 
   it('should satisfy media contract when it supports subtitles and auto-subtitle metadata without making network calls in tests', async () => {

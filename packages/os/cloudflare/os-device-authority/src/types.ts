@@ -57,6 +57,39 @@ export type WorkspaceNode = {
   updatedAt: number;
 };
 
+export type WorkspaceAgentName =
+  | 'codex'
+  | 'cursor'
+  | 'claude'
+  | 'opencode'
+  | 'factory'
+  | 'gemini'
+  | 'pi';
+
+export type NodeBootstrapCredential = {
+  tokenHash: string;
+  accountId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  expiresAt: number;
+};
+
+export type WorkspaceNodeAgentStatus = {
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  agents: WorkspaceAgentName[];
+  updatedAt: number;
+};
+
+export type WorkspaceAgentStatus = {
+  workspaceId: string;
+  workspaceHost: string;
+  nodes: Record<string, WorkspaceNodeAgentStatus>;
+  updatedAt: number;
+};
+
 export type OAuthState = {
   state: string;
   userCode: string;
@@ -178,6 +211,17 @@ export type Store = {
     accountId: string,
     nodeId: string,
   ): Promise<WorkspaceNode | undefined>;
+  putNodeBootstrapCredential(
+    credential: NodeBootstrapCredential,
+  ): Promise<void>;
+  byNodeBootstrapCredential(
+    tokenHash: string,
+  ): Promise<NodeBootstrapCredential | undefined>;
+  delNodeBootstrapCredential(tokenHash: string): Promise<void>;
+  putWorkspaceAgentStatus(status: WorkspaceAgentStatus): Promise<void>;
+  byWorkspaceAgentStatus(
+    workspaceHost: string,
+  ): Promise<WorkspaceAgentStatus | undefined>;
 };
 export type StorageLike = {
   get<T>(key: string): Promise<T | undefined>;

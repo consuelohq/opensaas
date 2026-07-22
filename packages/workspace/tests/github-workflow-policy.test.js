@@ -58,4 +58,13 @@ describe('GitHub workflow policy', () => {
       expect(policy, path).not.toContain(path);
     }
   });
+
+  test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
+    const policy = readFileSync(
+      join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
+      'utf8',
+    );
+
+    expect(policy).toContain('.github/workflows/ci-breaking-changes.yaml');
+  });
 });

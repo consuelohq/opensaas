@@ -1,4 +1,4 @@
-"""openworkspace MCP server — local workspace tools with optional memory and observability."""
+"""Consuelo OS MCP server — local workspace tools with memory and observability."""
 
 import asyncio
 import contextlib
@@ -260,7 +260,7 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
 
 APP_DIR = os.path.dirname(__file__)
 PORT = int(os.environ.get('PORT', 8000))
-SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'openworkspace')
+SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'consuelo-os')
 BUN_BIN = os.environ.get('BUN_BIN', '/opt/homebrew/bin/bun')
 WORKSPACE_CALL_DEFAULT_TIMEOUT_SECONDS = 120
 LONG_RUNNING_TOOL_TIMEOUT_SECONDS = {

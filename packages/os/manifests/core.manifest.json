@@ -38,8 +38,9 @@
         "exampleInput": {
           "steps": [
             {
-              "tool": "context.find",
+              "tool": "memory",
               "input": {
+                "operation": "find",
                 "keyword": "workspace",
                 "limit": 1
               }
@@ -156,137 +157,6 @@
             }
           }
         ]
-      }
-    },
-    {
-      "name": "context",
-      "kind": "facade-tool",
-      "source": "dev-tooling",
-      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
-      "category": "context",
-      "description": "search, read, save, list, and inspect project context and local workspace traces",
-      "core": true,
-      "definition": {
-        "name": "context",
-        "methodPath": [
-          "context"
-        ],
-        "description": "search, read, save, list, and inspect project context and local workspace traces",
-        "category": "context",
-        "underlying": "workspace context",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "ContextInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "context",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "operation",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "index",
-              "kind": "value"
-            },
-            {
-              "source": "keyword",
-              "kind": "value"
-            },
-            {
-              "source": "title",
-              "kind": "value"
-            },
-            {
-              "source": "file",
-              "kind": "value"
-            },
-            {
-              "source": "category",
-              "flag": "--category",
-              "kind": "value"
-            },
-            {
-              "source": "limit",
-              "flag": "--limit",
-              "kind": "value"
-            },
-            {
-              "source": "byTitle",
-              "flag": "--by-title",
-              "kind": "boolean"
-            },
-            {
-              "source": "text",
-              "flag": "--text",
-              "kind": "boolean"
-            },
-            {
-              "source": "traceId",
-              "flag": "--trace-id",
-              "kind": "value"
-            },
-            {
-              "source": "tool",
-              "flag": "--tool",
-              "kind": "value"
-            },
-            {
-              "source": "status",
-              "flag": "--status",
-              "kind": "value"
-            },
-            {
-              "source": "since",
-              "flag": "--since",
-              "kind": "value"
-            },
-            {
-              "source": "until",
-              "flag": "--until",
-              "kind": "value"
-            },
-            {
-              "source": "contains",
-              "flag": "--contains",
-              "kind": "value"
-            },
-            {
-              "source": "contextTaskSession",
-              "flag": "--task-session",
-              "kind": "value"
-            },
-            {
-              "source": "branch",
-              "flag": "--branch",
-              "kind": "value"
-            },
-            {
-              "source": "raw",
-              "flag": "--raw",
-              "kind": "boolean"
-            },
-            {
-              "source": "db",
-              "flag": "--db",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "operation": "search",
-          "keyword": "workspace",
-          "limit": 3
-        },
-        "sessionRequired": false
       }
     },
     {
@@ -584,6 +454,137 @@
       }
     },
     {
+      "name": "memory",
+      "kind": "facade-tool",
+      "source": "dev-tooling",
+      "sourcePath": "packages/os/tooling/dev-tool-manifest.json",
+      "category": "memory",
+      "description": "search, read, save, list, and inspect local project memory and workspace traces",
+      "core": true,
+      "definition": {
+        "name": "memory",
+        "methodPath": [
+          "memory"
+        ],
+        "description": "search, read, save, list, and inspect local project memory and workspace traces",
+        "category": "memory",
+        "underlying": "workspace memory",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "MemoryInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "memory",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "operation",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "index",
+              "kind": "value"
+            },
+            {
+              "source": "keyword",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "kind": "value"
+            },
+            {
+              "source": "file",
+              "kind": "value"
+            },
+            {
+              "source": "category",
+              "flag": "--category",
+              "kind": "value"
+            },
+            {
+              "source": "limit",
+              "flag": "--limit",
+              "kind": "value"
+            },
+            {
+              "source": "byTitle",
+              "flag": "--by-title",
+              "kind": "boolean"
+            },
+            {
+              "source": "text",
+              "flag": "--text",
+              "kind": "boolean"
+            },
+            {
+              "source": "traceId",
+              "flag": "--trace-id",
+              "kind": "value"
+            },
+            {
+              "source": "tool",
+              "flag": "--tool",
+              "kind": "value"
+            },
+            {
+              "source": "status",
+              "flag": "--status",
+              "kind": "value"
+            },
+            {
+              "source": "since",
+              "flag": "--since",
+              "kind": "value"
+            },
+            {
+              "source": "until",
+              "flag": "--until",
+              "kind": "value"
+            },
+            {
+              "source": "contains",
+              "flag": "--contains",
+              "kind": "value"
+            },
+            {
+              "source": "memoryTaskSession",
+              "flag": "--task-session",
+              "kind": "value"
+            },
+            {
+              "source": "branch",
+              "flag": "--branch",
+              "kind": "value"
+            },
+            {
+              "source": "raw",
+              "flag": "--raw",
+              "kind": "boolean"
+            },
+            {
+              "source": "db",
+              "flag": "--db",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "operation": "search",
+          "keyword": "workspace",
+          "limit": 3
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "review.run",
       "kind": "facade-tool",
       "source": "dev-tooling",
@@ -820,11 +821,6 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
-            },
-            {
-              "source": "createStream",
-              "flag": "--create-stream",
-              "kind": "boolean"
             },
             {
               "source": "pr",

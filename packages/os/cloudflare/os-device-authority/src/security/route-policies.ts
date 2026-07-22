@@ -1,4 +1,9 @@
-export type RouteTrust = 'public' | 'oauth' | 'device-proof' | 'internal';
+export type RouteTrust =
+  | 'public'
+  | 'oauth'
+  | 'device-proof'
+  | 'node-bootstrap'
+  | 'internal';
 export type RouteMethod = 'ANY' | 'GET' | 'POST';
 
 export const DEVICE_AUTHORITY_ROUTE_POLICIES = [
@@ -33,6 +38,8 @@ export const DEVICE_AUTHORITY_ROUTE_POLICIES = [
   { method: 'POST', path: '/login/device/workspace', trust: 'device-proof' },
   { method: 'POST', path: '/login/device/approve', trust: 'internal' },
   { method: 'POST', path: '/login/oauth/access_token', trust: 'device-proof' },
+  { method: 'GET', path: '/workspace/agents', trust: 'public' },
+  { method: 'POST', path: '/workspace/agents', trust: 'node-bootstrap' },
 ] as const satisfies ReadonlyArray<{
   method: RouteMethod;
   path: string;

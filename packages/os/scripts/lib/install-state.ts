@@ -26,9 +26,15 @@ import {
   type LocalAgentDetection,
 } from './local-agent-connectivity';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
-import { createGatewaySecurityConfig, issueAgentAppToken } from './security-gateway';
+import {
+  createGatewaySecurityConfig,
+  getAgentAppCredentialStatus,
+  issueAgentAppToken,
+  updateAgentAppTokenScopes,
+} from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
 import { validateBundledSkills } from './skills';
+import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 
 export type OsMode = 'local' | 'cloud';
@@ -199,6 +205,7 @@ function resolveBundledOperatorRoot(): string {
 
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
 const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
+const BUNDLED_STREAMS_ROOT = path.join(PACKAGE_ROOT, 'streams');
 const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
 const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
@@ -430,6 +437,36 @@ function writeYamlConfigIfMissing(input: {
   if (!exists) writeYamlConfig(input.path, input.value, input.dryRun);
 }
 
+function seedBundledStreams(
+  home: string,
+  dryRun: boolean,
+): ProvisionAction[] {
+  const sourcePath = path.join(BUNDLED_STREAMS_ROOT, 'tools', 'AGENTS.md');
+  const targetPath = path.join(home, 'streams', 'tools', 'AGENTS.md');
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(
+      `${sourcePath}: required Tools stream instructions are missing`,
+    );
+  }
+
+  const targetExists = fs.existsSync(targetPath);
+  const actions: ProvisionAction[] = [
+    {
+      type: 'seed_stream',
+      path: targetPath,
+      status: targetExists ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: targetExists
+        ? 'user stream instructions preserved'
+        : 'Tools stream instructions installed',
+    },
+  ];
+  if (!dryRun && !targetExists) {
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(sourcePath, targetPath);
+  }
+  return actions;
+}
+
 function samePath(left: string, right: string): boolean {
   return path.resolve(left) === path.resolve(right);
 }
@@ -621,33 +658,43 @@ function materializeChatGptMcpConnection(input: {
   dryRun: boolean;
 }): ProvisionAction[] {
   const targetPath = path.join(input.home, 'security', 'generated', 'chatgpt-mcp.json');
-  const scopes = ['route:/mcp:read', 'tool:*:read'];
+  const scopes = [...STANDARD_OS_MCP_SCOPES];
   if (input.dryRun) {
     return [{ type: 'create_file', path: targetPath, status: 'planned', message: 'ChatGPT MCP connection planned' }];
   }
   const existing = readJsonFile<JsonObject>(targetPath);
   const localUrl = `http://127.0.0.1:${input.port}/mcp`;
-  if (
+  const hasExistingConnection =
     typeof existing?.bearerToken === 'string' &&
     typeof existing?.tokenId === 'string' &&
-    typeof existing?.url === 'string'
-  ) {
-    const existingScopes = Array.isArray(existing.scopes) ? existing.scopes : scopes;
-    if (
-      existing.url !== CHATGPT_MCP_URL ||
-      existing.localUrl !== localUrl ||
-      !Array.isArray(existing.scopes)
-    ) {
-      writeJsonFile(targetPath, {
-        ...existing,
-        url: CHATGPT_MCP_URL,
-        localUrl,
-        scopes: existingScopes,
-        updatedAt: nowIso(),
-      }, false);
-      return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection metadata updated' }];
+    typeof existing?.url === 'string';
+  if (hasExistingConnection) {
+    const credential = getAgentAppCredentialStatus({
+      config: input.config,
+      tokenId: existing.tokenId,
+    });
+    if (credential?.status === 'active') {
+      updateAgentAppTokenScopes({
+        config: input.config,
+        tokenId: existing.tokenId,
+        scopes,
+      });
+      if (
+        existing.url !== CHATGPT_MCP_URL ||
+        existing.localUrl !== localUrl ||
+        JSON.stringify(existing.scopes) !== JSON.stringify(scopes)
+      ) {
+        writeJsonFile(targetPath, {
+          ...existing,
+          url: CHATGPT_MCP_URL,
+          localUrl,
+          scopes,
+          updatedAt: nowIso(),
+        }, false);
+        return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection metadata updated' }];
+      }
+      return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
     }
-    return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
   }
   const token = issueAgentAppToken({
     config: input.config,
@@ -674,7 +721,14 @@ function materializeChatGptMcpConnection(input: {
     scopes,
     createdAt: nowIso(),
   }, false);
-  return [{ type: 'create_file', path: targetPath, status: 'created', message: 'ChatGPT MCP connection written' }];
+  return [{
+    type: 'create_file',
+    path: targetPath,
+    status: hasExistingConnection ? 'updated' : 'created',
+    message: hasExistingConnection
+      ? 'ChatGPT MCP connection credential replaced'
+      : 'ChatGPT MCP connection written',
+  }];
 }
 
 function materializeWorkspaceConnectorBootstrap(input: {
@@ -1253,6 +1307,7 @@ export function provisionLocalOs(
   actions.push(...materializeProductPackageRoot(home, dryRun));
   actions.push(...materializeOperator(home, dryRun));
   actions.push(...seedBundledSteering(home, dryRun));
+  actions.push(...seedBundledStreams(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {

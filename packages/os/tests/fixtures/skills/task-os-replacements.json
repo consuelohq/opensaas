@@ -18,5 +18,61 @@
   {
     "from": "Normal workspace calls should be task-session scoped instead of branch-threaded.",
     "to": "Normal OS calls should be task-session scoped instead of branch-threaded."
+  },
+  {
+    "from": "context.search",
+    "to": "memory.search"
+  },
+  {
+    "from": "# Phase 3 — Research Through the Decision Engine and Context",
+    "to": "# Phase 3 — Research Through the Decision Engine and Memory"
+  },
+  {
+    "from": "Use the decision engine and project context before direct symbol hunting",
+    "to": "Use the decision engine and project memory before direct symbol hunting"
+  },
+  {
+    "from": "Context and exploration are not one-time kickoff steps",
+    "to": "Memory and exploration are not one-time kickoff steps"
+  },
+  {
+    "from": "context searched and relevant prior handoffs/workpads found",
+    "to": "memory searched and relevant prior handoffs/workpads found"
+  },
+  {
+    "from": "search context before guessing about prior decisions",
+    "to": "search memory before guessing about prior decisions"
+  },
+  {
+    "from": "tool: \"memory.search\",\n  input: {",
+    "to": "tool: \"memory\",\n  input: { operation: \"search\","
+  },
+  {
+    "from": "tool: \"memory.search\",\n        input: {",
+    "to": "tool: \"memory\",\n        input: {\n          operation: \"search\","
+  },
+  {
+    "from": "workspace.memory.search({",
+    "to": "workspace.memory({\n        operation: \"search\","
+  },
+  {
+    "from": "`memory.search`",
+    "to": "`memory` with `operation: \"search\"`"
+  },
+  {
+    "from": "## Context Is a Live Memory Layer",
+    "to": "## Memory Is a Live Project Layer"
+  },
+  {
+    "from": "The workspace context store contains",
+    "to": "The OS memory store contains"
+  },
+  {
+    "from": "const context = await workspace.memory({",
+    "to": "const memory = await workspace.memory({"
+  },
+  {
+    "from": "context,",
+    "to": "memory,"
   }
 ]

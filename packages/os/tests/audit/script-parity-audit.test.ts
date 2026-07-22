@@ -66,7 +66,7 @@ type ScriptInventory = {
 
 const highRiskScripts = [
   'scripts/office.ts',
-  'scripts/context.js',
+  'scripts/memory.js',
   'scripts/browser.js',
   'scripts/explore.js',
   'scripts/generate-docs.ts',

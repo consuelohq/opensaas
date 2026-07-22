@@ -67,7 +67,13 @@ describe('MCP gateway action scopes', () => {
       condition: 'the action kills a process',
       input: { action: 'kill', pid: 123 },
       tokenScopes: ['mcp:call'],
-      expectedStatus: 403,
+      expectedStatus: null,
+    },
+    {
+      condition: 'the action kills a process through the explicit OS facade grant',
+      input: { action: 'kill', pid: 123 },
+      tokenScopes: ['os:tools'],
+      expectedStatus: null,
     },
     {
       condition: 'the action kills a process with an explicit dangerous grant',
@@ -117,4 +123,46 @@ describe('MCP gateway action scopes', () => {
       }
     },
   );
+
+  test.each([
+    { tokenScopes: ['mcp:call'], label: 'compatibility MCP call grant' },
+    { tokenScopes: ['os:tools'], label: 'canonical OS tool grant' },
+  ])('should authorize task.push through the $label', async ({ tokenScopes }) => {
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      active: true,
+      workspace_host: 'scope-test.consuelohq.com',
+      scopes: tokenScopes,
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+
+    const scope = resolveMcpGatewayRequiredScope(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'task.push',
+          input: { message: 'fix(os): example', changed: true },
+        },
+      },
+    }));
+    expect(scope).toMatchObject({
+      ok: true,
+      requiredScope: 'tool:task.push:dangerous',
+    });
+    if (!scope.ok) throw new Error(scope.error.message);
+
+    const response = await authorizeConsueloOAuthMcpRequest({
+      config: {
+        workspaceHost: 'scope-test.consuelohq.com',
+      } as GatewaySecurityConfig,
+      bearerToken: 'test-token',
+      requiredScope: scope.requiredScope,
+    });
+
+    expect(response).toBeNull();
+  });
 });

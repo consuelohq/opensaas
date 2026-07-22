@@ -32,6 +32,7 @@ const expectedDescriptions = {
   'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
 } as const;
 const removedCoreToolNames = [
+  'context',
   'fs.list',
   'fs.write',
   'gh',
@@ -73,7 +74,7 @@ const oldContextToolNames = [
 const retainedCoreToolNames = [
   'batch',
   'code.call',
-  'context',
+  'memory',
   'explore',
   'fs.apply_patch',
   'fs.trash',

@@ -26,7 +26,7 @@
     "includeNames": [
       "batch",
       "code.call",
-      "context",
+      "memory",
       "explore",
       "github",
       "task.start",
@@ -63,7 +63,7 @@
       "git.diff",
       "git.status",
       "stream.list",
-      "stream.cleanup",
+      "stream.create",
       "checkFiles",
       "verify"
     ],

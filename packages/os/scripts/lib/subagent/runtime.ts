@@ -639,14 +639,15 @@ async function executeGrokSubagent(
   },
 ): Promise<ToolResult<SubagentData>> {
   const config = subagentConfig('grok', input, context.env);
-  const grok = findExecutable(config.bin, context.env);
+  const fallbackBinaries = context.env.WORKSPACE_SUBAGENT_GROK_BIN ? [] : ['agent'];
+  const grok = findExecutable(config.bin, context.env, fallbackBinaries);
   if (!grok) {
     return subagentToolResult(entry, context, {
       ...input,
       status: 'not_configured',
       command: [config.bin, '-p'],
       stdout: '',
-      stderr: 'grok CLI was not found on PATH',
+      stderr: 'grok CLI was not found in configured or standard executable locations',
       exitCode: 127,
       audit: input.audit,
       ok: true,
@@ -655,8 +656,32 @@ async function executeGrokSubagent(
     });
   }
 
+  const help = readCommandHelp(grok, ['--help'], context.env);
+  if (
+    input.policy === 'read' &&
+    (!help?.includes('--permission-mode') || !help.includes('--max-turns'))
+  ) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_supported',
+      command: [grok, '--help'],
+      stdout: '',
+      stderr: 'grok read policy requires plan permission mode and bounded turns',
+      exitCode: 1,
+      audit: input.audit,
+      ok: true,
+      code: 'OK',
+      message: 'grok provider cannot enforce the requested read policy',
+    });
+  }
+
   const prompt = subagentInstruction(input);
   const args = ['--no-auto-update'];
+  if (input.policy === 'read') {
+    args.push('--permission-mode', 'plan', '--max-turns', '32');
+    if (help?.includes('--no-memory')) args.push('--no-memory');
+    if (help?.includes('--no-subagents')) args.push('--no-subagents');
+  }
   if (config.model) args.push('--model', config.model);
   args.push('-p', prompt);
   args.push('--output-format', input.outputFormat === 'json' ? 'json' : 'text');
@@ -848,18 +873,44 @@ function findDangerousSubagentInstruction(instruction: string): string | null {
   return patterns.find(({ pattern }) => pattern.test(instruction))?.reason || null;
 }
 
-function findExecutable(binary: string, env: NodeJS.ProcessEnv): string | null {
-  const pathValue = env.PATH ?? process.env.PATH ?? '';
-  for (const directory of pathValue.split(path.delimiter).filter(Boolean)) {
-    const candidate = path.join(directory, binary);
-    try {
-      fs.accessSync(candidate, fs.constants.X_OK);
-      return candidate;
-    } catch {
-      // Keep scanning PATH.
+function findExecutable(binary: string, env: NodeJS.ProcessEnv, fallbackBinaries: string[] = []): string | null {
+  for (const candidateBinary of [binary, ...fallbackBinaries]) {
+    if (path.isAbsolute(candidateBinary)) {
+      if (isExecutable(candidateBinary)) return candidateBinary;
+      continue;
+    }
+
+    for (const directory of executableSearchDirectories(env)) {
+      const candidate = path.join(directory, candidateBinary);
+      if (isExecutable(candidate)) return candidate;
     }
   }
   return null;
+}
+
+function executableSearchDirectories(env: NodeJS.ProcessEnv): string[] {
+  const directories = (env.PATH ?? process.env.PATH ?? '')
+    .split(path.delimiter)
+    .filter(Boolean);
+  const home = env.HOME ?? process.env.HOME;
+  if (home) {
+    directories.push(
+      path.join(home, '.grok', 'bin'),
+      path.join(home, '.local', 'bin'),
+      path.join(home, '.bun', 'bin'),
+      path.join(home, '.opencode', 'bin'),
+    );
+  }
+  return Array.from(new Set(directories));
+}
+
+function isExecutable(candidate: string): boolean {
+  try {
+    fs.accessSync(candidate, fs.constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function readCommandHelp(command: string, args: string[], env: NodeJS.ProcessEnv): string | null {
