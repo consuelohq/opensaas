@@ -594,7 +594,7 @@ describe('os device authority worker', () => {
       ...form({
         token: String(tokenJson.access_token),
         resource,
-        scope: 'tool:get_raw_steering:read',
+        scope: 'tool:status:read',
       }),
     }));
     await expect(introspection.json()).resolves.toMatchObject({
@@ -683,7 +683,7 @@ describe('os device authority worker', () => {
       ...form({
         token: String(tokenJson.access_token),
         resource: 'https://macbook-air-test.consuelohq.com/mcp',
-        scope: 'tool:get_raw_steering:read',
+        scope: 'tool:status:read',
       }),
     }));
     await expect(introspection.json()).resolves.toMatchObject({

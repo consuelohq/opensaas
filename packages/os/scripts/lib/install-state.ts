@@ -155,8 +155,8 @@ const REQUIRED_DIRS = [
   'tools',
   'scripts',
   'src',
-  'tooling',
   'manifests',
+  'workflows',
   'hooks',
   'artifacts',
   'pages',
@@ -207,8 +207,8 @@ const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
 const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
 const BUNDLED_STREAMS_ROOT = path.join(PACKAGE_ROOT, 'streams');
 const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
-const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
-const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
+const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'generated', 'tool.manifest.json');
+const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'manifests', 'workflows', 'hooks'] as const;
 const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
@@ -1609,7 +1609,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
-        'manifests/workflow-bundles.json',
+        'workflows/generated/workflow-bundles.json',
       ],
     },
     {
@@ -1677,27 +1677,6 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         ? 'bundled skill metadata matches manifest'
         : `${skillIssues.length} bundled skill issue(s)`,
   });
-
-  try {
-    const { executeCall } = await import('../os');
-    const result = await executeCall({
-      name: 'daily-revenue-brief',
-      traceId: `trc_doctor_${Date.now().toString(36)}`,
-    });
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: result.ok && result.artifacts?.length ? 'connected' : 'unhealthy',
-      message: result.ok
-        ? 'skill created a local artifact'
-        : (result.error?.message ?? 'skill failed'),
-    });
-  } catch (error: unknown) {
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: 'unhealthy',
-      message: error instanceof Error ? error.message : 'skill failed',
-    });
-  }
 
   for (const agent of detectAgents(resolvedHome)) {
     checks.push({

@@ -5,8 +5,8 @@ const path = require('path');
 
 const { createOsHookDispatcher } = require('./dispatcher.js');
 
-const DEFAULT_MANIFEST_PATH = path.join(__dirname, '..', 'tooling', 'dev-tool-manifest.json');
-const DEFAULT_BUNDLES_PATH = path.join(__dirname, '..', 'manifests', 'workflow-bundles.json');
+const DEFAULT_MANIFEST_PATH = path.join(__dirname, '..', 'manifests', 'generated', 'tool.manifest.json');
+const DEFAULT_BUNDLES_PATH = path.join(__dirname, '..', 'workflows', 'generated', 'workflow-bundles.json');
 
 function expandHome(value) {
   if (value === '~') return require('os').homedir();
@@ -41,8 +41,11 @@ function readJson(filePath) {
 function loadIntentManifest(options = {}) {
   if (Array.isArray(options.manifest)) return options.manifest;
   const manifest = readJson(options.manifestPath || DEFAULT_MANIFEST_PATH);
-  if (!Array.isArray(manifest)) throw new Error('intent manifest must be an array');
-  return manifest;
+  if (Array.isArray(manifest)) return manifest;
+  if (manifest && manifest.kind === 'consuelo-os-tool-manifest' && Array.isArray(manifest.tools)) {
+    return manifest.tools.map((entry) => entry.definition);
+  }
+  throw new Error('intent manifest must be a generated manifest or array');
 }
 
 function loadWorkflowBundles(options = {}) {

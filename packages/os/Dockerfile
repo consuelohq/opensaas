@@ -5,7 +5,8 @@ WORKDIR /source
 COPY package.json bun.lock ./
 COPY scripts/ scripts/
 COPY src/ src/
-COPY tooling/ tooling/
+COPY tools/ tools/
+COPY workflows/ workflows/
 COPY manifests/ manifests/
 COPY hooks/ hooks/
 COPY skills/ skills/

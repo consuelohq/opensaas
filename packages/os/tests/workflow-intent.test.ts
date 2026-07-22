@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -35,8 +35,8 @@ type WorkflowBundlesFile = {
   workflows: WorkflowBundle[];
 };
 
-const manifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
-const bundlesPath = resolve(import.meta.dirname, '../manifests/workflow-bundles.json');
+const manifestPath = resolve(import.meta.dirname, '../manifests/generated/tool.manifest.json');
+const bundlesPath = resolve(import.meta.dirname, '../workflows/generated/workflow-bundles.json');
 const packageRoot = resolve(import.meta.dirname, '..');
 const taskIntentScript = resolve(import.meta.dirname, '../scripts/task-intent.js');
 
@@ -45,14 +45,16 @@ function readJson(path: string): unknown {
 }
 
 function readManifest(): ManifestToolDefinition[] {
-  const value = readJson(manifestPath);
-  if (!Array.isArray(value)) throw new Error('expected dev manifest array');
-  return value as ManifestToolDefinition[];
+  const value = readJson(manifestPath) as { kind?: string; tools?: ManifestWrapper[] };
+  if (value.kind !== 'consuelo-os-tool-manifest' || !Array.isArray(value.tools)) {
+    throw new Error('expected generated tool manifest');
+  }
+  return value.tools.map((entry) => entry.definition);
 }
 
 
 function readCoreManifest(): { tools: ManifestWrapper[] } {
-  return readJson(resolve(packageRoot, 'manifests/core.manifest.json')) as { tools: ManifestWrapper[] };
+  return readJson(resolve(packageRoot, 'manifests/generated/core.manifest.json')) as { tools: ManifestWrapper[] };
 }
 
 function readBundles(): WorkflowBundlesFile {
@@ -72,6 +74,12 @@ function toolNames(bundle: WorkflowBundle): string[] {
 }
 
 describe('OS workflow intent bundles', () => {
+  test('uses the canonical TypeScript workflow source and generated output paths', async () => {
+    const source = await import('../workflows/workflows');
+    expect(source.workflows.map((workflow) => workflow.id)).toEqual(['task', 'artifacts', 'media']);
+    expect(existsSync(resolve(packageRoot, 'workflows/generated/workflow-bundles.json'))).toBe(true);
+    expect(existsSync(resolve(packageRoot, 'tooling'))).toBe(false);
+  });
   test('should generate task and artifacts workflow bundles when loading workflow metadata', () => {
     const bundles = readBundles();
     const task = workflowById(bundles, 'task');

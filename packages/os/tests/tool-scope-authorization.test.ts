@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import manifestJson from '../manifests/tool.manifest.json';
+import manifestJson from '../manifests/generated/tool.manifest.json';
 import { MCP_OAUTH_SCOPES } from '../cloudflare/os-device-authority/src/constants';
 import { normalizeScopes } from '../cloudflare/os-device-authority/src/utils';
 import { resolveToolScope } from '../scripts/lib/security-gateway';

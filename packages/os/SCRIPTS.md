@@ -1399,7 +1399,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && rg "TODO" packages/
 
 ## Linear facade
 
-Linear uses `packages/workspace/scripts/linear.js` as the source wrapper and typed facade entries in `tooling/tool-manifest.json`.
+Linear uses `packages/workspace/scripts/linear.js` as the source wrapper and typed facade entries in `packages/workspace/tooling/tool-manifest.json`.
 
 Required workflow for issue creation:
 

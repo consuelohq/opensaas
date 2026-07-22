@@ -116,8 +116,8 @@ const REQUIRED_RUNTIME_INPUTS = [
   'scripts/os.ts',
   'scripts/server/main.ts',
   'scripts/lib/install-state.ts',
-  'manifests/tool.manifest.json',
-  'manifests/core.manifest.json',
+  'manifests/generated/tool.manifest.json',
+  'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
   'steering/decision.md',
@@ -131,8 +131,9 @@ const DEFAULT_DISCOVERY_PATHS = [
   'bun.lock',
   'scripts',
   'src',
-  'tooling',
+  'tools',
   'manifests',
+  'workflows',
   'hooks',
   'skills',
   'steering',
@@ -274,15 +275,21 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
     return 'test-only';
   }
   if (
-    filePath.startsWith('tooling/') ||
     filePath.startsWith('scripts/lib/distribution/') ||
+    filePath === 'manifests/manifest.config.ts' ||
+    filePath.startsWith('manifests/schemas/') ||
+    filePath === 'workflows/workflows.ts' ||
+    filePath === 'tools/package.ts' ||
+    filePath === 'tools/registry.ts' ||
+    /^tools\/[^/]+\/(?:manifest|schema)\.ts$/.test(filePath) ||
     SOURCE_ONLY_FILES.has(filePath)
   ) {
     return 'source-only';
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
   if (filePath.startsWith('skills/')) return 'managed-skill';
-  if (filePath.startsWith('manifests/') || filePath.startsWith('src/generated/')) {
+  if (/^tools\/[^/]+\/handler\.ts$/.test(filePath)) return 'managed-tool';
+  if (filePath.startsWith('manifests/generated/') || filePath.startsWith('workflows/generated/') || filePath.startsWith('src/generated/')) {
     return 'managed-tool';
   }
   if (filePath.startsWith('steering/') || filePath.startsWith('streams/')) return 'runtime';
@@ -369,6 +376,31 @@ function isTextFile(filePath: string, bytes: Buffer): boolean {
   return filePath === 'package.json' || filePath === 'bun.lock';
 }
 
+export function containsMachineSpecificAbsolutePath(text: string, sourceRoot: string): boolean {
+  const resolvedRoot = sourceRoot.startsWith('/') || /^[A-Za-z]:[\\/]/.test(sourceRoot)
+    ? sourceRoot
+    : resolve(sourceRoot);
+  const normalizedRoot = resolvedRoot.replaceAll('\\', '/');
+  const sourceRootSegments = normalizedRoot.split('/').filter(Boolean);
+  const rootCandidates = [...new Set([resolvedRoot, normalizedRoot])];
+  const embeddedSourceRoots = sourceRootSegments.length >= 2
+    ? rootCandidates.map((candidate) => new RegExp(
+        escapeRegExp(candidate) + '(?:\\\\|/|$|[\\s\"\'=,:;(){}\[\]])',
+      ))
+    : [];
+  if (embeddedSourceRoots.some((pattern) => pattern.test(text))) return true;
+
+  const textWithoutSourceRoot = rootCandidates.reduce(
+    (current, candidate) => current.replaceAll(candidate, ''),
+    text,
+  );
+  const machinePathPatterns = [
+    /\/Users\/(?!\.\.\.)([A-Za-z0-9_-]+)\//,
+    /\/home\/(?!\.\.\.)([A-Za-z0-9_-]+)\//,
+    /[A-Za-z]:\\Users\\(?!\.\.\.)([^\\\r\n]+)\\/,
+  ];
+  return machinePathPatterns.some((pattern) => pattern.test(textWithoutSourceRoot));
+}
 function portableContent(filePath: string, bytes: Buffer, sourceRoot: string): Buffer {
   if (!isTextFile(filePath, bytes)) return bytes;
   const originalText = bytes.toString('utf8');
@@ -378,20 +410,7 @@ function portableContent(filePath: string, bytes: Buffer, sourceRoot: string): B
         .replaceAll(/\/Users\/(?!\.\.\.\/)[A-Za-z0-9_-]+\//g, '/Users/.../')
         .replaceAll(/[A-Za-z]:\\Users\\(?!\.\.\.\\)[^\\\r\n]+\\/g, 'C:\\Users\\...\\')
     : originalText;
-  const normalizedRoot = resolve(sourceRoot).split(sep).join('/');
-  const sourceRootSegments = normalizedRoot.split('/').filter(Boolean);
-  const embeddedSourceRoot = sourceRootSegments.length >= 3
-    ? new RegExp(`${escapeRegExp(normalizedRoot)}(?:/|$|[\\s\\"'=,:;(){}\\[\\]])`)
-    : null;
-  const machinePathPatterns = [
-    /\/Users\/(?!\.\.\.)([A-Za-z0-9_-]+)\//,
-    /\/home\/(?!\.\.\.)([A-Za-z0-9_-]+)\//,
-    /[A-Za-z]:\\Users\\(?!\.\.\.)([^\\\r\n]+)\\/,
-  ];
-  if (
-    embeddedSourceRoot?.test(text) ||
-    machinePathPatterns.some((pattern) => pattern.test(text))
-  ) {
+  if (containsMachineSpecificAbsolutePath(text, sourceRoot)) {
     throw new Error(`machine-specific absolute path found in ${filePath}`);
   }
   const internalHostPatterns = [
@@ -747,7 +766,7 @@ export async function buildRuntimeBundle(
   const sourceRoot = resolve(options.sourceRoot);
   assertAuthoritativeToolManifestsAgree(
     sourceRoot,
-    options.authoritativeToolManifestPaths ?? ['manifests/tool.manifest.json'],
+    options.authoritativeToolManifestPaths ?? ['manifests/generated/tool.manifest.json'],
   );
   const collected = collectRuntimeFiles({
     sourceRoot,

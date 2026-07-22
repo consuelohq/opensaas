@@ -46,42 +46,6 @@
       "subskills": []
     },
     {
-      "name": "consuelo-workspace-snapshot",
-      "title": "Consuelo Workspace Snapshot",
-      "description": "Reads a structured, read-only snapshot of Consuelo workspace objects, including Files and Attachments, through the configured Consuelo GraphQL/API facade.",
-      "trigger": "Invoke when the user asks an agent to inspect Consuelo workspace records, files, attachments, tasks, notes, dashboards, or GraphQL-backed workspace context.",
-      "entrypoint": "SKILL.md",
-      "load": {
-        "type": "resource",
-        "path": "packages/os/skills/consuelo-workspace-snapshot/SKILL.md"
-      },
-      "permission": "read",
-      "requiresApproval": false,
-      "status": "active",
-      "capabilities": [
-        "workspace-graphql",
-        "consuelo-app",
-        "files"
-      ]
-    },
-    {
-      "name": "daily-revenue-brief",
-      "title": "Daily Revenue Brief",
-      "description": "Builds a daily workspace revenue brief from approved structured context and publishes a versioned Consuelo Artifact.",
-      "trigger": "Invoke when the user asks for a daily revenue brief, revenue summary, or workspace revenue artifact.",
-      "entrypoint": "skill.json",
-      "load": {
-        "type": "resource",
-        "path": "packages/os/skills/daily-revenue-brief/skill.json"
-      },
-      "permission": "draft",
-      "requiresApproval": false,
-      "status": "active",
-      "capabilities": [
-        "consuelo-graphql"
-      ]
-    },
-    {
       "name": "debugger",
       "title": "Debugger",
       "description": "Use this OS skill for runtime debugging across browser behavior, deployment logs, error tracking, analytics, and code evidence. Invoke it for bug triage, incidents, post-merge validation, frontend regressions, worker or queue issues, telephony flows, observability checks, and reconciling runtime truth with code assumptions.",

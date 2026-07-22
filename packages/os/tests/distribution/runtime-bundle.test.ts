@@ -19,6 +19,7 @@ import {
   buildRuntimeBundle,
   classifyRuntimeBundlePath,
   computeReleaseFingerprint,
+  containsMachineSpecificAbsolutePath,
   inspectRuntimeBundleArchive,
   verifyRuntimeBundleArchive,
   type RuntimeBundleBuildOptions,
@@ -32,8 +33,8 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
-  'manifests/tool.manifest.json': '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
-  'manifests/core.manifest.json': '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
+  'manifests/generated/tool.manifest.json': '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
+  'manifests/generated/core.manifest.json': '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
   'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
   'steering/system_prompt.md': '# Fixture system prompt\n',
   'steering/decision.md': '# Fixture decision process\n',
@@ -227,6 +228,16 @@ describe('runtime bundle contract', () => {
     });
 
     expect(classifyRuntimeBundlePath('scripts/seed-workspace-edge-route.ts')).toBe('operator-only');
+    expect(classifyRuntimeBundlePath('tools/filesystem/handler.ts')).toBe('managed-tool');
+    expect(classifyRuntimeBundlePath('tools/filesystem/manifest.ts')).toBe('source-only');
+    expect(classifyRuntimeBundlePath('tools/filesystem/schema.ts')).toBe('source-only');
+    expect(classifyRuntimeBundlePath('tools/filesystem/handler.test.ts')).toBe('test-only');
+    expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe('source-only');
+    expect(classifyRuntimeBundlePath('manifests/schemas/tool-manifest.schema.json')).toBe('source-only');
+    expect(classifyRuntimeBundlePath('manifests/generated/tool.manifest.json')).toBe('managed-tool');
+    expect(classifyRuntimeBundlePath('workflows/workflows.ts')).toBe('source-only');
+    expect(classifyRuntimeBundlePath('workflows/generated/workflow-bundles.json')).toBe('managed-tool');
+    expect(classifyRuntimeBundlePath('tests/audit/fixtures/script-parity-classifications.json')).toBe('test-only');
     await expect(
       buildRuntimeBundle(buildOptions(root, {
         includePaths: [
@@ -277,6 +288,24 @@ describe('runtime bundle contract', () => {
     await expect(buildRuntimeBundle(buildOptions(root))).rejects.toThrow(
       'machine-specific absolute path found in scripts/lib/leak.ts',
     );
+  });
+
+  it('applies source-root boundaries consistently on Unix and Windows paths', () => {
+    const cases = [
+      { root: '/tmp/runtime-bundle', separator: '/' },
+      { root: 'C:\\Users\\runner\\AppData\\Local\\Temp\\runtime-bundle', separator: '\\' },
+    ];
+
+    for (const { root, separator } of cases) {
+      expect(containsMachineSpecificAbsolutePath(
+        `https://registry.example.test${root}-map`,
+        root,
+      )).toBe(false);
+      expect(containsMachineSpecificAbsolutePath(
+        `export const path = '${root}${separator}secret';`,
+        root,
+      )).toBe(true);
+    }
   });
 
   it('keeps the release fingerprint stable across allocated versions', async () => {
@@ -349,7 +378,7 @@ describe('runtime bundle contract', () => {
     await expect(
       buildRuntimeBundle(buildOptions(root, {
         authoritativeToolManifestPaths: [
-          'manifests/tool.manifest.json',
+          'manifests/generated/tool.manifest.json',
           'manifests/tool-manifest-copy.json',
         ],
       })),
