@@ -1,9 +1,14 @@
 {
   "files": [
     ".task/os-web/test-os-web-define-universal-login-auth-contract/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+    "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
     "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/web-auth-contract.md",
     "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
-    "packages/workspace/scripts/task-push.js"
+    "packages/os/tests/os-web-auth-contract.test.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-22T20:44:31.631Z"
+  "updatedAt": "2026-07-22T21:32:47.746Z"
 }

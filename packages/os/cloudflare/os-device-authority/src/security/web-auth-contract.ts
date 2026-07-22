@@ -112,6 +112,7 @@ export type UniversalAuthRouteContract = {
   access:
     | 'public-preauth'
     | 'public-oauth'
+    | 'authority-session'
     | 'public-handoff-consumer'
     | 'workspace-session'
     | 'preserved-device-oauth'
@@ -126,10 +127,15 @@ export const UNIVERSAL_AUTH_ROUTE_MATRIX: readonly UniversalAuthRouteContract[] 
   { method: 'GET', path: '/', access: 'public-preauth', owner: 'worker-14' },
   { method: 'GET', path: '/login/google/start', access: 'public-oauth', owner: 'existing' },
   { method: 'GET', path: '/login/google/callback', access: 'public-oauth', owner: 'existing' },
+  { method: 'GET', path: '/auth/workspaces', access: 'authority-session', owner: 'worker-14' },
+  { method: 'POST', path: '/auth/handoff', access: 'authority-session', owner: 'worker-14' },
   { method: 'GET', path: '/auth/consume', access: 'public-handoff-consumer', owner: 'worker-14' },
   { method: 'POST', path: '/auth/logout', access: 'workspace-session', owner: 'worker-14' },
-  { method: 'POST', path: '/oauth/device/code', access: 'preserved-device-oauth', owner: 'existing' },
-  { method: 'POST', path: '/oauth/token', access: 'preserved-device-oauth', owner: 'existing' },
+  { method: 'GET', path: '/login/device', access: 'preserved-device-oauth', owner: 'existing' },
+  { method: 'POST', path: '/login/device/code', access: 'preserved-device-oauth', owner: 'existing' },
+  { method: 'POST', path: '/login/device/workspace', access: 'preserved-device-oauth', owner: 'existing' },
+  { method: 'POST', path: '/login/device/approve', access: 'preserved-device-oauth', owner: 'existing' },
+  { method: 'POST', path: '/login/oauth/access_token', access: 'preserved-device-oauth', owner: 'existing' },
   { method: 'ALL', path: '/oauth/authorize', access: 'preserved-mcp-oauth', owner: 'existing' },
   { method: 'ALL', path: '/oauth/google/callback', access: 'preserved-mcp-oauth', owner: 'existing' },
   { method: 'ALL', path: '/oauth/token', access: 'preserved-mcp-oauth', owner: 'existing' },

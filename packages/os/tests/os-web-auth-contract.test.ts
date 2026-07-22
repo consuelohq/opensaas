@@ -70,11 +70,36 @@ describe('OS web authentication contract', () => {
     expect(cookie).not.toContain('Domain=');
   });
 
-  it('documents public, protected, and preserved protocol routes', () => {
+  it('preserves the real device-code routes without colliding with MCP token exchange', () => {
     expect(UNIVERSAL_AUTH_ROUTE_MATRIX).toEqual(expect.arrayContaining([
-      expect.objectContaining({ method: 'GET', path: '/', access: 'public-preauth' }),
+      { method: 'GET', path: '/login/device', access: 'preserved-device-oauth', owner: 'existing' },
+      { method: 'POST', path: '/login/device/code', access: 'preserved-device-oauth', owner: 'existing' },
+      { method: 'POST', path: '/login/device/workspace', access: 'preserved-device-oauth', owner: 'existing' },
+      { method: 'POST', path: '/login/device/approve', access: 'preserved-device-oauth', owner: 'existing' },
+      { method: 'POST', path: '/login/oauth/access_token', access: 'preserved-device-oauth', owner: 'existing' },
+    ]));
+
+    expect(UNIVERSAL_AUTH_ROUTE_MATRIX).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: '/oauth/device/code' }),
+    ]));
+    expect(UNIVERSAL_AUTH_ROUTE_MATRIX.filter(({ path }) => path === '/oauth/token')).toEqual([
+      { method: 'ALL', path: '/oauth/token', access: 'preserved-mcp-oauth', owner: 'existing' },
+    ]);
+  });
+
+  it('documents the complete Worker 14 universal-login route boundary', () => {
+    expect(UNIVERSAL_AUTH_ROUTE_MATRIX).toEqual(expect.arrayContaining([
+      { method: 'GET', path: '/', access: 'public-preauth', owner: 'worker-14' },
+      { method: 'GET', path: '/auth/workspaces', access: 'authority-session', owner: 'worker-14' },
+      { method: 'POST', path: '/auth/handoff', access: 'authority-session', owner: 'worker-14' },
+      { method: 'GET', path: '/auth/consume', access: 'public-handoff-consumer', owner: 'worker-14' },
+      { method: 'POST', path: '/auth/logout', access: 'workspace-session', owner: 'worker-14' },
+    ]));
+  });
+
+  it('documents preserved MCP, bearer, and workspace-agent routes', () => {
+    expect(UNIVERSAL_AUTH_ROUTE_MATRIX).toEqual(expect.arrayContaining([
       expect.objectContaining({ method: 'GET', path: '/login/google/start', access: 'public-oauth' }),
-      expect.objectContaining({ method: 'GET', path: '/auth/consume', access: 'public-handoff-consumer' }),
       expect.objectContaining({ method: 'ALL', path: '/oauth/authorize', access: 'preserved-mcp-oauth' }),
       expect.objectContaining({ method: 'ALL', path: '/mcp/*', access: 'preserved-bearer' }),
       expect.objectContaining({ method: 'GET', path: '/workspace/agents', access: 'public-sanitized-status' }),
