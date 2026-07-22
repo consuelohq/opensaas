@@ -13,7 +13,7 @@
     "packages/workspace/tests/dialer-validation-runbook.test.ts",
     "scripts/code-review.sh"
   ],
-  "verifiedAt": "2026-07-22T18:50:28.437Z",
+  "verifiedAt": "2026-07-22T18:51:09.663Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -31,6 +31,7 @@
         ".task/dialer/restore-dialer-validation-environment-and-runbook/evidence-log.json",
         ".task/dialer/restore-dialer-validation-environment-and-runbook/read-log.json",
         ".task/dialer/restore-dialer-validation-environment-and-runbook/session.json",
+        ".task/dialer/restore-dialer-validation-environment-and-runbook/verify.json",
         ".task/dialer/restore-dialer-validation-environment-and-runbook/workpad.md",
         ".task/tasks/dialer/restore-dialer-validation-environment-and-runbook.json",
         "areas/dialer/AGENTS.md",

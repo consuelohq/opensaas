@@ -155,6 +155,7 @@ Decision: do not reconnect automatic deployment until a separate deployment task
 - 2026-07-22 18:48:47 `verify`: failed — COMMAND_FAILED
 - 2026-07-22 18:49:19 `verify`: passed — OK
 - 2026-07-22 18:50:28 `verify`: passed — OK
+- 2026-07-22 18:51:09 `verify`: passed — OK
 
 ## Final verification — 2026-07-22 18:49 UTC
 
@@ -185,3 +186,26 @@ Not yet proven:
 - stable `dialer-dev.consuelohq.com` routing until the exact no-script Worker route exclusion exists
 - Railway service configuration or deployed runtime until CLI authentication is restored
 - a Railway image that satisfies the strict no-OS-artifacts boundary; the current Twenty server image still copies the OS bootstrap asset
+
+## summary
+
+What changed:
+- replaced the short dialer notes with a durable local/live validation runbook covering infrastructure, Keychain, worktree environment, Cloudflare callbacks, scenario modes, edge cases, and Railway boundaries
+- fixed scenario authentication so multiple returned workspaces are tried safely instead of blindly selecting a stale first token
+- added contract tests and dialer-specific review routing, including untracked test detection
+
+Why:
+- future agents need to reproduce DEV-1499 validation without rediscovering machine state or confusing mock/Twilio-test evidence with a live phone lifecycle
+- the existing runner failed after a reset when sign-in returned more than one workspace
+- dialer-critical documentation and tooling changes previously had no focused review gate
+
+Validation:
+- full repository verify passed with zero findings in scope
+- code review passed 17/17; workspace dialer contracts passed 9/9
+- focused server, dialer package, and frontend suites passed
+- database reset, mock single/predictive, Twilio-test provider validation, public signed callback preflight, and transcript redaction were exercised locally
+
+Issues and follow-ups:
+- stable dialer callback routing still needs an exact no-script Cloudflare Worker route exclusion
+- real live Twilio single/predictive lifecycle and caller-ID lock reuse are not yet proven
+- Railway inspection requires authentication, and the current Twenty image still copies an OS bootstrap asset
