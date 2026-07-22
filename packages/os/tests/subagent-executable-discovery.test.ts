@@ -36,7 +36,18 @@ function writeInstruction(root: string): string {
 
 function writeFakeGrok(executablePath: string): string {
   mkdirSync(dirname(executablePath), { recursive: true });
-  writeFileSync(executablePath, '#!/bin/sh\nprintf \'%s\\n\' \'{"text":"fake grok ok"}\'\n');
+  writeFileSync(
+    executablePath,
+    [
+      '#!/bin/sh',
+      'if [ "$1" = "--help" ]; then',
+      "  printf '%s\\n' '--permission-mode <MODE> --max-turns <N> --no-memory --no-subagents'",
+      '  exit 0',
+      'fi',
+      "printf '%s\\n' '{\"text\":\"fake grok ok\"}'",
+      '',
+    ].join('\n'),
+  );
   chmodSync(executablePath, 0o755);
   return executablePath;
 }
@@ -51,6 +62,47 @@ async function runGrok(root: string, env: NodeJS.ProcessEnv) {
 }
 
 describe('Grok subagent executable discovery', () => {
+  it('should enforce plan permissions and bounded execution when policy is read', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-grok-read-policy-'));
+    try {
+      const executable = writeFakeGrok(join(root, '.grok', 'bin', 'grok'));
+      const result = await runGrok(root, { ...process.env, HOME: root, PATH: '' });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.command).toEqual(expect.arrayContaining([
+        executable,
+        '--permission-mode',
+        'plan',
+        '--max-turns',
+        '32',
+        '--no-memory',
+        '--no-subagents',
+      ]));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject read policy when Grok cannot enforce plan permissions', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-grok-unsupported-read-policy-'));
+    try {
+      const executable = join(root, '.grok', 'bin', 'grok');
+      mkdirSync(dirname(executable), { recursive: true });
+      writeFileSync(executable, '#!/bin/sh\nprintf \'%s\\n\' \'Grok help without read controls\'\n');
+      chmodSync(executable, 0o755);
+
+      const result = await runGrok(root, { ...process.env, HOME: root, PATH: '' });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('not_supported');
+      expect(result.data.command).toEqual([executable, '--help']);
+      expect(result.data.stderr).toContain('requires plan permission mode');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('discovers Grok in the canonical ~/.grok/bin directory with an empty PATH', async () => {
     const root = mkdtempSync(join(tmpdir(), 'os-grok-home-bin-'));
     try {

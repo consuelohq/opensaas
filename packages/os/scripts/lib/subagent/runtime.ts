@@ -656,8 +656,32 @@ async function executeGrokSubagent(
     });
   }
 
+  const help = readCommandHelp(grok, ['--help'], context.env);
+  if (
+    input.policy === 'read' &&
+    (!help?.includes('--permission-mode') || !help.includes('--max-turns'))
+  ) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_supported',
+      command: [grok, '--help'],
+      stdout: '',
+      stderr: 'grok read policy requires plan permission mode and bounded turns',
+      exitCode: 1,
+      audit: input.audit,
+      ok: true,
+      code: 'OK',
+      message: 'grok provider cannot enforce the requested read policy',
+    });
+  }
+
   const prompt = subagentInstruction(input);
   const args = ['--no-auto-update'];
+  if (input.policy === 'read') {
+    args.push('--permission-mode', 'plan', '--max-turns', '32');
+    if (help?.includes('--no-memory')) args.push('--no-memory');
+    if (help?.includes('--no-subagents')) args.push('--no-subagents');
+  }
   if (config.model) args.push('--model', config.model);
   args.push('-p', prompt);
   args.push('--output-format', input.outputFormat === 'json' ? 'json' : 'text');
