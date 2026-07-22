@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-web/test-os-web-define-universal-login-auth-contract",
+  "events": [
+    {
+      "id": "8303cf88-2ef9-459a-b85a-6ff3004ddb3c",
+      "occurred_at": "2026-07-22T20:39:53.821Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-web/test-os-web-define-universal-login-auth-contract/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-web/test-os-web-define-universal-login-auth-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-web/test-os-web-define-universal-login-auth-contract"
+      }
+    },
+    {
+      "id": "a42a34b0-edf3-443d-93a5-3e3df42b5b75",
+      "occurred_at": "2026-07-22T20:40:52.582Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-web/test-os-web-define-universal-login-auth-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-web/test-os-web-define-universal-login-auth-contract"
+      }
+    },
+    {
+      "id": "b250c5e4-77f4-4861-ba98-14ff22509d18",
+      "occurred_at": "2026-07-22T20:40:57.892Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-web/test-os-web-define-universal-login-auth-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-web/test-os-web-define-universal-login-auth-contract"
+      }
+    },
+    {
+      "id": "8b6a86de-bb8b-460e-825d-d9f5eb15cfeb",
+      "occurred_at": "2026-07-22T20:44:31.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-web/test-os-web-define-universal-login-auth-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-web/test-os-web-define-universal-login-auth-contract"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-22T20:44:31.763Z"
+}

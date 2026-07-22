@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fb2f87d41f93",
+  "tmuxSession": "opensaas-os-web-test-os-web-define-universal-login-auth-contract-fb2f87d4",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/test-os-web-define-universal-login-auth-contract",
+  "branch": "task/os-web/test-os-web-define-universal-login-auth-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-test-os-web-define-universal-login-auth-contract",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-test-os-web-define-universal-login-auth-contract",
+  "prNumber": 1559,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1559",
+  "createdAt": "2026-07-22T20:39:38.194Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-test-os-web-define-universal-login-auth-contract/.task/os-web/test-os-web-define-universal-login-auth-contract/session.json"
+}
