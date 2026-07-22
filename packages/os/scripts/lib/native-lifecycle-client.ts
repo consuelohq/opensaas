@@ -83,9 +83,19 @@ export function createNativeLifecycleClient(input: {
     if (subscription === current) subscription = undefined;
   };
 
-  const acceptSnapshot = (next: LifecycleSnapshot): boolean => {
+  const acceptSnapshot = (
+    next: LifecycleSnapshot,
+    options: { allowEqual?: boolean } = {},
+  ): boolean => {
     if (snapshot && next.sequence < snapshot.sequence) return false;
-    if (snapshot && next.sequence === snapshot.sequence && !hasLocalOfflineProjection) return false;
+    if (
+      snapshot &&
+      next.sequence === snapshot.sequence &&
+      !options.allowEqual &&
+      !hasLocalOfflineProjection
+    ) {
+      return false;
+    }
     snapshot = { ...next, connection: { state: 'online' } };
     hasLocalOfflineProjection = false;
     return true;
@@ -108,7 +118,7 @@ export function createNativeLifecycleClient(input: {
         if (!isSnapshot(response)) {
           throw new Error('unexpected lifecycle response for status.get');
         }
-        acceptSnapshot(response);
+        acceptSnapshot(response, { allowEqual: true });
         return snapshot!;
       } catch (error: unknown) {
         if (!snapshot) throw error;
