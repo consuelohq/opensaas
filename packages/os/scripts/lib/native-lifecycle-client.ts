@@ -97,7 +97,7 @@ export function createNativeLifecycleClient(input: {
         }
         snapshot = { ...response, connection: { state: 'online' } };
         return snapshot;
-      } catch (error) {
+      } catch (error: unknown) {
         if (!snapshot) throw error;
         snapshot = {
           ...snapshot,

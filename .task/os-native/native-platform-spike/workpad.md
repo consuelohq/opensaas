@@ -75,6 +75,7 @@ started: 2026-07-22
 - 2026-07-22 20:41:48 write: `packages/os/docs/architecture/native-platform-spike.md`
 - 2026-07-22 20:41:48 fs.write: `packages/os/docs/architecture/native-platform-spike.md`
 - 2026-07-22 20:42:05 fs.write: `.task/os-native/native-platform-spike/workpad.md`
+- 2026-07-22 20:44:18 fs.write: `.task/os-native/native-platform-spike/workpad.md`
 
 ## implementation and validation update
 
@@ -93,3 +94,19 @@ started: 2026-07-22
 - `packages/os/docs/architecture/native-platform-spike.md`
 
 - 2026-07-22 20:42:05 append: `.task/os-native/native-platform-spike/workpad.md`
+
+## workspace-owned: validation evidence
+
+- 2026-07-22 20:43:23 `review.run`: passed — OK
+- 2026-07-22 20:43:53 `review.run`: passed — OK
+- 2026-07-22 20:44:09 `verify`: passed — OK
+
+## final validation update
+
+- Strict review initially found `CATCH_TYPING` at the lifecycle refresh boundary (`trc_37a98b896546`). Fixed by typing the caught value as `unknown` (`trc_f74d237e15ee`).
+- Focused tests and package typecheck passed after the fix (`trc_e4322056af5b`).
+- Strict review passed with zero findings (`trc_553e481238fd`).
+- Full task safety verification passed and is publish-valid (`trc_c5796ade6b69`).
+- `task.push` failed because the facade forwarded unsupported `--task-session` (`trc_c2ade61755c8`). The first task-scoped GitHub API fallback had an invalid Bun stdin shape (`trc_8aa31de2330c`); the corrected API commit succeeded without native git (`trc_f8f4fd1db598`).
+
+- 2026-07-22 20:44:18 append: `.task/os-native/native-platform-spike/workpad.md`
