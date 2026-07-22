@@ -20,15 +20,15 @@ started: 2026-07-22
 
 ## files changed
 
-- none yet
+- `.tmp/worker26-final-push-files.json` (deleted)
 
 ## workspace-owned: files changed
 
-- none yet
+- `.tmp/worker26-final-push-files.json` (deleted)
 
 ## workspace-owned: activity log
 
-- none yet
+- 2026-07-22 22:14:29 fs.trash: `.tmp/worker26-final-push-files.json`
 
 ## workspace-owned: validation evidence
 
@@ -59,3 +59,8 @@ bun run task:push -- --message "type(os-distribution): description" --changed
 bun run task:pr
 bun run task:finish
 ```
+
+## workspace-owned: files read
+
+- `packages/workspace/scripts/lib/git.js`
+- `packages/workspace/scripts/task-push.js`

@@ -1,6 +1,7 @@
 {
   "files": [
     ".task/os-distribution/canonical-tool-packages-and-generated-manifests/workpad.md",
+    "packages/os/.tmp-reviews/canonical-tool-packages-and-generated-manifests/grok-review.json",
     "packages/os/README.md",
     "packages/os/business-context.md",
     "packages/os/plans/consuelo-os-foundation/environment-registry.md",
@@ -11,11 +12,14 @@
     "packages/os/scripts/lib/manifest.ts",
     "packages/os/scripts/lib/runtime-state.ts",
     "packages/os/scripts/lib/skills.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
     "packages/os/scripts/os.ts",
     "packages/os/scripts/server/routes/mcp.ts",
     "packages/os/scripts/server/services/oauth-introspection.ts",
     "packages/os/skills/artifacts/skill.json",
+    "packages/os/skills/artifacts/subskills/landing-page.json",
     "packages/os/tests/artifacts-legacy-contract.test.ts",
+    "packages/os/tests/artifacts-skill.test.ts",
     "packages/os/tests/audit/script-parity-audit.test.ts",
     "packages/os/tests/doctor-logs.test.ts",
     "packages/os/tests/facade/facade.test.ts",
@@ -24,7 +28,9 @@
     "packages/os/tests/security-gateway.test.ts",
     "packages/os/tests/skills-registry.test.ts",
     "packages/os/tests/workflow-intent.test.ts",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-22T21:42:30.370Z"
+  "updatedAt": "2026-07-22T22:13:45.168Z"
 }
