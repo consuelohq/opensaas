@@ -8,35 +8,37 @@ started: 2026-07-21
 
 ## acceptance criteria
 
-- [x] Add one portable, structured OS distribution environment probe that runs with Bun on Linux, macOS, and Windows.
-- [x] Prove isolated `CONSUELO_HOME`, writable filesystem, atomic replacement, and cleanup behavior without user or machine hard-coding.
-- [x] Add a local clean-host runner that prefers Apple Container, falls back to Docker, and skips clearly when neither engine is available.
-- [x] Add mandatory GitHub OCI/Linux plus native macOS and Windows jobs using the same probe and focused tests.
-- [x] Keep the existing installer, steering, MCP, and security regression contracts unchanged and green locally.
-- [x] Create GitHub deployment environments for `dev`, `canary`, `beta`, and `stable` without copying production secrets.
-- [x] Populate the local-only environment registry with exact runner, workflow, fixture, command, and account coordinates.
+- [x] Add a portable structured environment probe that runs on Linux, macOS, and Windows.
+- [x] Prove isolated `CONSUELO_HOME`, writable filesystem access, atomic replacement, and cleanup without user- or machine-specific hardcoding.
+- [x] Add a local runner that prefers Apple Container, falls back to Docker, and reports a clear skip when neither engine is available.
+- [x] Add mandatory GitHub jobs for a clean OCI environment, native Linux, native macOS, and native Windows.
+- [x] Keep existing installer, steering, MCP, and security regression coverage unchanged and green locally.
+- [x] Create GitHub environments for dev, canary, beta, and stable without copying production secrets.
+- [x] Record the exact local and hosted environment coordinates in the local-only OS environment registry.
 
 ## plan
 
-1. Characterize the current OS test and CI boundaries.
-2. Write focused probe and local-runner tests first and confirm the expected red failure.
-3. Implement the smallest portable probe and local container runner.
-4. Add a dedicated cross-platform GitHub Actions workflow.
-5. Run focused tests, existing regression suites, local probe, and optional local container smoke.
-6. Publish the task to `stream/os-distribution` after review and verification.
+1. Characterize the existing OS test and CI boundaries.
+2. Write focused distribution environment tests first and confirm the expected red state.
+3. Implement the portable probe, fixture services, and local container runner.
+4. Add the cross-platform GitHub workflow without weakening existing regressions.
+5. Run focused tests, existing regressions, typecheck, strict review, full verify, and a real Apple Container smoke test.
+6. Publish to `stream/os-distribution` after the review and CI matrix are green.
 
-## test-first contract
+## test-first plan
 
-- Behavior under test: one Bun entrypoint emits a redacted JSON report for an isolated Consuelo home and proves the filesystem operations required by later install/update workers.
-- Existing pattern: Vitest tests under `packages/os/tests`, Bun scripts under `packages/os/scripts`, and OS contract jobs in `.github/workflows/consuelo-ci.yaml`.
-- New tests: `packages/os/tests/distribution/environment-probe.test.ts` and `packages/os/tests/distribution/local-container-runner.test.ts`.
-- Focused red command: `bun x vitest run tests/distribution/environment-probe.test.ts tests/distribution/local-container-runner.test.ts` from `packages/os`.
-- Expected red failure: imports for the not-yet-created distribution probe and local container runner cannot resolve.
-- Broader unchanged contracts: bootstrap source, install state, steering trace/raw steering, MCP gateway, security gateway, and workspace gateway suites.
+- Behavior: one Bun entrypoint emits redacted structured JSON for an isolated home and proves filesystem operations.
+- Existing pattern: Vitest tests and Bun-owned scripts under `packages/os`.
+- Focused coverage: environment probe, fixture harness, lifecycle contracts, local runner, and workflow contract.
+- Initial red proof: focused tests failed because the new testing modules did not exist.
+- Unchanged contracts: installer, steering, MCP, security, bootstrap, and runtime regressions remain owned by their existing suites.
 
 ## current status
 
-- Implementation and local validation complete. Publishing the task so GitHub can prove the native and OCI matrix.
+- Implementation and local validation are complete.
+- The first GitHub matrix passed clean OCI, native Linux, native macOS, distribution regressions, and repo-wide checks.
+- Native Windows caught one POSIX-only test expectation while the implementation itself returned the correct Windows path.
+- The assertion now uses Node's platform path resolver. Focused tests, strict review, and full verify pass locally; the PR matrix needs the follow-up commit and rerun.
 
 ## files changed
 
@@ -51,49 +53,65 @@ started: 2026-07-21
 - `packages/os/tests/distribution/lifecycle-contract.test.ts`
 - `packages/os/tests/distribution/local-container-runner.test.ts`
 - `packages/os/tests/distribution/workflow-contract.test.ts`
+- task metadata and this workpad
 
 ## workspace-owned: files changed
 
-- none yet
+- No workspace-owned source files beyond task metadata.
 
 ## workspace-owned: activity log
 
-- none yet
+- Started the task with the underlying Bun task workflow after the workspace facade became unavailable after bootstrap.
+- Published the initial implementation to PR #1544.
+- Recovered the task after a host restart into `/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-add-distribution-test-environments`.
+- Fixed the Windows assertion after the native Windows runner exposed a POSIX-only expectation.
 
 ## workspace-owned: validation evidence
 
-- Red: focused tests failed because the probe and runner modules did not exist.
-- Green: distribution suite passed with 12 tests and 10 explicit lifecycle TODO contracts.
-- Green: 76 existing installer, steering, MCP, security, and workspace-gateway tests passed; 5 existing tests were skipped.
-- Green: `bun run typecheck` completed the OS workspace syntax checks.
-- Green: Apple Container `1.1.0` initialized successfully and ran the pinned `docker.io/oven/bun:1.3.14` OCI probe under Linux/arm64.
-- Green: local planning validator found all 30 worker prompts, no missing references, and no structural or forbidden-content failures.
+- Red: focused tests failed on missing distribution test modules before implementation.
+- Focused distribution suite: 12 passed, 10 future lifecycle contracts marked todo.
+- Existing OS regressions: 76 passed, 5 skipped.
+- `bun run typecheck`: passed.
+- Apple Container 1.1.0 OCI smoke: passed on Linux arm64 with Bun 1.3.14.
+- Local-only plan validator: 30 workers referenced, no structural or forbidden failures.
+- Strict review: 0 findings after explicit error-boundary fixes.
+- Full verify: passed with a publish-valid verification stamp.
+- First GitHub matrix: all jobs passed except native Windows, which reported `D:\\tmp\\opensaas:/workspace:ro` against a POSIX-only expected string. The test now derives the expected host path with `node:path.resolve`.
 
 ## key decisions
 
-- Apple Container is the preferred local clean-Linux loop on Apple Silicon/macOS 26.
-- Docker is an optional local fallback and the authoritative OCI engine in the GitHub Ubuntu job; it is not a customer runtime dependency.
-- GitHub-hosted `ubuntu-24.04`, `macos-26`, and `windows-2025` runners are the cross-platform source of truth.
-- Existing `consuelo / production` secrets and release behavior remain untouched.
+- Apple Container is the preferred local clean-Linux engine on supported Macs.
+- Docker remains an optional local fallback and the authoritative OCI engine in GitHub's Ubuntu runner.
+- Native GitHub runners are the cross-platform source of truth.
+- The existing `consuelo / production` GitHub environment and its secrets remain untouched.
+- Durable task worktrees live under `/Users/kokayi/Dev/opensaas-worktrees`, not macOS temporary storage.
+- A future `task.start` development-environment check must separate fast idempotent checks from one-time privileged host setup.
 
 ## notes for ko
 
-- Local-only planning lives at `packages/os/.workspace/consuelo-os-foundation/` and is excluded through `.git/info/exclude`.
+- GitHub environments now exist for `consuelo-os-dev`, `consuelo-os-canary`, `consuelo-os-beta`, and `consuelo-os-stable`; they contain no copied production secrets.
+- The Cloudflare development token is intentionally deferred until the live web-security worker needs it.
+- The local Apple Container installer is retained under `/Users/kokayi/Downloads/Consuelo Development/`.
 
 ## improvements noticed
 
-- A later dev-environment tool should make lightweight environment checks part of `task.start`, while keeping privileged or expensive one-time host initialization explicit.
+- The task workflow should default to a durable worktree root instead of the host temporary directory.
+- A future OS development-environment tool should report prerequisites and perform only bounded, explicit setup.
 
 ## issues and recovery
 
-- The workspace MCP facade is not exposed in this Codex tool session. After the mandatory steering bootstrap succeeded earlier, repo work continued through the user-approved underlying Bun task scripts in the isolated worktree.
+- The workspace MCP facade was unavailable after the mandatory bootstrap, so Ko approved the underlying Bun task scripts for this work.
+- A computer restart removed the default temporary worktree, but the pushed commit and PR remained safe.
+- Recovery with `task:start --pr 1544 --worktree-root /Users/kokayi/Dev/opensaas-worktrees` restored the task into a durable location.
+- Recovery regenerated this workpad template; the completed evidence was reconstructed before the follow-up push.
+- Native Windows found a test portability issue, not a runtime implementation defect.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "type(os-distribution): description" --changed
+bun run task:push -- --message "test(os): make container assertion platform-aware" --changed
 bun run task:pr
 bun run task:finish
 ```

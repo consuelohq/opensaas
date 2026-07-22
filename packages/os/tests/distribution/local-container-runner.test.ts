@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -49,7 +51,7 @@ describe('local distribution container runner', () => {
       'run',
       '--rm',
       '--volume',
-      '/tmp/opensaas:/workspace:ro',
+      `${resolve('/tmp/opensaas')}:/workspace:ro`,
       '--workdir',
       '/workspace',
       'docker.io/oven/bun:1.3.14',
