@@ -15,7 +15,8 @@ started: 2026-07-22
 - [x] Update the tracked foundation plan and validator to describe the executable policy.
 - [x] Prove the wrapper against the live local workspace MCP.
 - [x] Run workspace review and verify.
-- [ ] Publish through the stream PR after the independent Grok review.
+- [x] Complete the independent Grok review and fix the still-valid documentation contract finding.
+- [ ] Publish through the stream PR.
 
 ## plan
 
@@ -27,17 +28,18 @@ started: 2026-07-22
 
 ## current status
 
-- Focused implementation, live workspace MCP smoke, workspace review, and verify are complete. Independent review and publish remain.
+- Focused implementation, live workspace MCP smoke, workspace review, verify, and independent Grok review are complete. Publish remains.
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/tests/subagent-executable-discovery.test.ts`
 - `packages/os/plans/consuelo-os-foundation/dispatch.md`
+- `packages/os/plans/consuelo-os-foundation/environment-registry.md`
 - `packages/os/plans/consuelo-os-foundation/plan.md`
 - `packages/os/plans/consuelo-os-foundation/workers/27-grok-review-pipeline.md`
 - `packages/os/plans/consuelo-os-foundation/workers/validate-plan.ts`
-- `.task/os-distribution/fix-grok-read-reviews-and-fail-closed/workpad.md`
+- `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/tests/subagent-executable-discovery.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -61,6 +63,7 @@ started: 2026-07-22
 - Grok `plan` mode is not a read-only execution mode: it cancels the mandatory `workspace.get_steering` MCP call.
 - Grok `auto` mode permits the safe workspace MCP bootstrap. Built-in `Edit`, `Write`, and `Bash` are denied explicitly for the review lane.
 - A process exit code of zero is insufficient proof. Structured Grok output must contain an accepted terminal reason and a non-empty final message.
+- Grok review finding `CR-001` was valid: the environment registry retained the retired plan-mode claim. The registry and validator now enforce the executable auto-mode contract.
 
 ## notes for ko
 
@@ -75,6 +78,8 @@ started: 2026-07-22
 
 - The existing wrapper incorrectly marked live `stopReason: Cancelled` results as completed. This was found by running the real foundation review, not by synthetic inspection alone.
 - The live Grok process moved to a PTY session and required polling before its structured result was visible.
+- Independent review: https://github.com/consuelohq/opensaas/pull/1554#pullrequestreview-4758043206
+- Structured review: https://github.com/consuelohq/opensaas/pull/1554#issuecomment-5050553555
 
 ---
 
@@ -88,4 +93,9 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `packages/os/.tmp-reviews/pr-1554/grok-prompt.md`
 - `packages/os/.tmp-reviews/read-policy-smoke/grok-prompt.md`
+- `packages/os/plans/consuelo-os-foundation/environment-registry.md`
+- `packages/os/plans/consuelo-os-foundation/workers/validate-plan.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/tests/subagent-executable-discovery.test.ts`

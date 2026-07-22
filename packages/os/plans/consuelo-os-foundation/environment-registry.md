@@ -19,7 +19,7 @@ Updated: 2026-07-22
 | Local OCI probe | `bun packages/os/scripts/testing/distribution/local-container-runner.ts` |
 | OCI image | `docker.io/oven/bun:1.3.14` |
 | Durable task worktree root | `~/Dev/opensaas-worktrees/` |
-| Independent review wrapper | `bun run --cwd packages/os subagent -- --provider grok --model grok-4.5 --bundle core --policy read --instruction-path <task-worktree>/packages/os/.tmp-reviews/<task>/grok-prompt.md --cwd <task-worktree> --task-session <task-session> --timeout-ms 900000 --output-format json --workspace-only preferred`; read policy enforces Grok plan mode with bounded turns |
+| Independent review wrapper | `bun run --cwd packages/os subagent -- --provider grok --model grok-4.5 --bundle core --policy read --instruction-path <task-worktree>/packages/os/.tmp-reviews/<task>/grok-prompt.md --cwd <task-worktree> --task-session <task-session> --timeout-ms 900000 --output-format json --workspace-only preferred`; read policy uses Grok auto mode with bounded turns, denies built-in Edit/Write/Bash, disables memory and nested subagents, and fails closed on cancelled, incomplete, or empty output |
 
 Verified 2026-07-22: Apple Container system initialization completed, the service reported `running`, and the local OCI probe passed under Linux/arm64 with Bun `1.3.14`.
 

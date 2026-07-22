@@ -195,7 +195,8 @@ const coverage = {
     /bounded turns/i.test(corpus) &&
     /(?:disables? memory.*subagents|memory (?:disabled|and subagents disabled))/i.test(corpus) &&
     /--workspace-only preferred/.test(corpus) &&
-    !/--workspace-only strict/.test(corpus),
+    !/--workspace-only strict/.test(corpus) &&
+    !/Grok plan mode/i.test(environmentRegistry),
   githubReviewAuthority:
     /GitHub is the durable source of truth/i.test(corpus) &&
     /inline (?:review )?comments/i.test(corpus) &&
