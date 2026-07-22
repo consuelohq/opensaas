@@ -3,9 +3,9 @@
   "publishValid": true,
   "mode": "full",
   "branch": "task/dialer/restore-dialer-validation-environment-and-runbook",
-  "base": "stream/dialer",
-  "headSha": "1e7462dbef5cc3422efae6abf05675f621afb3a3",
-  "changeHash": "bcff598af2a28aaa01387d8449eac2736033f678d533d7ec2ff4b7a4e6e250cd",
+  "base": "origin/stream/dialer",
+  "headSha": "4a1f1df26fbe29d83ab0c5e2166bb9f66b48d385",
+  "changeHash": "6f83c6ae5ded1d4670639d1e7358ce4d5f6bde42a1e9386c2f7dd101b38f5916",
   "changedFiles": [
     "areas/dialer/AGENTS.md",
     "packages/workspace/scripts/run-dialer-scenario.ts",
@@ -13,7 +13,7 @@
     "packages/workspace/tests/dialer-validation-runbook.test.ts",
     "scripts/code-review.sh"
   ],
-  "verifiedAt": "2026-07-22T18:51:09.663Z",
+  "verifiedAt": "2026-07-22T23:23:56.306Z",
   "review": {
     "skipped": false,
     "passed": true,
