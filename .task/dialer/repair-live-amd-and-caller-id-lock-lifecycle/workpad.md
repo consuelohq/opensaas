@@ -20,7 +20,13 @@ started: 2026-07-22
 
 ## files changed
 
-- none yet
+- `packages/dialer/src/services/caller-id.spec.ts`
+- `packages/dialer/src/services/caller-id.ts`
+- `packages/dialer/src/services/parallel-dialer.spec.ts`
+- `packages/dialer/src/services/parallel-dialer.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts`
+
 
 ## workspace-owned: files changed
 
