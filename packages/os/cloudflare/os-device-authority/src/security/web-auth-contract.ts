@@ -112,6 +112,8 @@ export type UniversalAuthRouteContract = {
   access:
     | 'public-preauth'
     | 'public-oauth'
+    | 'public-health'
+    | 'public-oauth-metadata'
     | 'authority-session'
     | 'public-handoff-consumer'
     | 'workspace-session'
@@ -125,6 +127,10 @@ export type UniversalAuthRouteContract = {
 
 export const UNIVERSAL_AUTH_ROUTE_MATRIX: readonly UniversalAuthRouteContract[] = [
   { method: 'GET', path: '/', access: 'public-preauth', owner: 'worker-14' },
+  { method: 'ALL', path: '/health', access: 'public-health', owner: 'existing' },
+  { method: 'ALL', path: '/.well-known/oauth-authorization-server', access: 'public-oauth-metadata', owner: 'existing' },
+  { method: 'ALL', path: '/.well-known/oauth-protected-resource', access: 'public-oauth-metadata', owner: 'existing' },
+  { method: 'ALL', path: '/.well-known/oauth-protected-resource/mcp', access: 'public-oauth-metadata', owner: 'existing' },
   { method: 'GET', path: '/login/google/start', access: 'public-oauth', owner: 'existing' },
   { method: 'GET', path: '/login/google/callback', access: 'public-oauth', owner: 'existing' },
   { method: 'GET', path: '/auth/workspaces', access: 'authority-session', owner: 'worker-14' },
