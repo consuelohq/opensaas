@@ -34,17 +34,20 @@ function writeInstruction(root: string): string {
   return instructionPath;
 }
 
-function writeFakeGrok(executablePath: string): string {
+function writeFakeGrok(
+  executablePath: string,
+  output = '{"text":"fake grok ok","stopReason":"EndTurn"}',
+): string {
   mkdirSync(dirname(executablePath), { recursive: true });
   writeFileSync(
     executablePath,
     [
       '#!/bin/sh',
       'if [ "$1" = "--help" ]; then',
-      "  printf '%s\\n' '--permission-mode <MODE> --max-turns <N> --no-memory --no-subagents'",
+      "  printf '%s\\n' '--permission-mode <MODE> --max-turns <N> --deny <RULE> --no-memory --no-subagents'",
       '  exit 0',
       'fi',
-      "printf '%s\\n' '{\"text\":\"fake grok ok\"}'",
+      `printf '%s\\n' '${output}'`,
       '',
     ].join('\n'),
   );
@@ -62,7 +65,7 @@ async function runGrok(root: string, env: NodeJS.ProcessEnv) {
 }
 
 describe('Grok subagent executable discovery', () => {
-  it('should enforce plan permissions and bounded execution when policy is read', async () => {
+  it('should enforce read-only auto permissions and bounded execution when policy is read', async () => {
     const root = mkdtempSync(join(tmpdir(), 'os-grok-read-policy-'));
     try {
       const executable = writeFakeGrok(join(root, '.grok', 'bin', 'grok'));
@@ -73,9 +76,15 @@ describe('Grok subagent executable discovery', () => {
       expect(result.data.command).toEqual(expect.arrayContaining([
         executable,
         '--permission-mode',
-        'plan',
+        'auto',
         '--max-turns',
         '32',
+        '--deny',
+        'Edit',
+        '--deny',
+        'Write',
+        '--deny',
+        'Bash',
         '--no-memory',
         '--no-subagents',
       ]));
@@ -84,7 +93,7 @@ describe('Grok subagent executable discovery', () => {
     }
   });
 
-  it('should reject read policy when Grok cannot enforce plan permissions', async () => {
+  it('should reject read policy when Grok cannot enforce mutation denies', async () => {
     const root = mkdtempSync(join(tmpdir(), 'os-grok-unsupported-read-policy-'));
     try {
       const executable = join(root, '.grok', 'bin', 'grok');
@@ -97,7 +106,45 @@ describe('Grok subagent executable discovery', () => {
       expect(result.ok).toBe(true);
       expect(result.data.status).toBe('not_supported');
       expect(result.data.command).toEqual([executable, '--help']);
-      expect(result.data.stderr).toContain('requires plan permission mode');
+      expect(result.data.stderr).toContain('requires auto permission mode, mutation denies, and bounded turns');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should fail when Grok cancels a run despite exiting successfully', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-grok-cancelled-run-'));
+    try {
+      writeFakeGrok(
+        join(root, '.grok', 'bin', 'grok'),
+        '{"text":"partial review","stopReason":"Cancelled"}',
+      );
+
+      const result = await runGrok(root, { ...process.env, HOME: root, PATH: '' });
+
+      expect(result.ok).toBe(false);
+      expect(result.data.status).toBe('failed');
+      expect(result.data.exitCode).toBe(1);
+      expect(result.data.stderr).toContain('stop reason Cancelled');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should fail when Grok exits successfully without a final message', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-grok-empty-run-'));
+    try {
+      writeFakeGrok(
+        join(root, '.grok', 'bin', 'grok'),
+        '{"text":"","stopReason":"EndTurn"}',
+      );
+
+      const result = await runGrok(root, { ...process.env, HOME: root, PATH: '' });
+
+      expect(result.ok).toBe(false);
+      expect(result.data.status).toBe('failed');
+      expect(result.data.exitCode).toBe(1);
+      expect(result.data.stderr).toContain('without a final message');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
