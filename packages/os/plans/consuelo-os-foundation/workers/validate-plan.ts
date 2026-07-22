@@ -87,6 +87,7 @@ const forbiddenPatterns: Array<[string, RegExp]> = [
   ['positive temporary shim plan', /temporary compatibility shims with|Preserve compatibility aliases|Keep compatibility shims temporary|Provide a bounded compatibility message/i],
   ['separate Worker 27 dispatch', /Dispatch Worker 27 by itself first|Worker 27 may establish review infrastructure in parallel/i],
   ['local review artifacts as authority', /saved Grok 4\.5 review under|Save the redacted prompt, metadata, and response under/i],
+  ['tracked generated review directory', /packages\/os\/plans\/consuelo-os-foundation\/reviews\/<task>\//i],
 ];
 const forbiddenMatches = forbiddenPatterns
   .filter(([, pattern]) => pattern.test(corpus))

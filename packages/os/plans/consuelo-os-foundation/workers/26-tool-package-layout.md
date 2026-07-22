@@ -93,4 +93,4 @@ Every callable tool uses a Bun TypeScript handler. Generated JSON files are buil
 
 ## Review and completion
 
-Request CodeRabbit and run the approved Grok 4.5 review. Save the prompt, metadata, response, inventory, cutover map, and finding dispositions under `/Users/kokayi/Dev/opensaas/packages/os/plans/consuelo-os-foundation/reviews/<task>/` and the task workpad.
+Request CodeRabbit and run the approved Grok 4.5 review. Render the prompt to the Git-ignored `packages/os/.tmp-reviews/<task>/grok-prompt.md`, post the structured review, inline findings, and top-level summary to the task PR, verify every finding, post each disposition to the PR, and remove `packages/os/.tmp-reviews/<task>/` after posting. GitHub is the durable review record. Keep the inventory, cutover map, and concise finding dispositions in the task workpad.

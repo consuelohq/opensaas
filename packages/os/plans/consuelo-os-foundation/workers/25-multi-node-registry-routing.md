@@ -103,4 +103,4 @@ Workers must not install or update either real Mac. After automated tests pass:
 
 ## Review and completion
 
-Request CodeRabbit, then run the approved Grok 4.5 review with the master plan, this brief, exact diff, and test results. Save all review files under `/Users/kokayi/Dev/opensaas/packages/os/plans/consuelo-os-foundation/reviews/<task>/`, verify every finding, and include dispositions, trace IDs, migrations, routing proof, and the Ko checkpoint command in the workpad.
+Request CodeRabbit, then run the approved Grok 4.5 review with the master plan, this brief, exact diff, and test results. Render the prompt to the Git-ignored `packages/os/.tmp-reviews/<task>/grok-prompt.md`, post the structured review, inline findings, and top-level summary to the task PR, verify every finding, post each disposition to the PR, and remove `packages/os/.tmp-reviews/<task>/` after posting. GitHub is the durable review record. Include dispositions, trace IDs, migrations, routing proof, and the Ko checkpoint command in the workpad.
