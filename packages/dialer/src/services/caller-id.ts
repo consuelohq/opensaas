@@ -28,7 +28,8 @@ export interface LockStore {
 }
 
 const DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const DEFAULT_ACTIVE_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+export const ACTIVE_CALL_TTL_SECONDS = 12 * 60 * 60; // 12 hours
+const DEFAULT_ACTIVE_TTL_MS = ACTIVE_CALL_TTL_SECONDS * 1000;
 const LOCK_KEY_PREFIX = 'caller-id-lock:';
 
 type RedisClientLike = {

@@ -8,10 +8,11 @@ import type {
   ParallelCall,
   ParallelTelemetry,
 } from '../types.js';
+import { ACTIVE_CALL_TTL_SECONDS } from './caller-id.js';
 
 type TwilioClientInstance = import('twilio').Twilio;
 
-const GROUP_TTL_SECONDS = 300;
+const GROUP_TTL_SECONDS = ACTIVE_CALL_TTL_SECONDS;
 const GROUP_DIALING_TIMEOUT_MS = 60_000;
 const EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response />';
 const TERMINAL_CALL_STATUSES = new Set([
@@ -437,7 +438,9 @@ export class ParallelDialerService {
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Unknown telemetry store error';
-      throw new Error(`Failed to claim parallel telemetry emission: ${message}`);
+      throw new Error(
+        `Failed to claim parallel telemetry emission: ${message}`,
+      );
     }
   }
 

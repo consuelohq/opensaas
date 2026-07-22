@@ -306,6 +306,29 @@ describe('ParallelDialerService', () => {
   });
 
   describe('TTL expiry', () => {
+    it('should retain connected callback state beyond five minutes', async () => {
+      jest.useFakeTimers();
+      try {
+        const result = await service.initiateGroup({
+          ...baseOpts,
+          customerNumbers: ['+15551111111'],
+          fromNumbers: ['+15554444444'],
+          profile: { ...baseProfile, fanout: 1 },
+        });
+        const callSid = result.calls[0].callSid;
+
+        await service.handleStatusCallback(callSid, 'in-progress', 'human');
+        jest.advanceTimersByTime(6 * 60 * 1000);
+
+        await expect(service.getGroup(result.groupId)).resolves.not.toBeNull();
+        await expect(service.getGroupIdForCall(callSid)).resolves.toBe(
+          result.groupId,
+        );
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     it('should return null for expired group', async () => {
       // manually set a group with past expiry
       await store.setGroup('pg_expired', '{"status":"dialing"}', 0);

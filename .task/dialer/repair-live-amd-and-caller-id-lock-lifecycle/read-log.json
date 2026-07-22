@@ -1,9 +1,11 @@
 {
   "files": [
+    ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/workpad.md",
     "packages/dialer/package.json",
     "packages/dialer/src/services/parallel-dialer.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
-    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+    "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-22T20:14:21.615Z"
+  "updatedAt": "2026-07-22T22:51:12.170Z"
 }
