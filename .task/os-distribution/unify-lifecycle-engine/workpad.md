@@ -104,19 +104,31 @@ No real Consuelo install, update, repair, restart, launchctl mutation, daemon mu
 
 ## files changed
 
-- none yet
+- `packages/os/scripts/lib/lifecycle/release.ts`
+- `packages/os/scripts/lib/lifecycle/state.ts`
+- `packages/os/tests/lifecycle-engine.test.ts`
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/os/scripts/lib/lifecycle/release.ts`
+- `packages/os/scripts/lib/lifecycle/state.ts`
+- `packages/os/tests/lifecycle-engine.test.ts`
 
 ## workspace-owned: activity log
 
 - 2026-07-23 02:54:56 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+- 2026-07-23 02:57:29 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+- 2026-07-23 02:58:21 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+- 2026-07-23 02:59:12 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+- 2026-07-23 03:00:14 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+- 2026-07-23 03:01:57 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+- 2026-07-23 03:03:22 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+- 2026-07-23 03:05:19 fs.write: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-07-23 02:55:01 `verify`: passed — OK
+- 2026-07-23 03:05:25 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -129,3 +141,106 @@ No real Consuelo install, update, repair, restart, launchctl mutation, daemon mu
 ## workspace-owned: files read
 
 - `packages/workspace/scripts/task-push.js`
+
+
+## wait cycle 1
+
+- Wait reason: final-head CI for commit `75552c98` is running with 11 pending checks and zero failures.
+- Start time: 2026-07-23T02:57:18Z.
+- Duration: 30 seconds.
+- Resume action: query PR #1578 checks and current reviews immediately.
+- Expected signal: zero pending and zero failed required checks, with no new substantive review finding.
+- Fallback: if checks remain pending, record the result and run another bounded poll; if a check fails, inspect and repair through Consuelo OS before merge.
+
+- 2026-07-23 02:57:29 append: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+
+- Wake result: after 30 seconds, CI reported 42 checks, 3 pending, 0 failed; current reviews contained no new substantive finding.
+- Next decision: do not merge; run a second bounded poll.
+
+## wait cycle 2
+
+- Wait reason: three final-head CI checks remain pending for commit `75552c98`.
+- Start time: 2026-07-23T02:58:12Z.
+- Duration: 30 seconds.
+- Resume action: query PR #1578 checks immediately.
+- Expected signal: zero pending and zero failed checks.
+- Fallback: inspect any failure through Consuelo OS; if still pending, record and continue bounded polling.
+
+- 2026-07-23 02:58:21 append: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+
+- Wake result: after the second 30-second wait, 42 checks remained at 3 pending and 0 failed.
+- Pending checks: `Consuelo / OS contracts`, `Consuelo / verify`, and `danger-js`; each reported `IN_PROGRESS`.
+- Next decision: continue bounded polling because the task-relevant verification jobs are active.
+
+## wait cycle 3
+
+- Wait reason: the three identified final-head verification checks are actively running.
+- Start time: 2026-07-23T02:59:06Z.
+- Duration: 45 seconds.
+- Resume action: query PR #1578 checks immediately and inspect any non-success terminal state.
+- Expected signal: zero pending and zero failed checks.
+- Fallback: inspect failing job evidence through GitHub/Consuelo OS; if still active, record and use one final bounded poll.
+
+- 2026-07-23 02:59:12 append: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+
+- Wake result: after the 45-second wait, the same three checks remained pending with zero failures.
+- Next decision: use one final bounded poll before inspecting individual job execution details.
+
+## wait cycle 4
+
+- Wait reason: `Consuelo / OS contracts`, `Consuelo / verify`, and `danger-js` remain active without failure.
+- Start time: 2026-07-23T03:00:06Z.
+- Duration: 60 seconds.
+- Resume action: query PR #1578 checks immediately; if pending remains, inspect individual job status/log evidence.
+- Expected signal: zero pending and zero failed checks.
+- Fallback: diagnose the specific active or failed job through GitHub and Consuelo OS rather than merging around it.
+
+- 2026-07-23 03:00:14 append: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+
+- Wake result: after the 60-second wait, one check completed; `Consuelo / OS contracts` and `Consuelo / verify` remained pending with zero failures.
+- Job diagnosis: both jobs are assigned to active runners. OS contracts is on `Install dependencies`; verify is on `Run workspace verify`. No queue or failure condition is present.
+- Next decision: continue bounded polling because both jobs show normal forward execution.
+
+## wait cycle 5
+
+- Wait reason: the two task-relevant CI jobs are actively executing normal long-running steps.
+- Start time: 2026-07-23T03:01:49Z.
+- Duration: 60 seconds.
+- Resume action: query PR #1578 checks immediately and inspect terminal outcomes.
+- Expected signal: zero pending and zero failed checks.
+- Fallback: if a job remains on the same active step, inspect elapsed state again; if failed, retrieve logs and repair through Consuelo OS.
+
+- 2026-07-23 03:01:57 append: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+
+- Wake result: after wait cycle 5, `Consuelo / verify` completed successfully. One check remains: `Consuelo / OS contracts`, still on `Install dependencies`, with zero failures across 43 checks.
+- Next decision: allow one longer bounded cycle for dependency installation, then inspect the job again.
+
+## wait cycle 6
+
+- Wait reason: the sole remaining OS contracts job is assigned to a runner and installing dependencies.
+- Start time: 2026-07-23T03:03:15Z.
+- Duration: 90 seconds.
+- Resume action: query PR #1578 checks and the OS contracts job step immediately.
+- Expected signal: OS contracts completes successfully; all checks have zero pending and zero failed.
+- Fallback: if still on dependency installation, inspect run timing/log availability and determine whether the job is stalled before any merge action.
+
+- 2026-07-23 03:03:22 append: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
+
+- Wake result: the OS contracts job completed successfully. Final-head CI for commit `75552c98` reports 43 checks, 0 pending, and 0 failed (`trc_74f9583d92b4`).
+- Next decision: publish this final workpad evidence, confirm the metadata-only head has no failed required checks, then merge into `stream/os-distribution` and finish the task session.
+
+## final review disposition links
+
+- CR-001 reply: https://github.com/consuelohq/opensaas/pull/1578#discussion_r3635260119
+- CR-002 reply: https://github.com/consuelohq/opensaas/pull/1578#discussion_r3635260187
+- Consolidated dispositions: https://github.com/consuelohq/opensaas/pull/1578#issuecomment-5053812000
+
+## current state
+
+- Product head: `75552c98faf4969cc8d1eac4658ef74576bbbb0b`.
+- All local validation and final-head CI are green.
+- CodeRabbit has no findings; Grok CR-001 and CR-002 are valid, fixed, tested, and disposed on GitHub.
+- Temporary Grok prompt/output and local subagent-run directories are removed.
+- Remaining action: publish this workpad update, merge PR #1578 only into `stream/os-distribution`, and finish task session `tsk_2858e239d32a`.
+
+- 2026-07-23 03:05:19 append: `.task/os-distribution/unify-lifecycle-engine/workpad.md`
