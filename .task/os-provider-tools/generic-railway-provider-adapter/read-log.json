@@ -1,11 +1,38 @@
 {
   "files": [
     ".task/os-provider-tools/generic-railway-provider-adapter/workpad.md",
+    "package.json",
+    "packages/os/.tmp-reviews/generic-railway-provider-adapter/grok-prompt.md",
     "packages/os/SCRIPTS.md",
     "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/08-deployment-provider-core.md",
     "packages/os/plans/consuelo-os-foundation/workers/08-provider-core.md",
+    "packages/os/plans/consuelo-os-foundation/workers/09-railway-provider.md",
+    "packages/os/plans/consuelo-os-foundation/workers/26-canonical-tool-package-layout.md",
+    "packages/os/plans/consuelo-os-foundation/workers/26-canonical-tool-packages.md",
+    "packages/os/plans/consuelo-os-foundation/workers/26-package-layout.md",
+    "packages/os/plans/consuelo-os-foundation/workers/26-tool-package-layout.md",
+    "packages/os/scripts/railway-logs.js",
+    "packages/os/scripts/railway-redeploy.js",
+    "packages/os/scripts/subagent.ts",
+    "packages/os/tools/deployment-provider/errors.ts",
+    "packages/os/tools/deployment-provider/process.ts",
+    "packages/os/tools/deployment-provider/schema.ts",
     "packages/os/tools/deployment-provider/service.ts",
-    "packages/os/tools/package.ts"
+    "packages/os/tools/deployment-provider/types.ts",
+    "packages/os/tools/package.ts",
+    "packages/os/tools/railway/README.md",
+    "packages/os/tools/railway/adapter.ts",
+    "packages/os/tools/railway/cli.ts",
+    "packages/os/tools/railway/handler.test.ts",
+    "packages/os/tools/railway/handler.ts",
+    "packages/os/tools/railway/manifest.ts",
+    "packages/os/tools/railway/schema.ts",
+    "packages/os/tools/railway/service.ts",
+    "packages/os/tools/sentry/manifest.ts",
+    "packages/workspace/scripts/railway-logs.js",
+    "packages/workspace/scripts/railway-redeploy.js"
   ],
-  "updatedAt": "2026-07-23T16:01:48.616Z"
+  "updatedAt": "2026-07-23T16:52:25.262Z"
 }

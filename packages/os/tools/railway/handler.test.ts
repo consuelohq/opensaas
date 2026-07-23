@@ -22,6 +22,7 @@ import { createRailwayAdapter } from './adapter';
 import {
   parseRailwayLogsArgs,
   parseRailwayRedeployArgs,
+  runRailwayRedeployCli,
 } from './cli';
 import { toolPackage } from './manifest';
 import { createRailwayService } from './service';
@@ -465,7 +466,6 @@ describe('Railway provider adapter', () => {
 
     await expect(Effect.runPromise(service.redeploy({
       serviceId: 'api',
-      environment: 'production',
       wait: true,
       timeoutMs: 5_000,
       approval: { approved: true, reason: 'Customer approved redeploy' },
@@ -477,11 +477,175 @@ describe('Railway provider adapter', () => {
     });
 
     expect(fake.requests.map((request) => request.args)).toEqual([
-      ['deployment', 'list', '--service', 'api', '--environment', 'production', '--limit', '20', '--json'],
+      ['deployment', 'list', '--service', 'api', '--limit', '20', '--json'],
       ['redeploy', '--service', 'api', '--yes'],
-      ['deployment', 'list', '--service', 'api', '--environment', 'production', '--limit', '20', '--json'],
-      ['deployment', 'list', '--service', 'api', '--environment', 'production', '--limit', '20', '--json'],
+      ['deployment', 'list', '--service', 'api', '--limit', '20', '--json'],
+      ['deployment', 'list', '--service', 'api', '--limit', '20', '--json'],
     ]);
+  });
+
+  it('returns immediately after a successful redeploy when wait is false', async () => {
+    const fake = createFakeProviderProcess([
+      providerProcessResult({ stdout: 'Redeploying service' }),
+    ]);
+    const service = createRailwayService({ process: fake.process });
+
+    await expect(Effect.runPromise(service.redeploy({
+      serviceId: 'api',
+      wait: false,
+      approval: { approved: true, reason: 'Customer approved non-waiting redeploy' },
+    }))).resolves.toEqual({
+      deploymentId: 'latest',
+      serviceId: 'api',
+      status: 'triggered',
+      waited: false,
+    });
+
+    expect(fake.requests.map((request) => request.args)).toEqual([
+      ['redeploy', '--service', 'api', '--yes'],
+    ]);
+  });
+
+  it('keeps the non-waiting compatibility CLI fire-and-forget', async () => {
+    const fake = createFakeProviderProcess([
+      providerProcessResult({ stdout: 'Redeploying service' }),
+    ]);
+    const service = createRailwayService({ process: fake.process });
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+
+    await expect(runRailwayRedeployCli([
+      '--service', 'api',
+      '--yes',
+      '--quiet',
+    ], {
+      service,
+      io: {
+        stdout: (message) => stdout.push(message),
+        stderr: (message) => stderr.push(message),
+      },
+    })).resolves.toBe(0);
+
+    expect(stdout).toEqual(['api: triggered (latest)']);
+    expect(stderr).toEqual([]);
+    expect(fake.requests.map((request) => request.args)).toEqual([
+      ['redeploy', '--service', 'api', '--yes'],
+    ]);
+  });
+
+  it('keeps wait tracking pinned when a poll temporarily omits the new deployment', async () => {
+    const oldDeployment = deployment('dep_old', 'SUCCESS');
+    const newBuilding = deployment('dep_new', 'BUILDING');
+    const competingSuccess = deployment('dep_competing', 'SUCCESS');
+    const newSuccess = deployment('dep_new', 'SUCCESS');
+    const fake = createFakeProviderProcess([
+      providerProcessResult({ stdout: JSON.stringify([oldDeployment]) }),
+      providerProcessResult({ stdout: 'Redeploying service' }),
+      providerProcessResult({ stdout: JSON.stringify([newBuilding, oldDeployment]) }),
+      providerProcessResult({ stdout: JSON.stringify([competingSuccess, oldDeployment]) }),
+      providerProcessResult({ stdout: JSON.stringify([newSuccess, competingSuccess, oldDeployment]) }),
+    ]);
+    const service = createRailwayService({
+      process: fake.process,
+      sleep: () => Promise.resolve(),
+      now: (() => {
+        let value = 0;
+        return () => (value += 100);
+      })(),
+      pollIntervalMs: 1,
+    });
+
+    await expect(Effect.runPromise(service.redeploy({
+      serviceId: 'api',
+      wait: true,
+      timeoutMs: 5_000,
+      approval: { approved: true, reason: 'Pinned deployment tracking test' },
+    }))).resolves.toMatchObject({
+      deploymentId: 'dep_new',
+      status: 'SUCCESS',
+      waited: true,
+    });
+    expect(fake.requests).toHaveLength(5);
+  });
+
+  it('treats redeploy environment as an assertion against linked context', async () => {
+    const oldDeployment = deployment('dep_old', 'SUCCESS');
+    const newBuilding = deployment('dep_new', 'BUILDING');
+    const newSuccess = deployment('dep_new', 'SUCCESS');
+    const fake = createFakeProviderProcess([
+      providerProcessResult({
+        stdout: JSON.stringify({
+          project: { id: 'prj_123', name: 'Customer App' },
+          environment: { id: 'env_prod', name: 'production' },
+          service: { id: 'svc_api', name: 'api' },
+        }),
+      }),
+      providerProcessResult({ stdout: JSON.stringify([oldDeployment]) }),
+      providerProcessResult({ stdout: 'Redeploying service' }),
+      providerProcessResult({ stdout: JSON.stringify([newBuilding, oldDeployment]) }),
+      providerProcessResult({ stdout: JSON.stringify([newSuccess, oldDeployment]) }),
+    ]);
+    const service = createRailwayService({
+      process: fake.process,
+      sleep: () => Promise.resolve(),
+      now: (() => {
+        let value = 0;
+        return () => (value += 100);
+      })(),
+      pollIntervalMs: 1,
+    });
+
+    await expect(Effect.runPromise(service.redeploy({
+      serviceId: 'api',
+      environment: 'production',
+      wait: true,
+      timeoutMs: 5_000,
+      approval: { approved: true, reason: 'Linked environment assertion test' },
+    }))).resolves.toMatchObject({
+      deploymentId: 'dep_new',
+      status: 'SUCCESS',
+    });
+
+    expect(fake.requests.map((request) => request.args)).toEqual([
+      ['status', '--json'],
+      ['deployment', 'list', '--service', 'api', '--limit', '20', '--json'],
+      ['redeploy', '--service', 'api', '--yes'],
+      ['deployment', 'list', '--service', 'api', '--limit', '20', '--json'],
+      ['deployment', 'list', '--service', 'api', '--limit', '20', '--json'],
+    ]);
+  });
+
+  it('rejects a redeploy environment that does not match linked context', async () => {
+    const fake = createFakeProviderProcess([
+      providerProcessResult({
+        stdout: JSON.stringify({
+          project: { id: 'prj_123', name: 'Customer App' },
+          environment: { id: 'env_stage', name: 'staging' },
+          service: { id: 'svc_api', name: 'api' },
+        }),
+      }),
+    ]);
+    const service = createRailwayService({ process: fake.process });
+
+    const error = await expectProviderError(service.redeploy({
+      serviceId: 'api',
+      environment: 'production',
+      wait: false,
+      approval: { approved: true, reason: 'Mismatched environment test' },
+    }), 'INVALID_INPUT');
+    expect(error.message).toContain('linked Railway environment');
+    expect(fake.requests.map((request) => request.args)).toEqual([
+      ['status', '--json'],
+    ]);
+  });
+
+  it('rejects direct adapter redeploy environment selection', () => {
+    const adapter = createRailwayAdapter();
+    expect(() => adapter.operations.redeploy.command({
+      serviceId: 'api',
+      environment: 'production',
+      approval: { approved: true, reason: 'Direct adapter environment test' },
+    })).toThrow(/linked Railway environment/);
   });
 
   it('fails closed when a redeploy wait exceeds its bound', async () => {

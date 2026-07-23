@@ -453,9 +453,17 @@ export const createRailwayAdapter = (): DeploymentProviderAdapter => ({
     },
     redeploy: {
       capability: 'redeploy',
-      command: (input) => ({
-        args: ['redeploy', '--service', safeValue(input.serviceId, 'service'), '--yes'],
-      }),
+      command: (input) => {
+        if (input.environment) {
+          throw providerInputError(
+            'environment',
+            'Railway redeploy operates on the linked Railway environment; select or link the desired environment before redeploying',
+          );
+        }
+        return {
+          args: ['redeploy', '--service', safeValue(input.serviceId, 'service'), '--yes'],
+        };
+      },
       parse: (_result, input) => ({
         deploymentId: input.deploymentId || 'latest',
         ...(input.serviceId ? { serviceId: input.serviceId } : {}),

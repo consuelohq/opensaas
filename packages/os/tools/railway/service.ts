@@ -71,24 +71,53 @@ export const createRailwayService = (options: RailwayServiceOptions = {}): Railw
           message: 'Railway redeploy timeout must be between 1 ms and 1 hour',
         }));
       }
+
+      if (input.environment) {
+        const context = yield* core.contextCurrent({
+          timeoutMs: input.timeoutMs,
+          signal: input.signal,
+        });
+        const linkedEnvironment = context.environment;
+        const matchesLinkedEnvironment = linkedEnvironment
+          && (linkedEnvironment.id === input.environment || linkedEnvironment.name === input.environment);
+        if (!matchesLinkedEnvironment) {
+          const linkedLabel = linkedEnvironment?.name || linkedEnvironment?.id || 'none';
+          return yield* Effect.fail(providerError({
+            code: 'INVALID_INPUT',
+            provider: adapter.provider,
+            operation: 'redeploy',
+            message: `Requested environment ${input.environment} does not match the linked Railway environment ${linkedLabel}; select or link the desired environment before redeploying`,
+          }));
+        }
+      }
+
+      const mutationInput = {
+        serviceId: input.serviceId,
+        timeoutMs: input.timeoutMs,
+        signal: input.signal,
+        approval: input.approval,
+      } satisfies DeploymentProviderOperationInputMap['redeploy'];
+
+      if (!input.wait) {
+        const result = yield* core.redeploy(mutationInput);
+        return {
+          ...result,
+          serviceId: input.serviceId,
+          waited: false,
+        };
+      }
+
       const startedAt = now();
       const deadline = startedAt + timeoutMs;
       const listInput = {
         serviceId: input.serviceId,
-        environment: input.environment,
         limit: 20,
         timeoutMs: input.timeoutMs,
         signal: input.signal,
       } satisfies DeploymentProviderOperationInputMap['deployment.list'];
 
       const before = yield* core.deploymentList(listInput);
-      yield* core.redeploy({
-        serviceId: input.serviceId,
-        environment: input.environment,
-        timeoutMs: input.timeoutMs,
-        signal: input.signal,
-        approval: input.approval,
-      });
+      yield* core.redeploy(mutationInput);
 
       let current: ProviderDeployment | undefined;
       while (!current) {
@@ -112,16 +141,6 @@ export const createRailwayService = (options: RailwayServiceOptions = {}): Railw
             message: 'railway redeploy wait was interrupted',
           }),
         });
-      }
-
-      if (!input.wait) {
-        return {
-          deploymentId: current.id,
-          serviceId: input.serviceId,
-          status: current.status,
-          ...(current.url ? { url: current.url } : {}),
-          waited: false,
-        };
       }
 
       while (true) {
@@ -162,7 +181,6 @@ export const createRailwayService = (options: RailwayServiceOptions = {}): Railw
         });
         const deployments = yield* core.deploymentList(listInput);
         current = deployments.deployments.find((deployment) => deployment.id === current?.id)
-          || deployments.deployments[0]
           || current;
       }
     });

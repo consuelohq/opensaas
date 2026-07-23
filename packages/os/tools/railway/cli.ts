@@ -252,7 +252,7 @@ const redeployHelp = (): string => [
   '',
   'options:',
   '  --service <value>      required service name or id',
-  '  --environment <value>  optional environment name or id for deployment polling',
+  '  --environment <value>  optional assertion; must match the linked environment',
   '  --yes                  required approval',
   '  --wait                 wait for a terminal deployment status',
   '  --timeout <duration>   bounded wait, maximum 1h (default: 15m)',

@@ -35,6 +35,10 @@ secret through an error envelope.
 - Railway CLI 4.x does not expose `variable delete`; an unknown-subcommand
   response is mapped to `UNSUPPORTED_CAPABILITY`. No token extraction or private
   GraphQL fallback is permitted.
+- Railway redeploy operates on the currently linked environment. The wrapper's
+  optional `--environment` value is an assertion, not a selector: it is checked
+  against `railway status --json`, and a mismatch fails before mutation. Polling
+  then uses the same linked context without an environment override.
 - Structured network-flow and HTTP request logs are not exposed through a stable
   Railway CLI command, so `railway:logs --network` fails explicitly.
 - Cross-project service selection is not supported by the linked-context CLI
