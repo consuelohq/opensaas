@@ -17,6 +17,9 @@ const idGeneratorService: DialerIdGeneratorService = {
   generateParallelGroupId: Effect.sync(
     () => `pg_${randomUUID().replace(/-/g, '').slice(0, 12)}`,
   ),
+  generateDialerSessionId: Effect.sync(
+    () => `session_${randomUUID().replace(/-/g, '').slice(0, 20)}`,
+  ),
 };
 
 export const liveDialerClockLayer = Layer.succeed(DialerClock, clockService);

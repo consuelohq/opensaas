@@ -2,13 +2,10 @@ import { Logger } from '@nestjs/common';
 
 import type { ParallelGroup } from '@consuelo/dialer';
 
-jest.mock(
-  '@consuelo/dialer',
-  () => ({
-    ParallelStrategyResolver: class {},
-  }),
-  { virtual: true },
-);
+jest.mock('@consuelo/dialer', () => ({
+  ...jest.requireActual('@consuelo/dialer'),
+  ParallelStrategyResolver: class {},
+}));
 jest.mock('@consuelo/contacts', () => ({
   isValidPhone: jest.fn((phoneNumber: string) =>
     [

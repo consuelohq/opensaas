@@ -53,13 +53,50 @@ export class DialerInterruptedError extends Data.TaggedError(
   retryable: true;
 }> {}
 
+export class DialerRequestError extends Data.TaggedError('DialerRequestError')<{
+  code: string;
+  message: string;
+  details?: unknown;
+  retryable: false;
+}> {}
+
+export class DialerConflictError extends Data.TaggedError(
+  'DialerConflictError',
+)<{
+  code: string;
+  message: string;
+  retryAfterMs?: number;
+  retryable: false;
+}> {}
+
+export class DialerNotFoundError extends Data.TaggedError(
+  'DialerNotFoundError',
+)<{
+  code: string;
+  message: string;
+  retryable: false;
+}> {}
+
+export class DialerInfrastructureError extends Data.TaggedError(
+  'DialerInfrastructureError',
+)<{
+  operation: string;
+  message: string;
+  retryable: boolean;
+  cause?: unknown;
+}> {}
+
 export type DialerApplicationError =
   | DialerProviderError
   | DialerStateError
   | DialerCleanupError
   | DialerTransitionError
   | DialerTimeoutError
-  | DialerInterruptedError;
+  | DialerInterruptedError
+  | DialerRequestError
+  | DialerConflictError
+  | DialerNotFoundError
+  | DialerInfrastructureError;
 
 export const errorMessage = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);

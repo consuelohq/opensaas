@@ -32,6 +32,22 @@ export type { NumberPool } from './services/local-presence.js';
 export { startParallelSession } from './application/start-parallel-session.js';
 export type { StartParallelSessionOptions } from './application/start-parallel-session.js';
 export { processProviderCallback } from './application/process-provider-callback.js';
+export {
+  generateParallelCustomerTwiml,
+  getParallelGroupStatus,
+  initiateParallelDial,
+  terminateParallelGroup,
+  validateParallelDial,
+} from './application/parallel-compatibility-application.js';
+export {
+  startDialerCall,
+  computeDialerCallCapacity,
+} from './application/start-dialer-call.js';
+export type { StartDialerCallCommand } from './application/start-dialer-call.js';
+export {
+  processParallelCallback,
+  isSuccessfulParallelCompletion,
+} from './application/process-parallel-callback.js';
 export type { ProcessProviderCallbackInput } from './application/process-provider-callback.js';
 export {
   terminateCallSession,
@@ -79,6 +95,40 @@ export type {
 export { ParallelStateStore } from './ports/parallel-state-store.js';
 export type { ParallelStateStoreService } from './ports/parallel-state-store.js';
 export { CallerIdLockStore } from './ports/caller-id-lock-store.js';
+export {
+  DialerCallRepository,
+  DialerCallRuntime,
+  DialerTargetRepository,
+} from './ports/dialer-call-start.js';
+export type {
+  CallableTarget,
+  DialerCallContext,
+  DialerCallRepositoryService,
+  DialerCallRuntimeService,
+  DialerCallSelectionStrategy,
+  DialerCallSource,
+  DialerCallStartCall,
+  DialerCallStartCapacity,
+  DialerCallStartResult,
+  DialerCallStartStatus,
+  DialerScenarioCallMode,
+  DialerTargetRepositoryService,
+  StartDialerCallInput,
+} from './ports/dialer-call-start.js';
+export { ParallelCompatibilityRuntime } from './ports/parallel-compatibility.js';
+export type {
+  ParallelCallbackInput,
+  ParallelCallbackResult,
+  ParallelCompatibilityRuntimeService,
+  ParallelDialBody,
+  ParallelDialCommand,
+  ParallelGroupStatusResult,
+  ParallelStrategyInput,
+  ParallelTelemetryRecord,
+  ParallelTwimlInput,
+  TerminateParallelGroupCommand,
+  ValidateParallelDialCommand,
+} from './ports/parallel-compatibility.js';
 export type { CallerIdLockStoreService } from './ports/caller-id-lock-store.js';
 export { DialerClock } from './ports/clock.js';
 export type { DialerClockService } from './ports/clock.js';
@@ -88,6 +138,10 @@ export { DialerTelemetry } from './ports/telemetry.js';
 export type { DialerTelemetryService } from './ports/telemetry.js';
 export {
   DialerCleanupError,
+  DialerConflictError,
+  DialerInfrastructureError,
+  DialerNotFoundError,
+  DialerRequestError,
   DialerInterruptedError,
   DialerProviderError,
   DialerStateError,

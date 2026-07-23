@@ -124,6 +124,7 @@ const clockService: DialerClockService = {
 
 const idService: DialerIdGeneratorService = {
   generateParallelGroupId: Effect.succeed('pg_test'),
+  generateDialerSessionId: Effect.succeed('session_test'),
 };
 
 const createLayer = (state: TestState, providerLayer = createProviderLayer()) =>
