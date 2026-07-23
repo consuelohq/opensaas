@@ -58,7 +58,7 @@ The repository is not one product with one build system or one legal boundary. I
 4. Internal operator infrastructure (`packages/workspace`, `packages/diff-cockpit`) that currently acts as both OS development substrate and repository control plane.
 5. A vendored Open Design source tree with its own Apache-2.0 license, pnpm workspace, package names, generated artifacts, and upstream provenance.
 
-Immediate extraction is unsafe because the physical package boundary is cleaner than the operational boundary. `packages/os` has no first-party package-manifest dependency on other top-level packages, but one OS test imports a workspace helper; workspace scripts deep-import OS internals; documentation consumes the public OS package; root scripts dispatch into both OS and workspace; the published `consuelo` CLI combines OS, GTM/dialer, Twenty, deployment, and self-update commands; CI and release workflows dispatch by path across all products; and public installer/image/repository names still encode `opensaas`.
+Immediate extraction is unsafe because the physical package boundary is cleaner than the operational boundary. `packages/os` has no first-party package-manifest dependency on other top-level packages, but one OS test imports a workspace helper; workspace scripts and tests deep-import OS internals; the Twenty server reads and serves the OS bootstrap script at runtime; root scripts dispatch into both OS and workspace; the published `consuelo` CLI combines OS, GTM/dialer, Twenty, deployment, and self-update commands; CI and release workflows dispatch by path across all products; and public installer/image/repository names still encode `opensaas`.
 
 **Recommendation: staged hybrid.** First formalize and enforce explicit ownership inside the current repository, split public interfaces from deep relative imports, split the CLI and release surfaces, make OS independently buildable/distributable, and only then decide whether to extract OS to a dedicated repository. This retains Git history, issue/PR continuity, and rollback while removing the coupling that makes extraction risky.
 
@@ -80,7 +80,7 @@ The deterministic scanner found **27 active top-level directories under `package
 | 10 | `contacts` | GTM/dialer | GTM CRM contracts | MIT manifest; consumed by API, CLI, SDK, `twenty-front`, and `twenty-server`. This is a deliberate bridge into inherited Twenty. |
 | 11 | `dialer` | GTM/dialer | GTM telephony | MIT manifest; consumed by API, CLI, SDK, and `twenty-server`. |
 | 12 | `diff-cockpit` | internal/operator | Repository operator | Private review/Cloudflare worker surface; no product runtime manifest edge. |
-| 13 | `documentation` | docs/site | OS documentation | Astro/Starlight, Bun 1.3.14; tests import `@consuelo/os`; deployed separately to Cloudflare. |
+| 13 | `documentation` | docs/site | OS documentation | Astro/Starlight, Bun 1.3.14; deployed separately to Cloudflare. A test fixture contains an `@consuelo/os` import inside a Markdown code fence, but no executable package dependency was found. |
 | 14 | `eslint-rules` | inherited Twenty runtime | Twenty developer tooling | No package manifest; Nx project still named `twenty-eslint-rules`; root Nx config refers to the old path `packages/twenty-eslint-rules`, exposing stale metadata. |
 | 15 | `logger` | shared | GTM shared infrastructure | MIT manifest; shared by agent/API/chat-bot/dialer. No OS consumer found. |
 | 16 | `metering` | GTM/dialer | GTM commercial service | MIT manifest; product metering service, not OS runtime. |
@@ -139,9 +139,13 @@ Scanner correction: `packages/os/scripts/generate-types.ts` was initially report
 
 Outside importing OS internals:
 
-- `packages/documentation/tests/foundation.test.ts` imports `@consuelo/os`.
 - `packages/workspace/scripts/os-release-device-auth.ts` imports OS `device-authority-release-readiness` and `sites` internal modules.
 - `packages/workspace/scripts/trace-site-inspector/archive-history.ts` imports OS `trace-sites-local-read-backend` and `trace-sites-gateway-read-layer` internal modules.
+- `packages/workspace/tests/stream-lifecycle.test.ts` resolves OS stream cleanup/lifecycle scripts, the legacy development manifest, and `task-start.js` by relative path.
+- `packages/workspace/tests/trace-site-inspector.test.ts` reads OS trace routes, server app wiring, and trace-gateway service source by relative path.
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts` resolves and reads `packages/os/scripts/bootstrap.sh` at request time to serve the public installer. This is a production runtime/deployment coupling, not merely a test edge.
+
+Scanner correction: `packages/documentation/tests/foundation.test.ts` contains `import { call } from '@consuelo/os'` only inside a Markdown code-fence fixture and verifies that documentation normalization preserves it as text. It does not execute the import or declare a package-manifest dependency on OS.
 
 Operational duplication/coupling:
 
@@ -157,7 +161,7 @@ Before extraction, all cross-boundary imports must be one of:
 2. a generated protocol/schema artifact with an owning source and compatibility test; or
 3. a process/API boundary.
 
-Workspace deep imports into OS and the OS test import into workspace are extraction blockers until replaced by public contracts or isolated fixtures. Documentation's `@consuelo/os` import is a package-level consumer and should remain on documented exports. Root script dispatch is operational coupling rather than a source-import edge. Copying another helper is not an acceptable long-term boundary.
+Workspace deep imports into OS and the OS test import into workspace are extraction blockers until replaced by public contracts or isolated fixtures. The Twenty server's runtime bootstrap read must move behind a versioned installer artifact or explicit deployment contract before extraction. The documentation code-fence fixture is not a package edge. Root script dispatch is operational coupling rather than a source-import edge. Copying another helper is not an acceptable long-term boundary.
 
 ## CLI ownership audit
 
@@ -531,6 +535,12 @@ Ko can approve or reject these independently:
 - Structured review: https://github.com/consuelohq/opensaas/pull/1562#issuecomment-5051934462. Top-level summary: https://github.com/consuelohq/opensaas/pull/1562#issuecomment-5051935203. Dispositions: https://github.com/consuelohq/opensaas/pull/1562#issuecomment-5051935448.
 - CodeRabbit was requested and completed, but configured path filters skipped all seven `.task/**` files and it produced no inline findings. This is recorded as a zero-finding, non-substantive review result rather than an approval signal; Grok supplied the independent substantive review.
 
+## Orchestrator review corrections
+
+- **ORCH-001 — corrected and verified.** The original audit treated an `@consuelo/os` string inside a documentation Markdown code-fence fixture as an executable import. Direct inspection confirms the test only verifies text normalization and the documentation package has no manifest dependency on OS.
+- **ORCH-002 — corrected and verified.** The original source-crossing inventory omitted workspace tests that resolve OS scripts/source by relative path and the Twenty server controller that reads the OS bootstrap script at runtime. These are now included as test and production deployment couplings, respectively.
+- Validation: exact-reference searches over `packages/documentation/tests/foundation.test.ts`, `packages/workspace/tests/stream-lifecycle.test.ts`, `packages/workspace/tests/trace-site-inspector.test.ts`, and `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/os-install.controller.ts`; Markdown diff inspection; and `git diff --check`.
+
 ## evidence ledger
 
 - `trc_24b4b94e09e1` — deterministic 27-package census, manifest edges, source import crossings, locks/markers.
@@ -601,7 +611,7 @@ Ko can approve or reject these independently:
 ## notes for ko
 
 - PR #1562 is the durable audit record. No live environment or local Consuelo OS installation is being mutated.
-- The strongest positive signal for eventual extraction is that `packages/os` has no internal package-manifest dependency and no confirmed runtime import into another top-level package. The strongest negative signal is operator/test coupling, workspace deep imports into OS, duplicated operator tooling, mixed CLI ownership, installer hosting, legal inconsistency, and cross-product workflows.
+- The strongest positive signal for eventual extraction is that `packages/os` has no internal package-manifest dependency. The strongest negative signal is operator/test coupling, workspace deep imports into OS, the Twenty server's runtime installer-source read, duplicated operator tooling, mixed CLI ownership, installer hosting, legal inconsistency, and cross-product workflows.
 - The root README’s MIT claim should not be repeated in release material until resolved.
 
 ## improvements noticed
