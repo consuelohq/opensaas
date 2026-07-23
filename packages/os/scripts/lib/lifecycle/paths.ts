@@ -11,8 +11,21 @@ export type LifecyclePaths = {
   currentLink: string;
   previousLink: string;
   stagingDir: string;
+  testHomesDir: string;
+  devSlotsDir: string;
+  activationJournalPath: string;
+  retentionStatePath: string;
   lockPath: string;
   diagnosticsPath: string;
+  nodeDir: string;
+  nodeSecurityGeneratedDir: string;
+  nodeTunnelsDir: string;
+  nodeCaddyDir: string;
+  nodeCacheDir: string;
+  nodeTmpDir: string;
+  nodeRunsDir: string;
+  nodeLogsDir: string;
+  workspacesDir: string;
 };
 
 export function resolveLifecyclePaths(home?: string): LifecyclePaths {
@@ -26,8 +39,21 @@ export function resolveLifecyclePaths(home?: string): LifecyclePaths {
     currentLink: layout.runtimeCurrentDir,
     previousLink: join(layout.runtimeDir, 'previous'),
     stagingDir: join(layout.runtimeDir, 'staging'),
+    testHomesDir: join(layout.runtimeDir, 'test-homes'),
+    devSlotsDir: join(layout.runtimeDir, 'dev-slots'),
+    activationJournalPath: join(layout.runtimeDir, 'activation.json'),
+    retentionStatePath: join(layout.runtimeDir, 'retention.json'),
     lockPath: join(layout.runtimeDir, 'lifecycle.lock'),
     diagnosticsPath: join(layout.nodeLogsDir, 'lifecycle.jsonl'),
+    nodeDir: layout.nodeDir,
+    nodeSecurityGeneratedDir: layout.nodeSecurityGeneratedDir,
+    nodeTunnelsDir: layout.nodeTunnelsDir,
+    nodeCaddyDir: layout.nodeCaddyDir,
+    nodeCacheDir: layout.nodeCacheDir,
+    nodeTmpDir: layout.nodeTmpDir,
+    nodeRunsDir: layout.nodeRunsDir,
+    nodeLogsDir: layout.nodeLogsDir,
+    workspacesDir: layout.workspacesDir,
   };
 }
 
