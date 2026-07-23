@@ -1,0 +1,243 @@
+name: Consuelo OS runtime publish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/os/**'
+      - '.github/workflows/consuelo-os-runtime-publish.yaml'
+      - 'bun.lock'
+      - 'package.json'
+
+permissions:
+  contents: write
+  deployments: write
+
+concurrency:
+  group: consuelo-os-release-state
+  cancel-in-progress: false
+
+env:
+  RELEASE_STATE_PATH: .release/release-state.json
+
+jobs:
+  plan:
+    name: Plan dev publication
+    runs-on: ubuntu-latest
+    environment: consuelo-os-dev
+    outputs:
+      changed: ${{ steps.plan.outputs.changed }}
+      fingerprint: ${{ steps.plan.outputs.fingerprint }}
+      revision: ${{ steps.plan.outputs.revision }}
+      version: ${{ steps.plan.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Restore authoritative release state
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+        shell: bash
+        run: |
+          mkdir -p .release
+          set +e
+          bunx wrangler r2 object get "${CONSUELO_OS_RELEASE_R2_BUCKET}/state/release-state.json" \
+            --remote \
+            --file "${RELEASE_STATE_PATH}" > .release/state-restore.log 2>&1
+          restore_status=$?
+          set -e
+          if [[ ${restore_status} -ne 0 ]]; then
+            if grep -Eqi 'not found|does not exist|10007' .release/state-restore.log; then
+              echo "No authoritative release state exists yet."
+              rm -f "${RELEASE_STATE_PATH}"
+            else
+              echo "Failed to restore authoritative release state." >&2
+              exit "${restore_status}"
+            fi
+          fi
+          rm -f .release/state-restore.log
+      - name: Compute version-neutral runtime fingerprint
+        id: fingerprint
+        run: |
+          bun run --cwd packages/os runtime-bundle:fingerprint -- \
+            --source-root . > .release/fingerprint.json
+          echo "value=$(jq -r '.releaseFingerprint' .release/fingerprint.json)" >> "$GITHUB_OUTPUT"
+      - name: Allocate release version only when changed
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_INTENT: ${{ vars.CONSUELO_OS_RELEASE_INTENT || 'patch' }}
+          SEED_VERSION: ${{ vars.CONSUELO_OS_FIRST_RELEASE_VERSION }}
+        shell: bash
+        run: |
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/tags?per_page=100" \
+            --jq '.[] | select(.name | startswith("consuelo-os-v")) | .name' \
+            > .release/immutable-tags.txt
+          mapfile -t tags < .release/immutable-tags.txt
+          tag_args=()
+          for tag in "${tags[@]}"; do
+            tag_args+=(--immutable-tag "$tag")
+          done
+          seed_args=()
+          if [[ -n "${SEED_VERSION}" ]]; then
+            seed_args+=(--seed-version "${SEED_VERSION}")
+          fi
+          plan_json="$(bun run --cwd packages/os release:channels -- publish \
+            --channel dev \
+            --plan-only \
+            --state "../../${RELEASE_STATE_PATH}" \
+            --fingerprint "${{ steps.fingerprint.outputs.value }}" \
+            --source-commit "${GITHUB_SHA}" \
+            --intent "${RELEASE_INTENT}" \
+            "${seed_args[@]}" \
+            "${tag_args[@]}" \
+            --json)"
+          echo "$plan_json" | jq .
+          echo "changed=$(echo "$plan_json" | jq -r '.changed')" >> "$GITHUB_OUTPUT"
+          echo "fingerprint=$(echo "$plan_json" | jq -r '.releaseFingerprint')" >> "$GITHUB_OUTPUT"
+          echo "revision=$(jq -r '.revision // 0' "${RELEASE_STATE_PATH}" 2>/dev/null || echo 0)" >> "$GITHUB_OUTPUT"
+          echo "version=$(echo "$plan_json" | jq -r '.version // empty')" >> "$GITHUB_OUTPUT"
+      - name: Confirm changed runtime closure
+        if: steps.plan.outputs.changed == 'true'
+        run: echo "Runtime closure changed; build version ${{ steps.plan.outputs.version }}."
+      - name: Record true no-op
+        if: steps.plan.outputs.changed != 'true'
+        run: echo "Runtime closure is unchanged. No version, build, tag, release, deployment, or channel mutation will occur."
+
+  build:
+    name: Build ${{ matrix.platform }}-${{ matrix.architecture }}
+    needs: plan
+    if: needs.plan.outputs.changed == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            platform: darwin
+            architecture: arm64
+          - runner: ubuntu-latest
+            platform: linux
+            architecture: x64
+          - runner: windows-latest
+            platform: windows
+            architecture: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        shell: bash
+        run: bun install --frozen-lockfile
+      - name: Build runtime bundle exactly once
+        shell: bash
+        env:
+          OUTPUT_PATH: .release/consuelo-os-${{ matrix.platform }}-${{ matrix.architecture }}.tar.gz
+        run: |
+          mkdir -p .release
+          bun run --cwd packages/os runtime-bundle:build -- \
+            --source-root . \
+            --platform "${{ matrix.platform }}" \
+            --architecture "${{ matrix.architecture }}" \
+            --version "${{ needs.plan.outputs.version }}" \
+            --source-commit "${GITHUB_SHA}" \
+            --minimum-updater-version "${{ vars.CONSUELO_OS_MINIMUM_UPDATER_VERSION || '0.1.0' }}" \
+            --output "../../${OUTPUT_PATH}"
+          bun run --cwd packages/os runtime-bundle:verify -- \
+            --archive "../../${OUTPUT_PATH}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runtime-${{ matrix.platform }}-${{ matrix.architecture }}
+          path: .release/consuelo-os-${{ matrix.platform }}-${{ matrix.architecture }}.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish immutable release and dev pointer
+    needs:
+      - plan
+      - build
+    if: needs.plan.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment: consuelo-os-dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: runtime-*
+          path: .release/archives
+          merge-multiple: true
+      - name: Restore authoritative release state
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+        shell: bash
+        run: |
+          set +e
+          bunx wrangler r2 object get "${CONSUELO_OS_RELEASE_R2_BUCKET}/state/release-state.json" \
+            --remote \
+            --file "${RELEASE_STATE_PATH}" > .release/state-restore.log 2>&1
+          restore_status=$?
+          set -e
+          if [[ ${restore_status} -ne 0 ]]; then
+            if grep -Eqi 'not found|does not exist|10007' .release/state-restore.log; then
+              echo "No authoritative release state exists yet."
+              rm -f "${RELEASE_STATE_PATH}"
+            else
+              echo "Failed to restore authoritative release state." >&2
+              exit "${restore_status}"
+            fi
+          fi
+          rm -f .release/state-restore.log
+      - name: Verify, sign, and assemble publication input
+        id: publication
+        env:
+          CONSUELO_OS_RELEASE_SIGNING_KEY_ID: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_KEY_ID }}
+          CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY: ${{ secrets.CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY }}
+          CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY }}
+        run: |
+          result="$(bun ./packages/os/scripts/prepare-release-publication.ts \
+            --archive "darwin-arm64=.release/archives/consuelo-os-darwin-arm64.tar.gz" \
+            --archive "linux-x64=.release/archives/consuelo-os-linux-x64.tar.gz" \
+            --archive "windows-x64=.release/archives/consuelo-os-windows-x64.tar.gz" \
+            --version "${{ needs.plan.outputs.version }}" \
+            --fingerprint "${{ needs.plan.outputs.fingerprint }}" \
+            --source-commit "${GITHUB_SHA}" \
+            --evidence "ci=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --evidence "tests=consuelo-os-distribution-environments" \
+            --signature-directory .release/signatures \
+            --output .release/publication.json)"
+          echo "$result" | jq .
+          echo "bundle=$(echo "$result" | jq -r '.bundleId')" >> "$GITHUB_OUTPUT"
+      - name: Publish immutable bytes and signed dev manifest
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_OS_RELEASE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+          CONSUELO_OS_RELEASE_SIGNING_KEY_ID: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_KEY_ID }}
+          CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY: ${{ secrets.CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY }}
+          CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          release_time="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq '.created_at')"
+          bun run --cwd packages/os release:channels -- publish \
+            --channel dev \
+            --bundle "${{ steps.publication.outputs.bundle }}" \
+            --input ../../.release/publication.json \
+            --state "../../${RELEASE_STATE_PATH}" \
+            --expected-revision "${{ needs.plan.outputs.revision }}" \
+            --now "${release_time}" \
+            --apply \
+            --json

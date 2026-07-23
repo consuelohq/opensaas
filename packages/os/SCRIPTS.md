@@ -1542,3 +1542,25 @@ bun ./scripts/os.ts configuration enable-workflow <name> --json
 ```
 
 The legacy `settings` command remains an alias during migration. Mutations are serialized per OS home, materialize the public Configuration shell plus a private local snapshot, and append a redacted `configuration.overlay.changed` event to `logs/control-plane-audit.jsonl`. Disabled workflows are rejected by workflow intent routing. The public Configuration HTML contains no workspace snapshot; private state loads through the authenticated Configuration gateway at `/gateway/configuration/*`.
+
+---
+
+## release channels -- immutable Consuelo OS runtime publication
+
+`release:channels` is the Bun-owned JSON CLI for automatic version allocation, immutable publication, signed channel inspection, protected promotion, and rollback. It supports `publish`, `promote`, `inspect`, and `rollback-channel`; mutating commands default to dry-run and require `--apply` for provider changes.
+
+```bash
+bun run --cwd packages/os release:channels -- publish --channel dev --plan-only --state ../../.release/release-state.json --fingerprint sha256:<digest> --source-commit <commit> --seed-version 1.0.0 --json
+bun run --cwd packages/os release:channels -- promote --from dev --to canary --bundle sha256:<release-set-id> --state ../../.release/release-state.json --dry-run --json
+bun run --cwd packages/os release:channels -- inspect --channel canary --state ../../.release/release-state.json --json
+bun run --cwd packages/os release:channels -- rollback-channel --channel canary --bundle sha256:<release-set-id> --state ../../.release/release-state.json --dry-run --json
+```
+
+Supporting scripts:
+
+- `runtime-bundle:fingerprint` computes the version-neutral customer-runtime closure before any release allocation.
+- `runtime-bundle:build` builds one deterministic platform archive with the already approved version.
+- `runtime-bundle:verify` verifies an archive and its embedded manifest.
+- `release:prepare` verifies the complete platform set, creates detached Ed25519 signatures, and emits the publication input.
+
+The protected environments are `consuelo-os-dev`, `consuelo-os-canary`, `consuelo-os-beta`, and `consuelo-os-stable`. See `docs/distribution/release-channels.md` for variables, secrets, first-release seeding, key rotation, concurrency, retry, and human device checkpoints.
