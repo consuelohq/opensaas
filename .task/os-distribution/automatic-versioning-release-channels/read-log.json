@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-runtime-publish.yaml",
+    ".task/os-distribution/automatic-versioning-release-channels/workpad.md",
+    "packages/os/scripts/lib/distribution/release-channel-provider.ts",
+    "packages/os/scripts/lib/distribution/release-channel.schema.json",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/release-channels.ts",
+    "packages/os/skills/task/SKILL.md"
+  ],
+  "updatedAt": "2026-07-23T02:30:03.495Z"
+}

@@ -1,0 +1,87 @@
+name: Consuelo OS runtime promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      from:
+        description: Source release channel
+        required: true
+        type: choice
+        options:
+          - dev
+          - canary
+          - beta
+      to:
+        description: Destination release channel
+        required: true
+        type: choice
+        options:
+          - canary
+          - beta
+          - stable
+      bundle:
+        description: Verified immutable release-set bundle ID
+        required: true
+        type: string
+      expected_revision:
+        description: Optional release-state revision for optimistic concurrency
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  deployments: write
+
+concurrency:
+  group: consuelo-os-runtime-promote-${{ inputs.to }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    environment: consuelo-os-${{ inputs.to }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Restore authoritative release state
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+        run: |
+          mkdir -p .release
+          bunx wrangler r2 object get "${CONSUELO_OS_RELEASE_R2_BUCKET}/state/release-state.json" \
+            --remote \
+            --file .release/release-state.json
+      - name: Promote existing immutable bytes
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_OS_RELEASE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+          CONSUELO_OS_RELEASE_SIGNING_KEY_ID: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_KEY_ID }}
+          CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY: ${{ secrets.CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY }}
+          CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY }}
+          CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS: ${{ vars.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS }}
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          release_time="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq '.created_at')"
+          revision_args=()
+          if [[ -n "${{ inputs.expected_revision }}" ]]; then
+            revision_args+=(--expected-revision "${{ inputs.expected_revision }}")
+          fi
+          bun run --cwd packages/os release:channels -- promote \
+            --from "${{ inputs.from }}" \
+            --to "${{ inputs.to }}" \
+            --bundle "${{ inputs.bundle }}" \
+            --state ../../.release/release-state.json \
+            --approval-actor "${GITHUB_ACTOR}" \
+            --approval-evidence "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            "${revision_args[@]}" \
+            --now "${release_time}" \
+            --apply \
+            --json

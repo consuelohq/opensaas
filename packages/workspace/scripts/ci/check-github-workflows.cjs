@@ -56,6 +56,9 @@ const writePermissionAllowlist = new Set([
   '.github/workflows/ci-utils.yaml',
   '.github/workflows/cd-deploy-main.yaml',
   '.github/workflows/cd-deploy-tag.yaml',
+  '.github/workflows/consuelo-os-runtime-promote.yaml',
+  '.github/workflows/consuelo-os-runtime-publish.yaml',
+  '.github/workflows/consuelo-os-runtime-rollback.yaml',
   '.github/workflows/preview-env-dispatch.yaml',
   '.github/workflows/preview-env-keepalive.yaml',
 ]);
