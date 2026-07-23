@@ -67,6 +67,8 @@ export type {
   ParallelStrategyResolution,
   ParallelTelemetry,
   ParallelCall,
+  ParallelCleanupAction,
+  ParallelCleanupFailure,
   ParallelGroup,
   ParallelDialOptions,
   ParallelDialResult,

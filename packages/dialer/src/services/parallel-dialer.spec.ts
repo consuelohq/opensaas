@@ -44,6 +44,7 @@ describe('ParallelDialerService', () => {
   };
 
   const baseOpts = {
+    workspaceId: 'workspace-1',
     customerNumbers: ['+15551111111', '+15552222222', '+15553333333'],
     fromNumbers: ['+15554444444', '+15555555555', '+15556666666'],
     queueId: 'queue-1',

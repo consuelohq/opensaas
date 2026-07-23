@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/characterize-parallel-dial-lifecycle",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1592,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1592",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1592",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1592/characterize-parallel-dial-lifecycle",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1592",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1592/characterize-parallel-dial-lifecycle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-characterize-parallel-dial-lifecycle",
+  "taskSession": "tsk_6b6e1fd99991",
+  "tmuxSession": "opensaas-dialer-characterize-parallel-dial-lifecycle-6b6e1fd9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-characterize-parallel-dial-lifecycle/.task/dialer/characterize-parallel-dial-lifecycle/session.json",
+  "createdAt": "2026-07-23T17:21:02.331Z"
+}

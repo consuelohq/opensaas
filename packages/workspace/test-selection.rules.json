@@ -214,9 +214,11 @@
         {
           "name": "api specs",
           "command": [
-            "bun",
-            "test",
-            "packages/api/src"
+            "bunx",
+            "jest",
+            "--config",
+            "packages/api/jest.config.mjs",
+            "--runInBand"
           ]
         }
       ],

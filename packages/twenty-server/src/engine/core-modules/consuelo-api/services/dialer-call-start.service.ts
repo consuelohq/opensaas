@@ -316,23 +316,35 @@ export class DialerCallStartService {
     userId: string;
     input: StartDialerCallInput;
   }): Promise<string> {
-    if (params.input.queueId) {
-      return params.input.queueId;
+    try {
+      if (params.input.queueId) {
+        return params.input.queueId;
+      }
+
+      const contactIds =
+        params.input.contactIds && params.input.contactIds.length > 0
+          ? params.input.contactIds
+          : await this.findOrCreatePhoneOnlyContacts({
+              workspaceId: params.workspaceId,
+              phones: params.input.targetPhones ?? [],
+            });
+
+      return this.createPredictiveScenarioQueue({
+        workspaceId: params.workspaceId,
+        userId: params.userId,
+        contactIds,
+      });
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'queue resolution failed';
+      this.logger.error('[DialerCallStart] queue resolution failed', {
+        workspaceId: params.workspaceId,
+        errorMessage,
+      });
+      throw err;
     }
-
-    const contactIds =
-      params.input.contactIds && params.input.contactIds.length > 0
-        ? params.input.contactIds
-        : await this.findOrCreatePhoneOnlyContacts({
-            workspaceId: params.workspaceId,
-            phones: params.input.targetPhones ?? [],
-          });
-
-    return this.createPredictiveScenarioQueue({
-      workspaceId: params.workspaceId,
-      userId: params.userId,
-      contactIds,
-    });
   }
 
   private async resolveDirectTarget(params: {
@@ -340,81 +352,123 @@ export class DialerCallStartService {
     userId: string;
     input: StartDialerCallInput;
   }): Promise<CallableTarget[]> {
-    if (params.input.contactId) {
-      const rows = (await this.dataSource.query(
-        'SELECT id, phone FROM contacts WHERE id = $1 AND workspace_id = $2',
-        [params.input.contactId, params.workspaceId],
-      )) as ContactRow[];
-      const contact = rows[0];
+    try {
+      if (params.input.contactId) {
+        const rows = (await this.dataSource.query(
+          'SELECT id, phone FROM contacts WHERE id = $1 AND workspace_id = $2',
+          [params.input.contactId, params.workspaceId],
+        )) as ContactRow[];
+        const contact = rows[0];
 
-      if (!contact?.phone) {
-        throw new BadRequestException('Contact has no callable phone number');
+        if (!contact?.phone) {
+          throw new BadRequestException('Contact has no callable phone number');
+        }
+
+        return [
+          {
+            contactId: contact.id,
+            phone: this.readValidPhoneNumber(contact.phone),
+          },
+        ];
       }
 
-      return [
-        {
-          contactId: contact.id,
-          phone: this.readValidPhoneNumber(contact.phone),
-        },
-      ];
+      const phone = this.readValidPhoneNumber(
+        this.requireString(params.input.targetPhone, 'targetPhone'),
+      );
+      const contactId = await this.findOrCreatePhoneOnlyContact({
+        workspaceId: params.workspaceId,
+        phone,
+      });
+
+      return [{ contactId, phone }];
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'direct target resolution failed';
+      this.logger.error('[DialerCallStart] direct target resolution failed', {
+        workspaceId: params.workspaceId,
+        errorMessage,
+      });
+      throw err;
     }
-
-    const phone = this.readValidPhoneNumber(
-      this.requireString(params.input.targetPhone, 'targetPhone'),
-    );
-    const contactId = await this.findOrCreatePhoneOnlyContact({
-      workspaceId: params.workspaceId,
-      phone,
-    });
-
-    return [{ contactId, phone }];
   }
 
   private async findOrCreatePhoneOnlyContact(params: {
     workspaceId: string;
     phone: string;
   }): Promise<string> {
-    const existingRows = (await this.dataSource.query(
-      'SELECT id, phone FROM contacts WHERE workspace_id = $1 AND phone = $2 LIMIT 1',
-      [params.workspaceId, params.phone],
-    )) as ContactRow[];
+    try {
+      const existingRows = (await this.dataSource.query(
+        'SELECT id, phone FROM contacts WHERE workspace_id = $1 AND phone = $2 LIMIT 1',
+        [params.workspaceId, params.phone],
+      )) as ContactRow[];
 
-    if (existingRows[0]?.id) {
-      return existingRows[0].id;
+      if (existingRows[0]?.id) {
+        return existingRows[0].id;
+      }
+
+      const rows = (await this.dataSource.query(
+        'INSERT INTO contacts (workspace_id, name, phone, source, tags) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        [
+          params.workspaceId,
+          `Phone ${redactPhoneNumber(params.phone)}`,
+          params.phone,
+          'dialer',
+          ['dialer-direct'],
+        ],
+      )) as Array<{ id: string }>;
+
+      return rows[0].id;
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'phone-only contact resolution failed';
+      this.logger.error(
+        '[DialerCallStart] phone-only contact resolution failed',
+        {
+          workspaceId: params.workspaceId,
+          errorMessage,
+        },
+      );
+      throw err;
     }
-
-    const rows = (await this.dataSource.query(
-      'INSERT INTO contacts (workspace_id, name, phone, source, tags) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [
-        params.workspaceId,
-        `Phone ${redactPhoneNumber(params.phone)}`,
-        params.phone,
-        'dialer',
-        ['dialer-direct'],
-      ],
-    )) as Array<{ id: string }>;
-
-    return rows[0].id;
   }
 
   private async findOrCreatePhoneOnlyContacts(params: {
     workspaceId: string;
     phones: string[];
   }): Promise<string[]> {
-    const contactIds: string[] = [];
+    try {
+      const contactIds: string[] = [];
 
-    for (const phoneValue of params.phones) {
-      const phone = this.readValidPhoneNumber(phoneValue);
+      for (const phoneValue of params.phones) {
+        const phone = this.readValidPhoneNumber(phoneValue);
 
-      contactIds.push(
-        await this.findOrCreatePhoneOnlyContact({
+        contactIds.push(
+          await this.findOrCreatePhoneOnlyContact({
+            workspaceId: params.workspaceId,
+            phone,
+          }),
+        );
+      }
+
+      return contactIds;
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'phone-only contact batch resolution failed';
+      this.logger.error(
+        '[DialerCallStart] phone-only contact batch resolution failed',
+        {
           workspaceId: params.workspaceId,
-          phone,
-        }),
+          errorMessage,
+        },
       );
+      throw err;
     }
-
-    return contactIds;
   }
 
   private async resolveQueueTargets(params: {
@@ -423,10 +477,11 @@ export class DialerCallStartService {
     requestedFanout: number;
     fallbackPhonesByContactId?: Map<string, string>;
   }): Promise<CallableTarget[]> {
-    const workspaceSchemaName = getWorkspaceSchemaName(params.workspaceId);
+    try {
+      const workspaceSchemaName = getWorkspaceSchemaName(params.workspaceId);
 
-    const rows = (await this.dataSource.query(
-      `SELECT qi.id AS queue_item_id,
+      const rows = (await this.dataSource.query(
+        `SELECT qi.id AS queue_item_id,
               qi.contact_id,
               qi.attempts,
               COALESCE(
@@ -455,38 +510,49 @@ export class DialerCallStartService {
           CASE qi.status WHEN 'calling' THEN 0 ELSE 1 END,
           qi.position ASC
         LIMIT $3`,
-      [params.queueId, params.workspaceId, params.requestedFanout * 3],
-    )) as QueueTargetRow[];
+        [params.queueId, params.workspaceId, params.requestedFanout * 3],
+      )) as QueueTargetRow[];
 
-    const targets: CallableTarget[] = [];
+      const targets: CallableTarget[] = [];
 
-    for (const row of rows) {
-      if (row.dnc_status === 'blocked' || row.dnc_status === 'dnc') {
-        continue;
+      for (const row of rows) {
+        if (row.dnc_status === 'blocked' || row.dnc_status === 'dnc') {
+          continue;
+        }
+
+        if ((row.attempts ?? 0) >= 5) {
+          continue;
+        }
+
+        const phone =
+          this.tryReadValidPhoneNumber(row.phone) ??
+          this.tryReadValidPhoneNumber(
+            params.fallbackPhonesByContactId?.get(row.contact_id),
+          );
+
+        if (!phone) {
+          continue;
+        }
+
+        targets.push({
+          contactId: row.contact_id,
+          phone,
+          queueItemId: row.queue_item_id,
+        });
       }
 
-      if ((row.attempts ?? 0) >= 5) {
-        continue;
-      }
-
-      const phone =
-        this.tryReadValidPhoneNumber(row.phone) ??
-        this.tryReadValidPhoneNumber(
-          params.fallbackPhonesByContactId?.get(row.contact_id),
-        );
-
-      if (!phone) {
-        continue;
-      }
-
-      targets.push({
-        contactId: row.contact_id,
-        phone,
-        queueItemId: row.queue_item_id,
+      return targets;
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'queue target resolution failed';
+      this.logger.error('[DialerCallStart] queue target resolution failed', {
+        workspaceId: params.workspaceId,
+        errorMessage,
       });
+      throw err;
     }
-
-    return targets;
   }
 
   private buildTargetPhoneFallbacks(
@@ -643,29 +709,41 @@ export class DialerCallStartService {
     userId: string;
     contactIds: string[];
   }): Promise<string> {
-    const queueRows = (await this.dataSource.query(
-      'INSERT INTO call_queues (workspace_id, user_id, name, source_type, category, calling_mode, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-      [
-        params.workspaceId,
-        params.userId,
-        'Direct call',
-        'direct',
-        'single',
-        'server',
-        params.contactIds.length,
-      ],
-    )) as Array<{ id: string }>;
+    try {
+      const queueRows = (await this.dataSource.query(
+        'INSERT INTO call_queues (workspace_id, user_id, name, source_type, category, calling_mode, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+        [
+          params.workspaceId,
+          params.userId,
+          'Direct call',
+          'direct',
+          'single',
+          'server',
+          params.contactIds.length,
+        ],
+      )) as Array<{ id: string }>;
 
-    const queueId = queueRows[0].id;
+      const queueId = queueRows[0].id;
 
-    for (const [index, contactId] of params.contactIds.entries()) {
-      await this.dataSource.query(
-        'INSERT INTO queue_items (queue_id, contact_id, position) VALUES ($1, $2, $3)',
-        [queueId, contactId, index + 1],
-      );
+      for (const [index, contactId] of params.contactIds.entries()) {
+        await this.dataSource.query(
+          'INSERT INTO queue_items (queue_id, contact_id, position) VALUES ($1, $2, $3)',
+          [queueId, contactId, index + 1],
+        );
+      }
+
+      return queueId;
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'direct queue creation failed';
+      this.logger.error('[DialerCallStart] direct queue creation failed', {
+        workspaceId: params.workspaceId,
+        errorMessage,
+      });
+      throw err;
     }
-
-    return queueId;
   }
 
   private async createPredictiveScenarioQueue(params: {
@@ -673,35 +751,47 @@ export class DialerCallStartService {
     userId: string;
     contactIds: string[];
   }): Promise<string> {
-    if (params.contactIds.length === 0) {
-      throw new BadRequestException(
-        'contactIds are required to create a queue',
-      );
+    try {
+      if (params.contactIds.length === 0) {
+        throw new BadRequestException(
+          'contactIds are required to create a queue',
+        );
+      }
+
+      const queueRows = (await this.dataSource.query(
+        'INSERT INTO call_queues (workspace_id, user_id, name, source_type, category, calling_mode, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+        [
+          params.workspaceId,
+          params.userId,
+          'Predictive scenario',
+          'scenario',
+          'predictive',
+          'server',
+          params.contactIds.length,
+        ],
+      )) as Array<{ id: string }>;
+
+      const queueId = queueRows[0].id;
+
+      for (const [index, contactId] of params.contactIds.entries()) {
+        await this.dataSource.query(
+          'INSERT INTO queue_items (queue_id, contact_id, position) VALUES ($1, $2, $3)',
+          [queueId, contactId, index + 1],
+        );
+      }
+
+      return queueId;
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'predictive queue creation failed';
+      this.logger.error('[DialerCallStart] predictive queue creation failed', {
+        workspaceId: params.workspaceId,
+        errorMessage,
+      });
+      throw err;
     }
-
-    const queueRows = (await this.dataSource.query(
-      'INSERT INTO call_queues (workspace_id, user_id, name, source_type, category, calling_mode, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-      [
-        params.workspaceId,
-        params.userId,
-        'Predictive scenario',
-        'scenario',
-        'predictive',
-        'server',
-        params.contactIds.length,
-      ],
-    )) as Array<{ id: string }>;
-
-    const queueId = queueRows[0].id;
-
-    for (const [index, contactId] of params.contactIds.entries()) {
-      await this.dataSource.query(
-        'INSERT INTO queue_items (queue_id, contact_id, position) VALUES ($1, $2, $3)',
-        [queueId, contactId, index + 1],
-      );
-    }
-
-    return queueId;
   }
 
   private async createMockCalls(params: {
@@ -711,36 +801,48 @@ export class DialerCallStartService {
     targets: CallableTarget[];
     callerIds: string[];
   }): Promise<DialerCallStartCall[]> {
-    const calls: DialerCallStartCall[] = [];
+    try {
+      const calls: DialerCallStartCall[] = [];
 
-    for (const [index, target] of params.targets.entries()) {
-      const callSid = `mock_${randomUUID().replace(/-/g, '').slice(0, 24)}`;
-      const callerId = params.callerIds[index];
+      for (const [index, target] of params.targets.entries()) {
+        const callSid = `mock_${randomUUID().replace(/-/g, '').slice(0, 24)}`;
+        const callerId = params.callerIds[index];
 
-      await this.insertCallRow({
+        await this.insertCallRow({
+          workspaceId: params.workspaceId,
+          sessionId: params.sessionId,
+          twilioGroupId: null,
+          queueId: params.queueId,
+          callSid,
+          contactId: target.contactId,
+          to: target.phone,
+          from: callerId,
+          status: 'mocked',
+          position: index + 1,
+        });
+
+        calls.push({
+          callSid,
+          contactId: target.contactId,
+          customerNumber: target.phone,
+          callerId,
+          status: 'mocked',
+          position: index + 1,
+        });
+      }
+
+      return calls;
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'mock call creation failed';
+      this.logger.error('[DialerCallStart] mock call creation failed', {
         workspaceId: params.workspaceId,
-        sessionId: params.sessionId,
-        twilioGroupId: null,
-        queueId: params.queueId,
-        callSid,
-        contactId: target.contactId,
-        to: target.phone,
-        from: callerId,
-        status: 'mocked',
-        position: index + 1,
+        errorMessage,
       });
-
-      calls.push({
-        callSid,
-        contactId: target.contactId,
-        customerNumber: target.phone,
-        callerId,
-        status: 'mocked',
-        position: index + 1,
-      });
+      throw err;
     }
-
-    return calls;
   }
 
   private async initiateTwilioCalls(params: {
@@ -782,6 +884,7 @@ export class DialerCallStartService {
           ? this.createTwilioTestDialer()
           : this.legacyDialerService.getDialer();
       const result = await twilioDialer.parallel.initiateGroup({
+        workspaceId: params.workspaceId,
         customerNumbers: params.targets.map((target) => target.phone),
         queueId: params.queueId,
         contactIds: params.targets.map((target) => target.contactId),
@@ -871,20 +974,32 @@ export class DialerCallStartService {
     status: string;
     position: number;
   }): Promise<void> {
-    await this.dataSource.query(
-      'INSERT INTO calls (workspace_id, call_sid, contact_id, direction, status, "from", "to", start_time, parallel_group_id, parallel_position, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, NOW(), NOW())',
-      [
-        params.workspaceId,
-        params.callSid,
-        params.contactId,
-        'outbound',
-        params.status,
-        params.from,
-        params.to,
-        params.twilioGroupId ?? params.sessionId,
-        params.position,
-      ],
-    );
+    try {
+      await this.dataSource.query(
+        'INSERT INTO calls (workspace_id, call_sid, contact_id, direction, status, "from", "to", start_time, parallel_group_id, parallel_position, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, NOW(), NOW())',
+        [
+          params.workspaceId,
+          params.callSid,
+          params.contactId,
+          'outbound',
+          params.status,
+          params.from,
+          params.to,
+          params.twilioGroupId ?? params.sessionId,
+          params.position,
+        ],
+      );
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? this.redactPhoneNumbers(err.message)
+          : 'call row insertion failed';
+      this.logger.error('[DialerCallStart] call row insertion failed', {
+        workspaceId: params.workspaceId,
+        errorMessage,
+      });
+      throw err;
+    }
   }
 
   private createTwilioTestDialer(): Dialer {

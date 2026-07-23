@@ -185,6 +185,7 @@ export class ParallelService {
 
         createStage = 'initiate-group';
         const result = await dialer.parallel.initiateGroup({
+          workspaceId: input.workspaceId,
           customerNumbers,
           queueId,
           contactIds,
@@ -510,7 +511,7 @@ export class ParallelService {
     try {
       const group = await this.legacyDialerService
         .getDialer()
-        .parallel.getGroup(input.groupId);
+        .parallel.getGroupForWorkspace(input.groupId, input.workspaceId);
 
       if (!group) {
         throw new NotFoundException('Parallel group not found');
@@ -561,7 +562,10 @@ export class ParallelService {
   async terminateGroup(input: TerminateGroupInput) {
     try {
       const dialer = this.legacyDialerService.getDialer();
-      const group = await dialer.parallel.getGroup(input.groupId);
+      const group = await dialer.parallel.getGroupForWorkspace(
+        input.groupId,
+        input.workspaceId,
+      );
 
       if (!group) {
         throw new NotFoundException('Parallel group not found');
@@ -570,7 +574,13 @@ export class ParallelService {
       await this.releaseCallerIdLocks(
         group.calls.map((call) => call.fromNumber).filter(Boolean),
       );
-      await dialer.parallel.terminateGroup(input.groupId);
+      const terminated = await dialer.parallel.terminateGroupForWorkspace(
+        input.groupId,
+        input.workspaceId,
+      );
+      if (!terminated) {
+        throw new NotFoundException('Parallel group not found');
+      }
 
       this.logger.log('parallel group terminated', {
         groupId: input.groupId,
