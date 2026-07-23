@@ -22,6 +22,7 @@ import type {
   ProviderCommand,
   ProviderCommandOperation,
   ProviderDetection,
+  ProviderEnvironmentDeleteResult,
   ProviderEnvironmentSetResult,
   ProviderEnvironmentVariableMetadata,
   ProviderExecutionOptions,
@@ -79,11 +80,19 @@ const failureMessage = (
   return `${provider} ${operation} failed`;
 };
 
-const operationPolicy = (
+const operationPolicy = <Operation extends DeploymentProviderOperation>(
   adapter: DeploymentProviderAdapter,
-  operation: DeploymentProviderOperation,
+  operation: Operation,
+  input?: Partial<DeploymentProviderOperationInputMap[Operation]>,
 ): ProviderOperationPolicy => {
-  return adapter.operations[operation]?.policy || providerOperationPolicy(operation);
+  if (operation === 'detect') return providerOperationPolicy(operation);
+  const definition = adapter.operations[operation as ProviderCommandOperation];
+  const configured = definition?.policy as
+    | ProviderOperationPolicy
+    | ((value: unknown) => ProviderOperationPolicy)
+    | undefined;
+  if (typeof configured === 'function') return configured(input);
+  return configured || providerOperationPolicy(operation);
 };
 
 const hasApproval = (input: ProviderExecutionOptions): boolean => {
@@ -126,6 +135,25 @@ const normalizeEnvironmentMetadata = (value: unknown): ProviderEnvironmentVariab
       : record.value !== null && record.value !== undefined;
     return { name: record.name, scopes, present };
   });
+};
+
+const normalizeEnvironmentDeleteResult = (value: unknown): ProviderEnvironmentDeleteResult => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('environment deletion result must be an object');
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record.name !== 'string' || !record.name.trim()) {
+    throw new Error('environment deletion result is missing a name');
+  }
+  if (typeof record.deleted !== 'boolean') {
+    throw new Error('environment deletion result is missing deleted status');
+  }
+  const scopes = Array.isArray(record.scopes)
+    ? record.scopes.filter((scope): scope is string => typeof scope === 'string')
+    : typeof record.scope === 'string'
+      ? [record.scope]
+      : [];
+  return { name: record.name, scopes, deleted: record.deleted };
 };
 
 const normalizeEnvironmentSetResult = (value: unknown): ProviderEnvironmentSetResult => {
@@ -212,7 +240,7 @@ export const createDeploymentProviderService = (
           message: `${adapter.provider} does not support ${operation}`,
         }));
       }
-      const policy = operationPolicy(adapter, operation);
+      const policy = operationPolicy(adapter, operation, input);
       if (policy.approval.required && !hasApproval(input)) {
         return yield* Effect.fail(providerError({
           code: 'APPROVAL_REQUIRED',
@@ -241,7 +269,7 @@ export const createDeploymentProviderService = (
       }
 
       try {
-        const parsed = definition.parse(result);
+        const parsed = definition.parse(result, input);
         if (operation === 'auth.status') {
           return normalizeAuthStatus(parsed) as DeploymentProviderOperationOutputMap[Operation];
         }
@@ -250,6 +278,9 @@ export const createDeploymentProviderService = (
         }
         if (operation === 'environment.set') {
           return normalizeEnvironmentSetResult(parsed) as DeploymentProviderOperationOutputMap[Operation];
+        }
+        if (operation === 'environment.delete') {
+          return normalizeEnvironmentDeleteResult(parsed) as DeploymentProviderOperationOutputMap[Operation];
         }
         return redactJson(parsed) as DeploymentProviderOperationOutputMap[Operation];
       } catch (cause: unknown) {
@@ -310,18 +341,23 @@ export const createDeploymentProviderService = (
   });
 
   return {
-    policy: (operation) => operationPolicy(adapter, operation),
+    policy: (operation, input) => operationPolicy(adapter, operation, input),
     detect,
     authStatus: () => execute('auth.status', {}),
     contextCurrent: (input = {}) => execute('context.current', input),
     projectList: (input = {}) => execute('project.list', input),
+    projectLink: (input) => execute('project.link', input),
+    projectConfiguration: (input = {}) => execute('project.configuration', input),
+    domainList: (input = {}) => execute('domain.list', input),
     deploymentList: (input = {}) => execute('deployment.list', input),
     deploymentStatus: (input) => execute('deployment.status', input),
     logsRead: (input = {}) => execute('logs.read', input),
     deploy: (input) => execute('deploy', input),
     redeploy: (input) => execute('redeploy', input),
+    deploymentPromote: (input) => execute('deployment.promote', input),
     environmentListNames: (input = {}) => execute('environment.listNames', input),
     environmentSet: (input) => execute('environment.set', input),
+    environmentDelete: (input) => execute('environment.delete', input),
     raw: (input) => execute('raw', input),
     execute,
   };

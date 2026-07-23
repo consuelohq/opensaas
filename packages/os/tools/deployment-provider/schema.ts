@@ -5,13 +5,18 @@ export const deploymentProviderOperations = [
   'auth.status',
   'context.current',
   'project.list',
+  'project.link',
+  'project.configuration',
+  'domain.list',
   'deployment.list',
   'deployment.status',
+  'deployment.promote',
   'logs.read',
   'deploy',
   'redeploy',
   'environment.listNames',
   'environment.set',
+  'environment.delete',
   'raw',
 ] as const;
 
@@ -32,9 +37,12 @@ export type ProviderOperationPolicy = {
 };
 
 const mutationConsequences: Partial<Record<DeploymentProviderOperation, string>> = {
+  'project.link': 'Links the current checkout to a remote provider project and changes local provider context.',
+  'deployment.promote': 'Promotes an existing deployment and may reassign customer-facing traffic.',
   deploy: 'Creates a new deployment and may change customer-facing runtime behavior.',
   redeploy: 'Rebuilds or restarts an existing deployment and may affect availability.',
   'environment.set': 'Changes provider environment metadata and can alter future deployments.',
+  'environment.delete': 'Deletes provider environment metadata and can break future deployments.',
   raw: 'Runs an arbitrary provider CLI command that may change remote resources.',
 };
 

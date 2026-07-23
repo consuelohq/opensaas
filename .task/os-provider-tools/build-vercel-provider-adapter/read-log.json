@@ -1,0 +1,26 @@
+{
+  "files": [
+    ".task/os-provider-tools/build-vercel-provider-adapter/workpad.md",
+    "packages/os/package.json",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tools/deployment-provider/errors.ts",
+    "packages/os/tools/deployment-provider/handler.test.ts",
+    "packages/os/tools/deployment-provider/handler.ts",
+    "packages/os/tools/deployment-provider/index.ts",
+    "packages/os/tools/deployment-provider/manifest.ts",
+    "packages/os/tools/deployment-provider/process.ts",
+    "packages/os/tools/deployment-provider/redaction.ts",
+    "packages/os/tools/deployment-provider/schema.ts",
+    "packages/os/tools/deployment-provider/service.ts",
+    "packages/os/tools/deployment-provider/testing.ts",
+    "packages/os/tools/deployment-provider/types.ts",
+    "packages/os/tools/tool-package-contract.test.ts",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/task-selection.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-23T16:28:42.022Z"
+}
