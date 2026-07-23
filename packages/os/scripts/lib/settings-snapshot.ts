@@ -110,6 +110,13 @@ type WorkflowBundlesFile = {
   }>;
 };
 
+type InstalledSkillsRegistry = {
+  skills?: Array<{
+    name?: string;
+    permission?: string;
+  }>;
+};
+
 const CLOUD_CONNECTOR_PLACEHOLDERS = [
   { id: 'grok', label: 'Grok' },
   { id: 'cursor-cloud', label: 'Cursor' },
@@ -188,7 +195,42 @@ function readRunBooks(overlay: ReturnType<typeof readManifestOverlay>): Settings
     }));
 }
 
-function buildManifestItems(home: string, overlay: ReturnType<typeof readManifestOverlay>): {
+function readInstalledSkills(
+  home: string,
+  selectedSkills: readonly string[],
+): Array<{ name: string; permission: string }> {
+  const bundledByName = new Map(
+    listBundledSkills().map((skill) => [skill.name, skill]),
+  );
+  const selectedNames = new Set(selectedSkills);
+  const registry = readJsonFile<InstalledSkillsRegistry>(
+    path.join(home, 'skills', 'skills.json'),
+  );
+  const installed = registry?.skills ?? [];
+
+  if (installed.length === 0) {
+    return selectedSkills.flatMap((name) => {
+      const bundled = bundledByName.get(name);
+      return bundled ? [{ name, permission: bundled.permission }] : [];
+    });
+  }
+
+  return installed.flatMap((skill) => {
+    if (typeof skill.name !== 'string' || skill.name.length === 0) return [];
+    const bundled = bundledByName.get(skill.name);
+    if (bundled && !selectedNames.has(skill.name)) return [];
+    const permission = typeof skill.permission === 'string'
+      ? skill.permission
+      : bundled?.permission ?? '';
+    return [{ name: skill.name, permission }];
+  });
+}
+
+function buildManifestItems(
+  home: string,
+  overlay: ReturnType<typeof readManifestOverlay>,
+  selectedSkills: readonly string[],
+): {
   tools: SettingsManifestItem[];
   skills: SettingsManifestItem[];
 } {
@@ -211,7 +253,7 @@ function buildManifestItems(home: string, overlay: ReturnType<typeof readManifes
     });
   }
 
-  for (const skill of listBundledSkills()) {
+  for (const skill of readInstalledSkills(home, selectedSkills)) {
     skills.push({
       name: skill.name,
       kind: 'skill',
@@ -234,7 +276,8 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
   const fullManifest = readEffectiveFullManifest(home);
   const coreManifest = readEffectiveCoreManifest(home);
   const bundledSkills = listBundledSkills();
-  const manifestItems = buildManifestItems(home, overlay);
+  const selectedSkills = config?.selectedSkills ?? [];
+  const manifestItems = buildManifestItems(home, overlay, selectedSkills);
 
   return {
     version: 1,
@@ -262,7 +305,7 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
       coreTools: coreManifest.tools.length,
       skillEntries: bundledSkills.length,
       bundledSkills: bundledSkills.length,
-      selectedSkills: config?.selectedSkills ?? [],
+      selectedSkills,
     },
     overlay: {
       path: manifestOverlayPath(home),
