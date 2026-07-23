@@ -110,7 +110,8 @@
     "media:test:svg": "vitest run tests/media/31-svg-convert.test.ts",
     "media:svg": "python3 ./scripts/media-svg.py",
     "trace:watch": "bun ./scripts/trace-watch.ts",
-    "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check"
+    "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check",
+    "lifecycle": "bun ./scripts/lifecycle.ts"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

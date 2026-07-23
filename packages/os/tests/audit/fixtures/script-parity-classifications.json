@@ -509,6 +509,58 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/lifecycle/config.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/config.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/diagnostics.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/diagnostics.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/engine.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/engine.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/errors.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/errors.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/index.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/index.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/lock.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/lock.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/migrations.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/migrations.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/paths.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/paths.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/presentation.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/presentation.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/release.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/release.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/service.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/service.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/state.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/state.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
+    "scripts/lib/lifecycle/types.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lib/lifecycle/types.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
+    },
     "scripts/lib/local-agent-connectivity.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/local-agent-connectivity.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
@@ -663,7 +715,7 @@
     },
     "scripts/lib/native-lifecycle-client.ts": {
       "status": "os-only-intentional",
-      "reason": "Consuelo OS owns the native lifecycle client introduced by the synchronized foundation lifecycle dependency."
+      "reason": "scripts/lib/native-lifecycle-client.ts is an intentional OS-owned native lifecycle adapter with no workspace counterpart."
     },
     "scripts/lib/nx-projects.js": {
       "status": "same",
@@ -946,6 +998,10 @@
     "scripts/lib/workspace-state.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lifecycle.ts": {
+      "status": "os-only-intentional",
+      "reason": "scripts/lifecycle.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
     },
     "scripts/linear.js": {
       "status": "same",
