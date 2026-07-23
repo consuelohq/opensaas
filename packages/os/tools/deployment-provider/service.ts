@@ -3,6 +3,7 @@ import { Effect } from 'effect';
 import { redactJson } from '../../scripts/lib/redaction';
 import {
   providerError,
+  ProviderInputError,
   type ProviderCommandDiagnostics,
   type ProviderError,
   type ProviderErrorCode,
@@ -23,6 +24,7 @@ import type {
   ProviderCommandOperation,
   ProviderDetection,
   ProviderEnvironmentSetResult,
+  ProviderEnvironmentDeleteResult,
   ProviderEnvironmentVariableMetadata,
   ProviderExecutionOptions,
   ProviderOperationDefinition,
@@ -41,14 +43,18 @@ export type DeploymentProviderServiceOptions = {
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 
-const diagnostics = (command: string, result: ProviderProcessResult): ProviderCommandDiagnostics => {
+const diagnostics = (
+  command: string,
+  result: ProviderProcessResult,
+  includeOutput = true,
+): ProviderCommandDiagnostics => {
   return {
     command,
     exitCode: result.exitCode,
     timedOut: result.timedOut,
     cancelled: result.cancelled,
-    stdout: redactProviderText(result.stdout),
-    stderr: redactProviderText(result.stderr),
+    stdout: includeOutput ? redactProviderText(result.stdout) : '',
+    stderr: includeOutput ? redactProviderText(result.stderr) : '',
     ...(result.stdoutTruncated ? { stdoutTruncated: true } : {}),
     ...(result.stderrTruncated ? { stderrTruncated: true } : {}),
   };
@@ -64,25 +70,29 @@ const failureCode = (result: ProviderProcessResult): ProviderErrorCode => {
   if (/permission denied|forbidden|not authorized/i.test(detail)) return 'PERMISSION_DENIED';
   if (/rate.?limit|too many requests|\b429\b/i.test(detail)) return 'RATE_LIMITED';
   if (/unavailable|temporarily unavailable|ECONNREFUSED|ENETUNREACH|\b50[234]\b/i.test(detail)) return 'UNAVAILABLE';
+  if (/unrecognized subcommand|unknown command|not supported by this version/i.test(detail)) return 'UNSUPPORTED_CAPABILITY';
   return 'COMMAND_FAILED';
 };
 
 const failureMessage = (
-  provider: string,
+  adapter: DeploymentProviderAdapter,
   operation: DeploymentProviderOperation,
   executable: string,
   code: ProviderErrorCode,
 ): string => {
+  const custom = adapter.errors?.message?.({ code, operation, executable });
+  if (custom) return custom;
   if (code === 'CLI_MISSING') return `${executable} is not installed or is not available on PATH`;
-  if (code === 'TIMEOUT') return `${provider} ${operation} timed out`;
-  if (code === 'CANCELLED') return `${provider} ${operation} was cancelled`;
-  return `${provider} ${operation} failed`;
+  if (code === 'TIMEOUT') return `${adapter.provider} ${operation} timed out`;
+  if (code === 'CANCELLED') return `${adapter.provider} ${operation} was cancelled`;
+  return `${adapter.provider} ${operation} failed`;
 };
 
 const operationPolicy = (
   adapter: DeploymentProviderAdapter,
   operation: DeploymentProviderOperation,
 ): ProviderOperationPolicy => {
+  if (operation === 'detect') return providerOperationPolicy(operation);
   return adapter.operations[operation]?.policy || providerOperationPolicy(operation);
 };
 
@@ -151,6 +161,25 @@ const normalizeEnvironmentSetResult = (value: unknown): ProviderEnvironmentSetRe
   };
 };
 
+const normalizeEnvironmentDeleteResult = (value: unknown): ProviderEnvironmentDeleteResult => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('environment deletion result must be an object');
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record.name !== 'string' || !record.name.trim()) {
+    throw new Error('environment deletion result is missing a name');
+  }
+  if (typeof record.deleted !== 'boolean') {
+    throw new Error('environment deletion result is missing deleted status');
+  }
+  const scopes = Array.isArray(record.scopes)
+    ? record.scopes.filter((scope): scope is string => typeof scope === 'string')
+    : typeof record.scope === 'string'
+      ? [record.scope]
+      : [];
+  return { name: record.name, scopes, deleted: record.deleted };
+};
+
 const normalizeRawResult = (result: ProviderProcessResult): ProviderRawResult => {
   return {
     stdout: redactProviderText(result.stdout),
@@ -174,6 +203,7 @@ export const createDeploymentProviderService = (
     operation: DeploymentProviderOperation,
     command: ProviderCommand,
     input: ProviderExecutionOptions,
+    sensitiveOutput = false,
   ) => providerProcess.run({
     command: command.command || adapter.executable,
     args: [...command.args],
@@ -192,8 +222,8 @@ export const createDeploymentProviderService = (
         code,
         provider: adapter.provider,
         operation,
-        message: failureMessage(adapter.provider, operation, command.command || adapter.executable, code),
-        diagnostics: diagnostics(command.command || adapter.executable, result),
+        message: failureMessage(adapter, operation, command.command || adapter.executable, code),
+        diagnostics: diagnostics(command.command || adapter.executable, result, !sensitiveOutput),
       }));
     }),
   );
@@ -227,6 +257,14 @@ export const createDeploymentProviderService = (
       try {
         command = definition.command(input);
       } catch (cause: unknown) {
+        if (cause instanceof ProviderInputError) {
+          return yield* Effect.fail(providerError({
+            code: 'INVALID_INPUT',
+            provider: adapter.provider,
+            operation,
+            message: cause.message,
+          }));
+        }
         return yield* Effect.fail(providerError({
           code: 'MALFORMED_OUTPUT',
           provider: adapter.provider,
@@ -235,13 +273,13 @@ export const createDeploymentProviderService = (
           cause,
         }));
       }
-      const result = yield* runCommand(operation, command, input);
+      const result = yield* runCommand(operation, command, input, definition.sensitiveOutput === true);
       if (operation === 'raw') {
         return normalizeRawResult(result) as DeploymentProviderOperationOutputMap[Operation];
       }
 
       try {
-        const parsed = definition.parse(result);
+        const parsed = definition.parse(result, input);
         if (operation === 'auth.status') {
           return normalizeAuthStatus(parsed) as DeploymentProviderOperationOutputMap[Operation];
         }
@@ -251,6 +289,9 @@ export const createDeploymentProviderService = (
         if (operation === 'environment.set') {
           return normalizeEnvironmentSetResult(parsed) as DeploymentProviderOperationOutputMap[Operation];
         }
+        if (operation === 'environment.delete') {
+          return normalizeEnvironmentDeleteResult(parsed) as DeploymentProviderOperationOutputMap[Operation];
+        }
         return redactJson(parsed) as DeploymentProviderOperationOutputMap[Operation];
       } catch (cause: unknown) {
         return yield* Effect.fail(providerError({
@@ -258,7 +299,11 @@ export const createDeploymentProviderService = (
           provider: adapter.provider,
           operation,
           message: `${adapter.provider} returned malformed output for ${operation}`,
-          diagnostics: diagnostics(command.command || adapter.executable, result),
+          diagnostics: diagnostics(
+            command.command || adapter.executable,
+            result,
+            definition.sensitiveOutput !== true,
+          ),
           cause,
         }));
       }
@@ -315,6 +360,7 @@ export const createDeploymentProviderService = (
     authStatus: () => execute('auth.status', {}),
     contextCurrent: (input = {}) => execute('context.current', input),
     projectList: (input = {}) => execute('project.list', input),
+    serviceList: (input = {}) => execute('service.list', input),
     deploymentList: (input = {}) => execute('deployment.list', input),
     deploymentStatus: (input) => execute('deployment.status', input),
     logsRead: (input = {}) => execute('logs.read', input),
@@ -322,6 +368,7 @@ export const createDeploymentProviderService = (
     redeploy: (input) => execute('redeploy', input),
     environmentListNames: (input = {}) => execute('environment.listNames', input),
     environmentSet: (input) => execute('environment.set', input),
+    environmentDelete: (input) => execute('environment.delete', input),
     raw: (input) => execute('raw', input),
     execute,
   };

@@ -112,6 +112,7 @@ export const createFakeDeploymentProviderAdapter = (options: {
       'auth.status': definition('auth.status', () => ['auth', 'status', '--json']),
       'context.current': definition('context.current', () => ['context', 'current', '--json']),
       'project.list': definition('project.list', () => ['project', 'list', '--json']),
+      'service.list': definition('service.list', () => ['service', 'list', '--json']),
       'deployment.list': definition('deployment.list', () => ['deployment', 'list', '--json']),
       'deployment.status': definition(
         'deployment.status',
@@ -138,6 +139,10 @@ export const createFakeDeploymentProviderAdapter = (options: {
         }),
         parse: (result) => parseJson<ProviderAdapterOperationOutputMap['environment.set']>(result),
       },
+      'environment.delete': definition(
+        'environment.delete',
+        (input) => ['environment', 'delete', input.name],
+      ),
       raw: definition(
         'raw',
         (input) => [
