@@ -21,17 +21,19 @@ started: 2026-07-23
 - [x] Cover skills, tools, site templates, scripts, and job templates with focused behavioral fixtures and the worker-required regression matrix.
 - [x] Complete task-scoped OS strict review and publish-valid verify.
 - [x] Complete GitHub clean-host CI and CodeRabbit request/disposition.
-- [ ] Verify and disposition the two mandated read-only Grok 4.5 findings.
-- [ ] Record all findings/dispositions on GitHub, remove temporary review artifacts, merge PR #1601 only into `stream/os-distribution`, and finish the task session.
+- [x] Verify and disposition the two mandated read-only Grok 4.5 findings.
+- [x] Record all findings/dispositions on GitHub and remove temporary review artifacts.
+- [ ] Merge PR #1601 only into `stream/os-distribution` and finish the task session.
 
 ## implementation
 
 - Added `scripts/lib/managed-components.ts`: schema v1 provenance, deterministic plan generation, content-addressed bases, all eight actions, three-way text/tree merge classification, fail-closed state reads, content-reference pruning, retention handoff, secret-material rejection, live local-hash checks, symlink/path traversal rejection, and atomic exact-tree replacement.
-- Added `scripts/managed-components.ts`: typed inspect-plan, apply-safe, inspect-conflict, accept-upstream, keep-local, reviewed-merge, detach, and restore-default commands.
+- Added `scripts/managed-components.ts`: typed inspect-plan, live-tree refresh-plan, apply-safe, inspect-conflict/upstream-removal, accept-upstream, keep-local, reviewed-merge, detach, and restore-default commands.
 - Added `scripts/lib/managed-component-install.ts`: indexes bundled skills/tools from the immutable package/runtime, keeps tool wrappers executable, creates no hidden editable bundled copies, and preserves pre-existing hidden directories as unread legacy custom entries for explicit migration.
 - Integrated component indexes/provenance into `install-state.ts`, settings canonical-index reads with legacy fallback, runtime-bundle mandatory inputs, release/lifecycle fixtures, package scripts, and operator documentation.
 - Added `components/retention.json` containing only sorted unresolved base references for Worker 05.
 - Updated the script-parity baseline for the three new OS-only entrypoints and repaired eight already-stale assigned-stream classifications plus two existing Railway content-drift statuses.
+- Fixed Grok CR-001 by snapshotting configured visible managed trees during production planning and refreshing plans after safe apply/resolution operations; fixed CR-002 by representing absent upstream content as `upstream: null` during upstream-removal review.
 
 ## test-first evidence
 
@@ -60,6 +62,9 @@ started: 2026-07-23
 - Apple Container clean host: pass, Linux/arm64 Bun 1.3.14, isolated writable home, atomic replacement, cleanup.
 - Strict task review: pass, zero owned/pre-existing findings after the typed-catch disposition.
 - Full task verify: pass, publish-valid, zero DB risks, verification stamp written.
+- Final product head `2b359fce`: all 49 GitHub checks pass with zero failures or pending jobs, including Consuelo OS contracts and verify (`trc_664b75b031fc`).
+- CodeRabbit: both requested reviews completed with no actionable findings because configured path filters excluded all changed files (`trc_8ff218b4e84d`).
+- Grok: two valid findings fixed and dispositioned inline plus top-level approval (`trc_12038f3f3309`).
 - Global repository audit: blocked by pre-existing repository-wide drift (`trc_c83a5123c940`): 9,378 dead documentation references, 240 stale index entries, 371 indexed deletions, and unrelated script documentation mismatches. Worker 06's scoped script-parity audit, strict review, verify, named regression matrix, and registered distribution lane pass.
 - Broad `bun x vitest run`: execution audit and 258 tests passed, but 62 tests across 15 unrelated environment/provider/TTY/trace files failed (`trc_ba3d159a2ec8`). The failures are outside Worker 06 changed paths and include pre-existing local-environment contracts; the plan-designated named and clean-host lanes pass. GitHub's registered workflow remains the durable cross-platform source of truth.
 
@@ -128,11 +133,9 @@ Expected: `ok: true`, schema version 1, `summary.requiresReview: 0`, and no edit
 
 ## next
 
-1. Run scoped OS audit/review/verify gates.
-2. Push PR #1601 and execute the registered GitHub compatibility workflow.
-3. Request CodeRabbit and post/fix/dispose findings.
-4. Render and run the mandated read-only Grok 4.5 review; post structured review, inline findings, summary, and dispositions; remove `.tmp-reviews`.
-5. Merge only into `stream/os-distribution` and finish the task session.
+1. Regenerate the publish-valid verification stamp for this final metadata state.
+2. Publish the final task metadata and wait for the resulting GitHub checks to settle.
+3. Merge PR #1601 only into `stream/os-distribution` and finish the task session.
 
 ## active wait plan
 
@@ -175,6 +178,17 @@ Expected: `ok: true`, schema version 1, `summary.requiresReview: 0`, and no edit
 - The original wrapper transport timed out while the bounded provider process continued. Two transport-created duplicate Grok runs were terminated and failed closed with empty output.
 - The surviving run completed as `trc_bece22a5a9c3`; the persisted provider envelope was compacted after `CR-002`, but exact finding IDs/content were recovered and independently verified before posting.
 - Temporary `packages/os/.tmp-reviews/implement-managed-component-provenance-and-deterministic-update-plan/` and `.task/subagent-runs/` artifacts were removed after the review became durable on GitHub.
+
+## final-head CI wait plan
+
+- Start time: 2026-07-23T22:08:30Z.
+- Wait reason: PR #1601 checks and the final CodeRabbit request are running on commit `2b359fce`.
+- Duration: typed PR wait, followed by 30-second bounded polling if any check remains pending.
+- Resume action: immediately read `pr.checks` and `pr.reviews` for PR #1601.
+- Expected signal: zero failed and zero pending checks; CodeRabbit either provides actionable findings or records its configured path-filter skip.
+- Fallback: diagnose any failed check through its GitHub job evidence; do not merge while checks or actionable findings remain.
+- Typed `wait --pr 1601` failed before waiting because its parser requests unsupported GitHub field `conclusion` (`trc_b78d16a34cf4`). Recovery: use 30-second timed waits followed immediately by typed `pr.checks`/`pr.reviews` reads.
+- Observed result: final product head reached 49 checks, zero failed, zero pending (`trc_664b75b031fc`); CodeRabbit recorded its configured path-filter skip; Grok fixed dispositions were posted to both inline threads and the top-level PR (`trc_12038f3f3309`).
 
 - 2026-07-23 21:10:32 write: `.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md`
 
@@ -220,6 +234,7 @@ Expected: `ok: true`, schema version 1, `summary.requiresReview: 0`, and no edit
 - 2026-07-23 21:23:20 apply-patch: `.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md`
 - 2026-07-23 22:07:25 `review.run`: passed — OK
 - 2026-07-23 22:07:46 `verify`: passed — OK
+- 2026-07-23 22:15:43 `verify`: passed — OK
 
 ## workspace-owned: files read
 
@@ -228,7 +243,4 @@ Expected: `ok: true`, schema version 1, `summary.requiresReview: 0`, and no edit
 - `packages/os/scripts/lib/managed-components.ts`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-23 22:06:33 apply-patch: `packages/os/SCRIPTS.md`
-- 2026-07-23 22:06:33 apply-patch: `packages/os/docs/managed-components.md`
-
-- 2026-07-23 22:07:38 apply-patch: `.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md`
+- 2026-07-23 22:15:37 apply-patch: `.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md`
