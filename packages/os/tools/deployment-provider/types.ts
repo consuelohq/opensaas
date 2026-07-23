@@ -33,6 +33,8 @@ export type ProviderResourceReference = {
 export type ProviderContext = {
   workspace?: ProviderResourceReference;
   project?: ProviderResourceReference;
+  team?: ProviderResourceReference;
+  scope?: ProviderResourceReference;
   environment?: ProviderResourceReference;
   service?: ProviderResourceReference;
 };
@@ -58,6 +60,36 @@ export type ProviderService = {
 
 export type ProviderServiceList = {
   services: ProviderService[];
+  cursor?: string;
+};
+
+export type ProviderProjectLinkResult = {
+  project: ProviderResourceReference;
+  scope?: ProviderResourceReference;
+  linked: boolean;
+};
+
+export type ProviderProjectConfiguration = {
+  id: string;
+  name: string;
+  framework?: string;
+  nodeVersion?: string;
+  rootDirectory?: string;
+  team?: ProviderResourceReference;
+  scope?: ProviderResourceReference;
+  domains: string[];
+};
+
+export type ProviderDomain = {
+  name: string;
+  registrar?: string;
+  nameservers?: string;
+  verified?: boolean;
+  projectId?: string;
+};
+
+export type ProviderDomainList = {
+  domains: ProviderDomain[];
   cursor?: string;
 };
 
@@ -152,6 +184,19 @@ export type DeploymentProviderOperationInputMap = {
     cursor?: string;
     limit?: number;
   };
+  'project.link': ProviderExecutionOptions & {
+    project: string;
+    scope?: string;
+    path?: string;
+  };
+  'project.configuration': ProviderExecutionOptions & {
+    projectId?: string;
+  };
+  'domain.list': ProviderExecutionOptions & {
+    projectId?: string;
+    cursor?: string;
+    limit?: number;
+  };
   'deployment.list': ProviderExecutionOptions & {
     projectId?: string;
     environment?: string;
@@ -187,6 +232,10 @@ export type DeploymentProviderOperationInputMap = {
     serviceId?: string;
     environment?: string;
     wait?: boolean;
+    target?: string;
+  };
+  'deployment.promote': ProviderExecutionOptions & {
+    deploymentId: string;
   };
   'environment.listNames': ProviderExecutionOptions & {
     projectId?: string;
@@ -219,11 +268,15 @@ export type DeploymentProviderOperationOutputMap = {
   'context.current': ProviderContext;
   'project.list': ProviderProjectList;
   'service.list': ProviderServiceList;
+  'project.link': ProviderProjectLinkResult;
+  'project.configuration': ProviderProjectConfiguration;
+  'domain.list': ProviderDomainList;
   'deployment.list': ProviderDeploymentList;
   'deployment.status': ProviderDeployment;
   'logs.read': ProviderLogResult;
   deploy: ProviderDeploymentMutationResult;
   redeploy: ProviderDeploymentMutationResult;
+  'deployment.promote': ProviderDeploymentMutationResult;
   'environment.listNames': ProviderEnvironmentVariableMetadata[];
   'environment.set': ProviderEnvironmentSetResult;
   'environment.delete': ProviderEnvironmentDeleteResult;
@@ -244,6 +297,7 @@ export type ProviderCommand = {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
   stdin?: string;
+  timeoutMs?: number;
 };
 
 export type ProviderProcessRequest = {
@@ -286,7 +340,8 @@ export type ProviderOperationDefinition<
   Operation extends ProviderCommandOperation = ProviderCommandOperation,
 > = {
   capability: Operation;
-  policy?: ProviderOperationPolicy;
+  policy?: ProviderOperationPolicy | ((input: DeploymentProviderOperationInputMap[Operation]) => ProviderOperationPolicy);
+  acceptPartialResult?: (result: ProviderProcessResult) => boolean;
   command: (input: DeploymentProviderOperationInputMap[Operation]) => ProviderCommand;
   parse: (
     result: ProviderProcessResult,
@@ -319,7 +374,10 @@ export type DeploymentProviderAdapter = {
 };
 
 export type DeploymentProviderService = {
-  policy: (operation: DeploymentProviderOperation) => ProviderOperationPolicy;
+  policy: <Operation extends DeploymentProviderOperation>(
+    operation: Operation,
+    input?: Partial<DeploymentProviderOperationInputMap[Operation]>,
+  ) => ProviderOperationPolicy;
   detect: () => Effect.Effect<ProviderDetection, ProviderError>;
   authStatus: () => Effect.Effect<ProviderAuthStatus, ProviderError>;
   contextCurrent: (
@@ -331,6 +389,15 @@ export type DeploymentProviderService = {
   serviceList: (
     input?: DeploymentProviderOperationInputMap['service.list'],
   ) => Effect.Effect<ProviderServiceList, ProviderError>;
+  projectLink: (
+    input: DeploymentProviderOperationInputMap['project.link'],
+  ) => Effect.Effect<ProviderProjectLinkResult, ProviderError>;
+  projectConfiguration: (
+    input?: DeploymentProviderOperationInputMap['project.configuration'],
+  ) => Effect.Effect<ProviderProjectConfiguration, ProviderError>;
+  domainList: (
+    input?: DeploymentProviderOperationInputMap['domain.list'],
+  ) => Effect.Effect<ProviderDomainList, ProviderError>;
   deploymentList: (
     input?: DeploymentProviderOperationInputMap['deployment.list'],
   ) => Effect.Effect<ProviderDeploymentList, ProviderError>;
@@ -345,6 +412,9 @@ export type DeploymentProviderService = {
   ) => Effect.Effect<ProviderDeploymentMutationResult, ProviderError>;
   redeploy: (
     input: DeploymentProviderOperationInputMap['redeploy'],
+  ) => Effect.Effect<ProviderDeploymentMutationResult, ProviderError>;
+  deploymentPromote: (
+    input: DeploymentProviderOperationInputMap['deployment.promote'],
   ) => Effect.Effect<ProviderDeploymentMutationResult, ProviderError>;
   environmentListNames: (
     input?: DeploymentProviderOperationInputMap['environment.listNames'],
