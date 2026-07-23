@@ -17,6 +17,25 @@ import type {
 
 export type NodeProviderProcessOptions = {
   searchPaths?: readonly string[];
+  maxOutputBytes?: number;
+};
+
+const DEFAULT_MAX_OUTPUT_BYTES = 256 * 1024;
+
+const appendBoundedOutput = (
+  current: Buffer,
+  chunk: Buffer | string,
+  maxOutputBytes: number,
+): { output: Buffer; truncated: boolean } => {
+  const incoming = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+  const combined = Buffer.concat([current, incoming]);
+  if (combined.byteLength <= maxOutputBytes) {
+    return { output: combined, truncated: false };
+  }
+  return {
+    output: combined.subarray(combined.byteLength - maxOutputBytes),
+    truncated: true,
+  };
 };
 
 export const normalizeProviderPath = (
@@ -48,6 +67,8 @@ const emptyResult = (overrides: Partial<ProviderProcessResult> = {}): ProviderPr
     timedOut: false,
     cancelled: false,
     runtimeMissing: false,
+    stdoutTruncated: false,
+    stderrTruncated: false,
     ...overrides,
   };
 };
@@ -55,6 +76,7 @@ const emptyResult = (overrides: Partial<ProviderProcessResult> = {}): ProviderPr
 const runNodeProcess = (
   request: ProviderProcessRequest,
   searchPaths: readonly string[],
+  maxOutputBytes: number,
 ): Promise<ProviderProcessResult> => {
   if (request.signal?.aborted) {
     return Promise.resolve(emptyResult({ cancelled: true, exitCode: 130 }));
@@ -70,10 +92,12 @@ const runNodeProcess = (
       detached: shouldUseDetachedProcessGroup(),
       env,
       shell: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
-    let stdout = '';
-    let stderr = '';
+    let stdout = Buffer.alloc(0);
+    let stderr = Buffer.alloc(0);
+    let stdoutTruncated = false;
+    let stderrTruncated = false;
     let settled = false;
     let timedOut = false;
     let cancelled = false;
@@ -108,25 +132,39 @@ const runNodeProcess = (
     }, request.timeoutMs);
 
     request.signal?.addEventListener('abort', abort, { once: true });
-    child.stdout.setEncoding('utf8');
-    child.stderr.setEncoding('utf8');
-    child.stdout.on('data', (chunk) => { stdout += chunk; });
-    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.stdin.on('error', () => {
+      // The process may exit before consuming stdin; the command result owns the failure.
+    });
+    child.stdin.end(request.stdin);
+    child.stdout.on('data', (chunk: Buffer) => {
+      const appended = appendBoundedOutput(stdout, chunk, maxOutputBytes);
+      stdout = appended.output;
+      stdoutTruncated = stdoutTruncated || appended.truncated;
+    });
+    child.stderr.on('data', (chunk: Buffer) => {
+      const appended = appendBoundedOutput(stderr, chunk, maxOutputBytes);
+      stderr = appended.output;
+      stderrTruncated = stderrTruncated || appended.truncated;
+    });
     child.on('error', (error: NodeJS.ErrnoException) => {
       finish(emptyResult({
-        stdout: stdout.trim(),
-        stderr: (stderr || error.message || String(error)).trim(),
+        stdout: stdout.toString('utf8').trim(),
+        stderr: (stderr.toString('utf8') || error.message || String(error)).trim(),
         exitCode: 1,
         runtimeMissing: error.code === 'ENOENT',
+        stdoutTruncated,
+        stderrTruncated,
       }));
     });
     child.on('close', (code) => {
       finish(emptyResult({
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
+        stdout: stdout.toString('utf8').trim(),
+        stderr: stderr.toString('utf8').trim(),
         exitCode: timedOut ? 124 : cancelled ? 130 : (code ?? 1),
         timedOut,
         cancelled,
+        stdoutTruncated,
+        stderrTruncated,
       }));
     });
   });
@@ -136,8 +174,9 @@ export const createNodeProviderProcess = (
   options: NodeProviderProcessOptions = {},
 ): ProviderProcess => {
   const searchPaths = options.searchPaths || [];
+  const maxOutputBytes = Math.max(1, options.maxOutputBytes ?? DEFAULT_MAX_OUTPUT_BYTES);
   return {
     execPath: process.execPath,
-    run: (request) => Effect.promise(() => runNodeProcess(request, searchPaths)),
+    run: (request) => Effect.promise(() => runNodeProcess(request, searchPaths, maxOutputBytes)),
   };
 };

@@ -107,6 +107,8 @@ export type ProviderRawResult = {
   stdout: string;
   stderr: string;
   exitCode: number;
+  stdoutTruncated?: boolean;
+  stderrTruncated?: boolean;
 };
 
 export type DeploymentProviderOperationInputMap = {
@@ -186,6 +188,7 @@ export type ProviderCommand = {
   args: string[];
   cwd?: string;
   env?: NodeJS.ProcessEnv;
+  stdin?: string;
 };
 
 export type ProviderProcessRequest = {
@@ -195,6 +198,7 @@ export type ProviderProcessRequest = {
   env: NodeJS.ProcessEnv;
   timeoutMs: number;
   signal?: AbortSignal;
+  stdin?: string;
 };
 
 export type ProviderProcessResult = {
@@ -204,6 +208,8 @@ export type ProviderProcessResult = {
   timedOut: boolean;
   cancelled: boolean;
   runtimeMissing: boolean;
+  stdoutTruncated: boolean;
+  stderrTruncated: boolean;
 };
 
 export type ProviderProcess = {
