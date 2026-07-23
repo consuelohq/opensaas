@@ -37,6 +37,8 @@ export const vercelDeploymentListFixture = `
   Age     Deployment                          Status       Environment     Duration     Username
   2m      https://dep-one.vercel.app          ● Ready      Production      45s          ko
   1h      https://dep-two.vercel.app          ● Error      Preview         12s          ko
+
+> To display the next page, run vercel ls consuelo --next 1720000000000
 `;
 
 export const vercelDeploymentInspectionFixture = {

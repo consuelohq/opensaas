@@ -74,7 +74,8 @@ The development host reported Vercel CLI `50.1.3` on July 23, 2026. This observa
 `deployment.list`
 
 - CLI: `vercel list [project] [--environment <environment>] [--next <cursor>] --no-color`
-- Output: deployment ID/URL, normalized uppercase status, and lowercase environment.
+- Output: deployment URL handle in `id` and `url`, normalized uppercase status, lowercase environment, and an opaque cursor when Vercel prints a next-page command. Vercel 50.x accepts the returned URL handle anywhere it accepts `url|deploymentId`.
+- Input cursors use the same opaque `vercel:<base64url>` envelope as project pagination and are decoded only when constructing `--next`.
 - Approval: not required.
 
 `deployment.status`

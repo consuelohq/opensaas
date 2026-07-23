@@ -200,11 +200,12 @@ describe('Vercel deployment provider adapter', () => {
       ],
       cursor: `vercel:${Buffer.from('1720000000000').toString('base64url')}`,
     });
-    await expect(Effect.runPromise(service.deploymentList({
+    const listed = await Effect.runPromise(service.deploymentList({
       projectId: 'consuelo',
       environment: 'production',
-      cursor: '123',
-    }))).resolves.toEqual({
+      cursor: `vercel:${Buffer.from('123').toString('base64url')}`,
+    }));
+    expect(listed).toEqual({
       deployments: [
         {
           id: 'https://dep-one.vercel.app',
@@ -219,8 +220,11 @@ describe('Vercel deployment provider adapter', () => {
           environment: 'preview',
         },
       ],
+      cursor: `vercel:${Buffer.from('1720000000000').toString('base64url')}`,
     });
-    await expect(Effect.runPromise(service.deploymentStatus({ deploymentId: 'dpl_123' }))).resolves.toEqual({
+    await expect(Effect.runPromise(service.deploymentStatus({
+      deploymentId: listed.deployments[0].id,
+    }))).resolves.toEqual({
       id: 'dpl_123',
       url: 'https://dep-one.vercel.app',
       status: 'READY',
@@ -247,7 +251,7 @@ describe('Vercel deployment provider adapter', () => {
     expect(fake.requests.map((request) => request.args)).toEqual([
       ['project', 'list', '--json', '--no-color'],
       ['list', 'consuelo', '--environment', 'production', '--next', '123', '--no-color'],
-      ['inspect', 'dpl_123', '--json', '--no-color'],
+      ['inspect', 'https://dep-one.vercel.app', '--json', '--no-color'],
       ['logs', 'dpl_123', '--json', '--no-color'],
     ]);
   });
@@ -288,7 +292,7 @@ describe('Vercel deployment provider adapter', () => {
   it('returns bounded partial logs when the live stream reaches its timeout', async () => {
     const fake = createFakeProviderProcess([
       providerProcessResult({
-        stdout: vercelRuntimeLogsFixture.map((entry) => JSON.stringify(entry)).join('\n'),
+        stdout: `${vercelRuntimeLogsFixture.map((entry) => JSON.stringify(entry)).join('\n')}\n{"message":"incomplete`,
         exitCode: 124,
         timedOut: true,
       }),
@@ -317,6 +321,36 @@ describe('Vercel deployment provider adapter', () => {
       ],
       truncated: true,
     });
+  });
+
+  it('recovers valid log entries after a byte-truncated leading fragment', async () => {
+    const fake = createFakeProviderProcess([
+      providerProcessResult({
+        stdout: `broken-fragment}\n${vercelRuntimeLogsFixture.map((entry) => JSON.stringify(entry)).join('\n')}`,
+        stdoutTruncated: true,
+      }),
+    ]);
+    const service = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: fake.process,
+    });
+
+    const result = await Effect.runPromise(service.logsRead({ deploymentId: 'dpl_123' }));
+    expect(result.entries).toHaveLength(2);
+    expect(result.truncated).toBe(true);
+  });
+
+  it('still fails closed on invalid NDJSON inside a truncated log stream', async () => {
+    const [first, second] = vercelRuntimeLogsFixture.map((entry) => JSON.stringify(entry));
+    const service = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: createFakeProviderProcess([
+        providerProcessResult({
+          stdout: `${first}\nnot-json\n${second}`,
+          stdoutTruncated: true,
+        }),
+      ]).process,
+    });
+
+    await expectProviderError(service.logsRead({ deploymentId: 'dpl_123' }), 'MALFORMED_OUTPUT');
   });
 
   it('fails closed when deploy output has no deployment URL or timed-out logs are empty', async () => {

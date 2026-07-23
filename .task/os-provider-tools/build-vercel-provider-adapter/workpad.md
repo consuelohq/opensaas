@@ -67,6 +67,15 @@ task session: `tsk_e398fbe000ba`
 - Expected red failure: missing scope currently emits an all-environments command, approval consequences are generic, and promote inherits the 120000 ms service timeout.
 - No-test waiver: none; both findings can mutate customer-facing production state.
 
+### Post-fix Grok finding repair test contract
+
+- Behavior under test: truncated/timed-out Vercel NDJSON logs preserve complete entries while ignoring only incomplete boundary fragments; deployment listing returns an opaque next cursor and accepts that cursor on the next call; URL list handles remain valid inputs to deployment inspection.
+- Existing local pattern to follow: fail-closed table/NDJSON parsers, provider-opaque base64url cursors, and fixture-driven list-to-status workflows.
+- New or changed tests: trailing timeout fragment, leading byte-tail fragment, invalid middle NDJSON failure, deployment pagination footer encoding/decoding, and list URL passed directly to inspect.
+- Focused red command: `bun run --cwd packages/os test -- tools/deployment-provider/vercel.test.ts`.
+- Expected red failure: boundary fragments currently cause `MALFORMED_OUTPUT`, deployment list omits the footer cursor, and cursor input is forwarded without decoding.
+- No-test waiver: none; logs and pagination are required Worker 10 read paths.
+
 ## current status
 
 - FINAL GROK FIXES VALIDATED: Ko-expanded task.push repair remains green. All five concrete Grok findings recovered across bounded runs are fixed with regression coverage. Provider/lifecycle tests, compiler, strict review, and full verify pass; publication and final external approval remain.
@@ -114,13 +123,6 @@ task session: `tsk_e398fbe000ba`
 
 ## workspace-owned: validation evidence
 
-- `trc_e3848ff0402d`: focused red failed at module resolution as expected.
-- `trc_747d4aa77aab`: focused Vercel suite green, 11/11.
-- `trc_e9d0341affb8`: Vercel plus provider-core regression suite green, 37/37.
-- `trc_d4847d405577`: real TypeScript compiler pass green for the provider package.
-- `trc_fe1f0cad3c8d`: repository syntax gate green.
-- `trc_d0f93bd2a7ab`: read-only adapter detect returned installed Vercel CLI 50.1.3. The ad-hoc harness emitted an existing Effect 3.21.3/3.22.0 dependency-dedupe warning but returned the expected typed detection result.
-- 2026-07-23 15:58:43 `review.run`: passed — OK
 - 2026-07-23 15:58:43 `review.run`: passed — OK
 - 2026-07-23 15:58:43 `review.run`: passed — OK
 - 2026-07-23 15:58:54 `review.run`: passed — OK
@@ -145,10 +147,21 @@ task session: `tsk_e398fbe000ba`
 - `trc_033ad9e383ca`: provider package TypeScript compiler pass.
 - `trc_55a1f5ccb41a`: final strict changed-file review passed with zero findings.
 - `trc_35c0b28c7ea2`: final full verify passed publish-valid with zero review/database findings.
+- `trc_6b6fab23d7cf`: installed Vercel CLI 50.1.3 confirms redeploy has no `--yes`, while inspect/redeploy accept URL or deployment ID and list exposes `--next <MS>`.
+- `trc_bb035da701fa`: installed Vercel CLI source confirms deployment list emits a next-page command containing `--next ${pagination.next}`.
+- `trc_7fe1f3bdaa86`: read-only live list validation stopped at typed unauthenticated CLI output; no provider mutation occurred.
+- `trc_2ba86e3e77fa`: post-fix Grok repair red, 14 pass / 3 expected failures for cursor handling and truncated NDJSON boundaries.
+- `trc_a069c0541c10`: post-fix focused green, 17/17.
+- `trc_9841ec1a055a`: provider core + Vercel 43/43, lifecycle 21/21, OS syntax gate pass.
+- `trc_b09c5e77d5d5`: provider package TypeScript compiler pass.
+- `trc_09c748b37d03`: strict changed-file review passed with zero findings.
+- `trc_a1eb1f1c1c1a`: full verify passed publish-valid with zero review/database findings.
 - 2026-07-23 17:01:31 `review.run`: passed — OK
 - 2026-07-23 17:01:43 `verify`: passed — OK
 - 2026-07-23 17:14:42 `review.run`: passed — OK
 - 2026-07-23 17:14:53 `verify`: passed — OK
+- 2026-07-23 17:29:55 `review.run`: passed — OK
+- 2026-07-23 17:30:10 `verify`: passed — OK
 
 ## key decisions
 
@@ -207,6 +220,9 @@ task session: `tsk_e398fbe000ba`
 - Live logs timeout behavior: **fixed**. The provider core supports adapter-approved partial results; Vercel logs accept a timed-out result only when stdout contains entries, return `truncated: true`, and retain typed `TIMEOUT` for empty streams.
 - Environment mutation scope: **fixed**. Vercel set/delete require `production`, `preview`, or `development`, reject omitted/invalid scope before process execution, and publish scope-specific approval consequences.
 - Promotion timeout: **fixed**. Promote now passes CLI `--timeout 3m` and carries a 195000 ms command-level process timeout, leaving a 15-second local grace period before termination.
+- Truncated NDJSON boundaries: **fixed**. Timed-out or byte-truncated log streams may discard only unparseable first/last fragments; valid complete entries are returned with `truncated: true`, while invalid middle records and streams with no complete entry remain `MALFORMED_OUTPUT`.
+- Redeploy `--yes`: **rejected**. Vercel CLI 50.1.3 exposes only `--no-wait` and `--target` for redeploy; adding `--yes` would be an unsupported command-line flag.
+- Deployment list identity and pagination: **partially fixed / partially rejected**. URL identity is retained because Vercel officially accepts `url|deploymentId` for inspect/redeploy/promote. Pagination now parses Vercel's next-page footer, returns an opaque `vercel:<base64url>` cursor, and decodes it only when constructing the next `--next` argument.
 
 ---
 
@@ -254,13 +270,4 @@ task session: `tsk_e398fbe000ba`
 - `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/task-selector-pr-ref.test.js`
 
-- 2026-07-23 17:01:17 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
-
-- 2026-07-23 17:13:38 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
-- 2026-07-23 17:13:38 apply-patch: `packages/os/tools/deployment-provider/vercel.test.ts`
-- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/types.ts`
-- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/service.ts`
-- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/vercel.ts`
-- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/vercel.md`
-
-- 2026-07-23 17:15:07 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+- 2026-07-23 17:31:02 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`

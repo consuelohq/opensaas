@@ -5,7 +5,7 @@
   "branch": "task/os-provider-tools/build-vercel-provider-adapter",
   "base": "origin/stream/os-provider-tools",
   "headSha": "45a1bf4eb8e7958fcaa6cf4372b6551f6be6a3a9",
-  "changeHash": "0aa902cdd092f40f6ae7d7174c1277b22c035d00d8915042a0a0496743aa00e0",
+  "changeHash": "04248e1cdc5b0a8d971fba769f41b5d163ddc5c6ec48531eb0dfe1a6ce0f9c28",
   "changedFiles": [
     "packages/os/tools/deployment-provider/fixtures/vercel.ts",
     "packages/os/tools/deployment-provider/index.ts",
@@ -21,7 +21,7 @@
     "packages/workspace/tests/task-push-session.test.ts",
     "packages/workspace/tests/task-selector-pr-ref.test.js"
   ],
-  "verifiedAt": "2026-07-23T17:14:53.854Z",
+  "verifiedAt": "2026-07-23T17:30:10.454Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -44,6 +44,7 @@
         ".task/subagent-runs/trc_3db60b5d12d0-grok/summary.json",
         ".task/subagent-runs/trc_8d466a85f5b9-grok/summary.json",
         ".task/subagent-runs/trc_948ffb46edd5-grok/summary.json",
+        ".task/subagent-runs/trc_db1247eb7386-grok/summary.json",
         ".task/tasks/os-provider-tools/build-vercel-provider-adapter.json",
         "packages/os/tools/deployment-provider/fixtures/vercel.ts",
         "packages/os/tools/deployment-provider/index.ts",
@@ -152,8 +153,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 617,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-build-vercel-provider-adapter\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 261\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:14:53\n\u001b[2m   Duration \u001b[22m 344ms\u001b[2m (transform 11ms, setup 0ms, import 17ms, tests 261ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 550,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-build-vercel-provider-adapter\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 235\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:30:09\n\u001b[2m   Duration \u001b[22m 313ms\u001b[2m (transform 9ms, setup 0ms, import 16ms, tests 235ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "workspace task session tests",
@@ -169,8 +170,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 157,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [14.90ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.72ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.05ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.18ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.13ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.27ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.06ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.05ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [150.00ms]\n"
+          "durationMs": 128,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [1.13ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.52ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.05ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.17ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.12ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.23ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.06ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.05ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.04ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [122.00ms]\n"
         },
         {
           "name": "@consuelo/os package test",
@@ -187,7 +188,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 5,
+          "durationMs": 4,
           "outputTail": "$ bun run uninstall:system-daemons\n    bash ./scripts/uninstall-system-daemons.sh\n\n  $ bun run uninstall:system-daemons:dry-run\n    bash ./scripts/uninstall-system-daemons.sh --dry-run\n\n  $ bun run get-raw-steering\n    bun ./scripts/os.ts get-raw-steering\n\n  $ bun run task:hook\n    bun ./scripts/task-hook.js\n\n  $ bun run operator\n    bun ./operator/operator.ts\n\n  $ bun run doctor:watch\n    bun ./scripts/doctor-watch.ts\n\n  $ bun run artifact:render\n    bun ./scripts/artifact-render.ts\n\n  $ bun run artifact:publish\n    bun ./scripts/artifacts.ts publish\n\n  $ bun run artifact:validate\n    bun ./scripts/artifact-validate.ts\n\n  $ bun run semantic:embeddings\n    bun ./scripts/semantic-embeddings.js\n\n  $ bun run cloudflare:workspace-edge:dev\n    wrangler dev --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:deploy:dry-run\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n\n  $ bun run cloudflare:workspace-edge:deploy\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:migrate\n    wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:seed\n    bun ./scripts/seed-workspace-edge-route.ts\n\n  $ bun run platform:managed-os-mcp-ingress:provision\n    bun ./scripts/provision-managed-os-mcp-ingress-policy.ts\n\n  $ bun run smoke:workspace-edge\n    bun ./scripts/smoke-workspace-edge.ts\n\n  $ bun run media\n    bun ./scripts/media.ts\n\n  $ bun run media:doctor\n    bun ./scripts/media.ts doctor --json\n\n  $ bun run media:install\n    bun ./scripts/media.ts install\n\n  $ bun run media:screenshot\n    bun ./scripts/media.ts screenshot render\n\n  $ bun run media:test\n    vitest run tests/media\n\n  $ bun run media:test:manifest\n    vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts\n\n  $ bun run media:test:deps\n    vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts\n\n  $ bun run media:test:contracts\n    vitest run tests/media/06-effect-architecture.test.ts tests/media/07-contracts-asset.test.ts tests/media/08-contracts-timeline.test.ts tests/media/09-contracts-render-result.test.ts tests/media/10-cli-json-envelope.test.ts\n\n  $ bun run media:test:core\n    vitest run tests/media/11-core-probe.test.ts tests/media/12-core-frames-extract.test.ts tests/media/13-core-timeline-validate.test.ts tests/media/14-core-compose.test.ts tests/media/15-core-qa.test.ts\n\n  $ bun run media:test:youtube\n    vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:audio\n    vitest run tests/media/20-audio-transcribe.test.ts\n\n  $ bun run media:test:vision\n    vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts\n\n  $ bun run media:test:render\n    vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts\n\n  $ bun run media:test:handoff\n    vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts\n\n  $ bun run media:test:ingest\n    vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:svg\n    vitest run tests/media/31-svg-convert.test.ts\n\n  $ bun run media:svg\n    python3 ./scripts/media-svg.py\n\n  $ bun run trace:watch\n    bun ./scripts/trace-watch.ts\n\n  $ bun run generate-tool-manifest:check\n    bun ./scripts/generate-tool-manifest.ts --check\n\n  $ bun run lifecycle\n    bun ./scripts/lifecycle.ts\n\n"
         }
       ],

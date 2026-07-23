@@ -222,7 +222,8 @@ const parseProjectList = (result: ProviderProcessResult): ProviderProjectList =>
 };
 
 const parseDeploymentList = (result: ProviderProcessResult): ProviderDeploymentList => {
-  const lines = cleanLines(result.stdout);
+  const output = `${result.stdout}\n${result.stderr}`;
+  const lines = cleanLines(output);
   const headerIndex = lines.findIndex((line) => /\bAge\b/.test(line) && /\bDeployment\b/.test(line) && /\bEnvironment\b/.test(line));
   if (headerIndex < 0) throw new Error('Vercel deployment list header was not recognized');
   const deployments = lines.slice(headerIndex + 1).map((line) => line.trim().split(/\s{2,}/)).filter((columns) => columns.length > 1).map((columns) => {
@@ -233,7 +234,11 @@ const parseDeploymentList = (result: ProviderProcessResult): ProviderDeploymentL
     if (!status || !environment) throw new Error('Vercel deployment row is missing status or environment');
     return { id: url, url, status, environment };
   });
-  return { deployments };
+  const next = cleanText(output).match(/To display the next page,?\s+run\s+.*?--next\s+(\d+)/i)?.[1];
+  return {
+    deployments,
+    ...(next ? { cursor: encodeCursor(next) } : {}),
+  };
 };
 
 const parseDeploymentStatus = (result: ProviderProcessResult): ProviderDeployment => {
@@ -256,23 +261,31 @@ const parseDeploymentStatus = (result: ProviderProcessResult): ProviderDeploymen
 
 const parseLogs = (result: ProviderProcessResult): ProviderLogResult => {
   const lines = cleanLines(result.stdout);
-  const entries = lines.map((line) => {
-    const parsed = JSON.parse(line) as unknown;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      throw new Error('Vercel runtime log line must be a JSON object');
+  const allowIncompleteEdges = result.timedOut || result.stdoutTruncated;
+  const entries = lines.flatMap((line, index) => {
+    try {
+      const parsed = JSON.parse(line) as unknown;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('Vercel runtime log line must be a JSON object');
+      }
+      const record = parsed as Record<string, unknown>;
+      const message = requireString(record, ['message', 'text'], 'Vercel runtime log message');
+      const timestamp = normalizeTimestamp(record.timestamp ?? record.createdAt);
+      const level = optionalString(record, ['level']);
+      const stream = optionalString(record, ['source', 'stream']);
+      return [{
+        message,
+        ...(timestamp ? { timestamp } : {}),
+        ...(level ? { level } : {}),
+        ...(stream ? { stream } : {}),
+      }];
+    } catch (cause: unknown) {
+      const boundary = index === 0 || index === lines.length - 1;
+      if (allowIncompleteEdges && boundary) return [];
+      throw cause;
     }
-    const record = parsed as Record<string, unknown>;
-    const message = requireString(record, ['message', 'text'], 'Vercel runtime log message');
-    const timestamp = normalizeTimestamp(record.timestamp ?? record.createdAt);
-    const level = optionalString(record, ['level']);
-    const stream = optionalString(record, ['source', 'stream']);
-    return {
-      message,
-      ...(timestamp ? { timestamp } : {}),
-      ...(level ? { level } : {}),
-      ...(stream ? { stream } : {}),
-    };
   });
+  if (entries.length === 0) throw new Error('Vercel runtime logs contained no complete entries');
   return {
     entries,
     ...(result.timedOut || result.stdoutTruncated ? { truncated: true } : {}),
@@ -650,7 +663,7 @@ export const createVercelProviderAdapter = (): DeploymentProviderAdapter => ({
           'list',
           ...(input.projectId ? [input.projectId] : []),
           ...(input.environment ? ['--environment', input.environment] : []),
-          ...(input.cursor ? ['--next', input.cursor] : []),
+          ...(input.cursor ? ['--next', decodeCursor(input.cursor)] : []),
         ]),
       }),
       parse: parseDeploymentList,
