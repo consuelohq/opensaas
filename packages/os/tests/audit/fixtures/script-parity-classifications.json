@@ -161,14 +161,6 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
-    "scripts/generated/com.consuelo.system.plist": {
-      "status": "os-only-intentional",
-      "reason": "scripts/generated/com.consuelo.system.plist is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
-    },
-    "scripts/generated/com.consuelo.watchdog.plist": {
-      "status": "os-only-intentional",
-      "reason": "scripts/generated/com.consuelo.watchdog.plist is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
-    },
     "scripts/gh.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."

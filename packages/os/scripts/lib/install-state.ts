@@ -173,7 +173,6 @@ const REQUIRED_DIRS = [
   'tmp',
   'runtime',
   'runtime/releases',
-  'runtime/current',
   'node',
   'node/keys',
   'node/security',

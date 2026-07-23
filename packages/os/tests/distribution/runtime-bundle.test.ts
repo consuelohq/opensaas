@@ -256,6 +256,8 @@ describe('runtime bundle contract', () => {
     expect(classifyRuntimeBundlePath('tools/filesystem/schema.ts')).toBe('source-only');
     expect(classifyRuntimeBundlePath('tools/filesystem/handler.test.ts')).toBe('test-only');
     expect(classifyRuntimeBundlePath('tools/deployment-provider/testing.ts')).toBe('test-only');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/vercel.md')).toBe('source-only');
+    expect(classifyRuntimeBundlePath('tools/railway/README.md')).toBe('source-only');
     expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe('source-only');
     expect(classifyRuntimeBundlePath('manifests/schemas/tool-manifest.schema.json')).toBe('source-only');
     expect(classifyRuntimeBundlePath('manifests/generated/tool.manifest.json')).toBe('managed-tool');

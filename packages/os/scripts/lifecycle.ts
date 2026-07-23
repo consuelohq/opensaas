@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import {
   createHttpHealthAcceptance,
   createHttpReleaseSource,
+  createBunRuntimeMaterializer,
   createLifecycleEngine,
   createReloadServiceController,
   lifecycleFailureEnvelope,
@@ -102,6 +103,53 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
   return parsed;
 }
 
+function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
+  const rejectPositionals = (): void => {
+    if (parsed.positional.length > 0) {
+      throw new Error(`unexpected positional argument: ${parsed.positional[0]}`);
+    }
+  };
+  switch (parsed.command) {
+    case 'status':
+    case 'install':
+    case 'restart':
+    case 'update':
+    case 'repair':
+      rejectPositionals();
+      break;
+    case 'channel': {
+      const action = parsed.positional[0] ?? 'show';
+      if (action === 'show' && parsed.positional.length === 1) break;
+      if (action === 'show' && parsed.positional.length === 0) break;
+      if (action === 'set' && parsed.positional.length === 2) break;
+      throw new Error('channel requires `show` or `set <channel>`');
+    }
+    case 'updates':
+      if (
+        parsed.positional.length !== 2
+        || parsed.positional[0] !== 'notifications'
+        || !['on', 'off', 'snooze'].includes(parsed.positional[1])
+      ) {
+        throw new Error('updates requires `notifications on|off|snooze`');
+      }
+      break;
+    default:
+      throw new Error(`unknown lifecycle command: ${parsed.command}`);
+  }
+  if (parsed.check && parsed.command !== 'update') {
+    throw new Error('--check is only valid for update');
+  }
+  if (parsed.yes && parsed.command !== 'update') {
+    throw new Error('--yes is only valid for update');
+  }
+  if (parsed.channel && !['install', 'update'].includes(parsed.command)) {
+    throw new Error('--channel is only valid for install or update');
+  }
+  if (parsed.snoozedUntil && parsed.command !== 'updates') {
+    throw new Error('--until is only valid for update notification snooze');
+  }
+}
+
 function unavailableReleaseSource(): ReleaseSource {
   const missing = async (): Promise<never> => {
     throw new Error('CONSUELO_RELEASE_BASE_URL is required for install and update');
@@ -149,6 +197,7 @@ function createDefaultLifecycleEngine(input: {
       : unavailableReleaseSource(),
     trustedReleaseKeys: trustedReleaseKeysFromEnvironment(),
     service: createReloadServiceController({ osRoot }),
+    runtime: createBunRuntimeMaterializer(),
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',
@@ -241,6 +290,7 @@ export async function runLifecycleCli(
   let parsed: ParsedLifecycleArgs;
   try {
     parsed = parseArgs(argv);
+    if (parsed.command !== 'help') validateCommandArgs(parsed);
   } catch (error: unknown) {
     stderr(`${error instanceof Error ? error.message : String(error)}\n`);
     return 2;
