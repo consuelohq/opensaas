@@ -50,9 +50,10 @@ export function createReloadServiceController(input: {
         throw new Error(`canonical reload adapter is missing: ${reloadScript}`);
       }
     },
-    async restart() {
+    async restart(options = {}) {
       try {
-        const result = await run(process.execPath, [reloadScript, 'restart']);
+        const command = options.waitForCompletion ? 'restart-now' : 'restart';
+        const result = await run(process.execPath, [reloadScript, command]);
         if (result.exitCode !== 0) {
           throw new Error(result.stderr.trim() || result.stdout.trim() || `reload adapter exited ${result.exitCode}`);
         }
@@ -74,6 +75,7 @@ export function createHttpHealthAcceptance(input: {
   attempts?: number;
   intervalMs?: number;
   expectedName?: string;
+  expectedBundleId?: string;
   fetchImpl?: typeof fetch;
 }): LifecycleHealthAcceptance {
   const attempts = input.attempts ?? 40;
@@ -81,13 +83,18 @@ export function createHttpHealthAcceptance(input: {
   const expectedName = input.expectedName ?? 'consuelo-os';
   const fetchImpl = input.fetchImpl ?? fetch;
   return {
-    async accept() {
+    async accept(expected = {}) {
       for (let attempt = 0; attempt < attempts; attempt += 1) {
         try {
           const response = await fetchImpl(input.url, { signal: AbortSignal.timeout(2_000) });
           if (response.ok) {
-            const body = (await response.json()) as { name?: string };
-            if (body.name === expectedName) return true;
+            const body = (await response.json()) as { name?: string; bundleId?: string; version?: string };
+            const expectedBundleId = expected.bundleId ?? input.expectedBundleId;
+            if (
+              body.name === expectedName
+              && (!expectedBundleId || body.bundleId === expectedBundleId)
+              && (!expected.version || body.version === expected.version)
+            ) return true;
           }
         } catch {
           // A bounded retry follows; health failure remains a typed engine result.
