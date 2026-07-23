@@ -5,6 +5,7 @@ import {
   TRACE_SITE_JAVASCRIPT,
   renderTraceSite,
 } from '../../lib/trace-site';
+import type { TraceSitesGatewayLiveEndpoints } from '../../lib/trace-sites-gateway-live-endpoints';
 import {
   authorizeSignedRequest,
   loadAuthConfigForRequest,
@@ -29,6 +30,10 @@ type TraceRequestScope = {
   workspaceId: string;
   workspaceHost: string;
   nodeId: string;
+};
+
+export type TraceRouteOptions = {
+  endpoints?: TraceSitesGatewayLiveEndpoints;
 };
 
 function traceRequestScope(request: Request): TraceRequestScope | Response {
@@ -132,7 +137,10 @@ function invariantAssetHeaders(contentType: string): HeadersInit {
   };
 }
 
-async function handleTraceRequest(request: Request): Promise<Response> {
+async function handleTraceRequest(
+  request: Request,
+  endpoints: TraceSitesGatewayLiveEndpoints,
+): Promise<Response> {
   try {
     const pathname = new URL(request.url).pathname;
     const scope = await authorizeTraceRequest(request, pathname);
@@ -142,7 +150,7 @@ async function handleTraceRequest(request: Request): Promise<Response> {
     headers.set('x-consuelo-workspace-id', scope.workspaceId);
     headers.set('x-consuelo-workspace-host', scope.workspaceHost);
     headers.set('x-consuelo-node-id', scope.nodeId);
-    const response = await traceGatewayEndpoints().handle(
+    const response = await endpoints.handle(
       new Request(request, { headers }),
     );
     return withPrivateTraceHeaders(response);
@@ -151,8 +159,9 @@ async function handleTraceRequest(request: Request): Promise<Response> {
   }
 }
 
-export function createTraceRoutes(): Hono {
+export function createTraceRoutes(options: TraceRouteOptions = {}): Hono {
   const app = new Hono();
+  const endpoints = options.endpoints ?? traceGatewayEndpoints();
 
   app.all(TRACE_DOCUMENT_PATH, async (context) => {
     if (context.req.method !== 'GET') return routeNotFoundResponse();
@@ -213,7 +222,7 @@ export function createTraceRoutes(): Hono {
   for (const path of TRACE_READ_PATHS) {
     app.all(path, (context) => {
       if (context.req.method !== 'GET') return routeNotFoundResponse();
-      return handleTraceRequest(context.req.raw);
+      return handleTraceRequest(context.req.raw, endpoints);
     });
   }
   return app;

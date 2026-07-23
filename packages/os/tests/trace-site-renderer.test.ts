@@ -25,18 +25,16 @@ describe('shared trace site renderer', () => {
     expect(TRACE_SITE_JAVASCRIPT).not.toContain('node_renderer');
   });
 
-  it('keeps the generated Sites trace page as an inline compatibility copy of the same renderer', () => {
-    const inline = renderTraceSite({ assetMode: 'inline' });
+  it('demotes the generated Sites trace page to a non-interactive canonical link', () => {
     const sitesSource = readFileSync(
       new URL('../scripts/lib/sites.ts', import.meta.url),
       'utf8',
     );
 
-    expect(inline).toContain('<style>');
-    expect(inline).toContain('data-trace-table');
-    expect(inline).toContain('direction=newer');
-    expect(inline).toContain('includeRawPayload=true');
-    expect(sitesSource).toContain("return renderTraceSite({ assetMode: 'inline' });");
+    expect(sitesSource).toContain('Open authenticated traces');
+    expect(sitesSource).toContain('href="/traces"');
+    expect(sitesSource).not.toContain("return renderTraceSite({ assetMode: 'inline' });");
+    expect(sitesSource).not.toContain("import { renderTraceSite } from './trace-site';");
     expect(sitesSource).not.toContain("payload.events || payload.rows || payload.traces");
   });
 

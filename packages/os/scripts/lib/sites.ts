@@ -15,7 +15,6 @@ import {
   type LauncherLocalAgent,
 } from './launcher-onboarding';
 import { materializeConfigurationSite } from './settings-materialization';
-import { renderTraceSite } from './trace-site';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -647,7 +646,11 @@ function buildReservedSitePage(site: ReservedSite): string {
 }
 
 function buildTracesSite(): string {
-  return renderTraceSite({ assetMode: 'inline' });
+  return `<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Traces - Consuelo OS</title><style>${baseStyles()}</style></head>
+<body><main><header><h1>Traces</h1><p>The trace viewer is served by the authenticated local OS Hono application.</p></header><section><div class="section-header"><h2>Canonical trace viewer</h2></div><p style="padding: 18px;">This generated Sites page is a compatibility notice only. <a href="/traces">Open authenticated traces</a>.</p></section></main></body></html>
+`;
 }
 
 export function getSitesPaths(home: string): SitesPaths {

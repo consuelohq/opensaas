@@ -11,7 +11,12 @@ import {
   type AgentAppToken,
   type GatewaySecurityConfig,
 } from '../scripts/lib/security-gateway';
-import { traceGatewayScopeFromHeaders } from '../scripts/lib/trace-sites-gateway-live-endpoints';
+import {
+  createTraceSitesGatewayLiveEndpoints,
+  traceGatewayScopeFromHeaders,
+} from '../scripts/lib/trace-sites-gateway-live-endpoints';
+import { createFixtureTraceSitesReadBackend } from '../scripts/lib/trace-sites-gateway-read-layer';
+import { sanitizeTraceHistoryRowForTest } from '../scripts/lib/trace-sites-local-read-backend';
 import { LOCAL_OS_ROUTE_POLICIES } from '../scripts/server/route-policies';
 import { createTraceRoutes } from '../scripts/server/routes/traces';
 
@@ -143,6 +148,94 @@ describe('Hono trace surface', () => {
       error: {
         code: 'WORKSPACE_NODE_MISMATCH',
       },
+    });
+  });
+
+  it('serves signed trace history with workspace and node context after server-side redaction', async () => {
+    const fixture = createFixtureTraceSitesReadBackend();
+    const row = sanitizeTraceHistoryRowForTest({
+      rowid: 1,
+      id: 'row_hono_redacted',
+      ts: '2026-07-23T22:00:00.000Z',
+      trace_id: 'trc_hono_redacted',
+      source: 'workspace',
+      tool: 'code.call',
+      task_session: 'tsk_2d079fa0254f',
+      branch: 'task/os-web/workspace-trace-table-through-hono',
+      worktree: '/Users/kokayi/Dev/private-worktree',
+      status: 'error',
+      ok: 0,
+      code: 'COMMAND_FAILED',
+      exit_code: 1,
+      duration_ms: 42,
+      input_json: JSON.stringify({
+        prompt: 'private prompt fixture',
+        authorization: 'Bearer bearer-secret-1234567890abcdef',
+      }),
+      result_json: JSON.stringify({
+        ok: false,
+        token: 'output-token-secret-1234567890',
+      }),
+      stderr: 'failed with Bearer stderr-secret-1234567890abcdef',
+      input_tokens: 10,
+      output_tokens: 20,
+      total_tokens: 30,
+    });
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: {
+        ...fixture,
+        readHistoryPage() {
+          return { rows: [row], nextCursor: null };
+        },
+      },
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+    const app = createTraceRoutes({ endpoints });
+    const response = await app.fetch(
+      signedGet(
+        '/gateway/traces/recent?direction=older&cursor=latest&limit=20&sourceMode=local-networked&includeRawPayload=true',
+        'trace-history-success-nonce',
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    const body = await response.json();
+    expect(body).toMatchObject({
+      ok: true,
+      data: {
+        workspaceId: 'workspace_traces_hono',
+        workspaceHost: 'traces-hono.consuelohq.com',
+        nodeId: 'node_trace_home',
+        rows: [{ traceId: 'trc_hono_redacted', code: 'COMMAND_FAILED' }],
+      },
+    });
+    const serialized = JSON.stringify(body);
+    expect(serialized).toContain('[REDACTED');
+    expect(serialized).not.toContain('private prompt fixture');
+    expect(serialized).not.toContain('bearer-secret-1234567890abcdef');
+    expect(serialized).not.toContain('output-token-secret-1234567890');
+    expect(serialized).not.toContain('stderr-secret-1234567890abcdef');
+    expect(serialized).not.toContain('/Users/kokayi');
+  });
+
+  it('rejects a tampered workspace before trace data resolution', async () => {
+    const app = createTraceRoutes({
+      endpoints: createTraceSitesGatewayLiveEndpoints({
+        backend: createFixtureTraceSitesReadBackend(),
+        resolveScope: traceGatewayScopeFromHeaders,
+      }),
+    });
+    const response = await app.fetch(
+      signedGet('/gateway/traces/recent', 'trace-workspace-mismatch-nonce', {
+        'x-consuelo-workspace-id': 'workspace_other',
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(await response.json()).toMatchObject({
+      error: { code: 'WORKSPACE_MISMATCH' },
     });
   });
 
