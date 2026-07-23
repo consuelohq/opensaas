@@ -44,6 +44,7 @@ export const MCP_OAUTH_SCOPES = [
   'mcp:read',
   'mcp:call',
   'workspace:read',
+  'workspace:nodes:manage',
   'os:tools',
   'route:/mcp:read',
   'tool:*:read',

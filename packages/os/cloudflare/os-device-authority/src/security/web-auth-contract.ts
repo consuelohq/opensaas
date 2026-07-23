@@ -151,4 +151,8 @@ export const UNIVERSAL_AUTH_ROUTE_MATRIX: readonly UniversalAuthRouteContract[] 
   { method: 'ALL', path: '/mcp/*', access: 'preserved-bearer', owner: 'existing' },
   { method: 'GET', path: '/workspace/agents', access: 'public-sanitized-status', owner: 'existing' },
   { method: 'POST', path: '/workspace/agents', access: 'node-bootstrap-bearer', owner: 'existing' },
+  { method: 'GET', path: '/workspace/nodes', access: 'preserved-bearer', owner: 'existing' },
+  { method: 'POST', path: '/workspace/nodes/default', access: 'preserved-bearer', owner: 'existing' },
+  { method: 'POST', path: '/workspace/nodes/heartbeat', access: 'node-bootstrap-bearer', owner: 'existing' },
+  { method: 'ALL', path: '/workspace/nodes/*', access: 'preserved-bearer', owner: 'existing' },
 ] as const;

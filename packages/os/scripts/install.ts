@@ -467,7 +467,7 @@ function workspaceBootstrapFromApprovedDeviceGrant(input: {
   connectorId: string;
   connectorBootstrapToken: string;
   cloudflareTunnelToken?: string;
-}): WorkspaceBootstrap {
+}, deviceKeyPair: WorkspaceDeviceKeyPair): WorkspaceBootstrap {
   const connectorTransport = input.cloudflareTunnelToken
     ? 'cloudflare-tunnel'
     : 'websocket-relay';
@@ -480,6 +480,10 @@ function workspaceBootstrapFromApprovedDeviceGrant(input: {
     ...(input.nodeName ? { nodeName: input.nodeName } : {}),
     ...(input.nodeRole ? { nodeRole: input.nodeRole } : {}),
     ...(input.nodeStatus ? { nodeStatus: input.nodeStatus } : {}),
+    nodePublicKeyJwk: deviceKeyPair.publicKeyJwk,
+    nodeSigningKeyJwk: deviceKeyPair.signingKeyJwk,
+    nodeCapabilities: ['mcp', 'tools'],
+    authorityOrigin: 'https://os.consuelohq.com',
     connectorId: input.connectorId,
     connectorTransport,
     connectorBootstrapToken: input.connectorBootstrapToken,
@@ -736,7 +740,10 @@ export async function completeWorkspaceDeviceSelection(
       workspaceName,
       workspaceSlug: selected.workspaceSlug,
       workspaceHost: selected.workspaceHost,
-      workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(selected),
+      workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(
+        selected,
+        selection.deviceKeyPair,
+      ),
     };
   }
 
@@ -828,7 +835,10 @@ export async function attemptWorkspaceDeviceLogin(
         return {
           status: 'approved',
           verificationUrl: session.verificationUriComplete,
-          workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(pollResult),
+          workspaceBootstrap: workspaceBootstrapFromApprovedDeviceGrant(
+            pollResult,
+            liveDeviceCode.deviceKeyPair,
+          ),
         };
       }
 
