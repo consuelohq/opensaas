@@ -289,6 +289,19 @@ describe('Vercel deployment provider adapter', () => {
     expect(fake.requests[2].timeoutMs).toBe(195_000);
   });
 
+  it('rejects Railway-style service-only redeploy input before Vercel process execution', async () => {
+    const fake = createFakeProviderProcess([]);
+    const service = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: fake.process,
+    });
+
+    await expectProviderError(service.redeploy({
+      serviceId: 'svc_123',
+      approval: { approved: true, reason: 'Validate provider-specific redeploy input' },
+    }), 'INVALID_INPUT');
+    expect(fake.requests).toHaveLength(0);
+  });
+
   it('returns bounded partial logs when the live stream reaches its timeout', async () => {
     const fake = createFakeProviderProcess([
       providerProcessResult({

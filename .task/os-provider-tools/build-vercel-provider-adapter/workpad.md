@@ -78,10 +78,13 @@ task session: `tsk_e398fbe000ba`
 
 ## current status
 
-- FINAL GROK FIXES VALIDATED: Ko-expanded task.push repair remains green. All five concrete Grok findings recovered across bounded runs are fixed with regression coverage. Provider/lifecycle tests, compiler, strict review, and full verify pass; publication and final external approval remain.
+- STREAM RECONCILIATION VALIDATED: Worker 09 advanced `stream/os-provider-tools` through Railway PR #1591, producing substantive overlap in the shared provider core. The local validation tree now combines Railway service/workspace/error/sensitive-output contracts with Vercel project/domain/promote/input-aware-policy/partial-result contracts. Railway, Vercel, provider-core, lifecycle, syntax, and compiler checks pass; a two-parent task-branch merge commit and fresh current-head reviews remain.
 
 ## files changed
 
+- `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+- `packages/os/.tmp-merge-worker10` (deleted)
+- `packages/os/.tmp-reviews/build-vercel-provider-adapter` (deleted)
 - `packages/os/tools/deployment-provider/fixtures/vercel.ts`
 - `packages/os/tools/deployment-provider/index.ts`
 - `packages/os/tools/deployment-provider/process.ts`
@@ -96,10 +99,11 @@ task session: `tsk_e398fbe000ba`
 - `packages/workspace/tests/task-push-session.test.ts`
 - `packages/workspace/tests/task-selector-pr-ref.test.js`
 
-
 ## workspace-owned: files changed
 
 - `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+- `packages/os/.tmp-merge-worker10` (deleted)
+- `packages/os/.tmp-reviews/build-vercel-provider-adapter` (deleted)
 - `packages/os/tools/deployment-provider/fixtures/vercel.ts`
 - `packages/os/tools/deployment-provider/index.ts`
 - `packages/os/tools/deployment-provider/process.ts`
@@ -109,6 +113,10 @@ task session: `tsk_e398fbe000ba`
 - `packages/os/tools/deployment-provider/vercel.md`
 - `packages/os/tools/deployment-provider/vercel.test.ts`
 - `packages/os/tools/deployment-provider/vercel.ts`
+- `packages/workspace/scripts/lib/task-selection.js`
+- `packages/workspace/scripts/task-push.js`
+- `packages/workspace/tests/task-push-session.test.ts`
+- `packages/workspace/tests/task-selector-pr-ref.test.js`
 
 ## workspace-owned: activity log
 
@@ -119,21 +127,12 @@ task session: `tsk_e398fbe000ba`
 - 2026-07-23 15:49:13 fs.write: `packages/os/tools/deployment-provider/fixtures/vercel.ts`
 - 2026-07-23 15:50:11 fs.write: `packages/os/tools/deployment-provider/vercel.md`
 - 2026-07-23 16:01:08 fs.write: `packages/os/tools/deployment-provider/index.ts`
+- 2026-07-23 18:04:35 fs.trash: `packages/os/.tmp-merge-worker10`
+- 2026-07-23 18:04:39 fs.trash: `packages/os/.tmp-reviews/build-vercel-provider-adapter`
 - managed by workspace tooling
 
 ## workspace-owned: validation evidence
 
-- 2026-07-23 15:58:43 `review.run`: passed — OK
-- 2026-07-23 15:58:43 `review.run`: passed — OK
-- 2026-07-23 15:58:54 `review.run`: passed — OK
-- 2026-07-23 16:02:28 `review.run`: passed — OK
-- 2026-07-23 16:02:40 `verify`: passed — OK
-- `trc_e5cddc63b4ab`: full task-aware verification passed and was publish-valid with zero review or database findings.
-- `trc_7d2bd805e79d`: final provider TypeScript compile and OS syntax gate passed after the package index fix.
-- `trc_c81a9eccc456`: final strict changed-file review passed with zero findings.
-- 2026-07-23 16:04:54 `verify`: passed — OK
-- 2026-07-23 16:28:03 `checkFiles`: passed — OK
-- 2026-07-23 16:28:16 `review.run`: passed — OK
 - 2026-07-23 16:28:26 `verify`: passed — OK
 - `trc_f2595b8f341c`: Grok finding repair red, 11 pass / 2 expected failures at multi-URL deploy and timed-out partial logs.
 - `trc_245c2d26fb53`: installed Vercel CLI 50.1.3 confirms deploy/redeploy `--no-wait` and five-minute live log streaming semantics.
@@ -162,6 +161,8 @@ task session: `tsk_e398fbe000ba`
 - 2026-07-23 17:14:53 `verify`: passed — OK
 - 2026-07-23 17:29:55 `review.run`: passed — OK
 - 2026-07-23 17:30:10 `verify`: passed — OK
+- 2026-07-23 18:05:23 `review.run`: passed — OK
+- 2026-07-23 18:05:34 `verify`: passed — OK
 
 ## key decisions
 
@@ -212,6 +213,11 @@ task session: `tsk_e398fbe000ba`
 - The compact recovery also hit Grok's fixed 8028-character provider-output ceiling (`trc_3db60b5d12d0`, `trc_9fc5dd7754a7`). Across the retained portions, three findings were concrete and independently verified against source and Vercel CLI 50.1.3: multi-URL mutation parsing, `QUEUED` without `--no-wait`, and timed-out log streams discarding partial output. All three are fixed with regression coverage. A final post-fix Grok review is required to return a complete approval object before merge.
 - The first combined implementation patch was rejected atomically because a documentation hunk had moved (`trc_231d9193b109`); split anchored patches succeeded with no partial state.
 - The first ad hoc TypeScript compiler attempt used a missing `bun` type library (`trc_4aedf1b783c8`); the corrected Node-types run then exposed one real helper typing gap plus pre-existing strict redaction diagnostics (`trc_b2a0e79f6965`). The helper now forwards `acceptPartialResult`; the provider compile profile passes (`trc_b7862a463cb2`).
+- After all external reviews were posted, PR #1590 became `DIRTY` because Worker 09 merged Railway PR #1591 into the same stream. `task.ensureSynced` identified the advanced stream and prescribed `stream.sync` (`trc_b5db0ad55a32`). The first sync call exposed a facade/script mismatch for optional `--repo` (`trc_91480064373b`); retry without that field succeeded (`trc_205bf463c82b`).
+- The conflict is substantive but bounded to `deployment-provider/schema.ts`, `service.ts`, and `types.ts`. Three-way inspection against original base `11e1e998` and current stream `42cb80d0` confirmed additive provider contracts (`trc_aa6cf303b0c3`, `trc_ac23a7af4a52`). Recovery: assemble the exact stream-plus-task tree locally, preserve both providers' semantics, validate, then create a two-parent GitHub API merge commit on the task branch.
+- Worker 09's disjoint Railway files were copied from the assigned stream into the validation tree; shared core files were manually combined. Combined Railway/Vercel/provider-core tests passed 74/74, lifecycle tests 21/21, syntax passed (`trc_237b9c60fa3f`), and combined provider TypeScript compilation passed (`trc_015b0ab83881`).
+- Railway's provider-neutral redeploy input makes `deploymentId` optional, while Vercel requires it. A focused red test reproduced a service-only Vercel redeploy reaching the process layer (`trc_92cbe4aab845`); Vercel now throws typed `ProviderInputError` before argv construction, and focused green passed 18/18 (`trc_7ad38c94b6fc`).
+- Temporary merge and prior review directories were removed after their evidence was posted (`trc_b18d75458158`, `trc_2791ab3b30c7`).
 
 ## Grok finding dispositions
 
@@ -241,9 +247,13 @@ task session: `tsk_e398fbe000ba`
 
 ## workspace-owned: files read
 
+- `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-approval-schema-prompt.md`
+- `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-approval-serialization-prompt.md`
 - `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-compact-prompt.md`
+- `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-final-compact-prompt.md`
 - `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-prompt.md`
 - `packages/os/package.json`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
 - `packages/os/scripts/subagent.ts`
 - `packages/os/skills/task/SKILL.md`
 - `packages/os/tools/deployment-provider/errors.ts`
@@ -266,8 +276,9 @@ task session: `tsk_e398fbe000ba`
 - `packages/workspace/scripts/lib/task-selection.js`
 - `packages/workspace/scripts/lib/verification.js`
 - `packages/workspace/scripts/review.js`
+- `packages/workspace/scripts/task-pr.js`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/task-selector-pr-ref.test.js`
 
-- 2026-07-23 17:31:02 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+- 2026-07-23 18:05:07 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`

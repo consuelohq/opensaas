@@ -5,6 +5,7 @@ export const deploymentProviderOperations = [
   'auth.status',
   'context.current',
   'project.list',
+  'service.list',
   'project.link',
   'project.configuration',
   'domain.list',

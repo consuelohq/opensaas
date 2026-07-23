@@ -3,6 +3,7 @@ import { Effect } from 'effect';
 import { redactJson } from '../../scripts/lib/redaction';
 import {
   providerError,
+  ProviderInputError,
   type ProviderCommandDiagnostics,
   type ProviderError,
   type ProviderErrorCode,
@@ -42,14 +43,18 @@ export type DeploymentProviderServiceOptions = {
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 
-const diagnostics = (command: string, result: ProviderProcessResult): ProviderCommandDiagnostics => {
+const diagnostics = (
+  command: string,
+  result: ProviderProcessResult,
+  includeOutput = true,
+): ProviderCommandDiagnostics => {
   return {
     command,
     exitCode: result.exitCode,
     timedOut: result.timedOut,
     cancelled: result.cancelled,
-    stdout: redactProviderText(result.stdout),
-    stderr: redactProviderText(result.stderr),
+    stdout: includeOutput ? redactProviderText(result.stdout) : '',
+    stderr: includeOutput ? redactProviderText(result.stderr) : '',
     ...(result.stdoutTruncated ? { stdoutTruncated: true } : {}),
     ...(result.stderrTruncated ? { stderrTruncated: true } : {}),
   };
@@ -65,19 +70,22 @@ const failureCode = (result: ProviderProcessResult): ProviderErrorCode => {
   if (/permission denied|forbidden|not authorized/i.test(detail)) return 'PERMISSION_DENIED';
   if (/rate.?limit|too many requests|\b429\b/i.test(detail)) return 'RATE_LIMITED';
   if (/unavailable|temporarily unavailable|ECONNREFUSED|ENETUNREACH|\b50[234]\b/i.test(detail)) return 'UNAVAILABLE';
+  if (/unrecognized subcommand|unknown command|not supported by this version/i.test(detail)) return 'UNSUPPORTED_CAPABILITY';
   return 'COMMAND_FAILED';
 };
 
 const failureMessage = (
-  provider: string,
+  adapter: DeploymentProviderAdapter,
   operation: DeploymentProviderOperation,
   executable: string,
   code: ProviderErrorCode,
 ): string => {
+  const custom = adapter.errors?.message?.({ code, operation, executable });
+  if (custom) return custom;
   if (code === 'CLI_MISSING') return `${executable} is not installed or is not available on PATH`;
-  if (code === 'TIMEOUT') return `${provider} ${operation} timed out`;
-  if (code === 'CANCELLED') return `${provider} ${operation} was cancelled`;
-  return `${provider} ${operation} failed`;
+  if (code === 'TIMEOUT') return `${adapter.provider} ${operation} timed out`;
+  if (code === 'CANCELLED') return `${adapter.provider} ${operation} was cancelled`;
+  return `${adapter.provider} ${operation} failed`;
 };
 
 const operationPolicy = <Operation extends DeploymentProviderOperation>(
@@ -202,7 +210,10 @@ export const createDeploymentProviderService = (
     operation: DeploymentProviderOperation,
     command: ProviderCommand,
     input: ProviderExecutionOptions,
-    acceptPartialResult?: (result: ProviderProcessResult) => boolean,
+    options: {
+      acceptPartialResult?: (result: ProviderProcessResult) => boolean;
+      sensitiveOutput?: boolean;
+    } = {},
   ) => providerProcess.run({
     command: command.command || adapter.executable,
     args: [...command.args],
@@ -214,7 +225,9 @@ export const createDeploymentProviderService = (
   }).pipe(
     Effect.flatMap((result) => {
       const complete = result.exitCode === 0 && !result.runtimeMissing && !result.timedOut && !result.cancelled;
-      const acceptedPartial = !result.runtimeMissing && !result.cancelled && acceptPartialResult?.(result) === true;
+      const acceptedPartial = !result.runtimeMissing
+        && !result.cancelled
+        && options.acceptPartialResult?.(result) === true;
       if (complete || acceptedPartial) {
         return Effect.succeed(result);
       }
@@ -223,8 +236,12 @@ export const createDeploymentProviderService = (
         code,
         provider: adapter.provider,
         operation,
-        message: failureMessage(adapter.provider, operation, command.command || adapter.executable, code),
-        diagnostics: diagnostics(command.command || adapter.executable, result),
+        message: failureMessage(adapter, operation, command.command || adapter.executable, code),
+        diagnostics: diagnostics(
+          command.command || adapter.executable,
+          result,
+          options.sensitiveOutput !== true,
+        ),
       }));
     }),
   );
@@ -258,6 +275,14 @@ export const createDeploymentProviderService = (
       try {
         command = definition.command(input);
       } catch (cause: unknown) {
+        if (cause instanceof ProviderInputError) {
+          return yield* Effect.fail(providerError({
+            code: 'INVALID_INPUT',
+            provider: adapter.provider,
+            operation,
+            message: cause.message,
+          }));
+        }
         return yield* Effect.fail(providerError({
           code: 'MALFORMED_OUTPUT',
           provider: adapter.provider,
@@ -266,7 +291,10 @@ export const createDeploymentProviderService = (
           cause,
         }));
       }
-      const result = yield* runCommand(operation, command, input, definition.acceptPartialResult);
+      const result = yield* runCommand(operation, command, input, {
+        acceptPartialResult: definition.acceptPartialResult,
+        sensitiveOutput: definition.sensitiveOutput === true,
+      });
       if (operation === 'raw') {
         return normalizeRawResult(result) as DeploymentProviderOperationOutputMap[Operation];
       }
@@ -292,7 +320,11 @@ export const createDeploymentProviderService = (
           provider: adapter.provider,
           operation,
           message: `${adapter.provider} returned malformed output for ${operation}`,
-          diagnostics: diagnostics(command.command || adapter.executable, result),
+          diagnostics: diagnostics(
+            command.command || adapter.executable,
+            result,
+            definition.sensitiveOutput !== true,
+          ),
           cause,
         }));
       }
@@ -349,6 +381,7 @@ export const createDeploymentProviderService = (
     authStatus: () => execute('auth.status', {}),
     contextCurrent: (input = {}) => execute('context.current', input),
     projectList: (input = {}) => execute('project.list', input),
+    serviceList: (input = {}) => execute('service.list', input),
     projectLink: (input) => execute('project.link', input),
     projectConfiguration: (input = {}) => execute('project.configuration', input),
     domainList: (input = {}) => execute('domain.list', input),

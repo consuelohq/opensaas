@@ -4,6 +4,7 @@ import {
   type DeploymentProviderOperation,
   type ProviderOperationPolicy,
 } from './schema';
+import { ProviderInputError } from './errors';
 import type {
   DeploymentProviderAdapter,
   DeploymentProviderOperationInputMap,
@@ -715,14 +716,19 @@ export const createVercelProviderAdapter = (): DeploymentProviderAdapter => ({
     }),
     redeploy: definition({
       capability: 'redeploy',
-      command: (input) => ({
-        args: noColor([
-          'redeploy',
-          input.deploymentId,
-          ...(input.target ? ['--target', input.target] : []),
-          '--no-wait',
-        ]),
-      }),
+      command: (input) => {
+        if (!input.deploymentId) {
+          throw new ProviderInputError('Vercel redeploy requires deploymentId');
+        }
+        return {
+          args: noColor([
+            'redeploy',
+            input.deploymentId,
+            ...(input.target ? ['--target', input.target] : []),
+            '--no-wait',
+          ]),
+        };
+      },
       parse: parseDeploymentMutation,
     }),
     'environment.listNames': definition({
