@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_308cb0c69b5e",
+  "tmuxSession": "opensaas-os-foundation-two-cloudflare-provider-308cb0c6",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/cloudflare-provider",
+  "branch": "task/os-foundation-two/cloudflare-provider",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-cloudflare-provider",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-cloudflare-provider",
+  "prNumber": 1591,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1591",
+  "createdAt": "2026-07-23T15:45:03.436Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-cloudflare-provider/.task/os-foundation-two/cloudflare-provider/session.json"
+}

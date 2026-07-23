@@ -2,8 +2,10 @@ import { createHash, createPublicKey, verify } from 'node:crypto';
 import {
   chmodSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   renameSync,
   rmSync,
   symlinkSync,
@@ -26,6 +28,47 @@ import {
   type ReleaseSource,
   type SignedReleaseManifest,
 } from './types';
+
+export const CURRENT_LIFECYCLE_UPDATER_VERSION = '1.0.0';
+
+function compareSemver(left: string, right: string): number {
+  const parse = (value: string): [bigint, bigint, bigint, string[]] => {
+    const buildIndex = value.indexOf('+');
+    const withoutBuild = buildIndex >= 0 ? value.slice(0, buildIndex) : value;
+    const prereleaseIndex = withoutBuild.indexOf('-');
+    const core = prereleaseIndex >= 0 ? withoutBuild.slice(0, prereleaseIndex) : withoutBuild;
+    const prerelease = prereleaseIndex >= 0 ? withoutBuild.slice(prereleaseIndex + 1) : '';
+    const parts = core.split('.');
+    if (parts.length !== 3 || parts.some((part) => !/^\d+$/.test(part))) {
+      throw new Error(`invalid SemVer: ${value}`);
+    }
+    return [BigInt(parts[0]), BigInt(parts[1]), BigInt(parts[2]), prerelease ? prerelease.split('.') : []];
+  };
+  const [leftMajor, leftMinor, leftPatch, leftPre] = parse(left);
+  const [rightMajor, rightMinor, rightPatch, rightPre] = parse(right);
+  for (const [a, b] of [[leftMajor, rightMajor], [leftMinor, rightMinor], [leftPatch, rightPatch]] as const) {
+    if (a !== b) return a < b ? -1 : 1;
+  }
+  if (leftPre.length === 0 || rightPre.length === 0) {
+    if (leftPre.length === rightPre.length) return 0;
+    return leftPre.length === 0 ? 1 : -1;
+  }
+  const count = Math.max(leftPre.length, rightPre.length);
+  for (let index = 0; index < count; index += 1) {
+    const a = leftPre[index];
+    const b = rightPre[index];
+    if (a === undefined) return -1;
+    if (b === undefined) return 1;
+    if (a === b) continue;
+    const aNumeric = /^\d+$/.test(a);
+    const bNumeric = /^\d+$/.test(b);
+    if (aNumeric && bNumeric) return BigInt(a) < BigInt(b) ? -1 : 1;
+    if (aNumeric !== bNumeric) return aNumeric ? -1 : 1;
+    return a < b ? -1 : 1;
+  }
+  return 0;
+}
+
 
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -141,6 +184,11 @@ export function cleanupRuntimeBundleStaging(input: {
 export function verifyDownloadedRuntimeBundle(
   bytes: Uint8Array,
   release: ReleaseManifestPayload,
+  target: {
+    platform?: string;
+    architecture?: string;
+    updaterVersion?: string;
+  } = {},
 ): RuntimeBundleManifest {
   if (sha256Digest(bytes) !== release.bundleDigest) {
     throw lifecycleError('BUNDLE_DIGEST_MISMATCH', 'downloaded runtime bundle digest does not match release manifest');
@@ -159,6 +207,29 @@ export function verifyDownloadedRuntimeBundle(
     manifest.releaseFingerprint !== release.releaseFingerprint
   ) {
     throw lifecycleError('BUNDLE_VERIFY_FAILED', 'runtime bundle identity does not match signed release manifest');
+  }
+  const expectedPlatform = target.platform ?? process.platform;
+  const expectedArchitecture = target.architecture ?? process.arch;
+  const updaterVersion = target.updaterVersion
+    ?? process.env.CONSUELO_LIFECYCLE_UPDATER_VERSION
+    ?? CURRENT_LIFECYCLE_UPDATER_VERSION;
+  if (manifest.platform !== expectedPlatform) {
+    throw lifecycleError(
+      'BUNDLE_VERIFY_FAILED',
+      `runtime bundle platform ${manifest.platform} does not match ${expectedPlatform}`,
+    );
+  }
+  if (manifest.architecture !== expectedArchitecture) {
+    throw lifecycleError(
+      'BUNDLE_VERIFY_FAILED',
+      `runtime bundle architecture ${manifest.architecture} does not match ${expectedArchitecture}`,
+    );
+  }
+  if (compareSemver(updaterVersion, manifest.minimumUpdaterVersion) < 0) {
+    throw lifecycleError(
+      'BUNDLE_VERIFY_FAILED',
+      `runtime bundle requires updater ${manifest.minimumUpdaterVersion} but current updater is ${updaterVersion}`,
+    );
   }
   return manifest;
 }
@@ -238,6 +309,7 @@ export function activateRuntimeRelease(input: {
   home?: string;
   releasePath: string;
   operationId: string;
+  previousReleasePath?: string;
 }): void {
   const paths = resolveLifecyclePaths(input.home);
   const resolvedRelease = resolve(input.releasePath);
@@ -248,6 +320,38 @@ export function activateRuntimeRelease(input: {
     throw lifecycleError('ACTIVATION_FAILED', 'runtime activation target does not exist');
   }
   mkdirSync(paths.runtimeDir, { recursive: true });
+  if (existsSync(paths.currentLink)) {
+    const currentStat = lstatSync(paths.currentLink);
+    if (currentStat.isDirectory() && !currentStat.isSymbolicLink()) {
+      if (readdirSync(paths.currentLink).length > 0) {
+        throw lifecycleError(
+          'ACTIVATION_FAILED',
+          'runtime/current is a non-empty directory and cannot be replaced safely',
+        );
+      }
+      rmSync(paths.currentLink, { recursive: true });
+    }
+  }
+  if (input.previousReleasePath) {
+    const resolvedPrevious = resolve(input.previousReleasePath);
+    if (
+      resolvedPrevious !== resolvedRelease
+      && isPathWithin(paths.releasesDir, resolvedPrevious)
+      && existsSync(resolvedPrevious)
+    ) {
+      const temporaryPreviousLink = join(paths.runtimeDir, `.previous-${input.operationId}`);
+      rmSync(temporaryPreviousLink, { force: true, recursive: true });
+      try {
+        symlinkSync(relative(paths.runtimeDir, resolvedPrevious), temporaryPreviousLink, 'dir');
+        renameSync(temporaryPreviousLink, paths.previousLink);
+      } catch (error: unknown) {
+        rmSync(temporaryPreviousLink, { force: true, recursive: true });
+        throw lifecycleError('ACTIVATION_FAILED', 'failed to retain previous runtime release', {
+          cause: error,
+        });
+      }
+    }
+  }
   const temporaryLink = join(paths.runtimeDir, `.current-${input.operationId}`);
   rmSync(temporaryLink, { force: true, recursive: true });
   const target = relative(paths.runtimeDir, resolvedRelease);

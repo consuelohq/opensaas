@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e398fbe000ba",
+  "tmuxSession": "opensaas-os-provider-tools-build-vercel-provider-adapter-e398fbe0",
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/build-vercel-provider-adapter",
+  "branch": "task/os-provider-tools/build-vercel-provider-adapter",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-build-vercel-provider-adapter",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-build-vercel-provider-adapter",
+  "prNumber": 1590,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1590",
+  "createdAt": "2026-07-23T15:40:36.023Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-build-vercel-provider-adapter/.task/os-provider-tools/build-vercel-provider-adapter/session.json"
+}

@@ -184,6 +184,11 @@ const SOURCE_ONLY_FILES = new Set([
   'scripts/release-channels.ts',
 ]);
 
+const CUSTOMER_PROVIDER_FILES = new Set([
+  'tools/deployment-provider/cloudflare-runner.ts',
+  'tools/deployment-provider/cloudflare.ts',
+]);
+
 const CUSTOMER_PROVIDER_PREFIXES = [
   'scripts/browser',
   'scripts/github',
@@ -277,6 +282,7 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
   ) {
     return 'test-only';
   }
+  if (CUSTOMER_PROVIDER_FILES.has(filePath)) return 'customer-provider';
   if (
     filePath.startsWith('scripts/lib/distribution/') ||
     filePath === 'manifests/manifest.config.ts' ||
@@ -284,6 +290,7 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
     filePath === 'workflows/workflows.ts' ||
     filePath === 'tools/package.ts' ||
     filePath === 'tools/registry.ts' ||
+    /^tools\/[^/]+\/[^/]+\.md$/.test(filePath) ||
     /^tools\/[^/]+\/(?:manifest|schema)\.ts$/.test(filePath) ||
     SOURCE_ONLY_FILES.has(filePath)
   ) {

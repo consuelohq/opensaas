@@ -25,8 +25,8 @@ describe('lifecycle restart parity', () => {
 
     expect(reload).toContain("const CONFLICTING_LABELS = ['com.consuelo.workspace']");
     expect(reload).toContain('stopConflictingLaunchAgents();');
-    expect(reload).toContain("run('kill', [pid])");
-    expect(reload).toContain("run('kill', ['-9', pid])");
+    expect(reload).toContain("runBestEffort('kill', [pid])");
+    expect(reload).toContain("runBestEffort('kill', ['-9', pid])");
     expect(reload).toContain("const EXPECTED_SERVER_NAME = 'consuelo-os'");
     expect(reload).toContain('RELOAD_WAIT_ATTEMPTS');
     expect(reload).toContain('wrong server');
@@ -64,8 +64,17 @@ describe('lifecycle restart parity', () => {
     });
 
     await controller.preflight();
-    await controller.restart();
+    await controller.restart({ waitForCompletion: true });
 
+    expect(calls).toEqual([
+      {
+        command: process.execPath,
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'restart-now'],
+      },
+    ]);
+
+    calls.length = 0;
+    await controller.restart();
     expect(calls).toEqual([
       {
         command: process.execPath,

@@ -27,4 +27,24 @@ describe('local OS health readiness', () => {
     });
     expect(body).not.toContain('/private/path');
   });
+
+  it('should report the active runtime identity for lifecycle acceptance', async () => {
+    const app = createHealthRoutes(
+      { name: 'consuelo-os', port: 46321 },
+      {
+        assertReady: () => {},
+        runtimeIdentity: () => ({ bundleId: 'bundle-active', version: '2.3.4' }),
+      },
+    );
+
+    const response = await app.request('http://127.0.0.1:46321/health');
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'ok',
+      name: 'consuelo-os',
+      bundleId: 'bundle-active',
+      version: '2.3.4',
+    });
+  });
+
 });

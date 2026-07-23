@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 
 import { lifecycleError } from './errors';
 import { resolveLifecyclePaths } from './paths';
@@ -29,8 +29,29 @@ function readLock(path: string): LockRecord | null {
   }
 }
 
+function processIsAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error: unknown) {
+    return (error as NodeJS.ErrnoException).code === 'EPERM';
+  }
+}
+
+function recordsMatch(left: LockRecord | null, right: LockRecord | null): boolean {
+  return Boolean(
+    left
+      && right
+      && left.operationId === right.operationId
+      && left.acquiredAt === right.acquiredAt
+      && left.pid === right.pid,
+  );
+}
+
 function isStale(record: LockRecord | null, now: Date, staleAfterMs: number): boolean {
   if (!record) return true;
+  if (processIsAlive(record.pid)) return false;
   const acquired = Date.parse(record.acquiredAt);
   return !Number.isFinite(acquired) || now.getTime() - acquired >= staleAfterMs;
 }
@@ -74,7 +95,26 @@ export async function acquireLifecycleLock(input: {
       }
       const existing = readLock(paths.lockPath);
       if (attempt === 0 && isStale(existing, now, staleAfterMs)) {
-        rmSync(paths.lockPath, { force: true });
+        const quarantinePath = `${paths.lockPath}.stale-${input.operationId}`;
+        rmSync(quarantinePath, { force: true });
+        try {
+          renameSync(paths.lockPath, quarantinePath);
+        } catch (renameError: unknown) {
+          if ((renameError as NodeJS.ErrnoException).code === 'ENOENT') continue;
+          throw lifecycleError('LOCK_IO_FAILED', 'failed to quarantine stale lifecycle lock', {
+            cause: renameError,
+          });
+        }
+        const quarantined = readLock(quarantinePath);
+        if (existing ? !recordsMatch(existing, quarantined) : quarantined !== null) {
+          try {
+            renameSync(quarantinePath, paths.lockPath);
+          } catch {
+            // A competing owner may already have acquired the canonical lock path.
+          }
+          throw lifecycleError('LOCK_HELD', 'lifecycle lock owner changed during stale recovery');
+        }
+        rmSync(quarantinePath, { force: true });
         recoveredStaleLock = true;
         continue;
       }
