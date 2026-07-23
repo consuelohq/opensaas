@@ -22,12 +22,14 @@ import {
   keepManagedComponentLocal,
   migrateLegacyManagedMetadata,
   readManagedComponentState,
+  refreshManagedComponentPlan,
   requiredManagedContentBaseRefs,
   restoreManagedComponentDefault,
   writeManagedComponentState,
   type ComponentTree,
   type ManagedComponentProvenance,
 } from '../scripts/lib/managed-components';
+import { provisionManagedComponentIndexes } from '../scripts/lib/managed-component-install';
 
 let home: string;
 let userRoot: string;
@@ -310,12 +312,14 @@ describe('managed component state and typed resolution operations', () => {
     writeManagedComponentState(home, state);
     mkdirSync(join(userRoot, 'Tools', 'merge'), { recursive: true });
     writeFileSync(join(userRoot, 'Tools', 'merge', 'content.txt'), 'first\nmiddle\nlast local\n');
+    mkdirSync(join(userRoot, 'Sites', 'conflict'), { recursive: true });
+    writeFileSync(join(userRoot, 'Sites', 'conflict', 'content.txt'), 'local only\n');
 
     const result = applySafeManagedComponentItems({ home, userRoot });
     expect(result.applied).toEqual([key('job-template', 'new-job'), key('tool', 'merge')]);
     expect(result.skipped).toEqual([key('site-template', 'conflict')]);
     expect(readFileSync(join(userRoot, 'Tools', 'merge', 'content.txt'), 'utf8')).toBe('first upstream\nmiddle\nlast local\n');
-    expect(existsSync(join(userRoot, 'Sites', 'conflict', 'content.txt'))).toBe(false);
+    expect(readFileSync(join(userRoot, 'Sites', 'conflict', 'content.txt'), 'utf8')).toBe('local only\n');
     const persisted = readManagedComponentState(home);
     expect(persisted.provenance.find((item) => item.id === 'new-job')?.ownership).toBe('bundled-managed');
   });
@@ -395,6 +399,64 @@ describe('managed component state and typed resolution operations', () => {
     });
   });
 
+  it('refreshes from live visible trees and preserves a keep-local decision', () => {
+    writeManagedComponentState(home, conflictState());
+    mkdirSync(join(userRoot, 'Tools', 'conflict'), { recursive: true });
+    writeFileSync(join(userRoot, 'Tools', 'conflict', 'content.txt'), 'local\n');
+
+    keepManagedComponentLocal({ home, userRoot, componentKey: key('tool', 'conflict') });
+    const refreshed = refreshManagedComponentPlan({
+      home,
+      userRoot,
+      generatedAt: '2026-07-23T00:01:00.000Z',
+    });
+
+    expect(refreshed.provenance[0]).toMatchObject({
+      localHash: hashComponentTree(tree('local\n')),
+      resolutionState: 'kept-local',
+    });
+    expect(refreshed.plan.items[0]).toMatchObject({
+      action: 'preserve-custom',
+      localHash: hashComponentTree(tree('local\n')),
+      resolutionState: 'kept-local',
+    });
+    expect(readFileSync(join(userRoot, 'Tools', 'conflict', 'content.txt'), 'utf8')).toBe('local\n');
+  });
+
+  it('inspects an upstream removal review without fabricating upstream content', () => {
+    const base = tree('bundled\n');
+    const baseRef = hashComponentTree(base);
+    const local = tree('customer change\n');
+    const state = buildManagedComponentUpdateState({
+      generatedAt: '2026-07-23T00:00:00.000Z',
+      sourceBundle,
+      provenance: [provenance({
+        id: 'removed',
+        kind: 'job-template',
+        baseHash: baseRef,
+        baseContentRef: baseRef,
+        localPath: 'Jobs/removed',
+      })],
+      retainedContent: { [baseRef]: base },
+      upstream: [],
+      localOverrides: [{
+        id: 'removed',
+        kind: 'job-template',
+        localPath: 'Jobs/removed',
+        content: local,
+      }],
+      custom: [],
+    });
+    writeManagedComponentState(home, state);
+
+    expect(inspectManagedComponentConflict(home, key('job-template', 'removed'))).toEqual({
+      item: state.plan.items[0],
+      base,
+      local,
+      upstream: null,
+    });
+  });
+
   it('restores a bundled default to a new visible path without replacing local content', () => {
     writeManagedComponentState(home, conflictState());
     const localPath = join(userRoot, 'Tools', 'conflict', 'content.txt');
@@ -467,6 +529,43 @@ describe('managed metadata migration and ownership', () => {
   });
 });
 
+describe('managed component provisioning integration', () => {
+  it('loads a configured visible local tree when rebuilding the production update plan', () => {
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: [],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:00:00.000Z',
+      userRoot,
+    });
+    const initial = readManagedComponentState(home);
+    initial.provenance = initial.provenance.map((record) => record.kind === 'tool' && record.id === 'status'
+      ? { ...record, localPath: 'Tools/status' }
+      : record);
+    writeManagedComponentState(home, initial);
+
+    const visible = { 'tool.json': '{"name":"status","description":"customer visible override"}\n' };
+    mkdirSync(join(userRoot, 'Tools', 'status'), { recursive: true });
+    writeFileSync(join(userRoot, 'Tools', 'status', 'tool.json'), visible['tool.json']);
+
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: [],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:01:00.000Z',
+      userRoot,
+    });
+
+    const refreshed = readManagedComponentState(home);
+    expect(refreshed.plan.items.find((item) => item.key === key('tool', 'status'))).toMatchObject({
+      action: 'preserve-custom',
+      localPath: 'Tools/status',
+      localHash: hashComponentTree(visible),
+    });
+    expect(readFileSync(join(userRoot, 'Tools', 'status', 'tool.json'), 'utf8')).toBe(visible['tool.json']);
+  });
+});
+
 
 describe('managed component CLI', () => {
   it('exposes stable plan and explicit conflict inspection commands', () => {
@@ -525,6 +624,24 @@ describe('managed component CLI', () => {
         local: tree('local\n'),
         upstream: tree('upstream\n'),
       },
+    });
+
+    mkdirSync(join(userRoot, 'Tools', 'conflict'), { recursive: true });
+    writeFileSync(join(userRoot, 'Tools', 'conflict', 'content.txt'), 'local\n');
+    const refreshCommand = spawnSync('bun', [
+      'scripts/managed-components.ts',
+      'refresh-plan',
+      '--home',
+      home,
+      '--user-root',
+      userRoot,
+      '--json',
+    ], { cwd: process.cwd(), encoding: 'utf8' });
+    expect(refreshCommand.status).toBe(0);
+    expect(JSON.parse(refreshCommand.stdout)).toMatchObject({
+      ok: true,
+      command: 'refresh-plan',
+      plan: { summary: { total: 1, requiresReview: 1 } },
     });
   });
 });

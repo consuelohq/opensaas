@@ -55,7 +55,7 @@ The update engine rejects duplicate identities, invalid IDs, path traversal, sec
 | `detach` | Component remains local and is excluded from managed updates. | No write |
 | `no-change` | Base, local, and upstream state are equivalent. | No write |
 
-The comparison inputs are the retained base tree, the current local tree captured during planning, and the next runtime bundle's upstream tree. A clean merge is materialized only when the deterministic merge algorithm proves non-overlap. Conflicts retain all three content references for inspection.
+The comparison inputs are the retained base tree, the current visible local tree captured during planning, and the next runtime bundle's upstream tree. Provisioning and `refresh-plan` read configured visible `localPath` trees through the same path/symlink/secret guards used by apply operations. A clean merge is materialized only when the deterministic merge algorithm proves non-overlap. Review items retain every available content reference; `remove-upstream` inspection returns the base and local trees with `upstream: null`.
 
 ## Apply and resolution safety
 
@@ -67,7 +67,7 @@ Every write boundary:
 4. writes a complete temporary tree;
 5. atomically swaps the tree, removing stale files while preserving the old tree on failure.
 
-The typed CLI supports plan inspection, safe automatic application, conflict inspection, accept-upstream, keep-local, reviewed merge application with expected hashes, detach, and restore-default to a new visible path. Restore never overwrites an existing destination.
+The typed CLI supports plan inspection, live-tree plan refresh, safe automatic application, conflict/upstream-removal inspection, accept-upstream, keep-local, reviewed merge application with expected hashes, detach, and restore-default to a new visible path. Safe apply and explicit resolutions refresh the persisted plan before returning, so a kept-local or reviewed merged tree remains represented by its live hash. Restore never overwrites an existing destination.
 
 ## Lifecycle retention handoff
 

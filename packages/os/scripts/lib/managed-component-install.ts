@@ -9,6 +9,7 @@ import {
   buildManagedComponentUpdateState,
   hashComponentTree,
   readManagedComponentState,
+  snapshotManagedComponentLocalOverrides,
   writeManagedComponentState,
   type ComponentTree,
   type ManagedComponentLocal,
@@ -402,19 +403,20 @@ export function provisionManagedComponentIndexes(input: {
   }, null, 2)}\n`, { mode: 0o600 });
 
   const previous = readExistingState(input.home);
+  const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
   let state = buildManagedComponentUpdateState({
     generatedAt: input.generatedAt,
     sourceBundle,
     provenance: previous.provenance,
     retainedContent: previous.content,
     upstream,
-    localOverrides: [],
+    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, previous.provenance),
     custom: legacy.custom,
   });
   writeManagedComponentState(input.home, state);
   applySafeManagedComponentItems({
     home: input.home,
-    userRoot: input.userRoot ?? path.join(os.homedir(), 'Consuelo'),
+    userRoot,
   });
   const applied = readManagedComponentState(input.home);
   state = buildManagedComponentUpdateState({
@@ -423,7 +425,7 @@ export function provisionManagedComponentIndexes(input: {
     provenance: applied.provenance,
     retainedContent: applied.content,
     upstream,
-    localOverrides: [],
+    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, applied.provenance),
     custom: legacy.custom,
   });
   writeManagedComponentState(input.home, state);

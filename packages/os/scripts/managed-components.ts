@@ -10,6 +10,7 @@ import {
   inspectManagedComponentConflict,
   keepManagedComponentLocal,
   readManagedComponentState,
+  refreshManagedComponentPlan,
   requiredManagedContentBaseRefs,
   restoreManagedComponentDefault,
   type ComponentTree,
@@ -56,6 +57,7 @@ function usage(): never {
     '',
     'Commands:',
     '  inspect-plan --home <path> [--json]',
+    '  refresh-plan --home <path> --user-root <path> [--json]',
     '  apply-safe --home <path> --user-root <path> [--json]',
     '  inspect-conflict --home <path> --component <kind:id> [--json]',
     '  accept-upstream --home <path> --user-root <path> --component <kind:id> [--json]',
@@ -86,6 +88,18 @@ export function runManagedComponentsCli(argv = process.argv.slice(2)): unknown {
   switch (args.command) {
     case 'inspect-plan': {
       const state = readManagedComponentState(home);
+      return {
+        ok: true,
+        command: args.command,
+        plan: state.plan,
+        requiredContentBaseRefs: requiredManagedContentBaseRefs(state.provenance, state.plan),
+      };
+    }
+    case 'refresh-plan': {
+      const state = refreshManagedComponentPlan({
+        home,
+        userRoot: required(args, '--user-root'),
+      });
       return {
         ok: true,
         command: args.command,

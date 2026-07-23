@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/lib/managed-components.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-23T22:06:25.726Z"
+}

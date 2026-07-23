@@ -1155,6 +1155,7 @@ Reads the managed-component indexes, provenance, content bases, and stable `upda
 
 ```bash
 bun run managed-components -- inspect-plan --home "$CONSUELO_HOME" --json
+bun run managed-components -- refresh-plan --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --json
 bun run managed-components -- apply-safe --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --json
 bun run managed-components -- inspect-conflict --home "$CONSUELO_HOME" --component tool:example --json
 bun run managed-components -- accept-upstream --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --json

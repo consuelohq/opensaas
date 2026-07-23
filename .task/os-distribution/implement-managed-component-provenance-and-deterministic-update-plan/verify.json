@@ -5,7 +5,7 @@
   "branch": "task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan",
   "base": "stream/os-distribution",
   "headSha": "2df7b539d7734b527178ac81122bed5b282c3ee6",
-  "changeHash": "bd30d9369dd6c3bc2503419c8698e0f1645cc66d761f58ffca447b9b0326942b",
+  "changeHash": "a68154dd975e64f532adb70c1b2ffe5cb31c3b5038ee4cc7ed0dafa8119d6ca4",
   "changedFiles": [
     "packages/os/SCRIPTS.md",
     "packages/os/docs/managed-components.md",
@@ -25,7 +25,7 @@
     "packages/os/tests/managed-components.test.ts",
     "packages/os/tests/settings-site.test.ts"
   ],
-  "verifiedAt": "2026-07-23T21:14:27.501Z",
+  "verifiedAt": "2026-07-23T22:07:46.691Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -40,6 +40,8 @@
       "passed": true,
       "changedFiles": [
         ".task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/current.json",
+        ".task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/evidence-log.json",
+        ".task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/read-log.json",
         ".task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/session.json",
         ".task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/verify.json",
         ".task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md",

@@ -844,6 +844,65 @@ function readFilesystemTree(root: string, relativePath: string): ComponentTree {
   return canonicalTree(tree);
 }
 
+export function snapshotManagedComponentLocalOverrides(
+  userRoot: string,
+  provenance: ManagedComponentProvenance[],
+): ManagedComponentLocal[] {
+  return provenance
+    .filter((record) => record.ownership !== 'custom' && Boolean(record.localPath))
+    .map((record) => ({
+      id: record.id,
+      kind: record.kind,
+      localPath: record.localPath!,
+      content: readFilesystemTree(userRoot, record.localPath!),
+    }))
+    .sort(compareKeys);
+}
+
+function upstreamSourcesFromState(state: ManagedComponentState): ManagedComponentSource[] {
+  const provenanceByKey = mapByKey(state.provenance, 'provenance');
+  return state.plan.items
+    .filter((item) => Boolean(item.upstreamContentRef))
+    .map((item) => ({
+      id: item.id,
+      kind: item.kind,
+      sourcePath: item.sourcePath ?? provenanceByKey.get(item.key)?.sourcePath ?? '',
+      content: requireContent(state.content, item.upstreamContentRef, `upstream for ${item.key}`),
+    }))
+    .sort(compareKeys);
+}
+
+function customSourcesFromState(state: ManagedComponentState): ManagedComponentLocal[] {
+  return state.plan.items
+    .filter((item) => item.ownership === 'custom' && Boolean(item.localPath) && Boolean(item.localContentRef))
+    .map((item) => ({
+      id: item.id,
+      kind: item.kind,
+      localPath: item.localPath!,
+      content: requireContent(state.content, item.localContentRef, `custom local for ${item.key}`),
+    }))
+    .sort(compareKeys);
+}
+
+export function refreshManagedComponentPlan(input: {
+  home: string;
+  userRoot: string;
+  generatedAt?: string;
+}): ManagedComponentState {
+  const previous = readManagedComponentState(input.home);
+  const refreshed = buildManagedComponentUpdateState({
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    sourceBundle: previous.plan.sourceBundle,
+    provenance: previous.provenance,
+    retainedContent: previous.content,
+    upstream: upstreamSourcesFromState(previous),
+    localOverrides: snapshotManagedComponentLocalOverrides(input.userRoot, previous.provenance),
+    custom: customSourcesFromState(previous),
+  });
+  writeManagedComponentState(input.home, refreshed);
+  return refreshed;
+}
+
 function assertCurrentLocalMatches(userRoot: string, item: ManagedComponentPlanItem): void {
   if (!item.localPath) return;
   if (!item.localHash) throw new Error(`planned local hash is missing: ${item.key}`);
@@ -938,7 +997,7 @@ export function inspectManagedComponentConflict(home: string, componentKeyValue:
   item: ManagedComponentPlanItem;
   base: ComponentTree;
   local: ComponentTree;
-  upstream: ComponentTree;
+  upstream: ComponentTree | null;
 } {
   const state = readManagedComponentState(home);
   const item = findPlanItem(state, componentKeyValue);
@@ -947,7 +1006,9 @@ export function inspectManagedComponentConflict(home: string, componentKeyValue:
     item,
     base: requireContent(state.content, item.baseContentRef, 'base'),
     local: requireContent(state.content, item.localContentRef, 'local'),
-    upstream: requireContent(state.content, item.upstreamContentRef, 'upstream'),
+    upstream: item.upstreamContentRef
+      ? requireContent(state.content, item.upstreamContentRef, 'upstream')
+      : null,
   };
 }
 
@@ -1005,6 +1066,11 @@ export function applySafeManagedComponentItems(input: { home: string; userRoot: 
   }
 
   writeManagedComponentState(input.home, state);
+  refreshManagedComponentPlan({
+    home: input.home,
+    userRoot: input.userRoot,
+    generatedAt: state.plan.generatedAt,
+  });
   return { applied, skipped };
 }
 
@@ -1029,6 +1095,11 @@ export function acceptManagedComponentUpstream(input: {
     ownership: 'bundled-managed',
   }));
   writeManagedComponentState(input.home, state);
+  refreshManagedComponentPlan({
+    home: input.home,
+    userRoot: input.userRoot,
+    generatedAt: state.plan.generatedAt,
+  });
 }
 
 export function keepManagedComponentLocal(input: { home: string; userRoot: string; componentKey: string }): void {
@@ -1046,6 +1117,11 @@ export function keepManagedComponentLocal(input: { home: string; userRoot: strin
     ownership: 'bundled-managed',
   }));
   writeManagedComponentState(input.home, state);
+  refreshManagedComponentPlan({
+    home: input.home,
+    userRoot: input.userRoot,
+    generatedAt: state.plan.generatedAt,
+  });
 }
 
 export function applyReviewedManagedComponentMerge(input: {
@@ -1075,6 +1151,11 @@ export function applyReviewedManagedComponentMerge(input: {
     ownership: 'bundled-managed',
   }));
   writeManagedComponentState(input.home, state);
+  refreshManagedComponentPlan({
+    home: input.home,
+    userRoot: input.userRoot,
+    generatedAt: state.plan.generatedAt,
+  });
 }
 
 export function detachManagedComponent(input: { home: string; componentKey: string }): void {
