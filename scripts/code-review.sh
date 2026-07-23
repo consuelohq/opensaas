@@ -23,7 +23,7 @@ $(git ls-files --others --exclude-standard 2>/dev/null || echo "")"
 ALL_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -v '^$' | sort -u || true)
 
 CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^packages/[^/]+/src/.*\.(ts|tsx)$' || true)
-DIALER_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^(areas/dialer/AGENTS\.md|scripts/code-review\.sh|packages/workspace/scripts/run-dialer-scenario\.ts|packages/workspace/tests/dialer-.*\.test\.ts|packages/dialer/src/.*\.ts|packages/twenty-front/src/modules/dialer/.*\.(ts|tsx)|packages/twenty-server/src/engine/core-modules/consuelo-api/(controllers/parallel\.controller\.ts|guards/twilio-signature\.guard\.ts|resolvers/dialer-call-start\.resolver\.ts|services/(dialer-call-start|legacy-dialer|parallel|parallel-posterior|parallel-strategy-resolver).*\.ts))$' || true)
+DIALER_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^(areas/dialer/AGENTS\.md|scripts/code-review\.sh|packages/workspace/scripts/run-dialer-scenario\.ts|packages/workspace/tests/dialer-.*\.test\.ts|packages/dialer/src/.*\.ts|packages/dialer-server/(package\.json|project\.json|src/.*\.ts)|packages/twenty-front/src/modules/dialer/.*\.(ts|tsx)|packages/twenty-server/src/engine/core-modules/consuelo-api/(controllers/parallel\.controller\.ts|guards/twilio-signature\.guard\.ts|resolvers/dialer-call-start\.resolver\.ts|services/(dialer-call-start|legacy-dialer|parallel|parallel-posterior|parallel-strategy-resolver).*\.ts))$' || true)
 
 if [ -z "$CHANGED_FILES" ] && [ -z "$DIALER_CHANGED_FILES" ]; then
   echo -e "${GREEN}no changed source or dialer-critical files to review${NC}"
@@ -429,6 +429,15 @@ ${PACKAGE_DIALER_OUTPUT}"
     }
   fi
 
+
+  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/dialer-server/'; then
+    DIALER_SERVER_OUTPUT=$(bun test packages/dialer-server/src 2>&1) || {
+      FAIL=1
+      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
+--- dialer-server Hono tests ---
+${DIALER_SERVER_OUTPUT}"
+    }
+  fi
   if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/twenty-front/src/modules/dialer/'; then
     FRONT_DIALER_OUTPUT=$(npx jest \
       packages/twenty-front/src/modules/dialer/utils/__tests__/backend-queue-session.test.ts \

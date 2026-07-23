@@ -5,7 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const script = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../scripts/test-selection.js');
+const script = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../scripts/test-selection.js',
+);
 
 function run(args, options = {}) {
   return spawnSync('node', [script, ...args], {
@@ -35,16 +38,34 @@ describe('test selection registry', () => {
     expect(summary.testFileCount).toBeGreaterThan(0);
     expect(summary.mappedTestCount).toBeGreaterThan(0);
     expect(summary.mappedTestCount).toBeLessThanOrEqual(summary.testFileCount);
-    const explicitRuleIds = registry.rules.filter((rule) => rule.origin === 'explicit').map((rule) => rule.id);
-    expect(explicitRuleIds).toEqual(expect.arrayContaining([
-      'workspace-facade',
-      'workspace-publish-gate',
-      'workspace-test-selection',
-    ]));
-    expect(registry.tests.some((test) => test.path === 'packages/workspace/tests/verification.test.js')).toBe(true);
-    expect(registry.rules.some((rule) => rule.id === 'workspace-publish-gate')).toBe(true);
-    const autoTwentyShared = registry.rules.find((rule) => rule.id === 'auto:twenty-shared:test');
-    expect(autoTwentyShared?.tests[0]?.command).toEqual(['npx', 'nx', 'test', 'twenty-shared', '--coverage=false']);
+    const explicitRuleIds = registry.rules
+      .filter((rule) => rule.origin === 'explicit')
+      .map((rule) => rule.id);
+    expect(explicitRuleIds).toEqual(
+      expect.arrayContaining([
+        'workspace-facade',
+        'workspace-publish-gate',
+        'workspace-test-selection',
+      ]),
+    );
+    expect(
+      registry.tests.some(
+        (test) => test.path === 'packages/workspace/tests/verification.test.js',
+      ),
+    ).toBe(true);
+    expect(
+      registry.rules.some((rule) => rule.id === 'workspace-publish-gate'),
+    ).toBe(true);
+    const autoTwentyShared = registry.rules.find(
+      (rule) => rule.id === 'auto:twenty-shared:test',
+    );
+    expect(autoTwentyShared?.tests[0]?.command).toEqual([
+      'npx',
+      'nx',
+      'test',
+      'twenty-shared',
+      '--coverage=false',
+    ]);
   });
 
   it('uses the API package Jest configuration for API changes', () => {
@@ -68,18 +89,51 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('selects the Hono dialer-server suite for standalone server changes', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/dialer-server/src/app.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const serverSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'dialer-server-package',
+    );
+
+    expect(serverSuite?.command).toEqual([
+      'bun',
+      'test',
+      'packages/dialer-server/src',
+    ]);
+  });
+
   it('selects publish-gate tests for verify changes', () => {
-    const result = run(['check', '--changed-file', 'packages/workspace/scripts/verify.js', '--json']);
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/verify.js',
+      '--json',
+    ]);
     const data = json(result);
 
     expect(data.passed).toBe(true);
-    expect(data.matchedRules.map((rule) => rule.id)).toContain('workspace-publish-gate');
-    expect(data.selectedSuites.map((suite) => suite.name)).toContain('workspace verification stamp tests');
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-publish-gate',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace verification stamp tests',
+    );
     expect(data.zeroSuiteReason).toBeNull();
   });
 
   it('reports zero-suite warnings for unmapped code', () => {
-    const result = run(['check', '--changed-file', 'packages/unknown/src/example.ts', '--json']);
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/unknown/src/example.ts',
+      '--json',
+    ]);
     const data = json(result);
 
     expect(data.passed).toBe(true);
@@ -97,7 +151,12 @@ describe('test selection registry', () => {
   });
 
   it('allows explicit documentation json paths as docs-only', () => {
-    const result = run(['check', '--changed-file', 'docs/example.schema.json', '--json']);
+    const result = run([
+      'check',
+      '--changed-file',
+      'docs/example.schema.json',
+      '--json',
+    ]);
     const data = json(result);
 
     expect(data.level).toBe('pass');
@@ -105,32 +164,43 @@ describe('test selection registry', () => {
   });
 
   it('fails timed out suite commands', () => {
-    const registryPath = path.join(os.tmpdir(), `test-selection-timeout-${Date.now()}.json`);
-    fs.writeFileSync(registryPath, JSON.stringify({
-      version: 1,
-      rules: [
-        {
-          id: 'timeout-rule',
-          source: ['packages/slow/**'],
-          critical: true,
-          origin: 'test',
-          tests: [
-            {
-              name: 'slow suite',
-              command: [process.execPath, '-e', 'setTimeout(() => {}, 1000)'],
-            },
-          ],
-        },
-      ],
-    }));
+    const registryPath = path.join(
+      os.tmpdir(),
+      `test-selection-timeout-${Date.now()}.json`,
+    );
+    fs.writeFileSync(
+      registryPath,
+      JSON.stringify({
+        version: 1,
+        rules: [
+          {
+            id: 'timeout-rule',
+            source: ['packages/slow/**'],
+            critical: true,
+            origin: 'test',
+            tests: [
+              {
+                name: 'slow suite',
+                command: [process.execPath, '-e', 'setTimeout(() => {}, 1000)'],
+              },
+            ],
+          },
+        ],
+      }),
+    );
 
-    const result = run([
-      'check',
-      '--registry', registryPath,
-      '--changed-file', 'packages/slow/src/index.ts',
-      '--run',
-      '--json',
-    ], { env: { TEST_SUITE_TIMEOUT_MS: '50' } });
+    const result = run(
+      [
+        'check',
+        '--registry',
+        registryPath,
+        '--changed-file',
+        'packages/slow/src/index.ts',
+        '--run',
+        '--json',
+      ],
+      { env: { TEST_SUITE_TIMEOUT_MS: '50' } },
+    );
     const data = JSON.parse(result.stdout);
 
     expect(result.status).toBe(1);
@@ -139,5 +209,4 @@ describe('test selection registry', () => {
     expect(data.failedSuites[0].status).toBe('failed');
     expect(data.failedSuites[0].error?.code).toBe('ETIMEDOUT');
   });
-
 });
