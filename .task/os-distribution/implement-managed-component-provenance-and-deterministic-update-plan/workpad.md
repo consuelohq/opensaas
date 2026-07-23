@@ -64,10 +64,9 @@ started: 2026-07-23
 
 ## files changed
 
-- `.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md`
+- `packages/os/SCRIPTS.md`
 - `packages/os/docs/managed-components.md`
 - `packages/os/package.json`
-- `packages/os/SCRIPTS.md`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/managed-component-install.ts`
@@ -77,11 +76,13 @@ started: 2026-07-23
 - `packages/os/tests/audit/fixtures/script-parity-classifications.json`
 - `packages/os/tests/distribution/release-publication-preparer.test.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
 - `packages/os/tests/install-state.test.ts`
 - `packages/os/tests/installer-local-agent-connectivity.test.ts`
 - `packages/os/tests/lifecycle-engine.test.ts`
 - `packages/os/tests/managed-components.test.ts`
 - `packages/os/tests/settings-site.test.ts`
+
 
 ## key decisions
 
@@ -108,6 +109,7 @@ started: 2026-07-23
 - Registered distribution tests initially failed because the publication fixture omitted Worker 06's new mandatory runtime files (`trc_68cba779275d`); updated the fixture and reran the exact lane green (`trc_ec22b072a177`).
 - Global audit failed on broad existing repository drift (`trc_c83a5123c940`); no Worker 06 product bypass was taken. Continued through the plan-designated scoped execution audit, strict review, verify, and registered clean-host lane.
 - Strict review found one Worker 06 bare-catch typing issue (`trc_4a604f5be1aa`); fixed it, reran focused tests/typecheck (`trc_452799aac20a`), then reran strict review clean (`trc_0c6ef0bcdb99`) and verify publish-valid (`trc_c9752ad2ac0e`).
+- The first task publish surfaced an unrelated facade snapshot modified by the broad local suite. Cross-branch `fs.read` correctly rejected the task-session mismatch (`trc_bea707fff03b`); recovered through the authenticated GitHub content API inside the task worktree (`trc_4c0403e2a2a3`) and verified the restored file is byte-identical to `stream/os-distribution` (`trc_8d117ecfd8e3`).
 
 ## real-machine boundary
 
@@ -166,5 +168,6 @@ Expected: `ok: true`, schema version 1, `summary.requiresReview: 0`, and no edit
 - 2026-07-23 21:11:58 apply-patch: `packages/os/scripts/lib/managed-components.ts`
 - 2026-07-23 21:12:15 `review.run`: passed — OK
 - 2026-07-23 21:12:28 `verify`: passed — OK
-
 - 2026-07-23 21:12:48 apply-patch: `.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md`
+- 2026-07-23 21:14:11 apply-patch: `.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/workpad.md`
+- 2026-07-23 21:14:27 `verify`: passed — OK
