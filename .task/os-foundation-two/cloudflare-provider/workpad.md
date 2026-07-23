@@ -58,7 +58,7 @@ Out of scope:
 ## current status
 
 - Exact task session is active on PR 1591.
-- Product implementation, local validation, CI, CodeRabbit, and Grok review are complete on published product head `b1b1f5af`. Final task metadata publication and merge into the assigned stream remain.
+- Product implementation, local validation, CI, CodeRabbit, and Grok review are complete on product head `b1b1f5af`. Review evidence is published in metadata-only commit `44243bf8`; this final metadata-only commit records completion. Only merge into the assigned stream remains.
 - Worker 11 brief re-read after initial infrastructure discovery clarified the strict customer/provider boundary.
 - Existing Consuelo Cloudflare platform modules are evidence for forbidden imports/commands, not implementation dependencies.
 
@@ -168,7 +168,7 @@ Out of scope:
 19. Two long polling calls exceeded the outer OS window while the detached wrapper continued safely. Recovery: short deterministic process/output inspections established completion; the recovery wrapper succeeded with trace `trc_59594addcd3a`, stop reason `EndTurn`, exit code 0.
 20. The successful wrapper compacted/truncated nested provider JSON, so direct nested parse failed (`trc_cd27e030f456`), and the preserved log was likewise incomplete after the final message (`trc_aad6c2193c70`). Recovery: extract the exact valid `text` JSON string prefix before `stopReason`, then parse the embedded structured review without reading/reconstructing the truncated reasoning field (`trc_226ff5af1dbe`).
 
-21. Final metadata push used a relative `--files` path while the script was launched with `--cwd packages/os`, so it resolved under `packages/os/.task` and failed ENOENT (`trc_096df0731c2e`). No commit was created. Recovery: retry the same OS-native task lifecycle command with the absolute workpad path.
+21. Final metadata push used a relative `--files` path while the script was launched with `--cwd packages/os`, so it resolved under `packages/os/.task` and failed ENOENT (`trc_096df0731c2e`). No commit was created. Recovery: retried the same OS-native lifecycle command with the absolute workpad path; metadata-only commit `44243bf8` published successfully (`trc_4025666fc9f9`).
 
 ---
 
@@ -178,7 +178,7 @@ Out of scope:
 - [x] Focused and provider-core regression suites green.
 - [x] Runtime-bundle customer/operator boundary proven.
 - [x] `review.run` and `verify` green.
-- [x] Product changes pushed (`b1b1f5af`) and PR body current; final workpad metadata is ready to publish.
+- [x] Product changes pushed (`b1b1f5af`), review evidence published (`44243bf8`), and PR body current.
 - [x] CodeRabbit requested; review skipped by repository path filters, with zero findings to dispose.
 - [x] Grok prompt rendered, exact wrapper invoked, structured review/findings/summary posted, dispositions recorded, and tmp review folder removed.
 - [ ] Task PR merged only into `stream/os-foundation-two`.
@@ -249,3 +249,5 @@ Out of scope:
 - Temporary Grok artifacts removed (2026-07-23T16:31:22.724Z): deleted `packages/os/.tmp-reviews/cloudflare-provider/` only after the full structured review, top-level summary, and disposition were durable on GitHub.
 
 - Final local safety gate (2026-07-23T16:31:55.572Z): strict review passed with 0 local/pre-existing findings (trace `trc_7b97b8e3f43e`); full verify passed, database-risk scan clean, publish-valid (trace `trc_c17bcecfa57f`). Product diff remains the same four files reviewed by Grok and CI.
+
+- Final metadata state (2026-07-23T16:32:47.531Z): product files remain unchanged from Grok-reviewed head `b1b1f5af`; metadata-only review evidence is on `44243bf8`. This workpad commit finalizes the publish checklist before the resulting CI cycle and assigned-stream merge.
