@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/cloudflare-provider",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "stream/os-foundation-two",
+  "startFrom": "stream",
+  "prNumber": 1591,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1591",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1591",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1591/cloudflare-provider",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1591",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1591/cloudflare-provider",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-cloudflare-provider",
+  "taskSession": "tsk_308cb0c69b5e",
+  "tmuxSession": "opensaas-os-foundation-two-cloudflare-provider-308cb0c6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-cloudflare-provider/.task/os-foundation-two/cloudflare-provider/session.json",
+  "createdAt": "2026-07-23T15:45:03.437Z"
+}
