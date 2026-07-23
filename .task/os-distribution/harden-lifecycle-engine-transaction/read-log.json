@@ -1,0 +1,29 @@
+{
+  "files": [
+    ".task/os-distribution/harden-lifecycle-engine-transaction/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/lifecycle/config.ts",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/lifecycle/lock.ts",
+    "packages/os/scripts/lib/lifecycle/migrations.ts",
+    "packages/os/scripts/lib/lifecycle/release.ts",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/scripts/lib/lifecycle/state.ts",
+    "packages/os/scripts/lib/lifecycle/types.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-23T04:37:47.615Z"
+}

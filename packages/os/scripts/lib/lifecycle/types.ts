@@ -110,11 +110,23 @@ export type LifecycleStatusResult = LifecycleOperationResult & {
 
 export type LifecycleServiceController = {
   preflight(): Promise<void>;
-  restart(): Promise<void>;
+  restart(input?: {
+    operationId?: string;
+    expectedBundleId?: string;
+    waitForCompletion?: boolean;
+  }): Promise<void>;
 };
 
 export type LifecycleHealthAcceptance = {
-  accept(): Promise<boolean>;
+  accept(input?: { bundleId?: string; version?: string }): Promise<boolean>;
+};
+
+export type LifecycleRuntimeMaterializer = {
+  materialize(input: {
+    home: string;
+    releasePath: string;
+    manifest: RuntimeBundleManifest;
+  }): Promise<void>;
 };
 
 export type LifecycleMigrationRunner = {
@@ -140,6 +152,13 @@ export type LifecycleHooks = {
     previousReleasePath?: string;
     nextReleasePath: string;
     manifest: RuntimeBundleManifest;
+  }): Promise<void>;
+  onActivationFailure?(input: {
+    home: string;
+    operationId: string;
+    previousReleasePath?: string;
+    nextReleasePath?: string;
+    error: unknown;
   }): Promise<void>;
   onHealthFailure?(input: {
     home: string;

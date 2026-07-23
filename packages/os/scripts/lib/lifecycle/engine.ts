@@ -1,3 +1,5 @@
+import { rmSync } from 'node:fs';
+
 import { Effect } from 'effect';
 
 import {
@@ -9,6 +11,7 @@ import { createLifecycleProgressEmitter } from './diagnostics';
 import { asLifecycleError, lifecycleError } from './errors';
 import { acquireLifecycleLock } from './lock';
 import { noOpLifecycleMigrationRunner } from './migrations';
+import { noOpLifecycleRuntimeMaterializer } from './runtime';
 import { resolveLifecyclePaths } from './paths';
 import {
   activateRuntimeRelease,
@@ -21,6 +24,7 @@ import {
 import {
   inspectLifecycleInstallState,
   listVerifiedRetainedReleases,
+  verifyInstalledRuntimeRelease,
 } from './state';
 import type {
   LifecycleEngine,
@@ -32,6 +36,7 @@ import type {
   LifecycleOperationResult,
   LifecycleProgressEvent,
   LifecycleReleaseChannel,
+  LifecycleRuntimeMaterializer,
   LifecycleServiceController,
   ReleaseManifestPayload,
   ReleaseSource,
@@ -44,6 +49,7 @@ export type LifecycleEngineDependencies = {
   service: LifecycleServiceController;
   health: LifecycleHealthAcceptance;
   migration?: LifecycleMigrationRunner;
+  runtime?: LifecycleRuntimeMaterializer;
   hooks?: LifecycleHooks;
   onboarding?: () => Promise<void>;
   progress?: (event: LifecycleProgressEvent) => void;
@@ -84,6 +90,8 @@ export function createLifecycleEngine(
   const now = dependencies.now ?? (() => new Date());
   const nextOperationId = dependencies.operationId ?? defaultOperationId;
   const migration = dependencies.migration ?? noOpLifecycleMigrationRunner;
+  const runtime = dependencies.runtime ?? noOpLifecycleRuntimeMaterializer;
+  const paths = resolveLifecyclePaths(home);
 
   const emitter = (operation: LifecycleOperation) =>
     createLifecycleProgressEmitter({
@@ -107,7 +115,7 @@ export function createLifecycleEngine(
         phase: 'manifest-fetch',
       });
       emit('manifest-verify', { channel, keyId: signed.signature?.keyId });
-      return yield* Effect.try({
+      const verified = yield* Effect.try({
         try: () => verifySignedReleaseManifest(signed, dependencies.trustedReleaseKeys),
         catch: (error) => asLifecycleError(
           error,
@@ -116,6 +124,14 @@ export function createLifecycleEngine(
           'manifest-verify',
         ),
       });
+      if (verified.channel !== channel) {
+        return yield* Effect.fail(lifecycleError(
+          'MANIFEST_INVALID',
+          `release manifest channel ${verified.channel} does not match requested channel ${channel}`,
+          { phase: 'manifest-verify' },
+        ));
+      }
+      return verified;
     });
 
   const exclusive = <T>(
@@ -139,35 +155,141 @@ export function createLifecycleEngine(
       ),
     );
 
-  const acceptHealth = (
+  const acceptHealth = async (
     emit: ReturnType<typeof emitter>,
     hooksInput: {
       operationId: string;
       previousReleasePath?: string;
       nextReleasePath?: string;
     },
-  ): Effect.Effect<void, ReturnType<typeof asLifecycleError>> =>
-    Effect.gen(function* () {
-      emit('health');
-      const healthy = yield* tryPromise({
-        try: () => dependencies.health.accept(),
-        code: 'HEALTH_REJECTED',
-        message: 'runtime health acceptance failed',
-        phase: 'health',
+    expected?: { bundleId?: string; version?: string },
+  ): Promise<void> => {
+    emit('health', expected);
+    let healthy: boolean;
+    try {
+      healthy = await dependencies.health.accept(expected);
+    } catch (error: unknown) {
+      throw asLifecycleError(
+        error,
+        'HEALTH_REJECTED',
+        'runtime health acceptance failed',
+        'health',
+      );
+    }
+    if (healthy) return;
+    if (dependencies.hooks?.onHealthFailure) {
+      await dependencies.hooks.onHealthFailure({ home, ...hooksInput });
+    }
+    throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
+      phase: 'health',
+    });
+  };
+
+  const activateAndAccept = async (input: {
+    emit: ReturnType<typeof emitter>;
+    operationId: string;
+    previousReleasePath?: string;
+    nextReleasePath: string;
+    manifest: Parameters<LifecycleMigrationRunner['run']>[0]['manifest'];
+  }): Promise<void> => {
+    let activated = false;
+    try {
+      if (dependencies.hooks?.beforeActivate) {
+        await dependencies.hooks.beforeActivate({
+          home,
+          operationId: input.operationId,
+          previousReleasePath: input.previousReleasePath,
+          nextReleasePath: input.nextReleasePath,
+          manifest: input.manifest,
+        });
+      }
+      input.emit('activate', {
+        bundleId: input.manifest.bundleId,
+        previousReleasePath: input.previousReleasePath,
       });
-      if (!healthy) {
-        if (dependencies.hooks?.onHealthFailure) {
-          yield* Effect.promise(() => dependencies.hooks!.onHealthFailure!(
-            { home, ...hooksInput },
-          ));
-        }
-        return yield* Effect.fail(
-          lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
-            phase: 'health',
-          }),
+      activateRuntimeRelease({
+        home,
+        releasePath: input.nextReleasePath,
+        operationId: input.operationId,
+        previousReleasePath: input.previousReleasePath,
+      });
+      activated = true;
+      if (dependencies.hooks?.afterActivate) {
+        await dependencies.hooks.afterActivate({
+          home,
+          operationId: input.operationId,
+          previousReleasePath: input.previousReleasePath,
+          nextReleasePath: input.nextReleasePath,
+          manifest: input.manifest,
+        });
+      }
+      input.emit('service-restart');
+      try {
+        await dependencies.service.restart({
+          operationId: input.operationId,
+          expectedBundleId: input.manifest.bundleId,
+          waitForCompletion: true,
+        });
+      } catch (error: unknown) {
+        throw asLifecycleError(
+          error,
+          'SERVICE_RESTART_FAILED',
+          'failed to restart Consuelo services',
+          'service-restart',
         );
       }
-    });
+      await acceptHealth(input.emit, {
+        operationId: input.operationId,
+        previousReleasePath: input.previousReleasePath,
+        nextReleasePath: input.nextReleasePath,
+      }, {
+        bundleId: input.manifest.bundleId,
+        version: input.manifest.version,
+      });
+    } catch (error: unknown) {
+      if (dependencies.hooks?.onActivationFailure) {
+        await dependencies.hooks.onActivationFailure({
+          home,
+          operationId: input.operationId,
+          previousReleasePath: input.previousReleasePath,
+          nextReleasePath: input.nextReleasePath,
+          error,
+        });
+      }
+      if (!activated) throw error;
+      try {
+        if (input.previousReleasePath) {
+          const previousManifest = verifyInstalledRuntimeRelease(input.previousReleasePath);
+          activateRuntimeRelease({
+            home,
+            releasePath: input.previousReleasePath,
+            operationId: `${input.operationId}-rollback`,
+          });
+          await dependencies.service.restart({
+            operationId: `${input.operationId}-rollback`,
+            expectedBundleId: previousManifest.bundleId,
+            waitForCompletion: true,
+          });
+          await acceptHealth(input.emit, {
+            operationId: `${input.operationId}-rollback`,
+            nextReleasePath: input.previousReleasePath,
+          }, {
+            bundleId: previousManifest.bundleId,
+            version: previousManifest.version,
+          });
+        } else {
+          rmSync(paths.currentLink, { force: true });
+        }
+      } catch (rollbackError: unknown) {
+        throw lifecycleError(
+          'ACTIVATION_FAILED',
+          `runtime activation failed and rollback was not accepted: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
+          { phase: 'health', cause: { error, rollbackError } },
+        );
+      }
+      throw error;
+    }
+  };
 
   const applyRelease = async (input: {
     operation: 'install' | 'update';
@@ -175,10 +297,11 @@ export function createLifecycleEngine(
     check?: boolean;
     existingState?: Awaited<ReturnType<typeof inspectLifecycleInstallState>>;
     emit: ReturnType<typeof emitter>;
+    operationId?: string;
+    lockHeld?: boolean;
   }): Promise<LifecycleOperationResult> => {
-    const operationId = nextOperationId();
-    return exclusive(operationId, input.emit, () =>
-      Effect.gen(function* () {
+    const operationId = input.operationId ?? nextOperationId();
+    const program = Effect.gen(function* () {
         const current = input.existingState ?? (yield* Effect.promise(() => inspectLifecycleInstallState(home)));
         const release = yield* fetchVerifiedRelease(input.channel, input.emit);
         const updateAvailable = current.currentBundleId !== release.bundleId;
@@ -266,7 +389,13 @@ export function createLifecycleEngine(
           ),
         });
 
-        input.emit('preflight');
+        input.emit('preflight', { dependencyMaterialization: true });
+        yield* tryPromise({
+          try: () => runtime.materialize({ home, releasePath: staged.releasePath, manifest }),
+          code: 'PREFLIGHT_FAILED',
+          message: 'runtime dependency materialization failed',
+          phase: 'preflight',
+        });
         yield* tryPromise({
           try: () => dependencies.service.preflight(),
           code: 'PREFLIGHT_FAILED',
@@ -283,53 +412,17 @@ export function createLifecycleEngine(
         });
 
         const previousReleasePath = current.currentReleasePath;
-        if (dependencies.hooks?.beforeActivate) {
-          yield* Effect.promise(() => dependencies.hooks!.beforeActivate!({
-            home,
-            operationId,
-            previousReleasePath,
-            nextReleasePath: staged.releasePath,
-            manifest,
-          }));
-        }
-        input.emit('activate', {
-          bundleId: manifest.bundleId,
-          previousBundleId: current.currentBundleId,
-        });
-        yield* Effect.try({
-          try: () => activateRuntimeRelease({
-            home,
-            releasePath: staged.releasePath,
-            operationId,
-          }),
-          catch: (error) => asLifecycleError(
-            error,
-            'ACTIVATION_FAILED',
-            'failed to activate runtime bundle',
-            'activate',
-          ),
-        });
-        if (dependencies.hooks?.afterActivate) {
-          yield* Effect.promise(() => dependencies.hooks!.afterActivate!({
-            home,
-            operationId,
-            previousReleasePath,
-            nextReleasePath: staged.releasePath,
-            manifest,
-          }));
-        }
-
-        input.emit('service-restart');
         yield* tryPromise({
-          try: () => dependencies.service.restart(),
-          code: 'SERVICE_RESTART_FAILED',
-          message: 'failed to restart Consuelo services',
-          phase: 'service-restart',
-        });
-        yield* acceptHealth(input.emit, {
-          operationId,
-          previousReleasePath,
-          nextReleasePath: staged.releasePath,
+          try: () => activateAndAccept({
+            emit: input.emit,
+            operationId,
+            previousReleasePath,
+            nextReleasePath: staged.releasePath,
+            manifest,
+          }),
+          code: 'ACTIVATION_FAILED',
+          message: 'runtime activation transaction failed',
+          phase: 'activate',
         });
 
         input.emit('complete', {
@@ -344,56 +437,93 @@ export function createLifecycleEngine(
           version: manifest.version,
           bundleId: manifest.bundleId,
         } satisfies LifecycleOperationResult;
-      }),
-    );
+    });
+    return input.lockHeld
+      ? runEffect(program)
+      : exclusive(operationId, input.emit, () => program);
   };
 
   return {
     async status() {
-      const state = await inspectLifecycleInstallState(home);
-      return {
-        operation: 'status',
-        changed: false,
-        installState: state.kind,
-        version: state.currentVersion,
-        bundleId: state.currentBundleId,
-        preferences: loadLifecyclePreferences(home, now()),
-        ...(state.reason ? { detail: { reason: state.reason } } : {}),
-      };
+      try {
+        const state = await inspectLifecycleInstallState(home);
+        return {
+          operation: 'status',
+          changed: false,
+          installState: state.kind,
+          version: state.currentVersion,
+          bundleId: state.currentBundleId,
+          preferences: loadLifecyclePreferences(home, now()),
+          ...(state.reason ? { detail: { reason: state.reason } } : {}),
+        };
+      } catch (error: unknown) {
+        throw asLifecycleError(
+          error,
+          'INSTALL_STATE_INVALID',
+          'failed to inspect lifecycle status',
+          'inspect',
+        );
+      }
     },
 
     async install(input = {}) {
       const emit = emitter('install');
-      let state = await inspectLifecycleInstallState(home);
-      emit('inspect', { installState: state.kind });
-      if (state.onboardingRequired) {
-        if (!dependencies.onboarding) {
+      const initialState = await inspectLifecycleInstallState(home);
+      emit('inspect', { installState: initialState.kind });
+      if (!initialState.onboardingRequired) {
+        const preferences = loadLifecyclePreferences(home, now());
+        if (initialState.kind === 'legacy') {
           throw lifecycleError(
             'INSTALL_STATE_INVALID',
-            'first install requires the onboarding adapter',
+            'legacy install must be migrated before runtime activation',
           );
         }
-        emit('onboarding');
-        try {
-          await dependencies.onboarding();
-        } catch (error: unknown) {
-          throw asLifecycleError(error, 'ONBOARDING_FAILED', 'first-install onboarding failed', 'onboarding');
-        }
-        state = await inspectLifecycleInstallState(home);
+        return applyRelease({
+          operation: 'install',
+          channel: input.channel ?? preferences.channel,
+          existingState: initialState,
+          emit,
+        });
       }
-      if (state.kind === 'legacy') {
+      if (!dependencies.onboarding) {
         throw lifecycleError(
           'INSTALL_STATE_INVALID',
-          'legacy install must be migrated before runtime activation',
+          'first install requires the onboarding adapter',
         );
       }
-      const preferences = loadLifecyclePreferences(home, now());
-      return applyRelease({
-        operation: 'install',
-        channel: input.channel ?? preferences.channel,
-        existingState: state,
-        emit,
-      });
+      const operationId = nextOperationId();
+      return exclusive(operationId, emit, () => Effect.tryPromise({
+        try: async () => {
+          emit('onboarding');
+          try {
+            await dependencies.onboarding!();
+          } catch (error: unknown) {
+            throw asLifecycleError(
+              error,
+              'ONBOARDING_FAILED',
+              'first-install onboarding failed',
+              'onboarding',
+            );
+          }
+          const state = await inspectLifecycleInstallState(home);
+          if (state.kind === 'legacy') {
+            throw lifecycleError(
+              'INSTALL_STATE_INVALID',
+              'legacy install must be migrated before runtime activation',
+            );
+          }
+          const preferences = loadLifecyclePreferences(home, now());
+          return applyRelease({
+            operation: 'install',
+            channel: input.channel ?? preferences.channel,
+            existingState: state,
+            emit,
+            operationId,
+            lockHeld: true,
+          });
+        },
+        catch: (error) => error,
+      }));
     },
 
     async update(input = {}) {
@@ -433,20 +563,19 @@ export function createLifecycleEngine(
       if (state.kind === 'no-install' || state.kind === 'legacy') {
         throw lifecycleError('INSTALL_STATE_INVALID', 'restart requires an installed Consuelo OS');
       }
-      emit('service-restart');
+      emit('service-restart', { replySafe: true });
       try {
         await dependencies.service.restart();
       } catch (error: unknown) {
         throw asLifecycleError(
           error,
           'SERVICE_RESTART_FAILED',
-          'failed to restart Consuelo services',
+          'failed to schedule Consuelo service restart',
           'service-restart',
         );
       }
-      await runEffect(acceptHealth(emit, { operationId: nextOperationId() }));
-      emit('complete', { changed: true });
-      return { operation: 'restart', changed: true };
+      emit('complete', { changed: true, scheduled: true });
+      return { operation: 'restart', changed: true, detail: { scheduled: true } };
     },
 
     async repair() {
@@ -461,13 +590,80 @@ export function createLifecycleEngine(
           );
         }
         if (state.kind === 'valid') {
-          emit('complete', { changed: false, reason: 'runtime already valid' });
-          return {
-            operation: 'repair',
-            changed: false,
-            version: state.currentVersion,
-            bundleId: state.currentBundleId,
-          };
+          if (!state.currentReleasePath || !state.manifest) {
+            throw lifecycleError(
+              'REPAIR_FAILED',
+              'valid runtime state is missing its release identity',
+              { phase: 'inspect' },
+            );
+          }
+          const operationId = nextOperationId();
+          return await exclusive(operationId, emit, () =>
+            Effect.gen(function* () {
+              emit('preflight', { dependencyMaterialization: true, repair: true });
+              yield* tryPromise({
+                try: () => runtime.materialize({
+                  home,
+                  releasePath: state.currentReleasePath!,
+                  manifest: state.manifest!,
+                }),
+                code: 'PREFLIGHT_FAILED',
+                message: 'runtime dependency materialization failed during repair',
+                phase: 'preflight',
+              });
+              yield* tryPromise({
+                try: () => dependencies.service.preflight(),
+                code: 'PREFLIGHT_FAILED',
+                message: 'platform preflight failed during repair',
+                phase: 'preflight',
+              });
+              emit('migrate', { repair: true });
+              yield* tryPromise({
+                try: () => migration.run({
+                  home,
+                  releasePath: state.currentReleasePath!,
+                  manifest: state.manifest!,
+                }),
+                code: 'MIGRATION_FAILED',
+                message: 'runtime migration verification failed during repair',
+                phase: 'migrate',
+              });
+              emit('service-restart', { repair: true });
+              yield* tryPromise({
+                try: () => dependencies.service.restart({
+                  operationId,
+                  expectedBundleId: state.currentBundleId,
+                  waitForCompletion: true,
+                }),
+                code: 'SERVICE_RESTART_FAILED',
+                message: 'failed to restart Consuelo services after repair',
+                phase: 'service-restart',
+              });
+              yield* tryPromise({
+                try: () => acceptHealth(emit, {
+                  operationId,
+                  nextReleasePath: state.currentReleasePath,
+                }, {
+                  bundleId: state.currentBundleId,
+                  version: state.currentVersion,
+                }),
+                code: 'HEALTH_REJECTED',
+                message: 'repaired runtime health acceptance failed',
+                phase: 'health',
+              });
+              emit('complete', {
+                changed: true,
+                reason: 'runtime dependencies and service state repaired',
+              });
+              return {
+                operation: 'repair',
+                changed: true,
+                version: state.currentVersion,
+                bundleId: state.currentBundleId,
+                detail: { repaired: ['dependencies', 'migrations', 'service'] },
+              } satisfies LifecycleOperationResult;
+            }),
+          );
         }
 
         emit('repair-scan');
@@ -486,37 +682,34 @@ export function createLifecycleEngine(
         const operationId = nextOperationId();
         return await exclusive(operationId, emit, () =>
           Effect.gen(function* () {
-            emit('preflight');
+            emit('preflight', { dependencyMaterialization: true, repair: true });
+            yield* tryPromise({
+              try: () => runtime.materialize({
+                home,
+                releasePath: retained.path,
+                manifest: retained.manifest,
+              }),
+              code: 'PREFLIGHT_FAILED',
+              message: 'runtime dependency materialization failed during repair',
+              phase: 'preflight',
+            });
             yield* tryPromise({
               try: () => dependencies.service.preflight(),
               code: 'PREFLIGHT_FAILED',
               message: 'platform preflight failed during repair',
               phase: 'preflight',
             });
-            emit('activate', { bundleId: retained.manifest.bundleId, repair: true });
-            yield* Effect.try({
-              try: () => activateRuntimeRelease({
-                home,
-                releasePath: retained.path,
-                operationId,
-              }),
-              catch: (error) => asLifecycleError(
-                error,
-                'REPAIR_FAILED',
-                'failed to reactivate retained runtime release',
-                'activate',
-              ),
-            });
-            emit('service-restart');
             yield* tryPromise({
-              try: () => dependencies.service.restart(),
-              code: 'SERVICE_RESTART_FAILED',
-              message: 'failed to restart Consuelo services after repair',
-              phase: 'service-restart',
-            });
-            yield* acceptHealth(emit, {
-              operationId,
-              nextReleasePath: retained.path,
+              try: () => activateAndAccept({
+                emit,
+                operationId,
+                previousReleasePath: state.currentReleasePath,
+                nextReleasePath: retained.path,
+                manifest: retained.manifest,
+              }),
+              code: 'REPAIR_FAILED',
+              message: 'failed to reactivate retained runtime release',
+              phase: 'activate',
             });
             emit('complete', {
               changed: true,
