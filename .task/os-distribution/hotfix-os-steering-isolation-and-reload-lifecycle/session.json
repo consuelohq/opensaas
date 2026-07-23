@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_db00e1898cdc",
+  "tmuxSession": "opensaas-os-distribution-hotfix-os-steering-isolation-and-reload-lifecycl-db00e189",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/hotfix-os-steering-isolation-and-reload-lifecycle",
+  "branch": "task/os-distribution/hotfix-os-steering-isolation-and-reload-lifecycle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-hotfix-os-steering-isolation-and-reload-lifecycle",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-hotfix-os-steering-isolation-and-reload-lifecycle",
+  "prNumber": 1580,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1580",
+  "createdAt": "2026-07-23T02:46:09.438Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-hotfix-os-steering-isolation-and-reload-lifecycle/.task/os-distribution/hotfix-os-steering-isolation-and-reload-lifecycle/session.json"
+}
