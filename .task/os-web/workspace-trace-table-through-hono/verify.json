@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/os-web/workspace-trace-table-through-hono",
   "base": "origin/stream/os-web",
-  "headSha": "d2de5a9bcd748e7406dc8ba6fed030a795c36911",
-  "changeHash": "cac9429f2c2216289afd725ef0e57405ca0d854e50d7ae79edb6fefe4288d80f",
+  "headSha": "4f46e8d1579a518351fa6a3e6930da4bd2f9f8d7",
+  "changeHash": "9733103382d97dbb1a8d3278e3456e058661788d151545efb77c917502e2b00d",
   "changedFiles": [
     "packages/os/scripts/lib/sites.ts",
     "packages/os/scripts/lib/trace-site.ts",
@@ -22,7 +22,7 @@
     "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
     "packages/os/tests/traces-hono-routes.test.ts"
   ],
-  "verifiedAt": "2026-07-23T22:25:13.401Z",
+  "verifiedAt": "2026-07-23T22:40:31.590Z",
   "review": {
     "skipped": false,
     "passed": true,

@@ -21,7 +21,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - [x] Prevent archive/static refresh from unexpectedly replacing the live local trace assets or violating workspace/node cache isolation.
 - [x] Retire or clearly demote redundant trace-site ownership while preserving compatibility contracts required by existing callers.
 - [x] Add focused behavioral, auth-isolation, routing, cursor, redaction, static/Hono integration, and browser coverage; preserve existing trace/auth/node regressions.
-- [ ] Complete CodeRabbit and Grok 4.5 review, post findings/dispositions to GitHub, pass CI, and merge PR #1604 into `stream/os-web` only. Grok structured review and both inline findings are posted; CR-001 and CR-002 are fixed locally and await push/disposition comments.
+- [x] Complete CodeRabbit and Grok 4.5 review, post findings/dispositions to GitHub, and pass CI. Merge PR #1604 into `stream/os-web` only remains.
 
 ## plan
 
@@ -30,7 +30,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 3. Add focused behavioral tests first and capture the expected red failures. **Complete.**
 4. Implement the smallest Hono/static-adapter, workspace/node-scoping, UI-state, and redaction changes needed to satisfy the contract. **Complete.**
 5. Run focused and broader trace/auth/node regression suites and browser desktop/mobile verification. **Complete.**
-6. Push PR #1604, request CodeRabbit, run the prescribed Grok 4.5 wrapper, post and disposition every finding, and rerun validation. **Pending.**
+6. Push PR #1604, request CodeRabbit, run the prescribed Grok 4.5 wrapper, post and disposition every finding, and rerun validation. **Complete.**
 7. Merge the task PR into `stream/os-web`, remove temporary review artifacts, and stop without promoting the stream to main. **Pending.**
 
 ## current status
@@ -39,6 +39,8 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - Final local evidence: strict `review.run` has zero findings (`trc_a1d1f1574a36`); 77 Node/Vitest tests and 12 Bun-native SQLite tests pass (`trc_5fc7d812a654`); full `verify` against `origin/main` passes and is publish-valid (`trc_e1bf417b4d44`).
 - Grok remediation red phase captured three intended failures (Hono fixture injection ignored; generated Sites page still interactive) in `trc_a83432c49465`. Minimal fixes added a production-default-preserving endpoint injection seam and demoted the generated page to a static canonical `/traces` notice. Focused green: 18/18 tests passed (`trc_641b83255b2d`). The workspace mismatch assertion uses the canonical verifier's actual `WORKSPACE_MISMATCH` result because tampered identity is rejected before the redundant route-scope check.
 - Post-fix strict review against `origin/stream/os-web` found zero issues (`trc_8d24a6024caf`). Syntax plus 87 normal Vitest tests and 12 Bun-native SQLite tests passed (`trc_e6408b443033`). Full verify against `origin/stream/os-web` passed with `publishValid: true` (`trc_09365fcdac4b`).
+- Grok review trace `trc_01d57d23170b` produced CR-001 and CR-002; both fixes and validation dispositions are posted inline and in the top-level summary. CodeRabbit was requested twice, including a full review after the bounded diff refresh, but repository path filters excluded all 21 task files; no CodeRabbit findings were produced, and the limitation is recorded on PR #1604. Temporary Grok artifacts were removed after posting (`trc_c140b9b7965c`).
+- Final GitHub CI on remediation commit `4f46e8d1` completed 43/43 with zero failures or pending checks (`trc_fcd0f7982974`). The OS-contracts job spent most of its runtime in dependency installation (`trc_35d277a04a90`) and then passed without retry.
 
 ## test-first contract
 
@@ -51,28 +53,26 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 
 ## files changed
 
+- `packages/os/.tmp-reviews/workspace-trace-table-through-hono` (deleted)
 - `packages/os/scripts/lib/sites.ts`
-- `packages/os/scripts/lib/trace-sites-gateway-contract.ts`
-- `packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts`
-- `packages/os/scripts/lib/trace-sites-gateway-read-layer.ts`
-- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
-- `packages/os/scripts/server/route-policies.ts`
 - `packages/os/scripts/server/routes/traces.ts`
-- `packages/os/tests/local-os-server-hono-architecture.test.ts`
-- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
-- `packages/os/scripts/lib/trace-site.ts`
-- `packages/os/tests/trace-history-redaction.test.ts`
+- `packages/os/tests/sites-cli.test.ts`
 - `packages/os/tests/trace-site-renderer.test.ts`
 - `packages/os/tests/traces-hono-routes.test.ts`
 
-
 ## workspace-owned: files changed
 
-- none yet
+- `packages/os/.tmp-reviews/workspace-trace-table-through-hono` (deleted)
+- `packages/os/scripts/lib/sites.ts`
+- `packages/os/scripts/server/routes/traces.ts`
+- `packages/os/tests/sites-cli.test.ts`
+- `packages/os/tests/trace-site-renderer.test.ts`
+- `packages/os/tests/traces-hono-routes.test.ts`
 
 ## workspace-owned: activity log
 
-- none yet
+- 2026-07-23 22:26:21 fs.trash: `packages/os/.tmp-reviews/workspace-trace-table-through-hono`
+- 2026-07-23 22:40:08 fs.write: `.task/os-web/workspace-trace-table-through-hono/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -81,6 +81,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - 2026-07-23 21:48:12 `verify`: passed — OK
 - 2026-07-23 22:24:54 `review.run`: passed — OK
 - 2026-07-23 22:25:13 `verify`: passed — OK
+- 2026-07-23 22:40:31 `verify`: passed — OK
 
 ## key decisions
 
@@ -119,6 +120,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - The guarded Grok run completed successfully (`trc_8c1cdc3fe67d`, 451713ms, exit 0), but the subagent runtime applies `SUBAGENT_OUTPUT_LIMIT = 8000` before persisting provider stdout. The saved log ends midway through finding CR-002 with a literal truncation marker, so the structured review cannot be parsed and fails closed as incomplete. Recovery: rerun the same committed template and exact wrapper command with an appended JSON-only size constraint (≤6500 characters, concise required fields, no progress narration) so the complete structured review fits the runtime envelope.
 - Compact Grok rerun completed successfully (`trc_01d57d23170b`, 281094ms, exit 0). Its complete `text` field was recovered independently from the malformed later wrapper field and normalized to `packages/os/.tmp-reviews/workspace-trace-table-through-hono/grok-review.json` (`trc_0ed45ec09ed5`). Outcome: `issues_found`, confidence `medium`, two findings: CR-001 high/tests (missing signed Hono success, workspace mismatch, and redaction-on-wire coverage; blocks merge) and CR-002 medium/architecture (static Sites materialization still emits a full unscoped interactive trace client; does not independently block merge). Both were verified as valid and will be fixed.
 - A review-evidence push failed because the local task ref remained at bootstrap SHA `09cc0388` while the prior API-backed task push advanced the remote task branch to `d2de5a9b` (`trc_347cc28897fb`). Task cleanup preview confirmed the open PR protects the worktree (`trc_1a4aa2b73ed8`). Recovery plan: preserve the current task metadata/workpad, complete the active reviewer, then use typed task cleanup plus `task.start` on the same deterministic branch slug to recreate the worktree from the remote branch and recover the same deterministic task-session handle.
+- The same API-backed `task.push` local-ref desynchronization repeated after remediation: local remained `d2de5a9b` while remote advanced to `4f46e8d1` (`trc_cd6fb6742f9d`). Recovery: temporarily close PR #1604 with a durable explanation (`trc_fa69f98d049f`), typed `task.cleanup --force` removed only the local worktree/ref (`trc_0af8042ff1ec`), reopen the PR (`trc_ad70b1a7ab78`), and recover the exact task session/worktree from remote through `task.start` (`trc_5d60fc08125e`). The restored verify stamp then correctly failed closed on head mismatch (`trc_591211d05bca`); rerunning full verify on head `4f46e8d1` passed and regenerated a publish-valid stamp (`trc_4ad8cefd43e8`).
 
 ---
 
@@ -183,3 +185,8 @@ bun run task:finish
 - 2026-07-23 22:24:31 apply-patch: `.task/os-web/workspace-trace-table-through-hono/workpad.md`
 
 - 2026-07-23 22:25:28 apply-patch: `.task/os-web/workspace-trace-table-through-hono/workpad.md`
+
+- 2026-07-23 22:39:20 apply-patch: `.task/os-web/workspace-trace-table-through-hono/workpad.md`
+- 2026-07-23 22:40:08 write: `.task/os-web/workspace-trace-table-through-hono/workpad.md`
+
+- 2026-07-23 22:40:42 apply-patch: `.task/os-web/workspace-trace-table-through-hono/workpad.md`
