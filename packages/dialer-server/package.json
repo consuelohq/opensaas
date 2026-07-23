@@ -1,0 +1,21 @@
+{
+  "name": "@consuelo/dialer-server",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "test": "bun test src",
+    "typecheck": "tsc --noEmit",
+    "build": "bun build ./src/main.ts --outdir ./dist --target bun"
+  },
+  "dependencies": {
+    "@consuelo/dialer": "workspace:*",
+    "effect": "^3.21.3",
+    "hono": "^4.11.9",
+    "twilio": "^5.12.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "5.9.2"
+  }
+}
