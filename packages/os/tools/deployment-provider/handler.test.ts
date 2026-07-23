@@ -276,6 +276,58 @@ describe('deployment provider core', () => {
     await expectProviderError(unsupported.detect(), 'UNSUPPORTED_CAPABILITY');
   });
 
+  it('normalizes environment mutation results without returning provider values', async () => {
+    const secret = 'environment-set-secret-value';
+    const fake = createFakeProviderProcess([
+      providerProcessResult({
+        stdout: JSON.stringify({
+          name: 'FEATURE_FLAG',
+          scopes: ['production'],
+          updated: true,
+          value: secret,
+          token: 'also-secret',
+        }),
+      }),
+    ]);
+    const service = createDeploymentProviderService(createFakeDeploymentProviderAdapter(), {
+      process: fake.process,
+    });
+
+    const result = await Effect.runPromise(service.environmentSet({
+      name: 'FEATURE_FLAG',
+      value: secret,
+      scope: 'production',
+      approval: { approved: true, reason: 'Security normalization contract test' },
+    }));
+
+    expect(result).toEqual({
+      name: 'FEATURE_FLAG',
+      scopes: ['production'],
+      updated: true,
+    });
+    expect(JSON.stringify(result)).not.toContain(secret);
+    expect(JSON.stringify(result)).not.toContain('also-secret');
+  });
+
+  it('maps thrown version parsers to sanitized malformed-output errors', async () => {
+    const fake = createFakeProviderProcess([
+      providerProcessResult({ stdout: '{"version":"unexpected"}' }),
+    ]);
+    const adapter = createFakeDeploymentProviderAdapter();
+    adapter.version.parse = () => {
+      throw new Error('version parser exposed Bearer version-secret-token');
+    };
+    const service = createDeploymentProviderService(adapter, { process: fake.process });
+
+    const error = await expectProviderError(service.detect(), 'MALFORMED_OUTPUT');
+    expect(error.message).toContain('version output');
+    expect(error.cause).toEqual({
+      name: 'Error',
+      message: 'version parser exposed Bearer [REDACTED_SECRET]',
+    });
+    expect(JSON.stringify(error)).not.toContain('version-secret-token');
+  });
+
   it('returns environment variable names, scopes, and presence without values', async () => {
     const secret = 'postgres://user:password@example.test/db';
     const fake = createFakeProviderProcess([

@@ -50,19 +50,9 @@ task-start trace: `trc_9a5344a7c2ff`
 
 ## files changed
 
-- `.task/os-provider-tools/effect-based-deployment-provider-core/*`
-- `.task/os-provider-tools/effect-based-deployment-provider-core/workpad.md`
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
-- `packages/os/tools/deployment-provider/{manifest,handler}.ts`
-- `packages/os/tools/deployment-provider/errors.ts`
-- `packages/os/tools/deployment-provider/handler.test.ts`
-- `packages/os/tools/deployment-provider/process.ts`
-- `packages/os/tools/deployment-provider/redaction.ts`
-- `packages/os/tools/deployment-provider/schema.ts`
 - `packages/os/tools/deployment-provider/service.ts`
-- `packages/os/tools/deployment-provider/testing.ts`
-- `packages/os/tools/deployment-provider/types.ts`
+- `packages/os/tools/deployment-provider/handler.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -99,7 +89,7 @@ task-start trace: `trc_9a5344a7c2ff`
 - Generated full/core manifests current: `bun run --cwd packages/os generate-tool-manifest:check` (`trc_2e442256dffb`).
 - Compile-time typed operation contract red: `trc_1fef17b3c190`; green after generic input/output maps: `trc_f7dd606dc686`.
 - Intermediate generic-map compile failures were narrowed and repaired in `trc_fc5ba0cf2528`; final typed facade and fake-adapter compile passed in `trc_f7dd606dc686`.
-- Final targeted suite: 37/37, provider ESLint, typed test compile, OS syntax, and manifest drift all green (`trc_538ddaacc979`).
+- Final targeted suite before Grok fixes: 37/37, provider ESLint, typed test compile, OS syntax, and manifest drift all green (`trc_538ddaacc979`).
 - Workspace review first found two `CATCH_TYPING` findings (`trc_e790ac428cb7`); both fixed (`trc_2a8846112f67`) and focused validation reran green (`trc_d1df01d1e582`).
 - Final workspace review: zero findings (`trc_2a6d67343839`).
 - Final verify against `origin/main`: passed and publish-valid (`trc_f1d7f2698758`).
@@ -108,6 +98,8 @@ task-start trace: `trc_9a5344a7c2ff`
 - 2026-07-23 03:09:16 `verify`: passed — OK
 - 2026-07-23 03:11:58 `review.run`: passed — OK
 - 2026-07-23 03:12:07 `verify`: passed — OK
+- 2026-07-23 03:38:15 `review.run`: passed — OK
+- 2026-07-23 03:38:24 `verify`: passed — OK
 
 ## key decisions
 
@@ -154,7 +146,48 @@ task-start trace: `trc_9a5344a7c2ff`
 
 ## workspace-owned: files read
 
+- `packages/os/.tmp-reviews/effect-based-deployment-provider-core/grok-prompt.md`
+- `packages/os/.tmp-reviews/effect-based-deployment-provider-core/grok-status.json`
+- `packages/os/.tmp-reviews/effect-based-deployment-provider-core/grok-stdout.json`
+- `packages/os/.tmp-reviews/effect-based-deployment-provider-core/review-packet.md`
+- `packages/os/plans/consuelo-os-foundation/plan.md`
 - `packages/os/plans/consuelo-os-foundation/workers/08-provider-core.md`
+- `packages/os/plans/consuelo-os-foundation/workers/26-tool-package-layout.md`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/redaction.ts`
+- `packages/os/tools/deployment-provider/process.ts`
+- `packages/os/tools/deployment-provider/service.ts`
+- `packages/workspace/scripts/task-push.js`
 
-- 2026-07-23 03:10:52 write: `packages/os/tools/deployment-provider/types.ts`
+## wait log
+
+- Start: 2026-07-23T03:20:38.284783+00:00
+  - Wait reason: Grok 4.5 review process remained active after the outer Consuelo call timed out.
+  - Duration: bounded polling every 30 seconds for up to 5 minutes.
+  - Resume action: inspect the exact provider-core subagent/Grok process IDs and then inspect wrapper output persistence.
+  - Expected signal: PIDs 35706/35707/35713 exit and a non-empty completed JSON review is recoverable.
+  - Fallback: if no completed JSON is recoverable, record the run as incomplete and rerun the exact wrapper with durable output capture.
+
+- First mandated Grok wrapper invocation exceeded the outer Consuelo call window; its process later exited but no structured output/log directory was recoverable (`trc_793f397604ff`, poll `trc_825bf305ebd8`). Per fail-closed rules, that review is incomplete and is being rerun with durable task-local capture.
+
+- Start: 2026-07-23T03:27:38.856388+00:00
+  - Wait reason: allow the cancelled Grok provider session and steering cooldown to clear before the corrected packet-based retry.
+  - Duration: 60 seconds.
+  - Resume action: start the exact mandated wrapper through the durable capture runner, then poll `grok-status.json`.
+  - Expected signal: wrapper status `completed`, exit code 0, and non-empty structured review JSON.
+  - Fallback: if the corrected retry is cancelled or incomplete again, record Grok as an external provider blocker with all traces and stop before merge.
+
+- Corrected Grok run completed (`trc_564843999b41`) but its provider stdout hit an 8,028-character transport cap and ended mid-CR-002 without a closing JSON fence (`trc_05c6d33081bf`). Per fail-closed rules, the structured review is incomplete. Two visible findings were independently verified as valid: environment mutation output was not structurally allowlisted, and detect version parser throws escaped the typed error channel. A focused red/green repair cycle is in progress before a compact-output Grok retry.
+
+## Grok finding repair cycle
+
+- First visible Grok findings were verified before modification:
+  - CR-001: `environment.set` returned generic parsed output, allowing a provider field named `value` to escape structural secrecy guarantees.
+  - CR-002: `detect()` called `version.parse` outside a typed failure boundary, allowing parser throws to become Effect defects.
+- Focused red: 2 failures / 18 passes (`trc_2c106f2a9c16`).
+- Implemented structural environment-set normalization to `{ name, scopes, updated }` and wrapped version parsing in sanitized `MALFORMED_OUTPUT` conversion (`trc_f3d0f1178e09`).
+- Focused green, provider ESLint, and typed compile: 20/20 (`trc_bc9956fe5c07`).
+- Final targeted suite after fixes: 39/39; lint, typed compile, OS syntax, and manifest drift all green (`trc_9aa6473ec7d3`).
+- Post-fix workspace review: zero findings (`trc_8b64fdeeacd2`).
+- Post-fix verify against `origin/main`: passed and publish-valid (`trc_90d9f7fdd712`).

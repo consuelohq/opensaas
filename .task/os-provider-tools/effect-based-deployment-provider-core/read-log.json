@@ -1,8 +1,20 @@
 {
   "files": [
     ".task/os-provider-tools/effect-based-deployment-provider-core/workpad.md",
+    ".task/subagent-runs/trc_564843999b41-grok/stdout.log",
+    "packages/os/.tmp-reviews/effect-based-deployment-provider-core/grok-prompt.md",
+    "packages/os/.tmp-reviews/effect-based-deployment-provider-core/grok-status.json",
+    "packages/os/.tmp-reviews/effect-based-deployment-provider-core/grok-stdout.json",
+    "packages/os/.tmp-reviews/effect-based-deployment-provider-core/review-packet.md",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
     "packages/os/plans/consuelo-os-foundation/workers/08-provider-core.md",
-    "packages/os/scripts/lib/redaction.ts"
+    "packages/os/plans/consuelo-os-foundation/workers/26-tool-package-layout.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/lib/redaction.ts",
+    "packages/os/tools/deployment-provider/process.ts",
+    "packages/os/tools/deployment-provider/service.ts",
+    "packages/workspace/scripts/task-push.js"
   ],
-  "updatedAt": "2026-07-23T03:09:28.852Z"
+  "updatedAt": "2026-07-23T03:39:48.005Z"
 }

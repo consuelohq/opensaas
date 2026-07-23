@@ -22,6 +22,7 @@ import type {
   ProviderCommand,
   ProviderCommandOperation,
   ProviderDetection,
+  ProviderEnvironmentSetResult,
   ProviderEnvironmentVariableMetadata,
   ProviderExecutionOptions,
   ProviderOperationDefinition,
@@ -123,6 +124,29 @@ const normalizeEnvironmentMetadata = (value: unknown): ProviderEnvironmentVariab
       : record.value !== null && record.value !== undefined;
     return { name: record.name, scopes, present };
   });
+};
+
+const normalizeEnvironmentSetResult = (value: unknown): ProviderEnvironmentSetResult => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('environment mutation result must be an object');
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record.name !== 'string' || !record.name.trim()) {
+    throw new Error('environment mutation result is missing a name');
+  }
+  if (typeof record.updated !== 'boolean') {
+    throw new Error('environment mutation result is missing updated status');
+  }
+  const scopes = Array.isArray(record.scopes)
+    ? record.scopes.filter((scope): scope is string => typeof scope === 'string')
+    : typeof record.scope === 'string'
+      ? [record.scope]
+      : [];
+  return {
+    name: record.name,
+    scopes,
+    updated: record.updated,
+  };
 };
 
 const normalizeRawResult = (result: ProviderProcessResult): ProviderRawResult => {
@@ -230,6 +254,9 @@ export const createDeploymentProviderService = (
       if (operation === 'environment.listNames') {
         return normalizeEnvironmentMetadata(parsed) as DeploymentProviderOperationOutputMap[Operation];
       }
+      if (operation === 'environment.set') {
+        return normalizeEnvironmentSetResult(parsed) as DeploymentProviderOperationOutputMap[Operation];
+      }
       return redactJson(parsed) as DeploymentProviderOperationOutputMap[Operation];
     });
   };
@@ -244,7 +271,19 @@ export const createDeploymentProviderService = (
       }));
     }
     const result = yield* runCommand('detect', { args: adapter.version.args }, {});
-    const version = adapter.version.parse(`${result.stdout}\n${result.stderr}`);
+    let version: ProviderDetection['version'] | null;
+    try {
+      version = adapter.version.parse(`${result.stdout}\n${result.stderr}`);
+    } catch (cause: unknown) {
+      return yield* Effect.fail(providerError({
+        code: 'MALFORMED_OUTPUT',
+        provider: adapter.provider,
+        operation: 'detect',
+        message: `${adapter.provider} CLI version output could not be parsed`,
+        diagnostics: diagnostics(adapter.executable, result),
+        cause,
+      }));
+    }
     if (!version) {
       return yield* Effect.fail(providerError({
         code: 'MALFORMED_OUTPUT',
