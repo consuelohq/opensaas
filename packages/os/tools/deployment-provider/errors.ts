@@ -12,11 +12,26 @@ export type ProviderErrorCode =
   | 'RATE_LIMITED'
   | 'UNAVAILABLE'
   | 'MALFORMED_OUTPUT'
+  | 'INVALID_INPUT'
   | 'COMMAND_FAILED'
   | 'UNSUPPORTED_CAPABILITY'
   | 'APPROVAL_REQUIRED'
   | 'TIMEOUT'
   | 'CANCELLED';
+
+export class ProviderInputError extends Error {
+  readonly field: string;
+
+  constructor(field: string, message: string) {
+    super(message);
+    this.name = 'ProviderInputError';
+    this.field = field;
+  }
+}
+
+export const providerInputError = (field: string, message: string): ProviderInputError => {
+  return new ProviderInputError(field, message);
+};
 
 export type ProviderCommandDiagnostics = {
   command: string;

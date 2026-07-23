@@ -31,6 +31,7 @@ export type ProviderResourceReference = {
 };
 
 export type ProviderContext = {
+  workspace?: ProviderResourceReference;
   project?: ProviderResourceReference;
   environment?: ProviderResourceReference;
   service?: ProviderResourceReference;
@@ -39,10 +40,24 @@ export type ProviderContext = {
 export type ProviderProject = {
   id: string;
   name: string;
+  workspace?: ProviderResourceReference;
 };
 
 export type ProviderProjectList = {
   projects: ProviderProject[];
+  cursor?: string;
+};
+
+export type ProviderService = {
+  id: string;
+  name: string;
+  status?: string;
+  environment?: string;
+  projectId?: string;
+};
+
+export type ProviderServiceList = {
+  services: ProviderService[];
   cursor?: string;
 };
 
@@ -71,18 +86,30 @@ export type ProviderLogEntry = {
 export type ProviderLogResult = {
   entries: ProviderLogEntry[];
   cursor?: string;
+  kind?: 'runtime' | 'build';
+  requestedLimit?: number;
+  returned?: number;
+  truncated?: boolean;
 };
 
 export type ProviderDeploymentMutationResult = {
   deploymentId: string;
+  serviceId?: string;
   status?: string;
   url?: string;
+  waited?: boolean;
 };
 
 export type ProviderEnvironmentSetResult = {
   name: string;
   scopes: string[];
   updated: boolean;
+};
+
+export type ProviderEnvironmentDeleteResult = {
+  name: string;
+  scopes: string[];
+  deleted: boolean;
 };
 
 export type ProviderDetection = {
@@ -119,6 +146,12 @@ export type DeploymentProviderOperationInputMap = {
     cursor?: string;
     limit?: number;
   };
+  'service.list': ProviderExecutionOptions & {
+    projectId?: string;
+    environment?: string;
+    cursor?: string;
+    limit?: number;
+  };
   'deployment.list': ProviderExecutionOptions & {
     projectId?: string;
     environment?: string;
@@ -128,6 +161,8 @@ export type DeploymentProviderOperationInputMap = {
   };
   'deployment.status': ProviderExecutionOptions & {
     deploymentId: string;
+    serviceId?: string;
+    environment?: string;
   };
   'logs.read': ProviderExecutionOptions & {
     deploymentId?: string;
@@ -136,6 +171,10 @@ export type DeploymentProviderOperationInputMap = {
     cursor?: string;
     limit?: number;
     since?: string;
+    until?: string;
+    filter?: string;
+    kind?: 'runtime' | 'build';
+    latest?: boolean;
   };
   deploy: ProviderExecutionOptions & {
     target: string;
@@ -144,16 +183,30 @@ export type DeploymentProviderOperationInputMap = {
     source?: string;
   };
   redeploy: ProviderExecutionOptions & {
-    deploymentId: string;
+    deploymentId?: string;
+    serviceId?: string;
+    environment?: string;
+    wait?: boolean;
   };
   'environment.listNames': ProviderExecutionOptions & {
     projectId?: string;
     environment?: string;
+    serviceId?: string;
   };
   'environment.set': ProviderExecutionOptions & {
     name: string;
     value: string;
     scope?: string;
+    environment?: string;
+    serviceId?: string;
+    skipDeploys?: boolean;
+  };
+  'environment.delete': ProviderExecutionOptions & {
+    name: string;
+    scope?: string;
+    environment?: string;
+    serviceId?: string;
+    skipDeploys?: boolean;
   };
   raw: ProviderExecutionOptions & {
     args: string[];
@@ -165,6 +218,7 @@ export type DeploymentProviderOperationOutputMap = {
   'auth.status': ProviderAuthStatus;
   'context.current': ProviderContext;
   'project.list': ProviderProjectList;
+  'service.list': ProviderServiceList;
   'deployment.list': ProviderDeploymentList;
   'deployment.status': ProviderDeployment;
   'logs.read': ProviderLogResult;
@@ -172,6 +226,7 @@ export type DeploymentProviderOperationOutputMap = {
   redeploy: ProviderDeploymentMutationResult;
   'environment.listNames': ProviderEnvironmentVariableMetadata[];
   'environment.set': ProviderEnvironmentSetResult;
+  'environment.delete': ProviderEnvironmentDeleteResult;
   raw: ProviderRawResult;
 };
 
@@ -233,7 +288,11 @@ export type ProviderOperationDefinition<
   capability: Operation;
   policy?: ProviderOperationPolicy;
   command: (input: DeploymentProviderOperationInputMap[Operation]) => ProviderCommand;
-  parse: (result: ProviderProcessResult) => ProviderAdapterOperationOutputMap[Operation];
+  parse: (
+    result: ProviderProcessResult,
+    input: DeploymentProviderOperationInputMap[Operation],
+  ) => ProviderAdapterOperationOutputMap[Operation];
+  sensitiveOutput?: boolean;
 };
 
 export type ProviderOperationDefinitions = {
@@ -250,6 +309,13 @@ export type DeploymentProviderAdapter = {
     supports: (version: ProviderVersion) => boolean;
   };
   operations: ProviderOperationDefinitions;
+  errors?: {
+    message?: (input: {
+      code: ProviderError['code'];
+      operation: DeploymentProviderOperation;
+      executable: string;
+    }) => string | undefined;
+  };
 };
 
 export type DeploymentProviderService = {
@@ -262,6 +328,9 @@ export type DeploymentProviderService = {
   projectList: (
     input?: DeploymentProviderOperationInputMap['project.list'],
   ) => Effect.Effect<ProviderProjectList, ProviderError>;
+  serviceList: (
+    input?: DeploymentProviderOperationInputMap['service.list'],
+  ) => Effect.Effect<ProviderServiceList, ProviderError>;
   deploymentList: (
     input?: DeploymentProviderOperationInputMap['deployment.list'],
   ) => Effect.Effect<ProviderDeploymentList, ProviderError>;
@@ -283,6 +352,9 @@ export type DeploymentProviderService = {
   environmentSet: (
     input: DeploymentProviderOperationInputMap['environment.set'],
   ) => Effect.Effect<ProviderEnvironmentSetResult, ProviderError>;
+  environmentDelete: (
+    input: DeploymentProviderOperationInputMap['environment.delete'],
+  ) => Effect.Effect<ProviderEnvironmentDeleteResult, ProviderError>;
   raw: (
     input: DeploymentProviderOperationInputMap['raw'],
   ) => Effect.Effect<ProviderRawResult, ProviderError>;

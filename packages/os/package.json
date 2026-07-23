@@ -36,6 +36,7 @@
     "stream:list": "bun ./scripts/stream-list.js",
     "stream:create": "bun ./scripts/stream-create.js",
     "railway:logs": "bun ./scripts/railway-logs.js",
+    "railway:redeploy": "bun ./scripts/railway-redeploy.js",
     "wait": "bun ./scripts/wait.js",
     "browser": "bun ./scripts/browser.js",
     "website:deploy": "bun ./scripts/website-deploy.js",

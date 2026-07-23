@@ -5,6 +5,7 @@ export const deploymentProviderOperations = [
   'auth.status',
   'context.current',
   'project.list',
+  'service.list',
   'deployment.list',
   'deployment.status',
   'logs.read',
@@ -12,6 +13,7 @@ export const deploymentProviderOperations = [
   'redeploy',
   'environment.listNames',
   'environment.set',
+  'environment.delete',
   'raw',
 ] as const;
 
@@ -35,6 +37,7 @@ const mutationConsequences: Partial<Record<DeploymentProviderOperation, string>>
   deploy: 'Creates a new deployment and may change customer-facing runtime behavior.',
   redeploy: 'Rebuilds or restarts an existing deployment and may affect availability.',
   'environment.set': 'Changes provider environment metadata and can alter future deployments.',
+  'environment.delete': 'Deletes provider environment metadata and can alter future deployments.',
   raw: 'Runs an arbitrary provider CLI command that may change remote resources.',
 };
 

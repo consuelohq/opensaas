@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os-provider-tools/generic-railway-provider-adapter/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/workers/08-provider-core.md",
+    "packages/os/tools/deployment-provider/service.ts",
+    "packages/os/tools/package.ts"
+  ],
+  "updatedAt": "2026-07-23T16:01:48.616Z"
+}
