@@ -32,12 +32,24 @@ type WorkspaceRouteD1RecordInput = {
   provider: 'cloudflare';
   owner: 'consuelo-os-cloud';
   status: 'active' | 'revoked';
+  defaultNodeId?: string;
+  nodeTargets?: Array<{
+    nodeId: string;
+    connectorId: string;
+    connectorStatus: 'connected' | 'disconnected';
+    tunnelOriginUrl: string;
+    state: 'active' | 'revoked';
+    lastSeenAt: number;
+    heartbeatTtlMs: number;
+  }>;
   routes: WorkspaceRouteD1Route[];
 };
 
 type WorkspaceRouteD1ResolutionInput = {
   host: string;
   path: string;
+  nodeId?: string;
+  nowMs?: number;
 };
 
 type WorkspaceRouteD1RevocationInput = {
@@ -71,6 +83,17 @@ type WorkspaceRouteD1RegistryContract = {
   revokeWorkspaceHostnameInD1: (
     db: WorkspaceRouteD1Database,
     input: WorkspaceRouteD1RevocationInput,
+  ) => Promise<void>;
+  updateWorkspaceNodeTargetInD1: (
+    db: WorkspaceRouteD1Database,
+    input: {
+      hostname: string;
+      nodeId: string;
+      connectorStatus?: 'connected' | 'disconnected';
+      state?: 'active' | 'revoked';
+      lastSeenAt?: number;
+      heartbeatTtlMs?: number;
+    },
   ) => Promise<void>;
 };
 
@@ -166,6 +189,7 @@ async function loadWorkspaceRouteD1RegistryContract(): Promise<WorkspaceRouteD1R
     'upsertWorkspaceHostnameInD1',
     'resolveWorkspaceRouteFromD1',
     'revokeWorkspaceHostnameInD1',
+    'updateWorkspaceNodeTargetInD1',
   ];
   const missingExports = requiredExports.filter(
     (name) => typeof module[name] !== 'function',
@@ -575,6 +599,70 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
       allowed: true,
       route: '/mcp',
       surface: 'os',
+    });
+  });
+
+  it('should update node heartbeat state through a production-shaped prepare-only D1 binding', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    const fixture = createFixtureCloudflareD1();
+    const db: WorkspaceRouteD1Database = { prepare: fixture.prepare };
+    const nowMs = Date.parse('2026-07-22T20:00:00.000Z');
+    await registry.migrateWorkspaceRouteD1(db);
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_123',
+      workspaceSlug: 'kokayi',
+      hostname: 'kokayi.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      defaultNodeId: 'node_home',
+      nodeTargets: [
+        {
+          nodeId: 'node_home',
+          connectorId: 'connector_home',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://home.connector.test',
+          state: 'active',
+          lastSeenAt: nowMs - 300_000,
+          heartbeatTtlMs: 60_000,
+        },
+      ],
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_home',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://home.connector.test',
+          },
+        },
+      ],
+    });
+
+    await registry.updateWorkspaceNodeTargetInD1(db, {
+      hostname: 'kokayi.consuelohq.com',
+      nodeId: 'node_home',
+      connectorStatus: 'connected',
+      state: 'active',
+      lastSeenAt: nowMs,
+      heartbeatTtlMs: 60_000,
+    });
+
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'kokayi.consuelohq.com',
+        path: '/mcp',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node_home',
+      target: { connectorId: 'connector_home' },
     });
   });
 });

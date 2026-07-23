@@ -76,6 +76,7 @@ export type WorkspaceRouteD1ResolutionInput = {
   path: string;
   nodeId?: string;
   nowMs?: number;
+  requireOnlineNode?: boolean;
 };
 
 export type WorkspaceRouteD1RevocationInput = {
@@ -503,13 +504,15 @@ export const resolveWorkspaceRouteFromD1 = async (
         return denied({ status: 404, errorCode: 'WORKSPACE_NODE_REVOKED' });
       }
       if (
-        nodeTarget.connectorStatus !== 'connected' ||
-        nodePresence(nodeTarget, input.nowMs ?? Date.now()) !== 'online'
+        input.requireOnlineNode !== false &&
+        (nodeTarget.connectorStatus !== 'connected' ||
+          nodePresence(nodeTarget, input.nowMs ?? Date.now()) !== 'online')
       ) {
         return denied({ status: 503, errorCode: 'WORKSPACE_NODE_OFFLINE' });
       }
       target = connectorTargetForNode(nodeTarget);
     } else if (
+      input.requireOnlineNode !== false &&
       route.target.kind === 'os-connector' &&
       route.target.connectorStatus !== 'connected'
     ) {
@@ -590,6 +593,7 @@ export const createWorkspaceCloudflareD1RouteRegistry = (
     method: string;
     nodeId?: string;
     nowMs?: number;
+    requireOnlineNode?: boolean;
   }) => Promise<WorkspaceRouteD1Resolution>;
 } => ({
   async resolve(input: {
@@ -598,6 +602,7 @@ export const createWorkspaceCloudflareD1RouteRegistry = (
     method: string;
     nodeId?: string;
     nowMs?: number;
+    requireOnlineNode?: boolean;
   }): Promise<WorkspaceRouteD1Resolution> {
     // NOTE: method is reserved for future method-scoped route policies.
     try {
@@ -606,6 +611,9 @@ export const createWorkspaceCloudflareD1RouteRegistry = (
         path: input.path,
         ...(input.nodeId ? { nodeId: input.nodeId } : {}),
         ...(input.nowMs !== undefined ? { nowMs: input.nowMs } : {}),
+        ...(input.requireOnlineNode !== undefined
+          ? { requireOnlineNode: input.requireOnlineNode }
+          : {}),
       });
     } catch (error: unknown) {
       throw createD1RegistryError('route_resolution', error);

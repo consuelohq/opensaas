@@ -138,6 +138,26 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 - A specific-file `git.diff` call used `files` as an array instead of `paths` (`trc_9a8129c9353b`); corrected after inspecting the typed schema.
 - GitHub raw content retrieval first omitted the required reason (`trc_ecb40d05a6b4`); retried with a reason (`trc_3643a5128334`). The bounded response was not used as file content; exact local main content was restored through task-scoped `fs.write`.
 - `task.push` injected an unsupported `--task-session` flag into the canonical script (`trc_4fcbb03fe2d1`). The advertised `task.call` and `task.exec` recovery routes were absent from the generated runtime manifest (HTTP 403 `UNKNOWN_TOOL_SCOPE`). Manifest-backed `code.call` retained `tsk_60891d97bfc2` and exposed the canonical help (`trc_690906fa8354`), but branch and PR recovery initially found no local active-task record (`trc_890fe8693bab`, `trc_975fed2883d0`). Recovery: `task.init` reconstructed the local registry from the existing branch, PR #1581, worktree, and session (`trc_8265c8c060db`); the canonical verified task-push script can then publish from the resolved task worktree without the incompatible CLI flag.
+- Grok review launch through the exact wrapper and typed `subagent` route each exceeded the outer OS call boundary while their child Grok processes remained active; the wrapper output file was still empty, so both attempts fail closed until a completed JSON artifact is observed. Active same-prompt Grok processes at diagnosis: PIDs 43639, 45536, and 47609 (`trc_e6d0f65e38cd`).
+
+### Grok wait cycle 1
+
+- Start time (UTC): 2026-07-23 03:31:15Z
+- Wait reason: allow the already-running bounded Grok 4.5 reviews to finish after the outer OS calls timed out without terminating child processes.
+- Duration: 60 seconds.
+- Resume action: immediately inspect the three same-prompt Grok PIDs and the temporary review output/log artifacts.
+- Expected signal: at least one same-prompt Grok process exits and yields a non-empty completed JSON review; empty, cancelled, incomplete, or timed-out output fails closed.
+- Fallback: continue bounded polling without launching another Grok process; if the 900-second harness deadline is reached without valid JSON, record the failed review as blocked by the provider/harness route.
+- Wake result: the 60-second wait completed (`trc_0201181f956f`). All three processes were still present and the wrapper output remained empty (`trc_d4b88ab6e5bf`). Session logs showed active workspace MCP progress; the newest session subsequently ended with `outcome: cancelled`, `cancellation_category: permission_cancelled` (`trc_97fb449feb7f`) and is invalid.
+
+### Grok wait cycle 2
+
+- Start time (UTC): 2026-07-23 03:33:05Z
+- Wait reason: allow the two older same-prompt Grok sessions to finish while excluding the cancelled newest session.
+- Duration: 60 seconds.
+- Resume action: immediately inspect PIDs 43639 and 45536 plus their session-log terminal events and any non-empty review output.
+- Expected signal: one session exits with a completed, non-empty JSON review object.
+- Fallback: continue polling to the 900-second harness deadline without launching another provider process.
 
 ## notes for Ko / real-Mac checkpoint
 
@@ -163,15 +183,71 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 
 ## files changed
 
-- none yet
+- `packages/os/package.json`
+- `packages/os/cloudflare/os-device-authority/src/app.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/device.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/connectors.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/grants.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/nodes.ts`
+- `packages/os/cloudflare/os-device-authority/src/stores.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
+- `packages/os/docs/architecture/workspace-node-registry.md`
+- `packages/os/scripts/install-system-daemons.sh`
+- `packages/os/scripts/install.ts`
+- `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- `packages/os/scripts/lib/workspace-node-client.ts`
+- `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
+- `packages/os/scripts/uninstall-system-daemons.sh`
+- `packages/os/scripts/workspace-node-heartbeat.ts`
+- `packages/os/scripts/workspace-nodes.ts`
+- `packages/os/tests/cloudflare-d1-route-registry.test.ts`
+- `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
+- `packages/os/tests/installer-runtime-dependencies.test.ts`
+- `packages/os/tests/os-device-authority-worker.test.ts`
+- `packages/os/tests/workspace-node-heartbeat-client.test.ts`
+- `packages/os/tests/workspace-node-registry-routing.test.ts`
+- `packages/os/tests/workspace-nodes-cli.test.ts`
+
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/os/cloudflare/os-device-authority/src/app.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/device.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/connectors.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/grants.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/nodes.ts`
+- `packages/os/cloudflare/os-device-authority/src/stores.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
+- `packages/os/docs/architecture/workspace-node-registry.md`
+- `packages/os/package.json`
+- `packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- `packages/os/scripts/lib/workspace-node-client.ts`
+- `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
+- `packages/os/scripts/workspace-node-heartbeat.ts`
+- `packages/os/scripts/workspace-nodes.ts`
+- `packages/os/tests/cloudflare-d1-route-registry.test.ts`
+- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
+- `packages/os/tests/os-device-authority-worker.test.ts`
+- `packages/os/tests/workspace-node-heartbeat-client.test.ts`
+- `packages/os/tests/workspace-node-registry-routing.test.ts`
+- `packages/os/tests/workspace-nodes-cli.test.ts`
 
 ## workspace-owned: activity log
 
 - 2026-07-23 03:12:51 fs.write: `.task/os-web/multi-node-registry-presence-and-routing/workpad.md`
+- 2026-07-23 03:39:54 fs.write: `packages/os/tests/workspace-node-heartbeat-client.test.ts`
+- 2026-07-23 03:41:09 fs.write: `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
+- 2026-07-23 03:41:15 fs.write: `packages/os/scripts/workspace-node-heartbeat.ts`
+- 2026-07-23 03:47:48 fs.write: `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
 
 ## workspace-owned: validation evidence
 
@@ -197,8 +273,59 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 - 2026-07-23 03:15:25 `verify`: passed — OK
 - 2026-07-23 03:16:03 apply-patch: `.task/os-web/multi-node-registry-presence-and-routing/workpad.md`
 - 2026-07-23 03:16:07 `verify`: passed — OK
+- 2026-07-23 03:46:48 `review.run`: passed — OK
+- 2026-07-23 03:47:00 `verify`: passed — OK
+- 2026-07-23 03:48:09 `verify`: passed — OK
 
 ## workspace-owned: files read
 
+- `packages/os/.tmp-reviews/multi-node-registry-presence-and-routing/grok-output.json`
+- `packages/os/.tmp-reviews/multi-node-registry-presence-and-routing/grok-prompt.md`
+- `packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/connectors.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/grants.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/nodes.ts`
+- `packages/os/cloudflare/os-device-authority/src/stores.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
+- `packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql`
+- `packages/os/docs/architecture/workspace-node-registry.md`
+- `packages/os/package.json`
+- `packages/os/plans/consuelo-os-foundation/plan.md`
+- `packages/os/plans/consuelo-os-foundation/workers/25-multi-node-registry-routing.md`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
+- `packages/os/scripts/install.ts`
+- `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- `packages/os/scripts/lib/workspace-edge-route-seed.ts`
+- `packages/os/tests/cloudflare-d1-route-registry.test.ts`
+- `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
+- `packages/os/tests/installer-runtime-dependencies.test.ts`
+- `packages/os/tests/workspace-node-registry-routing.test.ts`
 - `packages/workspace/scripts/lib/task-meta.js`
 - `packages/workspace/scripts/task-push.js`
+
+## Grok finding verification and fixes
+
+- `CR-001` — **valid, fixed**. Red coverage showed installed nodes had no recurring heartbeat emitter (`trc_35ce4595577b`). Added a one-shot signed heartbeat client, private persisted key/config, a 30-second user LaunchAgent, and standard daemon install/rollback/debug/uninstall ownership. The daemon discovery tests failed before lifecycle support (`trc_897a60b7a25b`) and passed 3/3 afterward (`trc_4651357ef79f`). Cryptographic client, TTL routing, and installer materialization coverage are green.
+- `CR-002` — **false positive, characterized**. The production Worker binding is a native D1 binding with `prepare`; a new prepare-only production-shaped fixture proved `updateWorkspaceNodeTargetInD1` reads, updates, and resolves heartbeat state without `dumpHostnameRow`. No production adapter change was required. Characterization passed in the red investigation (`trc_44ff35c4d0d4`) and the current 32/32 gateway contract lane (`trc_a5d22034aaf8`).
+- `CR-003` — **valid, fixed**. Red coverage showed OAuth discovery returned 503 with a stale default (`trc_35ce4595577b`). Added an explicit `requireOnlineNode: false` resolution mode used only by the two OAuth metadata paths; normal MCP routing still returns `WORKSPACE_NODE_OFFLINE`. The routing suite now passes 10/10.
+
+## Review-fix validation
+
+- Heartbeat client + routing red: missing heartbeat module and offline OAuth metadata (`trc_35ce4595577b`).
+- Production-shaped D1 characterization and install materialization red investigation (`trc_44ff35c4d0d4`).
+- Heartbeat client 2/2, routing 10/10, targeted D1 1/1, and targeted heartbeat plist 1/1 passed (`trc_2c8cb8196f44`).
+- Generated heartbeat LaunchAgent install/uninstall red: 3/3 failed before lifecycle discovery (`trc_897a60b7a25b`); green: 3/3 passed (`trc_4651357ef79f`).
+- Shell syntax, OS syntax/typecheck, authority/installer 65 passing with 10 opt-in skips, and gateway 32/32 passed (`trc_a5d22034aaf8`).
+- The heartbeat-specific opt-in install test passed. Running the entire opt-in install contract also exposed three unrelated existing failures: a missing office artifact fixture, a stale source-order expectation for platform provisioning, and a pre-existing device-login/message ordering assertion (`trc_5cd3cf9a4626`). These do not touch the Worker 25 heartbeat path and remain outside this worker's ownership.
+- Post-fix strict workspace review passed with zero findings (`trc_53f00dc32ede`).
+- Post-fix full verify passed review and DB-risk gates and marked the task publish-valid (`trc_c496fe07bad1`).
+- Complete bounded OS suite passed: 273 files passed, 10 skipped; 1,555 tests passed, 62 skipped, 11 todo (`bun --cwd packages/os vitest run --pool=threads --maxWorkers=4`).
+- The complete suite again generated unrelated facade snapshot drift; restored that snapshot exactly from local `main` (`trc_b9239ae9fbcb`).
+
+- 2026-07-23 03:47:48 write: `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
+
+- 2026-07-23 03:47:57 apply-patch: `.task/os-web/multi-node-registry-presence-and-routing/workpad.md`

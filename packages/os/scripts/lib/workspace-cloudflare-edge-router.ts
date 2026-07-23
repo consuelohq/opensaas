@@ -90,6 +90,7 @@ export type WorkspaceCloudflareEdgeRouteRegistry = {
     method: string;
     nodeId?: string;
     nowMs?: number;
+    requireOnlineNode?: boolean;
   }) => Promise<WorkspaceCloudflareEdgeRouteResolution>;
 };
 
@@ -661,6 +662,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
             host: inboundUrl.hostname,
             path: '/mcp',
             method: 'POST',
+            requireOnlineNode: false,
           });
           if (!mcpResolution.allowed) {
             return createSafeErrorResponse({
@@ -685,6 +687,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
             host: inboundUrl.hostname,
             path: '/mcp',
             method: 'POST',
+            requireOnlineNode: false,
           });
           if (!mcpResolution.allowed) {
             return createSafeErrorResponse({

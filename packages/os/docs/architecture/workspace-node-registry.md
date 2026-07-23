@@ -32,6 +32,8 @@ A reconnect is accepted only when the presented node ID is bound to the same pub
 
 Nodes send the exact JSON heartbeat body signed with their registered Ed25519 key in `x-consuelo-node-signature`. The body contains `workspaceId`, `nodeId`, `timestamp`, `nonce`, `connectorStatus`, and `capabilities`.
 
+The normal installer persists the node signing material only in the private generated-security directory, writes a one-shot heartbeat client into the installed OS package, and creates a user LaunchAgent with `RunAtLoad` plus a 30-second `StartInterval`. The standard daemon installer/uninstaller owns that generated LaunchAgent alongside the node's cloudflared connector. The signing key is never embedded in the plist, command line, URL, response, or log output.
+
 Heartbeats are accepted only when:
 
 - the node exists and belongs to the supplied workspace ID;
@@ -59,6 +61,8 @@ Workspace hostname resolution and node selection are separate steps. The hostnam
 - Offline or stale selected node: return `WORKSPACE_NODE_OFFLINE`.
 
 There is no automatic fallback to another machine. In particular, an unavailable default produces a deterministic 503 response even when another member is online. Central MCP proxying and direct workspace-edge proxying use the same selection contract and replace untrusted routing headers with the resolved node and connector IDs.
+
+OAuth discovery is intentionally independent of connector presence. The protected-resource and authorization-server metadata endpoints remain available when the selected/default node is stale or offline so clients can authenticate and recover. Normal MCP and application routes still require an active online node and continue to fail with `WORKSPACE_NODE_OFFLINE`.
 
 ## Protected management API
 

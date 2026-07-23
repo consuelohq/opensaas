@@ -545,4 +545,45 @@ describe('multi-node connector routing', () => {
     expect(upstreams[0]?.headers.get('x-consuelo-node-id')).toBe('node-member');
     expect(upstreams[0]?.headers.get('x-consuelo-connector-id')).toBe('connector_node_member');
   });
+
+  it('keeps OAuth discovery available when the default node is stale while normal MCP routing remains offline', async () => {
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db, baseNow - heartbeatTtlMs * 4);
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: createWorkspaceCloudflareD1RouteRegistry(db),
+      now: () => baseNow,
+      fetchUpstream: async () => {
+        throw new Error('offline discovery must not reach a connector');
+      },
+    });
+
+    const protectedResource = await router.fetch(
+      new Request(`https://${workspaceHost}/.well-known/oauth-protected-resource`),
+    );
+    expect(protectedResource.status).toBe(200);
+    await expect(protectedResource.json()).resolves.toMatchObject({
+      resource: `https://${workspaceHost}/mcp`,
+      authorization_servers: ['https://os.consuelohq.com'],
+    });
+
+    const authorizationServer = await router.fetch(
+      new Request(`https://${workspaceHost}/.well-known/oauth-authorization-server`),
+    );
+    expect(authorizationServer.status).toBe(200);
+    await expect(authorizationServer.json()).resolves.toMatchObject({
+      issuer: 'https://os.consuelohq.com',
+    });
+
+    const mcp = await router.fetch(
+      new Request(`https://${workspaceHost}/mcp`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+      }),
+    );
+    expect(mcp.status).toBe(503);
+    await expect(mcp.json()).resolves.toMatchObject({
+      error: { code: 'WORKSPACE_NODE_OFFLINE' },
+    });
+  });
 });
