@@ -222,8 +222,34 @@ export function stringifyYamlConfig(value: unknown): string {
 
 export function writeYamlConfig(filePath: string, value: unknown, dryRun: boolean): void {
   if (dryRun) return;
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, stringifyYamlConfig(value), { mode: 0o600 });
+  const directory = path.dirname(filePath);
+  const temporaryPath = path.join(
+    directory,
+    `.${path.basename(filePath)}.${process.pid}.${crypto.randomUUID()}.tmp`,
+  );
+  fs.mkdirSync(directory, { recursive: true });
+  try {
+    const descriptor = fs.openSync(temporaryPath, 'wx', 0o600);
+    try {
+      fs.writeFileSync(descriptor, stringifyYamlConfig(value), 'utf8');
+      fs.fsyncSync(descriptor);
+    } finally {
+      fs.closeSync(descriptor);
+    }
+    fs.renameSync(temporaryPath, filePath);
+    try {
+      const directoryDescriptor = fs.openSync(directory, 'r');
+      try {
+        fs.fsyncSync(directoryDescriptor);
+      } finally {
+        fs.closeSync(directoryDescriptor);
+      }
+    } catch {
+      // Directory fsync is not available on every supported filesystem.
+    }
+  } finally {
+    fs.rmSync(temporaryPath, { force: true });
+  }
 }
 
 export function createDefaultGlobalYamlConfig(input: {

@@ -290,6 +290,7 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
     filePath === 'workflows/workflows.ts' ||
     filePath === 'tools/package.ts' ||
     filePath === 'tools/registry.ts' ||
+    /^tools\/[^/]+\/[^/]+\.md$/.test(filePath) ||
     /^tools\/[^/]+\/(?:manifest|schema)\.ts$/.test(filePath) ||
     SOURCE_ONLY_FILES.has(filePath)
   ) {
