@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2858e239d32a",
+  "tmuxSession": "opensaas-os-distribution-unify-lifecycle-engine-2858e239",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/unify-lifecycle-engine",
+  "branch": "task/os-distribution/unify-lifecycle-engine",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-unify-lifecycle-engine",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-unify-lifecycle-engine",
+  "prNumber": 1578,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1578",
+  "createdAt": "2026-07-23T01:49:33.375Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-unify-lifecycle-engine/.task/os-distribution/unify-lifecycle-engine/session.json"
+}

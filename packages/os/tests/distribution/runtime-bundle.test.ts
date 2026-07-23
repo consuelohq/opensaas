@@ -249,9 +249,13 @@ describe('runtime bundle contract', () => {
 
     expect(classifyRuntimeBundlePath('scripts/seed-workspace-edge-route.ts')).toBe('operator-only');
     expect(classifyRuntimeBundlePath('tools/filesystem/handler.ts')).toBe('managed-tool');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/service.ts')).toBe('managed-tool');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/process.ts')).toBe('managed-tool');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/types.ts')).toBe('managed-tool');
     expect(classifyRuntimeBundlePath('tools/filesystem/manifest.ts')).toBe('source-only');
     expect(classifyRuntimeBundlePath('tools/filesystem/schema.ts')).toBe('source-only');
     expect(classifyRuntimeBundlePath('tools/filesystem/handler.test.ts')).toBe('test-only');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/testing.ts')).toBe('test-only');
     expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe('source-only');
     expect(classifyRuntimeBundlePath('manifests/schemas/tool-manifest.schema.json')).toBe('source-only');
     expect(classifyRuntimeBundlePath('manifests/generated/tool.manifest.json')).toBe('managed-tool');
@@ -451,7 +455,16 @@ describe('runtime bundle contract', () => {
     expect(first.archiveDigest).toBe(second.archiveDigest);
     expect(first.manifest.files.length).toBeGreaterThan(300);
     expect(first.manifest.files.some((file) => file.path === 'scripts/railway-logs.js')).toBe(true);
+    expect(first.manifest.files).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        path: 'tools/deployment-provider/service.ts',
+        role: 'managed-tool',
+      }),
+    ]));
+    expect(first.manifest.files.some((file) => file.path === 'tools/deployment-provider/testing.ts')).toBe(false);
     expect(first.manifest.files.some((file) => file.path.startsWith('scripts/testing/'))).toBe(false);
+    expect(first.manifest.files.some((file) => file.path === 'scripts/release-channels.ts')).toBe(false);
+    expect(first.manifest.files.some((file) => file.path === 'scripts/prepare-release-publication.ts')).toBe(false);
     expect(first.manifest.files.some((file) => file.path.startsWith('operator/'))).toBe(false);
     expect(first.excludedCounts['operator-only']).toBeGreaterThan(0);
     expect(first.excludedCounts['test-only']).toBeGreaterThan(0);

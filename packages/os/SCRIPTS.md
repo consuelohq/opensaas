@@ -1125,6 +1125,30 @@ bun run mac -- port find --json
 
 ---
 
+### lifecycle — unified Consuelo OS install and runtime lifecycle
+
+Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, channel preferences, update-notification preferences, and repair. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`.
+
+`install` preserves the existing interactive onboarding flow. `update`, `restart`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, logs, selected skills, or user-owned content. JSON output is a stable envelope and progress events are emitted separately.
+
+```bash
+bun run lifecycle -- status
+bun run lifecycle -- status --json
+bun run lifecycle -- install --channel stable
+bun run lifecycle -- update --check
+bun run lifecycle -- update --yes --json
+bun run lifecycle -- restart
+bun run lifecycle -- channel show
+bun run lifecycle -- channel set beta
+bun run lifecycle -- updates notifications off
+bun run lifecycle -- updates notifications snooze --until 2026-08-01T12:00:00.000Z
+bun run lifecycle -- repair
+```
+
+Production install and update require `CONSUELO_RELEASE_BASE_URL` plus trusted Ed25519 public keys supplied through `CONSUELO_RELEASE_PUBLIC_KEYS_JSON` or `CONSUELO_RELEASE_KEY_ID` and `CONSUELO_RELEASE_PUBLIC_KEY`.
+
+---
+
 ### consuelo-reload — manage the local Consuelo OS server
 
 Use this command to inspect, start, stop, or restart the local Bun server. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
@@ -1442,7 +1466,7 @@ bun run install:local -- --dry-run --json
 bun run install:local -- --connect-agent codex
 ```
 
-The installer creates `~/.consuelo/os` by default, preserves existing files, writes `config.json` only when missing, initializes `consuelo.db`, creates the approved folders, and can record detected agent connections.
+The installer creates the approved `~/.consuelo` home shape by default, preserves existing files and identity, initializes managed databases and folders, and can record detected agent connections. New installs do not materialize the legacy `~/.consuelo/os` runtime path.
 
 ---
 
@@ -1542,3 +1566,25 @@ bun ./scripts/os.ts configuration enable-workflow <name> --json
 ```
 
 The legacy `settings` command remains an alias during migration. Mutations are serialized per OS home, materialize the public Configuration shell plus a private local snapshot, and append a redacted `configuration.overlay.changed` event to `logs/control-plane-audit.jsonl`. Disabled workflows are rejected by workflow intent routing. The public Configuration HTML contains no workspace snapshot; private state loads through the authenticated Configuration gateway at `/gateway/configuration/*`.
+
+---
+
+## release channels -- immutable Consuelo OS runtime publication
+
+`release:channels` is the Bun-owned JSON CLI for automatic version allocation, immutable publication, signed channel inspection, protected promotion, and rollback. It supports `publish`, `promote`, `inspect`, and `rollback-channel`; mutating commands default to dry-run and require `--apply` for provider changes.
+
+```bash
+bun run --cwd packages/os release:channels -- publish --channel dev --plan-only --state ../../.release/release-state.json --fingerprint sha256:<digest> --source-commit <commit> --seed-version 1.0.0 --json
+bun run --cwd packages/os release:channels -- promote --from dev --to canary --bundle sha256:<release-set-id> --state ../../.release/release-state.json --dry-run --json
+bun run --cwd packages/os release:channels -- inspect --channel canary --state ../../.release/release-state.json --json
+bun run --cwd packages/os release:channels -- rollback-channel --channel canary --bundle sha256:<release-set-id> --state ../../.release/release-state.json --dry-run --json
+```
+
+Supporting scripts:
+
+- `runtime-bundle:fingerprint` computes the version-neutral customer-runtime closure before any release allocation.
+- `runtime-bundle:build` builds one deterministic platform archive with the already approved version.
+- `runtime-bundle:verify` verifies an archive and its embedded manifest.
+- `release:prepare` verifies the complete platform set, creates detached Ed25519 signatures, and emits the publication input.
+
+The protected environments are `consuelo-os-dev`, `consuelo-os-canary`, `consuelo-os-beta`, and `consuelo-os-stable`. See `docs/distribution/release-channels.md` for variables, secrets, first-release seeding, key rotation, concurrency, retry, and human device checkpoints.

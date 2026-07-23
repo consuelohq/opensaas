@@ -17,11 +17,46 @@ import {
 import { internalError, jsonResponse } from '../middleware/errors';
 import { logLocalOsServerError } from '../logger';
 import { executeLocalOsFacadeTool } from '../services/call-service';
+import { resolveMcpRequestSession } from '../services/mcp-session';
 import { readGuardedLocalOsSteering } from '../services/steering-service';
 
 const MCP_PATH = '/mcp';
 
-export function createMcpRoutes(): Hono {
+type McpRouteDependencies = {
+  getSteering: (callerKey: string) => Promise<string>;
+  executeFacadeTool: (
+    toolName: string,
+    toolInput: Record<string, unknown>,
+  ) => Promise<unknown>;
+};
+
+const defaultDependencies: McpRouteDependencies = {
+  getSteering: readGuardedLocalOsSteering,
+  executeFacadeTool: async (toolName, toolInput) => {
+    try {
+      return await executeLocalOsFacadeTool(toolName, toolInput);
+    } catch (error: unknown) {
+      logLocalOsServerError(
+        'local_os.mcp_tool_execution_failed',
+        error,
+        {
+          code: 'OS_EXECUTION_FAILED',
+          route: MCP_PATH,
+          toolName,
+        },
+      );
+      return {
+        ok: false,
+        code: 'OS_EXECUTION_FAILED',
+        message: 'OS tool execution failed.',
+      };
+    }
+  },
+};
+
+export function createMcpRoutes(
+  dependencies: McpRouteDependencies = defaultDependencies,
+): Hono {
   const app = new Hono();
 
   app.all(MCP_PATH, async (context) => {
@@ -71,30 +106,16 @@ export function createMcpRoutes(): Hono {
           });
       if (denied) return denied;
 
+      const session = resolveMcpRequestSession(request, body);
       const result = await handleMcpGatewayJsonRpc(body, {
-        getSteering: readGuardedLocalOsSteering,
-        executeFacadeTool: async (toolName, toolInput) => {
-          try {
-            return await executeLocalOsFacadeTool(toolName, toolInput);
-          } catch (error: unknown) {
-            logLocalOsServerError(
-              'local_os.mcp_tool_execution_failed',
-              error,
-              {
-                code: 'OS_EXECUTION_FAILED',
-                route: MCP_PATH,
-                toolName,
-              },
-            );
-            return {
-              ok: false,
-              code: 'OS_EXECUTION_FAILED',
-              message: 'OS tool execution failed.',
-            };
-          }
-        },
+        getSteering: () => dependencies.getSteering(session.callerKey),
+        executeFacadeTool: dependencies.executeFacadeTool,
       });
-      return jsonResponse(result);
+      const response = jsonResponse(result);
+      if (session.responseSessionId) {
+        response.headers.set('mcp-session-id', session.responseSessionId);
+      }
+      return response;
     } catch (error: unknown) {
       return internalError(error);
     }

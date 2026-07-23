@@ -180,6 +180,8 @@ const SOURCE_ONLY_FILES = new Set([
   'scripts/generate-skills-registry.ts',
   'scripts/generate-tool-manifest.ts',
   'scripts/generate-types.ts',
+  'scripts/prepare-release-publication.ts',
+  'scripts/release-channels.ts',
 ]);
 
 const CUSTOMER_PROVIDER_PREFIXES = [
@@ -270,7 +272,8 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
     filePath.startsWith('tests/') ||
     filePath.startsWith('scripts/testing/') ||
     /(^|\/)fixtures?\//.test(filePath) ||
-    /(?:^|\.)test\.[^.]+$/.test(filePath)
+    /(?:^|\.)test\.[^.]+$/.test(filePath) ||
+    /^tools\/[^/]+\/testing\.ts$/.test(filePath)
   ) {
     return 'test-only';
   }
@@ -288,7 +291,7 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
   if (filePath.startsWith('skills/')) return 'managed-skill';
-  if (/^tools\/[^/]+\/handler\.ts$/.test(filePath)) return 'managed-tool';
+  if (/^tools\/[^/]+\/[^/]+\.ts$/.test(filePath)) return 'managed-tool';
   if (filePath.startsWith('manifests/generated/') || filePath.startsWith('workflows/generated/') || filePath.startsWith('src/generated/')) {
     return 'managed-tool';
   }
