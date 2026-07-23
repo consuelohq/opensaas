@@ -385,4 +385,109 @@ describe('deployment provider core', () => {
     }))).resolves.toEqual({ deploymentId: 'dep_new' });
     expect(fake.requests).toHaveLength(1);
   });
+
+  it.each([
+    {
+      name: 'auth status',
+      result: providerProcessResult({ stdout: '[]' }),
+      run: (service: ReturnType<typeof createDeploymentProviderService>) => service.authStatus(),
+    },
+    {
+      name: 'environment metadata',
+      result: providerProcessResult({ stdout: '{}' }),
+      run: (service: ReturnType<typeof createDeploymentProviderService>) => service.environmentListNames(),
+    },
+    {
+      name: 'environment mutation',
+      result: providerProcessResult({ stdout: '[]' }),
+      run: (service: ReturnType<typeof createDeploymentProviderService>) => service.environmentSet({
+        name: 'FEATURE_FLAG',
+        value: 'normalizer-secret',
+        scope: 'production',
+        approval: { approved: true, reason: 'Malformed normalization contract test' },
+      }),
+    },
+  ])('maps malformed normalized $name output to a typed provider error', async ({ result, run }) => {
+    const fake = createFakeProviderProcess([result]);
+    const service = createDeploymentProviderService(createFakeDeploymentProviderAdapter(), {
+      process: fake.process,
+    });
+
+    const error = await expectProviderError(run(service), 'MALFORMED_OUTPUT');
+
+    expect(error.message).toContain('returned malformed output');
+    expect(JSON.stringify(error)).not.toContain('normalizer-secret');
+  });
+
+  it('transports environment values through stdin without exposing them in argv or errors', async () => {
+    const secret = 'stdin-only-environment-secret';
+    const success = createFakeProviderProcess([
+      providerProcessResult({
+        stdout: JSON.stringify({ name: 'FEATURE_FLAG', scopes: ['production'], updated: true }),
+      }),
+    ]);
+    const service = createDeploymentProviderService(createFakeDeploymentProviderAdapter(), {
+      process: success.process,
+    });
+
+    await Effect.runPromise(service.environmentSet({
+      name: 'FEATURE_FLAG',
+      value: secret,
+      scope: 'production',
+      approval: { approved: true, reason: 'Secret transport contract test' },
+    }));
+
+    expect(success.requests[0].stdin).toBe(secret);
+    expect(success.requests[0].args.join(' ')).not.toContain(secret);
+
+    const failed = createFakeProviderProcess([
+      providerProcessResult({ exitCode: 1, stderr: 'provider rejected environment mutation' }),
+    ]);
+    const failedService = createDeploymentProviderService(createFakeDeploymentProviderAdapter(), {
+      process: failed.process,
+    });
+    const error = await expectProviderError(failedService.environmentSet({
+      name: 'FEATURE_FLAG',
+      value: secret,
+      scope: 'production',
+      approval: { approved: true, reason: 'Secret failure redaction contract test' },
+    }), 'COMMAND_FAILED');
+
+    expect(JSON.stringify(error)).not.toContain(secret);
+    expect(failed.requests[0].args.join(' ')).not.toContain(secret);
+  });
+
+  it('writes provider stdin through the node process without adding it to argv', async () => {
+    const secret = 'node-process-stdin-secret';
+    const providerProcess = createNodeProviderProcess();
+    const result = await Effect.runPromise(providerProcess.run({
+      command: process.execPath,
+      args: ['-e', "let input = ''; process.stdin.setEncoding('utf8'); process.stdin.on('data', (chunk) => input += chunk); process.stdin.on('end', () => process.stdout.write(String(input.length)));"],
+      cwd: process.cwd(),
+      env: process.env,
+      timeoutMs: 5_000,
+      stdin: secret,
+    }));
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe(String(secret.length));
+  });
+  it('bounds provider stdout and stderr by bytes and reports truncation', async () => {
+    const providerProcess = createNodeProviderProcess({ maxOutputBytes: 64 });
+    const result = await Effect.runPromise(providerProcess.run({
+      command: process.execPath,
+      args: ['-e', "process.stdout.write('x'.repeat(256)); process.stderr.write('y'.repeat(256));"],
+      cwd: process.cwd(),
+      env: process.env,
+      timeoutMs: 5_000,
+    }));
+
+    expect(Buffer.byteLength(result.stdout)).toBeLessThanOrEqual(64);
+    expect(Buffer.byteLength(result.stderr)).toBeLessThanOrEqual(64);
+    expect(result.stdout).toBe('x'.repeat(64));
+    expect(result.stderr).toBe('y'.repeat(64));
+    expect(result.stdoutTruncated).toBe(true);
+    expect(result.stderrTruncated).toBe(true);
+  });
+
 });

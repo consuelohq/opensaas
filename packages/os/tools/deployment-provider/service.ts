@@ -49,6 +49,8 @@ const diagnostics = (command: string, result: ProviderProcessResult): ProviderCo
     cancelled: result.cancelled,
     stdout: redactProviderText(result.stdout),
     stderr: redactProviderText(result.stderr),
+    ...(result.stdoutTruncated ? { stdoutTruncated: true } : {}),
+    ...(result.stderrTruncated ? { stderrTruncated: true } : {}),
   };
 };
 
@@ -154,6 +156,8 @@ const normalizeRawResult = (result: ProviderProcessResult): ProviderRawResult =>
     stdout: redactProviderText(result.stdout),
     stderr: redactProviderText(result.stderr),
     exitCode: result.exitCode,
+    ...(result.stdoutTruncated ? { stdoutTruncated: true } : {}),
+    ...(result.stderrTruncated ? { stderrTruncated: true } : {}),
   };
 };
 
@@ -177,6 +181,7 @@ export const createDeploymentProviderService = (
     env: { ...env, ...command.env },
     timeoutMs: input.timeoutMs || defaultTimeoutMs,
     ...(input.signal ? { signal: input.signal } : {}),
+    ...(command.stdin !== undefined ? { stdin: command.stdin } : {}),
   }).pipe(
     Effect.flatMap((result) => {
       if (result.exitCode === 0 && !result.runtimeMissing && !result.timedOut && !result.cancelled) {
@@ -235,9 +240,18 @@ export const createDeploymentProviderService = (
         return normalizeRawResult(result) as DeploymentProviderOperationOutputMap[Operation];
       }
 
-      let parsed: unknown;
       try {
-        parsed = definition.parse(result);
+        const parsed = definition.parse(result);
+        if (operation === 'auth.status') {
+          return normalizeAuthStatus(parsed) as DeploymentProviderOperationOutputMap[Operation];
+        }
+        if (operation === 'environment.listNames') {
+          return normalizeEnvironmentMetadata(parsed) as DeploymentProviderOperationOutputMap[Operation];
+        }
+        if (operation === 'environment.set') {
+          return normalizeEnvironmentSetResult(parsed) as DeploymentProviderOperationOutputMap[Operation];
+        }
+        return redactJson(parsed) as DeploymentProviderOperationOutputMap[Operation];
       } catch (cause: unknown) {
         return yield* Effect.fail(providerError({
           code: 'MALFORMED_OUTPUT',
@@ -248,16 +262,6 @@ export const createDeploymentProviderService = (
           cause,
         }));
       }
-      if (operation === 'auth.status') {
-        return normalizeAuthStatus(parsed) as DeploymentProviderOperationOutputMap[Operation];
-      }
-      if (operation === 'environment.listNames') {
-        return normalizeEnvironmentMetadata(parsed) as DeploymentProviderOperationOutputMap[Operation];
-      }
-      if (operation === 'environment.set') {
-        return normalizeEnvironmentSetResult(parsed) as DeploymentProviderOperationOutputMap[Operation];
-      }
-      return redactJson(parsed) as DeploymentProviderOperationOutputMap[Operation];
     });
   };
 

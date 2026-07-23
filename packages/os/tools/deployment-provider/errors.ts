@@ -25,6 +25,8 @@ export type ProviderCommandDiagnostics = {
   cancelled: boolean;
   stdout: string;
   stderr: string;
+  stdoutTruncated?: boolean;
+  stderrTruncated?: boolean;
 };
 
 export class ProviderError extends Data.TaggedError('ProviderError')<{

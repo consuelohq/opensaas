@@ -23,6 +23,8 @@ export const providerProcessResult = (
     timedOut: false,
     cancelled: false,
     runtimeMissing: false,
+    stdoutTruncated: false,
+    stderrTruncated: false,
     ...overrides,
   };
 };
@@ -128,10 +130,14 @@ export const createFakeDeploymentProviderAdapter = (options: {
         (input) => ['redeploy', inputString(input, 'deploymentId', 'current'), '--json'],
       ),
       'environment.listNames': definition('environment.listNames', () => ['environment', 'list', '--json']),
-      'environment.set': definition(
-        'environment.set',
-        (input) => ['environment', 'set', inputString(input, 'name', ''), '--scope', inputString(input, 'scope', 'production')],
-      ),
+      'environment.set': {
+        capability: 'environment.set',
+        command: (input: DeploymentProviderOperationInputMap['environment.set']) => ({
+          args: ['environment', 'set', input.name, '--scope', input.scope || 'production'],
+          stdin: input.value,
+        }),
+        parse: (result) => parseJson<ProviderAdapterOperationOutputMap['environment.set']>(result),
+      },
       raw: definition(
         'raw',
         (input) => [
