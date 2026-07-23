@@ -463,6 +463,8 @@ describe('runtime bundle contract', () => {
     ]));
     expect(first.manifest.files.some((file) => file.path === 'tools/deployment-provider/testing.ts')).toBe(false);
     expect(first.manifest.files.some((file) => file.path.startsWith('scripts/testing/'))).toBe(false);
+    expect(first.manifest.files.some((file) => file.path === 'scripts/release-channels.ts')).toBe(false);
+    expect(first.manifest.files.some((file) => file.path === 'scripts/prepare-release-publication.ts')).toBe(false);
     expect(first.manifest.files.some((file) => file.path.startsWith('operator/'))).toBe(false);
     expect(first.excludedCounts['operator-only']).toBeGreaterThan(0);
     expect(first.excludedCounts['test-only']).toBeGreaterThan(0);

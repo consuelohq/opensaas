@@ -57,9 +57,12 @@ describe('Bun product server contract', () => {
 
     const manager = source('scripts/server.js');
     expect(manager).toContain(
-      "const SERVER_TS = path.join(WORKSPACE_DIR, 'scripts', 'server', 'main.ts');",
+      "const LIFECYCLE_TS = path.join(WORKSPACE_DIR, 'scripts', 'lifecycle.ts');",
     );
-    expect(manager).toContain("spawn('bun', [SERVER_TS]");
+    expect(manager).toContain(
+      "const RELOAD_JS = path.join(WORKSPACE_DIR, 'scripts', 'consuelo-reload.js');",
+    );
+    expect(manager).toContain("run(LIFECYCLE_TS, ['restart'");
     expect(manager).not.toContain('server.py');
 
     const server = source('scripts/server/main.ts');

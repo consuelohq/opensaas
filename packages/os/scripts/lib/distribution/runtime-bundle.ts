@@ -180,6 +180,8 @@ const SOURCE_ONLY_FILES = new Set([
   'scripts/generate-skills-registry.ts',
   'scripts/generate-tool-manifest.ts',
   'scripts/generate-types.ts',
+  'scripts/prepare-release-publication.ts',
+  'scripts/release-channels.ts',
 ]);
 
 const CUSTOMER_PROVIDER_PREFIXES = [
