@@ -42,27 +42,15 @@ started: 2026-07-23
 
 ## files changed
 
-- `packages/os/SCRIPTS.md`
-- `packages/os/package.json`
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- `packages/os/tests/audit/fixtures/script-parity-classifications.json`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
-- `packages/workspace/scripts/ci/check-github-workflows.cjs`
 - `.github/workflows/consuelo-os-runtime-promote.yaml`
 - `.github/workflows/consuelo-os-runtime-publish.yaml`
 - `.github/workflows/consuelo-os-runtime-rollback.yaml`
 - `packages/os/docs/distribution/release-channels.md`
 - `packages/os/scripts/lib/distribution/release-channel-provider.ts`
-- `packages/os/scripts/lib/distribution/release-channel.schema.json`
-- `packages/os/scripts/lib/distribution/release-channels.ts`
-- `packages/os/scripts/prepare-release-publication.ts`
 - `packages/os/scripts/release-channels.ts`
 - `packages/os/tests/distribution/release-channel-provider-retries.test.ts`
-- `packages/os/tests/distribution/release-channel-schema.test.ts`
 - `packages/os/tests/distribution/release-channel-workflows.test.ts`
 - `packages/os/tests/distribution/release-channels-cli.test.ts`
-- `packages/os/tests/distribution/release-channels.test.ts`
-- `packages/os/tests/distribution/release-publication-preparer.test.ts`
 
 
 ## key decisions
@@ -290,3 +278,79 @@ Post-disposition evidence:
 - `git diff --check`: passed (`trc_54432e33fc0d`).
 - Final native review: zero issues (`trc_7b3e9e9973d9`).
 - Final workspace verify: publish-valid (`trc_5cbdd1aa6f1f`).
+
+## wait cycle: final CI 1
+
+Wait reason: PR #1579 has four in-progress checks and zero failures: danger-js, Consuelo verify, workspace contracts, and OS contracts.
+Duration: 30 seconds.
+Resume action: Query PR statusCheckRollup and mergeStateStatus immediately.
+Expected signal: Pending count decreases or all checks complete successfully.
+Fallback: Inspect any failed job logs; otherwise continue bounded 30-second polling.
+Start time (UTC): 2026-07-23T02:55:49.335Z
+Observed result (final CI cycle 1): At 2026-07-23T02:56:40.795Z, the same four checks remained in progress and no checks failed.
+Next decision: Run one additional bounded 30-second poll; inspect live job steps if unchanged.
+
+## wait cycle: final CI 2
+
+Wait reason: Four required PR checks remain active with zero failures after the first poll.
+Duration: 30 seconds.
+Resume action: Query statusCheckRollup; if unchanged, inspect the active Actions job summaries.
+Expected signal: Pending count decreases or checks complete successfully.
+Fallback: Inspect active job steps and logs for a concrete failure/stall signal.
+Start time (UTC): 2026-07-23T02:56:40.795Z
+Observed result (final CI cycle 2): At 2026-07-23T02:57:31.150Z, danger-js completed successfully. Three Consuelo CI jobs remain active in their dependency-install steps; no failures or stall signals.
+Next decision: Continue bounded polling and inspect gate steps immediately after install.
+
+## wait cycle: final CI 3
+
+Wait reason: Three required Consuelo CI jobs are actively installing dependencies.
+Duration: 30 seconds.
+Resume action: Query PR checks and active job steps immediately.
+Expected signal: Install steps complete and contract/verify gates begin or finish.
+Fallback: Inspect job logs if installation fails or remains unchanged for multiple cycles.
+Start time (UTC): 2026-07-23T02:57:31.150Z
+Observed result (final CI cycle 3): At 2026-07-23T02:58:21.765Z, all three jobs remained healthy. OS advanced to Install OS dependencies; verify and workspace contracts remained in Install dependencies. No failures.
+Next decision: Continue bounded polling without intervention.
+
+## wait cycle: final CI 4
+
+Wait reason: Three required CI jobs are actively progressing through dependency installation.
+Duration: 30 seconds.
+Resume action: Query active job steps and PR conclusions immediately.
+Expected signal: Contract/verify test steps begin or jobs complete.
+Fallback: Inspect logs only on failure or a sustained unchanged state.
+Start time (UTC): 2026-07-23T02:58:21.765Z
+Observed result (final CI cycle 4): At 2026-07-23T02:59:11.991Z, Consuelo OS contracts completed successfully. Only Consuelo verify and workspace contracts remain in progress; zero failures across 48 checks.
+Next decision: Poll the final two gates.
+
+## wait cycle: final CI 5
+
+Wait reason: Two required Consuelo CI gates remain in progress with no failures.
+Duration: 30 seconds.
+Resume action: Query PR status and active job steps immediately.
+Expected signal: One or both final gates complete successfully.
+Fallback: Inspect failed logs if a conclusion changes to failure; otherwise continue bounded polling.
+Start time (UTC): 2026-07-23T02:59:11.991Z
+Observed result (final CI cycle 5): At 2026-07-23T02:59:59.014Z, Consuelo verify completed successfully. Workspace contracts is the only remaining check; 47 checks succeeded and none failed.
+Next decision: Poll the final workspace contract gate.
+
+## wait cycle: final CI 6
+
+Wait reason: One required workspace contract check remains in progress.
+Duration: 30 seconds.
+Resume action: Query PR check conclusions and merge state immediately.
+Expected signal: All checks complete successfully and merge state becomes mergeable/clean.
+Fallback: Inspect the workspace contract job log if it fails or remains unchanged.
+Start time (UTC): 2026-07-23T02:59:59.014Z
+
+## final GitHub evidence and cleanup
+
+- Final PR head: `4ca955f5f701a8d61a53f6d002ecbaf815637104`; base: `stream/os-distribution`.
+- GitHub CI: **48/48 checks successful**, zero pending and zero failed; merge state `CLEAN` (trace `trc_66da2abe4672`).
+- CodeRabbit request: https://github.com/consuelohq/opensaas/pull/1579#issuecomment-5053667597; requested review completed successfully with no findings or inline comments.
+- Grok structured review: https://github.com/consuelohq/opensaas/pull/1579#issuecomment-5053797876
+- Grok review summary and four inline findings: https://github.com/consuelohq/opensaas/pull/1579#pullrequestreview-4760397173
+- Grok disposition comment: https://github.com/consuelohq/opensaas/pull/1579#issuecomment-5053804215
+- Inline finding URLs: https://github.com/consuelohq/opensaas/pull/1579#discussion_r3209865670, https://github.com/consuelohq/opensaas/pull/1579#discussion_r3209865674, https://github.com/consuelohq/opensaas/pull/1579#discussion_r3209865682, https://github.com/consuelohq/opensaas/pull/1579#discussion_r3209865687.
+- Temporary review directory `packages/os/.tmp-reviews/automatic-versioning-release-channels/` removed after all review evidence and dispositions were posted.
+- Final evidence recorded at 2026-07-23T03:01:03.872Z.
