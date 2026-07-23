@@ -230,13 +230,31 @@ const parseLogs = (result: ProviderProcessResult): ProviderLogResult => {
       ...(stream ? { stream } : {}),
     };
   });
-  return { entries };
+  return {
+    entries,
+    ...(result.timedOut || result.stdoutTruncated ? { truncated: true } : {}),
+  };
 };
 
 const parseDeploymentMutation = (result: ProviderProcessResult): ProviderDeploymentMutationResult => {
-  const urls = cleanText(result.stdout).match(URL_PATTERN) || [];
-  if (urls.length !== 1) throw new Error('Vercel deployment output did not contain exactly one deployment URL');
-  const url = normalizeUrl(urls[0]);
+  const urls = (cleanText(result.stdout).match(URL_PATTERN) || []).map(normalizeUrl);
+  const deploymentUrls = urls.filter((value) => {
+    try {
+      return new URL(value).hostname.toLowerCase().endsWith('.vercel.app');
+    } catch {
+      return false;
+    }
+  });
+  const nonDashboardUrls = urls.filter((value) => {
+    try {
+      const hostname = new URL(value).hostname.toLowerCase();
+      return hostname !== 'vercel.com' && !hostname.endsWith('.vercel.com');
+    } catch {
+      return false;
+    }
+  });
+  const url = deploymentUrls.at(-1) || nonDashboardUrls.at(-1);
+  if (!url) throw new Error('Vercel deployment output did not contain a deployment URL');
   return { deploymentId: url, url, status: 'QUEUED' };
 };
 
@@ -309,6 +327,7 @@ const parseDomainList = (result: ProviderProcessResult): ProviderDomainList => {
 
 const definition = <Operation extends ProviderCommandOperation>(input: {
   capability: Operation;
+  acceptPartialResult?: ProviderOperationDefinition<Operation>['acceptPartialResult'];
   command: (value: DeploymentProviderOperationInputMap[Operation]) => ProviderCommand;
   parse: (
     result: ProviderProcessResult,
@@ -406,7 +425,7 @@ export const vercelOperationCatalog = [
   {
     name: 'vercel.deploy.preview',
     capability: 'deploy',
-    command: 'vercel deploy <path> --target preview --yes --no-color',
+    command: 'vercel deploy <path> --target preview --yes --no-wait --no-color',
     readOnly: false,
     approval: {
       required: true,
@@ -417,7 +436,7 @@ export const vercelOperationCatalog = [
   {
     name: 'vercel.deploy.production',
     capability: 'deploy',
-    command: 'vercel deploy <path> --target production --yes --no-color',
+    command: 'vercel deploy <path> --target production --yes --no-wait --no-color',
     readOnly: false,
     approval: {
       required: true,
@@ -428,7 +447,7 @@ export const vercelOperationCatalog = [
   {
     name: 'vercel.redeploy',
     capability: 'redeploy',
-    command: 'vercel redeploy <deployment> [--target <target>] --no-color',
+    command: 'vercel redeploy <deployment> [--target <target>] --no-wait --no-color',
     readOnly: false,
     approval: {
       required: true,
@@ -606,6 +625,7 @@ export const createVercelProviderAdapter = (): DeploymentProviderAdapter => ({
     }),
     'logs.read': definition({
       capability: 'logs.read',
+      acceptPartialResult: (result) => result.timedOut && result.stdout.trim().length > 0,
       command: (input) => {
         if (!input.deploymentId) throw new Error('Vercel logs require deploymentId');
         return { args: noColor(['logs', input.deploymentId, '--json']) };
@@ -624,7 +644,7 @@ export const createVercelProviderAdapter = (): DeploymentProviderAdapter => ({
         if (target !== 'preview' && target !== 'production') {
           throw new Error('Vercel deploy target must be preview or production');
         }
-        return { args: noColor(['deploy', input.source || '.', '--target', target, '--yes']) };
+        return { args: noColor(['deploy', input.source || '.', '--target', target, '--yes', '--no-wait']) };
       },
       parse: parseDeploymentMutation,
     }),
@@ -635,6 +655,7 @@ export const createVercelProviderAdapter = (): DeploymentProviderAdapter => ({
           'redeploy',
           input.deploymentId,
           ...(input.target ? ['--target', input.target] : []),
+          '--no-wait',
         ]),
       }),
       parse: parseDeploymentMutation,

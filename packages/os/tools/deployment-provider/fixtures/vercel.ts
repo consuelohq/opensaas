@@ -63,6 +63,12 @@ export const vercelRuntimeLogsFixture = [
   },
 ] as const;
 
+export const vercelDeploymentMutationFixture = `
+Inspect: https://vercel.com/acme/consuelo/DEPLOYMENT_ID
+Production: https://consuelo.example.com
+https://preview-one.vercel.app
+`;
+
 export const vercelEnvironmentListFixture = `
   name             type         environments             created
   DATABASE_URL     Encrypted    Production                2d ago

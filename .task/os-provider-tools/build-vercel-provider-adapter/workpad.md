@@ -49,13 +49,21 @@ task session: `tsk_e398fbe000ba`
 - Expected red failure: the selector has no `taskSession` field and `task-push.js` exits with `unknown flag: --task-session`.
 - No-test waiver: none; this is lifecycle routing behavior and requires an executable regression test.
 
+### Grok finding repair test contract
+
+- Behavior under test: deploy/redeploy accept real multi-URL Vercel success output, explicitly use `--no-wait` when returning `QUEUED`, and logs.read returns bounded partial entries with truncation metadata when the live stream reaches the caller timeout.
+- Existing local pattern to follow: Vercel fixture-driven adapter tests plus provider-core typed result normalization.
+- New or changed tests: multi-URL mutation success, zero-URL fail-closed, exact `--no-wait` argv, partial timeout log success, and empty timeout log failure.
+- Focused red command: `bun run --cwd packages/os test -- tools/deployment-provider/vercel.test.ts`.
+- Expected red failure: mutation parsing rejects more than one URL, argv lacks `--no-wait`, and logs.read returns TIMEOUT instead of partial entries.
+- No-test waiver: none; all three findings affect launch-critical provider behavior.
+
 ## current status
 
-- READY TO PUBLISH: Ko explicitly expanded Worker 10 scope; `task.push --task-session` now parses and resolves the exact active task, focused lifecycle tests pass, strict review is clean, and verify is publish-valid.
+- REVIEW FIXES VALIDATED: Ko-expanded task.push repair remains green. Three concrete Grok recovery findings were verified and fixed: multi-URL deploy output, truthful queued semantics via `--no-wait`, and partial bounded logs on timeout. Focused/shared/lifecycle tests and provider TypeScript compile pass; final review/verify and publication remain.
 
 ## files changed
 
-- `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
 - `packages/os/tools/deployment-provider/fixtures/vercel.ts`
 - `packages/os/tools/deployment-provider/index.ts`
 - `packages/os/tools/deployment-provider/process.ts`
@@ -65,6 +73,11 @@ task session: `tsk_e398fbe000ba`
 - `packages/os/tools/deployment-provider/vercel.md`
 - `packages/os/tools/deployment-provider/vercel.test.ts`
 - `packages/os/tools/deployment-provider/vercel.ts`
+- `packages/workspace/scripts/lib/task-selection.js`
+- `packages/workspace/scripts/task-push.js`
+- `packages/workspace/tests/task-push-session.test.ts`
+- `packages/workspace/tests/task-selector-pr-ref.test.js`
+
 
 ## workspace-owned: files changed
 
@@ -111,6 +124,13 @@ task session: `tsk_e398fbe000ba`
 - 2026-07-23 16:28:03 `checkFiles`: passed — OK
 - 2026-07-23 16:28:16 `review.run`: passed — OK
 - 2026-07-23 16:28:26 `verify`: passed — OK
+- `trc_f2595b8f341c`: Grok finding repair red, 11 pass / 2 expected failures at multi-URL deploy and timed-out partial logs.
+- `trc_245c2d26fb53`: installed Vercel CLI 50.1.3 confirms deploy/redeploy `--no-wait` and five-minute live log streaming semantics.
+- `trc_5c19a8dade6d`: Grok finding repair focused green, 13/13.
+- `trc_6c66257124f3`: provider core + Vercel 39/39, lifecycle 21/21, OS syntax gate pass.
+- `trc_b7862a463cb2`: provider package TypeScript compiler pass after forwarding the partial-result hook through the adapter definition helper.
+- 2026-07-23 17:01:31 `review.run`: passed — OK
+- 2026-07-23 17:01:43 `verify`: passed — OK
 
 ## key decisions
 
@@ -147,6 +167,26 @@ task session: `tsk_e398fbe000ba`
 - A broader ad hoc lifecycle run exposed three pre-existing hook-dispatcher expectation failures unrelated to task selection (`trc_182bfe3bfcda`); no hook files were changed. The authoritative verify gate passed publish-valid with zero review/database findings (`trc_0b7837621685`).
 - The first post-repair typed `task.push` retry still invoked the root/main copy of `packages/workspace/scripts/task-push.js`, so the old parser rejected `--task-session` before the task-branch fix could publish itself (`trc_9eb018fb7ac2`). Recovery: invoke the verified task-worktree copy once through OS `code.call`; this preserves the existing publisher, verification checks, GitHub API path, authorship, and scoped metadata while resolving the self-hosting bootstrap problem.
 - The first `code.call` bootstrap ran with the task worktree as repository root; active-task enumeration correctly excluded that root and returned no matching candidate (`trc_37e8f255382f`). Recovery: execute the task-worktree script path with the main repository as discovery cwd so the normal selector can resolve the preserved task worktree.
+- Grok outer execution timed out while the bounded subprocess remained active, and backend retry behavior created one duplicate run. The newer duplicate was terminated cleanly while preserving the original bounded wrapper (`trc_717c21f8da30`, `trc_498dec7c9ccd`).
+
+### wait plan: Grok completion
+
+- Wait reason: the original bounded Grok 4.5 review subprocess is still running after the outer response timeout.
+- Duration: poll every 30 seconds for up to 12 minutes.
+- Resume action: inspect the original Grok process tree and `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-output.json` immediately after each wake.
+- Expected signal: original process exits and the output file contains a non-empty valid JSON review object.
+- Fallback: if the process exceeds its 900000 ms wrapper bound or output is empty/invalid, record the run as failed closed and rerun once with corrected transport.
+- Observed result: after the 30-second wake, the original process had exited but `grok-output.json` was zero bytes (`trc_68982a91d19a`, `trc_ee3b93e6f647`). The run is failed closed. Rerun once with wrapper stdout/stderr redirected directly to task-local temporary files so outer response timeouts cannot discard the structured result.
+- The corrected Grok run completed successfully (`trc_8d466a85f5b9`), but Grok's own JSON `text` field compacted the structured review at roughly 8 KB, cutting off CR-002 and any later fields. The retained OS stdout log is complete for the provider response but confirms the provider response itself is truncated. This review remains incomplete and therefore fails closed. Recovery: run a compact review using the same evidence, requiring a complete JSON object below 7 KB with concise findings and all mandatory fields.
+- The compact recovery also hit Grok's fixed 8028-character provider-output ceiling (`trc_3db60b5d12d0`, `trc_9fc5dd7754a7`). Across the retained portions, three findings were concrete and independently verified against source and Vercel CLI 50.1.3: multi-URL mutation parsing, `QUEUED` without `--no-wait`, and timed-out log streams discarding partial output. All three are fixed with regression coverage. A final post-fix Grok review is required to return a complete approval object before merge.
+- The first combined implementation patch was rejected atomically because a documentation hunk had moved (`trc_231d9193b109`); split anchored patches succeeded with no partial state.
+- The first ad hoc TypeScript compiler attempt used a missing `bun` type library (`trc_4aedf1b783c8`); the corrected Node-types run then exposed one real helper typing gap plus pre-existing strict redaction diagnostics (`trc_b2a0e79f6965`). The helper now forwards `acceptPartialResult`; the provider compile profile passes (`trc_b7862a463cb2`).
+
+## Grok finding dispositions
+
+- Multi-URL deploy/redeploy parsing: **fixed**. The adapter prefers the last `*.vercel.app` URL, falls back to a non-Vercel-dashboard URL, and fails only when no deployment URL exists. Added multi-URL success and zero-URL failure tests.
+- Mutation status semantics: **fixed**. Deploy and redeploy now pass Vercel CLI 50.1.3 `--no-wait`, so normalized `QUEUED` status matches actual command behavior. Catalog and documentation updated.
+- Live logs timeout behavior: **fixed**. The provider core supports adapter-approved partial results; Vercel logs accept a timed-out result only when stdout contains entries, return `truncated: true`, and retain typed `TIMEOUT` for empty streams.
 
 ---
 
@@ -165,9 +205,13 @@ task session: `tsk_e398fbe000ba`
 
 ## workspace-owned: files read
 
+- `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-compact-prompt.md`
+- `packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-prompt.md`
 - `packages/os/package.json`
+- `packages/os/scripts/subagent.ts`
 - `packages/os/skills/task/SKILL.md`
 - `packages/os/tools/deployment-provider/errors.ts`
+- `packages/os/tools/deployment-provider/fixtures/vercel.ts`
 - `packages/os/tools/deployment-provider/handler.test.ts`
 - `packages/os/tools/deployment-provider/handler.ts`
 - `packages/os/tools/deployment-provider/index.ts`
@@ -178,6 +222,9 @@ task session: `tsk_e398fbe000ba`
 - `packages/os/tools/deployment-provider/service.ts`
 - `packages/os/tools/deployment-provider/testing.ts`
 - `packages/os/tools/deployment-provider/types.ts`
+- `packages/os/tools/deployment-provider/vercel.md`
+- `packages/os/tools/deployment-provider/vercel.test.ts`
+- `packages/os/tools/deployment-provider/vercel.ts`
 - `packages/os/tools/tool-package-contract.test.ts`
 - `packages/workspace/package.json`
 - `packages/workspace/scripts/lib/task-selection.js`
@@ -185,9 +232,6 @@ task session: `tsk_e398fbe000ba`
 - `packages/workspace/scripts/review.js`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
+- `packages/workspace/tests/task-selector-pr-ref.test.js`
 
-- 2026-07-23 16:28:50 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
-
-- 2026-07-23 16:29:14 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
-
-- 2026-07-23 16:29:31 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+- 2026-07-23 17:01:17 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`

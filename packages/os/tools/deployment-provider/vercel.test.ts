@@ -5,6 +5,7 @@ import { ProviderError } from './errors';
 import {
   vercelDeploymentInspectionFixture,
   vercelDeploymentListFixture,
+  vercelDeploymentMutationFixture,
   vercelDomainListFixture,
   vercelEnvironmentListFixture,
   vercelProjectInspectionFixture,
@@ -253,7 +254,7 @@ describe('Vercel deployment provider adapter', () => {
 
   it('uses explicit deploy, redeploy, and promote semantics with approval', async () => {
     const fake = createFakeProviderProcess([
-      providerProcessResult({ stdout: 'https://preview-one.vercel.app' }),
+      providerProcessResult({ stdout: vercelDeploymentMutationFixture }),
       providerProcessResult({ stdout: 'https://preview-two.vercel.app' }),
       providerProcessResult({ stdout: 'Promoted https://preview-two.vercel.app to production' }),
     ]);
@@ -277,10 +278,63 @@ describe('Vercel deployment provider adapter', () => {
       status: 'PROMOTED',
     });
     expect(fake.requests.map((request) => request.args)).toEqual([
-      ['deploy', './app', '--target', 'preview', '--yes', '--no-color'],
-      ['redeploy', 'dpl_123', '--target', 'preview', '--no-color'],
+      ['deploy', './app', '--target', 'preview', '--yes', '--no-wait', '--no-color'],
+      ['redeploy', 'dpl_123', '--target', 'preview', '--no-wait', '--no-color'],
       ['promote', 'dpl_123', '--yes', '--no-color'],
     ]);
+  });
+
+  it('returns bounded partial logs when the live stream reaches its timeout', async () => {
+    const fake = createFakeProviderProcess([
+      providerProcessResult({
+        stdout: vercelRuntimeLogsFixture.map((entry) => JSON.stringify(entry)).join('\n'),
+        exitCode: 124,
+        timedOut: true,
+      }),
+    ]);
+    const service = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: fake.process,
+    });
+
+    await expect(Effect.runPromise(service.logsRead({
+      deploymentId: 'dpl_123',
+      timeoutMs: 100,
+    }))).resolves.toEqual({
+      entries: [
+        {
+          message: 'started',
+          timestamp: '2024-07-03T09:46:40.000Z',
+          level: 'info',
+          stream: 'lambda',
+        },
+        {
+          message: 'complete',
+          timestamp: '2026-07-23T12:00:00.000Z',
+          level: 'warning',
+          stream: 'edge',
+        },
+      ],
+      truncated: true,
+    });
+  });
+
+  it('fails closed when deploy output has no deployment URL or timed-out logs are empty', async () => {
+    const deploy = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: createFakeProviderProcess([
+        providerProcessResult({ stdout: 'Deployment created without a returned URL' }),
+      ]).process,
+    });
+    await expectProviderError(deploy.deploy({
+      target: 'preview',
+      approval: { approved: true, reason: 'Test malformed deploy output' },
+    }), 'MALFORMED_OUTPUT');
+
+    const logs = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: createFakeProviderProcess([
+        providerProcessResult({ exitCode: 124, timedOut: true }),
+      ]).process,
+    });
+    await expectProviderError(logs.logsRead({ deploymentId: 'dpl_123', timeoutMs: 100 }), 'TIMEOUT');
   });
 
   it('lists environment names and scopes and sets or deletes without exposing values', async () => {

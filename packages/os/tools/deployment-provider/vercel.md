@@ -88,23 +88,23 @@ The development host reported Vercel CLI `50.1.3` on July 23, 2026. This observa
 - CLI: `vercel logs <deployment> --json --no-color`
 - Output: bounded normalized log entries with message, timestamp, level, and stream/source.
 - Approval: not required.
-- Vercel streams runtime logs for up to five minutes. The shared timeout and output bound may end the read first.
+- Vercel streams runtime logs for up to five minutes. When the caller timeout ends a stream after at least one valid entry, the adapter returns bounded entries with `truncated: true`; an empty timed-out stream remains a typed `TIMEOUT` failure.
 
 `deploy` with `target: "preview"`
 
-- CLI: `vercel deploy <source> --target preview --yes --no-color`
+- CLI: `vercel deploy <source> --target preview --yes --no-wait --no-color`
 - Output: queued deployment ID/URL.
 - Approval consequence: creates a preview deployment without assigning production domains.
 
 `deploy` with `target: "production"`
 
-- CLI: `vercel deploy <source> --target production --yes --no-color`
+- CLI: `vercel deploy <source> --target production --yes --no-wait --no-color`
 - Output: queued deployment ID/URL.
 - Approval consequence: creates a production deployment and may reassign customer-facing domains.
 
 `redeploy`
 
-- CLI: `vercel redeploy <deployment> [--target <target>] --no-color`
+- CLI: `vercel redeploy <deployment> [--target <target>] --no-wait --no-color`
 - Output: queued deployment ID/URL.
 - Approval consequence: rebuilds an existing deployment and may affect availability.
 

@@ -202,6 +202,7 @@ export const createDeploymentProviderService = (
     operation: DeploymentProviderOperation,
     command: ProviderCommand,
     input: ProviderExecutionOptions,
+    acceptPartialResult?: (result: ProviderProcessResult) => boolean,
   ) => providerProcess.run({
     command: command.command || adapter.executable,
     args: [...command.args],
@@ -212,7 +213,9 @@ export const createDeploymentProviderService = (
     ...(command.stdin !== undefined ? { stdin: command.stdin } : {}),
   }).pipe(
     Effect.flatMap((result) => {
-      if (result.exitCode === 0 && !result.runtimeMissing && !result.timedOut && !result.cancelled) {
+      const complete = result.exitCode === 0 && !result.runtimeMissing && !result.timedOut && !result.cancelled;
+      const acceptedPartial = !result.runtimeMissing && !result.cancelled && acceptPartialResult?.(result) === true;
+      if (complete || acceptedPartial) {
         return Effect.succeed(result);
       }
       const code = failureCode(result);
@@ -263,7 +266,7 @@ export const createDeploymentProviderService = (
           cause,
         }));
       }
-      const result = yield* runCommand(operation, command, input);
+      const result = yield* runCommand(operation, command, input, definition.acceptPartialResult);
       if (operation === 'raw') {
         return normalizeRawResult(result) as DeploymentProviderOperationOutputMap[Operation];
       }

@@ -103,6 +103,7 @@ export type ProviderLogEntry = {
 export type ProviderLogResult = {
   entries: ProviderLogEntry[];
   cursor?: string;
+  truncated?: boolean;
 };
 
 export type ProviderDeploymentMutationResult = {
@@ -296,6 +297,7 @@ export type ProviderOperationDefinition<
 > = {
   capability: Operation;
   policy?: ProviderOperationPolicy | ((input: DeploymentProviderOperationInputMap[Operation]) => ProviderOperationPolicy);
+  acceptPartialResult?: (result: ProviderProcessResult) => boolean;
   command: (input: DeploymentProviderOperationInputMap[Operation]) => ProviderCommand;
   parse: (
     result: ProviderProcessResult,

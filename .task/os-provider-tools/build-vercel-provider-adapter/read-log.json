@@ -1,9 +1,14 @@
 {
   "files": [
+    ".task/os-provider-tools/build-vercel-provider-adapter/verify.json",
     ".task/os-provider-tools/build-vercel-provider-adapter/workpad.md",
+    "packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-compact-prompt.md",
+    "packages/os/.tmp-reviews/build-vercel-provider-adapter/grok-prompt.md",
     "packages/os/package.json",
+    "packages/os/scripts/subagent.ts",
     "packages/os/skills/task/SKILL.md",
     "packages/os/tools/deployment-provider/errors.ts",
+    "packages/os/tools/deployment-provider/fixtures/vercel.ts",
     "packages/os/tools/deployment-provider/handler.test.ts",
     "packages/os/tools/deployment-provider/handler.ts",
     "packages/os/tools/deployment-provider/index.ts",
@@ -14,13 +19,17 @@
     "packages/os/tools/deployment-provider/service.ts",
     "packages/os/tools/deployment-provider/testing.ts",
     "packages/os/tools/deployment-provider/types.ts",
+    "packages/os/tools/deployment-provider/vercel.md",
+    "packages/os/tools/deployment-provider/vercel.test.ts",
+    "packages/os/tools/deployment-provider/vercel.ts",
     "packages/os/tools/tool-package-contract.test.ts",
     "packages/workspace/package.json",
     "packages/workspace/scripts/lib/task-selection.js",
     "packages/workspace/scripts/lib/verification.js",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/task-push.js",
-    "packages/workspace/senior-engineer.md"
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/task-selector-pr-ref.test.js"
   ],
-  "updatedAt": "2026-07-23T16:28:42.022Z"
+  "updatedAt": "2026-07-23T17:01:07.007Z"
 }
