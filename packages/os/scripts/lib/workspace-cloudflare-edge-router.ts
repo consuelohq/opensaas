@@ -73,6 +73,7 @@ export type WorkspaceCloudflareEdgeRouteResolution =
       surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
       auth: 'public' | 'required' | 'workspace-session' | 'signed-connector';
       auditEvent: 'workspace.hostname.route.allowed';
+      nodeId?: string;
       target: WorkspaceCloudflareEdgeRouteTarget;
     }
   | {
@@ -87,6 +88,9 @@ export type WorkspaceCloudflareEdgeRouteRegistry = {
     host: string;
     path: string;
     method: string;
+    nodeId?: string;
+    nowMs?: number;
+    requireOnlineNode?: boolean;
   }) => Promise<WorkspaceCloudflareEdgeRouteResolution>;
 };
 
@@ -340,6 +344,7 @@ const buildProxyRequest = (input: {
   headers.delete(EDGE_SIGNATURE_TIMESTAMP_HEADER);
   headers.delete(EDGE_SIGNATURE_NONCE_HEADER);
   headers.delete('x-consuelo-connector-id');
+  headers.delete('x-consuelo-node-id');
 
   headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
   headers.set('x-consuelo-hostname', input.resolution.hostname);
@@ -348,6 +353,9 @@ const buildProxyRequest = (input: {
 
   if (input.resolution.target.kind === 'os-connector') {
     headers.set('x-consuelo-connector-id', input.resolution.target.connectorId);
+    if (input.resolution.nodeId) {
+      headers.set('x-consuelo-node-id', input.resolution.nodeId);
+    }
   }
 
   headers.set(EDGE_SIGNATURE_TIMESTAMP_HEADER, input.timestamp);
@@ -578,6 +586,7 @@ const MCP_OAUTH_SCOPES = [
   'mcp:read',
   'mcp:call',
   'workspace:read',
+  'workspace:nodes:manage',
   'os:tools',
   'route:/mcp:read',
   'tool:*:read',
@@ -654,6 +663,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
             host: inboundUrl.hostname,
             path: '/mcp',
             method: 'POST',
+            requireOnlineNode: false,
           });
           if (!mcpResolution.allowed) {
             return createSafeErrorResponse({
@@ -678,6 +688,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
             host: inboundUrl.hostname,
             path: '/mcp',
             method: 'POST',
+            requireOnlineNode: false,
           });
           if (!mcpResolution.allowed) {
             return createSafeErrorResponse({
@@ -699,6 +710,10 @@ export const createWorkspaceCloudflareEdgeRouter = (
           host: inboundUrl.hostname,
           path: inboundUrl.pathname,
           method: request.method,
+          ...(request.headers.get('x-consuelo-node-id')?.trim()
+            ? { nodeId: request.headers.get('x-consuelo-node-id')!.trim() }
+            : {}),
+          nowMs: now(),
         });
 
         if (!resolution.allowed) {

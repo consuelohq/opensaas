@@ -64,6 +64,10 @@ export type WorkspaceBootstrap = {
   nodeName?: string;
   nodeRole?: 'home' | 'member';
   nodeStatus?: 'created' | 'reconnected';
+  nodePublicKeyJwk?: string;
+  nodeSigningKeyJwk?: string;
+  nodeCapabilities?: string[];
+  authorityOrigin?: string;
   connectorBootstrapToken?: string;
   cloudflareTunnelToken?: string;
 };
@@ -602,6 +606,7 @@ function renderCloudflaredLaunchdPlist(input: {
   programArguments: string[];
   keepAlive: boolean;
   runAtLoad: boolean;
+  startIntervalSeconds?: number;
   standardOutPath: string;
   standardErrorPath: string;
 }): string {
@@ -624,6 +629,12 @@ function renderCloudflaredLaunchdPlist(input: {
     `  <${input.keepAlive ? 'true' : 'false'}/>`,
     '  <key>RunAtLoad</key>',
     `  <${input.runAtLoad ? 'true' : 'false'}/>`,
+    ...(input.startIntervalSeconds
+      ? [
+          '  <key>StartInterval</key>',
+          `  <integer>${input.startIntervalSeconds}</integer>`,
+        ]
+      : []),
     '  <key>StandardOutPath</key>',
     `  <string>${escapeXml(input.standardOutPath)}</string>`,
     '  <key>StandardErrorPath</key>',
@@ -818,6 +829,92 @@ function materializeWorkspaceConnectorBootstrap(input: {
       { mode: 0o755 },
     );
     fs.chmodSync(smokePath, 0o755);
+  }
+
+  if (
+    input.workspaceBootstrap.nodeId &&
+    input.workspaceBootstrap.nodePublicKeyJwk &&
+    input.workspaceBootstrap.nodeSigningKeyJwk
+  ) {
+    const heartbeatConfigPath = path.join(
+      input.nodeHome,
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    const safeNodeId = input.workspaceBootstrap.nodeId.replace(
+      /[^a-zA-Z0-9.-]+/g,
+      '-',
+    );
+    const heartbeatLabel = `com.consuelo.os.node-heartbeat.${safeNodeId}`;
+    const heartbeatPlistPath = path.join(
+      input.nodeHome,
+      'security',
+      'generated',
+      `${heartbeatLabel}.plist`,
+    );
+    const heartbeatScriptPath = path.join(
+      input.runtimeHome,
+      'scripts',
+      'workspace-node-heartbeat.ts',
+    );
+    const heartbeatLogPath = path.join(
+      input.nodeHome,
+      'logs',
+      'workspace-node-heartbeat.log',
+    );
+    writeJsonFile(
+      heartbeatConfigPath,
+      {
+        authorityOrigin:
+          input.workspaceBootstrap.authorityOrigin ??
+          'https://os.consuelohq.com',
+        workspaceId: input.workspaceBootstrap.workspaceId,
+        nodeId: input.workspaceBootstrap.nodeId,
+        connectorStatus: 'connected',
+        capabilities: [
+          ...(input.workspaceBootstrap.nodeCapabilities ?? ['mcp', 'tools']),
+        ].sort(),
+        publicKeyJwk: input.workspaceBootstrap.nodePublicKeyJwk,
+        signingKeyJwk: input.workspaceBootstrap.nodeSigningKeyJwk,
+      },
+      input.dryRun,
+    );
+    if (!input.dryRun) {
+      fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
+      fs.writeFileSync(
+        heartbeatPlistPath,
+        renderCloudflaredLaunchdPlist({
+          label: heartbeatLabel,
+          programArguments: [
+            process.execPath,
+            heartbeatScriptPath,
+            '--config',
+            heartbeatConfigPath,
+          ],
+          keepAlive: false,
+          runAtLoad: true,
+          startIntervalSeconds: 30,
+          standardOutPath: heartbeatLogPath,
+          standardErrorPath: heartbeatLogPath,
+        }),
+        { mode: 0o600 },
+      );
+    }
+    actions.push(
+      {
+        type: 'create_file',
+        path: heartbeatConfigPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'workspace node heartbeat config configured',
+      },
+      {
+        type: 'create_file',
+        path: heartbeatPlistPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'workspace node heartbeat launchd service configured',
+      },
+    );
   }
 
   return actions;

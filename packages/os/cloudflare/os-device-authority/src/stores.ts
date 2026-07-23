@@ -14,6 +14,11 @@ import type {
 } from './types';
 import { cleanCode } from './utils';
 
+const cloneWorkspaceNode = (node: WorkspaceNode): WorkspaceNode => ({
+  ...node,
+  ...(node.capabilities ? { capabilities: [...node.capabilities] } : {}),
+});
+
 export class DurableStore implements Store {
   constructor(private storage: StorageLike) {}
   async put(g: Grant) {
@@ -171,16 +176,68 @@ export class DurableStore implements Store {
   }
   async putWorkspaceNode(node: WorkspaceNode) {
     try {
-      await this.storage.put(`wn:${node.accountId}:${node.nodeId}`, node);
+      const boundAccountId = await this.storage.get<string>(`wni:${node.nodeId}`);
+      if (boundAccountId && boundAccountId !== node.accountId) {
+        throw new Error('workspace node ID is already bound to another account');
+      }
+      const nodeIds =
+        (await this.storage.get<string[]>(`wnl:${node.accountId}`)) ?? [];
+      await this.storage.put(
+        `wn:${node.accountId}:${node.nodeId}`,
+        cloneWorkspaceNode(node),
+      );
+      await this.storage.put(`wni:${node.nodeId}`, node.accountId);
+      if (!nodeIds.includes(node.nodeId)) {
+        await this.storage.put(`wnl:${node.accountId}`, [...nodeIds, node.nodeId]);
+      }
     } catch {
       throw new Error('workspace node write failed');
     }
   }
   async byWorkspaceNode(accountId: string, nodeId: string) {
     try {
-      return await this.storage.get<WorkspaceNode>(`wn:${accountId}:${nodeId}`);
+      const node = await this.storage.get<WorkspaceNode>(
+        `wn:${accountId}:${nodeId}`,
+      );
+      return node ? cloneWorkspaceNode(node) : undefined;
     } catch {
       throw new Error('workspace node read failed');
+    }
+  }
+  async byWorkspaceNodeId(nodeId: string) {
+    try {
+      const accountId = await this.storage.get<string>(`wni:${nodeId}`);
+      return accountId ? await this.byWorkspaceNode(accountId, nodeId) : undefined;
+    } catch {
+      throw new Error('workspace node identity read failed');
+    }
+  }
+  async listWorkspaceNodes(accountId: string) {
+    try {
+      const nodeIds =
+        (await this.storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+      const nodes = await Promise.all(
+        nodeIds.map((nodeId) => this.byWorkspaceNode(accountId, nodeId)),
+      );
+      return nodes.filter((node): node is WorkspaceNode => Boolean(node));
+    } catch {
+      throw new Error('workspace node list failed');
+    }
+  }
+  async claimWorkspaceNodeNonce(
+    nodeId: string,
+    nonce: string,
+    expiresAt: number,
+    nowMs: number,
+  ) {
+    try {
+      const key = `wnn:${nodeId}:${nonce}`;
+      const existing = await this.storage.get<number>(key);
+      if (existing && existing > nowMs) return false;
+      await this.storage.put(key, expiresAt);
+      return true;
+    } catch {
+      throw new Error('workspace node nonce write failed');
     }
   }
   async putNodeBootstrapCredential(credential: NodeBootstrapCredential) {
@@ -229,6 +286,8 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpRefreshTokens = new Map<string, McpOAuthRefreshToken>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
   const workspaceNodes = new Map<string, WorkspaceNode>();
+  const workspaceNodeAccounts = new Map<string, string>();
+  const workspaceNodeNonces = new Map<string, number>();
   const nodeBootstrapCredentials = new Map<string, NodeBootstrapCredential>();
   const workspaceAgentStatuses = new Map<string, WorkspaceAgentStatus>();
   const cloneWorkspaceAgentStatus = (status: WorkspaceAgentStatus): WorkspaceAgentStatus => ({
@@ -328,12 +387,43 @@ export function createMemoryDeviceGrantStore(): Store {
       return Promise.resolve(workspace ? { ...workspace } : undefined);
     },
     putWorkspaceNode(node) {
-      workspaceNodes.set(`${node.accountId}:${node.nodeId}`, { ...node });
+      const boundAccountId = workspaceNodeAccounts.get(node.nodeId);
+      if (boundAccountId && boundAccountId !== node.accountId) {
+        return Promise.reject(
+          new Error('workspace node ID is already bound to another account'),
+        );
+      }
+      workspaceNodeAccounts.set(node.nodeId, node.accountId);
+      workspaceNodes.set(
+        `${node.accountId}:${node.nodeId}`,
+        cloneWorkspaceNode(node),
+      );
       return Promise.resolve();
     },
     byWorkspaceNode(accountId, nodeId) {
       const node = workspaceNodes.get(`${accountId}:${nodeId}`);
-      return Promise.resolve(node ? { ...node } : undefined);
+      return Promise.resolve(node ? cloneWorkspaceNode(node) : undefined);
+    },
+    byWorkspaceNodeId(nodeId) {
+      const boundAccountId = workspaceNodeAccounts.get(nodeId);
+      const node = boundAccountId
+        ? workspaceNodes.get(`${boundAccountId}:${nodeId}`)
+        : undefined;
+      return Promise.resolve(node ? cloneWorkspaceNode(node) : undefined);
+    },
+    listWorkspaceNodes(accountId) {
+      return Promise.resolve(
+        [...workspaceNodes.values()]
+          .filter((node) => node.accountId === accountId)
+          .map(cloneWorkspaceNode),
+      );
+    },
+    claimWorkspaceNodeNonce(nodeId, nonce, expiresAt, nowMs) {
+      const key = `${nodeId}:${nonce}`;
+      const existing = workspaceNodeNonces.get(key);
+      if (existing && existing > nowMs) return Promise.resolve(false);
+      workspaceNodeNonces.set(key, expiresAt);
+      return Promise.resolve(true);
     },
     putNodeBootstrapCredential(credential) {
       nodeBootstrapCredentials.set(credential.tokenHash, { ...credential });

@@ -751,8 +751,13 @@ describe('os device authority worker', () => {
       approvalAssertionSecret,
     });
 
-    const startNodeGrant = async (input: { nodeId?: string; nodeName?: string }) => {
-      const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const startNodeGrant = async (input: {
+      nodeId?: string;
+      nodeName?: string;
+      deviceKeyPair?: WorkspaceDeviceKeyPair;
+    }) => {
+      const deviceKeyPair =
+        input.deviceKeyPair ?? generateWorkspaceDeviceKeyPair();
       const formFields: Record<string, string> = {
         client_id: 'consuelo-os-installer',
         scope: 'workspace:read os:connector:register',
@@ -854,6 +859,7 @@ describe('os device authority worker', () => {
     const third = await startNodeGrant({
       nodeId: String(secondApproved.node_id),
       nodeName: 'MacBook Air',
+      deviceKeyPair: second.deviceKeyPair,
     });
     await expect((await approveWithAccount(String(third.codeJson.user_code))).json()).resolves.toMatchObject({
       status: 'approved',

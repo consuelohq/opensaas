@@ -24,4 +24,40 @@ describe('task selector PR references', () => {
     expect(result.error).toBeNull();
     expect(result.task.worktreePath).toBe('/tmp/b');
   });
+
+  it('parses task sessions before proxied command args', () => {
+    const parsed = parseTaskSelectorPrefix([
+      '--task-session',
+      'tsk_e398fbe000ba',
+      'read',
+      '.task/current.json',
+    ]);
+    expect(parsed.selector.taskSession).toBe('tsk_e398fbe000ba');
+    expect(parsed.remainingArgs).toEqual(['read', '.task/current.json']);
+  });
+
+  it('matches active tasks by task session', () => {
+    const result = selectTaskFromCandidatesResult([
+      {
+        worktreePath: '/tmp/a',
+        branch: 'task/workspace-agents/a',
+        meta: {
+          area: 'workspace-agents',
+          taskBranch: 'task/workspace-agents/a',
+          taskSession: 'tsk_a',
+        },
+      },
+      {
+        worktreePath: '/tmp/b',
+        branch: 'task/workspace-agents/b',
+        meta: {
+          area: 'workspace-agents',
+          taskBranch: 'task/workspace-agents/b',
+          taskSession: 'tsk_b',
+        },
+      },
+    ], { taskSession: 'tsk_b' });
+    expect(result.error).toBeNull();
+    expect(result.task.worktreePath).toBe('/tmp/b');
+  });
 });
