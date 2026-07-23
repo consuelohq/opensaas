@@ -36,7 +36,7 @@ describe('Bun product server contract', () => {
       expect(existsSync(resolve(osRoot, path)), path).toBe(false);
     }
 
-    const parity = JSON.parse(source('tooling/script-parity-classifications.json')) as {
+    const parity = JSON.parse(source('tests/audit/fixtures/script-parity-classifications.json')) as {
       scripts: Record<string, unknown>;
     };
     expect(parity.scripts['scripts/start-brain.sh']).toMatchObject({
@@ -128,7 +128,7 @@ describe('Bun product server contract', () => {
     }
 
     expect(existsSync(resolve(osRoot, 'scripts/media-svg.py'))).toBe(true);
-    expect(existsSync(resolve(osRoot, 'tools/brain.py'))).toBe(true);
+    expect(existsSync(resolve(osRoot, 'tools/brain.py'))).toBe(false);
   });
 
   it('should document the Bun-only product server and current local port', () => {

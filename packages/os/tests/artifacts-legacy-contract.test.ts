@@ -22,6 +22,7 @@ describe('Artifacts strict legacy cutover', () => {
       'scripts/design/office-landing-page.ts',
       'scripts/lib/cloud-artifacts.ts',
       'scripts/lib/office-pages.ts',
+      'scripts/design/artifacts.ts',
       'skills/office',
       'skills/office-landing-page',
     ]) {
@@ -39,7 +40,6 @@ describe('Artifacts strict legacy cutover', () => {
       'scripts/artifacts.ts',
       'scripts/artifacts-design.ts',
       'scripts/lib/artifacts.ts',
-      'scripts/design/artifacts.ts',
       'scripts/server/routes/artifacts.ts',
       'scripts/server/services/artifacts-gateway.ts',
     ]) {
@@ -54,10 +54,10 @@ describe('Artifacts strict legacy cutover', () => {
   it('publishes only canonical Artifacts tools, skills, workflows, and generated types', () => {
     for (const relativePath of [
       'skills/skills.json',
-      'tooling/workflows.json',
-      'tooling/dev-tool-manifest.json',
-      'manifests/tool.manifest.json',
-      'manifests/workflow-bundles.json',
+      'workflows/workflows.ts',
+      'tools/artifacts/schema.ts',
+      'manifests/generated/tool.manifest.json',
+      'workflows/generated/workflow-bundles.json',
       'src/generated/workspace.d.ts',
     ]) {
       const generated = source(relativePath);
@@ -65,8 +65,8 @@ describe('Artifacts strict legacy cutover', () => {
       expect(generated, relativePath).not.toContain('design.publish');
     }
 
-    expect(source('tooling/workflows.json')).toContain('"id": "artifacts"');
-    expect(source('tooling/dev-tool-manifest.json')).toContain('"name": "artifacts.publish"');
+    expect(source('workflows/workflows.ts')).toContain('"id": "artifacts"');
+    expect(source('tools/artifacts/schema.ts')).toContain('"name": "artifacts.publish"');
     expect(source('skills/skills.json')).toContain('"name": "artifacts"');
   });
 

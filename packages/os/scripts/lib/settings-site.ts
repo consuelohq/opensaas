@@ -201,8 +201,11 @@ function configurationClientScript(): string {
       });
     }
 
-    function toggleRow(kind, name, enabled, category) {
-      return '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="' + escapeHtml(kind) + '" data-name="' + escapeHtml(name) + '" ' + (enabled ? 'checked' : '') + '> ' + escapeHtml(name) + '</label></td><td>' + escapeHtml(kind) + '</td><td>' + pill(enabled ? 'connected' : 'disabled') + '</td><td>' + (category ? '<code>' + escapeHtml(category) + '</code>' : '<span class="muted">—</span>') + '</td></tr>';
+    function toggleRow(kind, name, enabled, category, configurable = true) {
+      const control = configurable
+        ? '<input type="checkbox" class="configuration-toggle" data-kind="' + escapeHtml(kind) + '" data-name="' + escapeHtml(name) + '" ' + (enabled ? 'checked' : '') + '>'
+        : '<input type="checkbox" ' + (enabled ? 'checked ' : '') + 'disabled aria-label="' + escapeHtml(name + ' is managed locally') + '">';
+      return '<tr><td><label>' + control + ' ' + escapeHtml(name) + '</label></td><td>' + escapeHtml(kind) + '</td><td>' + pill(enabled ? 'connected' : 'disabled') + '</td><td>' + (category ? '<code>' + escapeHtml(category) + '</code>' : '<span class="muted">—</span>') + '</td></tr>';
     }
 
     function renderSnapshot(snapshot) {
@@ -227,11 +230,11 @@ function configurationClientScript(): string {
 
       const tools = Array.isArray(snapshot.tools) ? snapshot.tools : [];
       setHtml('tool-summary', detail('Enabled tools', String(tools.filter((tool) => tool.enabled).length)) + detail('Disabled tools', String((overlay.disabledTools || []).length)));
-      setHtml('tool-rows', tools.length ? tools.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category)).join('') : emptyRow(4, 'No tools found.'));
+      setHtml('tool-rows', tools.length ? tools.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category, item.configurable !== false)).join('') : emptyRow(4, 'No tools found.'));
 
       const skills = Array.isArray(snapshot.skills) ? snapshot.skills : [];
       setHtml('skill-summary', detail('Enabled skills', String(skills.filter((skill) => skill.enabled).length)) + detail('Disabled skills', String((overlay.disabledSkills || []).length)));
-      setHtml('skill-rows', skills.length ? skills.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category)).join('') : emptyRow(4, 'No skills found.'));
+      setHtml('skill-rows', skills.length ? skills.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category, item.configurable !== false)).join('') : emptyRow(4, 'No skills found.'));
 
       const workflows = Array.isArray(snapshot.runBooks) ? snapshot.runBooks : [];
       setHtml('workflow-rows', workflows.length ? workflows.map((workflow) => '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="workflow" data-name="' + escapeHtml(workflow.id) + '" ' + (workflow.enabled ? 'checked' : '') + '> ' + escapeHtml(workflow.id) + '</label></td><td><code>' + escapeHtml((workflow.aliases || []).join(', ') || '—') + '</code></td><td>' + pill(workflow.enabled ? 'connected' : 'disabled') + '</td><td>' + escapeHtml(workflow.roleCount) + '</td><td>' + escapeHtml(workflow.toolCount) + '</td></tr>').join('') : emptyRow(5, 'No workflow bundles found.'));

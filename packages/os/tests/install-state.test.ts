@@ -266,8 +266,8 @@ describe('local OS install state', () => {
       'tools',
       'scripts',
       'src',
-      'tooling',
       'manifests',
+      'workflows',
       'artifacts',
       'pages',
       'sites',
@@ -366,16 +366,15 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
     expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
 
-    const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'tool.manifest.json'), 'utf8'));
-    const coreToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'core.manifest.json'), 'utf8'));
+    const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'generated', 'tool.manifest.json'), 'utf8'));
+    const coreToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'generated', 'core.manifest.json'), 'utf8'));
     const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
     const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
     expect(installedToolRegistry.tools).toHaveLength(fullToolManifest.tools.length);
     expect(installedToolRegistry.tools.length).toBeGreaterThan(coreToolManifest.tools.length);
     expect(installedToolNames).toContain('status');
     expect(installedToolNames).toContain('browser.open');
-    expect(installedToolNames).toContain('railway.logs');
-    expect(installedToolNames).toContain('get_raw_steering');
+    expect(installedToolNames).toContain('railway.logs');    expect(installedToolNames).toHaveLength(148);
     expect(installedToolNames).toContain('code.call');
     const fullCodeCall = fullToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
     const coreCodeCall = coreToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
@@ -402,7 +401,7 @@ describe('local OS install state', () => {
     expect(statusWrapper).not.toContain('/Users/kokayi/Dev/opensaas');
     expect(statusWrapper).not.toContain('packages/os');
     const installedStatusMetadata = JSON.parse(readFileSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'), 'utf8'));
-    expect(installedStatusMetadata.sourcePath).toBe('manifests/tool.manifest.json');
+    expect(installedStatusMetadata.sourcePath).toBe('manifests/generated/tool.manifest.json');
     writeFileSync(join(tempHome, 'steering', 'system_prompt.md'), '# User system prompt\n\nuser-owned system prompt\n');
     writeFileSync(join(tempHome, 'steering', 'decision.md'), '# User decision\n\nuser-owned decision\n');
 
@@ -508,7 +507,7 @@ describe('local OS install state', () => {
         category: 'briefs',
         template: 'guide',
         traceId: 'trc_artifacts_site_test',
-        skillName: 'daily-revenue-brief',
+        skillName: 'fixture-report',
         now: '2026-07-15T00:00:00.000Z',
       });
       provisionLocalOs({ mode: 'local' });
@@ -642,15 +641,14 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(false);
 
-    const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'tool.manifest.json'), 'utf8'));
+    const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'generated', 'tool.manifest.json'), 'utf8'));
     const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
     const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
 
     expect(installedToolRegistry.tools).toHaveLength(fullToolManifest.tools.length);
     expect(installedToolNames).toContain('task.start');
     expect(installedToolNames).toContain('browser.open');
-    expect(installedToolNames).toContain('railway.logs');
-    expect(installedToolNames).toContain('get_raw_steering');
+    expect(installedToolNames).toContain('railway.logs');    expect(installedToolNames).toHaveLength(148);
   });
 
   it('preserves local user tools while refreshing the installed registry', () => {

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import manifestJson from '../../../manifests/tool.manifest.json';
+import manifestJson from '../../../manifests/generated/tool.manifest.json';
 
 import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';

@@ -17,9 +17,9 @@ The OS portal exposes two package entrypoints:
 - `get_steering`
 - `call`
 
-The visible OS portal is `get_steering` and `call`. Internal/dev/operator raw steering is available through `call` with `name: "get_raw_steering"`.
+The visible OS portal is `get_steering` and typed facade calls. Internal raw steering remains available only through the `get-raw-steering` CLI command.
 
-Skills live behind `call` as Bun scripts under `scripts/`. They are exposed through manifests in `tooling/`.
+Skills are instruction resources under `skills/`. Callable tools are owned by TypeScript packages under `tools/` and exposed through generated manifests.
 
 Manifests are manifests. Skills are the capabilities that agents can run. Scripts are the executable implementation behind those skills.
 
@@ -80,25 +80,12 @@ Return OS steering:
 bun --cwd packages/os ./scripts/os.ts get-steering
 ```
 
-Return raw dev/operator steering through `call`:
+Return raw dev/operator steering through the internal CLI:
 
 ```bash
-bun --cwd packages/os ./scripts/os.ts call '{"name":"get_raw_steering"}'
+bun --cwd packages/os ./scripts/os.ts get-raw-steering
 ```
 
-Run the smoke skill:
-
-```bash
-bun --cwd packages/os ./scripts/os.ts call '{"name":"daily-revenue-brief"}'
-```
-
-Run the workspace snapshot skill:
-
-```bash
-bun --cwd packages/os ./scripts/os.ts call '{"name":"consuelo-workspace-snapshot","input":{"limit":25}}'
-```
-
-With GraphQL env configured, the same command attempts a harmless connectivity proof.
 
 ## Bun server
 

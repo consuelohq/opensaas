@@ -667,7 +667,7 @@ Do not call get_steering again unless you are intentionally refreshing bootstrap
 
 Read only the specific file you need:
 - $CONSUELO_HOME/steering/system_prompt.md
-- packages/os/manifests/core.manifest.json
+- packages/os/manifests/generated/core.manifest.json
 
 Useful alternatives:
 - fs.read for exact files
@@ -839,7 +839,7 @@ export function getRawSteering(): string {
   if (devSteering)
     sections.push('# bundled OS system_prompt.md', '', devSteering);
   const manifest = readIfExists(
-    path.join(packageRoot, 'manifests', 'tool.manifest.json'),
+    path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json'),
   );
   if (manifest)
     sections.push(
@@ -899,86 +899,12 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
     };
   }
 
-  if (entry.name === 'get_raw_steering') {
-    return {
-      ok: true,
-      name: entry.name,
-      permission: entry.permission,
-      requiresApproval: entry.requiresApproval,
-      result: { steering: getRawSteering() },
-    };
-  }
-
   const context: SkillContext = {
     traceId: callInput.traceId ?? createTraceId(),
     workspaceId: callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID,
     userId: callInput.userId ?? process.env.CONSUELO_USER_ID,
     manifestEntry: entry,
   };
-  if (entry.name === 'daily-revenue-brief') {
-    try {
-      const { runDailyRevenueBrief } =
-        await import('./revenue/daily-revenue-brief');
-      return await runDailyRevenueBrief(callInput.input ?? {}, context);
-    } catch (error: unknown) {
-      return {
-        ok: false,
-        name: entry.name,
-        permission: entry.permission,
-        requiresApproval: entry.requiresApproval,
-        error: {
-          code: 'SKILL_EXECUTION_FAILED',
-          message:
-            error instanceof Error
-              ? error.message.slice(0, 240)
-              : 'Skill execution failed.',
-        },
-      };
-    }
-  }
-  if (entry.name === 'consuelo-workspace-snapshot') {
-    try {
-      const { runConsueloWorkspaceSnapshot } =
-        await import('./workspace/consuelo-workspace-snapshot');
-      return await runConsueloWorkspaceSnapshot(callInput.input ?? {}, context);
-    } catch (error: unknown) {
-      return {
-        ok: false,
-        name: entry.name,
-        permission: entry.permission,
-        requiresApproval: entry.requiresApproval,
-        error: {
-          code: 'SKILL_EXECUTION_FAILED',
-          message:
-            error instanceof Error
-              ? error.message.slice(0, 240)
-              : 'Skill execution failed.',
-        },
-      };
-    }
-  }
-  if (entry.name === 'artifacts') {
-    try {
-      const { runArtifacts } = await import('./design/artifacts');
-      return await runArtifacts(callInput.input ?? {}, context);
-    } catch (error: unknown) {
-      return {
-        ok: false,
-        name: entry.name,
-        permission: entry.permission,
-        requiresApproval: entry.requiresApproval,
-        error: {
-          code: 'SKILL_EXECUTION_FAILED',
-          message:
-            error instanceof Error
-              ? error.message.slice(0, 240)
-              : 'Skill execution failed.',
-        },
-      };
-    }
-  }
-
-
   return {
     ok: false,
     name: entry.name,
@@ -1156,7 +1082,6 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts configuration status [--json]',
       '  bun ./scripts/os.ts configuration disable-tool|enable-tool|disable-skill|enable-skill|disable-workflow|enable-workflow <name> [--json]',
       '  Legacy alias: settings',
-      '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
       '',
     ].join('\n'),
   );

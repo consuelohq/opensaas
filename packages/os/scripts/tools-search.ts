@@ -154,7 +154,7 @@ type EmbeddingCache = {
 };
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const manifestPath = path.join(workspaceRoot, 'manifests', 'tool.manifest.json');
+const manifestPath = path.join(workspaceRoot, 'manifests', 'generated', 'tool.manifest.json');
 const toolsDocPath = path.join(workspaceRoot, 'TOOLS.md');
 const TOOL_CARD_VERSION = 'tools-search-card-v2';
 
