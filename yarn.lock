@@ -4512,7 +4512,9 @@ __metadata:
   resolution: "@consuelo/dialer@workspace:packages/dialer"
   dependencies:
     "@consuelo/logger": "workspace:*"
+    effect: "npm:^3.21.3"
     twilio: "npm:^5.12.1"
+    typescript: "npm:5.9.2"
   peerDependencies:
     ioredis: ^5.0.0
     twilio: ">=4.0.0"
@@ -29149,6 +29151,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"effect@npm:^3.21.3":
+  version: 3.22.0
+  resolution: "effect@npm:3.22.0"
+  dependencies:
+    "@standard-schema/spec": "npm:^1.0.0"
+    fast-check: "npm:^3.23.1"
+  checksum: 10c0/3a9fe54271eef30e03b018592de66afaec2a0fec3351cf526569e919257702ce58e97375def2ab95946ad0e1f30c4b41fae7a08e4210976e8e1a43628505ac4c
+  languageName: node
+  linkType: hard
+
 "ejs@npm:^3.1.7":
   version: 3.1.10
   resolution: "ejs@npm:3.1.10"
@@ -30609,6 +30621,15 @@ __metadata:
   version: 11.0.0
   resolution: "extract-files@npm:11.0.0"
   checksum: 10c0/7ac1cd693d081099d7c29f2b36aad199f92c5ea234c2016eb37ba213dddaefe74d54566f0675de5917d35cf98670183c2c9a0d96094727eb2c6dae02be7fc308
+  languageName: node
+  linkType: hard
+
+"fast-check@npm:^3.23.1":
+  version: 3.23.2
+  resolution: "fast-check@npm:3.23.2"
+  dependencies:
+    pure-rand: "npm:^6.1.0"
+  checksum: 10c0/16fcff3c80321ee765e23c3aebd0f6427f175c9c6c1753104ec658970162365dc2d56bda046d815e8f2e90634c07ba7d6f0bcfd327fbd576d98c56a18a9765ed
   languageName: node
   linkType: hard
 
@@ -42778,7 +42799,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pure-rand@npm:^6.0.0":
+"pure-rand@npm:^6.0.0, pure-rand@npm:^6.1.0":
   version: 6.1.0
   resolution: "pure-rand@npm:6.1.0"
   checksum: 10c0/1abe217897bf74dcb3a0c9aba3555fe975023147b48db540aa2faf507aee91c03bf54f6aef0eb2bf59cc259a16d06b28eca37f0dc426d94f4692aeff02fb0e65

@@ -1,0 +1,20 @@
+{
+  "files": [
+    ".task/dialer/characterize-parallel-dial-lifecycle/workpad.md",
+    ".task/dialer/extract-effect-application-core/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/dialer/package.json",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/services/parallel-dialer.spec.ts",
+    "packages/dialer/src/services/parallel-dialer.ts",
+    "packages/dialer/src/services/parallel-lifecycle.contract.spec.ts",
+    "packages/dialer/src/types.ts",
+    "packages/dialer/tsconfig.json",
+    "packages/os/scripts/lib/code-call/errors.ts",
+    "packages/os/scripts/lib/code-call/service.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-23T18:29:50.184Z"
+}
