@@ -178,7 +178,6 @@ export function recoverInterruptedLifecycleActivation(home?: string): {
   const journal = readActivationJournal(paths.home);
   if (!journal) return { recovered: false };
   try {
-    assertManagedReleasePath(paths.home, journal.nextReleasePath);
     if (journal.previousReleasePath) {
       const previousPath = assertManagedReleasePath(paths.home, journal.previousReleasePath);
       const manifest = verifyInstalledRuntimeRelease(previousPath);

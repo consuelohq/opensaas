@@ -195,6 +195,37 @@ export function createLifecycleEngine(
     });
   };
 
+  const pruneAfterCommit = (
+    emit: ReturnType<typeof emitter>,
+    options: { automatic?: boolean; emitSuccess?: boolean } = {},
+  ): ReturnType<typeof pruneLifecycleReleases> => {
+    try {
+      const result = pruneLifecycleReleases({ home, now: now() });
+      if (options.emitSuccess) {
+        emit('retention', {
+          ...(options.automatic ? { automatic: true } : {}),
+          status: 'complete',
+          removedBundleIds: result.removedBundleIds,
+        });
+      }
+      return result;
+    } catch (error: unknown) {
+      const failure = asLifecycleError(
+        error,
+        'RETENTION_FAILED',
+        'failed to enforce lifecycle retention',
+        'retention',
+      );
+      emit('retention', {
+        ...(options.automatic ? { automatic: true } : {}),
+        status: 'failed',
+        code: failure.code,
+        message: failure.message,
+      });
+      return { retainedBundleIds: [], removedBundleIds: [] };
+    }
+  };
+
   const activateAndAccept = async (input: {
     emit: ReturnType<typeof emitter>;
     operationId: string;
@@ -296,8 +327,7 @@ export function createLifecycleEngine(
             version: previousManifest.version,
           });
           clearLifecycleActivationJournal(home);
-          input.emit('retention', { automatic: true });
-          pruneLifecycleReleases({ home, now: now() });
+          pruneAfterCommit(input.emit, { automatic: true, emitSuccess: true });
         } else {
           rmSync(paths.currentLink, { force: true });
           clearLifecycleActivationJournal(home);
@@ -447,15 +477,7 @@ export function createLifecycleEngine(
           phase: 'activate',
         });
 
-        const retention = yield* Effect.try({
-          try: () => pruneLifecycleReleases({ home, now: now() }),
-          catch: (error) => asLifecycleError(
-            error,
-            'RETENTION_FAILED',
-            'failed to enforce lifecycle retention',
-            'retention',
-          ),
-        });
+        const retention = yield* Effect.sync(() => pruneAfterCommit(input.emit));
         input.emit('complete', {
           changed: true,
           version: manifest.version,
