@@ -18,6 +18,7 @@ import {
 } from '../distribution/runtime-bundle';
 import { lifecycleError } from './errors';
 import { isPathWithin, resolveLifecyclePaths } from './paths';
+import { verifyInstalledRuntimeRelease } from './state';
 import {
   lifecycleReleaseChannels,
   type LifecycleReleaseChannel,
@@ -194,7 +195,34 @@ export function stageVerifiedRuntimeBundle(input: {
     }
     mkdirSync(paths.releasesDir, { recursive: true });
     if (existsSync(releasePath)) {
-      rmSync(stagingPath, { recursive: true, force: true });
+      let existingMatches = false;
+      try {
+        const existing = verifyInstalledRuntimeRelease(releasePath);
+        existingMatches =
+          existing.bundleId === input.manifest.bundleId &&
+          existing.version === input.manifest.version &&
+          existing.releaseFingerprint === input.manifest.releaseFingerprint;
+      } catch {
+        // A corrupt or stale same-id release must be replaced by the verified stage.
+      }
+
+      if (existingMatches) {
+        rmSync(stagingPath, { recursive: true, force: true });
+      } else {
+        const replacedReleasePath = join(stagingPath, 'replaced-release');
+        rmSync(replacedReleasePath, { recursive: true, force: true });
+        renameSync(releasePath, replacedReleasePath);
+        try {
+          renameSync(stagedReleasePath, releasePath);
+        } catch (error: unknown) {
+          if (!existsSync(releasePath) && existsSync(replacedReleasePath)) {
+            renameSync(replacedReleasePath, releasePath);
+          }
+          throw error;
+        }
+        rmSync(replacedReleasePath, { recursive: true, force: true });
+        rmSync(stagingPath, { recursive: true, force: true });
+      }
     } else {
       renameSync(stagedReleasePath, releasePath);
       rmSync(stagingPath, { recursive: true, force: true });

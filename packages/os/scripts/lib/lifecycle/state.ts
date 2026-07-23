@@ -115,6 +115,58 @@ function lstatExists(path: string): boolean {
   }
 }
 
+type ParsedSemver = {
+  major: bigint;
+  minor: bigint;
+  patch: bigint;
+  prerelease: string[];
+};
+
+function parseSemver(version: string): ParsedSemver {
+  const withoutBuild = version.split('+', 1)[0];
+  const [core, prerelease = ''] = withoutBuild.split('-', 2);
+  const [major, minor, patch] = core.split('.');
+  return {
+    major: BigInt(major),
+    minor: BigInt(minor),
+    patch: BigInt(patch),
+    prerelease: prerelease ? prerelease.split('.') : [],
+  };
+}
+
+function comparePrerelease(left: string[], right: string[]): number {
+  if (left.length === 0 && right.length === 0) return 0;
+  if (left.length === 0) return 1;
+  if (right.length === 0) return -1;
+  const count = Math.max(left.length, right.length);
+  for (let index = 0; index < count; index += 1) {
+    const leftPart = left[index];
+    const rightPart = right[index];
+    if (leftPart === undefined) return -1;
+    if (rightPart === undefined) return 1;
+    if (leftPart === rightPart) continue;
+    const leftNumeric = /^\d+$/.test(leftPart);
+    const rightNumeric = /^\d+$/.test(rightPart);
+    if (leftNumeric && rightNumeric) {
+      const leftValue = BigInt(leftPart);
+      const rightValue = BigInt(rightPart);
+      return leftValue < rightValue ? -1 : 1;
+    }
+    if (leftNumeric !== rightNumeric) return leftNumeric ? -1 : 1;
+    return leftPart < rightPart ? -1 : 1;
+  }
+  return 0;
+}
+
+function compareSemver(leftVersion: string, rightVersion: string): number {
+  const left = parseSemver(leftVersion);
+  const right = parseSemver(rightVersion);
+  for (const key of ['major', 'minor', 'patch'] as const) {
+    if (left[key] !== right[key]) return left[key] < right[key] ? -1 : 1;
+  }
+  return comparePrerelease(left.prerelease, right.prerelease);
+}
+
 export function listVerifiedRetainedReleases(home?: string): Array<{
   path: string;
   manifest: RuntimeBundleManifest;
@@ -131,5 +183,5 @@ export function listVerifiedRetainedReleases(home?: string): Array<{
       // Corrupt retained releases are ignored; repair never activates unverified bytes.
     }
   }
-  return releases.sort((left, right) => right.manifest.version.localeCompare(left.manifest.version));
+  return releases.sort((left, right) => compareSemver(right.manifest.version, left.manifest.version));
 }

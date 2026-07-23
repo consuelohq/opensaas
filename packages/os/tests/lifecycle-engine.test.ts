@@ -55,6 +55,8 @@ let privateKey: ReturnType<typeof generateKeyPairSync>['privateKey'];
 let publicKeyPem = '';
 let bundle100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle110: Awaited<ReturnType<typeof buildRuntimeBundle>>;
+let bundle190: Awaited<ReturnType<typeof buildRuntimeBundle>>;
+let bundle1100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 
 beforeAll(async () => {
   const pair = generateKeyPairSync('ed25519');
@@ -77,6 +79,24 @@ beforeAll(async () => {
     sourceCommit: 'fixture-110',
     sourceRoot: osRoot,
     version: '1.1.0',
+  });
+  bundle190 = await buildRuntimeBundle({
+    architecture: 'arm64',
+    includePaths: requiredRuntimePaths,
+    minimumUpdaterVersion: '1.0.0',
+    platform: 'darwin',
+    sourceCommit: 'fixture-190',
+    sourceRoot: osRoot,
+    version: '1.9.0',
+  });
+  bundle1100 = await buildRuntimeBundle({
+    architecture: 'arm64',
+    includePaths: requiredRuntimePaths,
+    minimumUpdaterVersion: '1.0.0',
+    platform: 'darwin',
+    sourceCommit: 'fixture-1100',
+    sourceRoot: osRoot,
+    version: '1.10.0',
   });
 });
 
@@ -429,6 +449,40 @@ describe('unified lifecycle engine', () => {
     expect(readFileSync(join(tempHome, 'user-note.txt'), 'utf8')).toBe('custom user content\n');
     expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
     expect(repair.onboardingCalls).toBe(0);
+  });
+
+  it('replaces a corrupt same-id retained release from the verified staged download', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const releasePath = join(
+      tempHome,
+      'runtime',
+      'releases',
+      bundle100.manifest.bundleId,
+    );
+    writeFileSync(join(releasePath, 'scripts', 'os.ts'), 'corrupt runtime bytes\n');
+    expect((await inspectLifecycleInstallState(tempHome)).kind).toBe('corrupt');
+
+    const repair = createEngine({ bundle: bundle100 });
+    await repair.repair();
+
+    expect((await inspectLifecycleInstallState(tempHome)).kind).toBe('valid');
+    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+  });
+
+  it('repairs to the highest retained semantic version instead of lexical order', async () => {
+    const initial = createEngine({ bundle: bundle190 });
+    await initial.install({ channel: 'dev' });
+    const update = createEngine({ bundle: bundle1100 });
+    await update.update({ channel: 'dev' });
+    unlinkSync(join(tempHome, 'runtime', 'current'));
+    symlinkSync('releases/missing-release', join(tempHome, 'runtime', 'current'));
+
+    const repair = createEngine({ bundle: bundle1100 });
+    const result = await repair.repair();
+
+    expect(result.version).toBe('1.10.0');
+    expect(currentTarget()).toBe(`releases/${bundle1100.manifest.bundleId}`);
   });
 
   it('detects no-install, legacy, partial, corrupt, and valid states', async () => {

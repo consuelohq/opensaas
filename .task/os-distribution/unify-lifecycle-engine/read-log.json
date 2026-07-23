@@ -1,19 +1,7 @@
 {
   "files": [
     ".task/os-distribution/unify-lifecycle-engine/workpad.md",
-    "packages/os/plans/consuelo-os-foundation/workers/04-lifecycle-engine.md",
-    "packages/os/scripts/lib/consuelo-home.ts",
-    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
-    "packages/os/scripts/lib/lifecycle/engine.ts",
-    "packages/os/scripts/lib/lifecycle/service.ts",
-    "packages/os/scripts/server.js",
-    "packages/os/scripts/server/route-policies.ts",
-    "packages/os/scripts/testing/distribution/fixtures.ts",
-    "packages/os/scripts/workspace-watchdog.sh",
-    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
-    "packages/os/tests/bun-product-server-contract.test.ts",
-    "packages/os/tests/local-os-port-cutover.test.ts",
-    "packages/os/tests/native-lifecycle-client.test.ts"
+    "packages/workspace/scripts/task-push.js"
   ],
-  "updatedAt": "2026-07-23T02:11:12.756Z"
+  "updatedAt": "2026-07-23T02:56:10.543Z"
 }
