@@ -7,7 +7,8 @@
     "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-23T19:35:02.596Z"
+  "updatedAt": "2026-07-23T19:54:03.955Z"
 }

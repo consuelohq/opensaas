@@ -88,7 +88,7 @@ export class ParallelService {
     );
   }
 
-  async initiateParallelDial(
+  initiateParallelDial(
     input: InitiateParallelDialInput,
   ): Promise<ParallelDialResult> {
     const body = input.body;
@@ -99,80 +99,68 @@ export class ParallelService {
     const profileId =
       typeof body.profileId === 'string' ? body.profileId : undefined;
 
-    const result = await this.run(
+    return this.run(
       initiateParallelDial({
         ...input,
         callbackBaseUrl: process.env.API_BASE_URL ?? '',
       }),
-    );
+    ).then((result) => {
+      if (Either.isRight(result)) {
+        this.logger.log('parallel dial created', {
+          queueId,
+          workspaceId: input.workspaceId,
+          profileId: profileId ?? result.right.profileId,
+        });
+        return result.right;
+      }
 
-    if (Either.isRight(result)) {
-      this.logger.log('parallel dial created', {
-        queueId,
-        workspaceId: input.workspaceId,
-        profileId: profileId ?? result.right.profileId,
-      });
-      return result.right;
-    }
-
-    const providerError = this.getProviderErrorDetails(result.left);
-    if (this.isProviderCustomerPhoneFailure(providerError)) {
-      this.logger.warn('parallel dial rejected customer number', {
-        queueId,
-        workspaceId: input.workspaceId,
-        profileId,
-        stage: this.getOperation(result.left, 'initiate-group'),
-        customerNumberCount,
-        fromNumberCount: customerNumberCount,
-        errorCode: providerError.code,
-        errorName: providerError.name,
-        errorMessage: providerError.message,
-      });
-      Sentry.addBreadcrumb({
-        category: 'parallel-dial',
-        level: 'warning',
-        message: 'provider rejected customer number',
-        data: {
+      const providerError = this.getProviderErrorDetails(result.left);
+      if (this.isProviderCustomerPhoneFailure(providerError)) {
+        this.logger.warn('parallel dial rejected customer number', {
           queueId,
           workspaceId: input.workspaceId,
           profileId,
           stage: this.getOperation(result.left, 'initiate-group'),
+          customerNumberCount,
+          fromNumberCount: customerNumberCount,
           errorCode: providerError.code,
           errorName: providerError.name,
-        },
-      });
-      throw new BadRequestException('Invalid customer phone number');
-    }
+          errorMessage: providerError.message,
+        });
+        Sentry.addBreadcrumb({
+          category: 'parallel-dial',
+          level: 'warning',
+          message: 'provider rejected customer number',
+          data: {
+            queueId,
+            workspaceId: input.workspaceId,
+            profileId,
+            stage: this.getOperation(result.left, 'initiate-group'),
+            errorCode: providerError.code,
+            errorName: providerError.name,
+          },
+        });
+        throw new BadRequestException('Invalid customer phone number');
+      }
 
-    if (result.left._tag === 'DialerConflictError') {
-      throw new ConflictException({
-        code: result.left.code,
-        message: result.left.message,
-        retryAfterMs: result.left.retryAfterMs,
-      });
-    }
-    if (
-      result.left._tag === 'DialerRequestError' &&
-      result.left.code !== 'CALLER_ID_LOCK_TRANSFER_FAILED'
-    ) {
-      throw new BadRequestException(result.left.details ?? result.left.message);
-    }
+      if (result.left._tag === 'DialerConflictError') {
+        throw new ConflictException({
+          code: result.left.code,
+          message: result.left.message,
+          retryAfterMs: result.left.retryAfterMs,
+        });
+      }
+      if (
+        result.left._tag === 'DialerRequestError' &&
+        result.left.code !== 'CALLER_ID_LOCK_TRANSFER_FAILED'
+      ) {
+        throw new BadRequestException(
+          result.left.details ?? result.left.message,
+        );
+      }
 
-    const safeError = this.getSafeErrorDetails(result.left);
-    this.logger.error('parallel dial failed', {
-      queueId,
-      workspaceId: input.workspaceId,
-      profileId,
-      stage: this.getOperation(result.left, 'request-validation'),
-      customerNumberCount,
-      fromNumberCount: customerNumberCount,
-      errorName: safeError.name,
-      errorMessage: safeError.message,
-      errorStack: safeError.stack,
-    });
-    Sentry.captureException(this.getCause(result.left), {
-      extra: {
-        context: 'nest_parallel_dial',
+      const safeError = this.getSafeErrorDetails(result.left);
+      this.logger.error('parallel dial failed', {
         queueId,
         workspaceId: input.workspaceId,
         profileId,
@@ -182,15 +170,28 @@ export class ParallelService {
         errorName: safeError.name,
         errorMessage: safeError.message,
         errorStack: safeError.stack,
-      },
-    });
+      });
+      Sentry.captureException(this.getCause(result.left), {
+        extra: {
+          context: 'nest_parallel_dial',
+          queueId,
+          workspaceId: input.workspaceId,
+          profileId,
+          stage: this.getOperation(result.left, 'request-validation'),
+          customerNumberCount,
+          fromNumberCount: customerNumberCount,
+          errorName: safeError.name,
+          errorMessage: safeError.message,
+          errorStack: safeError.stack,
+        },
+      });
 
-    throw new InternalServerErrorException({
-      code: 'PARALLEL_DIAL_FAILED',
-      message: getErrorMessage(result.left, 'Parallel dial failed'),
+      throw new InternalServerErrorException({
+        code: 'PARALLEL_DIAL_FAILED',
+        message: getErrorMessage(result.left, 'Parallel dial failed'),
+      });
     });
   }
-
   validateParallelDial(input: ValidateParallelDialInput) {
     return this.run(validateParallelDial(input)).then((result) => {
       if (Either.isRight(result)) return result.right;
@@ -211,14 +212,14 @@ export class ParallelService {
     });
   }
 
-  async statusCallback(body: Record<string, string | undefined>) {
+  statusCallback(body: Record<string, string | undefined>) {
     const callSid = body.CallSid;
     const callStatus = body.CallStatus;
     if (!callSid || !callStatus) {
       throw new BadRequestException('Missing CallSid or CallStatus');
     }
 
-    const result = await this.run(
+    return this.run(
       processParallelCallback({
         callSid,
         callStatus,
@@ -226,34 +227,32 @@ export class ParallelService {
         callDuration: body.CallDuration,
         dialCallDuration: body.DialCallDuration,
       }),
-    );
-    if (Either.isRight(result)) return { received: true };
+    ).then((result) => {
+      if (Either.isRight(result)) return { received: true };
 
-    this.logger.error('parallel callback lifecycle failed', {
-      callSid,
-      callStatus,
-      errorMessage: getErrorMessage(result.left, 'Callback lifecycle failed'),
-    });
-    Sentry.captureException(this.getCause(result.left), {
-      extra: {
-        context: 'parallel_callback.lifecycle',
+      this.logger.error('parallel callback lifecycle failed', {
         callSid,
         callStatus,
-      },
-    });
-    throw this.toNestError(result.left, {
-      internalCode: 'CALLBACK_FAILED',
-      fallback: 'Callback lifecycle failed',
+        errorMessage: getErrorMessage(result.left, 'Callback lifecycle failed'),
+      });
+      Sentry.captureException(this.getCause(result.left), {
+        extra: {
+          context: 'parallel_callback.lifecycle',
+          callSid,
+          callStatus,
+        },
+      });
+      throw this.toNestError(result.left, {
+        internalCode: 'CALLBACK_FAILED',
+        fallback: 'Callback lifecycle failed',
+      });
     });
   }
-
-  async customerTwiml(
-    body: Record<string, string | undefined>,
-  ): Promise<string> {
+  customerTwiml(body: Record<string, string | undefined>): Promise<string> {
     const callSid = body.CallSid;
     if (!callSid) throw new BadRequestException('Missing CallSid');
 
-    const result = await this.run(
+    return this.run(
       generateParallelCustomerTwiml({
         callSid,
         callStatus: body.CallStatus,
@@ -261,25 +260,27 @@ export class ParallelService {
         callDuration: body.CallDuration,
         dialCallDuration: body.DialCallDuration,
       }),
-    );
-    if (Either.isRight(result)) return result.right;
-    if (result.left._tag === 'DialerNotFoundError') {
-      throw new NotFoundException(result.left.message);
-    }
-    if (result.left._tag === 'DialerRequestError') {
-      throw new BadRequestException(result.left.details ?? result.left.message);
-    }
+    ).then((result) => {
+      if (Either.isRight(result)) return result.right;
+      if (result.left._tag === 'DialerNotFoundError') {
+        throw new NotFoundException(result.left.message);
+      }
+      if (result.left._tag === 'DialerRequestError') {
+        throw new BadRequestException(
+          result.left.details ?? result.left.message,
+        );
+      }
 
-    this.logger.error('parallel customer twiml failed', { callSid });
-    Sentry.captureException(this.getCause(result.left), {
-      extra: { context: 'nest_parallel_customer_twiml', callSid },
-    });
-    throw new InternalServerErrorException({
-      code: 'TWIML_FAILED',
-      message: getErrorMessage(result.left, 'TwiML generation failed'),
+      this.logger.error('parallel customer twiml failed', { callSid });
+      Sentry.captureException(this.getCause(result.left), {
+        extra: { context: 'nest_parallel_customer_twiml', callSid },
+      });
+      throw new InternalServerErrorException({
+        code: 'TWIML_FAILED',
+        message: getErrorMessage(result.left, 'TwiML generation failed'),
+      });
     });
   }
-
   getGroupStatus(input: GroupStatusInput): Promise<ParallelGroupStatusResult> {
     return this.run(getParallelGroupStatus(input)).then((result) => {
       if (Either.isRight(result)) return result.right;

@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+const TWENTY_SERVER_ROOT = resolve(__dirname, '../../../../..');
+
 const readSource = (relativePath: string) =>
-  readFileSync(resolve(process.cwd(), relativePath), 'utf8');
+  readFileSync(resolve(TWENTY_SERVER_ROOT, relativePath), 'utf8');
 
 describe('Twenty dialer adapter architecture', () => {
   it('keeps the GraphQL start service free of Twenty persistence and telephony decisions', () => {
