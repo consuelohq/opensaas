@@ -184,6 +184,11 @@ const SOURCE_ONLY_FILES = new Set([
   'scripts/release-channels.ts',
 ]);
 
+const CUSTOMER_PROVIDER_FILES = new Set([
+  'tools/deployment-provider/cloudflare-runner.ts',
+  'tools/deployment-provider/cloudflare.ts',
+]);
+
 const CUSTOMER_PROVIDER_PREFIXES = [
   'scripts/browser',
   'scripts/github',
@@ -272,10 +277,12 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
     filePath.startsWith('tests/') ||
     filePath.startsWith('scripts/testing/') ||
     /(^|\/)fixtures?\//.test(filePath) ||
-    /(?:^|\.)test\.[^.]+$/.test(filePath)
+    /(?:^|\.)test\.[^.]+$/.test(filePath) ||
+    /^tools\/[^/]+\/testing\.ts$/.test(filePath)
   ) {
     return 'test-only';
   }
+  if (CUSTOMER_PROVIDER_FILES.has(filePath)) return 'customer-provider';
   if (
     filePath.startsWith('scripts/lib/distribution/') ||
     filePath === 'manifests/manifest.config.ts' ||
@@ -283,6 +290,7 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
     filePath === 'workflows/workflows.ts' ||
     filePath === 'tools/package.ts' ||
     filePath === 'tools/registry.ts' ||
+    /^tools\/[^/]+\/[^/]+\.md$/.test(filePath) ||
     /^tools\/[^/]+\/(?:manifest|schema)\.ts$/.test(filePath) ||
     SOURCE_ONLY_FILES.has(filePath)
   ) {
@@ -290,7 +298,7 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
   if (filePath.startsWith('skills/')) return 'managed-skill';
-  if (/^tools\/[^/]+\/handler\.ts$/.test(filePath)) return 'managed-tool';
+  if (/^tools\/[^/]+\/[^/]+\.ts$/.test(filePath)) return 'managed-tool';
   if (filePath.startsWith('manifests/generated/') || filePath.startsWith('workflows/generated/') || filePath.startsWith('src/generated/')) {
     return 'managed-tool';
   }

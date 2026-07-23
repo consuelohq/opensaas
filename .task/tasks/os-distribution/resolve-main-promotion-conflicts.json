@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/resolve-main-promotion-conflicts",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1597,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1597",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1597",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1597/resolve-main-promotion-conflicts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1597",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1597/resolve-main-promotion-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-resolve-main-promotion-conflicts",
+  "taskSession": "tsk_08d302d332b7",
+  "tmuxSession": "opensaas-os-distribution-resolve-main-promotion-conflicts-08d302d3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-resolve-main-promotion-conflicts/.task/os-distribution/resolve-main-promotion-conflicts/session.json",
+  "createdAt": "2026-07-23T19:02:44.379Z"
+}

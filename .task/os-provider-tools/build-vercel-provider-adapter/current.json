@@ -1,0 +1,19 @@
+{
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/build-vercel-provider-adapter",
+  "baseBranch": "stream/os-provider-tools",
+  "sourceBranch": "stream/os-provider-tools",
+  "startFrom": "stream",
+  "prNumber": 1590,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1590",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1590",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1590/build-vercel-provider-adapter",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1590",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1590/build-vercel-provider-adapter",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-build-vercel-provider-adapter",
+  "taskSession": "tsk_e398fbe000ba",
+  "tmuxSession": "opensaas-os-provider-tools-build-vercel-provider-adapter-e398fbe0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-build-vercel-provider-adapter/.task/os-provider-tools/build-vercel-provider-adapter/session.json",
+  "createdAt": "2026-07-23T15:40:36.024Z"
+}
