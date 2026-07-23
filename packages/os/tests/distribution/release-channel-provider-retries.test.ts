@@ -207,12 +207,14 @@ const config: ReleaseProviderConfig = {
 function backend(input: {
   integrated?: boolean;
   remoteState?: ReleaseState | null;
+  remoteStates?: Array<ReleaseState | null>;
   tagSha?: string | null;
   assetDigest?: string | null;
   assetDigests?: Record<string, string | null>;
   r2Digests?: Record<string, string | null>;
 } = {}): ReleaseProviderBackend & { writes: string[] } {
   const writes: string[] = [];
+  let releaseStateReads = 0;
   return {
     writes,
     async createDeployment(value) { writes.push(`deployment:${value.environment}`); },
@@ -224,7 +226,11 @@ function backend(input: {
     async getGithubRelease() { return { prerelease: true }; },
     async getProtectedRefSha() { return SOURCE_COMMIT; },
     async getR2ObjectDigest(key) { return input.r2Digests?.[key] ?? null; },
-    async getReleaseState() { return input.remoteState ?? createEmptyReleaseState(); },
+    async getReleaseState() {
+      const sequenced = input.remoteStates?.[releaseStateReads];
+      releaseStateReads += 1;
+      return sequenced ?? input.remoteState ?? createEmptyReleaseState();
+    },
     async getTagSha() { return input.tagSha ?? null; },
     async isCommitIntegratedToMain() { return input.integrated ?? true; },
     async putR2Object(key, path) { writes.push(`r2:${key}:${digestFile(path)}`); },
@@ -297,6 +303,31 @@ describe('release provider retry safety', () => {
       'remote release state revision changed: expected 0, actual 9',
     );
     expect(fake.writes).toEqual([]);
+  });
+
+  it('fails closed when remote release state changes before the final commit marker', async () => {
+    const mutation = publicationMutation();
+    const initialState = createEmptyReleaseState();
+    const concurrentState = createEmptyReleaseState();
+    concurrentState.revision = 1;
+    concurrentState.audit.push({
+      action: 'promote',
+      bundleId: `sha256:${'9'.repeat(64)}`,
+      channel: 'canary',
+      occurredAt: '2026-07-23T00:00:01.000Z',
+      revision: 1,
+      version: '9.9.9',
+    });
+    const fake = backend({ remoteStates: [initialState, concurrentState] });
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'remote release state changed during provider mutation',
+    );
+    expect(fake.writes.some((write) => write.startsWith('r2:state/release-state.json:'))).toBe(false);
   });
 
   it('treats an already committed identical release state as an exact retry no-op', async () => {

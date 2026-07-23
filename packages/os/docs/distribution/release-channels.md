@@ -20,7 +20,7 @@ Consuelo OS publishes immutable, signed runtime bundles and moves signed channel
 
 | Workflow | Trigger | Environment | Mutation |
 | --- | --- | --- | --- |
-| `consuelo-os-runtime-publish.yaml` | push to `main`, or manual dispatch | `consuelo-os-dev` | fingerprint, optional SemVer allocation, one multi-platform build, immutable publication, signed `dev` pointer |
+| `consuelo-os-runtime-publish.yaml` | push to `main` | `consuelo-os-dev` | fingerprint, optional SemVer allocation, one multi-platform build, immutable publication, signed `dev` pointer |
 | `consuelo-os-runtime-promote.yaml` | manual dispatch | `consuelo-os-canary`, `consuelo-os-beta`, or `consuelo-os-stable` | legal forward pointer movement only |
 | `consuelo-os-runtime-rollback.yaml` | manual dispatch | selected channel environment | pointer rollback to a prior verified bundle ID |
 

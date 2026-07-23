@@ -907,6 +907,10 @@ export async function executeReleaseProviderMutation(
       }
     }
 
+    const latestRemoteState = await backend.getReleaseState();
+    if (canonicalReleaseJson(latestRemoteState) !== canonicalReleaseJson(remoteState)) {
+      throw new Error('remote release state changed during provider mutation');
+    }
     await backend.putR2Object('state/release-state.json', files.statePath);
     return planReleaseProviderCommands(input.mutation, {
       config: input.config,

@@ -87,6 +87,27 @@ describe('release channel CLI', () => {
     });
   });
 
+  it('requires an explicit expected revision for every apply command', () => {
+    const root = tempRoot();
+    const statePath = join(root, 'state.json');
+    writeFileSync(statePath, JSON.stringify(createEmptyReleaseState()));
+    const bundleId = `sha256:${'a'.repeat(64)}`;
+    const commands = [
+      ['publish', '--channel', 'dev', '--state', statePath, '--apply', '--json'],
+      ['promote', '--from', 'dev', '--to', 'canary', '--bundle', bundleId, '--state', statePath, '--apply', '--json'],
+      ['rollback-channel', '--channel', 'canary', '--bundle', bundleId, '--state', statePath, '--apply', '--json'],
+    ];
+
+    for (const args of commands) {
+      const result = runCli(args);
+      expect(result.exitCode).toBe(1);
+      expect(JSON.parse(result.stderr.toString())).toMatchObject({
+        ok: false,
+        error: '--expected-revision is required with --apply',
+      });
+    }
+  });
+
   it('fails closed when a mutating command has no release signing credentials', () => {
     const root = tempRoot();
     const statePath = join(root, 'state.json');

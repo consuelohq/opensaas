@@ -222,6 +222,17 @@ function executionMode(parsed: ParsedArguments): 'apply' | 'dry-run' {
   return apply ? 'apply' : 'dry-run';
 }
 
+function mutationExpectedRevision(
+  parsed: ParsedArguments,
+  mode: 'apply' | 'dry-run',
+): number | undefined {
+  const revision = integerFlag(parsed, 'expected-revision');
+  if (mode === 'apply' && revision === undefined) {
+    throw new Error('--expected-revision is required with --apply');
+  }
+  return revision;
+}
+
 function finishMutation(
   mutation: ReleaseMutationResult,
   input: {
@@ -283,6 +294,8 @@ function publishCommand(
     return;
   }
 
+  const mode = executionMode(parsed);
+  const expectedRevision = mutationExpectedRevision(parsed, mode);
   const signer = signerFromEnvironment(env);
   const inputPath = requiredFlag(parsed, 'input');
   const publication = readJsonFile<DevPublicationInput>(inputPath);
@@ -293,13 +306,13 @@ function publishCommand(
   const sourceCommit = publication.sourceCommit;
   const mutation = publishDevRelease(state, {
     ...publication,
-    expectedRevision: integerFlag(parsed, 'expected-revision') ?? publication.expectedRevision,
+    expectedRevision,
   }, {
     now: nowFromArguments(parsed),
     signer,
   });
   return finishMutation(mutation, {
-    mode: executionMode(parsed),
+    mode,
     sourceCommit,
     statePath,
   }, env);
@@ -309,6 +322,8 @@ function promoteCommand(
   parsed: ParsedArguments,
   env: NodeJS.ProcessEnv,
 ): Promise<void> {
+  const mode = executionMode(parsed);
+  const expectedRevision = mutationExpectedRevision(parsed, mode);
   const signer = signerFromEnvironment(env);
   const statePath = requiredFlag(parsed, 'state');
   const state = readReleaseState(statePath);
@@ -320,7 +335,7 @@ function promoteCommand(
   const mutation = promoteReleaseChannel(state, {
     approval: approvalFromArguments(parsed),
     bundleId,
-    expectedRevision: integerFlag(parsed, 'expected-revision'),
+    expectedRevision,
     from,
     to,
   }, {
@@ -329,7 +344,7 @@ function promoteCommand(
     signer,
   });
   return finishMutation(mutation, {
-    mode: executionMode(parsed),
+    mode,
     sourceCommit: release.sourceCommit,
     statePath,
   }, env);
@@ -339,6 +354,8 @@ function rollbackCommand(
   parsed: ParsedArguments,
   env: NodeJS.ProcessEnv,
 ): Promise<void> {
+  const mode = executionMode(parsed);
+  const expectedRevision = mutationExpectedRevision(parsed, mode);
   const signer = signerFromEnvironment(env);
   const statePath = requiredFlag(parsed, 'state');
   const state = readReleaseState(statePath);
@@ -350,14 +367,14 @@ function rollbackCommand(
     approval: approvalFromArguments(parsed),
     bundleId,
     channel,
-    expectedRevision: integerFlag(parsed, 'expected-revision'),
+    expectedRevision,
   }, {
     now: nowFromArguments(parsed),
     publicKeys: trustedPublicKeys(env, signer),
     signer,
   });
   return finishMutation(mutation, {
-    mode: executionMode(parsed),
+    mode,
     sourceCommit: release.sourceCommit,
     statePath,
   }, env);

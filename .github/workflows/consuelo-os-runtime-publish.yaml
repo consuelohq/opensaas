@@ -9,24 +9,13 @@ on:
       - '.github/workflows/consuelo-os-runtime-publish.yaml'
       - 'bun.lock'
       - 'package.json'
-  workflow_dispatch:
-    inputs:
-      release_intent:
-        description: SemVer intent for a changed runtime closure
-        required: false
-        default: patch
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
 
 permissions:
   contents: write
   deployments: write
 
 concurrency:
-  group: consuelo-os-runtime-publish-dev
+  group: consuelo-os-release-state
   cancel-in-progress: false
 
 env:
@@ -77,13 +66,13 @@ jobs:
         id: fingerprint
         run: |
           bun run --cwd packages/os runtime-bundle:fingerprint -- \
-            --source-root packages/os > .release/fingerprint.json
+            --source-root . > .release/fingerprint.json
           echo "value=$(jq -r '.releaseFingerprint' .release/fingerprint.json)" >> "$GITHUB_OUTPUT"
       - name: Allocate release version only when changed
         id: plan
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_INTENT: ${{ inputs.release_intent || vars.CONSUELO_OS_RELEASE_INTENT || 'patch' }}
+          RELEASE_INTENT: ${{ vars.CONSUELO_OS_RELEASE_INTENT || 'patch' }}
           SEED_VERSION: ${{ vars.CONSUELO_OS_FIRST_RELEASE_VERSION }}
         shell: bash
         run: |
@@ -102,7 +91,7 @@ jobs:
           plan_json="$(bun run --cwd packages/os release:channels -- publish \
             --channel dev \
             --plan-only \
-            --state "${RELEASE_STATE_PATH}" \
+            --state "../../${RELEASE_STATE_PATH}" \
             --fingerprint "${{ steps.fingerprint.outputs.value }}" \
             --source-commit "${GITHUB_SHA}" \
             --intent "${RELEASE_INTENT}" \
@@ -152,7 +141,7 @@ jobs:
         run: |
           mkdir -p .release
           bun run --cwd packages/os runtime-bundle:build -- \
-            --source-root packages/os \
+            --source-root . \
             --platform "${{ matrix.platform }}" \
             --architecture "${{ matrix.architecture }}" \
             --version "${{ needs.plan.outputs.version }}" \

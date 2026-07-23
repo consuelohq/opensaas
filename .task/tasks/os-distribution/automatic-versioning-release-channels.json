@@ -15,5 +15,6 @@
   "taskSession": "tsk_e72fe1489158",
   "tmuxSession": "opensaas-os-distribution-automatic-versioning-release-channels-e72fe148",
   "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-automatic-versioning-release-channels/.task/os-distribution/automatic-versioning-release-channels/session.json",
-  "createdAt": "2026-07-23T01:49:44.075Z"
+  "createdAt": "2026-07-23T01:49:44.075Z",
+  "taskPrNumber": 1579
 }

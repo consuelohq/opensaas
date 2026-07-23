@@ -23,17 +23,13 @@ on:
         description: Verified immutable release-set bundle ID
         required: true
         type: string
-      expected_revision:
-        description: Optional release-state revision for optimistic concurrency
-        required: false
-        type: string
 
 permissions:
   contents: write
   deployments: write
 
 concurrency:
-  group: consuelo-os-runtime-promote-${{ inputs.to }}
+  group: consuelo-os-release-state
   cancel-in-progress: false
 
 jobs:
@@ -70,10 +66,7 @@ jobs:
         shell: bash
         run: |
           release_time="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq '.created_at')"
-          revision_args=()
-          if [[ -n "${{ inputs.expected_revision }}" ]]; then
-            revision_args+=(--expected-revision "${{ inputs.expected_revision }}")
-          fi
+          release_revision="$(jq -er '.revision' .release/release-state.json)"
           bun run --cwd packages/os release:channels -- promote \
             --from "${{ inputs.from }}" \
             --to "${{ inputs.to }}" \
@@ -81,7 +74,7 @@ jobs:
             --state ../../.release/release-state.json \
             --approval-actor "${GITHUB_ACTOR}" \
             --approval-evidence "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
-            "${revision_args[@]}" \
+            --expected-revision "${release_revision}" \
             --now "${release_time}" \
             --apply \
             --json

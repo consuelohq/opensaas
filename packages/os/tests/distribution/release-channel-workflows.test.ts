@@ -16,6 +16,7 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('push:');
     expect(workflow).toContain('- main');
     expect(workflow).not.toContain('pull_request:');
+    expect(workflow).not.toContain('workflow_dispatch:');
     expect(workflow).toContain('contents: write');
     expect(workflow).toContain('deployments: write');
     expect(workflow).toContain('environment: consuelo-os-dev');
@@ -37,6 +38,10 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('.release/immutable-tags.txt');
     expect(workflow).toContain('actions/runs/${GITHUB_RUN_ID}');
     expect(workflow).toContain('--now \"${release_time}\"');
+    expect(workflow).toContain('--source-root .');
+    expect(workflow).not.toContain('--source-root packages/os');
+    expect(workflow).toContain('--state \"../../${RELEASE_STATE_PATH}\"');
+    expect(workflow).toContain('group: consuelo-os-release-state');
   });
 
   it('promotes only by manual dispatch through protected environments and never rebuilds', () => {
@@ -55,6 +60,10 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).not.toContain('runtime-bundle:build');
     expect(workflow).toContain('actions/runs/${GITHUB_RUN_ID}');
     expect(workflow).toContain('--now \"${release_time}\"');
+    expect(workflow).toContain('group: consuelo-os-release-state');
+    expect(workflow).not.toContain('expected_revision:');
+    expect(workflow).toContain('release_revision=');
+    expect(workflow).toContain('--expected-revision \"${release_revision}\"');
   });
 
   it('provides a manual rollback path that also avoids rebuilding', () => {
@@ -68,6 +77,10 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).not.toContain('build-runtime-bundle');
     expect(workflow).toContain('actions/runs/${GITHUB_RUN_ID}');
     expect(workflow).toContain('--now \"${release_time}\"');
+    expect(workflow).toContain('group: consuelo-os-release-state');
+    expect(workflow).not.toContain('expected_revision:');
+    expect(workflow).toContain('release_revision=');
+    expect(workflow).toContain('--expected-revision \"${release_revision}\"');
   });
 
   it('allowlists only the dedicated release workflows for write permissions', () => {

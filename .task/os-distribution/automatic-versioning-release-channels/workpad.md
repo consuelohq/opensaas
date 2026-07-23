@@ -42,29 +42,28 @@ started: 2026-07-23
 
 ## files changed
 
+- `packages/os/SCRIPTS.md`
+- `packages/os/package.json`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- `packages/os/tests/audit/fixtures/script-parity-classifications.json`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/workspace/scripts/ci/check-github-workflows.cjs`
 - `.github/workflows/consuelo-os-runtime-promote.yaml`
 - `.github/workflows/consuelo-os-runtime-publish.yaml`
 - `.github/workflows/consuelo-os-runtime-rollback.yaml`
-- `.task/os-distribution/automatic-versioning-release-channels/*`
-- `.task/tasks/os-distribution/automatic-versioning-release-channels.json`
 - `packages/os/docs/distribution/release-channels.md`
-- `packages/os/package.json`
-- `packages/os/SCRIPTS.md`
 - `packages/os/scripts/lib/distribution/release-channel-provider.ts`
 - `packages/os/scripts/lib/distribution/release-channel.schema.json`
 - `packages/os/scripts/lib/distribution/release-channels.ts`
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/prepare-release-publication.ts`
 - `packages/os/scripts/release-channels.ts`
-- `packages/os/tests/audit/fixtures/script-parity-classifications.json`
 - `packages/os/tests/distribution/release-channel-provider-retries.test.ts`
 - `packages/os/tests/distribution/release-channel-schema.test.ts`
 - `packages/os/tests/distribution/release-channel-workflows.test.ts`
 - `packages/os/tests/distribution/release-channels-cli.test.ts`
 - `packages/os/tests/distribution/release-channels.test.ts`
 - `packages/os/tests/distribution/release-publication-preparer.test.ts`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
-- `packages/workspace/scripts/ci/check-github-workflows.cjs`
+
 
 ## key decisions
 
@@ -171,4 +170,123 @@ Expected result: valid signed canary JSON with the approved version/bundle ID an
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-os-runtime-promote.yaml`
+- `.github/workflows/consuelo-os-runtime-publish.yaml`
+- `.github/workflows/consuelo-os-runtime-rollback.yaml`
+- `packages/os/SCRIPTS.md`
+- `packages/os/plans/consuelo-os-foundation/workers/03-release-channels.md`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
+- `packages/os/scripts/lib/distribution/release-channel-provider.ts`
+- `packages/os/scripts/release-channels.ts`
+- `packages/os/scripts/task-push.js`
 - `packages/os/skills/task/SKILL.md`
+- `packages/os/tests/distribution/release-channel-provider-retries.test.ts`
+- `packages/os/tests/distribution/release-channel-workflows.test.ts`
+- `packages/workspace/scripts/ci/check-github-workflows.cjs`
+
+## wait cycle: Grok review 1
+
+Wait reason: Active required Grok 4.5 wrapper outlived the outer 30-second transport timeout and is still processing the rendered PR review.
+Duration: 30 seconds.
+Resume action: Inspect the task-scoped Grok/subagent processes and read grok-output.json plus grok-stderr.log immediately.
+Expected signal: The task-specific Grok processes exit and grok-output.json contains non-empty valid JSON.
+Fallback: If still active, record the observation and repeat bounded 30-second polling without launching a duplicate; if exited without valid output, diagnose stderr and retry once with code.call input timeout 910000.
+Start time (UTC): 2026-07-23T02:33:41.925Z
+Observed result (cycle 1): At 2026-07-23T02:34:37.303Z, task-specific wrapper/subagent/Grok processes remained active; no output or stderr file existed.
+Next decision: Continue bounded polling without duplicate invocation.
+
+## wait cycle: Grok review 2
+
+Wait reason: Required Grok 4.5 review remains active after the first 30-second poll.
+Duration: 30 seconds.
+Resume action: Inspect task-specific processes and parse grok-output.json immediately.
+Expected signal: Processes exit and output is non-empty valid JSON.
+Fallback: Repeat one more bounded poll if still active; diagnose stderr and retry only if the process exits without valid output.
+Start time (UTC): 2026-07-23T02:34:37.303Z
+Observed result (cycle 2): At 2026-07-23T02:35:29.063Z, the same task-specific wrapper/subagent/Grok processes remained active; output and stderr remained empty.
+Next decision: Continue bounded polling.
+
+## wait cycle: Grok review 3
+
+Wait reason: Required Grok 4.5 review remains active after 60 seconds of bounded polling.
+Duration: 30 seconds.
+Resume action: Inspect the exact three process IDs and parse output immediately.
+Expected signal: Processes exit and grok-output.json is valid non-empty JSON.
+Fallback: Continue bounded polling up to the wrapper's own 900-second deadline; do not duplicate.
+Start time (UTC): 2026-07-23T02:35:29.063Z
+Observed result (cycle 3): At 2026-07-23T02:36:18.266Z, wrapper PID 11831, subagent PID 11832, and Grok PID 11851 remained active; no output or stderr existed.
+Next decision: Continue bounded polling under the wrapper deadline.
+
+## wait cycle: Grok review 4
+
+Wait reason: Required Grok review remains active after 90 seconds.
+Duration: 30 seconds.
+Resume action: Inspect the exact process IDs and output files immediately.
+Expected signal: Processes exit and valid JSON appears.
+Fallback: Continue bounded polling; diagnose only if the processes exit or deadline is reached.
+Start time (UTC): 2026-07-23T02:36:18.266Z
+Observed result (cycle 4): At 2026-07-23T02:37:06.639Z, all three Grok review processes remained active; no output or stderr existed.
+Next decision: Continue bounded polling.
+
+## wait cycle: Grok review 5
+
+Wait reason: Required Grok review remains active after approximately two minutes.
+Duration: 30 seconds.
+Resume action: Inspect exact process IDs and parse output files.
+Expected signal: Valid JSON output after process exit.
+Fallback: Continue within the 900-second wrapper budget.
+Start time (UTC): 2026-07-23T02:37:06.639Z
+Observed result (cycle 5): 2026-07-23T02:38:02.742Z - the original wrapper exited after the detached parent timeout, but no output or stderr artifact was produced. The run is incomplete and fails closed.
+Next decision: Retry once with the documented code.call timeout field set to 910000 so output capture remains attached.
+Observed result (cycle 5): 2026-07-23T02:40:08.917Z - the original wrapper exited after the detached parent timeout, but no output or stderr artifact was produced. The run is incomplete and fails closed.
+Next decision: Retry once with the documented code.call timeout field set to 910000 so output capture remains attached.
+Observed result (cycle 5): 2026-07-23T02:42:54.539Z - the original wrapper exited after the detached parent timeout, but no output or stderr artifact was produced. The run is incomplete and fails closed.
+Next decision: Retry once with the documented code.call timeout field set to 910000 so output capture remains attached.
+Grok retry result: 2026-07-23T02:44:03.891Z - wrapper trace trc_4c8cc357cc09 completed successfully with non-empty JSON (stdout 28,786 bytes; nested review output 8,028 chars; stderr contained only wrapper audit logs). Duplicate task-specific retry processes created by the transport timeout were terminated after preserving the completed artifact.
+
+## workspace-owned: validation evidence
+
+- Focused red phase confirmed missing release module/workflows before implementation.
+- Domain and signing suite: 18 passing tests, including seed/no-op/allocation, consensus, platform completeness, detached signatures, legal transitions, stable gate, concurrency, rollback, tamper rejection, and secret redaction.
+- CLI/provider planning suite: 5 passing tests for no-credential no-op planning, fail-closed mutation credentials, secret-safe errors/argv, and pointer-only promotion plans.
+- Provider retry suite: 6 passing failure-injection tests for exact object reuse, conflicting GitHub asset digest, stale remote state, exact committed retry, source-in-main requirement, and nullable GitHub digest download/hash fallback.
+- Publication preparer: real deterministic archives for `darwin-arm64`, `linux-x64`, and `windows-x64`; one release-set ID; three verified Ed25519 signatures.
+- Workflow/schema contracts: protected triggers/environments/permissions, fail-closed state restore and tag discovery, deterministic workflow-run timestamp, no rebuild during promotion/rollback, strict schema version/fields.
+- Complete distribution suite: 68 passed, 10 pre-existing Worker 04 lifecycle TODOs skipped (`trc_a672c521b144`).
+- Post-review affected suite: 12 passed (`trc_5637c219a2f4`).
+- Package syntax gate: passed (`trc_e87e78897e1e`).
+- Script parity audit: passed (`trc_f85f84a40ed2`).
+- YAML parse for all three workflows: passed (`trc_98c3771c4d2f`).
+- Bun builds for `release-channels.ts` and `prepare-release-publication.ts`: passed (`trc_601ae7ed996b`).
+- `git diff --check`: passed (`trc_bae5132708d1`).
+- Native review initially found 19 mechanical error-handling findings; all fixed with behavior preserved. Final `review.run` reports zero issues (`trc_456c66879089`).
+- Full workspace `verify` against `origin/stream/os-distribution`: publish-valid; review/static/spec checks passed, selected `@consuelo/os` package suite passed, DB guard passed, verify stamp written (`trc_56f78e2704c4`).
+- 2026-07-23 02:49:48 `review.run`: passed — OK
+- 2026-07-23 02:50:03 `verify`: passed — OK
+
+## workspace-owned: test selection
+
+- changed files: `.github/workflows/consuelo-os-runtime-promote.yaml`, `.github/workflows/consuelo-os-runtime-publish.yaml`, `.github/workflows/consuelo-os-runtime-rollback.yaml`, `.task/os-distribution/automatic-versioning-release-channels/current.json`, `.task/os-distribution/automatic-versioning-release-channels/evidence-log.json`, `.task/os-distribution/automatic-versioning-release-channels/read-log.json`, `.task/os-distribution/automatic-versioning-release-channels/session.json`, `.task/os-distribution/automatic-versioning-release-channels/verify.json`, `.task/os-distribution/automatic-versioning-release-channels/workpad.md`, `.task/subagent-runs/trc_4c8cc357cc09-grok/summary.json`, `.task/subagent-runs/trc_c5d371ba8a4f-grok/summary.json`, `.task/tasks/os-distribution/automatic-versioning-release-channels.json`, `packages/os/SCRIPTS.md`, `packages/os/docs/distribution/release-channels.md`, `packages/os/package.json`, `packages/os/scripts/lib/distribution/release-channel-provider.ts`, `packages/os/scripts/lib/distribution/release-channel.schema.json`, `packages/os/scripts/lib/distribution/release-channels.ts`, `packages/os/scripts/lib/distribution/runtime-bundle.ts`, `packages/os/scripts/prepare-release-publication.ts`, `packages/os/scripts/release-channels.ts`, `packages/os/tests/audit/fixtures/script-parity-classifications.json`, `packages/os/tests/distribution/release-channel-provider-retries.test.ts`, `packages/os/tests/distribution/release-channel-schema.test.ts`, `packages/os/tests/distribution/release-channel-workflows.test.ts`, `packages/os/tests/distribution/release-channels-cli.test.ts`, `packages/os/tests/distribution/release-channels.test.ts`, `packages/os/tests/distribution/release-publication-preparer.test.ts`, `packages/os/tests/distribution/runtime-bundle.test.ts`, `packages/workspace/scripts/ci/check-github-workflows.cjs`
+- matched rules: `auto:@consuelo/os:package-test`
+- selected suites: `@consuelo/os package test`
+- run results: `@consuelo/os package test` passed
+- failed suites: none
+
+## Grok review and dispositions
+
+Two required read-only Grok 4.5 wrapper runs completed successfully under task session `tsk_e72fe1489158` (canonical traces `trc_c5d371ba8a4f` and `trc_4c8cc357cc09`). The wrapper transport capped each rendered log at 8,028 characters, but the independent outputs exposed four high-severity, merge-blocking findings. Each was verified directly against commit `f716c0c2ac5a` and fixed:
+
+- **GROK-CR-001 / workflow source root:** valid. `bun run --cwd packages/os` was given `--source-root packages/os`, resolving to `packages/os/packages/os` in fingerprint and build steps. Fixed both steps to use `--source-root .`; workflow regression prevents reintroduction.
+- **GROK-CR-002 / release-state path:** valid. The plan command used `.release/release-state.json` relative to `packages/os` instead of the restored repository-root state. Fixed to `../../.release/release-state.json`; workflow regression locks the path.
+- **GROK-CR-003 / lost-update race:** valid. Publish, promote, and rollback had different concurrency groups and the provider wrote authoritative state without a final re-read. Fixed with one shared `consuelo-os-release-state` group, mandatory `--expected-revision` for all `--apply` commands, workflow-derived revisions, and a final remote-state equality check immediately before the state commit marker. Added an overlapping-apply failure-injection regression.
+- **GROK-CR-004 / non-main manual dev publication:** valid. `workflow_dispatch` could publish the selected ref as dev. Removed manual dispatch from the dev publication workflow; dev release publication is now main-push-only.
+
+Post-disposition evidence:
+
+- Focused Grok regressions: 18 passed (`trc_fd2128528040`).
+- Complete distribution suite: 70 passed, 10 pre-existing Worker 04 TODOs skipped (`trc_b7ee2416815c`).
+- Syntax gate: passed (`trc_b1c828c41055`).
+- Explicit YAML and workflow write-permission guard: passed for all three workflows (`trc_ce2340fe15ef`).
+- `git diff --check`: passed (`trc_54432e33fc0d`).
+- Final native review: zero issues (`trc_7b3e9e9973d9`).
+- Final workspace verify: publish-valid (`trc_5cbdd1aa6f1f`).
