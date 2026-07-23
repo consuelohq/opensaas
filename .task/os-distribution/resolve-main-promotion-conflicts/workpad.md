@@ -30,10 +30,12 @@ started: 2026-07-23
 
 - 2026-07-23 19:04:49 fs.write: `.task/os-distribution/resolve-main-promotion-conflicts/workpad.md`
 - 2026-07-23 19:07:23 fs.write: `.task/os-distribution/resolve-main-promotion-conflicts/workpad.md`
+- 2026-07-23 19:14:04 fs.write: `.task/os-distribution/resolve-main-promotion-conflicts/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-07-23 19:13:19 `review.run`: passed — OK
+- 2026-07-23 19:13:48 `verify`: passed — OK
 
 ## key decisions
 
@@ -96,3 +98,14 @@ bun run task:finish
 - 2026-07-23 19:07:23 append: `.task/os-distribution/resolve-main-promotion-conflicts/workpad.md`
 
 - 2026-07-23 19:07:47 apply-patch: `.task/os-distribution/resolve-main-promotion-conflicts/workpad.md`
+
+## Validation and publication readiness
+
+- Focused conflict suite: 58/58 passed after the provider-document classification correction.
+- Integrated OS matrix: 336 passed, 18 skipped by existing environment guards, 10 existing todo; lifecycle, distribution, provider, node-routing, installer, reload, server, and device-authority suites all passed.
+- Package syntax/typecheck passed.
+- Strict workspace review: 0 issues, 0 blockers (`trc_ebcc88724f6f`).
+- Full publish verification: passed and publish-valid, 0 review findings and 0 database risks (`trc_3ec9e99a1bbe`).
+- Merge commit `2a7e7f7a0c9456f72de8ae0bc40a4270fa8b0198` has parents task/stream integration head `b5ae99e8dcbc86e0d97485c9b72dd5ac71dea0e4` and current `main` `131ba2b2c0f7873eac94c3a46d9bac33cddf48b3`; publishing must retain both parents.
+
+- 2026-07-23 19:14:04 append: `.task/os-distribution/resolve-main-promotion-conflicts/workpad.md`
