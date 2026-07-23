@@ -254,6 +254,7 @@ export type ProviderCommand = {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
   stdin?: string;
+  timeoutMs?: number;
 };
 
 export type ProviderProcessRequest = {

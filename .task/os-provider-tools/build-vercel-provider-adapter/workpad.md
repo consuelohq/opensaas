@@ -58,9 +58,18 @@ task session: `tsk_e398fbe000ba`
 - Expected red failure: mutation parsing rejects more than one URL, argv lacks `--no-wait`, and logs.read returns TIMEOUT instead of partial entries.
 - No-test waiver: none; all three findings affect launch-critical provider behavior.
 
+### Final Grok finding repair test contract
+
+- Behavior under test: Vercel environment set/delete require one explicit environment (`production`, `preview`, or `development`) with scope-specific approval consequences, and promotion receives a process timeout longer than the CLI's documented three-minute wait.
+- Existing local pattern to follow: input-aware provider policies, command-builder validation mapped to `MALFORMED_OUTPUT`, and exact fake-process request assertions.
+- New or changed tests: missing/invalid environment scope fails before process execution; valid production policies name production; promote argv includes `--timeout 3m` and the process request uses a 195000 ms default.
+- Focused red command: `bun run --cwd packages/os test -- tools/deployment-provider/vercel.test.ts`.
+- Expected red failure: missing scope currently emits an all-environments command, approval consequences are generic, and promote inherits the 120000 ms service timeout.
+- No-test waiver: none; both findings can mutate customer-facing production state.
+
 ## current status
 
-- REVIEW FIXES VALIDATED: Ko-expanded task.push repair remains green. Three concrete Grok recovery findings were verified and fixed: multi-URL deploy output, truthful queued semantics via `--no-wait`, and partial bounded logs on timeout. Focused/shared/lifecycle tests and provider TypeScript compile pass; final review/verify and publication remain.
+- FINAL GROK FIXES VALIDATED: Ko-expanded task.push repair remains green. All five concrete Grok findings recovered across bounded runs are fixed with regression coverage. Provider/lifecycle tests, compiler, strict review, and full verify pass; publication and final external approval remain.
 
 ## files changed
 
@@ -129,8 +138,17 @@ task session: `tsk_e398fbe000ba`
 - `trc_5c19a8dade6d`: Grok finding repair focused green, 13/13.
 - `trc_6c66257124f3`: provider core + Vercel 39/39, lifecycle 21/21, OS syntax gate pass.
 - `trc_b7862a463cb2`: provider package TypeScript compiler pass after forwarding the partial-result hook through the adapter definition helper.
+- `trc_263d97c1b71d`: installed Vercel CLI 50.1.3 confirms omitted env scope targets all/multiple environments and promote defaults to a three-minute wait.
+- `trc_9c361b42f5d9`: final Grok repair red, 12 pass / 3 expected failures for promotion timeout, env validation, and scope-specific policy.
+- `trc_8e0c56c87c32`: final Grok repair focused green, 15/15.
+- `trc_58dc0cdd217d`: provider core + Vercel 41/41, lifecycle 21/21, OS syntax gate pass.
+- `trc_033ad9e383ca`: provider package TypeScript compiler pass.
+- `trc_55a1f5ccb41a`: final strict changed-file review passed with zero findings.
+- `trc_35c0b28c7ea2`: final full verify passed publish-valid with zero review/database findings.
 - 2026-07-23 17:01:31 `review.run`: passed — OK
 - 2026-07-23 17:01:43 `verify`: passed — OK
+- 2026-07-23 17:14:42 `review.run`: passed — OK
+- 2026-07-23 17:14:53 `verify`: passed — OK
 
 ## key decisions
 
@@ -187,6 +205,8 @@ task session: `tsk_e398fbe000ba`
 - Multi-URL deploy/redeploy parsing: **fixed**. The adapter prefers the last `*.vercel.app` URL, falls back to a non-Vercel-dashboard URL, and fails only when no deployment URL exists. Added multi-URL success and zero-URL failure tests.
 - Mutation status semantics: **fixed**. Deploy and redeploy now pass Vercel CLI 50.1.3 `--no-wait`, so normalized `QUEUED` status matches actual command behavior. Catalog and documentation updated.
 - Live logs timeout behavior: **fixed**. The provider core supports adapter-approved partial results; Vercel logs accept a timed-out result only when stdout contains entries, return `truncated: true`, and retain typed `TIMEOUT` for empty streams.
+- Environment mutation scope: **fixed**. Vercel set/delete require `production`, `preview`, or `development`, reject omitted/invalid scope before process execution, and publish scope-specific approval consequences.
+- Promotion timeout: **fixed**. Promote now passes CLI `--timeout 3m` and carries a 195000 ms command-level process timeout, leaving a 15-second local grace period before termination.
 
 ---
 
@@ -235,3 +255,12 @@ task session: `tsk_e398fbe000ba`
 - `packages/workspace/tests/task-selector-pr-ref.test.js`
 
 - 2026-07-23 17:01:17 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+
+- 2026-07-23 17:13:38 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+- 2026-07-23 17:13:38 apply-patch: `packages/os/tools/deployment-provider/vercel.test.ts`
+- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/types.ts`
+- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/service.ts`
+- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/vercel.ts`
+- 2026-07-23 17:14:06 apply-patch: `packages/os/tools/deployment-provider/vercel.md`
+
+- 2026-07-23 17:15:07 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`

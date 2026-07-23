@@ -110,7 +110,7 @@ The development host reported Vercel CLI `50.1.3` on July 23, 2026. This observa
 
 `deployment.promote`
 
-- CLI: `vercel promote <deployment> --yes --no-color`
+- CLI: `vercel promote <deployment> --yes --timeout 3m --no-color`
 - Output: promoted deployment ID and `PROMOTED` status.
 - Approval consequence: promotes an existing deployment and may reassign customer-facing traffic.
 
@@ -125,15 +125,17 @@ The development host reported Vercel CLI `50.1.3` on July 23, 2026. This observa
 
 `environment.set`
 
-- CLI: `vercel env add <name> [environment] --force --no-color`
+- CLI: `vercel env add <name> <production|preview|development> --force --no-color`
 - Value transport: stdin.
-- Output: name, scopes, and `updated: true` only.
+- Input requires exactly one explicit environment scope; omitted or invalid scope fails before process execution.
+- Output: name, the selected scope, and `updated: true` only.
 - Approval consequence: changes environment metadata and can alter future deployments.
 
 `environment.delete`
 
-- CLI: `vercel env remove <name> [environment] --yes --no-color`
-- Output: name, scopes, and `deleted: true` only.
+- CLI: `vercel env remove <name> <production|preview|development> --yes --no-color`
+- Input requires exactly one explicit environment scope; omitted or invalid scope fails before process execution.
+- Output: name, the selected scope, and `deleted: true` only.
 - Approval consequence: deletes environment metadata and can break future deployments.
 
 ### Raw escape hatch

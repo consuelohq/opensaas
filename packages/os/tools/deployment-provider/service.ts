@@ -208,7 +208,7 @@ export const createDeploymentProviderService = (
     args: [...command.args],
     cwd: command.cwd || cwd,
     env: { ...env, ...command.env },
-    timeoutMs: input.timeoutMs || defaultTimeoutMs,
+    timeoutMs: input.timeoutMs ?? command.timeoutMs ?? defaultTimeoutMs,
     ...(input.signal ? { signal: input.signal } : {}),
     ...(command.stdin !== undefined ? { stdin: command.stdin } : {}),
   }).pipe(

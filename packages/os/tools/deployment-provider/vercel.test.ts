@@ -280,8 +280,9 @@ describe('Vercel deployment provider adapter', () => {
     expect(fake.requests.map((request) => request.args)).toEqual([
       ['deploy', './app', '--target', 'preview', '--yes', '--no-wait', '--no-color'],
       ['redeploy', 'dpl_123', '--target', 'preview', '--no-wait', '--no-color'],
-      ['promote', 'dpl_123', '--yes', '--no-color'],
+      ['promote', 'dpl_123', '--yes', '--timeout', '3m', '--no-color'],
     ]);
+    expect(fake.requests[2].timeoutMs).toBe(195_000);
   });
 
   it('returns bounded partial logs when the live stream reaches its timeout', async () => {
@@ -375,6 +376,41 @@ describe('Vercel deployment provider adapter', () => {
     expect(fake.requests[1].stdin).toBe(secret);
     expect(fake.requests.flatMap((request) => request.args).join(' ')).not.toContain(secret);
     expect(JSON.stringify({ listed, set, deleted })).not.toContain(secret);
+  });
+
+  it('requires an explicit Vercel environment scope before set or delete', async () => {
+    const fake = createFakeProviderProcess([]);
+    const service = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: fake.process,
+    });
+    const approval = { approved: true, reason: 'Validate environment scope contract' };
+
+    await expectProviderError(service.environmentSet({
+      name: 'FEATURE_FLAG',
+      value: 'enabled',
+      approval,
+    }), 'MALFORMED_OUTPUT');
+    await expectProviderError(service.environmentDelete({
+      name: 'FEATURE_FLAG',
+      scope: 'all',
+      approval,
+    }), 'MALFORMED_OUTPUT');
+    expect(fake.requests).toHaveLength(0);
+  });
+
+  it('publishes scope-specific environment mutation consequences', () => {
+    const service = createDeploymentProviderService(createVercelProviderAdapter(), {
+      process: createFakeProviderProcess([]).process,
+    });
+
+    expect(service.policy('environment.set', { scope: 'production' }).approval).toEqual({
+      required: true,
+      consequence: 'Sets a Vercel environment variable in production and can alter future production deployments.',
+    });
+    expect(service.policy('environment.delete', { scope: 'preview' }).approval).toEqual({
+      required: true,
+      consequence: 'Deletes a Vercel environment variable from preview and can break future preview deployments.',
+    });
   });
 
   it('returns read-only project configuration and domain inventory', async () => {

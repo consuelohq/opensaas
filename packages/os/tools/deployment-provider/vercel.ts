@@ -30,6 +30,11 @@ const ANSI_PATTERN = /\u001B\[[0-?]*[ -/]*[@-~]/g;
 const URL_PATTERN = /https?:\/\/[^\s)]+/g;
 const VERCEL_MINIMUM_MAJOR = 40;
 const VERCEL_MAXIMUM_MAJOR = 50;
+const VERCEL_PROMOTION_TIMEOUT = '3m';
+const VERCEL_PROMOTION_PROCESS_TIMEOUT_MS = 195_000;
+const VERCEL_ENVIRONMENT_SCOPES = ['production', 'preview', 'development'] as const;
+
+type VercelEnvironmentScope = typeof VERCEL_ENVIRONMENT_SCOPES[number];
 
 const cleanText = (value: string): string => value.replace(ANSI_PATTERN, '').replace(/\r/g, '').trim();
 
@@ -100,6 +105,44 @@ const strictPolicy = (
   mutating: true,
   approval: { required: true, consequence },
 });
+
+const environmentScope = (value: unknown): VercelEnvironmentScope | undefined => {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toLowerCase();
+  return VERCEL_ENVIRONMENT_SCOPES.find((scope) => scope === normalized);
+};
+
+const requireEnvironmentScope = (value: unknown): VercelEnvironmentScope => {
+  const scope = environmentScope(value);
+  if (!scope) {
+    throw new Error('Vercel environment scope must be production, preview, or development');
+  }
+  return scope;
+};
+
+const environmentSetPolicy = (
+  input: Partial<DeploymentProviderOperationInputMap['environment.set']>,
+): ProviderOperationPolicy => {
+  const scope = environmentScope(input.scope);
+  return scope
+    ? strictPolicy(
+      'environment.set',
+      `Sets a Vercel environment variable in ${scope} and can alter future ${scope} deployments.`,
+    )
+    : providerOperationPolicy('environment.set');
+};
+
+const environmentDeletePolicy = (
+  input: Partial<DeploymentProviderOperationInputMap['environment.delete']>,
+): ProviderOperationPolicy => {
+  const scope = environmentScope(input.scope);
+  return scope
+    ? strictPolicy(
+      'environment.delete',
+      `Deletes a Vercel environment variable from ${scope} and can break future ${scope} deployments.`,
+    )
+    : providerOperationPolicy('environment.delete');
+};
 
 const parseVersion = (output: string): ProviderVersion | null => {
   const matches = [...cleanText(output).matchAll(/\b(\d+)\.(\d+)\.(\d+)\b/g)];
@@ -301,7 +344,7 @@ const parseEnvironmentSet = (
   if (!/\b(?:Added|Updated) Environment Variable\b/i.test(cleanText(`${result.stdout}\n${result.stderr}`))) {
     throw new Error('Vercel environment mutation output was not recognized');
   }
-  return { name: input.name, scopes: [input.scope || 'all'], updated: true };
+  return { name: input.name, scopes: [requireEnvironmentScope(input.scope)], updated: true };
 };
 
 const parseEnvironmentDelete = (
@@ -311,7 +354,7 @@ const parseEnvironmentDelete = (
   if (!/\bRemoved Environment Variable\b/i.test(cleanText(`${result.stdout}\n${result.stderr}`))) {
     throw new Error('Vercel environment deletion output was not recognized');
   }
-  return { name: input.name, scopes: [input.scope || 'all'], deleted: true };
+  return { name: input.name, scopes: [requireEnvironmentScope(input.scope)], deleted: true };
 };
 
 const parseDomainList = (result: ProviderProcessResult): ProviderDomainList => {
@@ -458,7 +501,7 @@ export const vercelOperationCatalog = [
   {
     name: 'vercel.deployment.promote',
     capability: 'deployment.promote',
-    command: 'vercel promote <deployment> --yes --no-color',
+    command: 'vercel promote <deployment> --yes --timeout 3m --no-color',
     readOnly: false,
     approval: {
       required: true,
@@ -481,7 +524,7 @@ export const vercelOperationCatalog = [
     readOnly: false,
     approval: {
       required: true,
-      consequence: 'Changes provider environment metadata and can alter future deployments.',
+      consequence: 'Changes a variable in one explicitly selected Vercel environment and can alter future deployments.',
     },
     searchTerms: ['set vercel environment variable'],
   },
@@ -492,7 +535,7 @@ export const vercelOperationCatalog = [
     readOnly: false,
     approval: {
       required: true,
-      consequence: 'Deletes provider environment metadata and can break future deployments.',
+      consequence: 'Deletes a variable from one explicitly selected Vercel environment and can break future deployments.',
     },
     searchTerms: ['delete vercel environment variable'],
   },
@@ -620,7 +663,16 @@ export const createVercelProviderAdapter = (): DeploymentProviderAdapter => ({
     'deployment.promote': definition({
       capability: 'deployment.promote',
       policy: providerOperationPolicy('deployment.promote'),
-      command: (input) => ({ args: noColor(['promote', input.deploymentId, '--yes']) }),
+      command: (input) => ({
+        args: noColor([
+          'promote',
+          input.deploymentId,
+          '--yes',
+          '--timeout',
+          VERCEL_PROMOTION_TIMEOUT,
+        ]),
+        timeoutMs: VERCEL_PROMOTION_PROCESS_TIMEOUT_MS,
+      }),
       parse: parsePromotion,
     }),
     'logs.read': definition({
@@ -669,30 +721,23 @@ export const createVercelProviderAdapter = (): DeploymentProviderAdapter => ({
     }),
     'environment.set': definition({
       capability: 'environment.set',
-      command: (input) => ({
-        args: noColor([
-          'env',
-          'add',
-          input.name,
-          ...(input.scope ? [input.scope] : []),
-          '--force',
-        ]),
-        stdin: input.value,
-      }),
+      policy: environmentSetPolicy,
+      command: (input) => {
+        const scope = requireEnvironmentScope(input.scope);
+        return {
+          args: noColor(['env', 'add', input.name, scope, '--force']),
+          stdin: input.value,
+        };
+      },
       parse: parseEnvironmentSet,
     }),
     'environment.delete': definition({
       capability: 'environment.delete',
-      policy: providerOperationPolicy('environment.delete'),
-      command: (input) => ({
-        args: noColor([
-          'env',
-          'remove',
-          input.name,
-          ...(input.scope ? [input.scope] : []),
-          '--yes',
-        ]),
-      }),
+      policy: environmentDeletePolicy,
+      command: (input) => {
+        const scope = requireEnvironmentScope(input.scope);
+        return { args: noColor(['env', 'remove', input.name, scope, '--yes']) };
+      },
       parse: parseEnvironmentDelete,
     }),
     raw: definition({
