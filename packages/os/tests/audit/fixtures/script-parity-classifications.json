@@ -161,14 +161,6 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
-    "scripts/generated/com.consuelo.system.plist": {
-      "status": "os-only-intentional",
-      "reason": "scripts/generated/com.consuelo.system.plist is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
-    },
-    "scripts/generated/com.consuelo.watchdog.plist": {
-      "status": "os-only-intentional",
-      "reason": "scripts/generated/com.consuelo.watchdog.plist is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
-    },
     "scripts/gh.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -380,6 +372,18 @@
     "scripts/lib/device-authority-release-readiness.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/device-authority-release-readiness.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/lib/distribution/release-channel-provider.ts": {
+      "status": "os-only-intentional",
+      "reason": "Consuelo OS owns provider-safe GitHub and Cloudflare release publication, retry, and channel-pointer operations."
+    },
+    "scripts/lib/distribution/release-channel.schema.json": {
+      "status": "os-only-intentional",
+      "reason": "Consuelo OS owns the signed release-channel manifest schema consumed by runtime update and promotion tooling."
+    },
+    "scripts/lib/distribution/release-channels.ts": {
+      "status": "os-only-intentional",
+      "reason": "Consuelo OS owns automatic version allocation, immutable release state, channel promotion, rollback, and signature verification."
     },
     "scripts/lib/distribution/runtime-bundle.schema.json": {
       "status": "os-only-intentional",
@@ -1057,6 +1061,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/prepare-release-publication.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned release publication preparer verifies and signs immutable runtime archives before channel publication."
+    },
     "scripts/provision-managed-os-mcp-ingress-policy.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1068,6 +1076,10 @@
     "scripts/railway-redeploy.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/release-channels.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned release-channel orchestration is intentionally separate from the legacy workspace installer/device-authority release scripts."
     },
     "scripts/research-ingest.js": {
       "status": "changed-needs-review",
