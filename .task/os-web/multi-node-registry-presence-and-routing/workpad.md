@@ -19,8 +19,8 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - [x] Revoked nodes cannot heartbeat, route, or call.
 - [x] Add deterministic behavioral coverage for two-node registration, routing, TTL presence, revocation, isolation, and response redaction while preserving existing auth/gateway regressions.
 - [x] Document the selected Durable Object/D1 authority boundary and expose the compact current/default/node-count contract needed by Worker 07.
-- [ ] Complete CodeRabbit, Grok 4.5, GitHub posting/dispositions, and final clean validation.
-- [ ] Stop at the real-Mac human checkpoint with the exact MacBook Air command and expected two-node result.
+- [x] Complete CodeRabbit, Grok 4.5, GitHub posting/dispositions, and final clean validation.
+- [x] Stop at the real-Mac human checkpoint with the exact MacBook Air command and expected two-node result.
 
 ## plan
 
@@ -162,7 +162,10 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 ## notes for Ko / real-Mac checkpoint
 
 - No lifecycle command has been run on the Mac Mini or MacBook Air.
-- The final response will quote the exact normal MacBook Air acceptance command from the Worker 25 brief and its expected two-node result. It will not execute that command.
+- Exact MacBook Air command for Ko to run, using the same Google account as the Mac Mini: `curl -fsSL https://install.consuelohq.com/os | bash -s -- --yes --install-daemons --mode local`.
+- Expected browser result: Google OAuth opens and the existing workspace is selected instead of creating or renaming a workspace.
+- Expected terminal result: installation completes, the MacBook Air receives a distinct member node/connector identity, and cloudflared plus the 30-second heartbeat LaunchAgent are installed.
+- Expected node-list result: two distinct nodes are listed; the original Mac Mini remains `home` and default; the MacBook Air is `member` and online. Powering either machine off transitions it to stale after 60 seconds and offline after 180 seconds without routing to the other machine.
 
 ## publish checklist
 
@@ -172,12 +175,12 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 - [x] Diff self-review removed an unrelated generated snapshot.
 - [x] Workspace review passes.
 - [x] Verify passes.
-- [ ] Task branch pushed and PR #1581 ready against `stream/os-web`.
-- [ ] CodeRabbit requested and findings dispositioned.
-- [ ] Grok 4.5 structured review, inline findings, top-level summary, and dispositions posted to GitHub.
-- [ ] Temporary `packages/os/.tmp-reviews/multi-node-registry-presence-and-routing/` removed.
-- [ ] Final validation after review fixes passes.
-- [ ] Ko checkpoint command and expected result recorded.
+- [x] Task branch pushed and PR #1581 ready against `stream/os-web` at `3f5bb419ee99afe1adf44098bf993e406f9438a1`.
+- [x] CodeRabbit requested twice; initial and post-fix incremental reviews completed with no inline findings (`trc_5abc5fbcbe1f`, `trc_a0c634d47949`).
+- [x] Grok 4.5 structured review, three inline findings, top-level summary, and all dispositions posted to GitHub (`trc_6f762d80e228`).
+- [x] Temporary `packages/os/.tmp-reviews/multi-node-registry-presence-and-routing/` removed (`trc_378e49b29323`).
+- [x] Final validation after review fixes passes: strict review zero findings, verify publish-valid, 32/32 gateway contracts, and complete bounded suite 1,555 passing.
+- [x] Ko checkpoint command and expected browser, terminal, node-list, and offline-state results recorded.
 
 - 2026-07-23 03:12:51 write: `.task/os-web/multi-node-registry-presence-and-routing/workpad.md`
 
@@ -276,6 +279,7 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 - 2026-07-23 03:46:48 `review.run`: passed — OK
 - 2026-07-23 03:47:00 `verify`: passed — OK
 - 2026-07-23 03:48:09 `verify`: passed — OK
+- 2026-07-23 03:53:43 `verify`: passed — OK
 
 ## workspace-owned: files read
 
@@ -329,3 +333,10 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 - 2026-07-23 03:47:48 write: `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
 
 - 2026-07-23 03:47:57 apply-patch: `.task/os-web/multi-node-registry-presence-and-routing/workpad.md`
+
+## final PR state
+
+- Published review-fix head: `3f5bb419ee99afe1adf44098bf993e406f9438a1` (`trc_631b261051e9`).
+- Grok dispositions: CR-001 valid/fixed (`trc_785ffad8f39c`), CR-002 false positive/proved (`trc_bedf3ff4d985`), CR-003 valid/fixed (`trc_aa96323fa35e`).
+- GitHub CI after the final commit: 47 checks, 0 failed, 4 still running after two bounded waits (`trc_3e212acccfc5`). All completed checks are green or intentionally skipped; no failed route requires recovery.
+- `--changed` publication could not pass its local-ref sync guard because API publication leaves the OS worktree ref unchanged. Recovery used the canonical task-push explicit-file path against the remote task head; no force push or native-git bypass was used (`trc_631b261051e9`).
