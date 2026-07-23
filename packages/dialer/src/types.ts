@@ -326,6 +326,7 @@ export type ParallelCleanupFailure = {
   attempts: number;
   firstFailedAt: string;
   lastFailedAt: string;
+  retryable?: boolean;
 };
 
 // Full parallel dial group state (stored in redis)

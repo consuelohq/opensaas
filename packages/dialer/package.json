@@ -6,14 +6,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npx tsc",
-    "dev": "npx tsc --watch",
+    "build": "tsc",
+    "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
   "dependencies": {
-    "@consuelo/logger": "workspace:*"
+    "@consuelo/logger": "workspace:*",
+    "effect": "^3.21.3"
   },
   "peerDependencies": {
     "ioredis": "^5.0.0",
@@ -28,7 +29,8 @@
     }
   },
   "devDependencies": {
-    "twilio": "^5.12.1"
+    "twilio": "^5.12.1",
+    "typescript": "5.9.2"
   },
   "publishConfig": {
     "access": "public"
