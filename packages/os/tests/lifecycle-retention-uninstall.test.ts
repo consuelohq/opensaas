@@ -274,6 +274,32 @@ describe('lifecycle rollback and retention', () => {
     expect(update.serviceOperations.slice(-2)).toEqual(['restart', 'health']);
   });
 
+  it('keeps an explicit rollback successful when post-commit retention fails', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleRetentionState({
+      home: tempHome,
+      pinnedBundleIds: [bundle130.manifest.bundleId],
+      unresolvedContentBaseBundleIds: [],
+    });
+    const events: LifecycleProgressEvent[] = [];
+    const rollback = createEngine({ bundle: bundle110, events });
+
+    await expect(rollback.rollback()).resolves.toMatchObject({
+      operation: 'rollback',
+      changed: true,
+      bundleId: bundle100.manifest.bundleId,
+    });
+
+    expect(currentBundleId()).toBe(bundle100.manifest.bundleId);
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(events).toContainEqual(expect.objectContaining({
+      phase: 'retention',
+      detail: expect.objectContaining({ status: 'failed' }),
+    }));
+    expect(events.at(-1)?.phase).toBe('complete');
+  });
+
   it('recovers an interrupted activation journal to the previous known-good release', async () => {
     writeInstalledIdentity();
     const previousPath = stageBundle(bundle100, 'stage-previous');
@@ -291,6 +317,52 @@ describe('lifecycle rollback and retention', () => {
     const recovery = recoverInterruptedLifecycleActivation(tempHome);
 
     expect(recovery).toMatchObject({ recovered: true, restoredBundleId: bundle100.manifest.bundleId });
+    expect(currentBundleId()).toBe(bundle100.manifest.bundleId);
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+  });
+
+  it('recovers the previous known-good release when the failed candidate is missing', () => {
+    writeInstalledIdentity();
+    const previousPath = stageBundle(bundle100, 'stage-missing-candidate-previous');
+    const candidatePath = stageBundle(bundle110, 'stage-missing-candidate');
+    mkdirSync(join(tempHome, 'runtime'), { recursive: true });
+    symlinkSync(`releases/${bundle110.manifest.bundleId}`, join(tempHome, 'runtime', 'current'));
+    symlinkSync(`releases/${bundle100.manifest.bundleId}`, join(tempHome, 'runtime', 'previous'));
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-missing-candidate',
+      previousReleasePath: previousPath,
+      nextReleasePath: candidatePath,
+    });
+    rmSync(candidatePath, { recursive: true, force: true });
+
+    expect(recoverInterruptedLifecycleActivation(tempHome)).toMatchObject({
+      recovered: true,
+      restoredBundleId: bundle100.manifest.bundleId,
+    });
+    expect(currentBundleId()).toBe(bundle100.manifest.bundleId);
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+  });
+
+  it('recovers the previous known-good release when the failed candidate is corrupt', () => {
+    writeInstalledIdentity();
+    const previousPath = stageBundle(bundle100, 'stage-corrupt-candidate-previous');
+    const candidatePath = stageBundle(bundle110, 'stage-corrupt-candidate');
+    mkdirSync(join(tempHome, 'runtime'), { recursive: true });
+    symlinkSync(`releases/${bundle110.manifest.bundleId}`, join(tempHome, 'runtime', 'current'));
+    symlinkSync(`releases/${bundle100.manifest.bundleId}`, join(tempHome, 'runtime', 'previous'));
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-corrupt-candidate',
+      previousReleasePath: previousPath,
+      nextReleasePath: candidatePath,
+    });
+    writeFileSync(join(candidatePath, 'package.json'), '{"corrupt":true}\n');
+
+    expect(recoverInterruptedLifecycleActivation(tempHome)).toMatchObject({
+      recovered: true,
+      restoredBundleId: bundle100.manifest.bundleId,
+    });
     expect(currentBundleId()).toBe(bundle100.manifest.bundleId);
     expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
   });
@@ -370,6 +442,52 @@ describe('lifecycle rollback and retention', () => {
     expect(releaseNames()).toEqual([bundle100.manifest.bundleId]);
     expect(events.some((event) => event.phase === 'rollback')).toBe(true);
     expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+  });
+
+  it('keeps a committed update successful when post-activation retention fails', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    writeLifecycleRetentionState({
+      home: tempHome,
+      pinnedBundleIds: [bundle130.manifest.bundleId],
+      unresolvedContentBaseBundleIds: [],
+    });
+    const events: LifecycleProgressEvent[] = [];
+    const update = createEngine({ bundle: bundle110, events });
+
+    await expect(update.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      operation: 'update',
+      changed: true,
+      bundleId: bundle110.manifest.bundleId,
+    });
+
+    expect(currentBundleId()).toBe(bundle110.manifest.bundleId);
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(events).toContainEqual(expect.objectContaining({
+      phase: 'retention',
+      detail: expect.objectContaining({ status: 'failed' }),
+    }));
+    expect(events.at(-1)?.phase).toBe('complete');
+  });
+
+  it('preserves the health rejection when retention fails after an accepted automatic rollback', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    writeLifecycleRetentionState({
+      home: tempHome,
+      pinnedBundleIds: [bundle130.manifest.bundleId],
+      unresolvedContentBaseBundleIds: [],
+    });
+    const events: LifecycleProgressEvent[] = [];
+    const failedUpdate = createEngine({ bundle: bundle110, health: [false, true], events });
+
+    await expect(failedUpdate.update({ channel: 'dev', yes: true }))
+      .rejects.toMatchObject({ code: 'HEALTH_REJECTED' });
+
+    expect(currentBundleId()).toBe(bundle100.manifest.bundleId);
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(events).toContainEqual(expect.objectContaining({
+      phase: 'retention',
+      detail: expect.objectContaining({ status: 'failed', automatic: true }),
+    }));
   });
 
   it('bounds staging, test-home, and dev-slot directories by TTL and count', () => {
