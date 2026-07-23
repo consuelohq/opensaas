@@ -33,6 +33,9 @@ Do not absorb provider, web-auth, or native-app work.
 - Eliminate customer-runtime assumptions about a specific Homebrew SQLite path or developer machine PATH.
 - Ensure Bun's executable path is resolved and persisted for non-interactive services.
 - Ensure the shipped runtime bundle includes every runtime directory required by current OS behavior, not only the narrow legacy Dockerfile copy list.
+- Enforce the flattened product root: new installs activate path-neutral bundles at `~/.consuelo/runtime/releases/<bundle-id>/`; `~/.consuelo/os/` is accepted only as legacy migration input and is never recreated as the final package root.
+- Resolve canonical tool package source and generator dependencies from the active immutable runtime release. Never materialize `packages/os/tools/` into the user-owned `~/.consuelo/tools/` namespace.
+- Preserve user-owned tools during install, update, repair, rollback, and migration even when their IDs overlap canonical source-package directory names such as `github`, `http`, `memory`, or `subagent`.
 - Remove `packages/os/tooling` after Worker 26's consumer proof; do not leave a competing manifest authority.
 - Preserve user-owned `~/Consuelo` content and steering without creating hidden editable duplicates.
 - Complete the `consuelo` OS lifecycle and `consuelo-dialer` split from Worker 30 without removing dialer behavior.
@@ -50,6 +53,7 @@ Use disposable homes and temporary release infrastructure where possible. Test:
 2. Empty host, existing Bun in a non-default path.
 3. Existing legacy `~/.consuelo/os` layout.
 4. Existing flattened `~/.consuelo/` layout.
+4a. Clean install proves no `~/.consuelo/os/` directory is created and the active release resolves through `~/.consuelo/runtime/current`.
 5. User-modified managed skill/tool/site.
 6. Unmodified managed component eligible for automatic update.
 7. Interrupted download.
@@ -68,6 +72,7 @@ Use disposable homes and temporary release infrastructure where possible. Test:
 19. Notification off/snooze persistence and steering behavior.
 20. Same-account second-node continuity using Worker 25's registry without replacing the home/default route.
 21. Visible user steering and modified user-owned tool/skill preservation.
+22. Canonical tool-package source remains under `runtime/releases/<bundle-id>` while a user-owned tool with an overlapping source-package name survives install, update, repair, and rollback unchanged.
 
 Use the PTY harness for interactive flows. The OCI clean-host CI lane plus macOS and Windows runners are mandatory. Local Docker/Apple `container` use is optional, and Ko's active machines are never the worker's test environment.
 
@@ -88,6 +93,7 @@ Use the PTY harness for interactive flows. The OCI clean-host CI lane plus macOS
 - Automatic versioning is a no-op when the runtime closure is unchanged and allocates exactly one idempotent SemVer when it changes.
 - Uninstall/reinstall leaves no orphan service or tunnel processes.
 - Managed user modifications survive normal update.
+- Canonical source packages never compete with or overwrite user-owned tools under `~/.consuelo/tools/`.
 - Diagnostics are useful and redacted.
 - Current full OS tests plus the new distribution E2E suite pass.
 

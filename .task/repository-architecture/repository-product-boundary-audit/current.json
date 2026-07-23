@@ -1,0 +1,12 @@
+{
+  "area": "repository-architecture",
+  "stream": "stream/repository-architecture",
+  "taskBranch": "task/repository-architecture/repository-product-boundary-audit",
+  "baseBranch": "stream/repository-architecture",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1562,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1562",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-repository-architecture-repository-product-boundary-audit",
+  "createdAt": "2026-07-22T21:23:43.338Z"
+}

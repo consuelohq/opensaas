@@ -56,6 +56,7 @@ Support structured JSON and quiet modes where appropriate.
 - Preserve node identity, workspace membership, secrets, tunnel credentials, and user content.
 - Verify signed channel/runtime-bundle manifests before executing downloaded code.
 - Download and verify in a temporary location.
+- Treat `~/.consuelo/` as the product root, activate releases only beneath `~/.consuelo/runtime/releases/<bundle-id>/`, and switch `runtime/current` atomically. Never materialize a new install at the legacy `~/.consuelo/os/` path.
 - Acquire a lock with clear stale-lock recovery.
 - Run platform preflight before activation.
 - Activate atomically.

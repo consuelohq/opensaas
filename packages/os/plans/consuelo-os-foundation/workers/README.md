@@ -94,6 +94,6 @@ Wave 0 tasks may run concurrently because their implementation ownership is disj
 - Every task PR remains independently reviewable and carries focused tests.
 - Every task closes with CodeRabbit disposition and the Grok 4.5 review posted to GitHub as inline comments plus one top-level PR comment. GitHub is the durable source of truth; temporary prompt/output files are removed after posting.
 - The Grok prompt includes the master plan, task brief, exact diff, existing comments, validation/CI summary, task context, and relevant repo patterns.
-- After GitHub contains the complete report, the worker responds in chat with only `done` and the PR URL.
+- After GitHub contains the complete report, the implementation worker returns a concise chat summary with the PR URL and stream, exact changes, validation/review dispositions, contribution to the larger plan, and remaining follow-ups. Implementation workers never respond with only `done`; that exception is reserved for a standalone Grok review task whose structured review is already on GitHub.
 - Worker agents do not mutate OS on Ko's real Macs. Ko performs the human-checkpoint command, then the worker may resume read-only validation.
 - A powered-off MacBook Air is an expected offline-node state, not evidence that provisioning or routing is broken.
