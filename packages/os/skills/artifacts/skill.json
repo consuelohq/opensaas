@@ -8,7 +8,7 @@
     "type": "resource",
     "path": "packages/os/skills/artifacts/SKILL.md"
   },
-  "script": "scripts/design/artifacts.ts",
+  "script": "scripts/artifacts.ts",
   "permission": "draft",
   "requiresApproval": false,
   "status": "active",

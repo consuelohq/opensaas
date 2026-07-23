@@ -45,11 +45,41 @@ Follow the assigned brief exactly. Start from fresh local main. Use Consuelo OS 
 
 Use TDD: write failing behavioral tests first, then implement. Preserve existing regression contracts unless the brief explicitly approves a behavior change. Use only the environment lane assigned by the plan and registry. Never install, update, reset, restart, or uninstall Consuelo OS on Ko's Mac Mini or MacBook Air; stop at a human checkpoint with the exact command and expected result.
 
-If the assigned environment, OS task session, provider/model authentication, workspace-first route, GitHub posting path, or test lane fails, is unavailable, or differs from the registry, stop. Put the exact failure on the PR and fix or realign the environment before continuing. Do not bypass it, use another computer, silently change providers, or treat partial results as proof.
+If an assigned environment, task-session route, provider authentication,
+workspace-first route, GitHub path, or test lane fails, pause product
+implementation and diagnose the failure through Consuelo OS.
+
+A failed tool call is not a terminal blocker. Retry with corrected typed input,
+inspect traces, and repair or realign the route when it is within the worker's
+scope.
+
+Return blocked only when:
+- recovery requires human judgment,
+- recovery would exceed the assigned ownership boundary,
+- a required external credential or environment is unavailable, or
+- the same failure remains after the prescribed recovery paths.
+
+Record both the original failure and every recovery attempt on the PR.
+Do not bypass the failed route with native git, unscoped shell, another
+computer, provider substitution, or the legacy workspace connector.
 
 Keep the task workpad current. Push an independently reviewable task PR only to the assigned stream. Request CodeRabbit. Render the committed Grok review template to `packages/os/.tmp-reviews/<task>/grok-prompt.md` inside the task worktree and invoke the existing wrapper with `bun run --cwd packages/os subagent -- --provider grok --model grok-4.5 --bundle core --policy read --instruction-path <task-worktree>/packages/os/.tmp-reviews/<task>/grok-prompt.md --cwd <task-worktree> --task-session <task-session> --timeout-ms 900000 --output-format json --workspace-only preferred`. The wrapper maps read policy to Grok `--permission-mode auto`, bounds the run, disables memory/subagents, and denies built-in edit, write, and shell tools while leaving workspace MCP reads available. Cancelled, incomplete, and empty Grok runs fail closed. Post the structured review, each new inline finding, and the top-level summary to GitHub. Verify every finding, fix valid findings, rerun validation, and post dispositions. GitHub is the durable source of truth; remove `packages/os/.tmp-reviews/<task>/` after posting. Do not create another product review tool.
 
-Do not merge the task PR, promote the stream, start downstream workers, or broaden scope. Return only after every acceptance criterion is complete and every substantive result is recorded on GitHub. In chat, respond with only `done` and the PR URL.
+Merge the task PR into its assigned stream, do not promote the stream to main,
+do not start downstream workers, and do not broaden scope. Return only after
+every acceptance criterion is complete and every substantive result is recorded
+on GitHub.
+
+Your user-facing closeout must be concise but informative. Include:
+
+1. the task PR URL and assigned stream;
+2. exactly what changed;
+3. tests, CI, CodeRabbit, Grok, and finding dispositions;
+4. how this work advances the larger foundation plan; and
+5. remaining blockers, risks, or downstream integration work.
+
+Do not reply with only `done`. That short closeout is reserved for a standalone
+Grok review task after its structured review is already durable on GitHub.
 ```
 
 ## Orchestrator closeout

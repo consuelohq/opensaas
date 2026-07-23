@@ -79,7 +79,7 @@ The output follows the complete schema and severity/category rules in `grok-revi
 - All open findings appear in the consolidated agent-fix prompt.
 - Stale or already-fixed existing comments are not reposted as new findings.
 - If the environment is broken, the worker stops until it is repaired.
-- The worker's user-facing closeout in chat contains only `done` and the PR URL; all substantive reporting lives on GitHub.
+- The Grok wrapper returns the required structured JSON to the implementation worker. If Grok is run as a standalone user-facing review task, it may close with only `done` and the PR URL after the structured review is durable on GitHub. Implementation workers must instead return the concise task summary required by the master plan.
 
 ## Completion report
 

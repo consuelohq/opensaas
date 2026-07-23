@@ -49,6 +49,9 @@ cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_hom
 cloudflared_labels=()
 cloudflared_generated_plists=()
 cloudflared_agent_plists=()
+heartbeat_labels=()
+heartbeat_generated_plists=()
+heartbeat_agent_plists=()
 portless_enabled=0
 stage_port="${WORKSPACE_STAGE_PORT:-}"
 if [ -z "$stage_port" ]; then
@@ -156,6 +159,37 @@ collect_cloudflared_plists() {
   done
 }
 
+append_heartbeat_plist() {
+  local plist="$1"
+  local label existing_label
+  label="$(extract_plist_label "$plist")"
+  if [ -z "$label" ]; then
+    echo "unable to read Label from heartbeat plist: $plist" >&2
+    exit 1
+  fi
+
+  for existing_label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
+    if [ "$existing_label" = "$label" ]; then
+      return 0
+    fi
+  done
+
+  heartbeat_labels+=("$label")
+  heartbeat_generated_plists+=("$plist")
+  heartbeat_agent_plists+=("$launch_agent_dir/${label}.plist")
+}
+
+collect_heartbeat_plists() {
+  local plist
+  if [ ! -d "$cloudflared_generated_dir" ]; then
+    return 0
+  fi
+  for plist in "$cloudflared_generated_dir"/com.consuelo.os.node-heartbeat*.plist; do
+    [ -e "$plist" ] || continue
+    append_heartbeat_plist "$plist"
+  done
+}
+
 service_labels_csv() {
   local labels="$workspace_label"
   local label
@@ -164,6 +198,9 @@ service_labels_csv() {
   fi
   labels="$labels, $watchdog_label"
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+    labels="$labels, $label"
+  done
+  for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
     labels="$labels, $label"
   done
   printf '%s\n' "$labels"
@@ -244,6 +281,9 @@ rollback_agents() {
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
     bootout_agent "$label"
   done
+  for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
+    bootout_agent "$label"
+  done
   bootout_agent "$watchdog_label"
   if [ "$portless_enabled" = "1" ]; then
     bootout_agent "$portless_label"
@@ -286,6 +326,9 @@ print_debug_state() {
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
     launchctl print "$launch_domain/$label" | sed -n '1,80p'
   done
+  for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
+    launchctl print "$launch_domain/$label" | sed -n '1,80p'
+  done
 }
 
 run_generate_daemons() {
@@ -305,6 +348,9 @@ run_plutil_lint() {
   for plist in "${cloudflared_generated_plists[@]+"${cloudflared_generated_plists[@]}"}"; do
     plists+=("$plist")
   done
+  for plist in "${heartbeat_generated_plists[@]+"${heartbeat_generated_plists[@]}"}"; do
+    plists+=("$plist")
+  done
   if [ "$debug" = "1" ]; then
     plutil -lint "${plists[@]}"
   else
@@ -321,6 +367,7 @@ if [ -f "$portless_generated_plist" ]; then
   portless_enabled=1
 fi
 collect_cloudflared_plists
+collect_heartbeat_plists
 
 bash -n "$script_dir/start-consuelo-daemon.sh"
 bash -n "$script_dir/start-portless-daemon.sh"
@@ -354,8 +401,14 @@ install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
 for index in "${!cloudflared_generated_plists[@]}"; do
   install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
 done
+for index in "${!heartbeat_generated_plists[@]}"; do
+  install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
+done
 
 for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+  bootout_agent "$label"
+done
+for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
   bootout_agent "$label"
 done
 bootout_agent "$watchdog_label"
@@ -370,6 +423,9 @@ if [ "$portless_enabled" = "1" ]; then
 fi
 for index in "${!cloudflared_labels[@]}"; do
   bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
+done
+for index in "${!heartbeat_labels[@]}"; do
+  bootstrap_agent "${heartbeat_labels[$index]}" "${heartbeat_agent_plists[$index]}"
 done
 bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 

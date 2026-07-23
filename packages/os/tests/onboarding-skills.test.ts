@@ -34,8 +34,6 @@ describe('onboarding skill choices', () => {
     expect(selected).toContain('senior-engineer');
     expect(selected).toContain('skill-creator');
     expect(selected).toContain('task');
-    expect(selected).not.toContain('consuelo-workspace-snapshot');
-    expect(selected).not.toContain('daily-revenue-brief');
     expect(selected).not.toContain('office');
   });
 
@@ -60,10 +58,7 @@ describe('onboarding skill choices', () => {
     );
 
     expect(coreNames).toEqual(getCoreSelectedSkillNames());
-    expect(optionalNames).toEqual([
-      'consuelo-workspace-snapshot',
-      'daily-revenue-brief',
-    ]);
+    expect(optionalNames).toEqual([]);
 
     for (const option of Object.values(grouped.options).flat()) {
       expect(option.label).toBeTruthy();

@@ -9,7 +9,6 @@
     "bootstrap": "bash ./scripts/bootstrap.sh",
     "doctor": "bun ./scripts/doctor.ts",
     "smoke:steering": "bun ./scripts/os.ts get-steering",
-    "smoke:daily-revenue-brief": "bun ./scripts/os.ts call '{\"name\":\"daily-revenue-brief\"}'",
     "generate-skills-registry": "bun ./scripts/generate-skills-registry.ts",
     "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
     "typecheck": "node ./scripts/check-syntax.js",
@@ -51,6 +50,7 @@
     "linear": "bun ./scripts/linear.js",
     "sentry": "bun ./scripts/sentry.js",
     "workspace": "bun ./scripts/workspace.ts",
+    "workspace:nodes": "bun ./scripts/workspace-nodes.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "tools:search": "bun ./scripts/tools-search.ts",
@@ -74,7 +74,6 @@
     "uninstall:system-daemons": "bash ./scripts/uninstall-system-daemons.sh",
     "uninstall:system-daemons:dry-run": "bash ./scripts/uninstall-system-daemons.sh --dry-run",
     "get-raw-steering": "bun ./scripts/os.ts get-raw-steering",
-    "smoke:raw-steering": "bun ./scripts/os.ts call '{\"name\":\"get_raw_steering\"}'",
     "task:hook": "bun ./scripts/task-hook.js",
     "operator": "bun ./operator/operator.ts",
     "doctor:watch": "bun ./scripts/doctor-watch.ts",
@@ -106,7 +105,8 @@
     "media:test:ingest": "vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts",
     "media:test:svg": "vitest run tests/media/31-svg-convert.test.ts",
     "media:svg": "python3 ./scripts/media-svg.py",
-    "trace:watch": "bun ./scripts/trace-watch.ts"
+    "trace:watch": "bun ./scripts/trace-watch.ts",
+    "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

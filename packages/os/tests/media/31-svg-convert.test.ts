@@ -11,7 +11,7 @@ import {
   expectSchemaAccepts,
   hasCommand,
   importMediaModule,
-  readManifestArray,
+  readGeneratedManifest,
   removeTempDir,
   runMediaCli,
 } from './helpers';
@@ -38,7 +38,7 @@ function writeFixturePng(dir: string): string {
 
 describe('media.svg.convert', () => {
   it('declares a visible media SVG conversion tool', () => {
-    const tools = readManifestArray('tooling/media-tool-manifest.json');
+    const tools = readGeneratedManifest('manifests/generated/tool.manifest.json').tools.map((entry) => entry.definition);
     const tool = tools.find((entry) => entry.name === 'media.svg.convert');
 
     expect(tool).toBeDefined();

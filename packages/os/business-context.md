@@ -8,23 +8,17 @@ The customer-facing idea:
 
 The technical idea:
 
-> Consuelo OS packages steering, a skill manifest, permissions, Bun runtime, GraphQL/API access, sandbox execution, files/artifacts, and docs into one agent-operable runtime.
+> Consuelo OS packages steering, typed tools, permissions, Bun runtime, app/API access, sandbox execution, files/artifacts, and documentation into one agent-operable runtime.
 
 ## Current scaffold boundary
 
-This package is the first scaffold. It proves the runtime spine and gives future work a place to add real business skills.
-
-The scaffold intentionally includes one skill:
-
-- `daily-revenue-brief`
-
-The skill may use the internal Consuelo GraphQL API as a proof surface when configured. It must tolerate missing fields, incomplete data model support, and absent credentials.
+The package now separates instruction skills from callable tools. Skills live under `skills/`; canonical TypeScript tool packages live under `tools/<domain>/`; generated manifests publish the customer-visible catalog.
 
 ## Future business domains
 
-Future skills can cover:
+Future capabilities can cover:
 
-- daily revenue brief
+- daily revenue summaries
 - lead prioritization
 - post-call analysis
 - sales coaching
@@ -34,5 +28,4 @@ Future skills can cover:
 - ad review
 - customer health summaries
 
-Each future capability should enter through the skill manifest, not through additional OS portal entrypoints.
-
+Each new callable capability should enter through a canonical tool package, with a skill only when reusable instructions are also needed.

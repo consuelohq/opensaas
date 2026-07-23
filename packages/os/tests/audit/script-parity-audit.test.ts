@@ -8,7 +8,7 @@ const packageRoot = join(import.meta.dirname, '..', '..');
 const repoRoot = join(packageRoot, '..', '..');
 const workspaceScriptsRoot = join(repoRoot, 'packages', 'workspace', 'scripts');
 const osScriptsRoot = join(packageRoot, 'scripts');
-const classificationPath = join(packageRoot, 'tooling', 'script-parity-classifications.json');
+const classificationPath = join(packageRoot, 'tests', 'audit', 'fixtures', 'script-parity-classifications.json');
 
 const allowedScriptStatuses = [
   'same',
@@ -65,7 +65,7 @@ type ScriptInventory = {
 };
 
 const highRiskScripts = [
-  'scripts/office.ts',
+  'scripts/artifacts.ts',
   'scripts/memory.js',
   'scripts/browser.js',
   'scripts/explore.js',

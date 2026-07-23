@@ -40,6 +40,14 @@ type WorkflowBundlesFile = {
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const overlayFileName = 'manifest.overlay.json';
 
+export function generatedToolManifestPath(): string {
+  return path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json');
+}
+
+export function generatedWorkflowBundlesPath(): string {
+  return path.join(packageRoot, 'workflows', 'generated', 'workflow-bundles.json');
+}
+
 function expandHome(value: string): string {
   if (value === '~') return os.homedir();
   if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
@@ -94,7 +102,7 @@ function writeJsonAtomic(filePath: string, value: unknown): void {
 }
 
 function readPackageToolManifest(): CanonicalToolManifest {
-  const manifestPath = path.join(packageRoot, 'manifests', 'tool.manifest.json');
+  const manifestPath = generatedToolManifestPath();
   const parsed = readJsonFile<CanonicalToolManifest>(manifestPath);
   if (!parsed || !Array.isArray(parsed.tools)) {
     throw new Error(`${manifestPath}: expected generated OS tool manifest with tools array`);
@@ -103,11 +111,23 @@ function readPackageToolManifest(): CanonicalToolManifest {
 }
 
 function readWorkflowIds(): string[] {
-  const bundlesPath = path.join(packageRoot, 'manifests', 'workflow-bundles.json');
+  const bundlesPath = generatedWorkflowBundlesPath();
   const bundles = readJsonFile<WorkflowBundlesFile>(bundlesPath);
   return (bundles?.workflows ?? [])
     .map((workflow) => workflow.id)
     .filter((id): id is string => typeof id === 'string');
+}
+
+function readBundledSkillIds(): Set<string> {
+  const skillsRoot = path.join(packageRoot, 'skills');
+  if (!fs.existsSync(skillsRoot)) return new Set();
+
+  return new Set(
+    fs.readdirSync(skillsRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => readJsonFile<{ name?: unknown }>(path.join(skillsRoot, entry.name, 'skill.json'))?.name)
+      .filter((name): name is string => typeof name === 'string' && name.length > 0),
+  );
 }
 
 export function readManifestOverlay(home?: string): ManifestOverlay {
@@ -139,8 +159,8 @@ export function validateManifestOverlayPatch(patch: ManifestOverlayPatch): Manif
   }
 
   if (patch.kind === 'skill') {
-    const exists = manifest.tools.some((entry) => entry.kind === 'os-skill' && entry.name === name);
-    return exists ? null : { code: 'UNKNOWN_SKILL', message: `Skill is not present in the generated manifest: ${name}` };
+    const exists = readBundledSkillIds().has(name);
+    return exists ? null : { code: 'UNKNOWN_SKILL', message: `Skill is not present in the bundled skill catalog: ${name}` };
   }
 
   return workflowIds.has(name)

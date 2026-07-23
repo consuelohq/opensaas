@@ -8,6 +8,7 @@ import { registerHealthRoutes } from './routes/health';
 import { registerMcpOAuthRoutes } from './routes/mcp-oauth';
 import { registerMcpProxyRoutes } from './routes/mcp-proxy';
 import { registerWorkspaceAgentRoutes } from './routes/workspace-agents';
+import { registerWorkspaceNodeRoutes } from './routes/workspace-nodes';
 import type {
   DefaultSiteSnapshot,
   DeviceAuthorityRuntime,
@@ -47,6 +48,7 @@ export function createOsDeviceAuthorityApp(
   registerGoogleOAuthRoutes(app, runtime);
   registerDeviceRoutes(app, runtime);
   registerWorkspaceAgentRoutes(app, runtime);
+  registerWorkspaceNodeRoutes(app, runtime);
 
   app.notFound(() => new Response('Not found\n', { status: 404 }));
   app.onError(() => json({ error: 'server_error' }, { status: 500 }));

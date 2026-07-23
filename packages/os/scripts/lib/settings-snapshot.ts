@@ -4,6 +4,7 @@ import path from 'node:path';
 import { getCapabilityHealth } from './capabilities';
 import { detectAgents, loadOsConfig, type AgentConnectionStatus } from './install-state';
 import {
+  generatedWorkflowBundlesPath,
   isManifestItemEnabled,
   manifestOverlayPath,
   readManifestOverlay,
@@ -54,6 +55,7 @@ export type SettingsManifestItem = {
   category: string;
   enabled: boolean;
   core: boolean;
+  configurable: boolean;
 };
 
 export type SettingsOverlaySummary = {
@@ -106,6 +108,13 @@ type WorkflowBundlesFile = {
     aliases?: string[];
     roles?: string[];
     tools?: unknown[];
+  }>;
+};
+
+type InstalledSkillsRegistry = {
+  skills?: Array<{
+    name?: string;
+    permission?: string;
   }>;
 };
 
@@ -170,7 +179,7 @@ function buildCloudConnectors(home: string, mcpUrl: string | null): SettingsClou
 }
 
 function readRunBooks(overlay: ReturnType<typeof readManifestOverlay>): SettingsRunBook[] {
-  const bundlesPath = path.join(getPackageRoot(), 'manifests', 'workflow-bundles.json');
+  const bundlesPath = generatedWorkflowBundlesPath();
   const bundles = readJsonFile<WorkflowBundlesFile>(bundlesPath);
   return (bundles?.workflows ?? [])
     .filter((workflow): workflow is { id: string; aliases?: string[]; roles?: string[]; tools?: unknown[] } =>
@@ -187,7 +196,46 @@ function readRunBooks(overlay: ReturnType<typeof readManifestOverlay>): Settings
     }));
 }
 
-function buildManifestItems(home: string, overlay: ReturnType<typeof readManifestOverlay>): {
+function readInstalledSkills(
+  home: string,
+  selectedSkills: readonly string[],
+): Array<{ name: string; permission: string; configurable: boolean }> {
+  const bundledByName = new Map(
+    listBundledSkills().map((skill) => [skill.name, skill]),
+  );
+  const selectedNames = new Set(selectedSkills);
+  const registry = readJsonFile<InstalledSkillsRegistry>(
+    path.join(home, 'skills', 'skills.json'),
+  );
+  const installed = registry?.skills ?? [];
+
+  if (installed.length === 0) {
+    return selectedSkills.flatMap((name) => {
+      const bundled = bundledByName.get(name);
+      return bundled ? [{ name, permission: bundled.permission, configurable: true }] : [];
+    });
+  }
+
+  return installed.flatMap((skill) => {
+    if (typeof skill.name !== 'string' || skill.name.length === 0) return [];
+    const bundled = bundledByName.get(skill.name);
+    if (bundled && !selectedNames.has(skill.name)) return [];
+    const permission = typeof skill.permission === 'string'
+      ? skill.permission
+      : bundled?.permission ?? '';
+    return [{
+      name: skill.name,
+      permission,
+      configurable: Boolean(bundled),
+    }];
+  });
+}
+
+function buildManifestItems(
+  home: string,
+  overlay: ReturnType<typeof readManifestOverlay>,
+  selectedSkills: readonly string[],
+): {
   tools: SettingsManifestItem[];
   skills: SettingsManifestItem[];
 } {
@@ -201,23 +249,24 @@ function buildManifestItems(home: string, overlay: ReturnType<typeof readManifes
     const entryRecord = entry as typeof entry & { category?: string; core?: boolean };
     const definition = entry.definition as { category?: string };
     const category = entryRecord.category ?? definition.category ?? '';
-    if (entry.kind === 'os-skill') {
-      skills.push({
-        name: entry.name,
-        kind: 'skill',
-        category,
-        enabled: isManifestItemEnabled(overlay, 'skill', entry.name),
-        core: entryRecord.core === true || coreNames.has(entry.name),
-      });
-      continue;
-    }
-
     tools.push({
       name: entry.name,
       kind: 'tool',
       category,
       enabled: isManifestItemEnabled(overlay, 'tool', entry.name),
       core: entryRecord.core === true || coreNames.has(entry.name),
+      configurable: true,
+    });
+  }
+
+  for (const skill of readInstalledSkills(home, selectedSkills)) {
+    skills.push({
+      name: skill.name,
+      kind: 'skill',
+      category: skill.permission,
+      enabled: isManifestItemEnabled(overlay, 'skill', skill.name),
+      core: false,
+      configurable: skill.configurable,
     });
   }
 
@@ -234,7 +283,8 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
   const fullManifest = readEffectiveFullManifest(home);
   const coreManifest = readEffectiveCoreManifest(home);
   const bundledSkills = listBundledSkills();
-  const manifestItems = buildManifestItems(home, overlay);
+  const selectedSkills = config?.selectedSkills ?? [];
+  const manifestItems = buildManifestItems(home, overlay, selectedSkills);
 
   return {
     version: 1,
@@ -260,9 +310,9 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
     manifest: {
       totalTools: fullManifest.tools.filter((entry) => entry.kind === 'facade-tool').length,
       coreTools: coreManifest.tools.length,
-      skillEntries: fullManifest.tools.filter((entry) => entry.kind === 'os-skill').length,
+      skillEntries: bundledSkills.length,
       bundledSkills: bundledSkills.length,
-      selectedSkills: config?.selectedSkills ?? [],
+      selectedSkills,
     },
     overlay: {
       path: manifestOverlayPath(home),

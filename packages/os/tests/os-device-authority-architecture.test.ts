@@ -318,6 +318,8 @@ describe('OS device authority architecture', () => {
       'mos:mcp-state',
       'aw:account',
       'wn:account:node',
+      'wni:node',
+      'wnl:account',
     ]);
   });
 

@@ -208,8 +208,15 @@ const coverage = {
   environmentFailureStopRule:
     /If .*environment.*(?:broken|fails|unavailable|mismatch).*stop/is.test(corpus) &&
     /Do not bypass.*environment|no environment fallback/is.test(corpus),
-  chatCloseoutContract:
-    /chat.*only.*`done`.*PR (?:link|URL)|respond.*only.*`done`.*PR (?:link|URL)/is.test(corpus),
+  workerSummaryCloseoutContract:
+    /PR URL and assigned stream.*what changed.*validation\/review results.*advances the master plan/is.test(corpus) &&
+    /Implementation workers must not reply with only `done`/i.test(corpus),
+  grokDoneOnlyException:
+    /Only a standalone Grok review task may use a `done`-only closeout/i.test(corpus),
+  flattenedProductRootContract:
+    /`~\/\.consuelo\/` is the product root/.test(master) &&
+    /runtime\/releases\/<bundle-id>/.test(master) &&
+    /Never materialize a new install at the legacy `~\/\.consuelo\/os\/` path/.test(corpus),
   fullReviewFindingContract:
     /agent_fix_prompt/.test(corpus) &&
     /inline_comment/.test(corpus) &&

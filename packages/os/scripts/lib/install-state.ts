@@ -64,6 +64,10 @@ export type WorkspaceBootstrap = {
   nodeName?: string;
   nodeRole?: 'home' | 'member';
   nodeStatus?: 'created' | 'reconnected';
+  nodePublicKeyJwk?: string;
+  nodeSigningKeyJwk?: string;
+  nodeCapabilities?: string[];
+  authorityOrigin?: string;
   connectorBootstrapToken?: string;
   cloudflareTunnelToken?: string;
 };
@@ -155,8 +159,8 @@ const REQUIRED_DIRS = [
   'tools',
   'scripts',
   'src',
-  'tooling',
   'manifests',
+  'workflows',
   'hooks',
   'artifacts',
   'pages',
@@ -207,8 +211,8 @@ const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
 const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
 const BUNDLED_STREAMS_ROOT = path.join(PACKAGE_ROOT, 'streams');
 const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
-const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
-const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
+const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'generated', 'tool.manifest.json');
+const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'manifests', 'workflows', 'hooks'] as const;
 const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
@@ -603,6 +607,7 @@ function renderCloudflaredLaunchdPlist(input: {
   programArguments: string[];
   keepAlive: boolean;
   runAtLoad: boolean;
+  startIntervalSeconds?: number;
   standardOutPath: string;
   standardErrorPath: string;
 }): string {
@@ -625,6 +630,12 @@ function renderCloudflaredLaunchdPlist(input: {
     `  <${input.keepAlive ? 'true' : 'false'}/>`,
     '  <key>RunAtLoad</key>',
     `  <${input.runAtLoad ? 'true' : 'false'}/>`,
+    ...(input.startIntervalSeconds
+      ? [
+          '  <key>StartInterval</key>',
+          `  <integer>${input.startIntervalSeconds}</integer>`,
+        ]
+      : []),
     '  <key>StandardOutPath</key>',
     `  <string>${escapeXml(input.standardOutPath)}</string>`,
     '  <key>StandardErrorPath</key>',
@@ -819,6 +830,92 @@ function materializeWorkspaceConnectorBootstrap(input: {
       { mode: 0o755 },
     );
     fs.chmodSync(smokePath, 0o755);
+  }
+
+  if (
+    input.workspaceBootstrap.nodeId &&
+    input.workspaceBootstrap.nodePublicKeyJwk &&
+    input.workspaceBootstrap.nodeSigningKeyJwk
+  ) {
+    const heartbeatConfigPath = path.join(
+      input.nodeHome,
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    const safeNodeId = input.workspaceBootstrap.nodeId.replace(
+      /[^a-zA-Z0-9.-]+/g,
+      '-',
+    );
+    const heartbeatLabel = `com.consuelo.os.node-heartbeat.${safeNodeId}`;
+    const heartbeatPlistPath = path.join(
+      input.nodeHome,
+      'security',
+      'generated',
+      `${heartbeatLabel}.plist`,
+    );
+    const heartbeatScriptPath = path.join(
+      input.runtimeHome,
+      'scripts',
+      'workspace-node-heartbeat.ts',
+    );
+    const heartbeatLogPath = path.join(
+      input.nodeHome,
+      'logs',
+      'workspace-node-heartbeat.log',
+    );
+    writeJsonFile(
+      heartbeatConfigPath,
+      {
+        authorityOrigin:
+          input.workspaceBootstrap.authorityOrigin ??
+          'https://os.consuelohq.com',
+        workspaceId: input.workspaceBootstrap.workspaceId,
+        nodeId: input.workspaceBootstrap.nodeId,
+        connectorStatus: 'connected',
+        capabilities: [
+          ...(input.workspaceBootstrap.nodeCapabilities ?? ['mcp', 'tools']),
+        ].sort(),
+        publicKeyJwk: input.workspaceBootstrap.nodePublicKeyJwk,
+        signingKeyJwk: input.workspaceBootstrap.nodeSigningKeyJwk,
+      },
+      input.dryRun,
+    );
+    if (!input.dryRun) {
+      fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
+      fs.writeFileSync(
+        heartbeatPlistPath,
+        renderCloudflaredLaunchdPlist({
+          label: heartbeatLabel,
+          programArguments: [
+            process.execPath,
+            heartbeatScriptPath,
+            '--config',
+            heartbeatConfigPath,
+          ],
+          keepAlive: false,
+          runAtLoad: true,
+          startIntervalSeconds: 30,
+          standardOutPath: heartbeatLogPath,
+          standardErrorPath: heartbeatLogPath,
+        }),
+        { mode: 0o600 },
+      );
+    }
+    actions.push(
+      {
+        type: 'create_file',
+        path: heartbeatConfigPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'workspace node heartbeat config configured',
+      },
+      {
+        type: 'create_file',
+        path: heartbeatPlistPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'workspace node heartbeat launchd service configured',
+      },
+    );
   }
 
   return actions;
@@ -1609,7 +1706,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
-        'manifests/workflow-bundles.json',
+        'workflows/generated/workflow-bundles.json',
       ],
     },
     {
@@ -1677,27 +1774,6 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         ? 'bundled skill metadata matches manifest'
         : `${skillIssues.length} bundled skill issue(s)`,
   });
-
-  try {
-    const { executeCall } = await import('../os');
-    const result = await executeCall({
-      name: 'daily-revenue-brief',
-      traceId: `trc_doctor_${Date.now().toString(36)}`,
-    });
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: result.ok && result.artifacts?.length ? 'connected' : 'unhealthy',
-      message: result.ok
-        ? 'skill created a local artifact'
-        : (result.error?.message ?? 'skill failed'),
-    });
-  } catch (error: unknown) {
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: 'unhealthy',
-      message: error instanceof Error ? error.message : 'skill failed',
-    });
-  }
 
   for (const agent of detectAgents(resolvedHome)) {
     checks.push({
