@@ -280,6 +280,7 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 - 2026-07-23 03:47:00 `verify`: passed — OK
 - 2026-07-23 03:48:09 `verify`: passed — OK
 - 2026-07-23 03:53:43 `verify`: passed — OK
+- 2026-07-23 04:42:09 `verify`: passed — OK
 
 ## workspace-owned: files read
 
@@ -340,3 +341,14 @@ Task metadata under `.task/os-web/multi-node-registry-presence-and-routing/` and
 - Grok dispositions: CR-001 valid/fixed (`trc_785ffad8f39c`), CR-002 false positive/proved (`trc_bedf3ff4d985`), CR-003 valid/fixed (`trc_aa96323fa35e`).
 - GitHub CI after the final commit: 47 checks, 0 failed, 4 still running after two bounded waits (`trc_3e212acccfc5`). All completed checks are green or intentionally skipped; no failed route requires recovery.
 - `--changed` publication could not pass its local-ref sync guard because API publication leaves the OS worktree ref unchanged. Recovery used the canonical task-push explicit-file path against the remote task head; no force push or native-git bypass was used (`trc_631b261051e9`).
+
+## Orchestrator review closeout
+
+- **Auth scope:** fixed. Workspace-node mutations now require `workspace:nodes:manage`; read-only list access remains `workspace:read`. OAuth discovery advertises the management scope.
+- **Revoked default:** fixed fail-closed behavior. Revoking the selected default preserves that explicit selection so untargeted MCP calls return `WORKSPACE_NODE_REVOKED` rather than silently switching computers.
+- **Legacy default migration:** fixed. A legacy connector is materialized as the home/default node before new member registration, preventing a second install from claiming default routing.
+- **Split Durable Object/D1 writes:** fixed with compensating D1 rollback when the Durable Object update fails for default selection, revocation, or heartbeat writes.
+- **Architecture contract:** updated to include the new `wni:` and `wnl:` Durable Object key prefixes.
+- Focused routing lane: 13/13 passed.
+- Broader OS authority, OAuth, node, and release lane: 93 passed, 28 opt-in skipped.
+- OS syntax/typecheck: passed.

@@ -57,6 +57,7 @@ async function readJsonObject(request: Request): Promise<Record<string, unknown>
 async function authenticateWorkspaceMember(
   request: Request,
   runtime: DeviceAuthorityRuntime,
+  requiredScope = 'workspace:read',
 ): Promise<
   | { ok: true; token: McpOAuthAccessToken; workspace: AccountWorkspace }
   | { ok: false; response: Response }
@@ -76,10 +77,16 @@ async function authenticateWorkspaceMember(
         response: errorResponse(401, 'UNAUTHORIZED', 'OAuth bearer token is invalid or expired.'),
       };
     }
-    if (!hasGrantedScope(token.scopes, 'workspace:read')) {
+    if (!hasGrantedScope(token.scopes, requiredScope)) {
       return {
         ok: false,
-        response: errorResponse(403, 'MISSING_SCOPE', 'Workspace read access is required.'),
+        response: errorResponse(
+          403,
+          'MISSING_SCOPE',
+          requiredScope === 'workspace:nodes:manage'
+            ? 'Workspace node management access is required.'
+            : 'Workspace read access is required.',
+        ),
       };
     }
     const workspace = await runtime.store.byAccountWorkspace(token.accountId);
@@ -100,26 +107,33 @@ async function authenticateWorkspaceMember(
   }
 }
 
-function activeWorkspaceNodes(nodes: WorkspaceNode[]): WorkspaceNode[] {
-  return nodes.filter((node) => (node.state ?? 'active') === 'active');
-}
-
 async function persistDefaultNode(input: {
   runtime: DeviceAuthorityRuntime;
   workspace: AccountWorkspace;
   nodeId: string;
 }): Promise<void> {
+  const previousDefaultNodeId = workspaceDefaultNodeId(input.workspace);
   try {
-    await input.runtime.store.putAccountWorkspace({
-      ...input.workspace,
-      defaultNodeId: input.nodeId,
-      updatedAt: input.runtime.now(),
-    });
     if (input.runtime.workspaceRouteRegistry) {
       await setDefaultWorkspaceNodeInD1(input.runtime.workspaceRouteRegistry, {
         hostname: input.workspace.workspaceHost,
         nodeId: input.nodeId,
       });
+    }
+    try {
+      await input.runtime.store.putAccountWorkspace({
+        ...input.workspace,
+        defaultNodeId: input.nodeId,
+        updatedAt: input.runtime.now(),
+      });
+    } catch (error: unknown) {
+      if (input.runtime.workspaceRouteRegistry && previousDefaultNodeId) {
+        await setDefaultWorkspaceNodeInD1(input.runtime.workspaceRouteRegistry, {
+          hostname: input.workspace.workspaceHost,
+          nodeId: previousDefaultNodeId,
+        });
+      }
+      throw error;
     }
   } catch (error: unknown) {
     throw new Error('workspace default node update failed', { cause: error });
@@ -165,7 +179,11 @@ async function handleRename(
   nodeId: string,
 ): Promise<Response> {
   try {
-    const auth = await authenticateWorkspaceMember(request, runtime);
+    const auth = await authenticateWorkspaceMember(
+      request,
+      runtime,
+      'workspace:nodes:manage',
+    );
     if (!auth.ok) return auth.response;
     const body = await readJsonObject(request);
     const displayName = typeof body?.displayName === 'string' ? body.displayName.trim() : '';
@@ -194,7 +212,11 @@ async function handleSelectDefault(
   runtime: DeviceAuthorityRuntime,
 ): Promise<Response> {
   try {
-    const auth = await authenticateWorkspaceMember(request, runtime);
+    const auth = await authenticateWorkspaceMember(
+      request,
+      runtime,
+      'workspace:nodes:manage',
+    );
     if (!auth.ok) return auth.response;
     const body = await readJsonObject(request);
     const nodeId = typeof body?.nodeId === 'string' ? body.nodeId.trim() : '';
@@ -221,7 +243,11 @@ async function handleRevoke(
   nodeId: string,
 ): Promise<Response> {
   try {
-    const auth = await authenticateWorkspaceMember(request, runtime);
+    const auth = await authenticateWorkspaceMember(
+      request,
+      runtime,
+      'workspace:nodes:manage',
+    );
     if (!auth.ok) return auth.response;
     const node = await runtime.store.byWorkspaceNode(auth.token.accountId, nodeId);
     if (!node || node.workspaceHost !== auth.workspace.workspaceHost) {
@@ -235,7 +261,6 @@ async function handleRevoke(
       revokedAt: nowMs,
       updatedAt: nowMs,
     };
-    await runtime.store.putWorkspaceNode(revoked);
     if (runtime.workspaceRouteRegistry) {
       await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
         hostname: auth.workspace.workspaceHost,
@@ -244,23 +269,21 @@ async function handleRevoke(
         connectorStatus: 'disconnected',
       });
     }
-
-    const currentDefault = workspaceDefaultNodeId(auth.workspace);
-    if (currentDefault === nodeId) {
-      const nodes = activeWorkspaceNodes(
-        await runtime.store.listWorkspaceNodes(auth.token.accountId),
-      ).filter((candidate) => candidate.nodeId !== nodeId);
-      const fallback =
-        nodes.find((candidate) => candidate.nodeId === auth.workspace.homeNodeId) ??
-        nodes[0];
-      if (fallback) {
-        await persistDefaultNode({
-          runtime,
-          workspace: auth.workspace,
-          nodeId: fallback.nodeId,
+    try {
+      await runtime.store.putWorkspaceNode(revoked);
+    } catch (error: unknown) {
+      if (runtime.workspaceRouteRegistry) {
+        await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
+          hostname: auth.workspace.workspaceHost,
+          nodeId,
+          state: node.state ?? 'active',
+          connectorStatus: node.connectorStatus,
+          lastSeenAt: node.lastSeenAt,
         });
       }
+      throw error;
     }
+
     return json({ node: safeWorkspaceNode(revoked, nowMs) }, { headers: jsonHeaders });
   } catch {
     return serviceUnavailableResponse();
@@ -358,7 +381,6 @@ async function handleHeartbeat(
     lastSeenAt: nowMs,
     updatedAt: nowMs,
   };
-  await runtime.store.putWorkspaceNode(updated);
   if (runtime.workspaceRouteRegistry) {
     await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
       hostname: node.workspaceHost,
@@ -368,6 +390,21 @@ async function handleHeartbeat(
       lastSeenAt: nowMs,
       heartbeatTtlMs: WORKSPACE_NODE_HEARTBEAT_TTL_MS,
     });
+  }
+  try {
+    await runtime.store.putWorkspaceNode(updated);
+  } catch (error: unknown) {
+    if (runtime.workspaceRouteRegistry) {
+      await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
+        hostname: node.workspaceHost,
+        nodeId,
+        connectorStatus: node.connectorStatus,
+        state: node.state ?? 'active',
+        lastSeenAt: node.lastSeenAt,
+        heartbeatTtlMs: WORKSPACE_NODE_HEARTBEAT_TTL_MS,
+      });
+    }
+    throw error;
   }
   return json(safeWorkspaceNode(updated, nowMs), { headers: jsonHeaders });
 }

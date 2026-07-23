@@ -633,15 +633,41 @@ export const upsertWorkspaceNodeTargetInD1 = async (
   try {
     const existing = await readStoredRecord(db, input.record.hostname);
     const base = existing ?? createStoredRecord(input.record);
+    const legacyConnectorRoute = existing?.routes.find(
+      (route) => route.target.kind === 'os-connector',
+    );
+    const legacyTarget =
+      existing &&
+      !(base.nodeTargets?.length) &&
+      legacyConnectorRoute?.target.kind === 'os-connector'
+        ? {
+            nodeId:
+              base.defaultNodeId ??
+              (legacyConnectorRoute.target.connectorId === input.target.connectorId
+                ? input.target.nodeId
+                : base.workspaceSlug),
+            connectorId: legacyConnectorRoute.target.connectorId,
+            connectorStatus: legacyConnectorRoute.target.connectorStatus,
+            tunnelOriginUrl: legacyConnectorRoute.target.tunnelOriginUrl,
+            state: 'active' as const,
+            lastSeenAt: Date.now(),
+            heartbeatTtlMs: input.target.heartbeatTtlMs,
+          }
+        : undefined;
     const targets = [
+      ...(legacyTarget ? [legacyTarget] : []),
       ...(base.nodeTargets ?? []).filter(
         (candidate) => candidate.nodeId !== input.target.nodeId,
       ),
       { ...input.target },
-    ];
+    ].filter(
+      (candidate, index, candidates) =>
+        candidates.findIndex((item) => item.nodeId === candidate.nodeId) === index,
+    );
     const defaultNodeId =
       (input.makeDefault ? input.target.nodeId : undefined) ??
       base.defaultNodeId ??
+      legacyTarget?.nodeId ??
       input.target.nodeId;
     const defaultTarget = targets.find(
       (candidate) => candidate.nodeId === defaultNodeId,

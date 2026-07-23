@@ -62,12 +62,18 @@ const node = (input: {
 async function authorizeWorkspace(store: ReturnType<typeof createMemoryDeviceGrantStore>, token: string, input?: {
   account?: string;
   host?: string;
+  scopes?: string[];
 }): Promise<void> {
+  const scopes = input?.scopes ?? [
+    'workspace:read',
+    'workspace:nodes:manage',
+    'route:/mcp:read',
+  ];
   await store.putMcpOAuthAccessToken({
     tokenHash: await hash(token),
     clientId: 'workspace-node-settings-test',
-    scope: 'workspace:read route:/mcp:read',
-    scopes: ['workspace:read', 'route:/mcp:read'],
+    scope: scopes.join(' '),
+    scopes,
     resource: `${origin}/mcp`,
     workspaceHost: input?.host ?? workspaceHost,
     accountId: input?.account ?? accountId,
@@ -265,24 +271,215 @@ describe('workspace node management and presence', () => {
     nowMs += 1;
     const finalList = await handler(new Request(`${origin}/workspace/nodes`, { headers: auth }));
     await expect(finalList.json()).resolves.toMatchObject({
-      defaultNodeId: 'node-home',
+      defaultNodeId: 'node-member',
       nodeCount: 2,
     });
 
-    const revokedCall = await handler(new Request(`${origin}/mcp`, {
+    const untargetedRevokedCall = await handler(new Request(`${origin}/mcp`, {
       method: 'POST',
       headers: {
         ...auth,
         'content-type': 'application/json',
-        'x-consuelo-node-id': 'node-member',
       },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
     }));
-    expect(revokedCall.status).toBe(404);
-    await expect(revokedCall.json()).resolves.toMatchObject({
+    expect(untargetedRevokedCall.status).toBe(404);
+    await expect(untargetedRevokedCall.json()).resolves.toMatchObject({
       error: { code: 'WORKSPACE_NODE_REVOKED' },
     });
     expect(upstreamCalls).toBe(0);
+  });
+
+  it('should reject node mutations when an OAuth token has read-only workspace access', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'workspace-read-only-token', {
+      scopes: ['workspace:read', 'route:/mcp:read'],
+    });
+    const routes = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routes);
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routes,
+    });
+    const auth = { authorization: 'Bearer workspace-read-only-token' };
+
+    expect(
+      (await handler(new Request(origin + '/workspace/nodes', { headers: auth }))).status,
+    ).toBe(200);
+
+    const requests = [
+      new Request(origin + '/workspace/nodes/node-member', {
+        method: 'PATCH',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ displayName: 'Should Not Change' }),
+      }),
+      new Request(origin + '/workspace/nodes/default', {
+        method: 'POST',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ nodeId: 'node-member' }),
+      }),
+      new Request(origin + '/workspace/nodes/node-member/revoke', {
+        method: 'POST',
+        headers: auth,
+      }),
+    ];
+
+    for (const request of requests) {
+      const response = await handler(request);
+      expect(response.status).toBe(403);
+      await expect(response.json()).resolves.toMatchObject({
+        error: { code: 'MISSING_SCOPE' },
+      });
+    }
+  });
+
+  it('should restore D1 routing when Durable Object node mutations fail', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'workspace-compensation-token');
+    const routes = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routes);
+
+    let failWorkspaceWrite = true;
+    let failNodeWrite = false;
+    const store = {
+      ...backingStore,
+      putAccountWorkspace: async (
+        workspace: Parameters<typeof backingStore.putAccountWorkspace>[0],
+      ) => {
+        if (failWorkspaceWrite) throw new Error('injected workspace write failure');
+        return backingStore.putAccountWorkspace(workspace);
+      },
+      putWorkspaceNode: async (
+        workspaceNode: Parameters<typeof backingStore.putWorkspaceNode>[0],
+      ) => {
+        if (failNodeWrite && workspaceNode.state === 'revoked') {
+          throw new Error('injected node write failure');
+        }
+        return backingStore.putWorkspaceNode(workspaceNode);
+      },
+    };
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routes,
+    });
+    const authorization = 'Bearer workspace-compensation-token';
+
+    const select = await handler(new Request(origin + '/workspace/nodes/default', {
+      method: 'POST',
+      headers: { authorization, 'content-type': 'application/json' },
+      body: JSON.stringify({ nodeId: 'node-member' }),
+    }));
+    expect(select.status).toBe(503);
+    await expect(resolveWorkspaceRouteFromD1(routes, {
+      host: workspaceHost,
+      path: '/mcp',
+      nowMs: baseNow,
+    })).resolves.toMatchObject({ allowed: true, nodeId: 'node-home' });
+
+    failWorkspaceWrite = false;
+    failNodeWrite = true;
+    const revoke = await handler(new Request(
+      origin + '/workspace/nodes/node-member/revoke',
+      { method: 'POST', headers: { authorization } },
+    ));
+    expect(revoke.status).toBe(503);
+    await expect(resolveWorkspaceRouteFromD1(routes, {
+      host: workspaceHost,
+      path: '/mcp',
+      nodeId: 'node-member',
+      nowMs: baseNow,
+    })).resolves.toMatchObject({ allowed: true, nodeId: 'node-member' });
+    await expect(
+      backingStore.byWorkspaceNode(accountId, 'node-member'),
+    ).resolves.toMatchObject({ state: 'active' });
+  });
+
+  it('should preserve a legacy connector as the home default when a member node is added', async () => {
+    const routes = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routes);
+    await upsertWorkspaceHostnameInD1(routes, {
+      workspaceId,
+      workspaceSlug,
+      hostname: workspaceHost,
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [{
+        surface: 'os',
+        pathPrefix: '/mcp',
+        auth: 'required',
+        status: 'active',
+        target: {
+          kind: 'os-connector',
+          connectorId: 'connector_legacy_home',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://legacy-home.connector.test',
+        },
+      }],
+    });
+    const registry = await import('../scripts/lib/workspace-cloudflare-d1-route-registry');
+    await registry.upsertWorkspaceNodeTargetInD1(routes, {
+      record: {
+        workspaceId,
+        workspaceSlug,
+        hostname: workspaceHost,
+        baseDomain: 'consuelohq.com',
+        provider: 'cloudflare',
+        owner: 'consuelo-os-cloud',
+        status: 'active',
+        routes: [{
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_node_member',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://member.connector.test',
+          },
+        }],
+      },
+      target: {
+        nodeId: 'node-member',
+        connectorId: 'connector_node_member',
+        connectorStatus: 'connected',
+        tunnelOriginUrl: 'https://member.connector.test',
+        state: 'active',
+        lastSeenAt: baseNow,
+        heartbeatTtlMs,
+      },
+    });
+
+    await expect(resolveWorkspaceRouteFromD1(routes, {
+      host: workspaceHost,
+      path: '/mcp',
+      nowMs: baseNow,
+    })).resolves.toMatchObject({
+      allowed: true,
+      nodeId: workspaceSlug,
+      target: {
+        connectorId: 'connector_legacy_home',
+        tunnelOriginUrl: 'https://legacy-home.connector.test',
+      },
+    });
+    await expect(resolveWorkspaceRouteFromD1(routes, {
+      host: workspaceHost,
+      path: '/mcp',
+      nodeId: 'node-member',
+      nowMs: baseNow,
+    })).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-member',
+      target: { connectorId: 'connector_node_member' },
+    });
   });
 
   it('accepts signed heartbeats, derives TTL presence, rejects replay, and blocks revoked nodes', async () => {
