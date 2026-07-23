@@ -203,6 +203,13 @@ describe('configuration site', () => {
       'local-research',
       'task',
     ]);
+    expect(snapshot.skills.find((skill) => skill.name === 'task')).toMatchObject({
+      configurable: true,
+    });
+    expect(snapshot.skills.find((skill) => skill.name === 'local-research')).toMatchObject({
+      configurable: false,
+      enabled: true,
+    });
     expect(snapshot.skills.find((skill) => skill.name === 'sites')).toBeUndefined();
   });
 });

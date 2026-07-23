@@ -55,6 +55,7 @@ export type SettingsManifestItem = {
   category: string;
   enabled: boolean;
   core: boolean;
+  configurable: boolean;
 };
 
 export type SettingsOverlaySummary = {
@@ -198,7 +199,7 @@ function readRunBooks(overlay: ReturnType<typeof readManifestOverlay>): Settings
 function readInstalledSkills(
   home: string,
   selectedSkills: readonly string[],
-): Array<{ name: string; permission: string }> {
+): Array<{ name: string; permission: string; configurable: boolean }> {
   const bundledByName = new Map(
     listBundledSkills().map((skill) => [skill.name, skill]),
   );
@@ -211,7 +212,7 @@ function readInstalledSkills(
   if (installed.length === 0) {
     return selectedSkills.flatMap((name) => {
       const bundled = bundledByName.get(name);
-      return bundled ? [{ name, permission: bundled.permission }] : [];
+      return bundled ? [{ name, permission: bundled.permission, configurable: true }] : [];
     });
   }
 
@@ -222,7 +223,11 @@ function readInstalledSkills(
     const permission = typeof skill.permission === 'string'
       ? skill.permission
       : bundled?.permission ?? '';
-    return [{ name: skill.name, permission }];
+    return [{
+      name: skill.name,
+      permission,
+      configurable: Boolean(bundled),
+    }];
   });
 }
 
@@ -250,6 +255,7 @@ function buildManifestItems(
       category,
       enabled: isManifestItemEnabled(overlay, 'tool', entry.name),
       core: entryRecord.core === true || coreNames.has(entry.name),
+      configurable: true,
     });
   }
 
@@ -260,6 +266,7 @@ function buildManifestItems(
       category: skill.permission,
       enabled: isManifestItemEnabled(overlay, 'skill', skill.name),
       core: false,
+      configurable: skill.configurable,
     });
   }
 
