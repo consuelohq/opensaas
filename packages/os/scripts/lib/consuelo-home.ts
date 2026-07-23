@@ -51,6 +51,17 @@ const globalYamlConfigSchema = z.object({
   runtime: z.object({
     current: z.string().min(1).optional(),
   }).strict().default({}),
+  updates: z.object({
+    channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).default('stable'),
+    notifications: z.discriminatedUnion('mode', [
+      z.object({ mode: z.literal('on') }).strict(),
+      z.object({ mode: z.literal('off') }).strict(),
+      z.object({
+        mode: z.literal('snoozed'),
+        snoozedUntil: z.string().datetime(),
+      }).strict(),
+    ]).default({ mode: 'on' }),
+  }).strict().default({ channel: 'stable', notifications: { mode: 'on' } }),
 }).strict();
 
 const nodeYamlConfigSchema = z.object({
@@ -224,6 +235,7 @@ export function createDefaultGlobalYamlConfig(input: {
     activeWorkspace: input.workspaceId,
     activeNode: input.nodeId,
     runtime: { current: 'runtime/current' },
+    updates: { channel: 'stable', notifications: { mode: 'on' } },
   };
 }
 

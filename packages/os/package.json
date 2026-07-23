@@ -8,6 +8,7 @@
     "install:local": "bun ./scripts/install.ts",
     "bootstrap": "bash ./scripts/bootstrap.sh",
     "doctor": "bun ./scripts/doctor.ts",
+    "lifecycle": "bun ./scripts/lifecycle.ts",
     "smoke:steering": "bun ./scripts/os.ts get-steering",
     "generate-skills-registry": "bun ./scripts/generate-skills-registry.ts",
     "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
