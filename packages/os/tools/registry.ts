@@ -18,6 +18,7 @@ import { toolPackage as package16 } from './subagent/manifest';
 import { toolPackage as package17 } from './task-lifecycle/manifest';
 import { toolPackage as package18 } from './tool-discovery/manifest';
 import { toolPackage as package19 } from './utilities/manifest';
+import { toolPackage as package20 } from './deployment-provider/manifest';
 
 import type { ToolPackage } from './package';
 
@@ -42,4 +43,5 @@ export const toolPackages = [
   package17,
   package18,
   package19,
+  package20,
 ] satisfies readonly ToolPackage[];

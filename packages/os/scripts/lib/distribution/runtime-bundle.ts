@@ -185,8 +185,18 @@ const SOURCE_ONLY_FILES = new Set([
 ]);
 
 const CUSTOMER_PROVIDER_FILES = new Set([
+  'tools/deployment-provider/errors.ts',
+  'tools/deployment-provider/facade.ts',
+  'tools/deployment-provider/process.ts',
+  'tools/deployment-provider/redaction.ts',
+  'tools/deployment-provider/service.ts',
+  'tools/deployment-provider/types.ts',
+  'tools/deployment-provider/vercel.ts',
   'tools/deployment-provider/cloudflare-runner.ts',
   'tools/deployment-provider/cloudflare.ts',
+  'tools/railway/adapter.ts',
+  'tools/railway/cli.ts',
+  'tools/railway/service.ts',
 ]);
 
 const CUSTOMER_PROVIDER_PREFIXES = [
