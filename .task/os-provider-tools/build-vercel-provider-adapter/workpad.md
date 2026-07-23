@@ -78,7 +78,7 @@ task session: `tsk_e398fbe000ba`
 
 ## current status
 
-- STREAM RECONCILIATION VALIDATED: Worker 09 advanced `stream/os-provider-tools` through Railway PR #1591, producing substantive overlap in the shared provider core. The local validation tree now combines Railway service/workspace/error/sensitive-output contracts with Vercel project/domain/promote/input-aware-policy/partial-result contracts. Railway, Vercel, provider-core, lifecycle, syntax, and compiler checks pass; a two-parent task-branch merge commit and fresh current-head reviews remain.
+- CURRENT-HEAD REVIEWS PENDING: Worker 09's Railway stream changes and Worker 10's Vercel/task-session changes are reconciled in two-parent merge commit `2abab0cc998e69e8e7c2206d4ecdc8b371ed2cb4`. Combined review and full verify are clean; GitHub CI, CodeRabbit, and Grok must complete on the reconciled head before stream merge.
 
 ## files changed
 
@@ -218,6 +218,8 @@ task session: `tsk_e398fbe000ba`
 - Worker 09's disjoint Railway files were copied from the assigned stream into the validation tree; shared core files were manually combined. Combined Railway/Vercel/provider-core tests passed 74/74, lifecycle tests 21/21, syntax passed (`trc_237b9c60fa3f`), and combined provider TypeScript compilation passed (`trc_015b0ab83881`).
 - Railway's provider-neutral redeploy input makes `deploymentId` optional, while Vercel requires it. A focused red test reproduced a service-only Vercel redeploy reaching the process layer (`trc_92cbe4aab845`); Vercel now throws typed `ProviderInputError` before argv construction, and focused green passed 18/18 (`trc_7ad38c94b6fc`).
 - Temporary merge and prior review directories were removed after their evidence was posted (`trc_b18d75458158`, `trc_2791ab3b30c7`).
+- Final combined strict review covered 25 source/test files across `consuelo-os` and `openworkspace` with zero findings (`trc_d837c7e09ee1`). Full verify covered the exact stream-plus-task tree and passed publish-valid with zero review/database findings (`trc_dfbb85edbce5`).
+- The reconciled remote task commit was assembled from the current stream tree and the 20 scoped PR files, with parents `2e7c78a3` and `42cb80d0`; GitHub task head is now `2abab0cc998e69e8e7c2206d4ecdc8b371ed2cb4` (`trc_cc37112742d5`). GitHub reports no merge conflict; current-head checks are running (`trc_7e86439e16e9`).
 
 ## Grok finding dispositions
 
@@ -237,10 +239,10 @@ task session: `tsk_e398fbe000ba`
 - [x] focused red recorded
 - [x] focused green recorded
 - [x] broader validation recorded
-- [ ] task pushed
+- [x] task pushed
 - [ ] CodeRabbit requested and dispositioned
 - [ ] Grok review posted and dispositioned
-- [ ] temporary review directory removed
+- [x] temporary review directory removed
 - [ ] task PR merged to stream
 
 - 2026-07-23 15:41:10 write: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
@@ -282,3 +284,5 @@ task session: `tsk_e398fbe000ba`
 - `packages/workspace/tests/task-selector-pr-ref.test.js`
 
 - 2026-07-23 18:05:07 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
+
+- 2026-07-23 18:06:34 apply-patch: `.task/os-provider-tools/build-vercel-provider-adapter/workpad.md`
