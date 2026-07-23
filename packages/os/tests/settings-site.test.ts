@@ -32,6 +32,8 @@ describe('configuration site', () => {
     const snapshot = buildSettingsSnapshot(home);
     const html = renderSettingsSite();
 
+    expect(snapshot.skills).toEqual([]);
+    expect(snapshot.runBooks.length).toBeGreaterThan(0);
     expect(html).toContain('<title>Configuration - Consuelo OS</title>');
     expect(html).toContain('aria-label="Configuration navigation"');
     expect(html).toContain('href="/configuration" class="is-active"');
@@ -162,5 +164,52 @@ describe('configuration site', () => {
     });
     expect(html).not.toContain('https://test.consuelohq.com/mcp');
     expect(html).toContain('Cloud agents');
+  });
+
+  it('reports selected bundled skills and installed local skills only', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-skills-'));
+    fs.mkdirSync(path.join(home, 'skills'), { recursive: true });
+    fs.writeFileSync(
+      path.join(home, 'config.json'),
+      JSON.stringify({
+        version: 1,
+        mode: 'local',
+        home,
+        port: 8787,
+        artifactStorage: 'local',
+        selectedSkills: ['task'],
+        agents: [],
+        createdAt: '2026-07-02T00:00:00.000Z',
+        updatedAt: '2026-07-02T00:00:00.000Z',
+      }),
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(home, 'skills', 'skills.json'),
+      JSON.stringify({
+        version: 1,
+        skills: [
+          { name: 'task', permission: 'operator' },
+          { name: 'sites', permission: 'operator' },
+          { name: 'local-research', permission: 'read' },
+        ],
+      }),
+      'utf8',
+    );
+
+    const snapshot = buildSettingsSnapshot(home);
+
+    expect(snapshot.skills.map((skill) => skill.name)).toEqual([
+      'local-research',
+      'task',
+    ]);
+    expect(snapshot.skills.find((skill) => skill.name === 'task')).toMatchObject({
+      configurable: true,
+    });
+    expect(snapshot.skills.find((skill) => skill.name === 'local-research')).toMatchObject({
+      configurable: false,
+      enabled: true,
+    });
+    expect(snapshot.skills.find((skill) => skill.name === 'sites')).toBeUndefined();
   });
 });
