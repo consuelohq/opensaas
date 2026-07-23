@@ -21,7 +21,8 @@ task-start trace: `trc_9a5344a7c2ff`
 - [x] Attach explicit approval/consequence metadata to mutating operations.
 - [x] Add shared deterministic fake CLI/provider fixtures; do not implement Railway, Vercel, or Cloudflare adapters.
 - [ ] Prove all required behavior with focused tests, then run broader OS validation, workspace review, and verify gates.
-- [ ] Request CodeRabbit and Grok 4.5 reviews, post all durable findings/dispositions to PR #1582, and merge only into `stream/os-provider-tools`.
+- [x] Request CodeRabbit and Grok 4.5 reviews and post all durable findings/dispositions to PR #1582.
+- [ ] Merge only into `stream/os-provider-tools`.
 
 ## plan
 
@@ -46,7 +47,7 @@ task-start trace: `trc_9a5344a7c2ff`
 - Focused red test: `trc_280fd259e415` failed because `./errors` and the remaining provider-core modules did not exist.
 - Focused green test: `trc_b69c31406eb8` (11/11); hardened suite: `trc_636408f8d416` (17 provider tests + 3 package-layout tests).
 - Targeted provider, canonical package, runtime-bundle closure, lint, TypeScript, syntax, and generated-manifest drift gates are green.
-- CodeRabbit, Grok, durable review dispositions, and stream-only merge remain.
+- All implementation, validation, CI, CodeRabbit, Grok, and disposition requirements are complete. Stream-only merge remains.
 
 ## files changed
 
@@ -137,9 +138,9 @@ task-start trace: `trc_9a5344a7c2ff`
 - [x] Focused red test recorded before production implementation.
 - [x] Focused and broader validation green.
 - [x] Workspace review and verify green against `origin/main`.
-- [ ] CodeRabbit requested and findings dispositioned.
-- [ ] Grok 4.5 structured review posted with inline findings/top-level summary and dispositions.
-- [ ] Temporary Grok review directory removed.
+- [x] CodeRabbit requested and findings dispositioned (no findings).
+- [x] Grok 4.5 structured review posted with zero new inline findings, top-level summary, and dispositions.
+- [x] Temporary Grok review directory removed.
 - [ ] Task PR merged only into `stream/os-provider-tools`.
 
 - 2026-07-23 02:53:10 write: `.task/os-provider-tools/effect-based-deployment-provider-core/workpad.md`
@@ -191,3 +192,21 @@ task-start trace: `trc_9a5344a7c2ff`
 - Final targeted suite after fixes: 39/39; lint, typed compile, OS syntax, and manifest drift all green (`trc_9aa6473ec7d3`).
 - Post-fix workspace review: zero findings (`trc_8b64fdeeacd2`).
 - Post-fix verify against `origin/main`: passed and publish-valid (`trc_90d9f7fdd712`).
+
+## final review and CI evidence
+
+- Remote product head: `064208e6000f796cbd8c6f6fe2b1743d56ba5c00` (`trc_f419f7466c31`).
+- CodeRabbit review command finished; no submitted review or inline finding was present (`trc_1a3ec60f4b07`, `trc_cd9dd03b73a5`).
+- Grok 4.5 final structured review: approved, high confidence, zero new findings; CR-001 and CR-002 verified fixed (`trc_5c6822532823`, extracted `trc_6501ee759214`, persisted `trc_56d65e222761`).
+- Structured review: https://github.com/consuelohq/opensaas/pull/1582#issuecomment-5054080313
+- Top-level summary: https://github.com/consuelohq/opensaas/pull/1582#issuecomment-5054080838
+- Dispositions: https://github.com/consuelohq/opensaas/pull/1582#issuecomment-5054081533
+- GitHub CI: 32 passed, 16 skipped, zero pending/failed (`trc_cd22b8f9f638`).
+- Final PR body updated with validation, reviews, dispositions, CI, and recovery history (`trc_6384ed43be4a`).
+
+## final route recoveries
+
+- Explicit-file publishing first failed because `verify --no-stamp` intentionally left no persisted verify stamp (`trc_c9cbd3e66c8c`). The documented Ko-approved route used the successful verify trace and published the review fixes (`trc_f419f7466c31`).
+- First structured-review GitHub comment used a task-relative body path that the root wrapper could not see (`trc_4b1f6b6337fa`); the exact task-worktree path succeeded (`trc_e6ff0e251cd7`).
+- First compact CI-count jq expression was over-escaped (`trc_f35d643d2c16`); a JSON-text query returned the settled counts (`trc_cd22b8f9f638`).
+- The final Grok provider stream still contained narration and reached its transport cap, but its complete balanced 4,060-character structured object preceded the trailing content. A direct outer-envelope parse failed on the truncated trailing string (`trc_0486e3978088`), and an initial schema assumption expected a non-template `summary` key (`trc_e9db6d378968`). A bounded decoder validated every actual template key and recovered the complete review (`trc_6501ee759214`).
