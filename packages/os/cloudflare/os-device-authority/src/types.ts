@@ -35,26 +35,45 @@ export type Grant = {
   nodeName?: string;
   nodeRole?: WorkspaceNodeRole;
   nodeStatus?: WorkspaceNodeStatus;
+  nodePlatform?: string;
+  nodeArchitecture?: string;
+  nodeChannel?: string;
+  nodeCapabilities?: string[];
+  nodeLastSeenAt?: number;
 };
 
 export type AccountWorkspace = {
   accountId: string;
+  workspaceId?: string;
   workspaceSlug: string;
   workspaceHost: string;
   homeNodeId?: string;
+  defaultNodeId?: string;
   updatedAt: number;
 };
 
 export type WorkspaceNode = {
   accountId: string;
+  workspaceId?: string;
   workspaceSlug: string;
   workspaceHost: string;
   nodeId: string;
   nodeName: string;
+  displayName?: string;
   role: WorkspaceNodeRole;
+  platform?: string;
+  architecture?: string;
+  channel?: string;
+  connectorId?: string;
+  capabilities?: string[];
+  connectorStatus?: 'connected' | 'disconnected';
+  state?: 'active' | 'revoked';
+  devicePublicKeyJwk?: string;
   devicePublicKeyThumbprint: string;
   createdAt: number;
   updatedAt: number;
+  lastSeenAt?: number;
+  revokedAt?: number;
 };
 
 export type WorkspaceAgentName =
@@ -211,6 +230,14 @@ export type Store = {
     accountId: string,
     nodeId: string,
   ): Promise<WorkspaceNode | undefined>;
+  byWorkspaceNodeId(nodeId: string): Promise<WorkspaceNode | undefined>;
+  listWorkspaceNodes(accountId: string): Promise<WorkspaceNode[]>;
+  claimWorkspaceNodeNonce(
+    nodeId: string,
+    nonce: string,
+    expiresAt: number,
+    nowMs: number,
+  ): Promise<boolean>;
   putNodeBootstrapCredential(
     credential: NodeBootstrapCredential,
   ): Promise<void>;

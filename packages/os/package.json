@@ -50,6 +50,7 @@
     "linear": "bun ./scripts/linear.js",
     "sentry": "bun ./scripts/sentry.js",
     "workspace": "bun ./scripts/workspace.ts",
+    "workspace:nodes": "bun ./scripts/workspace-nodes.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "tools:search": "bun ./scripts/tools-search.ts",

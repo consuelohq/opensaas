@@ -100,10 +100,19 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
           return null;
         },
         async run(): Promise<unknown> {
+          if (values.length === 0) return { success: true };
           if (/insert/i.test(sql)) {
+            const recordJson = [...values]
+              .reverse()
+              .find(
+                (value) =>
+                  typeof value === 'string' &&
+                  value.trim().startsWith('{') &&
+                  value.includes('"workspaceId"'),
+              );
             rows.set(String(values[0]), {
               hostname: values[0],
-              record_json: values[1],
+              record_json: recordJson ?? values[1],
               status: values[2],
               updated_at: values[3],
               revoked_at: values[4] ?? null,
@@ -111,11 +120,19 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
             });
           } else if (/update/i.test(sql)) {
             const existing = rows.get(String(values[0]));
+            const recordJson = [...values]
+              .reverse()
+              .find(
+                (value) =>
+                  typeof value === 'string' &&
+                  value.trim().startsWith('{') &&
+                  value.includes('"workspaceId"'),
+              );
 
             if (existing) {
               rows.set(String(values[0]), {
                 ...existing,
-                record_json: values[1],
+                record_json: recordJson ?? values[1],
                 status: values[2],
                 updated_at: values[3],
                 revoked_at: values[4] ?? null,
