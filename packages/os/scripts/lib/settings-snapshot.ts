@@ -4,6 +4,7 @@ import path from 'node:path';
 import { getCapabilityHealth } from './capabilities';
 import { detectAgents, loadOsConfig, type AgentConnectionStatus } from './install-state';
 import {
+  generatedWorkflowBundlesPath,
   isManifestItemEnabled,
   manifestOverlayPath,
   readManifestOverlay,
@@ -170,7 +171,7 @@ function buildCloudConnectors(home: string, mcpUrl: string | null): SettingsClou
 }
 
 function readRunBooks(overlay: ReturnType<typeof readManifestOverlay>): SettingsRunBook[] {
-  const bundlesPath = path.join(getPackageRoot(), 'manifests', 'workflow-bundles.json');
+  const bundlesPath = generatedWorkflowBundlesPath();
   const bundles = readJsonFile<WorkflowBundlesFile>(bundlesPath);
   return (bundles?.workflows ?? [])
     .filter((workflow): workflow is { id: string; aliases?: string[]; roles?: string[]; tools?: unknown[] } =>
@@ -201,23 +202,22 @@ function buildManifestItems(home: string, overlay: ReturnType<typeof readManifes
     const entryRecord = entry as typeof entry & { category?: string; core?: boolean };
     const definition = entry.definition as { category?: string };
     const category = entryRecord.category ?? definition.category ?? '';
-    if (entry.kind === 'os-skill') {
-      skills.push({
-        name: entry.name,
-        kind: 'skill',
-        category,
-        enabled: isManifestItemEnabled(overlay, 'skill', entry.name),
-        core: entryRecord.core === true || coreNames.has(entry.name),
-      });
-      continue;
-    }
-
     tools.push({
       name: entry.name,
       kind: 'tool',
       category,
       enabled: isManifestItemEnabled(overlay, 'tool', entry.name),
       core: entryRecord.core === true || coreNames.has(entry.name),
+    });
+  }
+
+  for (const skill of listBundledSkills()) {
+    skills.push({
+      name: skill.name,
+      kind: 'skill',
+      category: skill.permission,
+      enabled: isManifestItemEnabled(overlay, 'skill', skill.name),
+      core: false,
     });
   }
 
@@ -260,7 +260,7 @@ export function buildSettingsSnapshot(home: string): SettingsSnapshot {
     manifest: {
       totalTools: fullManifest.tools.filter((entry) => entry.kind === 'facade-tool').length,
       coreTools: coreManifest.tools.length,
-      skillEntries: fullManifest.tools.filter((entry) => entry.kind === 'os-skill').length,
+      skillEntries: bundledSkills.length,
       bundledSkills: bundledSkills.length,
       selectedSkills: config?.selectedSkills ?? [],
     },

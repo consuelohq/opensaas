@@ -32,6 +32,8 @@ describe('configuration site', () => {
     const snapshot = buildSettingsSnapshot(home);
     const html = renderSettingsSite();
 
+    expect(snapshot.skills.length).toBeGreaterThan(0);
+    expect(snapshot.runBooks.length).toBeGreaterThan(0);
     expect(html).toContain('<title>Configuration - Consuelo OS</title>');
     expect(html).toContain('aria-label="Configuration navigation"');
     expect(html).toContain('href="/configuration" class="is-active"');
