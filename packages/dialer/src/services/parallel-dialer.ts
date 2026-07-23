@@ -6,6 +6,8 @@ import type {
   ParallelDialOptions,
   ParallelDialResult,
   ParallelCall,
+  ParallelCleanupAction,
+  ParallelCleanupFailure,
   ParallelTelemetry,
 } from '../types.js';
 import { ACTIVE_CALL_TTL_SECONDS } from './caller-id.js';
@@ -80,6 +82,27 @@ export class ParallelDialerService {
       const conferenceName = `${groupId}_${opts.queueId}`;
       const createdAt = new Date().toISOString();
       const calls: ParallelCall[] = [];
+      const group: ParallelGroup = {
+        groupId,
+        conferenceName,
+        status: 'dialing',
+        winnerSid: null,
+        calls: [],
+        workspaceId: opts.workspaceId,
+        queueId: opts.queueId,
+        userId: opts.userId,
+        createdAt,
+        campaignSegment: opts.campaignSegment,
+        profile: opts.profile,
+        resolverReason: 'route-resolved',
+        cleanupFailures: [],
+      };
+
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
 
       try {
         for (let i = 0; i < opts.customerNumbers.length; i++) {
@@ -110,34 +133,16 @@ export class ParallelDialerService {
           };
           calls.push(parallelCall);
 
-          await this.store.setCallMapping(call.sid, groupId, GROUP_TTL_SECONDS);
+          await this.store.registerCall(
+            groupId,
+            parallelCall,
+            GROUP_TTL_SECONDS,
+          );
         }
       } catch (err: unknown) {
-        await Promise.all(
-          calls.map((call) => this.terminateCall(call.callSid)),
-        );
+        await this.failInitializingGroup(groupId);
         throw err;
       }
-
-      const group: ParallelGroup = {
-        groupId,
-        conferenceName,
-        status: 'dialing',
-        winnerSid: null,
-        calls,
-        queueId: opts.queueId,
-        userId: opts.userId,
-        createdAt,
-        campaignSegment: opts.campaignSegment,
-        profile: opts.profile,
-        resolverReason: 'route-resolved',
-      };
-
-      await this.store.setGroup(
-        groupId,
-        JSON.stringify(group),
-        GROUP_TTL_SECONDS,
-      );
 
       return {
         groupId,
@@ -167,16 +172,34 @@ export class ParallelDialerService {
       const groupId = await this.store.getCallMapping(callSid);
       if (!groupId) return;
 
+      await this.store.withGroupLock(groupId, () =>
+        this.processStatusCallbackLocked(
+          groupId,
+          callSid,
+          callStatus,
+          answeredBy,
+        ),
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Status callback handling failed';
+      throw new Error(message);
+    }
+  }
+
+  private async processStatusCallbackLocked(
+    groupId: string,
+    callSid: string,
+    callStatus: string,
+    answeredBy?: string,
+  ): Promise<void> {
+    try {
       const raw = await this.store.getGroup(groupId);
       if (!raw) return;
 
-      const group: ParallelGroup = JSON.parse(raw);
+      const group = this.parseGroup(raw);
       const call = group.calls.find((item) => item.callSid === callSid);
-      if (!call) return;
-
-      if (TERMINAL_CALL_STATUSES.has(call.status)) {
-        return;
-      }
+      if (!call || TERMINAL_CALL_STATUSES.has(call.status)) return;
 
       call.status = callStatus;
       if (answeredBy) {
@@ -202,9 +225,7 @@ export class ParallelDialerService {
           group.status = 'connected';
           group.connectedAt ??= call.answeredAt ?? new Date().toISOString();
         } else if (group.winnerSid) {
-          await this.terminateCall(callSid);
-          call.status = 'completed';
-          call.terminatedAt = new Date().toISOString();
+          await this.tryTerminateCall(group, call);
         } else {
           const won = await this.store.setWinnerIfAbsent(
             groupId,
@@ -213,9 +234,8 @@ export class ParallelDialerService {
           );
 
           if (!won) {
-            await this.terminateCall(callSid);
-            call.status = 'completed';
-            call.terminatedAt = new Date().toISOString();
+            group.winnerSid = await this.store.getWinner(groupId);
+            await this.tryTerminateCall(group, call);
           } else {
             group.winnerSid = callSid;
             group.status = 'connected';
@@ -223,10 +243,7 @@ export class ParallelDialerService {
             if (group.profile.terminationPolicy === 'winner-take-all') {
               await this.terminateLosingCalls(group, callSid);
             }
-            await this.unmuteConferenceParticipant(
-              group.conferenceName,
-              callSid,
-            );
+            await this.tryUnmuteWinner(group, callSid);
           }
         }
       } else if (
@@ -234,9 +251,7 @@ export class ParallelDialerService {
         call.amdResult !== undefined &&
         !isHumanLikeAnswer
       ) {
-        await this.terminateCall(callSid);
-        call.status = 'completed';
-        call.terminatedAt = new Date().toISOString();
+        await this.tryTerminateCall(group, call);
       } else if (TERMINAL_CALL_STATUSES.has(callStatus)) {
         call.terminatedAt = new Date().toISOString();
       }
@@ -256,7 +271,9 @@ export class ParallelDialerService {
       );
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Status callback handling failed';
+        err instanceof Error
+          ? err.message
+          : 'Locked status callback handling failed';
       throw new Error(message);
     }
   }
@@ -266,15 +283,13 @@ export class ParallelDialerService {
       const raw = await this.store.getGroup(groupId);
       if (!raw) return null;
 
-      const group = JSON.parse(raw) as ParallelGroup;
+      const group = this.parseGroup(raw);
 
       if (this.isStaleDialingGroup(group, new Date())) {
         await this.terminateGroup(groupId);
 
         const refreshedRaw = await this.store.getGroup(groupId);
-        return refreshedRaw
-          ? (JSON.parse(refreshedRaw) as ParallelGroup)
-          : null;
+        return refreshedRaw ? this.parseGroup(refreshedRaw) : null;
       }
 
       return group;
@@ -285,20 +300,44 @@ export class ParallelDialerService {
     }
   }
 
+  async getGroupForWorkspace(
+    groupId: string,
+    workspaceId: string,
+  ): Promise<ParallelGroup | null> {
+    try {
+      const group = await this.getGroup(groupId);
+      return group?.workspaceId === workspaceId ? group : null;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Workspace group lookup failed';
+      throw new Error(message);
+    }
+  }
+
   async terminateGroup(groupId: string): Promise<void> {
+    try {
+      await this.store.withGroupLock(groupId, () =>
+        this.terminateGroupLocked(groupId),
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Group termination failed';
+      throw new Error(message);
+    }
+  }
+
+  private async terminateGroupLocked(groupId: string): Promise<void> {
     try {
       const raw = await this.store.getGroup(groupId);
       if (!raw) return;
 
-      const group: ParallelGroup = JSON.parse(raw);
+      const group = this.parseGroup(raw);
       for (const call of group.calls) {
         if (!TERMINAL_CALL_STATUSES.has(call.status)) {
-          await this.terminateCall(call.callSid);
-          call.status = 'completed';
-          call.terminatedAt = new Date().toISOString();
+          await this.tryTerminateCall(group, call);
         }
       }
-      group.status = 'completed';
+      group.status = group.cleanupFailures.length > 0 ? 'failed' : 'completed';
       group.completedAt = new Date().toISOString();
       await this.store.setGroup(
         groupId,
@@ -307,7 +346,88 @@ export class ParallelDialerService {
       );
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Group termination failed';
+        err instanceof Error ? err.message : 'Locked group termination failed';
+      throw new Error(message);
+    }
+  }
+
+  async terminateGroupForWorkspace(
+    groupId: string,
+    workspaceId: string,
+  ): Promise<boolean> {
+    try {
+      const group = await this.getGroupForWorkspace(groupId, workspaceId);
+      if (!group) return false;
+      await this.terminateGroup(groupId);
+      return true;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Workspace group termination failed';
+      throw new Error(message);
+    }
+  }
+
+  async retryPendingCleanup(groupId: string): Promise<void> {
+    try {
+      await this.store.withGroupLock(groupId, () =>
+        this.retryPendingCleanupLocked(groupId),
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Cleanup reconciliation failed';
+      throw new Error(message);
+    }
+  }
+
+  private async retryPendingCleanupLocked(groupId: string): Promise<void> {
+    try {
+      const raw = await this.store.getGroup(groupId);
+      if (!raw) return;
+
+      const group = this.parseGroup(raw);
+      const pendingFailures = [...group.cleanupFailures];
+      group.cleanupFailures = [];
+
+      for (const failure of pendingFailures) {
+        try {
+          if (failure.action === 'terminate-call') {
+            await this.terminateCall(failure.callSid);
+            const call = group.calls.find(
+              (candidate) => candidate.callSid === failure.callSid,
+            );
+            if (call) {
+              call.status = 'completed';
+              call.terminatedAt = new Date().toISOString();
+            }
+          } else {
+            await this.unmuteConferenceParticipant(
+              group.conferenceName,
+              failure.callSid,
+            );
+          }
+        } catch (err: unknown) {
+          this.recordCleanupFailure(
+            group,
+            failure.action,
+            failure.callSid,
+            err,
+            failure,
+          );
+        }
+      }
+
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Locked cleanup reconciliation failed';
       throw new Error(message);
     }
   }
@@ -402,13 +522,9 @@ export class ParallelDialerService {
 
   async markTelemetryEmitted(groupId: string): Promise<void> {
     try {
-      const raw = await this.store.getGroup(groupId);
-      if (!raw) return;
-      const group: ParallelGroup = JSON.parse(raw);
-      group.telemetryEmittedAt = new Date().toISOString();
-      await this.store.setGroup(
+      await this.store.claimTelemetryEmission(
         groupId,
-        JSON.stringify(group),
+        new Date().toISOString(),
         GROUP_TTL_SECONDS,
       );
     } catch (err: unknown) {
@@ -420,21 +536,11 @@ export class ParallelDialerService {
 
   async markTelemetryEmittedIfAbsent(groupId: string): Promise<boolean> {
     try {
-      const raw = await this.store.getGroup(groupId);
-      if (!raw) return false;
-      const group: ParallelGroup = JSON.parse(raw);
-
-      if (group.telemetryEmittedAt) {
-        return false;
-      }
-
-      group.telemetryEmittedAt = new Date().toISOString();
-      await this.store.setGroup(
+      return await this.store.claimTelemetryEmission(
         groupId,
-        JSON.stringify(group),
+        new Date().toISOString(),
         GROUP_TTL_SECONDS,
       );
-      return true;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Unknown telemetry store error';
@@ -457,34 +563,142 @@ export class ParallelDialerService {
     );
   }
 
+  private parseGroup(raw: string): ParallelGroup {
+    const group = JSON.parse(raw) as ParallelGroup;
+    group.cleanupFailures ??= [];
+    return group;
+  }
+
+  private async failInitializingGroup(groupId: string): Promise<void> {
+    try {
+      await this.store.withGroupLock(groupId, () =>
+        this.failInitializingGroupLocked(groupId),
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Initializing group cleanup failed';
+      throw new Error(message);
+    }
+  }
+
+  private async failInitializingGroupLocked(groupId: string): Promise<void> {
+    try {
+      const raw = await this.store.getGroup(groupId);
+      if (!raw) return;
+
+      const group = this.parseGroup(raw);
+      for (const call of group.calls) {
+        if (!TERMINAL_CALL_STATUSES.has(call.status)) {
+          await this.tryTerminateCall(group, call);
+        }
+      }
+      group.status = 'failed';
+      group.completedAt = new Date().toISOString();
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Locked initializing group cleanup failed';
+      throw new Error(message);
+    }
+  }
+
   private async terminateLosingCalls(
     group: ParallelGroup,
     winnerSid: string,
   ): Promise<void> {
-    try {
-      for (const call of group.calls) {
-        if (
-          call.callSid !== winnerSid &&
-          !TERMINAL_CALL_STATUSES.has(call.status)
-        ) {
-          await this.terminateCall(call.callSid);
-          call.status = 'completed';
-          call.terminatedAt = new Date().toISOString();
-        }
+    for (const call of group.calls) {
+      if (
+        call.callSid !== winnerSid &&
+        !TERMINAL_CALL_STATUSES.has(call.status)
+      ) {
+        await this.tryTerminateCall(group, call);
       }
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to terminate losing calls';
-      throw new Error(message);
     }
+  }
+
+  private async tryTerminateCall(
+    group: ParallelGroup,
+    call: ParallelCall,
+  ): Promise<boolean> {
+    try {
+      await this.terminateCall(call.callSid);
+      call.status = 'completed';
+      call.terminatedAt = new Date().toISOString();
+      this.clearCleanupFailure(group, 'terminate-call', call.callSid);
+      return true;
+    } catch (err: unknown) {
+      this.recordCleanupFailure(group, 'terminate-call', call.callSid, err);
+      return false;
+    }
+  }
+
+  private async tryUnmuteWinner(
+    group: ParallelGroup,
+    callSid: string,
+  ): Promise<boolean> {
+    try {
+      await this.unmuteConferenceParticipant(group.conferenceName, callSid);
+      this.clearCleanupFailure(group, 'unmute-winner', callSid);
+      return true;
+    } catch (err: unknown) {
+      this.recordCleanupFailure(group, 'unmute-winner', callSid, err);
+      return false;
+    }
+  }
+
+  private recordCleanupFailure(
+    group: ParallelGroup,
+    action: ParallelCleanupAction,
+    callSid: string,
+    err: unknown,
+    previous?: ParallelCleanupFailure,
+  ): void {
+    const now = new Date().toISOString();
+    const existing =
+      previous ??
+      group.cleanupFailures.find(
+        (failure) => failure.action === action && failure.callSid === callSid,
+      );
+    const message =
+      err instanceof Error ? err.message : 'Provider cleanup failed';
+
+    this.clearCleanupFailure(group, action, callSid);
+    group.cleanupFailures.push({
+      action,
+      callSid,
+      message,
+      attempts: (existing?.attempts ?? 0) + 1,
+      firstFailedAt: existing?.firstFailedAt ?? now,
+      lastFailedAt: now,
+    });
+  }
+
+  private clearCleanupFailure(
+    group: ParallelGroup,
+    action: ParallelCleanupAction,
+    callSid: string,
+  ): void {
+    group.cleanupFailures = group.cleanupFailures.filter(
+      (failure) => failure.action !== action || failure.callSid !== callSid,
+    );
   }
 
   private async terminateCall(callSid: string): Promise<void> {
     try {
       const client = await this.getClient();
       await client.calls(callSid).update({ status: 'completed' });
-    } catch {
-      return;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Provider call termination failed';
+      throw new Error(`Failed to terminate provider call: ${message}`);
     }
   }
 
@@ -502,15 +716,17 @@ export class ParallelDialerService {
       const conferenceSid = conferences[0]?.sid;
 
       if (!conferenceSid) {
-        return;
+        throw new Error('Active conference not found');
       }
 
       await client
         .conferences(conferenceSid)
         .participants(callSid)
         .update({ muted: false });
-    } catch {
-      return;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Conference unmute failed';
+      throw new Error(`Failed to unmute conference winner: ${message}`);
     }
   }
 }
@@ -524,6 +740,8 @@ export class InMemoryParallelStore implements ParallelStore {
   >();
 
   private winners = new Map<string, { callSid: string; expiresAt: number }>();
+
+  private groupLocks = new Map<string, Promise<void>>();
 
   async setGroup(
     groupId: string,
@@ -543,6 +761,53 @@ export class InMemoryParallelStore implements ParallelStore {
       return null;
     }
     return entry.data;
+  }
+
+  async registerCall(
+    groupId: string,
+    call: ParallelCall,
+    ttlSeconds: number,
+  ): Promise<void> {
+    try {
+      await this.withGroupLock(groupId, () =>
+        this.registerCallLocked(groupId, call, ttlSeconds),
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Parallel call registration failed';
+      throw new Error(message);
+    }
+  }
+
+  private async registerCallLocked(
+    groupId: string,
+    call: ParallelCall,
+    ttlSeconds: number,
+  ): Promise<void> {
+    try {
+      const raw = await this.getGroup(groupId);
+      if (!raw) {
+        throw new Error('Parallel group not found while registering call');
+      }
+
+      const group = JSON.parse(raw) as ParallelGroup;
+      group.cleanupFailures ??= [];
+      if (
+        !group.calls.some((candidate) => candidate.callSid === call.callSid)
+      ) {
+        group.calls.push(call);
+      }
+      await this.setGroup(groupId, JSON.stringify(group), ttlSeconds);
+      await this.setCallMapping(call.callSid, groupId, ttlSeconds);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Locked parallel call registration failed';
+      throw new Error(message);
+    }
   }
 
   async setCallMapping(
@@ -588,8 +853,74 @@ export class InMemoryParallelStore implements ParallelStore {
     return entry.callSid;
   }
 
+  async claimTelemetryEmission(
+    groupId: string,
+    emittedAt: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    try {
+      return await this.withGroupLock(groupId, () =>
+        this.claimTelemetryEmissionLocked(groupId, emittedAt, ttlSeconds),
+      );
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Telemetry claim failed';
+      throw new Error(message);
+    }
+  }
+
+  private async claimTelemetryEmissionLocked(
+    groupId: string,
+    emittedAt: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    try {
+      const raw = await this.getGroup(groupId);
+      if (!raw) return false;
+
+      const group = JSON.parse(raw) as ParallelGroup;
+      if (group.telemetryEmittedAt) return false;
+
+      group.telemetryEmittedAt = emittedAt;
+      await this.setGroup(groupId, JSON.stringify(group), ttlSeconds);
+      return true;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Locked telemetry claim failed';
+      throw new Error(message);
+    }
+  }
+
+  async withGroupLock<T>(
+    groupId: string,
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    const previous = this.groupLocks.get(groupId) ?? Promise.resolve();
+    let release!: () => void;
+    const current = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const tail = previous.then(() => current);
+    this.groupLocks.set(groupId, tail);
+
+    await previous;
+    try {
+      return await operation();
+    } finally {
+      release();
+      if (this.groupLocks.get(groupId) === tail) {
+        this.groupLocks.delete(groupId);
+      }
+    }
+  }
+
   async deleteGroup(groupId: string): Promise<void> {
     this.groups.delete(groupId);
     this.winners.delete(groupId);
+    for (const [callSid, mapping] of this.callMappings.entries()) {
+      if (mapping.groupId === groupId) {
+        this.callMappings.delete(callSid);
+      }
+    }
   }
 }

@@ -67,6 +67,7 @@ const buildGroup = (): ParallelGroup => ({
       dialStartedAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
     },
   ],
+  workspaceId: 'workspace-1',
   queueId: 'queue-1',
   userId: 'user-1',
   createdAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
@@ -79,6 +80,7 @@ const buildGroup = (): ParallelGroup => ({
     terminationPolicy: 'winner-take-all',
   },
   resolverReason: 'thompson-sampling-global',
+  cleanupFailures: [],
 });
 
 const buildStrategy = () => ({
@@ -130,6 +132,11 @@ const createService = () => {
       handleStatusCallback: jest.fn().mockResolvedValue(undefined),
       getGroupIdForCall: jest.fn().mockResolvedValue(group.groupId),
       getGroup: jest.fn().mockResolvedValue(group),
+      getGroupForWorkspace: jest
+        .fn()
+        .mockImplementation(async (_groupId: string, workspaceId: string) =>
+          workspaceId === group.workspaceId ? group : null,
+        ),
       getReleasableNumbers: jest.fn().mockReturnValue(['+12125550123']),
       markTelemetryEmittedIfAbsent: jest.fn().mockResolvedValue(true),
       computeTelemetry: jest.fn().mockReturnValue({
@@ -141,6 +148,7 @@ const createService = () => {
         .fn()
         .mockResolvedValue('<?xml version="1.0"?><Response />'),
       terminateGroup: jest.fn().mockResolvedValue(undefined),
+      terminateGroupForWorkspace: jest.fn().mockResolvedValue(true),
     },
   };
 
@@ -520,6 +528,20 @@ describe('ParallelService group lifecycle', () => {
     expect(result.winner?.callSid).toBe('CA_WINNER');
   });
 
+  it('should scope frontend polling to the authenticated workspace', async () => {
+    const { service, group, mockDialer } = createService();
+
+    await service.getGroupStatus({
+      groupId: group.groupId,
+      workspaceId: 'workspace-1',
+    });
+
+    expect(mockDialer.parallel.getGroupForWorkspace).toHaveBeenCalledWith(
+      group.groupId,
+      'workspace-1',
+    );
+  });
+
   it('should return customer twiml from the migrated route', async () => {
     const { service, mockLockService } = createService();
 
@@ -653,8 +675,9 @@ describe('ParallelService group lifecycle', () => {
     expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
       '+12125550123',
     );
-    expect(mockDialer.parallel.terminateGroup).toHaveBeenCalledWith(
+    expect(mockDialer.parallel.terminateGroupForWorkspace).toHaveBeenCalledWith(
       group.groupId,
+      'workspace-1',
     );
     expect(result).toEqual({ groupId: group.groupId, status: 'completed' });
   });

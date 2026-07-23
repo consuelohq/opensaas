@@ -1,0 +1,314 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/characterize-parallel-dial-lifecycle",
+  "base": "stream/dialer",
+  "headSha": "85043c03dd454cc5d3238b45919d374ad4a54202",
+  "changeHash": "e3f9e51b8628b314e2c0674e5e10747282bc8918602ddc80f493a5f40d621a2b",
+  "changedFiles": [
+    "areas/dialer/AGENTS.md",
+    "packages/api/src/routes/__tests__/ghl.spec.ts",
+    "packages/api/src/routes/__tests__/local-presence.spec.ts",
+    "packages/api/src/routes/__tests__/subscription.spec.ts",
+    "packages/api/src/routes/parallel.ts",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/services/caller-id.spec.ts",
+    "packages/dialer/src/services/caller-id.ts",
+    "packages/dialer/src/services/parallel-dialer.spec.ts",
+    "packages/dialer/src/services/parallel-dialer.ts",
+    "packages/dialer/src/services/parallel-lifecycle.contract.spec.ts",
+    "packages/dialer/src/types.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+    "packages/workspace/scripts/run-dialer-scenario.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+    "packages/workspace/tests/dialer-validation-runbook.test.ts",
+    "packages/workspace/tests/test-selection.test.js",
+    "scripts/code-review.sh"
+  ],
+  "verifiedAt": "2026-07-23T17:49:44.591Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/characterize-parallel-dial-lifecycle/current.json",
+        ".task/dialer/characterize-parallel-dial-lifecycle/evidence-log.json",
+        ".task/dialer/characterize-parallel-dial-lifecycle/read-log.json",
+        ".task/dialer/characterize-parallel-dial-lifecycle/session.json",
+        ".task/dialer/characterize-parallel-dial-lifecycle/workpad.md",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/current.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/evidence-log.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/read-log.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/session.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/verify.json",
+        ".task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/workpad.md",
+        ".task/dialer/restore-dialer-validation-environment-and-runbook/current.json",
+        ".task/dialer/restore-dialer-validation-environment-and-runbook/evidence-log.json",
+        ".task/dialer/restore-dialer-validation-environment-and-runbook/read-log.json",
+        ".task/dialer/restore-dialer-validation-environment-and-runbook/session.json",
+        ".task/dialer/restore-dialer-validation-environment-and-runbook/verify.json",
+        ".task/dialer/restore-dialer-validation-environment-and-runbook/workpad.md",
+        ".task/tasks/dialer/characterize-parallel-dial-lifecycle.json",
+        ".task/tasks/dialer/repair-live-amd-and-caller-id-lock-lifecycle.json",
+        ".task/tasks/dialer/restore-dialer-validation-environment-and-runbook.json",
+        "areas/dialer/AGENTS.md",
+        "packages/api/src/routes/__tests__/ghl.spec.ts",
+        "packages/api/src/routes/__tests__/local-presence.spec.ts",
+        "packages/api/src/routes/__tests__/subscription.spec.ts",
+        "packages/api/src/routes/parallel.ts",
+        "packages/dialer/src/index.ts",
+        "packages/dialer/src/services/caller-id.spec.ts",
+        "packages/dialer/src/services/caller-id.ts",
+        "packages/dialer/src/services/parallel-dialer.spec.ts",
+        "packages/dialer/src/services/parallel-dialer.ts",
+        "packages/dialer/src/services/parallel-lifecycle.contract.spec.ts",
+        "packages/dialer/src/types.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+        "packages/workspace/scripts/run-dialer-scenario.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+        "packages/workspace/tests/dialer-validation-runbook.test.ts",
+        "packages/workspace/tests/test-selection.test.js",
+        "scripts/code-review.sh"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/index.ts",
+            "packages/dialer/src/services/caller-id.spec.ts",
+            "packages/dialer/src/services/caller-id.ts",
+            "packages/dialer/src/services/parallel-dialer.spec.ts",
+            "packages/dialer/src/services/parallel-dialer.ts",
+            "packages/dialer/src/services/parallel-lifecycle.contract.spec.ts",
+            "packages/dialer/src/types.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "api-package",
+          "critical": true,
+          "reason": "API changes must run API route and service specs.",
+          "matchedFiles": [
+            "packages/api/src/routes/__tests__/ghl.spec.ts",
+            "packages/api/src/routes/__tests__/local-presence.spec.ts",
+            "packages/api/src/routes/__tests__/subscription.spec.ts",
+            "packages/api/src/routes/parallel.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "twenty-server-project",
+          "critical": true,
+          "reason": "Server changes have the broadest backend impact and should run the project test target.",
+          "matchedFiles": [
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:twenty-server:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/twenty-server.",
+          "matchedFiles": [
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "api specs",
+          "command": [
+            "bunx",
+            "jest",
+            "--config",
+            "packages/api/jest.config.mjs",
+            "--runInBand"
+          ],
+          "ruleId": "api-package",
+          "critical": true
+        },
+        {
+          "name": "twenty-server affected test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ],
+          "ruleId": "twenty-server-project",
+          "critical": true
+        },
+        {
+          "name": "twenty-server test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-server:test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1623,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-characterize-parallel-dial-lifecycle\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 903\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 698\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:49:38\n\u001b[2m   Duration \u001b[22m 1.31s\u001b[2m (transform 92ms, setup 0ms, import 110ms, tests 903ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1311,
+          "outputTail": "h no winner [2.91ms]\n(pass) ParallelDialerService > computeTelemetry > should complete one-leg groups on terminal callback [0.22ms]\n(pass) ParallelDialerService > markTelemetryEmitted > should set telemetryEmittedAt on the group [3.28ms]\n(pass) ParallelDialerService > markTelemetryEmitted > should not throw for non-existent group [0.22ms]\n(pass) ParallelDialerService > generateCustomerTwiml > should return TwiML for a known call [4.01ms]\n(pass) ParallelDialerService > generateCustomerTwiml > should return null for unknown call [0.27ms]\n(pass) ParallelDialerService > InMemoryParallelStore > should support setWinnerIfAbsent atomicity [0.15ms]\n(pass) ParallelDialerService > InMemoryParallelStore > should delete group and winner together [0.20ms]\n\npackages/dialer/src/services/parallel-strategy-resolver.spec.ts:\n(pass) ParallelStrategyResolver > explicit profile selection > should use explicit profileId when provided and bypass sampling [0.32ms]\n(pass) ParallelStrategyResolver > thompson sampling > should deterministically pick aggressive when it samples highest [0.17ms]\n(pass) ParallelStrategyResolver > thompson sampling > should use informed default priors on cold start when no posteriors are returned [0.16ms]\n(pass) ParallelStrategyResolver > thompson sampling > should merge loaded posterior values instead of using defaults [0.19ms]\n(pass) ParallelStrategyResolver > thompson sampling > should sample all profiles exactly once when no explicit profileId is set [0.13ms]\n(pass) ParallelStrategyResolver > fallback behavior > should fallback to balanced when posterior loading fails without throwing [6.43ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return profile by id [0.13ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return all profiles [0.15ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.60ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.07ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.03ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.09ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.21ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window [0.02ms]\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size [0.02ms]\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero [0.02ms]\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward [0.02ms]\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.42ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.15ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [1.88ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.13ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.26ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.84ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [0.60ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.04ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [2.69ms]\n\n 140 pass\n 0 fail\n 264 expect() calls\nRan 140 tests across 11 files. [1299.00ms]\n"
+        },
+        {
+          "name": "api specs",
+          "command": [
+            "bunx",
+            "jest",
+            "--config",
+            "packages/api/jest.config.mjs",
+            "--runInBand"
+          ],
+          "ruleId": "api-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1006,
+          "outputTail": "PASS api packages/api/src/routes/__tests__/parallel.spec.ts\nPASS api packages/api/src/routes/__tests__/voice.spec.ts\nPASS api packages/api/src/services/retry-policy.spec.ts\nPASS api packages/api/src/routes/__tests__/ghl.spec.ts\nPASS api packages/api/src/routes/__tests__/twilio-settings.spec.ts\nPASS api packages/api/src/routes/__tests__/queues.spec.ts\nPASS api packages/api/src/routes/__tests__/local-presence.spec.ts\nPASS api packages/api/src/routes/__tests__/subscription.spec.ts\nPASS api packages/api/src/routes/__tests__/number-packs.spec.ts\nPASS api packages/api/src/routes/__tests__/stripe-webhook.spec.ts\nPASS api packages/api/src/routes/__tests__/preferences.spec.ts\nPASS api packages/api/src/services/workspace-phone-numbers.spec.ts\n\nTest Suites: 12 passed, 12 total\nTests:       258 passed, 258 total\nSnapshots:   0 total\nTime:        0.72 s, estimated 1 s\n"
+        },
+        {
+          "name": "twenty-server affected test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ],
+          "ruleId": "twenty-server-project",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1584,
+          "outputTail": "pace-query-builder/utils/__tests__/\u001b[22m\u001b[1mstringify-without-key-quote.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/blocklist/utils/__tests__/\u001b[22m\u001b[1mis-email-blocklisted.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mto-microsoft-recipients.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/workspace-schema-manager/utils/__tests__/\u001b[22m\u001b[1msanitize-default-value.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/gmail/utils/__tests__/\u001b[22m\u001b[1mbuild-gmail-label-search-name.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/__tests__/\u001b[22m\u001b[1mclean-entity-name.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing/utils/__tests__/\u001b[22m\u001b[1mnormalize-price-ref.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mmime-encode.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/utils/__test__/\u001b[22m\u001b[1mis-snake-case-string.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/match-participant/utils/__tests__/\u001b[22m\u001b[1madd-person-email-filters-to-query-builder.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/starting-after-parser-utils/__tests__/\u001b[22m\u001b[1mparse-starting-after-rest-request.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/microsoft/utils/__tests__/\u001b[22m\u001b[1mis-temporary-error.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/utils/version/__tests__/\u001b[22m\u001b[1mget-previous-version.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mget-record-to-connect-fields.util.spec.ts\u001b[22m\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\n=============================== Coverage summary ===============================\n\u001b[33;1mStatements   : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mBranches     : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mFunctions    : Unknown% ( 0/0 )\u001b[0m\n\u001b[33;1mLines        : Unknown% ( 0/0 )\u001b[0m\n================================================================================\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3516 passed\u001b[39m\u001b[22m, 3526 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        \u001b[1m\u001b[33m32.894 s\u001b[39m\u001b[22m\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n"
+        },
+        {
+          "name": "twenty-server test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-server:test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 571,
+          "outputTail": "ls/__tests__/\u001b[22m\u001b[1mtransform-array-field.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mget-record-to-connect-fields.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mcreate-sql-where-tuple-in-clause.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/microsoft/utils/__tests__/\u001b[22m\u001b[1mis-temporary-error.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-product-event-to-database-product.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/file/utils/__tests__/\u001b[22m\u001b[1mextract-file-info-from-request.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mget-subscription-id-from-invoice.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/gmail/utils/__tests__/\u001b[22m\u001b[1mparse-gmail-error-retry-after.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/search/utils/__tests__/\u001b[22m\u001b[1mformat-search-terms.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mcompute-permission-intersection.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-folder-manager/drivers/gmail/utils/__tests__/\u001b[22m\u001b[1mget-gmail-folder-parent-id.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing-webhook/utils/__tests__/\u001b[22m\u001b[1mtransform-stripe-entitlement-updated-event-to-database-entitlement.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mto-microsoft-recipients.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/domain/subdomain-manager/utils/__test__/\u001b[22m\u001b[1mgenerate-random-subdomain.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mapply-table-alias-on-where-condition.util.spec.ts\u001b[22m\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m445 passed\u001b[39m\u001b[22m, 445 of 447 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3516 passed\u001b[39m\u001b[22m, 3526 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        21.636 s, estimated 31 s\n\n\n\n NX   Successfully ran target test for project twenty-server and 6 tasks it depends on\n\nNx read the output from the cache instead of running the command for 7 out of 7 tasks.\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -47,6 +47,27 @@ describe('test selection registry', () => {
     expect(autoTwentyShared?.tests[0]?.command).toEqual(['npx', 'nx', 'test', 'twenty-shared', '--coverage=false']);
   });
 
+  it('uses the API package Jest configuration for API changes', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/api/src/routes/parallel.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const apiSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'api-package',
+    );
+
+    expect(apiSuite?.command).toEqual([
+      'bunx',
+      'jest',
+      '--config',
+      'packages/api/jest.config.mjs',
+      '--runInBand',
+    ]);
+  });
+
   it('selects publish-gate tests for verify changes', () => {
     const result = run(['check', '--changed-file', 'packages/workspace/scripts/verify.js', '--json']);
     const data = json(result);
