@@ -73,6 +73,11 @@ async function handleDeviceRequest(
         : undefined;
       const requestedNodeId = optionalNodeId(p.get('node_id') ?? '');
       const requestedNodeName = (p.get('node_name') ?? '').trim();
+      const nodeCapabilities = (p.get('node_capabilities') ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .slice(0, 32);
       const deviceCode = rand('dev', 24);
       const code = userCode();
       const g: Grant = {
@@ -83,6 +88,16 @@ async function handleDeviceRequest(
           : {}),
         ...(requestedNodeId ? { nodeId: requestedNodeId } : {}),
         ...(requestedNodeName ? { nodeName: requestedNodeName } : {}),
+        ...(p.get('node_platform')?.trim()
+          ? { nodePlatform: p.get('node_platform')!.trim() }
+          : {}),
+        ...(p.get('node_architecture')?.trim()
+          ? { nodeArchitecture: p.get('node_architecture')!.trim() }
+          : {}),
+        ...(p.get('node_channel')?.trim()
+          ? { nodeChannel: p.get('node_channel')!.trim() }
+          : {}),
+        ...(nodeCapabilities.length > 0 ? { nodeCapabilities } : {}),
         status: 'pending',
         expiresAt: now() + TTL_MS,
         interval: INTERVAL,

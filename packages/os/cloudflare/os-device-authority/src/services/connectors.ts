@@ -1,4 +1,8 @@
-import { createWorkspaceEdgeRouteSeedSql } from '../../../../scripts/lib/workspace-edge-route-seed';
+import {
+  createWorkspaceEdgeRouteSeedRecord,
+  createWorkspaceEdgeRouteSeedSql,
+} from '../../../../scripts/lib/workspace-edge-route-seed';
+import { upsertWorkspaceNodeTargetInD1 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import {
   applyWorkspaceCloudflareProvisioning,
   createCloudflareWorkspaceProvisioningClient,
@@ -102,7 +106,12 @@ export async function registerApprovedWorkspaceRoute(input: {
   grant: Grant;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
 }): Promise<void> {
-  if (!input.routeRegistry?.exec)
+  if (
+    !input.routeRegistry ||
+    (!input.routeRegistry.exec &&
+      !input.routeRegistry.prepare &&
+      !input.routeRegistry.dumpHostnameRow)
+  )
     throw new Error('workspace route registry is not configured');
   try {
     if (!input.workspaceConnectorProvisioner) {
@@ -120,19 +129,35 @@ export async function registerApprovedWorkspaceRoute(input: {
     });
     const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
     input.grant.cloudflareTunnelToken = connector.cloudflareTunnelToken;
-    await input.routeRegistry.exec(
-      createWorkspaceEdgeRouteSeedSql({
-        workspaceId,
-        workspaceSlug: workspace.workspaceSlug,
-        hostname: workspace.workspaceHost,
-        baseDomain: baseDomainFromHost(workspace.workspaceHost),
-        siteSnapshotKey: snapshot.key,
-        siteVersionId: snapshot.versionId,
-        connectorId: connector.connectorId,
-        tunnelOriginUrl: connector.tunnelOriginUrl,
+    const seedInput = {
+      workspaceId,
+      workspaceSlug: workspace.workspaceSlug,
+      hostname: workspace.workspaceHost,
+      baseDomain: baseDomainFromHost(workspace.workspaceHost),
+      siteSnapshotKey: snapshot.key,
+      siteVersionId: snapshot.versionId,
+      connectorId: connector.connectorId,
+      tunnelOriginUrl: connector.tunnelOriginUrl,
+      localServiceUrl: connector.localServiceUrl,
+    };
+    if (input.routeRegistry.prepare || input.routeRegistry.dumpHostnameRow) {
+      await upsertWorkspaceNodeTargetInD1(input.routeRegistry, {
+        record: createWorkspaceEdgeRouteSeedRecord(seedInput),
+        target: {
+          nodeId,
+          connectorId: connector.connectorId,
+          connectorStatus: 'connected',
+          tunnelOriginUrl: connector.tunnelOriginUrl,
+          state: 'active',
+          lastSeenAt: input.grant.nodeLastSeenAt ?? Date.now(),
+          heartbeatTtlMs: 60_000,
+        },
+        makeDefault: input.grant.nodeRole === 'home',
         localServiceUrl: connector.localServiceUrl,
-      }),
-    );
+      });
+    } else {
+      await input.routeRegistry.exec?.(createWorkspaceEdgeRouteSeedSql(seedInput));
+    }
   } catch (error: unknown) {
     throw new Error(
       `workspace route setup failed: ${error instanceof Error ? error.message : String(error)}`,
