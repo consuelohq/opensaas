@@ -1127,9 +1127,11 @@ bun run mac -- port find --json
 
 ### lifecycle — unified Consuelo OS install and runtime lifecycle
 
-Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, channel preferences, update-notification preferences, and repair. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`.
+Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, rollback, retention, channel preferences, update-notification preferences, repair, and uninstall. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`. The previous accepted release is retained at `runtime/previous`; interrupted activation journals restore that known-good release before another mutating operation proceeds.
 
-`install` preserves the existing interactive onboarding flow. `update`, `restart`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, logs, selected skills, or user-owned content. JSON output is a stable envelope and progress events are emitted separately.
+`install` preserves the existing interactive onboarding flow. `update`, `restart`, `rollback`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, selected skills, or user-owned content. Successful activation retains only current, previous, explicitly pinned releases, and unresolved merge content bases. Staging, test-home, and dev-slot directories are bounded by count and age. Inconsistent references and symlinked release roots fail closed.
+
+Default `uninstall` removes only Consuelo-owned services, runtime files, generated security/service/tunnel state, and bounded caches. It preserves `consuelo.yaml`, node identity, workspace membership, visible workspace content, security overrides, and provider CLI credentials. `--remove-node` and `--remove-user-content` are explicit destructive opt-ins. Full reset is restricted to the `dev` or `nightly` channel and requires `dev reset --yes`. Use `--dry-run` before rollback, uninstall, or development reset. JSON output remains a stable envelope and progress events are emitted separately.
 
 ```bash
 bun run lifecycle -- status
@@ -1138,11 +1140,17 @@ bun run lifecycle -- install --channel stable
 bun run lifecycle -- update --check
 bun run lifecycle -- update --yes --json
 bun run lifecycle -- restart
+bun run lifecycle -- rollback --dry-run --json
+bun run lifecycle -- rollback
+bun run lifecycle -- repair
+bun run lifecycle -- uninstall --dry-run --json
+bun run lifecycle -- uninstall
+bun run lifecycle -- uninstall --remove-node --remove-user-content
+bun run lifecycle -- dev reset --yes --dry-run --json
 bun run lifecycle -- channel show
 bun run lifecycle -- channel set beta
 bun run lifecycle -- updates notifications off
 bun run lifecycle -- updates notifications snooze --until 2026-08-01T12:00:00.000Z
-bun run lifecycle -- repair
 ```
 
 Production install and update require `CONSUELO_RELEASE_BASE_URL` plus trusted Ed25519 public keys supplied through `CONSUELO_RELEASE_PUBLIC_KEYS_JSON` or `CONSUELO_RELEASE_KEY_ID` and `CONSUELO_RELEASE_PUBLIC_KEY`.

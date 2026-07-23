@@ -22,10 +22,18 @@ import {
   verifySignedReleaseManifest,
 } from './release';
 import {
+  clearLifecycleActivationJournal,
+  pruneLifecycleReleases,
+  readLifecycleReleaseReference,
+  recoverInterruptedLifecycleActivation,
+  writeLifecycleActivationJournal,
+} from './retention';
+import {
   inspectLifecycleInstallState,
   listVerifiedRetainedReleases,
   verifyInstalledRuntimeRelease,
 } from './state';
+import { removeLifecycleManagedContent } from './uninstall';
 import type {
   LifecycleEngine,
   LifecycleHealthAcceptance,
@@ -149,7 +157,9 @@ export function createLifecycleEngine(
         }),
         (release) => {
           emit('lock', { recoveredStaleLock: release.recoveredStaleLock });
-          return use();
+          return Effect.sync(() => recoverInterruptedLifecycleActivation(home)).pipe(
+            Effect.flatMap(() => use()),
+          );
         },
         (release) => Effect.promise(() => release()),
       ),
@@ -203,6 +213,12 @@ export function createLifecycleEngine(
           manifest: input.manifest,
         });
       }
+      writeLifecycleActivationJournal({
+        home,
+        operationId: input.operationId,
+        previousReleasePath: input.previousReleasePath,
+        nextReleasePath: input.nextReleasePath,
+      });
       input.emit('activate', {
         bundleId: input.manifest.bundleId,
         previousReleasePath: input.previousReleasePath,
@@ -246,6 +262,7 @@ export function createLifecycleEngine(
         bundleId: input.manifest.bundleId,
         version: input.manifest.version,
       });
+      clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {
         await dependencies.hooks.onActivationFailure({
@@ -270,6 +287,7 @@ export function createLifecycleEngine(
             expectedBundleId: previousManifest.bundleId,
             waitForCompletion: true,
           });
+          input.emit('rollback', { bundleId: previousManifest.bundleId, automatic: true });
           await acceptHealth(input.emit, {
             operationId: `${input.operationId}-rollback`,
             nextReleasePath: input.previousReleasePath,
@@ -277,8 +295,12 @@ export function createLifecycleEngine(
             bundleId: previousManifest.bundleId,
             version: previousManifest.version,
           });
+          clearLifecycleActivationJournal(home);
+          input.emit('retention', { automatic: true });
+          pruneLifecycleReleases({ home, now: now() });
         } else {
           rmSync(paths.currentLink, { force: true });
+          clearLifecycleActivationJournal(home);
         }
       } catch (rollbackError: unknown) {
         throw lifecycleError(
@@ -425,10 +447,20 @@ export function createLifecycleEngine(
           phase: 'activate',
         });
 
+        const retention = yield* Effect.try({
+          try: () => pruneLifecycleReleases({ home, now: now() }),
+          catch: (error) => asLifecycleError(
+            error,
+            'RETENTION_FAILED',
+            'failed to enforce lifecycle retention',
+            'retention',
+          ),
+        });
         input.emit('complete', {
           changed: true,
           version: manifest.version,
           bundleId: manifest.bundleId,
+          removedBundleIds: retention.removedBundleIds,
         });
         return {
           operation: input.operation,
@@ -726,6 +758,178 @@ export function createLifecycleEngine(
         );
       } catch (error: unknown) {
         throw asLifecycleError(error, 'REPAIR_FAILED', 'lifecycle repair failed');
+      }
+    },
+
+    async rollback(input = {}) {
+      const emit = emitter('rollback');
+      const operationId = nextOperationId();
+      try {
+        return await exclusive(operationId, emit, () => Effect.tryPromise({
+          try: async () => {
+            try {
+              const state = await inspectLifecycleInstallState(home);
+              emit('inspect', { installState: state.kind });
+              if (state.kind !== 'valid' || !state.currentReleasePath) {
+                throw lifecycleError('ROLLBACK_FAILED', 'rollback requires a valid active runtime release');
+              }
+              const previous = readLifecycleReleaseReference(home, 'previous', { required: true })!;
+              if (previous.path === state.currentReleasePath) {
+                throw lifecycleError('ROLLBACK_FAILED', 'previous runtime release is identical to current');
+              }
+              if (input.dryRun) {
+                emit('complete', { changed: false, dryRun: true, bundleId: previous.manifest.bundleId });
+                return {
+                  operation: 'rollback',
+                  changed: false,
+                  version: previous.manifest.version,
+                  bundleId: previous.manifest.bundleId,
+                  detail: { dryRun: true },
+                } satisfies LifecycleOperationResult;
+              }
+              emit('rollback', {
+                fromBundleId: state.currentBundleId,
+                toBundleId: previous.manifest.bundleId,
+                automatic: false,
+              });
+              await activateAndAccept({
+                emit,
+                operationId,
+                previousReleasePath: state.currentReleasePath,
+                nextReleasePath: previous.path,
+                manifest: previous.manifest,
+              });
+              emit('retention', { rollback: true });
+              const retention = pruneLifecycleReleases({ home, now: now() });
+              emit('complete', {
+                changed: true,
+                bundleId: previous.manifest.bundleId,
+                removedBundleIds: retention.removedBundleIds,
+              });
+              return {
+                operation: 'rollback',
+                changed: true,
+                version: previous.manifest.version,
+                bundleId: previous.manifest.bundleId,
+                detail: { removedBundleIds: retention.removedBundleIds },
+              } satisfies LifecycleOperationResult;
+            } catch (error: unknown) {
+              throw asLifecycleError(error, 'ROLLBACK_FAILED', 'lifecycle rollback failed');
+            }
+          },
+          catch: (error) => asLifecycleError(error, 'ROLLBACK_FAILED', 'lifecycle rollback failed'),
+        }));
+      } catch (error: unknown) {
+        throw asLifecycleError(error, 'ROLLBACK_FAILED', 'lifecycle rollback failed');
+      }
+    },
+
+    async uninstall(input = {}) {
+      const emit = emitter('uninstall');
+      const operationId = nextOperationId();
+      try {
+        return await exclusive(operationId, emit, () => Effect.tryPromise({
+          try: async () => {
+            try {
+              const state = await inspectLifecycleInstallState(home);
+              emit('inspect', { installState: state.kind });
+              if (!dependencies.service.uninstall) {
+                throw lifecycleError('UNINSTALL_FAILED', 'platform service uninstall adapter is unavailable');
+              }
+              emit('uninstall', {
+                dryRun: input.dryRun ?? false,
+                removeNode: input.removeNode ?? false,
+                removeUserContent: input.removeUserContent ?? false,
+              });
+              await dependencies.service.uninstall({ dryRun: input.dryRun, home });
+              const plan = removeLifecycleManagedContent(home, {
+                dryRun: true,
+                removeNode: input.removeNode,
+                removeUserContent: input.removeUserContent,
+              });
+              const changed = !(input.dryRun ?? false) && plan.removedPaths.length > 0;
+              emit('complete', { changed, dryRun: input.dryRun ?? false });
+              if (!(input.dryRun ?? false)) {
+                removeLifecycleManagedContent(home, {
+                  removeNode: input.removeNode,
+                  removeUserContent: input.removeUserContent,
+                });
+              }
+              return {
+                operation: 'uninstall',
+                changed,
+                detail: {
+                  dryRun: input.dryRun ?? false,
+                  removeNode: input.removeNode ?? false,
+                  removeUserContent: input.removeUserContent ?? false,
+                  removedPaths: plan.removedPaths,
+                },
+              } satisfies LifecycleOperationResult;
+            } catch (error: unknown) {
+              throw asLifecycleError(error, 'UNINSTALL_FAILED', 'lifecycle uninstall failed');
+            }
+          },
+          catch: (error) => asLifecycleError(error, 'UNINSTALL_FAILED', 'lifecycle uninstall failed'),
+        }));
+      } catch (error: unknown) {
+        throw asLifecycleError(error, 'UNINSTALL_FAILED', 'lifecycle uninstall failed');
+      }
+    },
+
+    async devReset(input = {}) {
+      const preferences = loadLifecyclePreferences(home, now());
+      if (!input.yes) {
+        throw lifecycleError('RESET_NOT_ALLOWED', 'development reset requires explicit --yes confirmation');
+      }
+      if (!['dev', 'nightly'].includes(preferences.channel)) {
+        throw lifecycleError(
+          'RESET_NOT_ALLOWED',
+          'development reset is available only on the dev or nightly channel',
+        );
+      }
+      const emit = emitter('reset');
+      const operationId = nextOperationId();
+      try {
+        return await exclusive(operationId, emit, () => Effect.tryPromise({
+          try: async () => {
+            try {
+              emit('inspect', { channel: preferences.channel });
+              if (!dependencies.service.uninstall) {
+                throw lifecycleError('UNINSTALL_FAILED', 'platform service uninstall adapter is unavailable');
+              }
+              emit('reset', { dryRun: input.dryRun ?? false });
+              await dependencies.service.uninstall({ dryRun: input.dryRun, home });
+              const plan = removeLifecycleManagedContent(home, {
+                dryRun: true,
+                removeNode: true,
+                removeUserContent: true,
+                removeConfig: true,
+              });
+              const changed = !(input.dryRun ?? false) && plan.removedPaths.length > 0;
+              emit('complete', { changed, dryRun: input.dryRun ?? false });
+              if (!(input.dryRun ?? false)) {
+                removeLifecycleManagedContent(home, {
+                  removeNode: true,
+                  removeUserContent: true,
+                  removeConfig: true,
+                });
+              }
+              return {
+                operation: 'reset',
+                changed,
+                detail: {
+                  dryRun: input.dryRun ?? false,
+                  removedPaths: plan.removedPaths,
+                },
+              } satisfies LifecycleOperationResult;
+            } catch (error: unknown) {
+              throw asLifecycleError(error, 'UNINSTALL_FAILED', 'development reset failed');
+            }
+          },
+          catch: (error) => asLifecycleError(error, 'UNINSTALL_FAILED', 'development reset failed'),
+        }));
+      } catch (error: unknown) {
+        throw asLifecycleError(error, 'UNINSTALL_FAILED', 'development reset failed');
       }
     },
 
