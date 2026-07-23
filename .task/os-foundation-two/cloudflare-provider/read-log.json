@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os-foundation-two/cloudflare-provider/workpad.md",
+    "packages/os/scripts/build-runtime-bundle.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tools/deployment-provider/cloudflare-runner.ts",
+    "packages/os/tools/deployment-provider/cloudflare.test.ts"
+  ],
+  "updatedAt": "2026-07-23T16:00:22.857Z"
+}
