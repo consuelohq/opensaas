@@ -35,6 +35,9 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
+  'scripts/managed-components.ts': 'export const managedComponentsCliFixture = true;\n',
+  'scripts/lib/managed-components.ts': 'export const managedComponentsFixture = true;\n',
+  'scripts/lib/managed-component-install.ts': 'export const managedComponentInstallFixture = true;\n',
   'manifests/generated/tool.manifest.json': '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
   'manifests/generated/core.manifest.json': '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
   'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
@@ -457,6 +460,11 @@ describe('runtime bundle contract', () => {
     expect(first.archiveDigest).toBe(second.archiveDigest);
     expect(first.manifest.files.length).toBeGreaterThan(300);
     expect(first.manifest.files.some((file) => file.path === 'scripts/railway-logs.js')).toBe(true);
+    expect(first.manifest.files).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: 'scripts/managed-components.ts', role: 'runtime' }),
+      expect.objectContaining({ path: 'scripts/lib/managed-components.ts', role: 'runtime' }),
+      expect.objectContaining({ path: 'scripts/lib/managed-component-install.ts', role: 'runtime' }),
+    ]));
     expect(first.manifest.files).toEqual(expect.arrayContaining([
       expect.objectContaining({
         path: 'tools/deployment-provider/service.ts',
