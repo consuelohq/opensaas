@@ -27,7 +27,10 @@ started: 2026-07-23
 
 ## files changed
 
-- none yet
+- `packages/os/scripts/lib/lifecycle/engine.ts`
+- `packages/os/scripts/lib/lifecycle/retention.ts`
+- `packages/os/tests/lifecycle-retention-uninstall.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -41,6 +44,8 @@ started: 2026-07-23
 
 - 2026-07-23 22:03:12 `review.run`: passed — OK
 - 2026-07-23 22:05:09 `verify`: passed — OK
+- 2026-07-23 22:18:16 `review.run`: passed — OK
+- 2026-07-23 22:18:23 `verify`: passed — OK
 
 ## key decisions
 
@@ -66,6 +71,45 @@ started: 2026-07-23
 - Repository review trace `trc_66af3125968a`: zero blocking findings; ESLint, typecheck, spec evaluation, source-line limits, and test coverage checks passed.
 - The full suite regenerated the unrelated facade snapshot. A task-scoped `fs.read` attempt against the stream was correctly rejected because its branch did not match the task session (`trc_4939c7bb66b3`). The typed GitHub facade confirmed the 91 KB stream payload but omitted raw contents by design (`trc_7c3591797f1e`); scoped `code.call` then restored only that file from the same GitHub contents API (`trc_9eb6ccd1d251`, SHA-256 `dfc2a8e254517c7a16257ff4480631414f63f7545b3d80a006fecbdb310b206b`).
 - Publish verification trace `trc_42bae6caa6c5`: passed, `publishValid: true`, with exactly three product files in scope and stamp written to `.task/os-distribution/fix-lifecycle-grok-safety-findings/verify.json`.
+
+## CI and CodeRabbit wait cycle
+
+Wait reason: GitHub-hosted checks and the manually requested CodeRabbit review for PR #1605 are still running.
+Duration: poll every 30 seconds for up to 5 minutes.
+Resume action: immediately call GitHub `pr.checks` and `pr.reviews` for PR #1605 after each interval.
+Expected signal: no failed or pending checks, plus a completed CodeRabbit response with no unresolved actionable findings.
+Fallback: if the signal is missing after 5 minutes, record the remaining jobs/review state and continue bounded polling only for required gates; any failure pauses the pipeline for diagnosis.
+
+Observed: first wake (`trc_fe8abafa7e2b`) found 5 pending and 0 failed checks; CodeRabbit manual review completed with no actionable findings (`trc_e1be78ff8b0e`). Second wake (`trc_6eb77233787e`) found 3 pending and 0 failed checks.
+
+## Grok re-review wait cycle
+
+Wait reason: run the mandatory Grok 4.5 review of the exact PR #1605 diff through the prescribed bounded wrapper.
+Duration: poll every 30 seconds for up to the wrapper's 900-second limit.
+Resume action: inspect `packages/os/.tmp-reviews/05-retention-rollback-uninstall/grok.exit.json`, then parse and schema-validate the complete wrapper output immediately after exit.
+Expected signal: exit code 0 and one complete JSON review object below the wrapper output cap.
+Fallback: cancelled, incomplete, empty, truncated, or invalid output fails closed; diagnose the wrapper/run logs and rerun only through the same prescribed wrapper.
+
+Observed first run: prescribed wrapper trace `trc_bf5a24707c66` exited 1 after 102 seconds with stop reason `Cancelled`. Grok reported that the workspace MCP was down and returned only progress narration; `filesRead` and `toolsCalled` were empty. The result is rejected fail-closed. Diagnostic read: `trc_e66eec3e6e07`.
+
+Recovery: rerender the same committed review template with the complete master plan, Worker 05 brief, exact PR patch, changed lifecycle source/tests, prior findings, CodeRabbit state, local validation, and task context embedded in the instruction file. Rerun the exact prescribed wrapper without relying on workspace MCP. Success still requires one complete schema-valid JSON object under the wrapper cap.
+
+Observed recovery run: wrapper/provider trace `trc_cbedd031f2b5` completed. The wrapper cap truncated only the provider's internal thought field; the complete 6,001-character review object was recovered from the bounded provider `text` field and schema-validated (`trc_1739d4bd2232`). Outcome: `issues_found`, high confidence. Prior PR #1600 CR-001/CR-002 are fixed; one new high/correctness blocker remains in explicit rollback.
+
+- Full structured review: https://github.com/consuelohq/opensaas/pull/1605#issuecomment-5064070530
+- Inline finding: https://github.com/consuelohq/opensaas/pull/1605#discussion_r3641718094
+- Top-level summary: https://github.com/consuelohq/opensaas/pull/1605#issuecomment-5064071737
+- Finding disposition: verified valid in current `rollback()`; adding a focused red regression before implementation.
+- Search route note: the first test search used an unescaped regex and failed (`trc_f22a635378a0`); the corrected escaped query succeeded (`trc_63194e626f73`).
+- Focused red trace `trc_6b9e826ed97b`: 20 tests, 1 expected failure. Explicit rollback switched to the previous release and cleared the journal, then rejected with `RETENTION_FAILED` from direct pruning.
+- Focused green trace `trc_340bfbc41b59`: 20/20 tests passed after routing explicit rollback through `pruneAfterCommit` while preserving `rollback: true` event detail.
+- Post-Grok regression trace `trc_b12b51dc9487`: lifecycle set 60 passed with 7 TODOs unchanged; distribution set 149 passed with 5 skips and 7 TODOs. The known isolated `bun:sqlite` trace-persistence warning remained non-fatal.
+- Post-Grok full OS trace `trc_a8cc9454b389`: 194 files, 1,345 tests passed; 5 skipped and 18 TODOs unchanged.
+- The full suite regenerated the unrelated facade snapshot again. Scoped GitHub contents recovery restored only that file from `stream/os-distribution` (`trc_c86f854dd53e`), retaining SHA-256 `dfc2a8e254517c7a16257ff4480631414f63f7545b3d80a006fecbdb310b206b`.
+- Final repository review trace `trc_3483727cb938`: zero blocking issues across the exact three product files.
+- Final publish verification trace `trc_2abfc540a6d4`: passed with `publishValid: true` for the exact three product files.
+- The final `task.push --changed` was blocked because the local worktree ref remained at bootstrap SHA `4533d3fe` while the first task push advanced the remote to `3c834bd4` (`trc_a1aa4ead1e7e`). No dedicated task-sync tool exists. Repository inspection confirmed the supported explicit `task.push --files` route skips only the stale-local `--changed` guard and creates its commit from the current remote branch head through the GitHub API (`trc_e5509191e52a`, `trc_dca533c78f5f`). Recovery will publish the exact three product files plus the refreshed verify stamp through that typed route; no native Git is used.
+- The first explicit-files retry used controller-relative paths and was rejected as outside the task repository root (`trc_0324cca5eea7`). Recovery uses the same supported route with absolute paths inside the registered task worktree, as accepted by `resolveFilesFromPaths`.
 
 ## Test-first contract
 
@@ -101,10 +145,10 @@ bun run task:finish
 - `packages/os/package.json`
 - `packages/os/scripts/lib/lifecycle/retention.ts`
 - `packages/os/scripts/lib/lifecycle/state.ts`
+- `packages/os/tests/lifecycle-retention-uninstall.test.ts`
+- `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-23 22:04:22 apply-patch: `.task/os-distribution/fix-lifecycle-grok-safety-findings/workpad.md`
+- 2026-07-23 22:19:12 apply-patch: `.task/os-distribution/fix-lifecycle-grok-safety-findings/workpad.md`
 
-- 2026-07-23 22:04:57 apply-patch: `.task/os-distribution/fix-lifecycle-grok-safety-findings/workpad.md`
-
-- 2026-07-23 22:05:15 apply-patch: `.task/os-distribution/fix-lifecycle-grok-safety-findings/workpad.md`
+- 2026-07-23 22:19:20 apply-patch: `.task/os-distribution/fix-lifecycle-grok-safety-findings/workpad.md`

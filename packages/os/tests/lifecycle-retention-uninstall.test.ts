@@ -274,6 +274,32 @@ describe('lifecycle rollback and retention', () => {
     expect(update.serviceOperations.slice(-2)).toEqual(['restart', 'health']);
   });
 
+  it('keeps an explicit rollback successful when post-commit retention fails', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleRetentionState({
+      home: tempHome,
+      pinnedBundleIds: [bundle130.manifest.bundleId],
+      unresolvedContentBaseBundleIds: [],
+    });
+    const events: LifecycleProgressEvent[] = [];
+    const rollback = createEngine({ bundle: bundle110, events });
+
+    await expect(rollback.rollback()).resolves.toMatchObject({
+      operation: 'rollback',
+      changed: true,
+      bundleId: bundle100.manifest.bundleId,
+    });
+
+    expect(currentBundleId()).toBe(bundle100.manifest.bundleId);
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(events).toContainEqual(expect.objectContaining({
+      phase: 'retention',
+      detail: expect.objectContaining({ status: 'failed' }),
+    }));
+    expect(events.at(-1)?.phase).toBe('complete');
+  });
+
   it('recovers an interrupted activation journal to the previous known-good release', async () => {
     writeInstalledIdentity();
     const previousPath = stageBundle(bundle100, 'stage-previous');

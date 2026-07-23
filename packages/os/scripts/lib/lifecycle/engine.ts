@@ -197,13 +197,14 @@ export function createLifecycleEngine(
 
   const pruneAfterCommit = (
     emit: ReturnType<typeof emitter>,
-    options: { automatic?: boolean; emitSuccess?: boolean } = {},
+    options: { automatic?: boolean; rollback?: boolean; emitSuccess?: boolean } = {},
   ): ReturnType<typeof pruneLifecycleReleases> => {
     try {
       const result = pruneLifecycleReleases({ home, now: now() });
       if (options.emitSuccess) {
         emit('retention', {
           ...(options.automatic ? { automatic: true } : {}),
+          ...(options.rollback ? { rollback: true } : {}),
           status: 'complete',
           removedBundleIds: result.removedBundleIds,
         });
@@ -218,6 +219,7 @@ export function createLifecycleEngine(
       );
       emit('retention', {
         ...(options.automatic ? { automatic: true } : {}),
+        ...(options.rollback ? { rollback: true } : {}),
         status: 'failed',
         code: failure.code,
         message: failure.message,
@@ -821,8 +823,7 @@ export function createLifecycleEngine(
                 nextReleasePath: previous.path,
                 manifest: previous.manifest,
               });
-              emit('retention', { rollback: true });
-              const retention = pruneLifecycleReleases({ home, now: now() });
+              const retention = pruneAfterCommit(emit, { rollback: true, emitSuccess: true });
               emit('complete', {
                 changed: true,
                 bundleId: previous.manifest.bundleId,
