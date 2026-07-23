@@ -1149,6 +1149,25 @@ Production install and update require `CONSUELO_RELEASE_BASE_URL` plus trusted E
 
 ---
 
+### managed-components — inspect and resolve deterministic component updates
+
+Reads the managed-component indexes, provenance, content bases, and stable `update-plan.json` under `$CONSUELO_HOME/components`. Automatic writes require an explicit visible user root and re-verify the current local hash immediately before an atomic replacement.
+
+```bash
+bun run managed-components -- inspect-plan --home "$CONSUELO_HOME" --json
+bun run managed-components -- apply-safe --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --json
+bun run managed-components -- inspect-conflict --home "$CONSUELO_HOME" --component tool:example --json
+bun run managed-components -- accept-upstream --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --json
+bun run managed-components -- keep-local --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --json
+bun run managed-components -- apply-merge --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --input ./reviewed-tree.json --expected-local-hash sha256:... --expected-upstream-hash sha256:... --json
+bun run managed-components -- detach --home "$CONSUELO_HOME" --component tool:example --json
+bun run managed-components -- restore-default --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --destination Tools/example-bundled-default --json
+```
+
+See `docs/managed-components.md` for the schema, action table, safety invariants, legacy migration boundary, and lifecycle-retention handoff.
+
+---
+
 ### consuelo-reload — manage the local Consuelo OS server
 
 Use this command to inspect, start, stop, or restart the local Bun server. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
