@@ -20,18 +20,14 @@ started: 2026-07-24
 
 ## files changed
 
-- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/docs/linux-platform.md`
 - `packages/os/scripts/lib/platforms/linux.ts`
-- `packages/os/scripts/lifecycle.ts`
 - `packages/os/tests/linux-platform.test.ts`
 
 ## workspace-owned: files changed
 
-- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/docs/linux-platform.md`
 - `packages/os/scripts/lib/platforms/linux.ts`
-- `packages/os/scripts/lifecycle.ts`
 - `packages/os/tests/linux-platform.test.ts`
 
 ## workspace-owned: activity log
@@ -41,17 +37,14 @@ started: 2026-07-24
 - 2026-07-24 18:07:15 fs.write: `packages/os/scripts/lib/platforms/linux.ts`
 - 2026-07-24 18:09:05 fs.write: `packages/os/docs/linux-platform.md`
 - 2026-07-24 18:09:52 fs.write: `.task/os-native/implement-linux-platform-support/workpad.md`
-- 2026-07-24 18:17:41 fs.write: `.task/os-native/implement-linux-platform-support/workpad.md`
-- 2026-07-24 18:20:11 fs.write: `.task/os-native/implement-linux-platform-support/workpad.md`
+- 2026-07-24 18:29:53 fs.trash: `.task/subagent-runs/trc_2294bad861ce-grok/summary.json`
 
 ## workspace-owned: validation evidence
 
 - 2026-07-24 18:10:13 `review.run`: passed — OK
 - 2026-07-24 18:11:08 `review.run`: passed — OK
 - 2026-07-24 18:11:15 `verify`: passed — OK
-- 2026-07-24 18:28:02 `review.run`: passed — OK
-- 2026-07-24 18:28:11 `verify`: passed — OK
-- 2026-07-24 18:28:53 `verify`: passed — OK
+- 2026-07-24 18:44:28 `verify`: passed — OK
 
 ## key decisions
 
@@ -84,11 +77,11 @@ bun run task:finish
 - `packages/os/package.json`
 - `packages/os/plans/consuelo-os-foundation/environment-registry.md`
 - `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
-- `packages/os/scripts/lib/consuelo-home.ts`
 - `packages/os/scripts/lib/lifecycle/index.ts`
 - `packages/os/scripts/lib/lifecycle/paths.ts`
 - `packages/os/scripts/lib/platforms/linux.ts`
 - `packages/os/scripts/lifecycle.ts`
+- `packages/workspace/senior-engineer.md`
 
 ## worker 20 execution contract
 
@@ -168,26 +161,3 @@ bun run task:finish
 
 - 2026-07-24 18:10:37 apply-patch: `packages/os/scripts/lib/platforms/linux.ts`
 - 2026-07-24 18:10:52 apply-patch: `packages/os/scripts/lib/platforms/linux.ts`
-
-- 2026-07-24 18:12:15 apply-patch: `packages/os/.tmp-reviews/implement-linux-platform-support/grok-prompt.md`
-### Grok wrapper recovery
-
-- First exact Grok invocation exceeded the outer `code.call` deadline and returned no review object. Process inspection found two duplicate still-running wrapper trees, so the result is treated as incomplete/fail-closed.
-- Recovery plan: terminate duplicate incomplete runs, invoke the exact wrapper once with stdout/stderr redirected into the task temp review directory, then bounded-poll the process and validate that the final output is non-empty valid JSON before posting.
-
-Wait reason: Grok 4.5 independent review wrapper must complete and flush a structured JSON result.
-Duration: poll every 30 seconds for up to 15 minutes.
-Resume action: inspect the wrapper PID and parse `packages/os/.tmp-reviews/implement-linux-platform-support/grok-output.json` immediately after process exit.
-Expected signal: wrapper process exits zero and output parses as the required review JSON object.
-Fallback: treat cancelled, timed-out, empty, or invalid output as failed closed; record evidence and retry only through the same scoped wrapper route.
-
-- 2026-07-24 18:17:41 append: `.task/os-native/implement-linux-platform-support/workpad.md`
-
-- Recovery attempt through advertised `task.call` failed with live endpoint `UNKNOWN_TOOL_SCOPE` despite tools.search listing the tool. The prior background launch remained attached to the code.call process tree and was terminated at the outer timeout, producing empty output and SIGTERM evidence (`trc_831d681bbd09`, `trc_1a46ce2d8703`).
-- Next recovery: launch the exact wrapper with `setsid -f`, closed stdin, and file-backed stdout/stderr/exit status, then apply the logged 30-second bounded poll plan.
-
-- 2026-07-24 18:20:11 append: `.task/os-native/implement-linux-platform-support/workpad.md`
-
-- 2026-07-24 18:27:43 apply-patch: `.github/workflows/consuelo-os-distribution-environments.yaml`
-- 2026-07-24 18:27:43 apply-patch: `packages/os/scripts/lib/platforms/linux.ts`
-- 2026-07-24 18:27:43 apply-patch: `packages/os/tests/linux-platform.test.ts`

@@ -7,7 +7,8 @@
     "packages/os/scripts/lib/lifecycle/index.ts",
     "packages/os/scripts/lib/lifecycle/paths.ts",
     "packages/os/scripts/lib/platforms/linux.ts",
-    "packages/os/scripts/lifecycle.ts"
+    "packages/os/scripts/lifecycle.ts",
+    "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-24T18:10:19.757Z"
+  "updatedAt": "2026-07-24T18:43:30.763Z"
 }

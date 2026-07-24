@@ -75,6 +75,7 @@ jobs:
           bun-version: 1.3.14
 
       - name: Install OS dependencies
+        working-directory: packages/os
         run: bun install --frozen-lockfile
 
       - name: Run distribution harness contracts

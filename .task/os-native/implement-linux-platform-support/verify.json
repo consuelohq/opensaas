@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/os-native/implement-linux-platform-support",
   "base": "origin/main",
-  "headSha": "829fc1d118d294f2b4ef6d3939779d56e97f48eb",
-  "changeHash": "d667a36d9bc5a14a6285d86a02336fd6c420ce4cbfad08cd0bb26cd29d9a18cc",
+  "headSha": "735e9e95b24cdfd7f03b16b609b850bdde498afc",
+  "changeHash": "c81d20d7bd657e6b1a7e04e8c56bf585cdc88d7ad3a48cb9987f4f2b81f1abd2",
   "changedFiles": [
     ".github/workflows/consuelo-os-distribution-environments.yaml",
     "packages/os/docs/linux-platform.md",
@@ -13,7 +13,7 @@
     "packages/os/scripts/lifecycle.ts",
     "packages/os/tests/linux-platform.test.ts"
   ],
-  "verifiedAt": "2026-07-24T18:28:53.477Z",
+  "verifiedAt": "2026-07-24T18:44:28.142Z",
   "review": {
     "skipped": false,
     "passed": true,
