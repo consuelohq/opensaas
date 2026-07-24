@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { sanitizeTraceHistoryRowForTest } from '../scripts/lib/trace-sites-local-read-backend';
 
 describe('trace history redaction boundary', () => {
-  it('keeps useful inspector fields while removing credentials, prompts, environment values, and local paths', async () => {
+  it('should keep inspector fields when redacting credentials, prompts, environment values, and local paths', () => {
     const row = sanitizeTraceHistoryRowForTest({
       rowid: 1,
       id: 'row_secret',

@@ -1,0 +1,19 @@
+{
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/fix-stream-coderabbit-cleanup-findings",
+  "baseBranch": "stream/os-web",
+  "sourceBranch": "stream/os-web",
+  "startFrom": "stream",
+  "prNumber": 1622,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1622",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1622",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1622/fix-stream-coderabbit-cleanup-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1622",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1622/fix-stream-coderabbit-cleanup-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-stream-coderabbit-cleanup-findings",
+  "taskSession": "tsk_03a310f10bdd",
+  "tmuxSession": "opensaas-os-web-fix-stream-coderabbit-cleanup-findings-03a310f1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-stream-coderabbit-cleanup-findings/.task/os-web/fix-stream-coderabbit-cleanup-findings/session.json",
+  "createdAt": "2026-07-24T04:59:38.730Z"
+}

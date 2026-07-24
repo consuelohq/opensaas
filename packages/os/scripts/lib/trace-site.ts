@@ -85,8 +85,6 @@ export const TRACE_SITE_JAVASCRIPT = `
   const storageKey = 'consuelo:traces:view:' + workspaceId + ':' + nodeId;
   const MAX_ROWS = 200;
   const PAGE_SIZE = 100;
-  const NEWER_QUERY = 'direction=newer';
-  const RAW_QUERY = 'includeRawPayload=true';
   const tableBody = root.querySelector('[data-trace-rows]');
   const stateLabel = root.querySelector('[data-trace-state-label]');
   const countLabel = root.querySelector('[data-trace-count]');
@@ -361,8 +359,6 @@ export const TRACE_SITE_JAVASCRIPT = `
     if (event.key === 'Escape' && view.open) { view.fullscreen = false; view.open = false; persistView(); renderInspector(); }
   });
 
-  void NEWER_QUERY;
-  void RAW_QUERY;
   loadInitial();
   window.setInterval(pollNewer, 2500);
 })();

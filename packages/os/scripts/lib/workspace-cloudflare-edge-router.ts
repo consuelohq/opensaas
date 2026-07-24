@@ -744,7 +744,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
             if (acceptsHtml) {
               const login = new URL(
                 '/login/google/start',
-                'https://os.consuelohq.com',
+                OAUTH_AUTHORIZATION_SERVER,
               );
               login.searchParams.set('purpose', 'web');
               login.searchParams.set(
