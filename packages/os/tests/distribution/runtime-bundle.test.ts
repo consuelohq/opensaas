@@ -368,7 +368,7 @@ describe('runtime bundle contract', () => {
       'scripts/railway-logs.js': 'export const railwayCustomerCapability = true;\n',
     });
 
-    expect(classifyRuntimeBundlePath('scripts/railway-logs.js')).toBe('customer-provider');
+    expect(classifyRuntimeBundlePath('scripts/railway-logs.js')).toBe('source-only');
     const first = await computeReleaseFingerprint({ sourceRoot: root });
     const versionOne = await buildRuntimeBundle(buildOptions(root, { version: '1.2.3' }));
     const versionTwo = await buildRuntimeBundle(buildOptions(root, { version: '1.2.4' }));
@@ -484,7 +484,8 @@ describe('runtime bundle contract', () => {
 
     expect(first.archiveDigest).toBe(second.archiveDigest);
     expect(first.manifest.files.length).toBeGreaterThan(300);
-    expect(first.manifest.files.some((file) => file.path === 'scripts/railway-logs.js')).toBe(true);
+    expect(first.manifest.files.some((file) => file.path === 'scripts/railway-logs.js')).toBe(false);
+    expect(first.manifest.files.some((file) => file.path === 'scripts/railway-redeploy.js')).toBe(false);
     expect(first.manifest.files).toEqual(expect.arrayContaining([
       expect.objectContaining({ path: 'tools/deployment-provider/facade.ts', role: 'customer-provider' }),
       expect.objectContaining({ path: 'tools/deployment-provider/vercel.ts', role: 'customer-provider' }),
