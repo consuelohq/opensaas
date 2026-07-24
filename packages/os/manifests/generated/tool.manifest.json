@@ -120,7 +120,13 @@
       "label": "utilities",
       "kind": "facade-tool",
       "path": "packages/os/tools/utilities/manifest.ts",
-      "entryCount": 34
+      "entryCount": 32
+    },
+    {
+      "label": "deployment",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/deployment-provider/manifest.ts",
+      "entryCount": 8
     }
   ],
   "tools": [
@@ -3044,6 +3050,655 @@
           ]
         },
         "exampleInput": {},
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.context",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "inspect local Railway, Vercel, or Cloudflare authentication or linked project context without exposing credentials",
+      "core": false,
+      "definition": {
+        "name": "deployment.context",
+        "methodPath": [
+          "deployment",
+          "context"
+        ],
+        "description": "inspect local Railway, Vercel, or Cloudflare authentication or linked project context without exposing credentials",
+        "category": "deployment",
+        "underlying": "workspace deployment.context",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DeploymentContextInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "context",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "action",
+              "flag": "--action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "timeout",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway",
+          "action": "current"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.deploy",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "deploy, redeploy, or promote through Railway, Vercel, or Cloudflare; requires explicit local approval before provider execution",
+      "core": false,
+      "definition": {
+        "name": "deployment.deploy",
+        "methodPath": [
+          "deployment",
+          "deploy"
+        ],
+        "description": "deploy, redeploy, or promote through Railway, Vercel, or Cloudflare; requires explicit local approval before provider execution",
+        "category": "deployment",
+        "underlying": "workspace deployment.deploy",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 900000,
+        "inputSchema": "DeploymentDeployInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "deploy",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "action",
+              "flag": "--action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "target",
+              "flag": "--target",
+              "kind": "value"
+            },
+            {
+              "source": "projectId",
+              "flag": "--project-id",
+              "kind": "value"
+            },
+            {
+              "source": "serviceId",
+              "flag": "--service-id",
+              "kind": "value"
+            },
+            {
+              "source": "source",
+              "flag": "--source",
+              "kind": "value"
+            },
+            {
+              "source": "deploymentId",
+              "flag": "--deployment-id",
+              "kind": "value"
+            },
+            {
+              "source": "environment",
+              "flag": "--environment",
+              "kind": "value"
+            },
+            {
+              "source": "wait",
+              "flag": "--wait",
+              "kind": "boolean"
+            },
+            {
+              "source": "approved",
+              "flag": "--approved",
+              "kind": "boolean"
+            },
+            {
+              "source": "approvalReason",
+              "flag": "--approval-reason",
+              "kind": "value"
+            },
+            {
+              "source": "timeout",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway",
+          "action": "redeploy",
+          "serviceId": "api",
+          "approved": true,
+          "approvalReason": "Approved deployment mutation"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.detect",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "detect the Railway, Vercel, or Cloudflare CLI and report its supported version; returns provider-specific install guidance when missing",
+      "core": false,
+      "definition": {
+        "name": "deployment.detect",
+        "methodPath": [
+          "deployment",
+          "detect"
+        ],
+        "description": "detect the Railway, Vercel, or Cloudflare CLI and report its supported version; returns provider-specific install guidance when missing",
+        "category": "deployment",
+        "underlying": "workspace deployment.detect",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DeploymentDetectInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "detect",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.environment",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "list environment variable names or explicitly approved set/delete mutations for Railway, Vercel, or Cloudflare; secret values are never returned",
+      "core": false,
+      "definition": {
+        "name": "deployment.environment",
+        "methodPath": [
+          "deployment",
+          "environment"
+        ],
+        "description": "list environment variable names or explicitly approved set/delete mutations for Railway, Vercel, or Cloudflare; secret values are never returned",
+        "category": "deployment",
+        "underlying": "workspace deployment.environment",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DeploymentEnvironmentInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "environment",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "action",
+              "flag": "--action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "name",
+              "flag": "--name",
+              "kind": "value"
+            },
+            {
+              "source": "value",
+              "flag": "--value",
+              "kind": "value"
+            },
+            {
+              "source": "scope",
+              "flag": "--scope",
+              "kind": "value"
+            },
+            {
+              "source": "projectId",
+              "flag": "--project-id",
+              "kind": "value"
+            },
+            {
+              "source": "environment",
+              "flag": "--environment",
+              "kind": "value"
+            },
+            {
+              "source": "serviceId",
+              "flag": "--service-id",
+              "kind": "value"
+            },
+            {
+              "source": "skipDeploys",
+              "flag": "--skip-deploys",
+              "kind": "boolean"
+            },
+            {
+              "source": "approved",
+              "flag": "--approved",
+              "kind": "boolean"
+            },
+            {
+              "source": "approvalReason",
+              "flag": "--approval-reason",
+              "kind": "value"
+            },
+            {
+              "source": "timeout",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway",
+          "action": "list",
+          "serviceId": "api"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.list",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "list Railway, Vercel, or Cloudflare projects, services, deployments, or domains using the selected provider CLI",
+      "core": false,
+      "definition": {
+        "name": "deployment.list",
+        "methodPath": [
+          "deployment",
+          "list"
+        ],
+        "description": "list Railway, Vercel, or Cloudflare projects, services, deployments, or domains using the selected provider CLI",
+        "category": "deployment",
+        "underlying": "workspace deployment.list",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DeploymentListInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "list",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "resource",
+              "flag": "--resource",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "projectId",
+              "flag": "--project-id",
+              "kind": "value"
+            },
+            {
+              "source": "environment",
+              "flag": "--environment",
+              "kind": "value"
+            },
+            {
+              "source": "serviceId",
+              "flag": "--service-id",
+              "kind": "value"
+            },
+            {
+              "source": "cursor",
+              "flag": "--cursor",
+              "kind": "value"
+            },
+            {
+              "source": "limit",
+              "flag": "--limit",
+              "kind": "value"
+            },
+            {
+              "source": "timeout",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway",
+          "resource": "deployments",
+          "serviceId": "api"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.logs",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "read bounded Railway, Vercel, or Cloudflare runtime or build logs without changing provider state",
+      "core": false,
+      "definition": {
+        "name": "deployment.logs",
+        "methodPath": [
+          "deployment",
+          "logs"
+        ],
+        "description": "read bounded Railway, Vercel, or Cloudflare runtime or build logs without changing provider state",
+        "category": "deployment",
+        "underlying": "workspace deployment.logs",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 180000,
+        "inputSchema": "DeploymentLogsInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "logs",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "deploymentId",
+              "flag": "--deployment-id",
+              "kind": "value"
+            },
+            {
+              "source": "serviceId",
+              "flag": "--service-id",
+              "kind": "value"
+            },
+            {
+              "source": "environment",
+              "flag": "--environment",
+              "kind": "value"
+            },
+            {
+              "source": "cursor",
+              "flag": "--cursor",
+              "kind": "value"
+            },
+            {
+              "source": "limit",
+              "flag": "--limit",
+              "kind": "value"
+            },
+            {
+              "source": "since",
+              "flag": "--since",
+              "kind": "value"
+            },
+            {
+              "source": "until",
+              "flag": "--until",
+              "kind": "value"
+            },
+            {
+              "source": "filter",
+              "flag": "--filter",
+              "kind": "value"
+            },
+            {
+              "source": "kind",
+              "flag": "--kind",
+              "kind": "value"
+            },
+            {
+              "source": "latest",
+              "flag": "--latest",
+              "kind": "boolean"
+            },
+            {
+              "source": "timeout",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway",
+          "serviceId": "api",
+          "limit": 100
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.raw",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "run an explicitly approved raw Railway, Vercel, or Cloudflare CLI argv without shell evaluation",
+      "core": false,
+      "definition": {
+        "name": "deployment.raw",
+        "methodPath": [
+          "deployment",
+          "raw"
+        ],
+        "description": "run an explicitly approved raw Railway, Vercel, or Cloudflare CLI argv without shell evaluation",
+        "category": "deployment",
+        "underlying": "workspace deployment.raw",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DeploymentRawInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "raw",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "args",
+              "flag": "--arg",
+              "kind": "commandArray"
+            },
+            {
+              "source": "approved",
+              "flag": "--approved",
+              "kind": "boolean"
+            },
+            {
+              "source": "approvalReason",
+              "flag": "--approval-reason",
+              "kind": "value"
+            },
+            {
+              "source": "timeout",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway",
+          "args": [
+            "status",
+            "--json"
+          ],
+          "approved": true,
+          "approvalReason": "Approved raw provider command"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "deployment.status",
+      "kind": "facade-tool",
+      "source": "deployment",
+      "sourcePath": "packages/os/tools/deployment-provider/manifest.ts",
+      "category": "deployment",
+      "description": "inspect one Railway, Vercel, or Cloudflare deployment status by deployment id",
+      "core": false,
+      "definition": {
+        "name": "deployment.status",
+        "methodPath": [
+          "deployment",
+          "status"
+        ],
+        "description": "inspect one Railway, Vercel, or Cloudflare deployment status by deployment id",
+        "category": "deployment",
+        "underlying": "workspace deployment.status",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DeploymentStatusInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "deployment",
+          "internal": "deployment",
+          "subcommand": "status",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "deploymentId",
+              "flag": "--deployment-id",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "serviceId",
+              "flag": "--service-id",
+              "kind": "value"
+            },
+            {
+              "source": "environment",
+              "flag": "--environment",
+              "kind": "value"
+            },
+            {
+              "source": "timeout",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "provider": "railway",
+          "deploymentId": "deployment-id"
+        },
         "sessionRequired": false
       }
     },
@@ -6571,141 +7226,6 @@
         },
         "exampleInput": {
           "pr": 225
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "railway.logs",
-      "kind": "facade-tool",
-      "source": "utilities",
-      "sourcePath": "packages/os/tools/utilities/manifest.ts",
-      "category": "utilities",
-      "description": "read Railway deploy/runtime logs through the workspace script",
-      "core": false,
-      "definition": {
-        "name": "railway.logs",
-        "methodPath": [
-          "railway",
-          "logs"
-        ],
-        "description": "read Railway deploy/runtime logs through the workspace script",
-        "category": "utilities",
-        "underlying": "workspace railway.logs",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": false,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 60000,
-        "inputSchema": "RailwayLogsInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "railway:logs",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "service",
-              "flag": "--service",
-              "kind": "value"
-            },
-            {
-              "source": "build",
-              "flag": "--build",
-              "kind": "boolean"
-            },
-            {
-              "source": "errors",
-              "flag": "--errors",
-              "kind": "boolean"
-            },
-            {
-              "source": "network",
-              "flag": "--network",
-              "kind": "boolean"
-            },
-            {
-              "source": "raw",
-              "flag": "--raw",
-              "kind": "boolean"
-            },
-            {
-              "source": "status",
-              "flag": "--status",
-              "kind": "boolean"
-            },
-            {
-              "source": "filter",
-              "flag": "--filter",
-              "kind": "value"
-            },
-            {
-              "source": "lines",
-              "flag": "--lines",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "service": "opensaas",
-          "lines": 10
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "railway.redeploy",
-      "kind": "facade-tool",
-      "source": "utilities",
-      "sourcePath": "packages/os/tools/utilities/manifest.ts",
-      "category": "utilities",
-      "description": "trigger a Railway redeploy",
-      "core": false,
-      "definition": {
-        "name": "railway.redeploy",
-        "methodPath": [
-          "railway",
-          "redeploy"
-        ],
-        "description": "trigger a Railway redeploy",
-        "category": "utilities",
-        "underlying": "workspace railway.redeploy",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "RailwayRedeployInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "railway:redeploy",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "arguments": [
-            {
-              "source": "service",
-              "flag": "--service",
-              "kind": "value"
-            },
-            {
-              "source": "all",
-              "flag": "--all",
-              "kind": "boolean"
-            },
-            {
-              "source": "wait",
-              "flag": "--wait",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "service": "opensaas",
-          "dryRun": true
         },
         "sessionRequired": false
       }

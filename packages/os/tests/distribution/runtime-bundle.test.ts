@@ -249,9 +249,9 @@ describe('runtime bundle contract', () => {
 
     expect(classifyRuntimeBundlePath('scripts/seed-workspace-edge-route.ts')).toBe('operator-only');
     expect(classifyRuntimeBundlePath('tools/filesystem/handler.ts')).toBe('managed-tool');
-    expect(classifyRuntimeBundlePath('tools/deployment-provider/service.ts')).toBe('managed-tool');
-    expect(classifyRuntimeBundlePath('tools/deployment-provider/process.ts')).toBe('managed-tool');
-    expect(classifyRuntimeBundlePath('tools/deployment-provider/types.ts')).toBe('managed-tool');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/service.ts')).toBe('customer-provider');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/process.ts')).toBe('customer-provider');
+    expect(classifyRuntimeBundlePath('tools/deployment-provider/types.ts')).toBe('customer-provider');
     expect(classifyRuntimeBundlePath('tools/filesystem/manifest.ts')).toBe('source-only');
     expect(classifyRuntimeBundlePath('tools/filesystem/schema.ts')).toBe('source-only');
     expect(classifyRuntimeBundlePath('tools/filesystem/handler.test.ts')).toBe('test-only');
@@ -274,6 +274,34 @@ describe('runtime bundle contract', () => {
     ).rejects.toThrow(
       'operator-only content cannot enter a runtime bundle: scripts/seed-workspace-edge-route.ts',
     );
+  });
+
+  it('classifies all customer deployment adapters separately from operator infrastructure', () => {
+    for (const filePath of [
+      'tools/deployment-provider/facade.ts',
+      'tools/deployment-provider/service.ts',
+      'tools/deployment-provider/process.ts',
+      'tools/deployment-provider/types.ts',
+      'tools/deployment-provider/errors.ts',
+      'tools/deployment-provider/redaction.ts',
+      'tools/deployment-provider/vercel.ts',
+      'tools/deployment-provider/cloudflare.ts',
+      'tools/deployment-provider/cloudflare-runner.ts',
+      'tools/railway/adapter.ts',
+      'tools/railway/service.ts',
+      'tools/railway/cli.ts',
+    ]) {
+      expect(classifyRuntimeBundlePath(filePath), filePath).toBe('customer-provider');
+    }
+
+    for (const filePath of [
+      'cloudflare/workspace-edge-router/src/index.ts',
+      'operator/deploy-cloudflare.ts',
+      'scripts/lib/platform-cloudflare-provisioning.ts',
+      'scripts/lib/workspace-cloudflare-edge-router.ts',
+    ]) {
+      expect(classifyRuntimeBundlePath(filePath), filePath).toBe('operator-only');
+    }
   });
 
   it('fails when an explicitly requested file has no classification', async () => {
@@ -458,16 +486,18 @@ describe('runtime bundle contract', () => {
     expect(first.manifest.files.length).toBeGreaterThan(300);
     expect(first.manifest.files.some((file) => file.path === 'scripts/railway-logs.js')).toBe(true);
     expect(first.manifest.files).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        path: 'tools/deployment-provider/service.ts',
-        role: 'managed-tool',
-      }),
+      expect.objectContaining({ path: 'tools/deployment-provider/facade.ts', role: 'customer-provider' }),
+      expect.objectContaining({ path: 'tools/deployment-provider/vercel.ts', role: 'customer-provider' }),
+      expect.objectContaining({ path: 'tools/deployment-provider/cloudflare.ts', role: 'customer-provider' }),
+      expect.objectContaining({ path: 'tools/railway/adapter.ts', role: 'customer-provider' }),
     ]));
     expect(first.manifest.files.some((file) => file.path === 'tools/deployment-provider/testing.ts')).toBe(false);
     expect(first.manifest.files.some((file) => file.path.startsWith('scripts/testing/'))).toBe(false);
     expect(first.manifest.files.some((file) => file.path === 'scripts/release-channels.ts')).toBe(false);
     expect(first.manifest.files.some((file) => file.path === 'scripts/prepare-release-publication.ts')).toBe(false);
     expect(first.manifest.files.some((file) => file.path.startsWith('operator/'))).toBe(false);
+    expect(first.manifest.files.some((file) => file.path.startsWith('cloudflare/'))).toBe(false);
+    expect(first.manifest.files.some((file) => file.path === 'scripts/lib/platform-cloudflare-provisioning.ts')).toBe(false);
     expect(first.excludedCounts['operator-only']).toBeGreaterThan(0);
     expect(first.excludedCounts['test-only']).toBeGreaterThan(0);
     const archive = inspectRuntimeBundleArchive(first.archiveBytes);

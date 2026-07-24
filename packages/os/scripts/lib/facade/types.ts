@@ -9,7 +9,19 @@ export type ErrorCode =
   | 'NOT_FOUND'
   | 'TASK_SESSION_NOT_FOUND'
   | 'TASK_SESSION_REQUIRED'
-  | 'DRY_RUN';
+  | 'DRY_RUN'
+  | 'CLI_MISSING'
+  | 'UNSUPPORTED_VERSION'
+  | 'UNAUTHENTICATED'
+  | 'NO_CONTEXT'
+  | 'PERMISSION_DENIED'
+  | 'RATE_LIMITED'
+  | 'UNAVAILABLE'
+  | 'MALFORMED_OUTPUT'
+  | 'INVALID_INPUT'
+  | 'UNSUPPORTED_CAPABILITY'
+  | 'APPROVAL_REQUIRED'
+  | 'CANCELLED';
 
 export type ToolCapabilities = {
   readOnly: boolean;

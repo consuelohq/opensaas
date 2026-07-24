@@ -65,12 +65,38 @@ describe('deployment provider core', () => {
     expectTypeOf(service.environmentSet({ name: 'FEATURE_FLAG', value: 'enabled' })).toEqualTypeOf<Effect.Effect<ProviderEnvironmentSetResult, ProviderError>>();
   });
 
-  it('keeps the provider-neutral package canonical without publishing tools early', () => {
-    expect(toolPackage.domain).toBe('deployment-provider');
+  it('publishes the canonical provider-neutral deployment package', () => {
+    expect(toolPackage.domain).toBe('deployment');
     expect(toolPackage.sourcePath).toBe('packages/os/tools/deployment-provider/manifest.ts');
-    expect(toolPackage.definitions).toEqual([]);
-    expect(toolPackage.handlers).toEqual([]);
-    expect(toolPackage.schemas).toEqual([]);
+    expect(toolPackage.definitions.map((definition) => definition.name)).toEqual([
+      'deployment.detect',
+      'deployment.context',
+      'deployment.list',
+      'deployment.status',
+      'deployment.logs',
+      'deployment.deploy',
+      'deployment.environment',
+      'deployment.raw',
+    ]);
+    expect(toolPackage.handlers.map((handler) => handler.name)).toEqual(
+      toolPackage.definitions.map((definition) => definition.name),
+    );
+    expect(toolPackage.schemas.map((schema) => schema.name)).toEqual(
+      toolPackage.definitions.map((definition) => definition.name),
+    );
+    expect(toolPackage.definitions.every((definition) => definition.category === 'deployment')).toBe(true);
+    expect(toolPackage.definitions.every((definition) => definition.exampleInput?.provider === 'railway')).toBe(true);
+    expect(toolPackage.handlers.every((handler) => handler.command.script === 'deployment')).toBe(true);
+    expect(toolPackage.handlers.every((handler) => handler.command.internal === 'deployment')).toBe(true);
+
+    const mutating = toolPackage.definitions
+      .filter((definition) => definition.capabilities.mutating)
+      .map((definition) => definition.name);
+    expect(mutating).toEqual([
+      'deployment.deploy',
+      'deployment.environment',
+      'deployment.raw',
+    ]);
   });
 
   it('detects the installed CLI, parses its version, and rejects unsupported versions', async () => {
