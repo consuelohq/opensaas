@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-cross-platform-release-fingerprint-parity",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1632,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1632",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1632",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1632/fix-cross-platform-release-fingerprint-parity",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1632",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1632/fix-cross-platform-release-fingerprint-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-cross-platform-release-fingerprint-parity",
+  "taskSession": "tsk_8785082fde37",
+  "tmuxSession": "opensaas-os-distribution-fix-cross-platform-release-fingerprint-parity-8785082f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-cross-platform-release-fingerprint-parity/.task/os-distribution/fix-cross-platform-release-fingerprint-parity/session.json",
+  "createdAt": "2026-07-24T07:11:24.190Z"
+}

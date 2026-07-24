@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_61626492acfb",
+  "tmuxSession": "opensaas-os-distribution-fix-dev-publication-frozen-lockfile-install-61626492",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-dev-publication-frozen-lockfile-install",
+  "branch": "task/os-distribution/fix-dev-publication-frozen-lockfile-install",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-dev-publication-frozen-lockfile-install",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-dev-publication-frozen-lockfile-install",
+  "prNumber": 1626,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1626",
+  "createdAt": "2026-07-24T05:29:49.447Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-dev-publication-frozen-lockfile-install/.task/os-distribution/fix-dev-publication-frozen-lockfile-install/session.json"
+}

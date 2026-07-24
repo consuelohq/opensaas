@@ -383,6 +383,36 @@ describe('runtime bundle contract', () => {
     expect(versionOne.manifest.bundleId).not.toBe(versionTwo.manifest.bundleId);
   });
 
+  it('keeps the release fingerprint stable across POSIX and Windows source representations', async () => {
+    const portableScript = '#!/usr/bin/env bash\necho portable\n';
+    const posixRoot = createFixture({ 'scripts/portable.sh': portableScript });
+    writeFixtureFile(posixRoot, 'scripts/portable.sh', portableScript, 0o755);
+
+    const windowsRoot = createFixture({
+      'scripts/portable.sh': portableScript.replaceAll('\n', '\r\n'),
+    });
+    for (const [relativePath, content] of Object.entries({
+      ...requiredFixtureFiles,
+      'scripts/portable.sh': portableScript,
+    })) {
+      writeFixtureFile(
+        windowsRoot,
+        relativePath,
+        content.replaceAll('\n', '\r\n'),
+        0o666,
+      );
+    }
+
+    const posix = await computeReleaseFingerprint({ sourceRoot: posixRoot });
+    const windows = await computeReleaseFingerprint({ sourceRoot: windowsRoot });
+
+    expect(windows.releaseFingerprint).toBe(posix.releaseFingerprint);
+    expect(posix.files.find((file) => file.path === 'scripts/os.ts')?.mode).toBe(0o644);
+    expect(windows.files.find((file) => file.path === 'scripts/os.ts')?.mode).toBe(0o644);
+    expect(posix.files.find((file) => file.path === 'scripts/portable.sh')?.mode).toBe(0o755);
+    expect(windows.files.find((file) => file.path === 'scripts/portable.sh')?.mode).toBe(0o755);
+  });
+
   it('produces byte-identical archives with deterministic ordering', async () => {
     const root = createFixture({
       'scripts/z-last.ts': 'export const z = true;\n',
