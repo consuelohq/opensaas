@@ -178,12 +178,14 @@ When portless is configured or discoverable, setup also installs:
 ~/Library/LaunchAgents/com.consuelo.portless.system.plist
 ```
 
-The labels stay:
+The baseline labels stay:
 
 ```text
 com.consuelo.system
 com.consuelo.watchdog
 ```
+
+Host power policy is opt-in. Set `CONSUELO_AVAILABILITY_ENABLED=1` before daemon generation or installation to add `com.consuelo.availability`, which runs Apple `/usr/bin/caffeinate -s` and prevents system sleep only while the Mac is connected to AC power. It does not prevent display sleep or alter global `pmset` settings. Disabling the setting removes an existing Consuelo availability LaunchAgent on the next daemon installation. The watchdog runs as a periodic one-shot health check and stores counters and recovery state under `$CONSUELO_HOME/node/runtime/watchdog`.
 
 Portless is optional. If present, status output may also include `com.consuelo.portless.system`; otherwise Consuelo OS uses the regular local service port on `http://127.0.0.1:46321`.
 
@@ -211,6 +213,7 @@ Status and stop paths are available through the local server helper and `launchc
 bun --cwd packages/os run server -- status
 bun --cwd packages/os run server -- stop
 launchctl bootout "gui/$(id -u)/com.consuelo.watchdog" || true
+launchctl bootout "gui/$(id -u)/com.consuelo.availability" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/com.consuelo.portless.system" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/com.consuelo.system" || true
 ```
@@ -220,6 +223,7 @@ To remove the user LaunchAgent plists after stopping them:
 ```bash
 rm -f ~/Library/LaunchAgents/com.consuelo.system.plist
 rm -f ~/Library/LaunchAgents/com.consuelo.watchdog.plist
+rm -f ~/Library/LaunchAgents/com.consuelo.availability.plist
 rm -f ~/Library/LaunchAgents/com.consuelo.portless.system.plist
 ```
 ## Current Boundary

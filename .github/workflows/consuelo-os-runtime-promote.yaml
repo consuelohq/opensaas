@@ -42,6 +42,7 @@ jobs:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
+        working-directory: packages/os
         run: bun install --frozen-lockfile
       - name: Restore authoritative release state
         env:

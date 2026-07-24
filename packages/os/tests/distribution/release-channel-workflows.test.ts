@@ -1,12 +1,30 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
 const repoRoot = resolve(import.meta.dirname, '../../../..');
 
 function read(path: string): string {
   return readFileSync(resolve(repoRoot, path), 'utf8');
+}
+
+type WorkflowStep = {
+  name?: string;
+  run?: string;
+  'working-directory'?: string;
+};
+
+type ReleaseWorkflow = {
+  jobs?: Record<string, { steps?: WorkflowStep[] }>;
+};
+
+function dependencyInstallSteps(workflow: string): WorkflowStep[] {
+  const parsed = parse(workflow) as ReleaseWorkflow;
+  return Object.values(parsed.jobs ?? {})
+    .flatMap((job) => job.steps ?? [])
+    .filter((step) => step.name === 'Install dependencies');
 }
 
 describe('Consuelo OS release-channel workflows', () => {
@@ -81,6 +99,28 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).not.toContain('expected_revision:');
     expect(workflow).toContain('release_revision=');
     expect(workflow).toContain('--expected-revision \"${release_revision}\"');
+  });
+
+  it('installs release dependencies from the OS package lockfile', () => {
+    const workflows = [
+      ['publish', read('.github/workflows/consuelo-os-runtime-publish.yaml'), 3],
+      ['promote', read('.github/workflows/consuelo-os-runtime-promote.yaml'), 1],
+      ['rollback', read('.github/workflows/consuelo-os-runtime-rollback.yaml'), 1],
+    ] as const;
+
+    for (const [name, workflow, expectedInstallCount] of workflows) {
+      const installSteps = dependencyInstallSteps(workflow);
+
+      expect(installSteps, `${name} install step count`).toHaveLength(expectedInstallCount);
+      for (const step of installSteps) {
+        expect(step['working-directory'], `${name} install working directory`).toBe(
+          'packages/os',
+        );
+        expect(step.run, `${name} frozen OS lockfile install`).toBe(
+          'bun install --frozen-lockfile',
+        );
+      }
+    }
   });
 
   it('allowlists only the dedicated release workflows for write permissions', () => {
