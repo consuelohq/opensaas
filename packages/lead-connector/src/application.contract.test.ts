@@ -153,6 +153,7 @@ const makeHarness = (
 const connectedInstallation = (
   overrides: Partial<LeadConnectorInstallation> = {},
 ): LeadConnectorInstallation => ({
+  installationId: 'installation-1',
   workspaceId: 'workspace-1',
   locationId: 'location-1',
   accessTokenCiphertext: 'encrypted:access-old',

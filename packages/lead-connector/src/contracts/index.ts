@@ -18,6 +18,7 @@ export type LeadConnectorOAuthState = {
 };
 
 export type LeadConnectorInstallation = {
+  installationId: string;
   workspaceId: string;
   locationId: string;
   accessTokenCiphertext: string;
@@ -26,6 +27,23 @@ export type LeadConnectorInstallation = {
   scopes: string[];
   connectedAt: string;
   updatedAt: string;
+};
+
+export type LeadConnectorUserContext = {
+  userId: string;
+  companyId: string;
+  role: string;
+  type: 'agency' | 'location';
+  activeLocation: string | null;
+  versionId: string | null;
+  appStatus: string | null;
+};
+
+export type LeadConnectorEmbedIdentity = {
+  workspaceId: string;
+  userId: string;
+  installationId: string;
+  locationId: string;
 };
 
 export type LeadConnectorHttpMethod = 'DELETE' | 'GET' | 'POST' | 'PUT';

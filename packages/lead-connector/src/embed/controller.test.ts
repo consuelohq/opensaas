@@ -77,10 +77,26 @@ const createApi = (): LeadConnectorEmbedApi => ({
 });
 
 describe('LeadConnector embed controller', () => {
+  it('projects a recoverable parent authentication failure instead of remaining in booting', () => {
+    const controller = createLeadConnectorEmbedController({ api: createApi() });
+    controller.fail({
+      code: 'EMBED_PARENT_UNAVAILABLE',
+      message: 'Open the dialer from the LeadConnector custom menu.',
+      recoverable: true,
+    });
+    expect(controller.getState()).toMatchObject({
+      phase: 'failed',
+      error: {
+        code: 'EMBED_PARENT_UNAVAILABLE',
+        recoverable: true,
+      },
+    });
+  });
+
   it('authenticates, loads resources, starts a backend-authoritative call, terminates, and writes disposition', async () => {
     const api = createApi();
     const controller = createLeadConnectorEmbedController({ api });
-    await controller.authenticate('bootstrap-token');
+    await controller.authenticate('opaque-parent-ciphertext');
     expect(controller.getState()).toMatchObject({
       phase: 'ready',
       sessionToken: 'embed-token',
@@ -130,7 +146,7 @@ describe('LeadConnector embed controller', () => {
   it('searches resources with pipeline and stage filters and supports queue pause and resume', async () => {
     const api = createApi();
     const controller = createLeadConnectorEmbedController({ api });
-    await controller.authenticate('bootstrap-token');
+    await controller.authenticate('opaque-parent-ciphertext');
     await controller.searchContacts('Test');
     await controller.searchOpportunities({
       query: 'Renewal',
@@ -156,7 +172,7 @@ describe('LeadConnector embed controller', () => {
   it('starts multiline calls through the queue predictive contract', async () => {
     const api = createApi();
     const controller = createLeadConnectorEmbedController({ api });
-    await controller.authenticate('bootstrap-token');
+    await controller.authenticate('opaque-parent-ciphertext');
     for (const [index, phone] of ['+15550100123', '+15550100124'].entries()) {
       const target = normalizeClickToCallTarget({
         phone,
@@ -182,7 +198,7 @@ describe('LeadConnector embed controller', () => {
       throw new EmbedSessionExpiredError();
     });
     const controller = createLeadConnectorEmbedController({ api });
-    await controller.authenticate('bootstrap-token');
+    await controller.authenticate('opaque-parent-ciphertext');
     expect(controller.getState()).toMatchObject({
       phase: 'authenticating',
       sessionToken: null,

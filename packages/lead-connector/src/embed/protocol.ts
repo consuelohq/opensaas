@@ -21,6 +21,7 @@ export type LeadConnectorClickToCallTarget = {
 };
 
 export type LeadConnectorEmbedMessage =
+  | { type: 'bootstrap'; encryptedData: string }
   | { type: 'handshake'; bootstrapToken: string }
   | {
       type: 'click-to-call';
@@ -84,6 +85,7 @@ export const createLeadConnectorParentBridge = (
   host: EmbedMessageHost,
   options: {
     allowedOrigins: readonly string[];
+    parentOrigin?: string;
     onMessage: (message: LeadConnectorEmbedMessage) => void;
     onProtocolError?: (error: LeadConnectorProtocolError) => void;
   },
@@ -98,7 +100,18 @@ export const createLeadConnectorParentBridge = (
       return;
     }
     const data = readRecord(event.data);
-    if (!data || typeof data.type !== 'string') return;
+    if (!data) return;
+    if (data.message === 'REQUEST_USER_DATA_RESPONSE') {
+      const encryptedData = readOptionalString(data, 'payload');
+      if (!encryptedData) {
+        options.onProtocolError?.('INVALID_MESSAGE');
+        return;
+      }
+      activeOrigin = event.origin;
+      options.onMessage({ type: 'bootstrap', encryptedData });
+      return;
+    }
+    if (typeof data.type !== 'string') return;
     if (data.version !== LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION) {
       options.onProtocolError?.('PROTOCOL_VERSION_MISMATCH');
       return;
@@ -143,6 +156,11 @@ export const createLeadConnectorParentBridge = (
     if (activeOrigin) host.parent.postMessage(message, activeOrigin);
   };
 
+  const configuredParentOrigin = options.parentOrigin?.trim() || null;
+  if (configuredParentOrigin && !trusted.has(configuredParentOrigin)) {
+    throw new Error('LeadConnector parent origin is not trusted');
+  }
+
   return {
     start: () => {
       if (started) return;
@@ -153,6 +171,17 @@ export const createLeadConnectorParentBridge = (
       if (!started) return;
       started = false;
       host.removeEventListener('message', handler);
+    },
+    requestUserContext: () => {
+      if (!configuredParentOrigin) {
+        options.onProtocolError?.('INVALID_MESSAGE');
+        return;
+      }
+      activeOrigin = configuredParentOrigin;
+      host.parent.postMessage(
+        { message: 'REQUEST_USER_DATA' },
+        configuredParentOrigin,
+      );
     },
     sendReady: () =>
       post({

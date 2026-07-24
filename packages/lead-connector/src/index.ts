@@ -14,7 +14,9 @@ export type {
   LeadConnectorHttpRequest,
   LeadConnectorHttpResponse,
   LeadConnectorInstallation,
+  LeadConnectorEmbedIdentity,
   LeadConnectorOAuthState,
+  LeadConnectorUserContext,
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
   LeadConnectorPipelineStage,
@@ -26,6 +28,7 @@ export type {
 export {
   LeadConnectorInstallationNotFoundError,
   LeadConnectorInstallationOwnershipError,
+  LeadConnectorEmbedIdentityError,
   LeadConnectorOAuthStateError,
   LeadConnectorProviderError,
   LeadConnectorStateError,
@@ -43,6 +46,7 @@ export {
   LeadConnectorOAuthStateStore,
   LeadConnectorRandom,
   LeadConnectorTokenCipher,
+  LeadConnectorUserContextDecoder,
   LeadConnectorWebhookEventStore,
   LeadConnectorWebhookVerifier,
 } from './ports/index.js';
@@ -53,6 +57,7 @@ export type {
   LeadConnectorOAuthStateStoreService,
   LeadConnectorRandomService,
   LeadConnectorTokenCipherService,
+  LeadConnectorUserContextDecoderService,
   LeadConnectorWebhookEventStoreService,
   LeadConnectorWebhookVerificationInput,
   LeadConnectorWebhookVerifierService,
@@ -77,6 +82,10 @@ export {
   searchLeadConnectorOpportunities,
 } from './application/resources.js';
 export { processLeadConnectorWebhook } from './application/webhooks.js';
+export {
+  exchangeLeadConnectorEmbedContext,
+  validateLeadConnectorEmbedIdentity,
+} from './application/embed-bootstrap.js';
 
 export { createLeadConnectorFetchTransportLayer } from './infrastructure/fetch-transport.js';
 export {
@@ -85,6 +94,15 @@ export {
   liveLeadConnectorRandomLayer,
 } from './infrastructure/runtime.js';
 export { createLeadConnectorTokenCipherLayer } from './infrastructure/token-cipher.js';
+export { createLeadConnectorUserContextDecoderLayer } from './infrastructure/user-context-decoder.js';
+export {
+  createPersistentLeadConnectorStoreLayer,
+  initializeLeadConnectorPersistence,
+} from './infrastructure/persistent-stores.js';
+export type {
+  LeadConnectorCache,
+  LeadConnectorDatabase,
+} from './infrastructure/persistent-stores.js';
 export {
   createLeadConnectorWebhookVerifierLayer,
   verifyLeadConnectorWebhookSignature,

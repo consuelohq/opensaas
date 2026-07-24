@@ -77,12 +77,11 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
     setSessionToken: (token: string | null) => {
       sessionToken = token;
     },
-    createEmbedSession: (bootstrapToken: string) =>
-      request<{ token: string; expiresAt: string }>(
-        '/v1/embed/session',
-        { method: 'POST' },
-        bootstrapToken,
-      ),
+    createEmbedSession: (encryptedData: string) =>
+      request<{ token: string; expiresAt: string }>('/v1/embed/session', {
+        method: 'POST',
+        body: JSON.stringify({ encryptedData }),
+      }),
     listContacts: (
       input: { query?: string; limit?: number; cursor?: string } = {},
     ) => {

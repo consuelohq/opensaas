@@ -57,7 +57,7 @@ describe('LeadConnector embed API client', () => {
       baseUrl: 'https://dialer.test',
       fetch: fetcher,
     });
-    const session = await api.createEmbedSession('bootstrap-token');
+    const session = await api.createEmbedSession('opaque-parent-ciphertext');
     api.setSessionToken(session.token);
     await api.listContacts({ query: 'Ada' });
     await api.searchOpportunities({
@@ -81,9 +81,10 @@ describe('LeadConnector embed API client', () => {
       tags: ['called'],
     });
     expect(requests).toHaveLength(8);
-    expect(requests[0]?.headers.get('authorization')).toBe(
-      'Bearer bootstrap-token',
-    );
+    expect(requests[0]?.headers.get('authorization')).toBeNull();
+    expect(await requests[0]?.json()).toEqual({
+      encryptedData: 'opaque-parent-ciphertext',
+    });
     for (const request of requests.slice(1))
       expect(request.headers.get('authorization')).toBe('Bearer embed-token');
   });

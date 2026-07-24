@@ -51,6 +51,15 @@ const createDependencies = (): DialerServerDependencies => ({
     ),
     listPipelines: mock(() => Effect.succeed([])),
     recordDisposition: mock(() => Effect.succeed({ recorded: true as const })),
+    exchangeEmbedBootstrap: mock(() =>
+      Effect.succeed({
+        workspaceId: 'workspace-1',
+        userId: 'provider-user-1',
+        installationId: 'installation-1',
+        locationId: 'location-1',
+      }),
+    ),
+    validateEmbedIdentity: mock(() => Effect.succeed(true)),
   },
 });
 

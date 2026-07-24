@@ -19,14 +19,17 @@
     "test": "bun test src",
     "typecheck": "tsc --noEmit",
     "build": "tsc && bun run build:embed",
-    "build:embed": "bun ./scripts/build-embed.ts"
+    "build:embed": "bun ./scripts/build-embed.ts",
+    "deploy:embed": "bun run build:embed && wrangler deploy --config wrangler.jsonc",
+    "configure:sandbox-menu": "bun ./scripts/configure-sandbox-menu.ts"
   },
   "dependencies": {
     "effect": "^3.21.3"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "wrangler": "^4.27.0"
   },
   "publishConfig": {
     "access": "public"

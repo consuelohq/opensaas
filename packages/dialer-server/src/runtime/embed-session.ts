@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
+import type { LeadConnectorEmbedIdentity } from '@consuelo/lead-connector';
+
 import type { DialerIdentity } from '../contracts';
 
 const VERSION = 1;
@@ -17,10 +19,8 @@ const bearerToken = (request: Request): string | null => {
     : null;
 };
 
-type EmbedSessionPayload = {
+type EmbedSessionPayload = LeadConnectorEmbedIdentity & {
   version: number;
-  workspaceId: string;
-  userId: string;
   issuedAt: number;
   expiresAt: number;
 };
@@ -36,6 +36,10 @@ const parsePayload = (value: string): EmbedSessionPayload | null => {
       !payload.workspaceId ||
       typeof payload.userId !== 'string' ||
       !payload.userId ||
+      typeof payload.installationId !== 'string' ||
+      !payload.installationId ||
+      typeof payload.locationId !== 'string' ||
+      !payload.locationId ||
       typeof payload.issuedAt !== 'number' ||
       typeof payload.expiresAt !== 'number'
     ) {
@@ -51,6 +55,7 @@ export const createEmbedSessionService = (options: {
   secret: string;
   ttlSeconds?: number;
   now?: () => number;
+  validateIdentity?: (identity: LeadConnectorEmbedIdentity) => Promise<boolean>;
 }) => {
   if (options.secret.length < 24) {
     throw new Error('Embed session secret must contain at least 24 characters');
@@ -61,7 +66,7 @@ export const createEmbedSessionService = (options: {
     createHmac('sha256', options.secret).update(payload).digest('base64url');
 
   return {
-    issue: async (identity: DialerIdentity) => {
+    issue: async (identity: LeadConnectorEmbedIdentity) => {
       const issuedAt = Math.floor(now() / 1000);
       const expiresAt = issuedAt + ttlSeconds;
       const payload = encode(
@@ -69,6 +74,8 @@ export const createEmbedSessionService = (options: {
           version: VERSION,
           workspaceId: identity.workspaceId,
           userId: identity.userId,
+          installationId: identity.installationId,
+          locationId: identity.locationId,
           issuedAt,
           expiresAt,
         } satisfies EmbedSessionPayload),
@@ -101,10 +108,20 @@ export const createEmbedSessionService = (options: {
       ) {
         return null;
       }
-      return {
+      const identity: LeadConnectorEmbedIdentity = {
         workspaceId: payload.workspaceId,
         userId: payload.userId,
+        installationId: payload.installationId,
+        locationId: payload.locationId,
       };
+      if (options.validateIdentity) {
+        try {
+          if (!(await options.validateIdentity(identity))) return null;
+        } catch (_error: unknown) {
+          return null;
+        }
+      }
+      return identity;
     },
   };
 };
