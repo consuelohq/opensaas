@@ -62,6 +62,9 @@ export type LifecycleOperation =
   | 'update'
   | 'restart'
   | 'repair'
+  | 'rollback'
+  | 'uninstall'
+  | 'reset'
   | 'channel'
   | 'notifications';
 
@@ -80,6 +83,10 @@ export type LifecycleProgressPhase =
   | 'service-restart'
   | 'health'
   | 'repair-scan'
+  | 'rollback'
+  | 'retention'
+  | 'uninstall'
+  | 'reset'
   | 'complete';
 
 export type LifecycleProgressEvent = {
@@ -114,6 +121,10 @@ export type LifecycleServiceController = {
     operationId?: string;
     expectedBundleId?: string;
     waitForCompletion?: boolean;
+  }): Promise<void>;
+  uninstall?(input?: {
+    dryRun?: boolean;
+    home?: string;
   }): Promise<void>;
 };
 
@@ -178,6 +189,13 @@ export type LifecycleEngine = {
   }): Promise<LifecycleOperationResult>;
   restart(): Promise<LifecycleOperationResult>;
   repair(): Promise<LifecycleOperationResult>;
+  rollback(input?: { dryRun?: boolean }): Promise<LifecycleOperationResult>;
+  uninstall(input?: {
+    dryRun?: boolean;
+    removeNode?: boolean;
+    removeUserContent?: boolean;
+  }): Promise<LifecycleOperationResult>;
+  devReset(input?: { yes?: boolean; dryRun?: boolean }): Promise<LifecycleOperationResult>;
   setChannel(channel: LifecycleReleaseChannel): Promise<LifecycleOperationResult>;
   setUpdateNotifications(
     preference: LifecycleNotificationPreference,

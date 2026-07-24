@@ -118,6 +118,18 @@ type InstalledSkillsRegistry = {
   }>;
 };
 
+type InstalledSkillsComponentIndex = {
+  kind?: string;
+  selected?: Array<{
+    id?: string;
+    name?: string;
+    permission?: string;
+  }>;
+  legacyCustom?: Array<{
+    id?: string;
+  }>;
+};
+
 const CLOUD_CONNECTOR_PLACEHOLDERS = [
   { id: 'grok', label: 'Grok' },
   { id: 'cursor-cloud', label: 'Cursor' },
@@ -204,6 +216,36 @@ function readInstalledSkills(
     listBundledSkills().map((skill) => [skill.name, skill]),
   );
   const selectedNames = new Set(selectedSkills);
+  const componentIndex = readJsonFile<InstalledSkillsComponentIndex>(
+    path.join(home, 'components', 'installed-skills.json'),
+  );
+  if (componentIndex?.kind === 'consuelo-installed-skill-index') {
+    const indexed = (componentIndex.selected ?? []).flatMap((skill) => {
+      const name = typeof skill.id === 'string' && skill.id.length > 0
+        ? skill.id
+        : typeof skill.name === 'string' && skill.name.length > 0
+          ? skill.name
+          : null;
+      if (!name || (selectedNames.size > 0 && !selectedNames.has(name))) return [];
+      const bundled = bundledByName.get(name);
+      return [{
+        name,
+        permission: typeof skill.permission === 'string'
+          ? skill.permission
+          : bundled?.permission ?? '',
+        configurable: true,
+      }];
+    });
+    const custom = (componentIndex.legacyCustom ?? []).flatMap((skill) =>
+      typeof skill.id === 'string' && skill.id.length > 0
+        ? [{ name: skill.id, permission: '', configurable: false }]
+        : [],
+    );
+    return [...indexed, ...custom].filter((skill, index, all) =>
+      all.findIndex((candidate) => candidate.name === skill.name) === index,
+    );
+  }
+
   const registry = readJsonFile<InstalledSkillsRegistry>(
     path.join(home, 'skills', 'skills.json'),
   );

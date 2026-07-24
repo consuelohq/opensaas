@@ -15,6 +15,7 @@ import {
   renderLifecycleResult,
   type LifecycleEngine,
   type LifecycleNotificationPreference,
+  type LifecycleOperationResult,
   type LifecycleProgressEvent,
   type LifecycleReleaseChannel,
   type ReleaseSource,
@@ -35,6 +36,9 @@ type ParsedLifecycleArgs = {
   channel?: LifecycleReleaseChannel;
   check: boolean;
   yes: boolean;
+  dryRun: boolean;
+  removeNode: boolean;
+  removeUserContent: boolean;
   json: boolean;
   quiet: boolean;
   home?: string;
@@ -52,6 +56,9 @@ Usage:
   consuelo channel set <channel> [--json]
   consuelo updates notifications on|off|snooze [--until <iso>] [--json]
   consuelo repair [--json] [--quiet]
+  consuelo rollback [--dry-run] [--json] [--quiet]
+  consuelo uninstall [--dry-run] [--remove-node] [--remove-user-content] [--json]
+  consuelo dev reset --yes [--dry-run] [--json]
 
 Channels: stable, beta, canary, dev, nightly
 `;
@@ -69,6 +76,9 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
     positional,
     check: false,
     yes: false,
+    dryRun: false,
+    removeNode: false,
+    removeUserContent: false,
     json: false,
     quiet: false,
   };
@@ -79,6 +89,9 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
     else if (arg === '--quiet') parsed.quiet = true;
     else if (arg === '--check') parsed.check = true;
     else if (arg === '--yes' || arg === '-y') parsed.yes = true;
+    else if (arg === '--dry-run') parsed.dryRun = true;
+    else if (arg === '--remove-node') parsed.removeNode = true;
+    else if (arg === '--remove-user-content') parsed.removeUserContent = true;
     else if (arg === '--channel') {
       const value = nextValue(argv, index, arg);
       if (!lifecycleReleaseChannels.includes(value as LifecycleReleaseChannel)) {
@@ -115,7 +128,14 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
     case 'restart':
     case 'update':
     case 'repair':
+    case 'rollback':
+    case 'uninstall':
       rejectPositionals();
+      break;
+    case 'dev':
+      if (parsed.positional.length !== 1 || parsed.positional[0] !== 'reset') {
+        throw new Error('dev requires `reset`');
+      }
       break;
     case 'channel': {
       const action = parsed.positional[0] ?? 'show';
@@ -139,8 +159,17 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   if (parsed.check && parsed.command !== 'update') {
     throw new Error('--check is only valid for update');
   }
-  if (parsed.yes && parsed.command !== 'update') {
-    throw new Error('--yes is only valid for update');
+  if (parsed.yes && parsed.command !== 'update' && parsed.command !== 'dev') {
+    throw new Error('--yes is only valid for update or dev reset');
+  }
+  if (parsed.dryRun && !['rollback', 'uninstall', 'dev'].includes(parsed.command)) {
+    throw new Error('--dry-run is only valid for rollback, uninstall, or dev reset');
+  }
+  if (parsed.removeNode && parsed.command !== 'uninstall') {
+    throw new Error('--remove-node is only valid for uninstall');
+  }
+  if (parsed.removeUserContent && parsed.command !== 'uninstall') {
+    throw new Error('--remove-user-content is only valid for uninstall');
   }
   if (parsed.channel && !['install', 'update'].includes(parsed.command)) {
     throw new Error('--channel is only valid for install or update');
@@ -244,7 +273,7 @@ function notificationPreference(parsed: ParsedLifecycleArgs): LifecycleNotificat
 async function executeCommand(
   parsed: ParsedLifecycleArgs,
   engine: LifecycleEngine,
-): Promise<Awaited<ReturnType<LifecycleEngine['status']>>> {
+): Promise<LifecycleOperationResult> {
   switch (parsed.command) {
     case 'status':
       return engine.status();
@@ -260,6 +289,16 @@ async function executeCommand(
       });
     case 'repair':
       return engine.repair();
+    case 'rollback':
+      return engine.rollback({ dryRun: parsed.dryRun });
+    case 'uninstall':
+      return engine.uninstall({
+        dryRun: parsed.dryRun,
+        removeNode: parsed.removeNode,
+        removeUserContent: parsed.removeUserContent,
+      });
+    case 'dev':
+      return engine.devReset({ yes: parsed.yes, dryRun: parsed.dryRun });
     case 'channel': {
       const action = parsed.positional[0] ?? 'show';
       if (action === 'show') return engine.status();
