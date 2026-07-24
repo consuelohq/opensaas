@@ -403,7 +403,7 @@ export function createLinuxPlatformAdapter(input: {
       try {
         await assertSupported();
         if (options.dryRun) return;
-        if ((await activeManager()) === 'systemd-user') {
+        if (await systemdAvailable()) {
           const disable = { executable: 'systemctl', args: ['--user', 'disable', '--now', UNIT_NAME], environment };
           const result = await run(disable);
           const detail = `${result.stdout}\n${result.stderr}`;
@@ -412,7 +412,6 @@ export function createLinuxPlatformAdapter(input: {
           const reload = { executable: 'systemctl', args: ['--user', 'daemon-reload'], environment };
           const reloaded = await run(reload);
           if (reloaded.exitCode !== 0) throw commandError(reload, reloaded);
-          return;
         }
         stopSessionProcess();
         rmSync(paths.unitPath, { force: true });

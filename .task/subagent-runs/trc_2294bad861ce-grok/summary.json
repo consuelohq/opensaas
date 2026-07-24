@@ -1,0 +1,8 @@
+{
+  "provider": "grok",
+  "traceId": "trc_2294bad861ce",
+  "stdoutChars": 8028,
+  "stderrChars": 0,
+  "stdoutLogPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-linux-platform-support/.task/subagent-runs/trc_2294bad861ce-grok/stdout.log",
+  "stderrLogPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-linux-platform-support/.task/subagent-runs/trc_2294bad861ce-grok/stderr.log"
+}

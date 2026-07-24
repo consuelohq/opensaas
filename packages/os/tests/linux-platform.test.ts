@@ -218,4 +218,33 @@ describe('Linux platform adapter', () => {
     expect(readFileSync(join(paths.systemdUserDir, 'user-owned.service'), 'utf8')).toBe('keep\n');
     expect(readFileSync(join(home, 'workspaces', 'user-workspace', 'note.md'), 'utf8')).toBe('keep\n');
   });
+
+  it('disables systemd and stops fallback state during mixed-manager uninstall', async () => {
+    const paths = resolveLinuxPlatformPaths(home);
+    mkdirSync(paths.systemdUserDir, { recursive: true });
+    mkdirSync(paths.runsDir, { recursive: true });
+    writeFileSync(paths.unitPath, 'owned unit\n');
+    writeFileSync(paths.sessionStatePath, `${JSON.stringify({ pid: 4242 })}\n`);
+    const adapter = createLinuxPlatformAdapter({
+      home,
+      host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
+      run: runner([
+        { exitCode: 0 },
+        { exitCode: 0 },
+        { exitCode: 0 },
+      ]),
+      bunExecutable: '/opt/bun',
+      isProcessAlive: () => false,
+    });
+
+    await adapter.uninstall();
+
+    expect(commands.map(({ executable, args }) => [executable, args])).toEqual([
+      ['systemctl', ['--user', 'show-environment']],
+      ['systemctl', ['--user', 'disable', '--now', 'consuelo-os.service']],
+      ['systemctl', ['--user', 'daemon-reload']],
+    ]);
+    expect(existsSync(paths.unitPath)).toBe(false);
+    expect(existsSync(paths.sessionStatePath)).toBe(false);
+  });
 });
