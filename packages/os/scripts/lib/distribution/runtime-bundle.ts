@@ -400,6 +400,10 @@ function isTextFile(filePath: string, bytes: Buffer): boolean {
   return filePath === 'package.json' || filePath === 'bun.lock';
 }
 
+function portableFileMode(bytes: Buffer): number {
+  return bytes.subarray(0, 2).equals(Buffer.from('#!')) ? 0o755 : 0o644;
+}
+
 export function containsMachineSpecificAbsolutePath(text: string, sourceRoot: string): boolean {
   const resolvedRoot = sourceRoot.startsWith('/') || /^[A-Za-z]:[\\/]/.test(sourceRoot)
     ? sourceRoot
@@ -425,12 +429,13 @@ export function containsMachineSpecificAbsolutePath(text: string, sourceRoot: st
 function portableContent(filePath: string, bytes: Buffer, sourceRoot: string): Buffer {
   if (!isTextFile(filePath, bytes)) return bytes;
   const originalText = bytes.toString('utf8');
+  const portableText = originalText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   const isSanitizedDocumentation = filePath.startsWith('steering/') && filePath.endsWith('.md');
   const text = isSanitizedDocumentation
-    ? originalText
+    ? portableText
         .replaceAll(/\/Users\/(?!\.\.\.\/)[A-Za-z0-9_-]+\//g, '/Users/.../')
         .replaceAll(/[A-Za-z]:\\Users\\(?!\.\.\.\\)[^\\\r\n]+\\/g, 'C:\\Users\\...\\')
-    : originalText;
+    : portableText;
   if (containsMachineSpecificAbsolutePath(text, sourceRoot)) {
     throw new Error(`machine-specific absolute path found in ${filePath}`);
   }
@@ -491,7 +496,7 @@ function collectRuntimeFiles(input: RuntimeBundleFingerprintOptions): CollectedR
     files.push({
       bytes,
       digest: sha256(bytes),
-      mode: stat.mode & 0o777,
+      mode: portableFileMode(bytes),
       path: filePath,
       role: role as RuntimeBundleIncludedRole,
       size: bytes.byteLength,
