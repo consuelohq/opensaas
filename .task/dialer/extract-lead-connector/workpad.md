@@ -180,21 +180,117 @@ Non-goals: live marketplace installation, customer mutation, deleting old compat
 
 ## files changed
 
-- none yet
+- `package.json`
+- `packages/dialer-server/package.json`
+- `packages/dialer-server/src/app.ts`
+- `packages/dialer-server/src/architecture.test.ts`
+- `packages/dialer-server/src/contracts.ts`
+- `packages/dialer-server/src/errors.ts`
+- `packages/dialer-server/src/index.ts`
+- `packages/dialer-server/src/lead-connector-application.ts`
+- `packages/dialer-server/src/lead-connector-boundary.test.ts`
+- `packages/dialer-server/src/routes/lead-connector.ts`
+- `packages/dialer-server/tsconfig.json`
+- `packages/lead-connector/MIGRATION.md`
+- `packages/lead-connector/package.json`
+- `packages/lead-connector/project.json`
+- `packages/lead-connector/src/application.contract.test.ts`
+- `packages/lead-connector/src/application/oauth.ts`
+- `packages/lead-connector/src/application/provider.ts`
+- `packages/lead-connector/src/application/resources.ts`
+- `packages/lead-connector/src/application/tokens.ts`
+- `packages/lead-connector/src/application/webhooks.ts`
+- `packages/lead-connector/src/architecture.contract.test.ts`
+- `packages/lead-connector/src/constants.ts`
+- `packages/lead-connector/src/contracts/index.ts`
+- `packages/lead-connector/src/errors.ts`
+- `packages/lead-connector/src/index.ts`
+- `packages/lead-connector/src/infrastructure.contract.test.ts`
+- `packages/lead-connector/src/infrastructure/fetch-transport.ts`
+- `packages/lead-connector/src/infrastructure/runtime.ts`
+- `packages/lead-connector/src/infrastructure/token-cipher.ts`
+- `packages/lead-connector/src/infrastructure/webhook-verifier.ts`
+- `packages/lead-connector/src/ports/index.ts`
+- `packages/lead-connector/src/testing/in-memory.ts`
+- `packages/lead-connector/src/webhook.contract.test.ts`
+- `packages/lead-connector/tsconfig.json`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/dialer-validation-runbook.test.ts`
+- `packages/workspace/tests/test-selection.test.js`
+- `scripts/code-review.sh`
 
 ## workspace-owned: files changed
 
-- none yet
+- `package.json`
+- `packages/dialer-server/package.json`
+- `packages/dialer-server/src/app.ts`
+- `packages/dialer-server/src/architecture.test.ts`
+- `packages/dialer-server/src/contracts.ts`
+- `packages/dialer-server/src/errors.ts`
+- `packages/dialer-server/src/index.ts`
+- `packages/dialer-server/src/lead-connector-application.ts`
+- `packages/dialer-server/src/lead-connector-boundary.test.ts`
+- `packages/dialer-server/src/routes/lead-connector.ts`
+- `packages/dialer-server/tsconfig.json`
+- `packages/lead-connector/MIGRATION.md`
+- `packages/lead-connector/package.json`
+- `packages/lead-connector/project.json`
+- `packages/lead-connector/src/application.contract.test.ts`
+- `packages/lead-connector/src/application/oauth.ts`
+- `packages/lead-connector/src/application/provider.ts`
+- `packages/lead-connector/src/application/resources.ts`
+- `packages/lead-connector/src/application/tokens.ts`
+- `packages/lead-connector/src/application/webhooks.ts`
+- `packages/lead-connector/src/architecture.contract.test.ts`
+- `packages/lead-connector/src/constants.ts`
+- `packages/lead-connector/src/contracts/index.ts`
+- `packages/lead-connector/src/errors.ts`
+- `packages/lead-connector/src/index.ts`
+- `packages/lead-connector/src/infrastructure.contract.test.ts`
+- `packages/lead-connector/src/infrastructure/fetch-transport.ts`
+- `packages/lead-connector/src/infrastructure/runtime.ts`
+- `packages/lead-connector/src/infrastructure/token-cipher.ts`
+- `packages/lead-connector/src/infrastructure/webhook-verifier.ts`
+- `packages/lead-connector/src/ports/index.ts`
+- `packages/lead-connector/src/testing/in-memory.ts`
+- `packages/lead-connector/src/webhook.contract.test.ts`
+- `packages/lead-connector/tsconfig.json`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/dialer-validation-runbook.test.ts`
+- `packages/workspace/tests/test-selection.test.js`
+- `scripts/code-review.sh`
 
 ## workspace-owned: activity log
 
 - 2026-07-24 01:15:57 fs.write: `.task/dialer/extract-lead-connector/workpad.md`
-
 - 2026-07-24 01:16:46 apply-patch: `packages/workspace/test-selection.rules.json`
 - 2026-07-24 01:16:46 apply-patch: `packages/workspace/tests/test-selection.test.js`
+- 2026-07-24 01:20:25 fs.write: `.task/dialer/extract-lead-connector/workpad.md`
+- 2026-07-24 01:21:11 fs.write: `.task/dialer/extract-lead-connector/workpad.md`
+- 2026-07-24 01:23:58 fs.write: `.task/dialer/extract-lead-connector/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-07-24 01:17:16 `review.run`: passed — OK
-
 - 2026-07-24 01:17:39 apply-patch: `.task/dialer/extract-lead-connector/workpad.md`
+- 2026-07-24 01:24:09 `review.run`: passed — OK
+
+## CI wait cycle
+
+Wait reason: PR #1609 checks restarted after the mode-only commit and currently have 11 pending, 0 failed.
+Duration: bounded polling every 20 seconds for up to 10 minutes.
+Resume action: inspect PR #1609 checks and normalized reviews immediately after each wake.
+Expected signal: zero failed checks, zero pending required checks, and no actionable review finding.
+Fallback: stop merge, record the failing or timed-out checks, and inspect their exact logs/review comments.
+
+- 2026-07-24 01:20:25 append: `.task/dialer/extract-lead-connector/workpad.md`
+
+Wait cycle 1 observed at 2026-07-24T01:21:00Z: 26 total checks, 15 pending, 0 failed. Normalized review feedback contained no actionable code finding; automated reviewers were unavailable or skipped the non-default base. Decision: continue bounded polling; do not merge.
+
+- 2026-07-24 01:21:11 append: `.task/dialer/extract-lead-connector/workpad.md`
+
+Wait cycle 2 observed at 2026-07-24T01:22:10Z: dialer CI passed; `danger-js` failed because Yarn immutable install detected the new workspace dependency was absent from `yarn.lock`. Added the lockfile entry with `yarn install --mode=update-lockfile`. A subsequent immutable install completed successfully; its link step changed two unrelated launcher modes, which were restored to the stream's `100644` values with no remaining diff. Provider tests remained 17/17, dialer-server tests 22/22, and workspace selection tests 9/9. Decision: rerun scoped review and formal verifier, then publish the lockfile follow-up before resuming CI polling.
+
+- 2026-07-24 01:23:58 append: `.task/dialer/extract-lead-connector/workpad.md`
