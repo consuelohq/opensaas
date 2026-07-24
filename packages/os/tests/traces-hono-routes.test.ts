@@ -125,8 +125,9 @@ describe('Hono trace surface', () => {
     expect(javascript.status).toBe(200);
     expect(javascript.headers.get('content-type')).toContain('javascript');
     const source = await javascript.text();
-    expect(source).toContain('direction=newer');
-    expect(source).toContain('includeRawPayload=true');
+    expect(source).toContain('const query = new URLSearchParams({');
+    expect(source).toContain('direction,');
+    expect(source).toContain("includeRawPayload: 'true'");
     expect(source).toContain('WORKSPACE_NODE_OFFLINE');
     expect(source).toContain('localStorage');
     expect(source).not.toContain('rawInputJson, rawResolvedInputJson, rawResultJson');
