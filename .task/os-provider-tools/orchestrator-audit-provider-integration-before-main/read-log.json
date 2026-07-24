@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os-provider-tools/orchestrator-audit-provider-integration-before-main/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/tests/tool-manifest.test.ts"
+  ],
+  "updatedAt": "2026-07-24T04:23:30.814Z"
+}

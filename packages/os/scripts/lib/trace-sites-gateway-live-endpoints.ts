@@ -99,6 +99,7 @@ export function createTraceSitesGatewayLiveEndpoints(
           'TRACE_HISTORY_DIRECTION_INVALID',
           'Trace history direction must be older or newer.',
           400,
+          scope,
         );
       }
 
@@ -134,6 +135,7 @@ async function cursorPageResponse(
   const input: TraceSitesGatewayReadBackendInput = {
     workspaceId: request.workspaceId,
     workspaceHost: request.workspaceHost,
+    ...(request.nodeId ? { nodeId: request.nodeId } : {}),
     site: request.site,
     sourceMode: request.sourceMode,
     cursor: request.cursor,
@@ -149,6 +151,7 @@ async function cursorPageResponse(
       'TRACE_READ_SCOPE_DENIED',
       'Trace history read scope was denied.',
       403,
+      scope,
     );
   }
 
@@ -170,6 +173,9 @@ async function cursorPageResponse(
         ok: false,
         publicBoundary: 'consuelo-gateway',
         route: '/gateway/traces/recent',
+        workspaceId: scope.workspaceId,
+        workspaceHost: scope.workspaceHost,
+        ...(scope.nodeId ? { nodeId: scope.nodeId } : {}),
         error: {
           code: validation.errors[0] ?? 'TRACE_HISTORY_QUERY_INVALID',
           message: 'Trace history query is invalid.',
@@ -191,6 +197,7 @@ async function cursorPageResponse(
       'BRIDGE_REQUIRED',
       'A configured bridge is required before hosted Trace Sites can read local off-network history.',
       503,
+      scope,
     );
   }
   const readPage =
@@ -200,6 +207,7 @@ async function cursorPageResponse(
       'TRACE_HISTORY_UNAVAILABLE',
       'The trace history backend is unavailable.',
       503,
+      scope,
     );
   }
 
@@ -210,6 +218,7 @@ async function cursorPageResponse(
         'TRACE_STORE_UNAVAILABLE',
         'The trace store is unavailable.',
         503,
+        scope,
       );
     }
     const page = await readPage(input);
@@ -219,6 +228,9 @@ async function cursorPageResponse(
       route: '/gateway/traces/recent',
       data: {
         direction,
+        workspaceId: request.workspaceId,
+        workspaceHost: request.workspaceHost,
+        ...(request.nodeId ? { nodeId: request.nodeId } : {}),
         rows: page.rows,
         nextCursor: page.nextCursor,
       },
@@ -228,6 +240,7 @@ async function cursorPageResponse(
       'TRACE_HISTORY_READ_FAILED',
       'Trace history read failed.',
       503,
+      scope,
     );
   }
 }
@@ -236,12 +249,20 @@ function historyFailureResponse(
   code: string,
   message: string,
   status: number,
+  scope?: TraceGatewaySessionScope,
 ): Response {
   return jsonResponse(
     {
       ok: false,
       publicBoundary: 'consuelo-gateway',
       route: '/gateway/traces/recent',
+      ...(scope
+        ? {
+            workspaceId: scope.workspaceId,
+            workspaceHost: scope.workspaceHost,
+            ...(scope.nodeId ? { nodeId: scope.nodeId } : {}),
+          }
+        : {}),
       error: { code, message },
     },
     status,
@@ -265,6 +286,10 @@ export function traceGatewayScopeFromHeaders(
       'signed-gateway-caller',
     workspaceId: headers.get('x-consuelo-workspace-id') || 'workspace-unknown',
     workspaceHost: headers.get('x-consuelo-workspace-host') || url.host,
+    nodeId:
+      headers.get('x-consuelo-node-id') ||
+      headers.get('x-consuelo-device-id') ||
+      undefined,
     allowedSites: allowedSites.length
       ? allowedSites
       : ['trace', 'trace-burn-intelligence'],
@@ -292,6 +317,7 @@ function readRequestFromUrl(
     workspaceId: url.searchParams.get('workspaceId') || scope.workspaceId,
     workspaceHost:
       url.searchParams.get('workspaceHost') || scope.workspaceHost || url.host,
+    ...(scope.nodeId ? { nodeId: scope.nodeId } : {}),
     site,
     sourceMode,
     cursor: url.searchParams.get('cursor') || '000000000000',
@@ -326,6 +352,9 @@ function failureResponse(
       ok: false,
       publicBoundary: result.publicBoundary,
       route,
+      workspaceId: result.workspaceId,
+      workspaceHost: result.workspaceHost,
+      ...(result.nodeId ? { nodeId: result.nodeId } : {}),
       dataState: result.dataState,
       discovery: result.discovery,
       resilience: result.resilience,
@@ -424,6 +453,9 @@ function streamSnapshotFromReadResult(
   result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>,
 ) {
   return {
+    workspaceId: result.workspaceId,
+    workspaceHost: result.workspaceHost,
+    ...(result.nodeId ? { nodeId: result.nodeId } : {}),
     cursor: result.cursor,
     rows: result.recentEvents.map((event, index) =>
       streamRowFromDashboardEvent(event, result.cursor, index),
@@ -468,6 +500,9 @@ function responseData(
   result: Extract<TraceSitesGatewayReadLayerResult, { ok: true }>,
 ) {
   return {
+    workspaceId: result.workspaceId,
+    workspaceHost: result.workspaceHost,
+    ...(result.nodeId ? { nodeId: result.nodeId } : {}),
     cursor: result.cursor,
     sourceMode: result.sourceMode,
     site: result.site,

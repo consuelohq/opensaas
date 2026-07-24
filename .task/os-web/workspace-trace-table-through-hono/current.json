@@ -1,0 +1,19 @@
+{
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/workspace-trace-table-through-hono",
+  "baseBranch": "stream/os-web",
+  "sourceBranch": "stream/os-web",
+  "startFrom": "stream",
+  "prNumber": 1604,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1604",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1604",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1604/workspace-trace-table-through-hono",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1604",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1604/workspace-trace-table-through-hono",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-workspace-trace-table-through-hono",
+  "taskSession": "tsk_2d079fa0254f",
+  "tmuxSession": "opensaas-os-web-workspace-trace-table-through-hono-2d079fa0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-workspace-trace-table-through-hono/.task/os-web/workspace-trace-table-through-hono/session.json",
+  "createdAt": "2026-07-23T22:40:02.870Z"
+}

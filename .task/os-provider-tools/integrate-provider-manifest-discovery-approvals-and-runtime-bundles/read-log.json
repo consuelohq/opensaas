@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/os-provider-tools/integrate-provider-manifest-discovery-approvals-and-runtime-bundles/workpad.md",
+    "packages/documentation/src/content/docs/connect/apps-and-services/railway.mdx",
+    "packages/os/SCRIPTS.md",
+    "packages/os/manifests/manifest.config.ts",
+    "packages/os/plans/consuelo-os-foundation/workers/12-provider-integration.md",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tests/tools-search-v2.test.ts",
+    "packages/os/tools/deployment-provider/errors.ts",
+    "packages/os/tools/deployment-provider/types.ts",
+    "packages/os/tools/registry.ts"
+  ],
+  "updatedAt": "2026-07-23T21:12:32.944Z"
+}

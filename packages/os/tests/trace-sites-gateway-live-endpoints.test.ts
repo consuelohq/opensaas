@@ -59,6 +59,8 @@ function request(path: string): Request {
       'x-consuelo-user-id': 'usr_live',
       'x-consuelo-workspace-id': 'wrk_live',
       'x-consuelo-workspace-host': 'testing.consuelohq.com',
+      'x-consuelo-node-id': 'node_live',
+      'x-consuelo-device-id': 'node_live',
       'x-consuelo-trace-read': 'true',
       'x-consuelo-allowed-sites': 'trace,trace-burn-intelligence',
       'x-consuelo-source-modes':
@@ -161,6 +163,9 @@ describe('Trace Sites gateway live endpoints', () => {
       publicBoundary: 'consuelo-gateway',
       route: '/gateway/traces/recent',
       data: {
+        workspaceId: 'wrk_live',
+        workspaceHost: 'testing.consuelohq.com',
+        nodeId: 'node_live',
         cursor: '00000001',
         dataState: 'fresh',
         recentEvents: [event],
@@ -192,6 +197,9 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(await response.json()).toMatchObject({
       ok: false,
       route: '/gateway/traces/recent',
+      workspaceId: 'wrk_live',
+      workspaceHost: 'testing.consuelohq.com',
+      nodeId: 'node_live',
       error: {
         code: 'TRACE_HISTORY_DIRECTION_INVALID',
       },
