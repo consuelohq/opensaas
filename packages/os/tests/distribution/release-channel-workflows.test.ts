@@ -16,9 +16,19 @@ type WorkflowStep = {
   'working-directory'?: string;
 };
 
-type ReleaseWorkflow = {
-  jobs?: Record<string, { steps?: WorkflowStep[] }>;
+type WorkflowJob = {
+  environment?: string;
+  needs?: string | string[];
+  steps?: WorkflowStep[];
 };
+
+type ReleaseWorkflow = {
+  jobs?: Record<string, WorkflowJob>;
+};
+
+function parseWorkflow(path: string): ReleaseWorkflow {
+  return parse(read(path)) as ReleaseWorkflow;
+}
 
 function dependencyInstallSteps(workflow: string): WorkflowStep[] {
   const parsed = parse(workflow) as ReleaseWorkflow;
@@ -37,7 +47,7 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).not.toContain('workflow_dispatch:');
     expect(workflow).toContain('contents: write');
     expect(workflow).toContain('deployments: write');
-    expect(workflow).toContain('environment: consuelo-os-dev');
+    expect(workflow).toContain('environment: consuelo / production');
     expect(workflow).toContain('runtime-bundle:fingerprint');
     expect(workflow).toContain('release:channels -- publish');
     expect(workflow).toContain('--plan-only');
@@ -120,6 +130,34 @@ describe('Consuelo OS release-channel workflows', () => {
           'bun install --frozen-lockfile',
         );
       }
+    }
+  });
+
+  it('separates release credentials from channel approval environments', () => {
+    const publishSource = read('.github/workflows/consuelo-os-runtime-publish.yaml');
+    const promoteSource = read('.github/workflows/consuelo-os-runtime-promote.yaml');
+    const rollbackSource = read('.github/workflows/consuelo-os-runtime-rollback.yaml');
+    const publish = parseWorkflow('.github/workflows/consuelo-os-runtime-publish.yaml');
+    const promote = parseWorkflow('.github/workflows/consuelo-os-runtime-promote.yaml');
+    const rollback = parseWorkflow('.github/workflows/consuelo-os-runtime-rollback.yaml');
+
+    expect(publish.jobs?.plan?.environment).toBe('consuelo / production');
+    expect(publish.jobs?.publish?.environment).toBe('consuelo / production');
+
+    expect(promote.jobs?.approve?.environment).toBe('consuelo-os-${{ inputs.to }}');
+    expect(promote.jobs?.promote?.environment).toBe('consuelo / production');
+    expect(promote.jobs?.promote?.needs).toBe('approve');
+
+    expect(rollback.jobs?.approve?.environment).toBe('consuelo-os-${{ inputs.channel }}');
+    expect(rollback.jobs?.rollback?.environment).toBe('consuelo / production');
+    expect(rollback.jobs?.rollback?.needs).toBe('approve');
+
+    for (const source of [publishSource, promoteSource, rollbackSource]) {
+      expect(source).toContain('CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}');
+      expect(source).toContain(
+        'CLOUDFLARE_OS_RELEASE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}',
+      );
+      expect(source).not.toContain('CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}');
     }
   });
 
