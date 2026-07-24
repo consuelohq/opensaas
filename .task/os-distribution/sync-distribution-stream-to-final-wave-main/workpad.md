@@ -15,7 +15,7 @@ Advance the completed distribution stream to the final wave `main` so the next w
 - [x] Resolve the known runtime-bundle contract conflict to the exact final `main` behavior.
 - [x] Preserve distribution, provider, and web code; do not introduce new product behavior.
 - [x] Run runtime-bundle, lifecycle, managed-component, provider-cutover, web, manifest, and typecheck gates.
-- [ ] Fast-forward `stream/os-distribution` with a real two-parent merge commit.
+- [x] Fast-forward `stream/os-distribution` with a real two-parent merge commit.
 - [x] Do not invoke external reviews.
 
 ## test-first contract
@@ -50,6 +50,7 @@ No assertion may be removed solely to resolve the conflict.
 - OS package typecheck/syntax gate passed.
 - Full task verify passed in publish-valid mode with static rules, ESLint, typecheck, spec compliance, and DB safety all clean.
 - No external review invoked.
+- Fast-forwarded `stream/os-distribution` to `101d420c6d`, whose ancestry includes the real two-parent merge `8114fef83c` with final `main` as its second parent.
 
 - 2026-07-24 05:19:59 write: `.task/os-distribution/sync-distribution-stream-to-final-wave-main/workpad.md`
 
@@ -80,3 +81,5 @@ No assertion may be removed solely to resolve the conflict.
 - 2026-07-24 05:21:20 `verify`: passed — OK
 
 - 2026-07-24 05:21:32 apply-patch: `.task/os-distribution/sync-distribution-stream-to-final-wave-main/workpad.md`
+
+- 2026-07-24 05:21:51 apply-patch: `.task/os-distribution/sync-distribution-stream-to-final-wave-main/workpad.md`
