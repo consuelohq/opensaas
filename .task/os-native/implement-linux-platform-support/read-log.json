@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/os-native/implement-linux-platform-support/workpad.md",
+    "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/os/scripts/lib/lifecycle/index.ts",
+    "packages/os/scripts/lib/lifecycle/paths.ts",
+    "packages/os/scripts/lib/platforms/linux.ts",
+    "packages/os/scripts/lifecycle.ts"
+  ],
+  "updatedAt": "2026-07-24T18:10:19.757Z"
+}

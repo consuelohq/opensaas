@@ -13,13 +13,16 @@ import {
   lifecycleSuccessEnvelope,
   renderLifecycleProgress,
   renderLifecycleResult,
+  resolveLifecyclePaths,
   type LifecycleEngine,
   type LifecycleNotificationPreference,
   type LifecycleOperationResult,
   type LifecycleProgressEvent,
   type LifecycleReleaseChannel,
+  type LifecycleServiceController,
   type ReleaseSource,
 } from './lib/lifecycle';
+import { createLinuxPlatformAdapter } from './lib/platforms/linux';
 
 export type LifecycleCliIo = {
   stdout(value: string): void;
@@ -210,6 +213,22 @@ function trustedReleaseKeysFromEnvironment(): Record<string, string> {
   return keyId && publicKey ? { [keyId]: publicKey } : {};
 }
 
+export function createDefaultLifecycleServiceController(input: {
+  home?: string;
+  osRoot: string;
+  platform?: NodeJS.Platform;
+  bunExecutable?: string;
+}): LifecycleServiceController {
+  const platform = input.platform ?? process.platform;
+  if (platform === 'linux') {
+    return createLinuxPlatformAdapter({
+      home: resolveLifecyclePaths(input.home).home,
+      bunExecutable: input.bunExecutable ?? process.execPath,
+    });
+  }
+  return createReloadServiceController({ osRoot: input.osRoot, platform });
+}
+
 function createDefaultLifecycleEngine(input: {
   home?: string;
   quiet: boolean;
@@ -225,7 +244,10 @@ function createDefaultLifecycleEngine(input: {
       ? createHttpReleaseSource({ baseUrl: releaseBaseUrl })
       : unavailableReleaseSource(),
     trustedReleaseKeys: trustedReleaseKeysFromEnvironment(),
-    service: createReloadServiceController({ osRoot }),
+    service: createDefaultLifecycleServiceController({
+      home: input.home,
+      osRoot,
+    }),
     runtime: createBunRuntimeMaterializer(),
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
