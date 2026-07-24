@@ -95,8 +95,8 @@
 - `packages/os/scripts/lib/lifecycle/types.ts`
 - `packages/os/scripts/lifecycle.ts`
 - `packages/os/tests/cli-product-split.test.ts`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/distribution/release-publication-preparer.test.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts`
 - `yarn.lock`
 
@@ -135,9 +135,30 @@
 
 - `packages/cli/bin/consuelo-dialer.js`
 - `packages/cli/bin/consuelo.js` (deleted)
+- `packages/cli/package.json`
+- `packages/cli/src/api-client.ts`
+- `packages/cli/src/commands/analytics.ts`
+- `packages/cli/src/commands/call.ts`
+- `packages/cli/src/commands/coach.ts`
+- `packages/cli/src/commands/contacts.ts`
+- `packages/cli/src/commands/deploy.ts`
+- `packages/cli/src/commands/files.ts`
+- `packages/cli/src/commands/init.ts`
+- `packages/cli/src/commands/kb.ts`
 - `packages/cli/src/commands/os.ts` (deleted)
+- `packages/cli/src/commands/update.ts`
+- `packages/cli/src/config.ts`
+- `packages/cli/src/index.ts`
+- `packages/cli/src/output.ts`
+- `packages/os/package.json`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- `packages/os/scripts/lib/lifecycle/types.ts`
+- `packages/os/scripts/lifecycle.ts`
 - `packages/os/tests/cli-product-split.test.ts`
+- `packages/os/tests/distribution/release-publication-preparer.test.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts`
+- `yarn.lock`
 
 ## Workspace-owned: activity log
 
@@ -146,6 +167,11 @@
 - 2026-07-24 19:22:19 fs.write: `packages/cli/bin/consuelo-dialer.js`
 - 2026-07-24 19:22:22 fs.trash: `packages/cli/bin/consuelo.js`
 - 2026-07-24 19:22:24 fs.trash: `packages/cli/src/commands/os.ts`
+- 2026-07-24 19:56:34 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 20:00:46 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 20:00:58 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 20:11:19 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 20:13:08 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
 - Managed by task tooling below this line when present.
 
 ## Workspace-owned: validation evidence
@@ -156,6 +182,8 @@
 - 2026-07-24 19:35:22 `verify`: failed — COMMAND_FAILED
 - 2026-07-24 19:39:36 `review.run`: passed — OK
 - 2026-07-24 19:40:36 `verify`: failed — COMMAND_FAILED
+- 2026-07-24 20:12:02 `review.run`: passed — OK
+- 2026-07-24 20:13:01 `verify`: failed — COMMAND_FAILED
 
 ## workspace-owned: files read
 
@@ -172,8 +200,40 @@
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
 - `packages/os/scripts/lifecycle.ts`
+- `packages/os/tests/cli-product-split.test.ts`
 - `packages/os/tests/distribution/release-publication-preparer.test.ts`
 - `packages/twenty-sdk/package.json`
 - `packages/twenty-sdk/project.json`
 
-- 2026-07-24 19:47:50 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 20:10:05 apply-patch: `packages/cli/src/config.ts`
+## Reviewer findings and dispositions
+
+### CodeRabbit final review on head `00a8b93d`
+
+1. `packages/cli/src/commands/kb.ts`: the FILE_NOT_FOUND recovery command omitted the required upload path. **Valid.** Added `consuelo-dialer files upload <path>` and a source-level regression.
+2. `packages/os/scripts/lifecycle.ts`: the `consuelo` bin target was mode `100644`, so direct execution/package bin linking was not guaranteed. **Valid.** A temporary versioned package copy proved npm preserved the non-executable source mode in the tarball (`trc_285806442f38`). Changed the source mode to `100755` and added an executable-mode regression.
+3. `packages/cli/src/config.ts`: concurrent first-run migration could throw `EEXIST` after the pre-check. **Valid.** Migration now treats only `EEXIST` as successful concurrent completion, still enforces mode `0600`, and rethrows all other filesystem errors. Added deterministic race and non-EEXIST regressions.
+4. `packages/os/scripts/lifecycle.ts`: replace raw `Error` construction with the shared CLI helper. **Not valid for Worker 30.** The only repository CLI error helper is dialer-owned (`packages/cli/src/errors.ts`) and imports Sentry/dialer output globals. Importing it would violate the acceptance criterion that the OS lifecycle dependency graph exclude dialer/telemetry runtime dependencies. Worker 04's adapter already catches these errors and renders stable JSON/text envelopes with non-zero exit codes. No duplicate OS error framework is introduced in this split.
+
+Review-fix TDD evidence:
+- Red: exactly 3 new expected failures and 7 passes (`trc_836ee8c6bb9a`).
+- Green: 5 files and all 38 focused tests pass (`trc_6b6405602e73`).
+- Fix traces: KB command `trc_a62e102c12d7`; EEXIST-safe migration `trc_bccee2668c49`; executable mode `trc_17157f49a17b`.
+
+### Grok 4.5 execution status
+
+- The first mandated wrapper outlived the outer OS facade timeout, then exited with an empty output file. It was failed closed after a bounded poll (`trc_e1d1df3b3ff1`).
+- The diagnostic rerun of the exact mandated wrapper completed with exit `0` and a non-empty 28,999-byte wrapper result (`trc_248e1378f905`; wrapper trace `trc_0a2aefc9ebcd`). The provider's nested text transport was truncated at 8,028 characters, so the structured review was not complete and has not been posted.
+- The visible partial Grok review independently identified the valid EEXIST race and also proposed redesigning the public installer. The installer finding is outside this worker's approved boundary: the brief explicitly requires the public curl installer to remain unchanged and states this task is not an installer redesign.
+- Required next action: after the CodeRabbit fixes are pushed, rerender against the final head and rerun Grok with the same mandated wrapper plus a compact structured-output limit so the complete review can be validated and posted.
+
+- 2026-07-24 20:11:19 append: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+
+### Post-review validation
+
+- OS syntax/type and complete distribution suite are green: 77 passed with 7 existing TODOs (`trc_502190029e1f`). The first combined call accidentally supplied `packages/os` both as runner CWD and command path and failed before execution (`trc_6b9a5acc3ab1`); corrected typed input passed.
+- Task-local dependency validation is green: `twenty-sdk` build, `@consuelo/dialer-cli` Nx typecheck, and dialer Nx build all pass (`trc_b9dce0e74117`). The temporary ignored package-local SDK link was removed automatically.
+- Strict review after CodeRabbit fixes reports 0 owned issues and 0 blockers (`trc_e6a7d9ac9b96`). The sole pre-existing issue remains Twenty-front's missing generated ESLint/typecheck dependency in the shared worktree.
+- Full verify after CodeRabbit fixes reports 0 owned issues, 0 related issues, 0 database risks, and no must-fix findings (`trc_015d4ca4ba33`). It fails closed only on the previously documented Twenty-front shared-worktree typecheck/test infrastructure (170 unrelated failures); GitHub clean-host CI remains authoritative.
+
+- 2026-07-24 20:13:08 append: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`

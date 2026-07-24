@@ -16,9 +16,10 @@
     "packages/os/scripts/lib/distribution/runtime-bundle.ts",
     "packages/os/scripts/lib/lifecycle/types.ts",
     "packages/os/scripts/lifecycle.ts",
+    "packages/os/tests/cli-product-split.test.ts",
     "packages/os/tests/distribution/release-publication-preparer.test.ts",
     "packages/twenty-sdk/package.json",
     "packages/twenty-sdk/project.json"
   ],
-  "updatedAt": "2026-07-24T19:47:36.300Z"
+  "updatedAt": "2026-07-24T20:09:56.125Z"
 }

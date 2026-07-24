@@ -6,6 +6,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -90,6 +91,7 @@ describe('Consuelo product CLI ownership', () => {
     expect(dialerPackage.bin).toEqual({
       'consuelo-dialer': 'bin/consuelo-dialer.js',
     });
+    expect(statSync(join(osRoot, 'scripts', 'lifecycle.ts')).mode & 0o111).not.toBe(0);
     expect(existsSync(join(dialerRoot, 'bin', 'consuelo.js'))).toBe(false);
   });
 
@@ -159,6 +161,12 @@ describe('Consuelo product CLI ownership', () => {
     expect(entrySource).toContain("const { ConfigService } = await import('twenty-sdk/cli')");
     expect(entrySource).toContain("const { registerCommands } = await import('twenty-sdk/cli')");
     expect(entrySource).toContain('registerCommands(program)');
+
+    const knowledgeBaseSource = readFileSync(
+      join(dialerRoot, 'src', 'commands', 'kb.ts'),
+      'utf8',
+    );
+    expect(knowledgeBaseSource).toContain('consuelo-dialer files upload <path>');
   });
 
   it('removes the old mixed OS registration and stale product command/package references', () => {
@@ -232,6 +240,37 @@ describe('Consuelo Dialer config and telemetry boundary', () => {
     expect(sentrySource).toContain("process.argv.includes('--no-telemetry')");
     expect(sentrySource).toMatch(/twilioAuthToken|llmApiKey|apiKey|token|password/);
     expect(readFileSync(join(osRoot, 'scripts', 'lifecycle.ts'), 'utf8')).not.toMatch(/@sentry|twilio|twenty-sdk/i);
+  });
+
+  it('treats concurrent completion of legacy config migration as success', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-dialer-migration-race-'));
+    temporaryPaths.push(root);
+    const legacySource = join(root, 'legacy.json');
+    const destination = join(root, 'dialer', 'config.json');
+    writeFileSync(legacySource, JSON.stringify({ twilioAccountSid: 'AC-race' }));
+
+    const configModule = await import('../../cli/src/config');
+    expect(configModule.migrateLegacyConfig).toBeTypeOf('function');
+
+    const competingCopy = ((source: string, target: string) => {
+      mkdirSync(join(root, 'dialer'), { recursive: true });
+      writeFileSync(target, readFileSync(source));
+      throw Object.assign(new Error('destination exists'), { code: 'EEXIST' });
+    }) as typeof import('node:fs').copyFileSync;
+
+    expect(() => configModule.migrateLegacyConfig(
+      destination,
+      legacySource,
+      competingCopy,
+    )).not.toThrow();
+    expect(readJson(destination)).toEqual({ twilioAccountSid: 'AC-race' });
+
+    const diskFailure = Object.assign(new Error('disk full'), { code: 'ENOSPC' });
+    expect(() => configModule.migrateLegacyConfig(
+      join(root, 'other', 'config.json'),
+      legacySource,
+      (() => { throw diskFailure; }) as typeof import('node:fs').copyFileSync,
+    )).toThrow(diskFailure);
   });
 });
 

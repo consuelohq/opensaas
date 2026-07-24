@@ -94,10 +94,21 @@ const DEFAULT_CONFIG: ConsuloConfig = {
 };
 
 // backward-compat — other commands depend on these
-function migrateLegacyConfig(destination: string, legacySource: string): void {
+export function migrateLegacyConfig(
+  destination: string,
+  legacySource: string,
+  copyFile: typeof copyFileSync = copyFileSync,
+): void {
   if (existsSync(destination) || !existsSync(legacySource)) return;
   mkdirSync(dirname(destination), { recursive: true, mode: 0o700 });
-  copyFileSync(legacySource, destination, constants.COPYFILE_EXCL);
+  try {
+    copyFile(legacySource, destination, constants.COPYFILE_EXCL);
+  } catch (error: unknown) {
+    const code = typeof error === 'object' && error !== null && 'code' in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+    if (code !== 'EEXIST') throw error;
+  }
   chmodSync(destination, 0o600);
 }
 
