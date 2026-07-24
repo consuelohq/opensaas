@@ -47,11 +47,11 @@ This is an audit. Existing behavioral tests and exact generated plist/script out
 - One-shot launchd scheduling, local/external failure thresholds, minimum restart gap, restart-window circuit breaker, Consuelo-home state, and Consuelo-owned label targeting are bounded and covered by tests.
 - No broad host process kill, global power setting, or non-Consuelo service mutation was found.
 
-### Scope violation recorded: live Mac mutation
+### Authorization clarified: live Mac Mini validation
 
 - The original task workpad states that the worker installed and bootstrapped the watchdog and availability LaunchAgents on Ko's Mac Mini.
-- That violated the master-plan rule that workers must not install, update, restart, reset, or uninstall OS/services on Ko's real Macs; workers must stop at a human checkpoint.
-- This audit did not change the live machine. Removing or retaining the already-installed availability agent requires Ko's explicit decision/command after the code reaches main.
+- Ko confirmed that this specific live-machine validation was explicitly authorized separate work, so it was not a scope violation.
+- The general product decision remains unchanged: availability/power policy is opt-in by default, while Ko may explicitly enable it on the always-on Mac Mini.
 
 ## test-first evidence
 
