@@ -63,3 +63,9 @@ This is conflict reconciliation rather than new behavior. The existing distribut
 - No external model review invoked.
 - 2026-07-24 04:43:05 write: `.task/os-provider-tools/resolve-distribution-provider-main-sync-conflict/workpad.md`
 - 2026-07-24 04:44:03 `verify`: passed — OK
+
+## stream ancestry repair
+
+- `task.merge` created stream commit `d361397d79` as a single-parent squash despite `squash:false`, so the tested content landed but `main` was not an ancestor and GitHub still reported the stream PR as dirty.
+- Re-entered the interrupted `stream.sync` merge, reused the already-tested conflict resolution, and will push the resulting two-parent merge commit directly to `stream/os-provider-tools` after focused validation.
+- This preserves both content and Git ancestry; no external review is invoked.
