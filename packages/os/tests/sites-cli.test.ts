@@ -237,6 +237,23 @@ describe('Sites CLI', () => {
     expect(html).not.toContain('<div class="grid">');
   });
 
+  it('materializes launcher links from the configured authenticated workspace host', () => {
+    writeFileSync(
+      join(tempHome, 'config.json'),
+      JSON.stringify({ workspace: { host: 'acme.consuelohq.com' } }, null, 2),
+    );
+
+    const refreshResult = runSitesCommand(['refresh', '--json']);
+    const html = readFileSync(refreshResult.indexPath, 'utf8');
+
+    for (const route of ['/gtm', '/artifacts', '/observability', '/diffs']) {
+      expect(html).toContain(`href="https://acme.consuelohq.com${route}"`);
+    }
+    expect(html).not.toContain('https://sites.consuelohq.com/');
+    expect(html).not.toContain('https://app.consuelohq.com/');
+    expect(html).not.toContain('https://internal.consuelohq.com/');
+  });
+
   it('rewrites legacy ChatGPT MCP URLs before rendering the launcher', () => {
     const configPath = join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json');
     mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });

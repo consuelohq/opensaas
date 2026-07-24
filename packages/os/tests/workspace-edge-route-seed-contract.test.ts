@@ -113,7 +113,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/design-wiki',
     ]);
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
-      expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
+      expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'workspace-session', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'private-preview' }) }),
       expect.objectContaining({ pathPrefix: '/artifacts', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'artifacts', manifestKey: 'sites/workspace_internal/artifacts/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/observability', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/traces', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
@@ -295,6 +295,7 @@ contractDescribe('workspace edge route seed contract', () => {
     }
     expect(osSql).toMatch(/http:\/\/127\.0\.0\.1:8787/);
     expect(osSql).toMatch(/\/mcp/);
+    expect(osSql).toMatch(/\/gtm/);
     expect(osSql).toMatch(/\/observability/);
     expect(osSql).toMatch(/\/traces/);
     expect(osSql).toMatch(/consuelo-gateway-service/);
@@ -307,6 +308,25 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(osSql).not.toMatch(/  connector_internal  /);
     expect(osSql).not.toMatch(/api[_-]?key|access[_-]?token|refresh[_-]?token|credential[_-]?value|secret[_-]?value/i);
     expect(osSql).not.toMatch(/"pathPrefix":"\/traces"[^}]+"kind":"os-connector"/);
+
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      hostname: 'acme.consuelohq.com',
+      workspaceId: 'workspace_acme',
+      workspaceSlug: 'acme',
+      connectorId: 'connector_acme',
+      tunnelOriginUrl: 'https://connector-acme.example.test',
+    }) as { routes: Array<{ pathPrefix: string; auth: string; target: { kind: string; connectorId?: string } }> };
+    const gtmIndex = record.routes.findIndex((route) => route.pathPrefix === '/gtm');
+    const mcpIndex = record.routes.findIndex((route) => route.pathPrefix === '/mcp');
+    const launcherIndex = record.routes.findIndex((route) => route.pathPrefix === '/');
+    expect(record.routes[gtmIndex]).toMatchObject({
+      pathPrefix: '/gtm',
+      auth: 'workspace-session',
+      target: { kind: 'os-connector', connectorId: 'connector_acme' },
+    });
+    expect(gtmIndex).toBeGreaterThanOrEqual(0);
+    expect(gtmIndex).toBeLessThan(mcpIndex);
+    expect(gtmIndex).toBeLessThan(launcherIndex);
   });
 
   it('should ignore incomplete connector inputs instead of persisting empty connector routes', async () => {
