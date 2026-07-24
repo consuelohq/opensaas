@@ -35,9 +35,12 @@ started: 2026-07-24
 - Discovery confirms the launcher hard-codes `sites.consuelohq.com`, while the workspace edge already has host-scoped route lookup, workspace-session handoff, connector proxying, and redacted failures. No separate GTM server or handler exists in the repository.
 - The focused red run is captured at `trc_4ac9a94d01c7`: 32 tests executed, 25 passed, and 7 failed for the intended missing contracts (workspace-derived launcher links, invalid global-host rejection, protected private launcher serving, `/gtm` seed policy/order, and clear unavailable-node copy). The existing authenticated `/gtm` proxy and unauthenticated universal-login redirect already passed with a supplied route.
 - Production implementation is complete for the owned boundary. Focused green validation is `trc_c3426030e571` (32/32), initial integration validation is `trc_5abe9619dd21` (46/46), and final owned-lane validation is `trc_9bc0637b3678` (73/73 plus syntax and generated-manifest checks).
-- A package-wide `bun test` attempt (`trc_55d4db33b39c`) executed 2,039 tests with 1,793 passing, but failed the isolated-worktree lane because generated runtime manifests were absent and environment-dependent suites cascaded. The run also appended snapshots before `code.call` correctly rejected mutation in verify mode. The accidental snapshot append was removed through task-scoped `code.call` (`trc_690df261bc0a`) and the file is clean (`trc_e89c5b871422`). Correct generated-artifact and workspace-edge validation lanes are being resolved next.
+- A package-wide `bun test` attempt (`trc_55d4db33b39c`) executed 2,039 tests with 1,793 passing, but failed the isolated-worktree lane because legacy/environment-dependent suites expected unavailable generated or local runtime state. The run also appended snapshots before `code.call` correctly rejected mutation in verify mode. The accidental snapshot append was removed through task-scoped `code.call` (`trc_690df261bc0a`) and the file is clean (`trc_e89c5b871422`). The repository's actual CI-equivalent lanes were identified and all pass.
 - The repository's exact OS CI contract and manifest-current gate pass (`trc_157ecc9980d0`, 44/44). The exact Sites/Gateway CI lane passes (`trc_64c37c49e8bd`, 17/17; Cloudflare contract was also explicitly enabled and passed in `trc_d7bb9b131547`, 27/27). Wrangler workspace-edge deploy dry-run passes with the expected D1, R2, and Durable Object bindings (`trc_25dca636a430`). Strict workspace review is clean with zero findings (`trc_22aef9979eea`).
 - No screenshot was required: the visual layout and rendered copy are unchanged; only authenticated href derivation and route/auth behavior changed. Browser-equivalent Request/Response contracts cover session handoff, redirect, proxy, cache, and redaction behavior.
+- PR #1641 is pushed at `47bb90bab31da03db3c1de6f2f7f1dca5e3258ca`. GitHub reports merge state `CLEAN`; all 43 checks are terminal with 27 successful, 16 skipped/neutral, and no pending or failed checks (`trc_b19c7d324f55`).
+- CodeRabbit completed its requested review at `2026-07-24T17:06:40Z` and produced zero review submissions and zero inline findings (`trc_b84f495c64f1`, `trc_be4120e8c0d2`, `trc_1dbaf08c18fc`). The zero-finding disposition is durable on GitHub.
+- Grok 4.5 approved with `confidence: medium` and zero findings. The complete structured JSON, top-level summary, and finding disposition are durable on GitHub. The temporary prompt directory was removed (`trc_6e912770bd28`). Merge into `stream/os-web` is the only remaining acceptance step.
 
 ## Test-first contract
 
@@ -50,12 +53,17 @@ started: 2026-07-24
 
 ## files changed
 
-- `packages/os/scripts/lib/launcher-onboarding.ts` — workspace-derived product links and reserved global-host rejection.
-- `packages/os/scripts/lib/sites.ts` — forwards authenticated/configured workspace hostname into launcher materialization.
-- `packages/os/scripts/lib/workspace-edge-route-seed.ts` — protected private launcher plus literal protected `/gtm` connector route before fallback routes.
-- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts` — serves authorized private launcher snapshots and returns clear redacted unavailable-node copy.
-- `packages/os/cloudflare/workspace-edge/README.md` — documents the protected launcher, `/gtm`, and private cache policy.
-- Launcher, Sites CLI, route seed, edge router, and Sites/Gateway integration tests — failing-first coverage for internal/customer routing, auth handoff, cache isolation, route order, and redaction.
+- `packages/os/cloudflare/workspace-edge/README.md`
+- `packages/os/scripts/lib/launcher-onboarding.ts`
+- `packages/os/scripts/lib/sites.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- `packages/os/scripts/lib/workspace-edge-route-seed.ts`
+- `packages/os/tests/cloudflare-edge-router.test.ts`
+- `packages/os/tests/launcher-onboarding.test.ts`
+- `packages/os/tests/sites-cli.test.ts`
+- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
+- `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -101,6 +109,9 @@ started: 2026-07-24
 - Task-scoped `status` ignored the task session and reported repository `main` (`trc_898a6a2472f8`). Recovery: use task-aware `git.diff`, task lifecycle, and scoped filesystem calls for worktree truth.
 - The package-wide `bun test` lane failed in the isolated task worktree (`trc_55d4db33b39c`) because legacy/environment-dependent suites expected generated or local runtime state unavailable in this lane, causing 102 failures after 1,793 passes. It also generated an unrelated facade snapshot append before the verify mutation guard stopped the command. Recovery: removed only the appended lines through scoped `code.call` (`trc_690df261bc0a`), verified zero remaining snapshot diff (`trc_e89c5b871422`), inspected the repository CI workflow, and ran its actual OS and Sites/Gateway contract lanes successfully (`trc_157ecc9980d0`, `trc_64c37c49e8bd`) plus the broader owned edge suite (`trc_9bc0637b3678`) and Wrangler dry-run (`trc_25dca636a430`).
 - The first broader edge integration run found one stale assertion that the root launcher remained public (`trc_95a0f651d7e5`; 26/27 passed). Recovery: updated that approved regression contract to `workspace-session`/`private-preview`, added `/gtm` integration/order assertions, and reran green (`trc_d7bb9b131547`, 27/27).
+- The prescribed Grok wrapper exceeded the outer facade response window, and a direct typed `subagent` retry hit the same timeout. Recovery: inspected the subagent runtime's documented persistence path, found the completed bounded run at `.task/subagent-runs/trc_275cc8a0e6ef-grok/` with 8,026 stdout characters and zero stderr, extracted the fenced review JSON, and schema-validated it (`trc_3795ed9d749c`). The review outcome was approved with no findings. The first extraction attempt assumed the persisted wrapper log was complete JSON and failed because the outer log was compacted/truncated (`trc_74324b60f0c4`); recovery decoded only the complete fenced JSON segment. The required structured review, top-level summary, and dispositions were posted to GitHub, then `packages/os/.tmp-reviews/authenticated-launcher-workspace-links-and-gtm/` was removed.
+- The first GitHub check-summary jq expression scoped `index()` against the wrong array and failed (`trc_dc11c18ad3d9`). Recovery: corrected jq variable scoping and confirmed 43 terminal checks with no pending or failed entries (`trc_b19c7d324f55`).
+- A targeted `task.push --files` retry rejected the task-relative workpad path because the publisher resolved it from the main repository process directory (`trc_9a3a4c8f06e7`). A subsequent changed-file retry correctly detected that the local worktree ref had not advanced after the prior GitHub API push and refused an unsafe publish (`trc_bca02af80c53`). Recovery: removed the generated Grok run-log directory after its review was durable on GitHub (`trc_37d5fbb48795`), inspected the publisher path resolution, and supplied the exact absolute task-worktree workpad path through the explicit typed file route.
 
 ---
 
@@ -119,13 +130,10 @@ bun run task:finish
 - `packages/os/plans/consuelo-os-foundation/workers/15-launcher-gtm-routing.md`
 - `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
 - `packages/os/scripts/lib/sites.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/scripts/os.ts`
 - `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
+- `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-24 17:03:30 apply-patch: `.task/os-web/authenticated-launcher-workspace-links-and-gtm/workpad.md`
-- 2026-07-24 17:04:06 apply-patch: `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
-
-- 2026-07-24 17:05:09 apply-patch: `packages/os/cloudflare/workspace-edge/README.md`
-
-- 2026-07-24 17:05:56 apply-patch: `.task/os-web/authenticated-launcher-workspace-links-and-gtm/workpad.md`
+- 2026-07-24 17:22:10 apply-patch: `.task/os-web/authenticated-launcher-workspace-links-and-gtm/workpad.md`
