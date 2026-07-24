@@ -9,6 +9,8 @@ export * from './presentation';
 export * from './release';
 export * from './retention';
 export * from './runtime';
+export * from './runtime-links';
+export * from './runtime-release-path';
 export * from './service';
 export * from './state';
 export * from './types';

@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os-native/implement-windows-platform-support/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/lifecycle/retention.ts",
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
+    "packages/os/tests/distribution/workflow-contract.test.ts"
+  ],
+  "updatedAt": "2026-07-24T18:46:33.011Z"
+}
