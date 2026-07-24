@@ -182,6 +182,8 @@ const SOURCE_ONLY_FILES = new Set([
   'scripts/generate-types.ts',
   'scripts/prepare-release-publication.ts',
   'scripts/release-channels.ts',
+  'scripts/railway-logs.js',
+  'scripts/railway-redeploy.js',
 ]);
 
 const CUSTOMER_PROVIDER_FILES = new Set([
@@ -203,7 +205,6 @@ const CUSTOMER_PROVIDER_PREFIXES = [
   'scripts/browser',
   'scripts/github',
   'scripts/linear',
-  'scripts/railway-',
   'scripts/sentry',
   'scripts/lib/app-files-client',
   'scripts/lib/connector-origin-hostname',

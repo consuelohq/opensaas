@@ -559,7 +559,6 @@ export const ExploitInput = z.object({
 export const ConfirmInput = z.object({
   ...requestFields,
   verify: z.boolean().optional(),
-  runtime: z.boolean().optional(),
   test: optionalString,
 });
 
@@ -1379,7 +1378,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
-  ConfirmInput: '{ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }',
+  ConfirmInput: '{ verify?: boolean; test?: string; requestId?: string; taskSession?: string }',
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',

@@ -1727,7 +1727,7 @@ run verification or targeted validation through confirm
 | Field | Value |
 | --- | --- |
 | Category | decision engine |
-| Signature | `workspace.confirm({ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.confirm({ verify?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace confirm` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
