@@ -647,9 +647,10 @@ function boundedSteeringFile(file: SteeringMarkdownFile): SteeringMarkdownFile {
     ? STEERING_MANAGED_FILE_MAX_CHARS
     : STEERING_USER_FILE_MAX_CHARS;
   if (file.content.length <= maxChars) return file;
+  const marker = '\n\n[truncated to fit the steering output budget]';
   return {
     ...file,
-    content: `${file.content.slice(0, maxChars)}\n\n[truncated to fit the steering output budget]`,
+    content: `${file.content.slice(0, Math.max(0, maxChars - marker.length))}${marker}`,
   };
 }
 

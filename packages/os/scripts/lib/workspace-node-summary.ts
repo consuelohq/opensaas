@@ -117,8 +117,12 @@ export function parseWorkspaceNodeListSummary(value: unknown): WorkspaceNodeList
 }
 
 export function workspaceNodeSummaryCachePath(home: string, workspaceId: string): string {
+  const parsedWorkspaceId = workspaceIdSchema.safeParse(workspaceId);
+  if (!parsedWorkspaceId.success) {
+    throw new Error('workspaceId must be a safe path segment');
+  }
   return path.join(
-    resolveConsueloHomeLayout(home).nodeWorkspaceStateDir(workspaceId),
+    resolveConsueloHomeLayout(home).nodeWorkspaceStateDir(parsedWorkspaceId.data),
     WORKSPACE_NODE_SUMMARY_CACHE_FILE,
   );
 }

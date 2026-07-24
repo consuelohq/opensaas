@@ -444,6 +444,44 @@ describe('installed runtime steering context', () => {
     expect(steering.length).toBeLessThanOrEqual(65_536);
   });
 
+  it('fails runtime identity atomically when the active workspace config is invalid', () => {
+    installFixture();
+    writeFileSync(
+      join(home, 'workspaces', WORKSPACE_ID, 'shared', 'workspace.yaml'),
+      'not: [valid yaml',
+    );
+
+    const steering = runSteering();
+
+    expect(steering).toContain('runtime_identity_unavailable');
+    expect(steering).toContain('"nodeId": null');
+    expect(steering).toContain('"displayName": null');
+    expect(steering).toContain('"platform": null');
+    expect(steering).toContain('"architecture": null');
+    expect(steering).toContain('"channel": null');
+    expect(steering).toContain('"workspaceId": null');
+    expect(steering).toContain('"workspaceSlug": null');
+    expect(steering).toContain('"workspaceHost": null');
+    expect(steering).toContain('"isDefaultNode": null');
+    expect(steering).toContain('"installedVersion": "1.2.3"');
+  });
+
+  it('keeps the truncation marker inside the per-file steering budget', () => {
+    installFixture();
+    const visibleRoot = join(userHome, 'Consuelo', 'Steering');
+    rmSync(join(visibleRoot, 'zeta.md'));
+    writeFileSync(join(visibleRoot, 'alpha.md'), 'user '.repeat(20_000));
+
+    const steering = runSteering();
+    const prefix = '# alpha.md\n\n';
+    const start = steering.indexOf(prefix);
+    expect(start).toBeGreaterThanOrEqual(0);
+    const renderedFile = steering.slice(start + prefix.length);
+
+    expect(renderedFile).toContain('[truncated to fit the steering output budget]');
+    expect(renderedFile.length).toBeLessThanOrEqual(6_000);
+  });
+
   it('does not follow user steering symlinks outside the visible steering directory', () => {
     installFixture();
     const outsidePath = join(userHome, `outside-${SECRET}.md`);

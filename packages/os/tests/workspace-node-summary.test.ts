@@ -109,4 +109,11 @@ describe('shared authenticated workspace node summary contract', () => {
       cachedAt: '2026-07-24T16:05:00.000Z',
     })).toThrow('invalid workspace node summary');
   });
+
+  it('rejects an unsafe workspace identifier before constructing a cache read path', () => {
+    const home = makeHome();
+
+    expect(() => readWorkspaceNodeSummaryCache(home, '../outside'))
+      .toThrow('workspaceId must be a safe path segment');
+  });
 });

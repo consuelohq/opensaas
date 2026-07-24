@@ -222,6 +222,8 @@ const TOOL_REGISTRY_FILE = 'tools.json';
 const TOOL_DEFINITION_FILE = 'tool.json';
 const DEFAULT_STEERING_FILES = ['system_prompt.md'] as const;
 const LEGACY_DECISION_FILE = 'decision.md';
+const STEERING_PROVENANCE_FILE = 'steering-provenance.json';
+const LEGACY_DECISION_PROVENANCE_PATH = 'steering/decision.md';
 
 const COMPACT_SKILL_FIELDS = [
   'name',
@@ -568,6 +570,33 @@ function seedBundledSteering(home: string, dryRun: boolean): ProvisionAction[] {
 
   const legacySourcePath = path.join(BUNDLED_STEERING_ROOT, LEGACY_DECISION_FILE);
   const legacyTargetPath = path.join(targetRoot, LEGACY_DECISION_FILE);
+  const provenancePath = path.join(home, 'components', STEERING_PROVENANCE_FILE);
+  const trustedLegacyHash = (() => {
+    if (!fs.existsSync(provenancePath)) return null;
+    try {
+      const value = JSON.parse(fs.readFileSync(provenancePath, 'utf8')) as unknown;
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+      const record = value as Record<string, unknown>;
+      if (
+        record.schemaVersion !== 1
+        || record.kind !== 'consuelo-steering-provenance'
+        || !Array.isArray(record.files)
+      ) return null;
+      const entry = record.files.find((candidate) => {
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return false;
+        const item = candidate as Record<string, unknown>;
+        return item.path === LEGACY_DECISION_PROVENANCE_PATH
+          && item.ownership === 'bundled-managed'
+          && typeof item.contentHash === 'string'
+          && /^sha256:[a-f0-9]{64}$/.test(item.contentHash);
+      }) as Record<string, unknown> | undefined;
+      return typeof entry?.contentHash === 'string' ? entry.contentHash : null;
+    } catch {
+      return null;
+    }
+  })();
+  const contentHash = (filePath: string): string =>
+    `sha256:${createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')}`;
   if (fs.existsSync(legacyTargetPath)) {
     if (installedInPlace) {
       actions.push({
@@ -577,8 +606,11 @@ function seedBundledSteering(home: string, dryRun: boolean): ProvisionAction[] {
         message: 'bundled source decision file preserved in the package checkout',
       });
     } else if (
+      trustedLegacyHash
+      &&
       fs.existsSync(legacySourcePath)
-      && fs.readFileSync(legacyTargetPath).equals(fs.readFileSync(legacySourcePath))
+      && contentHash(legacySourcePath) === trustedLegacyHash
+      && contentHash(legacyTargetPath) === trustedLegacyHash
     ) {
       actions.push({
         type: 'seed_steering',

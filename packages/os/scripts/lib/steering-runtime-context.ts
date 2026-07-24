@@ -283,18 +283,31 @@ export function readSteeringRuntimeContext(input: {
   let channel: string | null = null;
 
   try {
-    globalConfig = loadGlobalYamlConfig(layout.globalConfigPath);
+    const loadedGlobalConfig = loadGlobalYamlConfig(layout.globalConfigPath);
     const nodeConfig = loadNodeYamlConfig(layout.nodeConfigPath);
-    workspaceId = globalConfig.activeWorkspace ?? nodeConfig.workspaces[0]?.id ?? null;
-    nodeId = globalConfig.activeNode ?? nodeConfig.node.id;
-    displayName = nodeConfig.node.name;
-    channel = globalConfig.updates.channel;
-    if (workspaceId) {
-      const workspace = loadWorkspaceYamlConfig(layout.workspaceConfigPath(workspaceId));
-      workspaceSlug = workspace.workspace.slug ?? null;
-      workspaceHost = workspace.workspace.host ?? null;
+    const loadedWorkspaceId = loadedGlobalConfig.activeWorkspace ?? nodeConfig.workspaces[0]?.id ?? null;
+    let loadedWorkspaceSlug: string | null = null;
+    let loadedWorkspaceHost: string | null = null;
+    if (loadedWorkspaceId) {
+      const workspace = loadWorkspaceYamlConfig(layout.workspaceConfigPath(loadedWorkspaceId));
+      loadedWorkspaceSlug = workspace.workspace.slug ?? null;
+      loadedWorkspaceHost = workspace.workspace.host ?? null;
     }
+    globalConfig = loadedGlobalConfig;
+    workspaceId = loadedWorkspaceId;
+    nodeId = loadedGlobalConfig.activeNode ?? nodeConfig.node.id;
+    displayName = nodeConfig.node.name;
+    channel = loadedGlobalConfig.updates.channel;
+    workspaceSlug = loadedWorkspaceSlug;
+    workspaceHost = loadedWorkspaceHost;
   } catch {
+    globalConfig = null;
+    nodeId = null;
+    displayName = null;
+    workspaceId = null;
+    workspaceSlug = null;
+    workspaceHost = null;
+    channel = null;
     diagnostics.push('runtime_identity_unavailable');
   }
 

@@ -100,6 +100,24 @@ All failures below must be summarized on the PR with the successful recovery pat
 - Post-fix focused/typecheck validation: `trc_f5f56983a059` — 43/43 focused tests green with syntax checks.
 - Strict assigned regression lane after the Grok-derived fix: `trc_f3e01a824fbe` — `set -euo pipefail`, syntax/typecheck green, 12 required suites / 128 tests green, generated manifests current.
 - Post-fix strict workspace review: `trc_728d2c6f001b` — 12 owned product/test files, static rules + eslint + typecheck + spec compliance, 0 task issues, 0 pre-existing issues, 0 blockers.
+- CodeRabbit red phase: `trc_2f139462e5ce` — four focused failures reproduced all four inline findings: unmarked identical `decision.md` deletion, partial identity after workspace parse failure, unsafe cache-read workspace path, and per-file marker overflow.
+- CodeRabbit fixes: `trc_c4e8124214c1` plus syntax correction `trc_15162a2137e4` — trusted steering provenance gating, atomic identity assignment/reset, workspace ID validation before cache path construction, and marker-inclusive file budgets.
+- CodeRabbit focused green: `trc_b517e1569a6b` — syntax/typecheck and 39/39 focused tests green.
+- Final assigned regression lane after all CodeRabbit fixes: `trc_f4b42a8c2e35` — 12 required suites / 133 tests green, syntax/typecheck green, generated manifests current.
+- Final strict workspace review after all CodeRabbit fixes: `trc_0366027c31a4` — 12 owned files, 0 issues, 0 blockers.
+
+## CodeRabbit finding dispositions
+
+- `3647007424` — **valid, fixed**. Content equality alone no longer proves ownership. Unmarked/ambiguous files are preserved; removal requires a strict `components/steering-provenance.json` bundled-managed record whose trusted hash matches both the bundled source and installed target. Marked-but-modified files remain preserved.
+- `3647007429` — **valid, fixed**. Runtime identity is loaded into temporary values and committed only after global, node, and active-workspace config all succeed. Failure clears all local identity fields while independent installed-version state remains available.
+- `3647007442` — **valid, fixed**. `workspaceNodeSummaryCachePath()` now validates the caller-provided workspace ID as a safe path segment before any path construction, covering reads as well as parsed writes.
+- `3647007447` — **valid, fixed**. The truncation marker is included inside the managed/user per-file character budget rather than appended beyond it.
+- CodeRabbit test-organization nitpick — **addressed**. Decision migration behavior is split into three descriptive arrange/act/assert tests: unmarked exact match preserved, trusted exact match removed, trusted modified file preserved.
+
+## Decision migration ownership rationale
+
+- Repository inspection found no historical trusted steering ownership ledger. Therefore no legacy file is deleted merely because its bytes match the bundled template.
+- The new strict provenance marker is the only deletion authority. This is intentionally conservative: ambiguous historical copies remain on disk but are excluded from steering, while proven installer-owned unchanged copies can be removed safely.
 
 ## Broad repository sweep diagnosis
 
@@ -160,22 +178,18 @@ The first implementation checkpoint is pushed. A medium reliability issue sugges
 
 - `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/steering-runtime-context.ts`
-- `packages/os/scripts/lib/workspace-node-client.ts`
 - `packages/os/scripts/lib/workspace-node-summary.ts`
 - `packages/os/scripts/os.ts`
-- `packages/os/scripts/workspace-nodes.ts`
 - `packages/os/tests/install-state.test.ts`
-- `packages/os/tests/os-get-steering-trace.test.ts`
-- `packages/os/tests/os-raw-steering.test.ts`
 - `packages/os/tests/os-steering-runtime-context.test.ts`
 - `packages/os/tests/workspace-node-summary.test.ts`
-- `packages/os/tests/workspace-nodes-cli.test.ts`
 
 
 ## workspace-owned: files changed
 
 - `packages/os/.tmp-reviews/07-steering-runtime-context/grok-context.json`
 - `packages/os/.tmp-reviews/07-steering-runtime-context/pr-initial-comment.md`
+- `packages/os/.tmp-reviews/07-steering-runtime-context/pr-second-comment.md`
 - `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/steering-runtime-context.ts`
 - `packages/os/scripts/lib/workspace-node-client.ts`
@@ -208,6 +222,7 @@ The first implementation checkpoint is pushed. A medium reliability issue sugges
 - 2026-07-24 16:57:39 fs.write: `packages/os/scripts/lib/steering-runtime-context.ts`
 - 2026-07-24 17:04:48 fs.write: `packages/os/.tmp-reviews/07-steering-runtime-context/pr-initial-comment.md`
 - 2026-07-24 17:05:50 fs.write: `packages/os/.tmp-reviews/07-steering-runtime-context/grok-context.json`
+- 2026-07-24 17:38:43 fs.write: `packages/os/.tmp-reviews/07-steering-runtime-context/pr-second-comment.md`
 
 ## workspace-owned: files read
 
@@ -220,17 +235,6 @@ The first implementation checkpoint is pushed. A medium reliability issue sugges
 
 ## workspace-owned: validation evidence
 
-- TDD red: `trc_ec1dd6d7a10e` — 30 pre-existing tests passed; new contracts failed only on the intentionally absent Worker 07 behavior.
-- Focused green: `trc_e705ea615bd0` — 39/39; strengthened budget/core-tool suite `trc_e722bed6e404` — 40/40.
-- Required regression matrix: `trc_caf6cc13f165` — 125/125 across steering trace/raw, install state, skills registry, managed components, Worker 25 node routes/client/cache, MCP gateway/action scopes, and security gateway.
-- Package syntax gate: `trc_b8f54d11e862` — green.
-- Full package suite: `trc_608a5fbac719` — 129 test files, 530 tests, all green.
-- Generated core manifest drift check: `trc_021df376d386` — current.
-- Measured oversized steering fixture: `trc_de3764b9db98` — exactly 65,534 characters, below the 65,536-character ceiling.
-- 2026-07-24 17:05:19 `review.run`: passed — OK
-- 2026-07-24 17:05:50 write: `packages/os/.tmp-reviews/07-steering-runtime-context/grok-context.json`
-- 2026-07-24 17:11:27 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
-- 2026-07-24 17:13:09 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
 - 2026-07-24 17:14:38 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
 - 2026-07-24 17:14:52 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
 - 2026-07-24 17:16:13 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
@@ -249,3 +253,15 @@ The first implementation checkpoint is pushed. A medium reliability issue sugges
 - 2026-07-24 17:36:55 `review.run`: passed — OK
 - 2026-07-24 17:37:07 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
 - 2026-07-24 17:38:08 `verify`: passed — OK
+- 2026-07-24 17:38:43 write: `packages/os/.tmp-reviews/07-steering-runtime-context/pr-second-comment.md`
+- 2026-07-24 17:40:57 apply-patch: `packages/os/tests/install-state.test.ts`
+- 2026-07-24 17:41:04 apply-patch: `packages/os/tests/os-steering-runtime-context.test.ts`
+- 2026-07-24 17:41:04 apply-patch: `packages/os/tests/workspace-node-summary.test.ts`
+- 2026-07-24 17:41:52 apply-patch: `packages/os/scripts/lib/install-state.ts`
+- 2026-07-24 17:41:52 apply-patch: `packages/os/scripts/lib/steering-runtime-context.ts`
+- 2026-07-24 17:41:52 apply-patch: `packages/os/scripts/lib/workspace-node-summary.ts`
+- 2026-07-24 17:41:52 apply-patch: `packages/os/scripts/os.ts`
+- 2026-07-24 17:41:56 apply-patch: `packages/os/scripts/lib/install-state.ts`
+- 2026-07-24 17:42:38 `review.run`: passed — OK
+- 2026-07-24 17:42:49 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:42:59 `verify`: passed — OK

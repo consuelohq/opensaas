@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -465,7 +466,7 @@ describe('local OS install state', () => {
     expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('user-owned decision');
   });
 
-  it('removes an unchanged bundled decision file while preserving user-modified copies', () => {
+  it('preserves an unmarked decision file even when its content matches the bundled copy', () => {
     JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
@@ -474,6 +475,39 @@ describe('local OS install state', () => {
     const decisionPath = join(tempHome, 'steering', 'decision.md');
     const bundledDecision = readFileSync(join(process.cwd(), 'steering', 'decision.md'), 'utf8');
     writeFileSync(decisionPath, bundledDecision);
+
+    const preserved = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    expect(readFileSync(decisionPath, 'utf8')).toBe(bundledDecision);
+    expect(preserved.actions).toContainEqual(expect.objectContaining({
+      type: 'seed_steering',
+      path: decisionPath,
+      status: 'preserved',
+    }));
+  });
+
+  it('removes an unchanged decision file only when trusted installer provenance owns it', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    const decisionPath = join(tempHome, 'steering', 'decision.md');
+    const bundledDecision = readFileSync(join(process.cwd(), 'steering', 'decision.md'), 'utf8');
+    const contentHash = `sha256:${createHash('sha256').update(bundledDecision).digest('hex')}`;
+    writeFileSync(decisionPath, bundledDecision);
+    writeFileSync(join(tempHome, 'components', 'steering-provenance.json'), `${JSON.stringify({
+      schemaVersion: 1,
+      kind: 'consuelo-steering-provenance',
+      files: [{
+        path: 'steering/decision.md',
+        ownership: 'bundled-managed',
+        contentHash,
+      }],
+    }, null, 2)}\n`);
 
     const migrated = JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
@@ -486,6 +520,26 @@ describe('local OS install state', () => {
       path: decisionPath,
       status: 'updated',
     }));
+  });
+
+  it('preserves a provenance-marked decision file after user modification', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    const decisionPath = join(tempHome, 'steering', 'decision.md');
+    const bundledDecision = readFileSync(join(process.cwd(), 'steering', 'decision.md'), 'utf8');
+    const contentHash = `sha256:${createHash('sha256').update(bundledDecision).digest('hex')}`;
+    writeFileSync(join(tempHome, 'components', 'steering-provenance.json'), `${JSON.stringify({
+      schemaVersion: 1,
+      kind: 'consuelo-steering-provenance',
+      files: [{
+        path: 'steering/decision.md',
+        ownership: 'bundled-managed',
+        contentHash,
+      }],
+    }, null, 2)}\n`);
 
     writeFileSync(decisionPath, '# User decision\n\nkeep this user-owned file\n');
     const preserved = JSON.parse(runBunEval(`
