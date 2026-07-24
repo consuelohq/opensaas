@@ -13,6 +13,7 @@ import {
 } from './index';
 
 const installation: LeadConnectorInstallation = {
+  installationId: 'installation-1',
   workspaceId: 'workspace-1',
   locationId: 'location-1',
   accessTokenCiphertext: 'encrypted-access',

@@ -27,6 +27,18 @@ export class LeadConnectorInstallationOwnershipError extends Data.TaggedError(
   retryable: false;
 }> {}
 
+export class LeadConnectorEmbedIdentityError extends Data.TaggedError(
+  'LeadConnectorEmbedIdentityError',
+)<{
+  code:
+    | 'INVALID_EMBED_CONTEXT'
+    | 'EMBED_LOCATION_REQUIRED'
+    | 'EMBED_INSTALLATION_NOT_FOUND';
+  message: string;
+  retryable: false;
+  cause?: unknown;
+}> {}
+
 export class LeadConnectorProviderError extends Data.TaggedError(
   'LeadConnectorProviderError',
 )<{
@@ -75,6 +87,7 @@ export type LeadConnectorError =
   | LeadConnectorOAuthStateError
   | LeadConnectorInstallationNotFoundError
   | LeadConnectorInstallationOwnershipError
+  | LeadConnectorEmbedIdentityError
   | LeadConnectorProviderError
   | LeadConnectorStateError
   | LeadConnectorTokenCipherError

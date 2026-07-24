@@ -1,11 +1,13 @@
 import {
   beginLeadConnectorOAuth,
   completeLeadConnectorOAuth,
+  exchangeLeadConnectorEmbedContext,
   listLeadConnectorContacts,
   listLeadConnectorPipelines,
   processLeadConnectorWebhook,
   recordLeadConnectorDisposition,
   searchLeadConnectorOpportunities,
+  validateLeadConnectorEmbedIdentity,
   type LeadConnectorClockService,
   type LeadConnectorConfiguration,
   type LeadConnectorHttpTransportService,
@@ -13,6 +15,7 @@ import {
   type LeadConnectorOAuthStateStoreService,
   type LeadConnectorRandomService,
   type LeadConnectorTokenCipherService,
+  type LeadConnectorUserContextDecoderService,
   type LeadConnectorWebhookEventStoreService,
   type LeadConnectorWebhookVerifierService,
 } from '@consuelo/lead-connector';
@@ -28,6 +31,7 @@ type LeadConnectorRuntime =
   | LeadConnectorOAuthStateStoreService
   | LeadConnectorRandomService
   | LeadConnectorTokenCipherService
+  | LeadConnectorUserContextDecoderService
   | LeadConnectorWebhookEventStoreService
   | LeadConnectorWebhookVerifierService;
 
@@ -50,4 +54,8 @@ export const createEffectLeadConnectorApplication = (
     listLeadConnectorPipelines(workspaceId).pipe(Effect.provide(layer)),
   recordDisposition: (input) =>
     recordLeadConnectorDisposition(input).pipe(Effect.provide(layer)),
+  exchangeEmbedBootstrap: (input) =>
+    exchangeLeadConnectorEmbedContext(input).pipe(Effect.provide(layer)),
+  validateEmbedIdentity: (identity) =>
+    validateLeadConnectorEmbedIdentity(identity).pipe(Effect.provide(layer)),
 });

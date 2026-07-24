@@ -36,6 +36,35 @@ const createHost = () => {
 };
 
 describe('LeadConnector embed protocol', () => {
+  it('requests encrypted platform user context from the exact trusted parent origin', () => {
+    const fixture = createHost();
+    const onMessage = mock(() => undefined);
+    const parentOrigin = LEAD_CONNECTOR_PARENT_ORIGINS[0];
+    const bridge = createLeadConnectorParentBridge(fixture.host, {
+      allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
+      parentOrigin,
+      onMessage,
+    });
+
+    bridge.start();
+    bridge.requestUserContext();
+    expect(fixture.posts).toEqual([
+      {
+        targetOrigin: parentOrigin,
+        message: { message: 'REQUEST_USER_DATA' },
+      },
+    ]);
+
+    fixture.dispatch(parentOrigin, {
+      message: 'REQUEST_USER_DATA_RESPONSE',
+      payload: 'opaque-parent-ciphertext',
+    });
+    expect(onMessage).toHaveBeenCalledWith({
+      type: 'bootstrap',
+      encryptedData: 'opaque-parent-ciphertext',
+    });
+  });
+
   it('accepts a versioned handshake only from a trusted parent and responds to that exact origin', () => {
     const fixture = createHost();
     const onMessage = mock(() => undefined);

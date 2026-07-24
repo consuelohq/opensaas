@@ -92,6 +92,7 @@ export const exchangeLeadConnectorToken = (input: {
 export const persistLeadConnectorTokens = (input: {
   workspaceId: string;
   token: LeadConnectorTokenResponse;
+  installationId?: string;
   connectedAt?: string;
 }) =>
   Effect.gen(function* () {
@@ -108,6 +109,8 @@ export const persistLeadConnectorTokens = (input: {
     );
     const timestamp = now.toISOString();
     const installation: LeadConnectorInstallation = {
+      installationId:
+        input.installationId ?? existing?.installationId ?? crypto.randomUUID(),
       workspaceId: input.workspaceId,
       locationId: input.token.locationId,
       accessTokenCiphertext,
@@ -156,6 +159,7 @@ export const getValidLeadConnectorAccessToken = (workspaceId: string) =>
     const refreshed = yield* persistLeadConnectorTokens({
       workspaceId,
       token,
+      installationId: installation.installationId,
       connectedAt: installation.connectedAt,
     });
     return yield* cipher.decrypt(refreshed.accessTokenCiphertext);

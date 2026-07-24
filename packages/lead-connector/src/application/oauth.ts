@@ -86,6 +86,7 @@ export const completeLeadConnectorOAuth = (input: {
 }) =>
   Effect.gen(function* () {
     const clock = yield* LeadConnectorClock;
+    const random = yield* LeadConnectorRandom;
     const stateStore = yield* LeadConnectorOAuthStateStore;
     const installationStore = yield* LeadConnectorInstallationStore;
     const stored = yield* stateStore.consume(input.state);
@@ -121,6 +122,7 @@ export const completeLeadConnectorOAuth = (input: {
     const installation = yield* persistLeadConnectorTokens({
       workspaceId: stored.workspaceId,
       token,
+      installationId: base64Url(yield* random.randomBytes(24)),
     });
     return {
       workspaceId: installation.workspaceId,

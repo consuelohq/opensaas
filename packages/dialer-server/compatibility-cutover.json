@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "evidence": {
+    "deterministicContracts": true,
+    "localPostgresRedisRuntime": true,
+    "providerTestCredentials": true,
+    "sandboxInstallation": false,
+    "sandboxIframe": false,
+    "sandboxResourceQueries": false,
+    "sandboxWriteback": false,
+    "liveHumanWinner": false
+  },
+  "compatibility": {
+    "legacyProviderApiRoutes": "preserved",
+    "legacyTwentyDialerAdapters": "preserved",
+    "legacyTwentyClickToCallAsset": "preserved"
+  },
+  "removalRule": "Compatibility code may be removed only after the equivalent standalone evidence flag is true and an executable parity contract exists."
+}

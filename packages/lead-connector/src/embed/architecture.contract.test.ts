@@ -66,4 +66,13 @@ describe('LeadConnector browser architecture and branding', () => {
       readFileSync('packages/lead-connector/src/embed/index.html', 'utf8'),
     ).toContain('href="./main.css"');
   });
+
+  it('restarts the trusted parent bootstrap exchange when authentication is retried', () => {
+    const source = readFileSync(
+      'packages/lead-connector/src/embed/main.ts',
+      'utf8',
+    );
+    expect(source).toContain("if (action === 'retry') {");
+    expect(source).toContain('bridge.requestUserContext();');
+  });
 });

@@ -15,11 +15,52 @@ if (!root) throw new Error('LeadConnector embed root is missing');
 const api = createLeadConnectorEmbedApi({ baseUrl: window.location.origin });
 const controller = createLeadConnectorEmbedController({ api });
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
+let bootstrapTimer: ReturnType<typeof setTimeout> | null = null;
+
+const failBootstrap = (): void => {
+  if (bootstrapTimer) clearTimeout(bootstrapTimer);
+  bootstrapTimer = null;
+  controller.fail({
+    code: 'EMBED_PARENT_UNAVAILABLE',
+    message: 'Open the dialer from the LeadConnector custom menu to reconnect.',
+    recoverable: true,
+  });
+};
+
+const completeBootstrap = (): void => {
+  if (bootstrapTimer) clearTimeout(bootstrapTimer);
+  bootstrapTimer = null;
+};
+
+const parentOrigin = (() => {
+  try {
+    const origin = document.referrer ? new URL(document.referrer).origin : '';
+    return LEAD_CONNECTOR_PARENT_ORIGINS.includes(
+      origin as (typeof LEAD_CONNECTOR_PARENT_ORIGINS)[number],
+    )
+      ? origin
+      : undefined;
+  } catch (_error: unknown) {
+    return undefined;
+  }
+})();
 
 const bridge = createLeadConnectorParentBridge(window, {
   allowedOrigins: LEAD_CONNECTOR_PARENT_ORIGINS,
+  parentOrigin,
   onMessage: (message) => {
+    if (message.type === 'bootstrap') {
+      completeBootstrap();
+      void controller.authenticate(message.encryptedData).then(() => {
+        const phase = controller.getState().phase;
+        if (phase === 'ready' || phase === 'target-selected') {
+          bridge.sendReady();
+        }
+      });
+      return;
+    }
     if (message.type === 'handshake') {
+      completeBootstrap();
       void controller.authenticate(message.bootstrapToken).then(() => {
         const phase = controller.getState().phase;
         if (phase === 'ready' || phase === 'target-selected') {
@@ -31,7 +72,7 @@ const bridge = createLeadConnectorParentBridge(window, {
     controller.selectTarget(message.target);
     if (message.autoDial) void controller.startCall('single');
   },
-  onProtocolError: () => undefined,
+  onProtocolError: failBootstrap,
 });
 
 const stopRefresh = (): void => {
@@ -73,7 +114,11 @@ root.addEventListener('click', (event) => {
   const actionElement = readElement(event.target);
   const action = actionElement?.dataset.action;
   if (!actionElement || !action) return;
-  if (action === 'retry') controller.retry();
+  if (action === 'retry') {
+    controller.retry();
+    bootstrapTimer = setTimeout(failBootstrap, 5000);
+    bridge.requestUserContext();
+  }
   if (action === 'start-single') void controller.startCall('single');
   if (action === 'start-parallel') void controller.startCall('predictive');
   if (action === 'pause') controller.pause();
@@ -177,7 +222,10 @@ root.addEventListener('submit', (event) => {
 });
 
 bridge.start();
+bootstrapTimer = setTimeout(failBootstrap, 5000);
+bridge.requestUserContext();
 window.addEventListener('beforeunload', () => {
+  completeBootstrap();
   stopRefresh();
   bridge.stop();
 });

@@ -33,6 +33,15 @@ const createDependencies = (): DialerServerDependencies => ({
     ),
     listPipelines: mock(() => Effect.succeed([])),
     recordDisposition: mock(() => Effect.succeed({ recorded: true as const })),
+    exchangeEmbedBootstrap: mock(() =>
+      Effect.succeed({
+        workspaceId: 'workspace-1',
+        userId: 'provider-user-1',
+        installationId: 'installation-1',
+        locationId: 'location-1',
+      }),
+    ),
+    validateEmbedIdentity: mock(() => Effect.succeed(true)),
   },
 });
 
@@ -42,11 +51,15 @@ const auth = {
 };
 
 describe('dialer-server embed and LeadConnector resources', () => {
-  it('exchanges an authenticated bootstrap identity for a short-lived embed session', async () => {
+  it('exchanges encrypted parent context for a short-lived scoped embed session', async () => {
     const dependencies = createDependencies();
     const response = await createDialerServer(dependencies).request(
       '/v1/embed/session',
-      { method: 'POST', headers: auth },
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ encryptedData: 'opaque-parent-ciphertext' }),
+      },
     );
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({
@@ -55,7 +68,9 @@ describe('dialer-server embed and LeadConnector resources', () => {
     });
     expect(dependencies.issueEmbedSession).toHaveBeenCalledWith({
       workspaceId: 'workspace-1',
-      userId: 'user-1',
+      userId: 'provider-user-1',
+      installationId: 'installation-1',
+      locationId: 'location-1',
     });
   });
 

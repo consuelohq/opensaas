@@ -92,11 +92,11 @@ export const createLeadConnectorEmbedController = (input: {
       listener(state);
       return () => listeners.delete(listener);
     },
-    authenticate: async (bootstrapToken: string): Promise<void> => {
+    authenticate: async (encryptedData: string): Promise<void> => {
       try {
         dispatch({ type: 'AUTHENTICATION_STARTED' });
         const session = await run(() =>
-          input.api.createEmbedSession(bootstrapToken),
+          input.api.createEmbedSession(encryptedData),
         );
         if (!session) return;
         input.api.setSessionToken(session.token);
@@ -266,6 +266,11 @@ export const createLeadConnectorEmbedController = (input: {
       }
     },
     retry: () => dispatch({ type: 'RETRY_REQUESTED' }),
+    fail: (inputValue: {
+      code: string;
+      message: string;
+      recoverable: boolean;
+    }) => dispatch({ type: 'FAILED', ...inputValue }),
     reset: () => dispatch({ type: 'RESET' }),
   };
 };

@@ -6,12 +6,14 @@ import type {
   LeadConnectorHttpResponse,
   LeadConnectorInstallation,
   LeadConnectorOAuthState,
+  LeadConnectorUserContext,
 } from '../contracts/index.js';
 import type {
   LeadConnectorInstallationOwnershipError,
   LeadConnectorProviderError,
   LeadConnectorStateError,
   LeadConnectorTokenCipherError,
+  LeadConnectorEmbedIdentityError,
 } from '../errors.js';
 
 export type LeadConnectorClockService = {
@@ -98,6 +100,17 @@ export type LeadConnectorTokenCipherService = {
 export const LeadConnectorTokenCipher =
   Context.GenericTag<LeadConnectorTokenCipherService>(
     '@consuelo/lead-connector/TokenCipher',
+  );
+
+export type LeadConnectorUserContextDecoderService = {
+  decrypt: (
+    encryptedData: string,
+  ) => Effect.Effect<LeadConnectorUserContext, LeadConnectorEmbedIdentityError>;
+};
+
+export const LeadConnectorUserContextDecoder =
+  Context.GenericTag<LeadConnectorUserContextDecoderService>(
+    '@consuelo/lead-connector/UserContextDecoder',
   );
 
 export type LeadConnectorWebhookVerificationInput = {

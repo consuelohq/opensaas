@@ -1,6 +1,7 @@
 import type { DialerApplicationLayers } from '../application';
 import { createEffectDialerApplication } from '../application';
 import type { DialerServerDependencies } from '../contracts';
+import { runApplicationEffect } from '../effect-runner';
 import {
   createEffectLeadConnectorApplication,
   type LeadConnectorApplicationLayer,
@@ -58,13 +59,12 @@ export async function loadDialerServerRuntime(
   environment: DialerServerEnvironment = process.env,
 ): Promise<DialerServerRuntimeConfig> {
   try {
-    const runtimeModulePath = required(
-      environment,
-      'DIALER_SERVER_RUNTIME_MODULE',
-    );
-    const imported = (await import(
+    const runtimeModulePath = environment.DIALER_SERVER_RUNTIME_MODULE?.trim();
+    const imported = (
       runtimeModulePath
-    )) as Partial<RuntimeModule>;
+        ? await import(runtimeModulePath)
+        : await import('./railway.js')
+    ) as Partial<RuntimeModule>;
     if (typeof imported.createDialerApplicationLayers !== 'function') {
       throw new Error(
         'Runtime module must export createDialerApplicationLayers',
@@ -74,8 +74,11 @@ export async function loadDialerServerRuntime(
     const leadConnectorLayer = imported.createLeadConnectorApplicationLayer
       ? await imported.createLeadConnectorApplicationLayer(environment)
       : null;
+    const leadConnector = leadConnectorLayer
+      ? createEffectLeadConnectorApplication(leadConnectorLayer)
+      : undefined;
     const identities = parseIdentities(
-      required(environment, 'DIALER_SERVER_AUTH_IDENTITIES_JSON'),
+      environment.DIALER_SERVER_AUTH_IDENTITIES_JSON?.trim() || '[]',
     );
     const staticAuthenticator = createBearerAuthenticator(identities);
     const embedSessions = createEmbedSessionService({
@@ -83,6 +86,13 @@ export async function loadDialerServerRuntime(
       ttlSeconds: Number(
         environment.DIALER_SERVER_EMBED_SESSION_TTL_SECONDS || '900',
       ),
+      validateIdentity: async (identity) => {
+        if (!leadConnector) return false;
+        const result = await runApplicationEffect(
+          leadConnector.validateEmbedIdentity(identity),
+        );
+        return result.ok && result.value;
+      },
     });
     const authenticate = async (request: Request) => {
       try {
@@ -103,9 +113,7 @@ export async function loadDialerServerRuntime(
         application: createEffectDialerApplication(layers),
         authenticate,
         issueEmbedSession: embedSessions.issue,
-        leadConnector: leadConnectorLayer
-          ? createEffectLeadConnectorApplication(leadConnectorLayer)
-          : undefined,
+        leadConnector,
         verifyTwilioSignature: createTwilioSignatureVerifier(
           required(environment, 'TWILIO_AUTH_TOKEN'),
         ),

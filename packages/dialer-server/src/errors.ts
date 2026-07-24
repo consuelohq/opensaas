@@ -11,6 +11,7 @@ import {
   DialerTransitionError,
 } from '@consuelo/dialer';
 import {
+  LeadConnectorEmbedIdentityError,
   LeadConnectorInstallationNotFoundError,
   LeadConnectorInstallationOwnershipError,
   LeadConnectorOAuthStateError,
@@ -117,6 +118,18 @@ export function leadConnectorErrorResponse(
   context: Context,
   error: unknown,
 ): Response {
+  if (error instanceof LeadConnectorEmbedIdentityError) {
+    return context.json(
+      {
+        error: {
+          code: error.code,
+          message: 'LeadConnector embedded session could not be verified',
+          retryable: false,
+        },
+      },
+      error.code === 'EMBED_INSTALLATION_NOT_FOUND' ? 403 : 401,
+    );
+  }
   if (error instanceof LeadConnectorOAuthStateError) {
     return context.json(
       {

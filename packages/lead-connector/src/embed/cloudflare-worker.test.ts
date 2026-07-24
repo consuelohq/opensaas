@@ -1,0 +1,85 @@
+import { describe, expect, it } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import { createLeadConnectorEdgeWorker } from './cloudflare-worker';
+
+const createEnvironment = () => {
+  const originRequests: Request[] = [];
+  const assetRequests: Request[] = [];
+  return {
+    originRequests,
+    assetRequests,
+    environment: {
+      DIALER_SERVER_ORIGIN: 'https://dialer-origin.example.test',
+      ASSETS: {
+        fetch: async (request: Request) => {
+          assetRequests.push(request);
+          return new Response('<html>embed</html>', {
+            headers: { 'content-type': 'text/html' },
+          });
+        },
+      },
+      fetchOrigin: async (request: Request) => {
+        originRequests.push(request);
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 201,
+          headers: { 'content-type': 'application/json' },
+        });
+      },
+    },
+  };
+};
+
+describe('LeadConnector Cloudflare embed edge', () => {
+  it('deploys the browser application build rather than TypeScript library output', () => {
+    const config = readFileSync(
+      resolve(import.meta.dir, '../../wrangler.jsonc'),
+      'utf8',
+    );
+    expect(config).toContain('"directory": "./dist/embed-app"');
+    expect(config).not.toContain('"directory": "./dist/embed"');
+  });
+
+  it('proxies only dialer API, OAuth, webhook, and health paths to Railway', async () => {
+    const fixture = createEnvironment();
+    const worker = createLeadConnectorEdgeWorker(
+      fixture.environment.fetchOrigin,
+    );
+    const response = await worker.fetch(
+      new Request('https://dialer.example.test/v1/call-sessions?view=full', {
+        method: 'POST',
+        headers: { authorization: 'Bearer scoped-session' },
+        body: JSON.stringify({ source: 'direct' }),
+      }),
+      fixture.environment,
+    );
+
+    expect(response.status).toBe(201);
+    expect(fixture.originRequests).toHaveLength(1);
+    expect(fixture.originRequests[0]?.url).toBe(
+      'https://dialer-origin.example.test/v1/call-sessions?view=full',
+    );
+    expect(fixture.assetRequests).toHaveLength(0);
+  });
+
+  it('serves the embed as an iframe-safe static asset without proxying arbitrary paths', async () => {
+    const fixture = createEnvironment();
+    const worker = createLeadConnectorEdgeWorker(
+      fixture.environment.fetchOrigin,
+    );
+    const response = await worker.fetch(
+      new Request('https://dialer.example.test/embed/'),
+      fixture.environment,
+    );
+
+    expect(response.status).toBe(200);
+    expect(fixture.originRequests).toHaveLength(0);
+    expect(fixture.assetRequests).toHaveLength(1);
+    expect(response.headers.get('x-frame-options')).toBeNull();
+    expect(response.headers.get('content-security-policy')).toContain(
+      'frame-ancestors https://app.leadconnectorhq.com https://app.msgsndr.com',
+    );
+    expect(response.headers.get('permissions-policy')).toContain('microphone');
+  });
+});

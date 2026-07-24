@@ -9,6 +9,7 @@ import type {
 } from '@consuelo/dialer';
 import type {
   LeadConnectorContact,
+  LeadConnectorEmbedIdentity,
   LeadConnectorError,
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
@@ -16,7 +17,12 @@ import type {
 } from '@consuelo/lead-connector';
 import type { Effect } from 'effect';
 
-export type DialerIdentity = { workspaceId: string; userId: string };
+export type DialerIdentity = {
+  workspaceId: string;
+  userId: string;
+  installationId?: string;
+  locationId?: string;
+};
 
 export type DialerServerApplication = {
   startCallSession: (
@@ -102,6 +108,12 @@ export type LeadConnectorServerApplication = {
     note?: string;
     tags?: string[];
   }) => Effect.Effect<{ recorded: true }, LeadConnectorError>;
+  exchangeEmbedBootstrap: (input: {
+    encryptedData: string;
+  }) => Effect.Effect<LeadConnectorEmbedIdentity, LeadConnectorError>;
+  validateEmbedIdentity: (
+    identity: LeadConnectorEmbedIdentity,
+  ) => Effect.Effect<boolean, LeadConnectorError>;
 };
 
 export type DialerServerDependencies = {
@@ -109,7 +121,7 @@ export type DialerServerDependencies = {
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;
   issueEmbedSession?: (
-    identity: DialerIdentity,
+    identity: LeadConnectorEmbedIdentity,
   ) => Promise<{ token: string; expiresAt: string }>;
   leadConnector?: LeadConnectorServerApplication;
 };
