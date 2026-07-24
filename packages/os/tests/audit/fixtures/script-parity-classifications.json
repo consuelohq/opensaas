@@ -161,6 +161,14 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/generated/com.consuelo.system.plist": {
+      "status": "os-only-intentional",
+      "reason": "Generated OS launchd service definition is intentionally packaged with the standalone runtime and has no workspace counterpart."
+    },
+    "scripts/generated/com.consuelo.watchdog.plist": {
+      "status": "os-only-intentional",
+      "reason": "Generated OS watchdog launchd definition is intentionally packaged with the standalone runtime and has no workspace counterpart."
+    },
     "scripts/gh.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -549,6 +557,10 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/lifecycle/release.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
     },
+    "scripts/lib/lifecycle/runtime.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned lifecycle runtime adapter coordinates installed release execution and intentionally has no workspace counterpart."
+    },
     "scripts/lib/lifecycle/service.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/lifecycle/service.ts is an intentional OS-owned lifecycle runtime boundary with no workspace counterpart."
@@ -568,6 +580,14 @@
     "scripts/lib/local-guardrails.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/managed-component-install.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned provisioning boundary indexes immutable runtime components and conservatively preserves legacy custom directories without a workspace counterpart."
+    },
+    "scripts/lib/managed-components.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned deterministic provenance, update planning, merge classification, and bounded component resolution engine has no workspace counterpart."
     },
     "scripts/lib/managed-os-mcp-origin-class-migration.ts": {
       "status": "os-only-intentional",
@@ -995,6 +1015,14 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/workspace-node-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned workspace node client implements standalone multi-node routing behavior and intentionally has no workspace script counterpart."
+    },
+    "scripts/lib/workspace-node-heartbeat-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned workspace node heartbeat client supports standalone node registration and intentionally has no workspace counterpart."
+    },
     "scripts/lib/workspace-state.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -1010,6 +1038,10 @@
     "scripts/mac.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/managed-components.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned typed CLI exposes managed component inspection and explicit resolution operations for installed runtime bundles."
     },
     "scripts/mcp-stdio.ts": {
       "status": "os-only-intentional",
@@ -1070,12 +1102,12 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/railway-logs.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Workspace and OS Railway log entrypoints have current content drift; keep the divergence visible until a focused provider parity review reconciles behavior."
     },
     "scripts/railway-redeploy.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Workspace and OS Railway redeploy entrypoints have current content drift; keep the divergence visible until a focused provider parity review reconciles behavior."
     },
     "scripts/release-channels.ts": {
       "status": "os-only-intentional",
@@ -1184,6 +1216,10 @@
     "scripts/server/services/call-service.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/server/services/call-service.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/server/services/mcp-session.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS server owns MCP session lifecycle and authentication state; this runtime service intentionally has no workspace counterpart."
     },
     "scripts/server/services/oauth-introspection.ts": {
       "status": "os-only-intentional",
@@ -1480,6 +1516,14 @@
     "scripts/website-deploy.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/workspace-node-heartbeat.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned heartbeat entrypoint maintains standalone workspace node liveness and intentionally has no workspace counterpart."
+    },
+    "scripts/workspace-nodes.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned workspace node administration CLI supports standalone node routing and intentionally has no workspace counterpart."
     },
     "scripts/workspace-watchdog.sh": {
       "status": "changed-needs-review",

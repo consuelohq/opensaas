@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/orchestrator-audit-distribution-wave-before-main",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1617,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1617",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1617",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1617/orchestrator-audit-distribution-wave-before-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1617",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1617/orchestrator-audit-distribution-wave-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-orchestrator-audit-distribution-wave-before-main",
+  "taskSession": "tsk_069d7071708e",
+  "tmuxSession": "opensaas-os-distribution-orchestrator-audit-distribution-wave-before-main-069d7071",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-orchestrator-audit-distribution-wave-before-main/.task/os-distribution/orchestrator-audit-distribution-wave-before-main/session.json",
+  "createdAt": "2026-07-24T04:16:44.824Z"
+}

@@ -166,6 +166,40 @@ describe('configuration site', () => {
     expect(html).toContain('Cloud agents');
   });
 
+  it('reads selected and legacy custom skills from the canonical component index', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-component-index-'));
+    fs.mkdirSync(path.join(home, 'components'), { recursive: true });
+    fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({
+      version: 1,
+      mode: 'local',
+      home,
+      port: 8787,
+      artifactStorage: 'local',
+      selectedSkills: ['task'],
+      agents: [],
+      createdAt: '2026-07-23T00:00:00.000Z',
+      updatedAt: '2026-07-23T00:00:00.000Z',
+    }));
+    fs.writeFileSync(path.join(home, 'components', 'installed-skills.json'), JSON.stringify({
+      schemaVersion: 1,
+      kind: 'consuelo-installed-skill-index',
+      sourceBundle: { bundleId: 'sha256:test', version: '1.2.0' },
+      selected: [{ id: 'task', kind: 'skill', ownership: 'bundled-managed', permission: 'operator' }],
+      legacyCustom: [{ id: 'local-research', kind: 'skill', ownership: 'custom', legacyPath: 'skills/local-research', migrationRequired: true }],
+    }));
+
+    const snapshot = buildSettingsSnapshot(home);
+    expect(snapshot.skills.map((skill) => skill.name)).toEqual(['local-research', 'task']);
+    expect(snapshot.skills.find((skill) => skill.name === 'task')).toMatchObject({
+      category: 'operator',
+      configurable: true,
+    });
+    expect(snapshot.skills.find((skill) => skill.name === 'local-research')).toMatchObject({
+      configurable: false,
+      enabled: true,
+    });
+  });
+
   it('reports selected bundled skills and installed local skills only', () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-skills-'));
     fs.mkdirSync(path.join(home, 'skills'), { recursive: true });

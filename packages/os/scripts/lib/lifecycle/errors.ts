@@ -19,7 +19,11 @@ export type LifecycleErrorCode =
   | 'CONFIG_INVALID'
   | 'CONFIG_WRITE_FAILED'
   | 'ONBOARDING_FAILED'
-  | 'REPAIR_FAILED';
+  | 'REPAIR_FAILED'
+  | 'ROLLBACK_FAILED'
+  | 'RETENTION_FAILED'
+  | 'UNINSTALL_FAILED'
+  | 'RESET_NOT_ALLOWED';
 
 export class LifecycleError extends Data.TaggedError('LifecycleError')<{
   code: LifecycleErrorCode;
