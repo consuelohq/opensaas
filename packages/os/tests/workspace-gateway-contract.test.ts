@@ -109,7 +109,7 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
       workspaceId: 'workspace-acme',
       workspaceSlug: 'acme',
       workspaceHost: 'acme.consuelohq.com',
-      publicRoutes: ['/office', '/diffs', '/docs', '/wiki', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
+      publicRoutes: ['/artifacts', '/diffs', '/docs', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
     });
     expect(authConfig).toMatchObject({
       kind: 'consuelo-generated',
@@ -143,13 +143,12 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
     expect(registry.routes.map((route) => route.path).sort()).toEqual([
       '/api',
       '/apps/chatgpt',
+      '/artifacts',
       '/diffs',
       '/docs',
       '/mcp',
-      '/office',
       '/tools',
       '/traces',
-      '/wiki',
     ]);
     for (const route of registry.routes) {
       expect(route).toMatchObject({
@@ -212,7 +211,7 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
       audit: { enabled: true, eventName: 'gateway.connector.state' },
       cloudflare: {
         managedHostname: 'acme.consuelohq.com',
-        publicRoutes: ['/office', '/diffs', '/docs', '/wiki', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
+        publicRoutes: ['/artifacts', '/diffs', '/docs', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
       },
     });
   });
