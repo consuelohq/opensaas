@@ -1,0 +1,13 @@
+{
+  "files": [
+    "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/15-launcher-gtm-routing.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-24T17:03:09.487Z"
+}

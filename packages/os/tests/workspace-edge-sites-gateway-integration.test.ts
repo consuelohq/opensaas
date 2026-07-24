@@ -369,13 +369,14 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
 
     const traceRoute = record.routes.find((route) => route.pathPrefix === '/observability');
+    const gtmRoute = record.routes.find((route) => route.pathPrefix === '/gtm');
     const mcpRoute = record.routes.find((route) => route.pathPrefix === '/mcp');
     const gatewayRoutes = record.routes.filter((route) => route.target.kind === 'consuelo-gateway-service');
 
     expect(record.routes.find((route) => route.pathPrefix === '/')).toMatchObject({
       surface: 'sites',
-      auth: 'public',
-      target: { kind: 'site-snapshot' },
+      auth: 'workspace-session',
+      target: { kind: 'site-snapshot', cachePolicy: 'private-preview' },
     });
     expect(traceRoute).toMatchObject({
       surface: 'sites',
@@ -399,6 +400,12 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       surface: 'os',
       target: { kind: 'os-connector', connectorId: 'connector_internal' },
     });
+    expect(gtmRoute).toMatchObject({
+      surface: 'os',
+      auth: 'workspace-session',
+      target: { kind: 'os-connector', connectorId: 'connector_internal' },
+    });
+    expect(record.routes.indexOf(gtmRoute!)).toBeLessThan(record.routes.findIndex((route) => route.pathPrefix === '/'));
     expect(record.routes.some((route) => route.pathPrefix === '/observability' && route.target.kind === 'os-connector')).toBe(false);
     expect(record.routes.some((route) => route.pathPrefix === '/traces' && route.target.kind === 'os-connector')).toBe(false);
     expect(gatewayRoutes.map((route) => route.target).filter((target): target is ConsueloGatewayServiceTarget => target.kind === 'consuelo-gateway-service')).toEqual(expect.arrayContaining([

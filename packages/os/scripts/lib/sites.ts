@@ -614,9 +614,20 @@ function launcherLocalAgents(home: string): LauncherLocalAgent[] {
     }));
 }
 
-function buildSitesIndex(home: string): string {
+function launcherWorkspaceHostname(
+  home: string,
+  workspaceHost: string | null | undefined,
+): string | null {
+  const explicit = workspaceHost?.trim();
+  if (explicit) return explicit;
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  return config?.workspace?.host?.trim() || null;
+}
+
+function buildSitesIndex(home: string, workspaceHost?: string | null): string {
   return renderLauncherOnboarding({
     mcpUrl: launcherMcpUrl(home),
+    workspaceHostname: launcherWorkspaceHostname(home, workspaceHost),
     localAgents: launcherLocalAgents(home),
   });
 }
@@ -716,7 +727,11 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.secretsIndexPath, options.dryRun, 'Secrets site generated');
   addFileAction(actions, paths.configurationSnapshotPath, options.dryRun, 'Configuration snapshot generated');
   if (!options.dryRun) {
-    fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
+    fs.writeFileSync(
+      paths.indexPath,
+      buildSitesIndex(options.home, options.workspaceHost),
+      { mode: 0o600 },
+    );
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     refreshArtifactsSite(options.home, data);
     fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });

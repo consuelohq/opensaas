@@ -95,25 +95,28 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
   workspaceId: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
-}): WorkspaceRouteD1Route => ({
-  surface: 'sites',
-  pathPrefix: input.pathPrefix,
-  auth: 'public',
-  status: 'active',
-  target: {
-    kind: 'site-snapshot',
-    siteId: input.siteId,
-    versionId: trimmedValue(input.siteVersionId) ?? siteVersionFromSnapshotKey(input.siteSnapshotKey) ?? DEFAULT_SITE_VERSION_ID,
-    manifestKey: siteManifestKey({
-      workspaceId: input.workspaceId,
+}): WorkspaceRouteD1Route => {
+  const isLauncher = input.pathPrefix === '/' && input.siteId === 'launcher';
+  return {
+    surface: 'sites',
+    pathPrefix: input.pathPrefix,
+    auth: isLauncher ? 'workspace-session' : 'public',
+    status: 'active',
+    target: {
+      kind: 'site-snapshot',
       siteId: input.siteId,
-      siteSnapshotKey: input.siteSnapshotKey,
-      siteVersionId: input.siteVersionId,
-    }),
-    contentType: DEFAULT_SITE_CONTENT_TYPE,
-    cachePolicy: 'static-shell',
-  },
-});
+      versionId: trimmedValue(input.siteVersionId) ?? siteVersionFromSnapshotKey(input.siteSnapshotKey) ?? DEFAULT_SITE_VERSION_ID,
+      manifestKey: siteManifestKey({
+        workspaceId: input.workspaceId,
+        siteId: input.siteId,
+        siteSnapshotKey: input.siteSnapshotKey,
+        siteVersionId: input.siteVersionId,
+      }),
+      contentType: DEFAULT_SITE_CONTENT_TYPE,
+      cachePolicy: isLauncher ? 'private-preview' : 'static-shell',
+    },
+  };
+};
 
 const buildAppRoute = (input: {
   appUpstreamUrl: string;
@@ -132,18 +135,30 @@ const buildAppRoute = (input: {
 const buildOsRoutes = (input: {
   connectorId: string;
   tunnelOriginUrl: string;
-}): WorkspaceRouteD1Route[] => [{
-  surface: 'os',
-  pathPrefix: '/mcp',
-  auth: 'required',
-  status: 'active',
-  target: {
+}): WorkspaceRouteD1Route[] => {
+  const target: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }> = {
     kind: 'os-connector',
     connectorId: input.connectorId,
     connectorStatus: 'connected',
     tunnelOriginUrl: input.tunnelOriginUrl,
-  },
-}];
+  };
+  return [
+    {
+      surface: 'os',
+      pathPrefix: '/gtm',
+      auth: 'workspace-session',
+      status: 'active',
+      target,
+    },
+    {
+      surface: 'os',
+      pathPrefix: '/mcp',
+      auth: 'required',
+      status: 'active',
+      target,
+    },
+  ];
+};
 
 const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
@@ -345,7 +360,14 @@ export const createWorkspaceEdgeRouteSeedRecord = (
   const hostname = trimmedOrDefault(input.hostname, DEFAULT_HOSTNAME);
   const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
   const appUpstreamUrl = trimmedOrDefault(input.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
+  const connectorId = trimmedValue(input.connectorId);
+  const tunnelOriginUrl = trimmedValue(input.tunnelOriginUrl);
+  const osRoutes =
+    hasOsConnectorInput(input) && connectorId !== undefined && tunnelOriginUrl !== undefined
+      ? buildOsRoutes({ connectorId, tunnelOriginUrl })
+      : [];
   const routes: WorkspaceRouteD1Route[] = [
+    ...osRoutes,
     ...SITE_SNAPSHOT_ROUTES.map((route) => buildSiteSnapshotRoute({
       ...route,
       workspaceId,
@@ -362,20 +384,6 @@ export const createWorkspaceEdgeRouteSeedRecord = (
 
   if (trimmedValue(input.appUpstreamUrl) !== undefined) {
     routes.push(buildAppRoute({ appUpstreamUrl }));
-  }
-
-  if (hasOsConnectorInput(input)) {
-    const connectorId = trimmedValue(input.connectorId);
-    const tunnelOriginUrl = trimmedValue(input.tunnelOriginUrl);
-
-    if (connectorId !== undefined && tunnelOriginUrl !== undefined) {
-      routes.push(
-        ...buildOsRoutes({
-          connectorId,
-          tunnelOriginUrl,
-        }),
-      );
-    }
   }
 
   return {
