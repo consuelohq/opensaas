@@ -209,6 +209,18 @@
       "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts."
     },
     {
+      "id": "lead-connector-package",
+      "critical": true,
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": ["bun", "test", "packages/lead-connector/src"]
+        }
+      ],
+      "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts."
+    },
+    {
       "id": "api-package",
       "critical": true,
       "source": ["packages/api/**"],

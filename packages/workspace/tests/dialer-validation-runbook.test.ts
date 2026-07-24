@@ -82,6 +82,8 @@ describe('dialer validation runbook contract', () => {
     expect(codeReview).toContain('parallel.service.spec.ts');
     expect(codeReview).toContain('caller-id.spec.ts');
     expect(codeReview).toContain('parallel-dialer.spec.ts');
+    expect(codeReview).toContain('packages/lead-connector/');
+    expect(codeReview).toContain('bun test packages/lead-connector/src');
     expect(codeReview).toContain('TOTAL_CHECKS=17');
   });
 });

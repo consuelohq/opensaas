@@ -10,6 +10,16 @@ import {
   DialerTimeoutError,
   DialerTransitionError,
 } from '@consuelo/dialer';
+import {
+  LeadConnectorInstallationNotFoundError,
+  LeadConnectorInstallationOwnershipError,
+  LeadConnectorOAuthStateError,
+  LeadConnectorProviderError,
+  LeadConnectorStateError,
+  LeadConnectorTokenCipherError,
+  LeadConnectorWebhookPayloadError,
+  LeadConnectorWebhookSignatureError,
+} from '@consuelo/lead-connector';
 import type { Context } from 'hono';
 
 const publicError = (
@@ -102,3 +112,106 @@ export const invalidRequestResponse = (
     { error: { code: 'INVALID_REQUEST', message, retryable: false } },
     400,
   );
+
+export function leadConnectorErrorResponse(
+  context: Context,
+  error: unknown,
+): Response {
+  if (error instanceof LeadConnectorOAuthStateError) {
+    return context.json(
+      {
+        error: {
+          code: 'INVALID_OAUTH_STATE',
+          message: 'LeadConnector OAuth state is invalid or expired',
+          retryable: false,
+        },
+      },
+      400,
+    );
+  }
+  if (error instanceof LeadConnectorWebhookSignatureError) {
+    return context.json(
+      {
+        error: {
+          code: 'INVALID_WEBHOOK_SIGNATURE',
+          message: 'LeadConnector webhook signature is invalid',
+          retryable: false,
+        },
+      },
+      401,
+    );
+  }
+  if (error instanceof LeadConnectorWebhookPayloadError) {
+    return context.json(
+      {
+        error: {
+          code: error.code,
+          message: 'LeadConnector webhook payload is invalid',
+          retryable: false,
+        },
+      },
+      400,
+    );
+  }
+  if (error instanceof LeadConnectorInstallationOwnershipError) {
+    return context.json(
+      {
+        error: {
+          code: 'LOCATION_OWNERSHIP_CONFLICT',
+          message: 'LeadConnector location belongs to another workspace',
+          retryable: false,
+        },
+      },
+      409,
+    );
+  }
+  if (error instanceof LeadConnectorInstallationNotFoundError) {
+    return context.json(
+      {
+        error: {
+          code: 'LEADCONNECTOR_NOT_CONNECTED',
+          message: 'LeadConnector integration is not connected',
+          retryable: false,
+        },
+      },
+      404,
+    );
+  }
+  if (error instanceof LeadConnectorProviderError) {
+    return context.json(
+      {
+        error: {
+          code: 'LEADCONNECTOR_PROVIDER_ERROR',
+          message: 'LeadConnector provider request failed',
+          retryable: error.retryable,
+        },
+      },
+      502,
+    );
+  }
+  if (
+    error instanceof LeadConnectorStateError ||
+    error instanceof LeadConnectorTokenCipherError
+  ) {
+    return context.json(
+      {
+        error: {
+          code: 'LEADCONNECTOR_SERVICE_UNAVAILABLE',
+          message: 'LeadConnector service is unavailable',
+          retryable: true,
+        },
+      },
+      503,
+    );
+  }
+  return context.json(
+    {
+      error: {
+        code: 'LEADCONNECTOR_REQUEST_FAILED',
+        message: 'LeadConnector request failed',
+        retryable: false,
+      },
+    },
+    500,
+  );
+}

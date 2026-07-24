@@ -4512,6 +4512,7 @@ __metadata:
   resolution: "@consuelo/dialer-server@workspace:packages/dialer-server"
   dependencies:
     "@consuelo/dialer": "workspace:*"
+    "@consuelo/lead-connector": "workspace:*"
     "@types/bun": "npm:latest"
     effect: "npm:^3.21.3"
     hono: "npm:^4.11.9"
@@ -4536,6 +4537,16 @@ __metadata:
       optional: true
     twilio:
       optional: true
+  languageName: unknown
+  linkType: soft
+
+"@consuelo/lead-connector@workspace:*, @consuelo/lead-connector@workspace:packages/lead-connector":
+  version: 0.0.0-use.local
+  resolution: "@consuelo/lead-connector@workspace:packages/lead-connector"
+  dependencies:
+    "@types/bun": "npm:latest"
+    effect: "npm:^3.21.3"
+    typescript: "npm:5.9.2"
   languageName: unknown
   linkType: soft
 

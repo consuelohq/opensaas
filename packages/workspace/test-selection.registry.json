@@ -2,14 +2,14 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2399,
-    "mappedTestCount": 2326,
+    "testFileCount": 2404,
+    "mappedTestCount": 2331,
     "unmappedTestCount": 73,
-    "ruleCount": 32,
-    "explicitRuleCount": 12,
-    "autoRuleCount": 20,
-    "projectCount": 14,
-    "packageTestScriptCount": 18,
+    "ruleCount": 34,
+    "explicitRuleCount": 13,
+    "autoRuleCount": 21,
+    "projectCount": 15,
+    "packageTestScriptCount": 19,
     "byGroup": {
       "packages/os/tests": 131,
       "packages/twenty-server/test/integration/graphql/utils": 65,
@@ -130,6 +130,7 @@
       "packages/twenty-server/test/integration/metadata/suites/front-component": 6,
       "packages/twenty-shared/src/utils/validation": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
+      "packages/dialer-server/src": 5,
       "packages/os/tests/distribution": 5,
       "packages/twenty-front/src/modules/apollo/utils": 5,
       "packages/twenty-front/src/modules/auth/sign-in-up/hooks": 5,
@@ -150,7 +151,7 @@
       "packages/twenty-server/test/integration/metadata/suites/utils": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
-      "packages/dialer-server/src": 4,
+      "packages/lead-connector/src": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
       "packages/twenty-front/src/modules/favorites/hooks": 4,
@@ -599,7 +600,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 308,
+      "test": 313,
       "spec": 151,
       "other": 7,
       "tests-dir": 6,
@@ -706,9 +707,7 @@
     },
     {
       "id": "trace-watch",
-      "source": [
-        "packages/os/scripts/trace-watch.ts"
-      ],
+      "source": ["packages/os/scripts/trace-watch.ts"],
       "tests": [
         {
           "name": "OS trace watcher behavior",
@@ -802,17 +801,11 @@
     },
     {
       "id": "dialer-package",
-      "source": [
-        "packages/dialer/**"
-      ],
+      "source": ["packages/dialer/**"],
       "tests": [
         {
           "name": "dialer specs",
-          "command": [
-            "bun",
-            "test",
-            "packages/dialer/src"
-          ]
+          "command": ["bun", "test", "packages/dialer/src"]
         }
       ],
       "critical": true,
@@ -821,17 +814,11 @@
     },
     {
       "id": "dialer-server-package",
-      "source": [
-        "packages/dialer-server/**"
-      ],
+      "source": ["packages/dialer-server/**"],
       "tests": [
         {
           "name": "dialer-server Hono contracts",
-          "command": [
-            "bun",
-            "test",
-            "packages/dialer-server/src"
-          ]
+          "command": ["bun", "test", "packages/dialer-server/src"]
         }
       ],
       "critical": true,
@@ -839,10 +826,21 @@
       "origin": "explicit"
     },
     {
-      "id": "api-package",
-      "source": [
-        "packages/api/**"
+      "id": "lead-connector-package",
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": ["bun", "test", "packages/lead-connector/src"]
+        }
       ],
+      "critical": true,
+      "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+      "origin": "explicit"
+    },
+    {
+      "id": "api-package",
+      "source": ["packages/api/**"],
       "tests": [
         {
           "name": "api specs",
@@ -869,12 +867,7 @@
       "tests": [
         {
           "name": "twenty-server affected test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ]
+          "command": ["npx", "nx", "test", "twenty-server"]
         }
       ],
       "critical": true,
@@ -883,18 +876,11 @@
     },
     {
       "id": "twenty-front-project",
-      "source": [
-        "packages/twenty-front/**"
-      ],
+      "source": ["packages/twenty-front/**"],
       "tests": [
         {
           "name": "twenty-front test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front"
-          ]
+          "command": ["npx", "nx", "test", "twenty-front"]
         }
       ],
       "critical": false,
@@ -903,19 +889,11 @@
     },
     {
       "id": "auto:@consuelo/core:package-test",
-      "source": [
-        "packages/consuelo-core/**"
-      ],
+      "source": ["packages/consuelo-core/**"],
       "tests": [
         {
           "name": "@consuelo/core package test",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/consuelo-core",
-            "run",
-            "test"
-          ]
+          "command": ["bun", "--cwd", "packages/consuelo-core", "run", "test"]
         }
       ],
       "critical": false,
@@ -924,19 +902,11 @@
     },
     {
       "id": "auto:@consuelo/dialer-server:package-test",
-      "source": [
-        "packages/dialer-server/**"
-      ],
+      "source": ["packages/dialer-server/**"],
       "tests": [
         {
           "name": "@consuelo/dialer-server package test",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/dialer-server",
-            "run",
-            "test"
-          ]
+          "command": ["bun", "--cwd", "packages/dialer-server", "run", "test"]
         }
       ],
       "critical": false,
@@ -945,19 +915,11 @@
     },
     {
       "id": "auto:@consuelo/diff-cockpit:package-test",
-      "source": [
-        "packages/diff-cockpit/**"
-      ],
+      "source": ["packages/diff-cockpit/**"],
       "tests": [
         {
           "name": "@consuelo/diff-cockpit package test",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/diff-cockpit",
-            "run",
-            "test"
-          ]
+          "command": ["bun", "--cwd", "packages/diff-cockpit", "run", "test"]
         }
       ],
       "critical": false,
@@ -965,20 +927,25 @@
       "origin": "auto"
     },
     {
-      "id": "auto:@consuelo/os:package-test",
-      "source": [
-        "packages/os/**"
+      "id": "auto:@consuelo/lead-connector:package-test",
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": ["bun", "--cwd", "packages/lead-connector", "run", "test"]
+        }
       ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/lead-connector.",
+      "origin": "auto"
+    },
+    {
+      "id": "auto:@consuelo/os:package-test",
+      "source": ["packages/os/**"],
       "tests": [
         {
           "name": "@consuelo/os package test",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "run",
-            "test"
-          ]
+          "command": ["bun", "--cwd", "packages/os", "run", "test"]
         }
       ],
       "critical": false,
@@ -1008,9 +975,7 @@
     },
     {
       "id": "auto:@open-design/e2e:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/e2e/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/e2e/**"],
       "tests": [
         {
           "name": "@open-design/e2e package test",
@@ -1092,9 +1057,7 @@
     },
     {
       "id": "auto:@open-design/tools-dev:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/tools/dev/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/tools/dev/**"],
       "tests": [
         {
           "name": "@open-design/tools-dev package test",
@@ -1113,9 +1076,7 @@
     },
     {
       "id": "auto:@open-design/tools-pack:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/tools/pack/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/tools/pack/**"],
       "tests": [
         {
           "name": "@open-design/tools-pack package test",
@@ -1134,9 +1095,7 @@
     },
     {
       "id": "auto:@open-design/web:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/apps/web/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/apps/web/**"],
       "tests": [
         {
           "name": "@open-design/web package test",
@@ -1155,9 +1114,7 @@
     },
     {
       "id": "auto:open-design:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/**"],
       "tests": [
         {
           "name": "open-design package test",
@@ -1176,9 +1133,7 @@
     },
     {
       "id": "auto:twenty-e2e-testing:test",
-      "source": [
-        "packages/twenty-e2e-testing/**"
-      ],
+      "source": ["packages/twenty-e2e-testing/**"],
       "tests": [
         {
           "name": "twenty-e2e-testing test",
@@ -1197,9 +1152,7 @@
     },
     {
       "id": "auto:twenty-eslint-rules:test",
-      "source": [
-        "packages/eslint-rules/**"
-      ],
+      "source": ["packages/eslint-rules/**"],
       "tests": [
         {
           "name": "twenty-eslint-rules test",
@@ -1218,19 +1171,11 @@
     },
     {
       "id": "auto:twenty-front:test",
-      "source": [
-        "packages/twenty-front/**"
-      ],
+      "source": ["packages/twenty-front/**"],
       "tests": [
         {
           "name": "twenty-front test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-front", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1239,19 +1184,11 @@
     },
     {
       "id": "auto:twenty-sdk:test",
-      "source": [
-        "packages/twenty-sdk/**"
-      ],
+      "source": ["packages/twenty-sdk/**"],
       "tests": [
         {
           "name": "twenty-sdk test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-sdk",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-sdk", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1260,19 +1197,11 @@
     },
     {
       "id": "auto:twenty-server:test",
-      "source": [
-        "packages/twenty-server/**"
-      ],
+      "source": ["packages/twenty-server/**"],
       "tests": [
         {
           "name": "twenty-server test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-server", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1281,19 +1210,11 @@
     },
     {
       "id": "auto:twenty-shared:test",
-      "source": [
-        "packages/twenty-shared/**"
-      ],
+      "source": ["packages/twenty-shared/**"],
       "tests": [
         {
           "name": "twenty-shared test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-shared",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-shared", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1302,19 +1223,11 @@
     },
     {
       "id": "auto:twenty-ui:test",
-      "source": [
-        "packages/twenty-ui/**"
-      ],
+      "source": ["packages/twenty-ui/**"],
       "tests": [
         {
           "name": "twenty-ui test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-ui",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-ui", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1784,6 +1697,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/lead-connector-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/lifecycle.integration.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "integration"
@@ -1987,6 +1905,26 @@
       "path": "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
       "group": "packages/eslint-rules/rules",
       "kind": "spec"
+    },
+    {
+      "path": "packages/lead-connector/src/application.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/architecture.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/infrastructure.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/webhook.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
     },
     {
       "path": "packages/os/scripts/compact-daemon-output.test.ts",
@@ -13423,9 +13361,7 @@
       "name": "documentation",
       "root": "packages/documentation",
       "file": "packages/documentation/project.json",
-      "testTargets": [
-        "test-translation"
-      ],
+      "testTargets": ["test-translation"],
       "typecheck": false,
       "lint": false
     },
@@ -13433,11 +13369,17 @@
       "name": "twenty-eslint-rules",
       "root": "packages/eslint-rules",
       "file": "packages/eslint-rules/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/project.json",
+      "testTargets": [],
+      "typecheck": true,
+      "lint": false
     },
     {
       "name": "@consuelo/logger",
@@ -13459,12 +13401,7 @@
       "name": "twenty-e2e-testing",
       "root": "packages/twenty-e2e-testing",
       "file": "packages/twenty-e2e-testing/project.json",
-      "testTargets": [
-        "test",
-        "test:ui",
-        "test:debug",
-        "test:report"
-      ],
+      "testTargets": ["test", "test:ui", "test:debug", "test:report"],
       "typecheck": false,
       "lint": false
     },
@@ -13472,11 +13409,7 @@
       "name": "twenty-front",
       "root": "packages/twenty-front",
       "file": "packages/twenty-front/project.json",
-      "testTargets": [
-        "test",
-        "storybook:test",
-        "storybook:test:no-coverage"
-      ],
+      "testTargets": ["test", "storybook:test", "storybook:test:no-coverage"],
       "typecheck": true,
       "lint": true
     },
@@ -13499,12 +13432,7 @@
       "name": "twenty-server",
       "root": "packages/twenty-server",
       "file": "packages/twenty-server/project.json",
-      "testTargets": [
-        "test:integration",
-        "test",
-        "test:debug",
-        "jest"
-      ],
+      "testTargets": ["test:integration", "test", "test:debug", "jest"],
       "typecheck": true,
       "lint": true
     },
@@ -13512,9 +13440,7 @@
       "name": "twenty-shared",
       "root": "packages/twenty-shared",
       "file": "packages/twenty-shared/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
     },
@@ -13522,11 +13448,7 @@
       "name": "twenty-ui",
       "root": "packages/twenty-ui",
       "file": "packages/twenty-ui/project.json",
-      "testTargets": [
-        "test",
-        "storybook:test",
-        "storybook:test:no-coverage"
-      ],
+      "testTargets": ["test", "storybook:test", "storybook:test:no-coverage"],
       "typecheck": true,
       "lint": true
     },
@@ -13696,6 +13618,14 @@
         "test:reference": "bun test tests/reference.test.ts",
         "test:reference-browser": "bun scripts/test-reference-browser.mjs",
         "test:review-cleanup": "bun test tests/review-cleanup.test.ts"
+      }
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/package.json",
+      "scripts": {
+        "test": "bun test src"
       }
     },
     {

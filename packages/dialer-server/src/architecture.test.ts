@@ -21,13 +21,14 @@ describe('dialer-server architecture', () => {
     expect(manifest.private).toBe(true);
     expect(manifest.dependencies.hono).toBeDefined();
     expect(manifest.dependencies['@consuelo/dialer']).toBeDefined();
+    expect(manifest.dependencies['@consuelo/lead-connector']).toBeDefined();
     expect(existsSync(resolve(srcRoot, 'app.ts'))).toBe(true);
     expect(existsSync(resolve(srcRoot, 'main.ts'))).toBe(true);
     expect(read('src/main.ts')).toContain('Bun.serve({');
     expect(read('src/app.ts')).not.toContain('Bun.serve');
   });
 
-  it('has zero Twenty, NestJS, GraphQL, or LeadConnector branding leakage', () => {
+  it('has zero Twenty, NestJS, GraphQL, or forbidden provider branding leakage', () => {
     for (const file of sourceFiles(srcRoot)) {
       const source = readFileSync(file, 'utf8');
       expect(source, file).not.toMatch(
