@@ -12,7 +12,7 @@ Required baseline behavior:
 
 - missing portless does not fail bootstrap;
 - missing portless does not fail `install:system-daemons`;
-- generated user LaunchAgents include `com.consuelo.system` and `com.consuelo.watchdog`;
+- generated user LaunchAgents include `com.consuelo.system`, the scheduled one-shot `com.consuelo.watchdog`, and the AC-only `com.consuelo.availability` assertion;
 - generated user LaunchAgents include `com.consuelo.portless.system` only when portless is configured or discoverable;
 - the local health endpoint responds on the regular local port.
 
@@ -56,7 +56,8 @@ Required baseline verification:
   Cloudflared is not required for baseline local-port installs. It is required only after approved bootstrap material selects a Cloudflare tunnel transport for a connector.
 - `~/.consuelo/os/.env` contains `BUN_BIN`, `CLOUDFLARED_BIN`, and `PORTLESS_ENABLED=0` when portless is absent;
 - `~/.consuelo/os/.env` does not contain `PORTLESS_BIN` when portless is absent;
-- `launchctl print` shows the workspace and watchdog LaunchAgents;
+- `launchctl print` shows the system, watchdog, and availability LaunchAgents;
+- watchdog state is writable under `$CONSUELO_HOME/node/runtime/watchdog` and does not depend on `~/Library/Caches/Consuelo` ownership;
 - `launchctl print` does not require `com.consuelo.portless.system` when portless is absent;
 - the local health endpoint responds on `http://127.0.0.1:46321/health`;
 - managed MCP ingress reaches the local service after approved tunnel bootstrap.

@@ -26,6 +26,7 @@ launch_agent_dir="$daemon_home/Library/LaunchAgents"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
+availability_label="${CONSUELO_AVAILABILITY_LABEL:-com.consuelo.availability}"
 cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
 cloudflared_labels=()
 heartbeat_labels=()
@@ -119,6 +120,7 @@ collect_cloudflared_labels
 collect_heartbeat_labels
 
 remove_agent "$watchdog_label"
+remove_agent "$availability_label"
 remove_agent "$portless_label"
 remove_agent "$workspace_label"
 for cloudflared_label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
