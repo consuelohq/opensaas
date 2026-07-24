@@ -73,7 +73,7 @@ workspace_path="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/b
 portless_path="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_path="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_interval_seconds="${WORKSPACE_WATCHDOG_INTERVAL_SECONDS:-30}"
-availability_enabled="${CONSUELO_AVAILABILITY_ENABLED:-1}"
+availability_enabled="${CONSUELO_AVAILABILITY_ENABLED:-0}"
 case "$watchdog_interval_seconds" in
   ''|*[!0-9]*)
     echo "invalid WORKSPACE_WATCHDOG_INTERVAL_SECONDS: $watchdog_interval_seconds" >&2

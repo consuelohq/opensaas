@@ -282,6 +282,13 @@ bootstrap_agent() {
   launchctl kickstart -k "$launch_domain/$label"
 }
 
+remove_disabled_agent() {
+  local label="$1"
+  local plist="$2"
+  bootout_agent "$label"
+  rm -f "$plist"
+}
+
 rollback_agents() {
   local label
   log "rolling back user LaunchAgents"
@@ -419,6 +426,8 @@ fi
 install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
 if [ "$availability_enabled" = "1" ]; then
   install -m 644 "$availability_generated_plist" "$availability_agent_plist"
+else
+  remove_disabled_agent "$availability_label" "$availability_agent_plist"
 fi
 for index in "${!cloudflared_generated_plists[@]}"; do
   install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"

@@ -170,7 +170,6 @@ After onboarding, the bootstrap offers user LaunchAgent setup unless `--skip-dae
 ```text
 ~/Library/LaunchAgents/com.consuelo.system.plist
 ~/Library/LaunchAgents/com.consuelo.watchdog.plist
-~/Library/LaunchAgents/com.consuelo.availability.plist
 ```
 
 When portless is configured or discoverable, setup also installs:
@@ -179,15 +178,14 @@ When portless is configured or discoverable, setup also installs:
 ~/Library/LaunchAgents/com.consuelo.portless.system.plist
 ```
 
-The labels stay:
+The baseline labels stay:
 
 ```text
 com.consuelo.system
 com.consuelo.watchdog
-com.consuelo.availability
 ```
 
-`com.consuelo.availability` runs Apple `/usr/bin/caffeinate -s` to prevent system sleep only while the Mac is connected to AC power. It does not prevent display sleep or alter global `pmset` settings and can be omitted with `CONSUELO_AVAILABILITY_ENABLED=0`. The watchdog runs as a periodic one-shot health check and stores counters and recovery state under `$CONSUELO_HOME/node/runtime/watchdog`.
+Host power policy is opt-in. Set `CONSUELO_AVAILABILITY_ENABLED=1` before daemon generation or installation to add `com.consuelo.availability`, which runs Apple `/usr/bin/caffeinate -s` and prevents system sleep only while the Mac is connected to AC power. It does not prevent display sleep or alter global `pmset` settings. Disabling the setting removes an existing Consuelo availability LaunchAgent on the next daemon installation. The watchdog runs as a periodic one-shot health check and stores counters and recovery state under `$CONSUELO_HOME/node/runtime/watchdog`.
 
 Portless is optional. If present, status output may also include `com.consuelo.portless.system`; otherwise Consuelo OS uses the regular local service port on `http://127.0.0.1:46321`.
 
