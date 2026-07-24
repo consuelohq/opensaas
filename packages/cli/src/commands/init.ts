@@ -53,7 +53,7 @@ export async function initCommand(opts: InitOptions): Promise<void> {
         template: opts.template ?? 'full',
       });
       success('Configured for hosted mode');
-      log.info('Run: npx @consuelo/cli status');
+      log.info('Run: npx @consuelo/dialer-cli status');
       printEnd();
       return;
     }
@@ -200,7 +200,7 @@ const handleHostedSetup = async (template: Template): Promise<void> => {
   if (isCancel(shouldAuth) || !shouldAuth) {
     generateEnv({ deploymentType: 'hosted', template });
     success('configured for hosted mode');
-    log.info('run `consuelo auth:login` later to connect your workspace');
+    log.info('run `consuelo-dialer auth:login` later to connect your workspace');
     return;
   }
 
@@ -226,7 +226,7 @@ const handleHostedSetup = async (template: Template): Promise<void> => {
     generateEnv({ deploymentType: 'hosted', template });
     const message = err instanceof Error ? err.message : 'unknown error';
     log.warn(`could not authenticate: ${message}`);
-    log.info('run `consuelo auth:login` later to connect your workspace');
+    log.info('run `consuelo-dialer auth:login` later to connect your workspace');
     captureError(err, { command: 'init' });
   }
 };
@@ -444,7 +444,7 @@ const promptAuthLogin = async (): Promise<void> => {
 function printNextSteps(deploymentType: 'hosted' | 'self-hosted'): void {
   log.step('next steps:');
   if (deploymentType === 'hosted') {
-    log.info('1. consuelo status');
+    log.info('1. consuelo-dialer status');
     log.info('2. https://consuelohq.com');
   } else {
     log.info('1. docker-compose up');

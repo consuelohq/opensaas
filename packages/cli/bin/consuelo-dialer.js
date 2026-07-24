@@ -8,7 +8,7 @@ const entryUrl = new URL('../dist/index.js', import.meta.url);
 
 if (!existsSync(entryUrl)) {
   process.stderr.write(
-    'The Consuelo CLI has not been built. Run `yarn nx build @consuelo/cli` before invoking this workspace binary.\n',
+    'The Consuelo Dialer CLI has not been built. Run `yarn nx build @consuelo/dialer-cli` before invoking this workspace binary.\n',
   );
   process.exitCode = 1;
 } else {

@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1647,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1647",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1647",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1647/split-consuelo-and-consuelo-dialer-cli-products",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1647",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1647/split-consuelo-and-consuelo-dialer-cli-products",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products",
+  "taskSession": "tsk_9dbc06d95dc7",
+  "tmuxSession": "opensaas-os-distribution-split-consuelo-and-consuelo-dialer-cli-products-9dbc06d9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products/.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/session.json",
+  "createdAt": "2026-07-24T19:10:29.656Z"
+}

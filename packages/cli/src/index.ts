@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-globalThis.__consuelo_cli_mode = true;
+globalThis.__consuelo_dialer_cli_mode = true;
 
 import { Command } from 'commander';
 import { initCommand } from './commands/init.js';
@@ -15,7 +15,6 @@ import { registerConfig } from './commands/config.js';
 import { registerDeploy } from './commands/deploy.js';
 import { registerDev } from './commands/dev.js';
 import { registerMigrate } from './commands/migrate.js';
-import { registerOs } from './commands/os.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand, registerStatus } from './commands/status.js';
 import { loadConfig } from './config.js';
@@ -33,8 +32,8 @@ const program = new Command();
 await initSentry();
 
 program
-  .name('consuelo')
-  .description('AI-powered sales toolkit')
+  .name('consuelo-dialer')
+  .description('Consuelo Dialer sales and GTM toolkit')
   .version('0.0.1')
   .option('--json', 'machine-readable output')
   .option('--quiet', 'suppress output')
@@ -44,8 +43,8 @@ program
     lastCommandName = actionCommand.name();
     lastCommandArgs = actionCommand.args;
     const opts = actionCommand.optsWithGlobals();
-    if (opts.json) globalThis.__consuelo_json = true;
-    if (opts.quiet) globalThis.__consuelo_quiet = true;
+    if (opts.json) globalThis.__consuelo_dialer_json = true;
+    if (opts.quiet) globalThis.__consuelo_dialer_quiet = true;
 
     // twenty-sdk workspace resolution
     try {
@@ -61,14 +60,10 @@ program
       // twenty-sdk not available — skip workspace resolution — intentional: optional dep
     }
   })
-  .action(async () => {
+  .action(() => {
     const config = loadConfig();
     const isConfigured = config.twilioAccountSid || config.managed;
-    if (isConfigured) {
-      await statusCommand();
-    } else {
-      await initCommand({});
-    }
+    return isConfigured ? statusCommand() : initCommand({});
   });
 
 program
@@ -77,13 +72,13 @@ program
   .option('--managed', 'use hosted infrastructure')
   .option('--yes', 'non-interactive mode with sensible defaults')
   .option('--template <type>', 'project template (full, minimal, api-only)')
-  .action(async (opts) => {
-    await initCommand({
+  .action((opts) =>
+    initCommand({
       managed: opts.managed,
       yes: opts.yes,
       template: opts.template,
-    });
-  });
+    }),
+  );
 
 program
   .command('coach')
@@ -105,7 +100,6 @@ registerDeploy(program);
 registerDev(program);
 registerMigrate(program);
 registerStatus(program);
-registerOs(program);
 
 // twenty-sdk platform commands (auth, app, entity, function)
 try {

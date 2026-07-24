@@ -1,4 +1,4 @@
-import * as fs from 'node:fs';
+import { existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import type { Command } from 'commander';
 import { log, error, json, isJson } from '../output.js';
@@ -42,7 +42,7 @@ const PLATFORM_CLIS: Record<Platform, string> = {
 
 const detectPlatform = (): Platform | null => {
   for (const [platform, configFile] of Object.entries(PLATFORM_CONFIG_FILES)) {
-    if (fs.existsSync(configFile)) return platform as Platform;
+    if (existsSync(configFile)) return platform as Platform;
   }
   return null;
 };
@@ -81,9 +81,9 @@ const preDeployChecks = (platform: Platform): void => {
   }
 
   const configFile = PLATFORM_CONFIG_FILES[platform];
-  if (platform !== 'docker' && !fs.existsSync(configFile)) {
+  if (platform !== 'docker' && !existsSync(configFile)) {
     throw new Error(
-      `${configFile} not found in project root. run \`consuelo init\` or create it manually.`,
+      `${configFile} not found in project root. run \`consuelo-dialer init\` or create it manually.`,
     );
   }
 };
@@ -211,8 +211,8 @@ export const registerDeploy = (program: Command): void => {
     .option('--json', 'output as JSON')
     .option('--quiet', 'suppress output')
     .action(async (opts: DeployOptions) => {
-      globalThis.__consuelo_json = opts.json;
-      globalThis.__consuelo_quiet = opts.quiet;
+      globalThis.__consuelo_dialer_json = opts.json;
+      globalThis.__consuelo_dialer_quiet = opts.quiet;
       try {
         await deploy(opts);
       } catch (err: unknown) {

@@ -1,16 +1,16 @@
 import { execSync } from 'node:child_process';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { existsSync, lstatSync, readFileSync, realpathSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import type { Command } from 'commander';
 import { log, success, error, info } from '../output.js';
 import { captureError } from '../sentry.js';
 
-const CLI_PACKAGE_NAME = '@consuelo/cli';
+const CLI_PACKAGE_NAME = '@consuelo/dialer-cli';
 
 const getInstalledVersion = (): string => {
   try {
     const pkgPath = require.resolve(`${CLI_PACKAGE_NAME}/package.json`);
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
     return pkg.version;
   } catch (err: unknown) {
     captureError(err, { command: 'update', step: 'getInstalledVersion' });
@@ -35,8 +35,8 @@ const getLatestVersion = (): string | null => {
 const isLocalDev = (): boolean => {
   try {
     const cliPath = require.resolve(CLI_PACKAGE_NAME);
-    const realPath = fs.realpathSync(cliPath);
-    const stat = fs.lstatSync(path.dirname(cliPath));
+    const realPath = realpathSync(cliPath);
+    const stat = lstatSync(dirname(cliPath));
     if (stat.isSymbolicLink()) return true;
     if (realPath.includes('/packages/cli')) return true;
     if (process.env.CONSUELO_DEV === 'true') return true;
@@ -49,10 +49,10 @@ const isLocalDev = (): boolean => {
 
 const rebuildLocal = async (): Promise<boolean> => {
   const cliPath = require.resolve(CLI_PACKAGE_NAME);
-  const cliDir = path.dirname(cliPath);
-  const srcDir = path.resolve(cliDir, '..', 'src');
+  const cliDir = dirname(cliPath);
+  const srcDir = resolve(cliDir, '..', 'src');
 
-  if (!fs.existsSync(srcDir)) {
+  if (!existsSync(srcDir)) {
     error('could not find CLI source directory');
     return false;
   }
@@ -61,7 +61,7 @@ const rebuildLocal = async (): Promise<boolean> => {
 
   try {
     execSync('npx tsc', {
-      cwd: path.resolve(srcDir, '..'),
+      cwd: resolve(srcDir, '..'),
       stdio: 'pipe',
       timeout: 60000,
     });
@@ -110,7 +110,7 @@ export const updateCommand = async (): Promise<void> => {
 
   if (!latestVersion) {
     error('could not check for updates — npm registry unavailable');
-    log('try again later or run: npm install -g @consuelo/cli@latest');
+    log('try again later or run: npm install -g @consuelo/dialer-cli@latest');
     process.exit(1);
   }
 
@@ -125,10 +125,10 @@ export const updateCommand = async (): Promise<void> => {
 
   if (updated) {
     success(`updated to ${latestVersion}`);
-    log('run `consuelo --version` to verify');
+    log('run `consuelo-dialer --version` to verify');
   } else {
     error('update failed');
-    log('try manually: npm install -g @consuelo/cli@latest');
+    log('try manually: npm install -g @consuelo/dialer-cli@latest');
     process.exit(1);
   }
   } catch (err: unknown) {

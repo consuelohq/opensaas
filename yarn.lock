@@ -4463,9 +4463,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@consuelo/cli@workspace:packages/cli":
+"@consuelo/dialer-cli@workspace:packages/cli":
   version: 0.0.0-use.local
-  resolution: "@consuelo/cli@workspace:packages/cli"
+  resolution: "@consuelo/dialer-cli@workspace:packages/cli"
   dependencies:
     "@clack/prompts": "npm:^1.0.1"
     "@consuelo/analytics": "npm:*"
@@ -4481,7 +4481,7 @@ __metadata:
     pg: "npm:^8.13.0"
     twenty-sdk: "npm:*"
   bin:
-    consuelo: bin/consuelo.js
+    consuelo-dialer: bin/consuelo-dialer.js
   languageName: unknown
   linkType: soft
 

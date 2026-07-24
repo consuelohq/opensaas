@@ -58,6 +58,7 @@ export type ReleaseSource = {
 
 export type LifecycleOperation =
   | 'status'
+  | 'node'
   | 'install'
   | 'update'
   | 'restart'
