@@ -18,13 +18,13 @@ Consuelo OS publishes immutable, signed runtime bundles and moves signed channel
 
 ## Workflows and protected environments
 
-| Workflow | Trigger | Environment | Mutation |
-| --- | --- | --- | --- |
-| `consuelo-os-runtime-publish.yaml` | push to `main` | `consuelo-os-dev` | fingerprint, optional SemVer allocation, one multi-platform build, immutable publication, signed `dev` pointer |
-| `consuelo-os-runtime-promote.yaml` | manual dispatch | `consuelo-os-canary`, `consuelo-os-beta`, or `consuelo-os-stable` | legal forward pointer movement only |
-| `consuelo-os-runtime-rollback.yaml` | manual dispatch | selected channel environment | pointer rollback to a prior verified bundle ID |
+| Workflow | Trigger | Approval/deployment environment | Credential environment | Mutation |
+| --- | --- | --- | --- | --- |
+| `consuelo-os-runtime-publish.yaml` | push to `main` | provider records `consuelo-os-dev` deployment evidence | `consuelo / production` | fingerprint, optional SemVer allocation, one multi-platform build, immutable publication, signed `dev` pointer |
+| `consuelo-os-runtime-promote.yaml` | manual dispatch | `consuelo-os-canary`, `consuelo-os-beta`, or `consuelo-os-stable` gate | `consuelo / production` | legal forward pointer movement only |
+| `consuelo-os-runtime-rollback.yaml` | manual dispatch | selected `consuelo-os-*` channel gate | `consuelo / production` | pointer rollback to a prior verified bundle ID |
 
-Pull-request workflows validate code and workflow contracts only. They do not receive release credentials and cannot mutate protected channel pointers.
+Pull-request workflows validate code and workflow contracts only. They do not receive release credentials and cannot mutate protected channel pointers. Channel environments carry approval and deployment evidence; Cloudflare release credentials are read only by mutation jobs through the existing `consuelo / production` credential environment. Credentials are not copied into channel environments.
 
 ## GitHub variables
 
@@ -36,11 +36,12 @@ Pull-request workflows validate code and workflow contracts only. They do not re
 - `CONSUELO_OS_RELEASE_INTENT`: optional default `patch`, `minor`, or `major` intent for automatic main publication.
 - `CONSUELO_OS_MINIMUM_UPDATER_VERSION`: minimum updater accepted by the runtime bundle manifest.
 
-## GitHub environment secrets
+## GitHub release configuration
 
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_OS_RELEASE_API_TOKEN`
-- `CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY`
+- `consuelo / production` variable: `CLOUDFLARE_ACCOUNT_ID`.
+- `consuelo / production` secret: `CLOUDFLARE_OS_RELEASE_API_TOKEN`.
+- Repository secret: `CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY`.
+- Repository variables: the `CONSUELO_OS_RELEASE_*` values listed above.
 
 GitHub supplies `GITHUB_TOKEN`. Provider tokens are passed only through process environment variables. They are never placed in command arguments, state, audit records, or JSON errors.
 
