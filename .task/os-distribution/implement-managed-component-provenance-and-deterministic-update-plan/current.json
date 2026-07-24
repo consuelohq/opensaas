@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1601,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1601",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1601",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1601/implement-managed-component-provenance-and-deterministic-update-plan",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1601",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1601/implement-managed-component-provenance-and-deterministic-update-plan",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-managed-component-provenance-and-deterministic-update-plan",
+  "taskSession": "tsk_b38aac3ba6fd",
+  "tmuxSession": "opensaas-os-distribution-implement-managed-component-provenance-and-deter-b38aac3b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-managed-component-provenance-and-deterministic-update-plan/.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/session.json",
+  "createdAt": "2026-07-23T20:38:18.181Z"
+}
