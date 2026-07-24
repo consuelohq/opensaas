@@ -275,6 +275,8 @@ export function planReleaseProviderCommands(
           `environment=${operation.environment}`,
           '-F',
           'auto_merge=false',
+          '-F',
+          'required_contexts[]',
           '-f',
           `payload[bundleId]=${operation.bundleId}`,
         ));
@@ -477,6 +479,8 @@ export function createReleaseProviderCommandBackend(
         `environment=${input.environment}`,
         '-F',
         'auto_merge=false',
+        '-F',
+        'required_contexts[]',
         '-f',
         `payload[bundleId]=${input.bundleId}`,
       )).then(() => undefined);
