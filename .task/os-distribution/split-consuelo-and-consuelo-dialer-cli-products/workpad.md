@@ -65,7 +65,11 @@
 - The full verify initially surfaced 12 mechanical related-pre-existing findings in touched dialer files: 10 namespace imports and 2 unnecessary async Commander actions (`trc_84fe92305e66`, detailed at `trc_a024f4043412`). All were repaired without behavior changes; a residual scan is clean (`trc_893f675ee9e7`) and the focused gate remains green with 37/37 at `trc_babae2f1a99a`.
 - Post-repair strict review is clean for this change at `trc_99faeec3486b`: 0 owned issues, 0 blockers, 0 failed test suites in review-only mode. Three shared-worktree typecheck issues remain classified pre-existing: two unresolved `twenty-sdk/cli` declarations and Twenty-front dependency-chain resolution.
 - Post-repair full verify at `trc_fe95234312cf` reports 0 owned issues, 0 related issues, 0 database risks, and no must-fix findings. It still fails closed on the same three pre-existing typecheck issues plus Twenty-front's unrelated broad test suite (170 failures) because the shared worktree lacks its generated ESLint/dependency artifacts. The registered clean-host GitHub matrix is the authoritative completion gate.
-- Next: inspect final diff, create the first reviewable commit/push, run the registered GitHub matrix, CodeRabbit, and Grok.
+- First reviewable commit `2041cd12143dc70a54793ded529d2657dfb52387` was pushed to PR #1647 (`trc_7bc915b4978a`). The implementation/recovery record and CodeRabbit request are durable at https://github.com/consuelohq/opensaas/pull/1647#issuecomment-5073702577 (`trc_83dd163b5836`).
+- The first GitHub matrix exposed one task-owned failure: `danger-js` rejected the manually edited `yarn.lock` because Yarn needed to regenerate the workspace descriptor ordering/consolidation after the package rename (`trc_207444b996a2`, log evidence `trc_5e8c05620aa2`).
+- `yarn install --mode=update-lockfile` regenerated only `yarn.lock` (`trc_b3f7cd36ba47`); the exact diff cleanly replaces the old `@consuelo/cli` workspace block with `@consuelo/dialer-cli` and its new bin (`trc_35c69478ec89`). A clean `yarn install --immutable` now succeeds with no net tracked mutation at `trc_55cbfc6230c9`.
+- The post-lock corrective gate is green at `trc_89a76ad47ee0`: the correct Nx dependency order builds `twenty-sdk`, then `@consuelo/dialer-cli` typecheck and build pass, followed by all 37 focused tests. A temporary ignored package-local SDK link was created only for validation because the task worktree root `node_modules/twenty-sdk` remains physically anchored to the base checkout; the link was removed automatically and no files changed.
+- Next: push the lockfile correction, rerun the registered GitHub matrix, collect CodeRabbit, then run/post/dispose the mandated Grok review.
 
 ## Files changed
 
@@ -121,6 +125,11 @@
 13. Full verify identified 12 mechanical related-pre-existing findings in files already touched: namespace Node imports and unnecessary async wrappers (`trc_84fe92305e66`). Recovery: converted only the referenced imports to named imports and returned existing promises directly. Two source-guess patches missed and were corrected after exact reads (`trc_8f5567f1c39f` → `trc_259dadd823aa`/`trc_e56cec47a003`; `trc_aa85b9cffd11` → `trc_9d83f3a5fbfd`/`trc_a8424592cc9f`). Review is now clean (`trc_99faeec3486b`).
 14. The raw-review extraction command used a heredoc and was rejected by the typed runner (`trc_4d8a48c1bd53`). Recovery: wrote the review JSON with a plain scoped command (`trc_eade7d73963b`) and parsed it through a separate Bun read (`trc_a024f4043412`).
 15. Post-repair full verify still fails closed only on shared-worktree pre-existing infrastructure: unresolved `twenty-sdk/cli` declarations, missing Twenty ESLint generated config, and the resulting unrelated Twenty-front suite (`trc_fe95234312cf`). No task-owned or related findings remain. Completion requires the registered clean-host CI matrix rather than a provider or machine substitution.
+16. After the first push, `task.current` could not recover the task from ambient state (`trc_de1355e86f24`). Recovery: read the committed task session metadata and recovered the exact task worktree path and session (`trc_5f5337959814`); all subsequent calls continue to carry `tsk_9dbc06d95dc7` explicitly.
+17. The first raw GitHub PR-comment call was rejected because the raw facade requires a reason when no typed comment operation exists (`trc_b2b08f6edd40`). Recovery: retried with the required audit reason and posted the durable implementation/failure record plus `@coderabbitai review` (`trc_83dd163b5836`).
+18. GitHub `danger-js` failed because the hand-edited lockfile was not Yarn's canonical result after renaming the workspace package (`trc_207444b996a2`, `trc_600590563ff5`, focused tail `trc_5e8c05620aa2`). Recovery: regenerated the lockfile in the task worktree with `yarn install --mode=update-lockfile` (`trc_b3f7cd36ba47`) and proved the resulting graph with `yarn install --immutable` (`trc_55cbfc6230c9`).
+19. The first immutable verification completed successfully but Yarn's link step changed only the executable bit on `packages/twenty-sdk/bin/twenty.mjs`, causing the mutation-aware verify wrapper to fail (`trc_1c2cf09c1f9e`, `trc_0f8d914c28f4`). An attempted immutable lock-only combination was invalid (`trc_bba839bcc0f6`). Recovery: restored the committed mode and wrapped the immutable install with a final mode normalization; the command then exited 0 with zero net file changes (`trc_55cbfc6230c9`).
+20. Direct dialer Nx typecheck after the immutable install still resolved `twenty-sdk/cli` through the base checkout's physical root `node_modules` path (`trc_aee99e6f5102`, diagnosis `trc_ef811eb0b9b9`). Recovery: built the SDK in the task worktree, created a temporary ignored `packages/cli/node_modules/twenty-sdk` link to the task-local package, ran the actual Nx typecheck/build dependency lane plus all 37 focused tests, and removed the link through a shell trap. The complete gate passed with no tracked changes (`trc_89a76ad47ee0`).
 
 ## Workspace-owned: files changed
 
@@ -158,6 +167,7 @@
 - `packages/cli/src/index.ts`
 - `packages/cli/src/output.ts`
 - `packages/os/plans/consuelo-os-foundation/workers/30-cli-product-split.md`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
 - `packages/os/scripts/lib/consuelo-home.ts`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
@@ -166,17 +176,4 @@
 - `packages/twenty-sdk/package.json`
 - `packages/twenty-sdk/project.json`
 
-- 2026-07-24 19:28:19 apply-patch: `packages/os/tests/distribution/release-publication-preparer.test.ts`
-
-- 2026-07-24 19:28:38 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
-
-- 2026-07-24 19:36:47 apply-patch: `packages/cli/src/commands/analytics.ts`
-- 2026-07-24 19:37:03 apply-patch: `packages/cli/src/commands/coach.ts`
-- 2026-07-24 19:37:40 apply-patch: `packages/cli/src/commands/contacts.ts`
-- 2026-07-24 19:37:58 apply-patch: `packages/cli/src/commands/deploy.ts`
-- 2026-07-24 19:38:13 apply-patch: `packages/cli/src/commands/files.ts`
-- 2026-07-24 19:38:21 apply-patch: `packages/cli/src/commands/update.ts`
-- 2026-07-24 19:38:29 apply-patch: `packages/cli/src/config.ts`
-- 2026-07-24 19:38:34 apply-patch: `packages/cli/src/index.ts`
-
-- 2026-07-24 19:40:49 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 19:47:50 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
