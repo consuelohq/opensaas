@@ -283,8 +283,8 @@ describe('dialer-server in-memory lifecycle', () => {
       }),
     });
     expect(startResponse.status).toBe(201);
-    const start = (await startResponse.json()) as { twilioGroupId: string };
-    expect(start.twilioGroupId).toBe('group-1');
+    const start = (await startResponse.json()) as { providerGroupId: string };
+    expect(start.providerGroupId).toBe('group-1');
     expect(locks.size).toBe(2);
 
     const callbackHeaders = {

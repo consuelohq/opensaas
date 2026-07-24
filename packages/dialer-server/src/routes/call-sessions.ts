@@ -5,6 +5,14 @@ import { runApplicationEffect } from '../effect-runner';
 import { dialerErrorResponse, invalidRequestResponse } from '../errors';
 import type { DialerVariables } from '../middleware/auth';
 
+const callSessionStartResponse = (value: {
+  twilioGroupId: string | null;
+  [key: string]: unknown;
+}) => {
+  const { twilioGroupId, ...publicValue } = value;
+  return { ...publicValue, providerGroupId: twilioGroupId };
+};
+
 const readJsonObject = async (
   request: Request,
 ): Promise<Record<string, unknown> | null> => {
@@ -36,7 +44,7 @@ export const createCallSessionRoutes = (
         }),
       );
       return result.ok
-        ? context.json(result.value, 201)
+        ? context.json(callSessionStartResponse(result.value), 201)
         : dialerErrorResponse(context, result.error);
     } catch (error: unknown) {
       return dialerErrorResponse(context, error);

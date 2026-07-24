@@ -43,6 +43,14 @@ const createDependencies = (): DialerServerDependencies => ({
         event: null,
       }),
     ),
+    listContacts: mock(() =>
+      Effect.succeed({ contacts: [], total: 0, nextCursor: null }),
+    ),
+    searchOpportunities: mock(() =>
+      Effect.succeed({ opportunities: [], total: 0 }),
+    ),
+    listPipelines: mock(() => Effect.succeed([])),
+    recordDisposition: mock(() => Effect.succeed({ recorded: true as const })),
   },
 });
 

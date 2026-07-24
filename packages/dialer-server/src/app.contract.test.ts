@@ -100,6 +100,12 @@ describe('dialer-server HTTP contracts', () => {
       }),
     );
     expect(response.status).toBe(201);
+    expect(await response.json()).toEqual(
+      expect.objectContaining({
+        sessionId: 'session-1',
+        providerGroupId: 'group-1',
+      }),
+    );
     expect(dependencies.authenticate).toHaveBeenCalledTimes(1);
     expect(dependencies.application.startCallSession).toHaveBeenCalledTimes(1);
     expect(dependencies.application.startCallSession).toHaveBeenCalledWith({
