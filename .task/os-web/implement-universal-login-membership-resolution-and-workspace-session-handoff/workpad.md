@@ -37,7 +37,10 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 
 - Implementation and local validation are complete. Worker 13's executable contract and Worker 25's node/routing behavior are integrated and passing on the task branch.
 - Publish verification is valid against `origin/stream/os-web`; strict review reports zero findings.
-- Remaining work is GitHub CI, CodeRabbit, Grok 4.5 review/dispositions, merge into `stream/os-web`, and task cleanup.
+- GitHub CI is complete with 43 checks, zero failures, and zero pending checks (`trc_2161902a5133`).
+- CodeRabbit was requested and completed its workflow, but repository path filters skipped all 23 changed files; it produced no findings. Grok 4.5 independently approved the exact product head with high confidence and zero findings; the structured review and top-level summary are durable on GitHub.
+- The consolidated execution-route recovery log is durable at https://github.com/consuelohq/opensaas/pull/1613#issuecomment-5065893593. Temporary review artifacts were removed after posting (`trc_ad3dc1174c8e`).
+- Remaining work is the evidence-only workpad push, merge into `stream/os-web`, and task finish.
 
 ## test-first contract
 
@@ -51,16 +54,46 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 ## files changed
 
 - `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+- `packages/os/.tmp-reviews/14-universal-login` (deleted)
+- `packages/os/.tmp-reviews/14-universal-login/execution-recovery.md`
+- `packages/os/cloudflare/os-device-authority/src/app.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/health.ts`
 - `packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/route-policies.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/google-oauth.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/grants.ts`
+- `packages/os/cloudflare/os-device-authority/src/stores.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
 - `packages/os/cloudflare/workspace-edge/src/index.ts`
+- `packages/os/cloudflare/workspace-edge/wrangler.toml`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- `packages/os/tests/os-device-authority-architecture.test.ts`
 - `packages/os/tests/os-universal-login.test.ts`
+- `packages/os/tests/workspace-gateway-contract.test.ts`
+- `packages/os/tests/workspace-hostname-edge-router.test.ts`
 
 ## workspace-owned: files changed
 
 - `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+- `packages/os/.tmp-reviews/14-universal-login` (deleted)
+- `packages/os/.tmp-reviews/14-universal-login/execution-recovery.md`
+- `packages/os/cloudflare/os-device-authority/src/app.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/health.ts`
 - `packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/route-policies.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/google-oauth.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/grants.ts`
+- `packages/os/cloudflare/os-device-authority/src/stores.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
 - `packages/os/cloudflare/workspace-edge/src/index.ts`
+- `packages/os/cloudflare/workspace-edge/wrangler.toml`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- `packages/os/tests/os-device-authority-architecture.test.ts`
 - `packages/os/tests/os-universal-login.test.ts`
+- `packages/os/tests/workspace-gateway-contract.test.ts`
+- `packages/os/tests/workspace-hostname-edge-router.test.ts`
 
 ## workspace-owned: activity log
 
@@ -71,6 +104,13 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - 2026-07-24 03:05:57 fs.write: `packages/os/cloudflare/workspace-edge/src/index.ts`
 - 2026-07-24 03:07:54 fs.write: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
 - 2026-07-24 03:13:37 fs.trash: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/decision-context.md`
+- 2026-07-24 03:22:41 fs.write: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+- 2026-07-24 03:37:20 fs.write: `packages/os/.tmp-reviews/14-universal-login/execution-recovery.md`
+- 2026-07-24 03:37:34 fs.trash: `packages/os/.tmp-reviews/14-universal-login`
+- 2026-07-24 03:41:22 fs.trash: `.task/subagent-runs/trc_656efbc57446-grok`
+- 2026-07-24 03:41:25 fs.trash: `.task/subagent-runs/trc_9ef354f847e4-grok`
+- 2026-07-24 03:41:27 fs.trash: `.task/subagent-runs/trc_a68e8b958466-grok`
+- 2026-07-24 03:41:29 fs.trash: `.task/subagent-runs/trc_c3db19d87940-grok`
 
 ## workspace-owned: validation evidence
 
@@ -80,6 +120,9 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - 2026-07-24 03:13:14 `verify`: passed — OK
 - 2026-07-24 03:15:23 `verify`: passed — OK
 - 2026-07-24 03:15:36 `verify`: passed — OK
+- 2026-07-24 03:42:07 `verify`: passed — OK
+- 2026-07-24 03:43:06 `verify`: passed — OK
+- 2026-07-24 03:43:18 `verify`: passed — OK
 
 ## key decisions
 
@@ -108,6 +151,15 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - The confidence helper returned `0.15` because its stale index recorded no live validation and a moved result (`trc_c20f61bd98a5`). Recovery/evidence override: the repository safety gate independently inspected the current worktree and returned `passed: true`, `publishValid: true`, zero review or database risks (`trc_e52c90d47b83`).
 - Environment-gated runs emit a non-fatal optional trace persistence warning because Node/Vitest cannot load `bun:sqlite`; all 218 assertions and 25 suites pass (`trc_d59875e50fd1`). No product path depends on that optional test-time trace adapter.
 - The pre-push sync check found `stream/os-web` one commit behind main (`trc_8598809726bc`). Recovery: ran the prescribed OS `stream.sync` route, which merged and pushed the stream with no conflicts (`trc_c5c5da5e1035`); the follow-up reported behind `0` (`trc_5e0aa139e72b`) and the full publish gate remained valid against the updated stream (`trc_91ca1509ea5e`).
+- The first `task.push` was blocked because the successful verify had used `noStamp: true`. Recovery: reran the same publish gate with stamping (`trc_f2babd515efc`) and then pushed the reviewable implementation commit through `task.push` (`trc_1d9e583a515f`); no approval bypass was used.
+- The first raw GitHub metadata read omitted the facade-required audit reason and was rejected. Recovery: repeated the exact read with an explicit reason and obtained the authoritative base/head SHAs used to render the Grok template.
+- CodeRabbit was requested on PR #1613. Its workflow completed but skipped review because repository path filters ignored all changed paths; no inline or top-level findings were emitted. This is recorded as reviewer unavailable-by-configuration, not as a substantive approval.
+- The prescribed Grok wrapper exceeded the outer OS facade timeout twice, leaving three prompt-bound orphan processes. Recovery: diagnosed the exact processes through task-scoped OS reads, terminated only those duplicates (`trc_aa64a3f0deff`), and relaunched the identical provider/model/policy command detached with durable stdout/stderr (`trc_f40114778696`). The bounded wrapper completed successfully in 284388 ms with exit code 0 (`trc_656efbc57446`).
+- Grok's provider envelope placed the complete structured review inside its raw `text` field while the wrapper's derived `finalMessage` transport was truncated and not parseable JSON (`trc_2aeac25e5e55`). Recovery: read the durable raw log, extracted only the complete inner JSON object, validated its schema/PR/outcome/findings fields, and excluded diagnostic reasoning from publication (`trc_0f5d576be0e5`). Result: `approved`, confidence `high`, zero findings. Structured review: https://github.com/consuelohq/opensaas/pull/1613#issuecomment-5065884174. Top-level summary: https://github.com/consuelohq/opensaas/pull/1613#issuecomment-5065884588.
+- An independent post-review hostname check confirmed `os` is already a default reserved workspace label in the Cloudflare provisioning authority, while the exact authority route owns `os.consuelohq.com` (`trc_62076df4b6cd`). No allocation or wildcard-routing product change was required.
+- The structured Grok review, top-level summary, and consolidated recovery log were posted to GitHub before cleanup. Recovery artifacts under `packages/os/.tmp-reviews/14-universal-login/` were then removed through task-scoped `fs.trash` (`trc_ad3dc1174c8e`), as required.
+- The final evidence-only `task.push --changed` was rejected because the local task ref remained at the pre-API-publish SHA `d58f26b2` while the remote task branch was at `037525d7` (`trc_facc5478b889`). Repository inspection confirmed there is no typed task-worktree sync mutation. Recovery: use the supported `task.push` explicit-files path to commit only this workpad plus auto-scoped task metadata directly atop the remote task head; do not invoke native Git or bypass verification.
+- The first explicit-files retry used a task-relative path, but `task.push` resolves explicit paths from the caller repository root and rejected it as outside the selected task worktree (`trc_b3107977f16a`). Recovery: retry the same supported route with the absolute task-worktree path; no product files are selected.
 
 ---
 
@@ -123,6 +175,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `packages/os/.tmp-reviews/14-universal-login/grok-prompt.md`
 - `packages/os/AGENTS.md`
 - `packages/os/cloudflare/os-device-authority/src/http.ts`
 - `packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts`
@@ -131,10 +184,14 @@ bun run task:finish
 - `packages/os/cloudflare/workspace-edge/wrangler.toml`
 - `packages/os/package.json`
 - `packages/os/plans/consuelo-os-foundation/workers/14-universal-login.md`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
 - `packages/os/scripts/lib/security-gateway.ts`
 - `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
 - `packages/os/tests/os-device-authority-architecture.test.ts`
 - `packages/os/tests/workspace-gateway-contract.test.ts`
+- `packages/workspace/scripts/task-push.js`
+- `packages/workspace/scripts/task-start.js`
+- `packages/workspace/senior-engineer.md`
 
 ## implementation checkpoint — 2026-07-24 03:08Z
 
@@ -192,3 +249,33 @@ Deployment order for the downstream web integration worker: provision the same d
 - 2026-07-24 03:13:57 apply-patch: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
 
 - 2026-07-24 03:15:29 apply-patch: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+
+
+## Grok wrapper recovery — 2026-07-24 03:22Z
+
+Wait reason: the prescribed bounded Grok 4.5 wrapper exceeded the outer OS facade timeout, and its child process may still be finishing or may have already written the temporary output files.
+Duration: poll every 30 seconds for up to 5 minutes.
+Resume action: inspect `packages/os/.tmp-reviews/14-universal-login/grok-output.json` and `grok-stderr.log`, then validate the wrapper envelope status and structured `finalMessage` JSON.
+Expected signal: a non-empty output file whose wrapper envelope has `status: completed`, exit code 0, and a non-empty structured review object in `finalMessage`.
+Fallback: if output is missing, empty, cancelled, incomplete, or failed after the bounded poll, diagnose the wrapper trace/process through Consuelo OS and retry the same prescribed Grok route with corrected timeout handling; do not substitute another provider or review path.
+
+Final result: after the prescribed recovery, Grok 4.5 completed with trace `trc_656efbc57446`, approved with high confidence, and returned zero findings. Workspace MCP was unavailable inside the reviewer; because the invocation specified `--workspace-only preferred`, the wrapper used and reported its permitted read-only fallback (`rawShellUsed: true`). No alternate provider, model, review tool, or write-capable reviewer was substituted.
+
+## review and CI disposition — 2026-07-24 03:36Z
+
+- GitHub CI: 43 total checks, 0 failed, 0 pending (`trc_2161902a5133`).
+- CodeRabbit: requested; workflow completed but skipped all changed files due repository path filters. Findings: none; disposition: no CodeRabbit findings to verify or fix.
+- Grok 4.5: approved, confidence high, findings: none. Disposition: no findings to fix or dismiss; structured review and top-level summary posted separately to GitHub.
+- Repository strict review: zero findings (`trc_2d836b070d14`).
+- All substantive review results and route-recovery evidence are durable on PR #1613 before merge.
+
+- 2026-07-24 03:22:41 append: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+
+- 2026-07-24 03:37:06 apply-patch: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+- 2026-07-24 03:37:20 write: `packages/os/.tmp-reviews/14-universal-login/execution-recovery.md`
+
+- 2026-07-24 03:37:41 apply-patch: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+
+- 2026-07-24 03:43:02 apply-patch: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
+
+- 2026-07-24 03:43:14 apply-patch: `.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/workpad.md`
