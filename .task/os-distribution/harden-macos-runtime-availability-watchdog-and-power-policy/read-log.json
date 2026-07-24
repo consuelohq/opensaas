@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/os-distribution/harden-macos-runtime-availability-watchdog-and-power-policy/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/uninstall-system-daemons.sh",
+    "packages/os/scripts/workspace-watchdog.sh",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/os/tests/local-os-port-cutover.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-24T05:39:22.547Z"
+}
