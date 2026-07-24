@@ -36,7 +36,7 @@ describe('Bun product server contract', () => {
       expect(existsSync(resolve(osRoot, path)), path).toBe(false);
     }
 
-    const parity = JSON.parse(source('tooling/script-parity-classifications.json')) as {
+    const parity = JSON.parse(source('tests/audit/fixtures/script-parity-classifications.json')) as {
       scripts: Record<string, unknown>;
     };
     expect(parity.scripts['scripts/start-brain.sh']).toMatchObject({
@@ -57,9 +57,12 @@ describe('Bun product server contract', () => {
 
     const manager = source('scripts/server.js');
     expect(manager).toContain(
-      "const SERVER_TS = path.join(WORKSPACE_DIR, 'scripts', 'server', 'main.ts');",
+      "const LIFECYCLE_TS = path.join(WORKSPACE_DIR, 'scripts', 'lifecycle.ts');",
     );
-    expect(manager).toContain("spawn('bun', [SERVER_TS]");
+    expect(manager).toContain(
+      "const RELOAD_JS = path.join(WORKSPACE_DIR, 'scripts', 'consuelo-reload.js');",
+    );
+    expect(manager).toContain("run(LIFECYCLE_TS, ['restart'");
     expect(manager).not.toContain('server.py');
 
     const server = source('scripts/server/main.ts');
@@ -128,7 +131,7 @@ describe('Bun product server contract', () => {
     }
 
     expect(existsSync(resolve(osRoot, 'scripts/media-svg.py'))).toBe(true);
-    expect(existsSync(resolve(osRoot, 'tools/brain.py'))).toBe(true);
+    expect(existsSync(resolve(osRoot, 'tools/brain.py'))).toBe(false);
   });
 
   it('should document the Bun-only product server and current local port', () => {

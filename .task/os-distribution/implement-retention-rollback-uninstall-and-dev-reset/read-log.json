@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-distribution-environments.yaml",
+    ".task/os-distribution/implement-retention-rollback-uninstall-and-dev-reset/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/distribution/lifecycle-contract.test.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-07-23T20:54:56.482Z"
+}

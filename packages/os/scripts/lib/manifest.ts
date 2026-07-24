@@ -21,8 +21,8 @@ type CanonicalToolManifest = {
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(currentDir, '..', '..');
-const fullManifestPath = path.join(packageRoot, 'manifests', 'tool.manifest.json');
-const coreManifestPath = path.join(packageRoot, 'manifests', 'core.manifest.json');
+const fullManifestPath = path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json');
+const coreManifestPath = path.join(packageRoot, 'manifests', 'generated', 'core.manifest.json');
 
 function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);

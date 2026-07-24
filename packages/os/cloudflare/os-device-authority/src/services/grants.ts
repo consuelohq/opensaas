@@ -50,9 +50,21 @@ export async function rememberAccountWorkspace(input: {
     const existing = await input.store.byAccountWorkspace(input.accountId);
     await input.store.putAccountWorkspace({
       accountId: input.accountId,
+      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
       workspaceSlug: workspace.workspaceSlug,
       workspaceHost: workspace.workspaceHost,
       homeNodeId: existing?.homeNodeId ?? input.grant.nodeId,
+      defaultNodeId:
+        existing?.defaultNodeId ?? existing?.homeNodeId ?? input.grant.nodeId,
+      updatedAt: input.nowMs,
+    });
+    await input.store.putWorkspaceMembership({
+      accountId: input.accountId,
+      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceSlug: workspace.workspaceSlug,
+      workspaceHost: workspace.workspaceHost,
+      status: 'active',
+      createdAt: existing?.updatedAt ?? input.nowMs,
       updatedAt: input.nowMs,
     });
   } catch (error: unknown) {
@@ -87,6 +99,16 @@ export async function registerGrantNode(input: {
       input.accountId,
       nodeId,
     );
+    if (
+      existingNode &&
+      existingNode.devicePublicKeyThumbprint !==
+        input.grant.devicePublicKeyThumbprint
+    ) {
+      throw new Error('node identity key does not match the registered node');
+    }
+    if (existingNode?.state === 'revoked') {
+      throw new Error('workspace node has been revoked');
+    }
     const role =
       existingNode?.role ?? (existingWorkspace?.homeNodeId ? 'member' : 'home');
     const nodeName =
@@ -95,16 +117,31 @@ export async function registerGrantNode(input: {
     input.grant.nodeName = nodeName;
     input.grant.nodeRole = role;
     input.grant.nodeStatus = existingNode ? 'reconnected' : 'created';
+    input.grant.nodeLastSeenAt = input.nowMs;
     await input.store.putWorkspaceNode({
       accountId: input.accountId,
+      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
       workspaceSlug: workspace.workspaceSlug,
       workspaceHost: workspace.workspaceHost,
       nodeId,
       nodeName,
+      displayName: nodeName,
       role,
+      platform: input.grant.nodePlatform ?? existingNode?.platform ?? 'unknown',
+      architecture:
+        input.grant.nodeArchitecture ?? existingNode?.architecture ?? 'unknown',
+      channel: input.grant.nodeChannel ?? existingNode?.channel ?? 'stable',
+      connectorId: connectorIdFromNodeId(nodeId),
+      capabilities:
+        input.grant.nodeCapabilities ?? existingNode?.capabilities ?? [],
+      connectorStatus: 'connected',
+      state: existingNode?.state ?? 'active',
+      devicePublicKeyJwk:
+        existingNode?.devicePublicKeyJwk ?? input.grant.devicePublicKeyJwk,
       devicePublicKeyThumbprint: input.grant.devicePublicKeyThumbprint,
       createdAt: existingNode?.createdAt ?? input.nowMs,
       updatedAt: input.nowMs,
+      lastSeenAt: input.nowMs,
     });
   } catch (error: unknown) {
     throw new Error(

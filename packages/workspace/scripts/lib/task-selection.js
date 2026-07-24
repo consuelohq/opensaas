@@ -7,13 +7,14 @@ function parseTaskSelectorPrefix(rawArgs) {
     area: null,
     branch: null,
     prNumber: null,
+    taskSession: null,
   };
 
   let index = 0;
   while (index < rawArgs.length) {
     const flag = rawArgs[index];
 
-    if (flag === '--area' || flag === '--branch' || flag === '--pr' || flag === '--github') {
+    if (flag === '--area' || flag === '--branch' || flag === '--pr' || flag === '--github' || flag === '--task-session') {
       const value = rawArgs[index + 1];
       if (!value || value.startsWith('--')) {
         throw new Error(`missing value for ${flag}`);
@@ -22,6 +23,7 @@ function parseTaskSelectorPrefix(rawArgs) {
       if (flag === '--area') selector.area = value;
       if (flag === '--branch') selector.branch = value;
       if (flag === '--pr' || flag === '--github') selector.prNumber = resolvePrRefNumber(value);
+      if (flag === '--task-session') selector.taskSession = value;
       index += 2;
       continue;
     }
@@ -56,6 +58,7 @@ function taskMatchesSelector(task, selector = {}) {
   if (selector.area && task.meta.area !== selector.area) return false;
   if (selector.branch && task.meta.taskBranch !== selector.branch && task.branch !== selector.branch) return false;
   if (selector.prNumber !== null && selector.prNumber !== undefined && getTaskPrNumber(task) !== selector.prNumber) return false;
+  if (selector.taskSession && task.meta.taskSession !== selector.taskSession) return false;
   return true;
 }
 
@@ -64,6 +67,7 @@ function getSelectorLabel(selector = {}) {
   if (selector.area) parts.push(`area "${selector.area}"`);
   if (selector.branch) parts.push(`branch "${selector.branch}"`);
   if (selector.prNumber !== null && selector.prNumber !== undefined) parts.push(`pr #${selector.prNumber}`);
+  if (selector.taskSession) parts.push(`task session "${selector.taskSession}"`);
   return parts.length > 0 ? parts.join(', ') : 'any active task';
 }
 
@@ -81,7 +85,7 @@ function selectTaskFromCandidatesResult(tasks, selector = {}) {
     const labels = matches.map(getTaskLabel).join(', ');
     return {
       task: null,
-      error: `multiple active tasks found (${labels}). use --branch <task-branch>, --pr <number-or-url>, or --github <url> to select one.`,
+      error: `multiple active tasks found (${labels}). use --task-session <id>, --branch <task-branch>, --pr <number-or-url>, or --github <url> to select one.`,
     };
   }
 

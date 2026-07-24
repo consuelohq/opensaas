@@ -3,8 +3,14 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { Effect } from 'effect';
 
-import manifestJson from '../../../manifests/tool.manifest.json';
+import manifestJson from '../../../manifests/generated/tool.manifest.json';
+import {
+  executeDeploymentFacade,
+  type DeploymentFacadeInput,
+} from '../../../tools/deployment-provider/facade';
+import { redactDeploymentTraceInput } from '../../../tools/deployment-provider/redaction';
 
 import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
@@ -721,6 +727,7 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
 
   return input;
 }
+
 async function executeInternalTool<TData>(
   entry: ToolManifestEntry,
   input: ToolInput,
@@ -769,6 +776,51 @@ async function executeInternalTool<TData>(
       env: context.env,
     });
     return result;
+  }
+
+  if (internal === 'deployment') {
+    const deploymentInput = {
+      ...input,
+      tool: entry.name,
+    } as DeploymentFacadeInput;
+    const outcome = await Effect.runPromise(Effect.either(executeDeploymentFacade(deploymentInput)));
+    const result = outcome._tag === 'Right'
+      ? createToolResult({
+        ok: true,
+        code: 'OK',
+        message: `${entry.name} completed`,
+        data: outcome.right,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      })
+      : createToolResult({
+        ok: false,
+        code: outcome.left.code,
+        message: outcome.left.message,
+        data: {
+          provider: outcome.left.provider,
+          operation: outcome.left.operation,
+          ...(outcome.left.diagnostics ? { diagnostics: outcome.left.diagnostics } : {}),
+          ...(outcome.left.approval ? { approval: outcome.left.approval } : {}),
+          ...(outcome.left.recovery ? { recovery: outcome.left.recovery } : {}),
+        },
+        stderr: '',
+        exitCode: 1,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      });
+    const traceInput = redactDeploymentTraceInput(entry.name, context.rawInput);
+    const resolvedTraceInput = redactDeploymentTraceInput(entry.name, input);
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: traceInput,
+      resolvedInput: resolvedTraceInput,
+      env: context.env,
+    });
+    return result as ToolResult<TData>;
   }
 
   if (internal === 'subagent') {

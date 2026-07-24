@@ -266,4 +266,8 @@ Before returning the JSON, verify:
 - the signoff is exact;
 - no tokens, cookies, credentials, private environment values, private URLs, or customer data appear in the response.
 
-After the implementation worker posts the complete review and dispositions to GitHub, its chat response to Ko contains only `done` and the PR URL.
+The wrapper returns this structured review to the implementation worker. After
+the implementation worker posts the complete review and dispositions to GitHub,
+the implementation worker still returns Ko the concise task summary required by
+the master plan. Only a standalone, user-facing Grok review task may close with
+only `done` and the PR URL after its structured review is durable on GitHub.

@@ -154,7 +154,7 @@ type EmbeddingCache = {
 };
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const manifestPath = path.join(workspaceRoot, 'manifests', 'tool.manifest.json');
+const manifestPath = path.join(workspaceRoot, 'manifests', 'generated', 'tool.manifest.json');
 const toolsDocPath = path.join(workspaceRoot, 'TOOLS.md');
 const TOOL_CARD_VERSION = 'tools-search-card-v2';
 
@@ -189,11 +189,17 @@ const QUERY_ALIASES: Record<string, string[]> = {
   read: ['get', 'fetch', 'view'],
   trace: ['context', 'logs', 'sentry'],
   log: ['logs', 'trace'],
-  logs: ['railway', 'context', 'sentry'],
+  logs: ['deployment', 'runtime', 'build', 'context', 'sentry'],
   codex: ['worker', 'cdx'],
   cdx: ['codex', 'worker'],
   pi: ['worker', 'mini'],
-  deploy: ['railway', 'website', 'server'],
+  deploy: ['deployment', 'railway', 'vercel', 'cloudflare', 'website', 'server'],
+  redeploy: ['deployment', 'deploy', 'service', 'railway', 'vercel', 'cloudflare'],
+  railway: ['deployment', 'provider', 'hosting'],
+  vercel: ['deployment', 'provider', 'hosting'],
+  cloudflare: ['deployment', 'provider', 'hosting', 'workers'],
+  environment: ['deployment', 'variables', 'config'],
+  variables: ['environment', 'deployment', 'config'],
   browser: ['page', 'screenshot', 'open'],
   bun: ['runtime', 'package', 'script', 'code', 'call'],
   python: ['runtime', 'transform', 'script', 'code', 'call'],
@@ -451,11 +457,38 @@ const INTENT_PACKS: IntentPack[] = [
     boost: { 'linear.issue': 86, 'linear.search': 72, 'linear.createIssue': -16 },
   },
   {
-    id: 'railway-logs',
-    label: 'inspect Railway logs or deploy status',
-    terms: ['railway', 'logs', 'deploy', 'errors', 'runtime'],
-    requireAny: ['railway', 'logs', 'deploy'],
-    boost: { 'railway.logs': 86, 'railway.redeploy': -20 },
+    id: 'deployment-logs',
+    label: 'inspect Railway, Vercel, or Cloudflare deployment logs',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'logs', 'log', 'errors', 'runtime', 'build'],
+    requireAny: ['logs', 'log', 'errors', 'runtime', 'build'],
+    boost: { 'deployment.logs': 145, 'deployment.status': 24, 'deployment.list': 10, 'task.prs': -120, 'task.pr': -90 },
+    safeDefault: 'deployment.logs is the read-only default for bounded Railway, Vercel, and Cloudflare runtime or build logs.',
+  },
+  {
+    id: 'deployment-status',
+    label: 'inspect Railway, Vercel, or Cloudflare deployment status',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'status', 'check', 'inspect'],
+    requireAll: ['deployment'],
+    requireAny: ['status', 'check', 'inspect'],
+    boost: { 'deployment.status': 135, 'deployment.list': 22, 'deployment.context': 10, 'task.current': -80, 'task.prs': -100 },
+    safeDefault: 'deployment.status reads one provider deployment without changing remote state.',
+  },
+  {
+    id: 'deployment-environment',
+    label: 'inspect or change Railway, Vercel, or Cloudflare environment metadata',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'environment', 'variable', 'variables', 'config', 'names', 'set', 'delete'],
+    requireAny: ['environment', 'variable', 'variables'],
+    boost: { 'deployment.environment': 145, 'deployment.context': 12, 'deployment.list': 8, 'task.prs': -100 },
+    safeDefault: 'Use deployment.environment action list to read variable names; set and delete require explicit approval and never return secret values.',
+    mutatingGuidance: 'deployment.environment set/delete changes provider configuration and requires explicit local approval.',
+  },
+  {
+    id: 'deployment-mutation',
+    label: 'deploy, redeploy, or promote on Railway, Vercel, or Cloudflare',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'deploy', 'redeploy', 'promote', 'service', 'production'],
+    requireAny: ['deploy', 'redeploy', 'promote'],
+    boost: { 'deployment.deploy': 145, 'deployment.status': 18, 'deployment.logs': 8, 'task.prs': -110, 'website.deploy': -25 },
+    mutatingGuidance: 'deployment.deploy changes remote provider state and requires explicit local approval.',
   },
 ];
 

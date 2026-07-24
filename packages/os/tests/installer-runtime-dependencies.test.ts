@@ -555,7 +555,7 @@ describe('public installer runtime dependencies', () => {
     expect(result.stderr).toContain('Set PORTLESS_BIN');
   });
 
-  it('should include cloudflared in daemon dry-run output only when a generated plist exists', () => {
+  it('should include generated connector and heartbeat services in daemon dry-run output only when their plists exist', () => {
     const home = createTempHome('consuelo-os-installer-runtime-daemons-');
     const generatedDir = join(home, 'security', 'generated');
     mkdirSync(generatedDir, { recursive: true });
@@ -586,10 +586,17 @@ describe('public installer runtime dependencies', () => {
     expect(absentResult.stdout).not.toContain(
       'com.consuelo.os.cloudflared.connector-123',
     );
+    expect(absentResult.stdout).not.toContain(
+      'com.consuelo.os.node-heartbeat.node-member',
+    );
 
     writeCloudflaredPlist(
       join(generatedDir, 'com.consuelo.os.cloudflared.connector-123.plist'),
       'com.consuelo.os.cloudflared.connector-123',
+    );
+    writeCloudflaredPlist(
+      join(generatedDir, 'com.consuelo.os.node-heartbeat.node-member.plist'),
+      'com.consuelo.os.node-heartbeat.node-member',
     );
     const presentResult = spawnSync(
       '/bin/bash',
@@ -617,6 +624,9 @@ describe('public installer runtime dependencies', () => {
     expect(presentResult.stdout).not.toContain('com.consuelo.portless.system');
     expect(presentResult.stdout).toContain(
       'com.consuelo.os.cloudflared.connector-123',
+    );
+    expect(presentResult.stdout).toContain(
+      'com.consuelo.os.node-heartbeat.node-member',
     );
   });
 
@@ -705,7 +715,7 @@ describe('public installer runtime dependencies', () => {
     expect(systemPlist).toContain(`<string>${osHome}</string>`);
   });
 
-  it('should discover generated connector LaunchAgents during uninstall from the flattened home', () => {
+  it('should discover generated connector and heartbeat LaunchAgents during uninstall from the flattened home', () => {
     const home = createTempHome(
       'consuelo-os-installer-runtime-flat-uninstall-',
     );
@@ -713,10 +723,16 @@ describe('public installer runtime dependencies', () => {
     const generatedDir = join(osHome, 'node', 'security', 'generated');
     const connectorLabel =
       'com.consuelo.os.cloudflared.connector-flat-uninstall';
+    const heartbeatLabel =
+      'com.consuelo.os.node-heartbeat.node-flat-uninstall';
     mkdirSync(generatedDir, { recursive: true });
     writeCloudflaredPlist(
       join(generatedDir, `${connectorLabel}.plist`),
       connectorLabel,
+    );
+    writeCloudflaredPlist(
+      join(generatedDir, `${heartbeatLabel}.plist`),
+      heartbeatLabel,
     );
 
     const result = spawnSync(
@@ -740,15 +756,20 @@ describe('public installer runtime dependencies', () => {
 
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain(connectorLabel);
+    expect(result.stdout).toContain(heartbeatLabel);
   });
 
-  it('should include dynamic cloudflared LaunchAgents when running uninstall dry-run', () => {
+  it('should include dynamic connector and heartbeat LaunchAgents when running uninstall dry-run', () => {
     const home = createTempHome('consuelo-os-installer-runtime-uninstall-');
     const launchAgentDir = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgentDir, { recursive: true });
     writeCloudflaredPlist(
       join(launchAgentDir, 'com.consuelo.os.cloudflared.connector-123.plist'),
       'com.consuelo.os.cloudflared.connector-123',
+    );
+    writeCloudflaredPlist(
+      join(launchAgentDir, 'com.consuelo.os.node-heartbeat.node-member.plist'),
+      'com.consuelo.os.node-heartbeat.node-member',
     );
 
     const result = spawnSync(
@@ -773,6 +794,9 @@ describe('public installer runtime dependencies', () => {
     expect(result.stdout).toContain('com.consuelo.portless.system');
     expect(result.stdout).toContain(
       'com.consuelo.os.cloudflared.connector-123',
+    );
+    expect(result.stdout).toContain(
+      'com.consuelo.os.node-heartbeat.node-member',
     );
   });
 });

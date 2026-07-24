@@ -34,6 +34,8 @@ Lock method, path, auth class, status, headers, storage, and destination for:
 ## Security acceptance
 
 - OAuth redirect parameters and PKCE remain exact.
+- One-hour access-token expiry renews transparently through the refresh-token grant without asking the user to reconnect.
+- Refresh-token rotation is retry-safe: duplicate/concurrent refreshes, an interrupted response, or a transient persistence failure cannot invalidate the only usable credential and strand a valid ChatGPT connection.
 - `WWW-Authenticate` challenges remain compliant.
 - Handoff is one-time, expiring, host-bound, and replay-safe.
 - Cookies are narrowly scoped.
@@ -65,9 +67,11 @@ After explicit deployment approval:
 6. Connect ChatGPT to central MCP.
 7. Discover `get_steering` and `call` only.
 8. Run steering, tools.search, and one harmless call.
-9. Verify connector and WAF logs show intended boundaries.
-10. Repeat a bounded second-workspace isolation test.
-11. After Ko performs the second-machine login, verify distinct node identities, default-node preservation, signed presence, explicit routing, offline state, and revocation.
+9. Force or simulate access-token expiry, complete refresh rotation, and repeat steering plus a harmless call without reconnecting the app.
+10. Replay the previous refresh request and exercise an interrupted/duplicate refresh path; prove the session remains usable and rotation does not mint an unbounded credential family.
+11. Verify connector and WAF logs show intended boundaries.
+12. Repeat a bounded second-workspace isolation test.
+13. After Ko performs the second-machine login, verify distinct node identities, default-node preservation, signed presence, explicit routing, offline state, and revocation.
 
 ## Owned files
 

@@ -85,6 +85,13 @@ Provide an explicit development-only reset bun command. Never make reset the imp
 
 ### 2.4 Local layout
 
+`~/.consuelo/` is the product root. New installs must not recreate
+`~/.consuelo/os/`; that path is legacy migration input only. Runtime-bundle
+archives are path-neutral and are activated beneath
+`~/.consuelo/runtime/releases/<bundle-id>/`, with `runtime/current` selecting
+the active release. Node-local state and shared workspace configuration remain
+siblings of `runtime/`, not children of a release.
+
 Hidden machine/runtime state:
 
 ```text
@@ -536,6 +543,7 @@ Required test layers:
 - MacBook Air canary/beta acceptance before beta promotion;
 - two-node same-account registration, presence, default routing, explicit routing, offline, and revocation tests;
 - live OAuth, MCP discovery, steering, `tools.search`, and harmless `call` acceptance before stable promotion.
+- one-hour access-token expiry renewed transparently through refresh-token rotation without asking the user to reconnect; retries, duplicate refreshes, and interrupted responses cannot strand an otherwise valid connection.
 
 No workflow should send customer secrets or unredacted diagnostics to GitHub Actions.
 
@@ -638,7 +646,8 @@ Every worker must:
 20. Include the full master plan, assigned brief, PR/diff, existing reviews, workspace review, tests/CI, task context, nearby patterns, and unavailable-context notes. Post every new inline finding, the structured review object, consolidated agent-fix prompt, and concise top-level PR comment to GitHub.
 21. Verify each review finding against current code, fix valid findings, rerun validation, and post fixed/stale/skipped dispositions to the PR. GitHub is the durable source of truth; remove `packages/os/.tmp-reviews/<task>/` after posting.
 22. If the assigned environment, OS/task route, model/authentication, GitHub path, or test lane is broken, fails, is unavailable, or mismatches the registry, stop and fix or realign that environment before continuing. Do not bypass the environment, silently change providers, or fall back to another computer.
-23. End only after GitHub contains changed files, exact validation, review/dispositions, known limitations, blockers, and integration instructions. The user-facing chat response contains only `done` and the PR URL.
+23. End only after GitHub contains changed files, exact validation, review/dispositions, known limitations, blockers, and integration instructions.
+24. Return a concise user-facing closeout with the PR URL and assigned stream, what changed, validation/review results, how the work advances the master plan, and any remaining blocker or follow-up. Implementation workers must not reply with only `done`. Only a standalone Grok review task may use a `done`-only closeout after its structured review is already durable on GitHub.
 
 No worker agent may install, update, reset, restart, or uninstall Consuelo OS on Ko's Mac Mini or MacBook Air. The worker stops at a human checkpoint and gives Ko the exact command and expected result. Read-only observation after Ko acts is allowed when explicitly approved.
 

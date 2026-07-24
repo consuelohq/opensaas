@@ -23,6 +23,12 @@ Create one explicit, testable runtime-bundle contract used by hosted installatio
 
 ## Design requirements
 
+The archive contract is independent of its eventual host install path. It must
+not embed or prescribe `~/.consuelo/os/`. Worker 04 activates verified bundles
+at `~/.consuelo/runtime/releases/<bundle-id>/` and advances
+`~/.consuelo/runtime/current`; `node/`, `workspaces/`, and `components/` remain
+outside the release tree.
+
 Introduce a versioned runtime-bundle specification and builder with:
 
 - platform and architecture;
