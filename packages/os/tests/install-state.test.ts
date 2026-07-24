@@ -386,13 +386,12 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'hooks', 'task', 'guidance.js'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(existsSync(join(tempHome, 'steering', 'system_prompt.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'steering', 'decision.md'))).toBe(true);
+    expect(existsSync(join(tempHome, 'steering', 'decision.md'))).toBe(false);
     expect(existsSync(join(tempHome, 'steering', 'STEERING.md'))).toBe(false);
     expect(existsSync(join(tempHome, 'steering', 'steering.md'))).toBe(false);
     expect(readFileSync(join(tempHome, 'steering', 'system_prompt.md'), 'utf8')).toContain('# System Prompt');
-    expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('# decision process');
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'system_prompt.md')) && action.status === 'created')).toBe(true);
-    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')) && action.status === 'created')).toBe(true);
+    expect(first.actions.some((action: { type: string; path: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')))).toBe(false);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'create_file' && action.path.endsWith(join('components', 'installed-skills.json')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('bin', 'status')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_operator' && action.path.endsWith('operator') && action.status === 'created')).toBe(true);
@@ -464,6 +463,42 @@ describe('local OS install state', () => {
     expect(second.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')) && action.status === 'preserved')).toBe(true);
     expect(readFileSync(join(tempHome, 'steering', 'system_prompt.md'), 'utf8')).toContain('user-owned system prompt');
     expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('user-owned decision');
+  });
+
+  it('removes an unchanged bundled decision file while preserving user-modified copies', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    const decisionPath = join(tempHome, 'steering', 'decision.md');
+    const bundledDecision = readFileSync(join(process.cwd(), 'steering', 'decision.md'), 'utf8');
+    writeFileSync(decisionPath, bundledDecision);
+
+    const migrated = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    expect(existsSync(decisionPath)).toBe(false);
+    expect(migrated.actions).toContainEqual(expect.objectContaining({
+      type: 'seed_steering',
+      path: decisionPath,
+      status: 'updated',
+    }));
+
+    writeFileSync(decisionPath, '# User decision\n\nkeep this user-owned file\n');
+    const preserved = JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local' })));
+    `));
+
+    expect(readFileSync(decisionPath, 'utf8')).toContain('keep this user-owned file');
+    expect(preserved.actions).toContainEqual(expect.objectContaining({
+      type: 'seed_steering',
+      path: decisionPath,
+      status: 'preserved',
+    }));
   });
 
 

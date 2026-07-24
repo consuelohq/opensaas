@@ -220,7 +220,8 @@ const SKILLS_REGISTRY_FILE = 'skills.json';
 const TOOL_METADATA_FILE = '.consuelo-tool.json';
 const TOOL_REGISTRY_FILE = 'tools.json';
 const TOOL_DEFINITION_FILE = 'tool.json';
-const DEFAULT_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
+const DEFAULT_STEERING_FILES = ['system_prompt.md'] as const;
+const LEGACY_DECISION_FILE = 'decision.md';
 
 const COMPACT_SKILL_FIELDS = [
   'name',
@@ -563,6 +564,37 @@ function seedBundledSteering(home: string, dryRun: boolean): ProvisionAction[] {
     if (dryRun || targetExists || installedInPlace) continue;
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
     fs.copyFileSync(sourcePath, targetPath);
+  }
+
+  const legacySourcePath = path.join(BUNDLED_STEERING_ROOT, LEGACY_DECISION_FILE);
+  const legacyTargetPath = path.join(targetRoot, LEGACY_DECISION_FILE);
+  if (fs.existsSync(legacyTargetPath)) {
+    if (installedInPlace) {
+      actions.push({
+        type: 'seed_steering',
+        path: legacyTargetPath,
+        status: 'preserved',
+        message: 'bundled source decision file preserved in the package checkout',
+      });
+    } else if (
+      fs.existsSync(legacySourcePath)
+      && fs.readFileSync(legacyTargetPath).equals(fs.readFileSync(legacySourcePath))
+    ) {
+      actions.push({
+        type: 'seed_steering',
+        path: legacyTargetPath,
+        status: dryRun ? 'planned' : 'updated',
+        message: 'unchanged legacy bundled decision file removed',
+      });
+      if (!dryRun) fs.rmSync(legacyTargetPath, { force: true });
+    } else {
+      actions.push({
+        type: 'seed_steering',
+        path: legacyTargetPath,
+        status: 'preserved',
+        message: 'user-modified legacy decision file preserved',
+      });
+    }
   }
 
   return actions;

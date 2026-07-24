@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/07-steering-runtime-context.md",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/workspace-nodes.ts"
+  ],
+  "updatedAt": "2026-07-24T17:03:34.366Z"
+}
