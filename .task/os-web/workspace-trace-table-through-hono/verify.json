@@ -4,12 +4,12 @@
   "mode": "full",
   "branch": "task/os-web/workspace-trace-table-through-hono",
   "base": "origin/stream/os-web",
-  "headSha": "8e6e570ce78d80e6e17d7e6fa0b36ccedbbdfbd8",
-  "changeHash": "2cd37a807f4fcd7d4d7b56aaee667062df7e3196b0d83340c5ce40bb795fd154",
+  "headSha": "e8ab5e0b3e7ac7c6276596d99e26af68512bf835",
+  "changeHash": "a0a73f84a30a1dddb8c249c5bed9fa86fb885c18048bc45762280cb1f8b14888",
   "changedFiles": [
     "packages/workspace/tests/trace-site-inspector.test.ts"
   ],
-  "verifiedAt": "2026-07-24T17:31:41.005Z",
+  "verifiedAt": "2026-07-24T17:40:16.124Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -27,6 +27,7 @@
         ".task/os-web/workspace-trace-table-through-hono/evidence-log.json",
         ".task/os-web/workspace-trace-table-through-hono/read-log.json",
         ".task/os-web/workspace-trace-table-through-hono/session.json",
+        ".task/os-web/workspace-trace-table-through-hono/verify.json",
         ".task/os-web/workspace-trace-table-through-hono/workpad.md",
         ".task/tasks/os-web/workspace-trace-table-through-hono.json",
         "packages/workspace/tests/trace-site-inspector.test.ts"

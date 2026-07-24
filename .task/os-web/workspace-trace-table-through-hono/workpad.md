@@ -15,7 +15,7 @@ started: 2026-07-24
 - [x] Verify Hono owns the protected trace document/assets/data routes and static site refresh cannot replace the live surface.
 - [x] Verify stable inspector state plus loading, empty, offline-node, error, and reconnect states.
 - [x] Verify bearer tokens, prompts containing secrets, environment values, and local paths are not exposed.
-- [ ] Complete current focused/broad validation, CodeRabbit, Grok review, dispositions, and merge PR #1643 into `stream/os-web` only.
+- [ ] Complete current focused/broad validation, CodeRabbit, Grok review, dispositions, and merge PR #1643 into `stream/os-web` only. Reviews are complete; merge awaits terminal CI.
 
 ## plan
 
@@ -33,6 +33,7 @@ started: 2026-07-24
 - Current focused validation is green after splitting Vitest and Bun-native suites by runtime: 39/39 Vitest tests and 16/16 Bun tests (`trc_f364088d7bf4`).
 - The broader inspector audit exposed one stale pre-Hono source assertion (`trc_a34bc399056e`). The test now verifies the injected Hono endpoint boundary and passes 43/43 (`trc_cf02127419d9`). No production code changed.
 - Strict review is clean (`trc_65d6a655fa08`) and full verification is publish-valid (`trc_901b6ce2c7b8`).
+- CodeRabbit completed the requested review with zero inline findings (`trc_0bffe86255fa`). Grok 4.5 approved with medium confidence and zero findings (`trc_7dfaf1241c9a`); the structured review and disposition are durable on PR #1643 (`trc_1487caf3d85c`).
 
 ## Test-first contract
 
@@ -45,8 +46,8 @@ started: 2026-07-24
 
 ## files changed
 
-- `.task/os-web/workspace-trace-table-through-hono/workpad.md`
 - `packages/workspace/tests/trace-site-inspector.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -61,8 +62,10 @@ started: 2026-07-24
 - 2026-07-24: current focused regression lanes passed, 55 tests total (`trc_f364088d7bf4`).
 - 2026-07-24: inspector regression passed, 43/43 (`trc_cf02127419d9`).
 - 2026-07-24: strict review clean (`trc_65d6a655fa08`); full verify publish-valid (`trc_901b6ce2c7b8`).
+- 2026-07-24: CodeRabbit zero findings (`trc_0bffe86255fa`); Grok approved with zero findings (`trc_7dfaf1241c9a`).
 - 2026-07-24 17:31:31 `review.run`: passed — OK
 - 2026-07-24 17:31:41 `verify`: passed — OK
+- 2026-07-24 17:40:16 `verify`: passed — OK
 
 ## key decisions
 
@@ -90,6 +93,8 @@ started: 2026-07-24
 - The first combined validation invocation ran Bun-native tests under Vitest and failed to resolve `bun:test`/`bun:sqlite` (`trc_b8f9b63d34e1`). Recovery: split suites by declared runtime; all 55 tests passed (`trc_f364088d7bf4`).
 - The broader inspector invocation initially used Vitest for a Bun-native SQLite suite (`trc_08f53ecf7409`). Retrying under `bun test` exposed one stale source assertion (`trc_a34bc399056e`); updated only that regression assertion through task-scoped `code.call` (`trc_7aac2aec2be0`), then passed 43/43 (`trc_cf02127419d9`).
 - The advertised `fs.patch` route was absent from the generated manifest. Recovery used task-scoped `code.call`; no unscoped fallback was used.
+- The prescribed Grok wrapper completed successfully (`trc_7dfaf1241c9a`) but the outer `code.call` verify guard reported `COMMAND_FAILED` because the wrapper wrote its normal audit logs (`trc_46c7e0d3fff5`). Recovery: treated the provider result as authoritative, posted the structured zero-finding review to GitHub, and removed both the prompt directory and generated audit-log directories through task-scoped `code.call` (`trc_fc92f0e4817e`).
+- GitHub CI initially had two required lanes in progress (`trc_64b93b23c064`). Bounded wait cycles of 30 seconds (`trc_8b08ccd330db`) and 60 seconds (`trc_965f3d4ef42e`) were followed immediately by checks (`trc_335b31213567`, `trc_e20bc5550bdb`); both lanes remained in progress with zero failures.
 
 ---
 
@@ -111,3 +116,11 @@ bun run task:finish
 - `packages/os/tests/traces-hono-routes.test.ts`
 - `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/trace-site-inspector.test.ts`
+
+## CI wait cycle
+
+Wait reason: two required GitHub checks remain in progress after all local validation and reviews completed.
+Duration: bounded polling, 30 seconds.
+Resume action: query PR #1643 checks immediately after wake.
+Expected signal: zero failed and zero pending checks.
+Fallback: inspect the remaining check names and stop merge if any fail or remain pending.
