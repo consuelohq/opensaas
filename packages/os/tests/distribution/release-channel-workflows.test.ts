@@ -9,6 +9,11 @@ function read(path: string): string {
   return readFileSync(resolve(repoRoot, path), 'utf8');
 }
 
+function dependencyInstallBlocks(workflow: string): string[] {
+  return [...workflow.matchAll(/      - name: Install dependencies\n((?:        [^\n]*\n){1,4})/gu)]
+    .map((match) => match[0]);
+}
+
 describe('Consuelo OS release-channel workflows', () => {
   it('keeps pull requests validation-only and publishes dev only from main', () => {
     const workflow = read('.github/workflows/consuelo-os-runtime-publish.yaml');
@@ -81,6 +86,28 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).not.toContain('expected_revision:');
     expect(workflow).toContain('release_revision=');
     expect(workflow).toContain('--expected-revision \"${release_revision}\"');
+  });
+
+  it('installs release dependencies from the OS package lockfile', () => {
+    const workflows = [
+      ['publish', read('.github/workflows/consuelo-os-runtime-publish.yaml'), 3],
+      ['promote', read('.github/workflows/consuelo-os-runtime-promote.yaml'), 1],
+      ['rollback', read('.github/workflows/consuelo-os-runtime-rollback.yaml'), 1],
+    ] as const;
+
+    for (const [name, workflow, expectedInstallCount] of workflows) {
+      const installBlocks = dependencyInstallBlocks(workflow);
+
+      expect(installBlocks, `${name} install step count`).toHaveLength(expectedInstallCount);
+      for (const block of installBlocks) {
+        expect(block, `${name} install working directory`).toContain(
+          'working-directory: packages/os',
+        );
+        expect(block, `${name} frozen OS lockfile install`).toContain(
+          'run: bun install --frozen-lockfile',
+        );
+      }
+    }
   });
 
   it('allowlists only the dedicated release workflows for write permissions', () => {
