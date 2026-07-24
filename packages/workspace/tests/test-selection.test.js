@@ -108,6 +108,25 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('selects LeadConnector provider contracts for integration package changes', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/lead-connector/src/application/oauth.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const providerSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'lead-connector-package',
+    );
+
+    expect(providerSuite?.command).toEqual([
+      'bun',
+      'test',
+      'packages/lead-connector/src',
+    ]);
+  });
+
   it('selects publish-gate tests for verify changes', () => {
     const result = run([
       'check',

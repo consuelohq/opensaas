@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@consuelo/dialer": ["../dialer/src/index.ts"]
+      "@consuelo/dialer": ["../dialer/src/index.ts"],
+      "@consuelo/lead-connector": ["../lead-connector/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts"]

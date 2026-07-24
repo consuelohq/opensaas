@@ -7,13 +7,19 @@ import {
 } from './middleware/auth';
 import { createCallSessionRoutes } from './routes/call-sessions';
 import { createHealthRoutes } from './routes/health';
+import {
+  createLeadConnectorAuthenticatedRoutes,
+  createLeadConnectorPublicRoutes,
+} from './routes/lead-connector';
 import { createTwilioRoutes } from './routes/twilio';
 
 export function createDialerServer(dependencies: DialerServerDependencies) {
   const app = new Hono<{ Variables: DialerVariables }>();
   app.route('/', createHealthRoutes());
+  app.route('/', createLeadConnectorPublicRoutes(dependencies));
   app.use('/v1/*', createAuthenticationMiddleware(dependencies));
   app.route('/', createCallSessionRoutes(dependencies));
+  app.route('/', createLeadConnectorAuthenticatedRoutes(dependencies));
   app.route('/', createTwilioRoutes(dependencies));
   app.notFound((context) =>
     context.json(

@@ -7,6 +7,10 @@ import type {
   ParallelTwimlInput,
   StartDialerCallCommand,
 } from '@consuelo/dialer';
+import type {
+  LeadConnectorError,
+  LeadConnectorWebhookProcessResult,
+} from '@consuelo/lead-connector';
 import type { Effect } from 'effect';
 
 export type DialerIdentity = { workspaceId: string; userId: string };
@@ -43,8 +47,29 @@ export type TwilioSignatureInput = {
   params: Record<string, string>;
 };
 
+export type LeadConnectorServerApplication = {
+  beginOAuth: (input: {
+    workspaceId: string;
+  }) => Effect.Effect<
+    { authorizationUrl: string; state: string },
+    LeadConnectorError
+  >;
+  completeOAuth: (input: {
+    code: string;
+    state: string;
+  }) => Effect.Effect<
+    { workspaceId: string; locationId: string; connected: true },
+    LeadConnectorError
+  >;
+  processWebhook: (input: {
+    rawBody: string;
+    headers: Record<string, string | undefined>;
+  }) => Effect.Effect<LeadConnectorWebhookProcessResult, LeadConnectorError>;
+};
+
 export type DialerServerDependencies = {
   application: DialerServerApplication;
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;
+  leadConnector?: LeadConnectorServerApplication;
 };

@@ -1,0 +1,41 @@
+import {
+  beginLeadConnectorOAuth,
+  completeLeadConnectorOAuth,
+  processLeadConnectorWebhook,
+  type LeadConnectorClockService,
+  type LeadConnectorConfiguration,
+  type LeadConnectorHttpTransportService,
+  type LeadConnectorInstallationStoreService,
+  type LeadConnectorOAuthStateStoreService,
+  type LeadConnectorRandomService,
+  type LeadConnectorTokenCipherService,
+  type LeadConnectorWebhookEventStoreService,
+  type LeadConnectorWebhookVerifierService,
+} from '@consuelo/lead-connector';
+import { Effect, type Layer } from 'effect';
+
+import type { LeadConnectorServerApplication } from './contracts';
+
+type LeadConnectorRuntime =
+  | LeadConnectorClockService
+  | LeadConnectorConfiguration
+  | LeadConnectorHttpTransportService
+  | LeadConnectorInstallationStoreService
+  | LeadConnectorOAuthStateStoreService
+  | LeadConnectorRandomService
+  | LeadConnectorTokenCipherService
+  | LeadConnectorWebhookEventStoreService
+  | LeadConnectorWebhookVerifierService;
+
+export type LeadConnectorApplicationLayer = Layer.Layer<LeadConnectorRuntime>;
+
+export const createEffectLeadConnectorApplication = (
+  layer: LeadConnectorApplicationLayer,
+): LeadConnectorServerApplication => ({
+  beginOAuth: (input) =>
+    beginLeadConnectorOAuth(input).pipe(Effect.provide(layer)),
+  completeOAuth: (input) =>
+    completeLeadConnectorOAuth(input).pipe(Effect.provide(layer)),
+  processWebhook: (input) =>
+    processLeadConnectorWebhook(input).pipe(Effect.provide(layer)),
+});
