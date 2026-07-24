@@ -13,6 +13,7 @@ function read(path: string): string {
 type WorkflowStep = {
   name?: string;
   run?: string;
+  uses?: string;
   'working-directory'?: string;
 };
 
@@ -158,6 +159,27 @@ describe('Consuelo OS release-channel workflows', () => {
         'CLOUDFLARE_OS_RELEASE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}',
       );
       expect(source).not.toContain('CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}');
+    }
+  });
+
+  it('installs the pinned Wrangler CLI before every credentialed provider operation', () => {
+    const cases = [
+      ['publish plan', parseWorkflow('.github/workflows/consuelo-os-runtime-publish.yaml').jobs?.plan],
+      ['publish mutation', parseWorkflow('.github/workflows/consuelo-os-runtime-publish.yaml').jobs?.publish],
+      ['promotion', parseWorkflow('.github/workflows/consuelo-os-runtime-promote.yaml').jobs?.promote],
+      ['rollback', parseWorkflow('.github/workflows/consuelo-os-runtime-rollback.yaml').jobs?.rollback],
+    ] as const;
+
+    for (const [name, job] of cases) {
+      const steps = job?.steps ?? [];
+      const wranglerIndex = steps.findIndex((step) => step.name === 'Install Wrangler');
+      const restoreIndex = steps.findIndex((step) => step.name === 'Restore authoritative release state');
+
+      expect(wranglerIndex, `${name} Wrangler setup`).toBeGreaterThanOrEqual(0);
+      expect(steps[wranglerIndex]?.run, `${name} pinned Wrangler version`).toBe(
+        'bun install --global wrangler@4.105.0',
+      );
+      expect(wranglerIndex, `${name} setup order`).toBeLessThan(restoreIndex);
     }
   });
 

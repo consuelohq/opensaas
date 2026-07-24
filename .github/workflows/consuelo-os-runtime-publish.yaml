@@ -39,6 +39,8 @@ jobs:
       - name: Install dependencies
         working-directory: packages/os
         run: bun install --frozen-lockfile
+      - name: Install Wrangler
+        run: bun install --global wrangler@4.105.0
       - name: Restore authoritative release state
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
@@ -175,6 +177,8 @@ jobs:
       - name: Install dependencies
         working-directory: packages/os
         run: bun install --frozen-lockfile
+      - name: Install Wrangler
+        run: bun install --global wrangler@4.105.0
       - uses: actions/download-artifact@v4
         with:
           pattern: runtime-*
