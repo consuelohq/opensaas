@@ -8,7 +8,10 @@ import type {
   StartDialerCallCommand,
 } from '@consuelo/dialer';
 import type {
+  LeadConnectorContact,
   LeadConnectorError,
+  LeadConnectorOpportunity,
+  LeadConnectorPipeline,
   LeadConnectorWebhookProcessResult,
 } from '@consuelo/lead-connector';
 import type { Effect } from 'effect';
@@ -65,11 +68,48 @@ export type LeadConnectorServerApplication = {
     rawBody: string;
     headers: Record<string, string | undefined>;
   }) => Effect.Effect<LeadConnectorWebhookProcessResult, LeadConnectorError>;
+  listContacts: (input: {
+    workspaceId: string;
+    query?: string;
+    limit?: number;
+    cursor?: string;
+  }) => Effect.Effect<
+    {
+      contacts: LeadConnectorContact[];
+      total: number;
+      nextCursor: string | null;
+    },
+    LeadConnectorError
+  >;
+  searchOpportunities: (input: {
+    workspaceId: string;
+    query?: string;
+    pipelineId?: string;
+    stageId?: string;
+    status?: string;
+    limit?: number;
+  }) => Effect.Effect<
+    { opportunities: LeadConnectorOpportunity[]; total: number },
+    LeadConnectorError
+  >;
+  listPipelines: (
+    workspaceId: string,
+  ) => Effect.Effect<LeadConnectorPipeline[], LeadConnectorError>;
+  recordDisposition: (input: {
+    workspaceId: string;
+    contactId: string;
+    disposition: string;
+    note?: string;
+    tags?: string[];
+  }) => Effect.Effect<{ recorded: true }, LeadConnectorError>;
 };
 
 export type DialerServerDependencies = {
   application: DialerServerApplication;
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;
+  issueEmbedSession?: (
+    identity: DialerIdentity,
+  ) => Promise<{ token: string; expiresAt: string }>;
   leadConnector?: LeadConnectorServerApplication;
 };

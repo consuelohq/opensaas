@@ -6,6 +6,7 @@ import {
   type DialerVariables,
 } from './middleware/auth';
 import { createCallSessionRoutes } from './routes/call-sessions';
+import { createEmbedRoutes } from './routes/embed';
 import { createHealthRoutes } from './routes/health';
 import {
   createLeadConnectorAuthenticatedRoutes,
@@ -18,6 +19,7 @@ export function createDialerServer(dependencies: DialerServerDependencies) {
   app.route('/', createHealthRoutes());
   app.route('/', createLeadConnectorPublicRoutes(dependencies));
   app.use('/v1/*', createAuthenticationMiddleware(dependencies));
+  app.route('/', createEmbedRoutes(dependencies));
   app.route('/', createCallSessionRoutes(dependencies));
   app.route('/', createLeadConnectorAuthenticatedRoutes(dependencies));
   app.route('/', createTwilioRoutes(dependencies));

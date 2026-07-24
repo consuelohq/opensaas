@@ -11,6 +11,8 @@ export type {
   TwilioSignatureInput,
 } from './contracts';
 export { createBearerAuthenticator } from './runtime/auth';
+export { createEmbedSessionService } from './runtime/embed-session';
+export type { EmbedSessionService } from './runtime/embed-session';
 export { loadDialerServerRuntime } from './runtime/environment';
 export type {
   DialerServerEnvironment,

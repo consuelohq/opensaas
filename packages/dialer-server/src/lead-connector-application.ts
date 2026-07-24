@@ -1,7 +1,11 @@
 import {
   beginLeadConnectorOAuth,
   completeLeadConnectorOAuth,
+  listLeadConnectorContacts,
+  listLeadConnectorPipelines,
   processLeadConnectorWebhook,
+  recordLeadConnectorDisposition,
+  searchLeadConnectorOpportunities,
   type LeadConnectorClockService,
   type LeadConnectorConfiguration,
   type LeadConnectorHttpTransportService,
@@ -38,4 +42,12 @@ export const createEffectLeadConnectorApplication = (
     completeLeadConnectorOAuth(input).pipe(Effect.provide(layer)),
   processWebhook: (input) =>
     processLeadConnectorWebhook(input).pipe(Effect.provide(layer)),
+  listContacts: (input) =>
+    listLeadConnectorContacts(input).pipe(Effect.provide(layer)),
+  searchOpportunities: (input) =>
+    searchLeadConnectorOpportunities(input).pipe(Effect.provide(layer)),
+  listPipelines: (workspaceId) =>
+    listLeadConnectorPipelines(workspaceId).pipe(Effect.provide(layer)),
+  recordDisposition: (input) =>
+    recordLeadConnectorDisposition(input).pipe(Effect.provide(layer)),
 });

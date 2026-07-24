@@ -1,7 +1,7 @@
 {
   "name": "@consuelo/lead-connector",
   "version": "0.0.1",
-  "description": "LeadConnector provider integration contracts and application services",
+  "description": "LeadConnector provider integration and standalone embedded dialer contracts",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,12 +9,17 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./embed": {
+      "types": "./dist/embed/index.d.ts",
+      "import": "./dist/embed/index.js"
     }
   },
   "scripts": {
     "test": "bun test src",
     "typecheck": "tsc --noEmit",
-    "build": "tsc"
+    "build": "tsc && bun run build:embed",
+    "build:embed": "bun ./scripts/build-embed.ts"
   },
   "dependencies": {
     "effect": "^3.21.3"

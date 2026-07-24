@@ -1,7 +1,12 @@
 import type { DialerApplicationLayers } from '../application';
 import { createEffectDialerApplication } from '../application';
 import type { DialerServerDependencies } from '../contracts';
+import {
+  createEffectLeadConnectorApplication,
+  type LeadConnectorApplicationLayer,
+} from '../lead-connector-application';
 import { createBearerAuthenticator, type BearerIdentity } from './auth';
+import { createEmbedSessionService } from './embed-session';
 import { createTwilioSignatureVerifier } from './twilio-signature';
 
 export type DialerServerEnvironment = Record<string, string | undefined>;
@@ -10,6 +15,9 @@ type RuntimeModule = {
   createDialerApplicationLayers: (
     environment: DialerServerEnvironment,
   ) => Promise<DialerApplicationLayers> | DialerApplicationLayers;
+  createLeadConnectorApplicationLayer?: (
+    environment: DialerServerEnvironment,
+  ) => Promise<LeadConnectorApplicationLayer> | LeadConnectorApplicationLayer;
 };
 
 export type DialerServerRuntimeConfig = {
@@ -63,15 +71,41 @@ export async function loadDialerServerRuntime(
       );
     }
     const layers = await imported.createDialerApplicationLayers(environment);
+    const leadConnectorLayer = imported.createLeadConnectorApplicationLayer
+      ? await imported.createLeadConnectorApplicationLayer(environment)
+      : null;
     const identities = parseIdentities(
       required(environment, 'DIALER_SERVER_AUTH_IDENTITIES_JSON'),
     );
+    const staticAuthenticator = createBearerAuthenticator(identities);
+    const embedSessions = createEmbedSessionService({
+      secret: required(environment, 'DIALER_SERVER_EMBED_SESSION_SECRET'),
+      ttlSeconds: Number(
+        environment.DIALER_SERVER_EMBED_SESSION_TTL_SECONDS || '900',
+      ),
+    });
+    const authenticate = async (request: Request) => {
+      try {
+        return (
+          (await embedSessions.authenticate(request)) ??
+          (await staticAuthenticator(request))
+        );
+      } catch (error: unknown) {
+        throw new Error('Dialer server authentication failed', {
+          cause: error,
+        });
+      }
+    };
     return {
       hostname: environment.HOST?.trim() || '0.0.0.0',
       port: Number(environment.PORT || '3000'),
       dependencies: {
         application: createEffectDialerApplication(layers),
-        authenticate: createBearerAuthenticator(identities),
+        authenticate,
+        issueEmbedSession: embedSessions.issue,
+        leadConnector: leadConnectorLayer
+          ? createEffectLeadConnectorApplication(leadConnectorLayer)
+          : undefined,
         verifyTwilioSignature: createTwilioSignatureVerifier(
           required(environment, 'TWILIO_AUTH_TOKEN'),
         ),
