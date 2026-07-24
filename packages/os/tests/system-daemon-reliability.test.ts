@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('macOS runtime service reliability', () => {
-  it('wires availability and OS-owned watchdog state through install and uninstall', () => {
+  it('wires opt-in availability and OS-owned watchdog state through install and uninstall', () => {
     const install = readFileSync(
       resolve(osRoot, 'scripts/install-system-daemons.sh'),
       'utf8',
@@ -57,10 +57,37 @@ describe('macOS runtime service reliability', () => {
     expect(install).toContain('$consuelo_data_home/node/runtime/watchdog');
     expect(install).toContain('bootstrap_agent "$availability_label"');
     expect(install).toContain('bootout_agent "$availability_label"');
+    expect(install).toContain('remove_disabled_agent "$availability_label" "$availability_agent_plist"');
     expect(uninstall).toContain('remove_agent "$availability_label"');
   });
 
-  it('generates an AC-only availability assertion and a scheduled one-shot watchdog', () => {
+  it('does not install a host power assertion unless availability is explicitly enabled', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-disabled-');
+    const scriptsDirectory = join(fixtureRoot, 'scripts');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    mkdirSync(scriptsDirectory, { recursive: true });
+    mkdirSync(home, { recursive: true });
+    copyFileSync(
+      resolve(osRoot, 'scripts/generate-system-daemons.sh'),
+      join(scriptsDirectory, 'generate-system-daemons.sh'),
+    );
+
+    const result = run('bash', [join(scriptsDirectory, 'generate-system-daemons.sh')], {
+      ...process.env,
+      HOME: home,
+      USER: process.env.USER ?? 'nobody',
+      CONSUELO_HOME: consueloHome,
+      PORTLESS_ENABLED: '0',
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(
+      existsSync(join(scriptsDirectory, 'generated', 'com.consuelo.availability.plist')),
+    ).toBe(false);
+  });
+
+  it('generates an AC-only availability assertion when explicitly enabled and a scheduled one-shot watchdog', () => {
     const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-');
     const scriptsDirectory = join(fixtureRoot, 'scripts');
     const home = join(fixtureRoot, 'home');
@@ -77,6 +104,7 @@ describe('macOS runtime service reliability', () => {
       HOME: home,
       USER: process.env.USER ?? 'nobody',
       CONSUELO_HOME: consueloHome,
+      CONSUELO_AVAILABILITY_ENABLED: '1',
       PORTLESS_ENABLED: '0',
     });
 
