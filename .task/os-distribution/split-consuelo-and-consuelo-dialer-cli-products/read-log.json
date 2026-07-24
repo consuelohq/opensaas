@@ -10,6 +10,7 @@
     "packages/cli/src/config.ts",
     "packages/cli/src/index.ts",
     "packages/cli/src/output.ts",
+    "packages/os/.tmp-reviews/split-consuelo-and-consuelo-dialer-cli-products/grok-structured-review.json",
     "packages/os/plans/consuelo-os-foundation/workers/30-cli-product-split.md",
     "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
     "packages/os/scripts/lib/consuelo-home.ts",
@@ -21,5 +22,5 @@
     "packages/twenty-sdk/package.json",
     "packages/twenty-sdk/project.json"
   ],
-  "updatedAt": "2026-07-24T20:09:56.125Z"
+  "updatedAt": "2026-07-24T20:20:22.502Z"
 }

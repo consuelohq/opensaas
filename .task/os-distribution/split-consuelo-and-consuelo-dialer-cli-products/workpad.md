@@ -12,14 +12,14 @@
 
 ## Acceptance criteria
 
-- [ ] `consuelo` is a thin OS lifecycle CLI exposing the Worker 04 lifecycle contract: install, status, restart, update, channel, repair, rollback, node, uninstall, and dev reset, with existing structured JSON/quiet/error behavior preserved where applicable.
-- [ ] `consuelo-dialer` preserves the existing sales/GTM command surface, including contacts, calls, queues, coaching, analytics, GTM deployment, and Twenty-connected commands.
-- [ ] The OS CLI runtime dependency graph excludes dialer, Twilio, coaching, analytics, contacts, GTM deployment, and Twenty SDK/runtime dependencies.
-- [ ] OS configuration remains `~/.consuelo/consuelo.yaml`; the dialer continues to use its existing config loader and is moved to a clearly dialer-owned namespace without discarding or reinterpreting existing settings.
-- [ ] `consuelo restart` delegates to the one Worker 04 lifecycle engine and retains healthy, stopped, failed, and timeout behavior.
-- [ ] The old mixed `consuelo os ...` registration path and all internal/docs/installer references are removed in the same cutover; no compatibility shim or duplicate authority remains.
-- [ ] Runtime-bundle allowlists include the OS CLI and exclude the dialer product graph.
-- [ ] Existing dialer commands are not deleted or functionally weakened.
+- [x] `consuelo` is a thin OS lifecycle CLI exposing the Worker 04 lifecycle contract: install, status, restart, update, channel, repair, rollback, node, uninstall, and dev reset, with existing structured JSON/quiet/error behavior preserved where applicable.
+- [x] `consuelo-dialer` preserves the existing sales/GTM command surface, including contacts, calls, queues, coaching, analytics, GTM deployment, and Twenty-connected commands.
+- [x] The OS CLI runtime dependency graph excludes dialer, Twilio, coaching, analytics, contacts, GTM deployment, and Twenty SDK/runtime dependencies.
+- [x] OS configuration remains `~/.consuelo/consuelo.yaml`; the dialer continues to use its existing config loader and is moved to a clearly dialer-owned namespace without discarding or reinterpreting existing settings.
+- [x] `consuelo restart` delegates to the one Worker 04 lifecycle engine and retains healthy, stopped, failed, and timeout behavior.
+- [x] The old mixed `consuelo os ...` registration path and all internal/docs/installer references are removed in the same cutover; no compatibility shim or duplicate authority remains.
+- [x] Runtime-bundle allowlists include the OS CLI and exclude the dialer product graph.
+- [x] Existing dialer commands are not deleted or functionally weakened.
 - [ ] Focused tests, package checks, required distribution/clean-host CI, workspace review, full verify, CodeRabbit, and Grok 4.5 review are green or have explicit verified dispositions.
 - [ ] Task PR is merged only into `stream/os-distribution`; the stream is not promoted to `main` and no downstream worker is started.
 
@@ -90,6 +90,7 @@
 - `packages/cli/src/config.ts`
 - `packages/cli/src/index.ts`
 - `packages/cli/src/output.ts`
+- `packages/os/.tmp-reviews/split-consuelo-and-consuelo-dialer-cli-products` (deleted)
 - `packages/os/package.json`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
@@ -150,6 +151,7 @@
 - `packages/cli/src/config.ts`
 - `packages/cli/src/index.ts`
 - `packages/cli/src/output.ts`
+- `packages/os/.tmp-reviews/split-consuelo-and-consuelo-dialer-cli-products` (deleted)
 - `packages/os/package.json`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
@@ -172,6 +174,11 @@
 - 2026-07-24 20:00:58 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
 - 2026-07-24 20:11:19 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
 - 2026-07-24 20:13:08 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 20:15:29 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-24 20:19:56 fs.trash: `packages/os/.tmp-reviews/split-consuelo-and-consuelo-dialer-cli-products`
+- 2026-07-24 20:20:00 fs.trash: `.task/subagent-runs/trc_0a2aefc9ebcd-grok`
+- 2026-07-24 20:20:05 fs.trash: `.task/subagent-runs/trc_54a0b0a962e9-grok`
+- 2026-07-24 20:20:53 fs.write: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
 - Managed by task tooling below this line when present.
 
 ## Workspace-owned: validation evidence
@@ -194,6 +201,7 @@
 - `packages/cli/src/config.ts`
 - `packages/cli/src/index.ts`
 - `packages/cli/src/output.ts`
+- `packages/os/.tmp-reviews/split-consuelo-and-consuelo-dialer-cli-products/grok-structured-review.json`
 - `packages/os/plans/consuelo-os-foundation/workers/30-cli-product-split.md`
 - `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
 - `packages/os/scripts/lib/consuelo-home.ts`
@@ -205,7 +213,6 @@
 - `packages/twenty-sdk/package.json`
 - `packages/twenty-sdk/project.json`
 
-- 2026-07-24 20:10:05 apply-patch: `packages/cli/src/config.ts`
 ## Reviewer findings and dispositions
 
 ### CodeRabbit final review on head `00a8b93d`
@@ -237,3 +244,26 @@ Review-fix TDD evidence:
 - Full verify after CodeRabbit fixes reports 0 owned issues, 0 related issues, 0 database risks, and no must-fix findings (`trc_015d4ca4ba33`). It fails closed only on the previously documented Twenty-front shared-worktree typecheck/test infrastructure (170 unrelated failures); GitHub clean-host CI remains authoritative.
 
 - 2026-07-24 20:13:08 append: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+
+### Wait cycle: final compact Grok review
+
+- Start time (UTC): 2026-07-24T20:15:24Z
+- Wait reason: final-head Grok 4.5 review is running under the mandated 15-minute wrapper bound with compact JSON output constraints.
+- Duration: poll every 20 seconds for up to 4 minutes.
+- Resume action: inspect `grok-final-exit-status.txt`, PID 23019, output size, and stderr immediately after wake.
+- Expected signal: exit status `0` plus a non-empty complete structured review under the provider transport limit.
+- Fallback: repeat a bounded poll within the wrapper deadline; fail closed on nonzero, empty, partial, or invalid structured output.
+
+- 2026-07-24 20:15:29 append: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+
+- 2026-07-24 20:20:44 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+### Final reviewer and publication evidence
+
+- CodeRabbit's three valid findings are fixed: KB upload guidance (`ad453d3e`), concurrent migration recovery (`ad453d3e`), and executable lifecycle mode (`07936b0e`). Inline dispositions are durable at discussion replies `3647877051` and `3647877590`; summary nitpick dispositions are at https://github.com/consuelohq/opensaas/pull/1647#issuecomment-5073966014.
+- The lifecycle executable mode required a Git Data fast-forward because the supported explicit-files task push normalizes modes to `100644`. Two form-encoded tree attempts failed without branch mutation (`trc_bc0d73d60cde`, `trc_ce1b16920a50`). Exact JSON input created tree `567498a4ca060fd2f0a96c9f140f1028fb5106cf` (`trc_a0c69e91272f`), verified the lifecycle entry as mode `100755` with unchanged blob (`trc_e2124e04c49d`), and advanced the branch to `07936b0e3cf39f1d2a3f9e54b7561ddd21cee2d4` (`trc_1321617d5ec2`).
+- Final Grok 4.5 wrapper trace `trc_54a0b0a962e9` completed at head `07936b0e`; the compact structured review validated at `trc_b41e2d7617b4` with outcome `approved`, confidence `medium`, and zero findings. Structured review: https://github.com/consuelohq/opensaas/pull/1647#issuecomment-5074007365. Top-level summary: https://github.com/consuelohq/opensaas/pull/1647#issuecomment-5074008197.
+- The first compact-review parser incorrectly required the Grok field to contain JSON only (`trc_cdc26f13e46c`). Recovery: located the complete object at the `schema_version` boundary after the provider preamble and validated all required fields/signoff (`trc_b41e2d7617b4`).
+- All temporary review prompt/output artifacts and both local Grok run-summary directories were removed after posting (`trc_fe889d923c3f`, `trc_81b8b84bf05b`, `trc_054e90c7f93a`).
+- Current final-head GitHub state at `trc_1fc0f904ce9`: 42 checks, 0 failures, 7 pending. `Consuelo / OS contracts`, `Consuelo / dialer`, website status, and other completed checks are green. The remaining pending clean-host checks are the final merge gate.
+
+- 2026-07-24 20:20:53 append: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
