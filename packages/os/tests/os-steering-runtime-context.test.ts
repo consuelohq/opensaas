@@ -372,6 +372,46 @@ describe('installed runtime steering context', () => {
     }
   });
 
+  it('bounds oversized installed metadata before it can displace core-tool routing', () => {
+    installFixture();
+    const skillIndexPath = join(home, 'components', 'installed-skills.json');
+    const skillIndex = JSON.parse(readFileSync(skillIndexPath, 'utf8')) as {
+      selected: Array<Record<string, unknown>>;
+    };
+    skillIndex.selected[0]!.description = 'oversized skill metadata '.repeat(20_000);
+    writeJson(skillIndexPath, skillIndex);
+
+    const nodeCachePath = join(
+      home,
+      'node',
+      'workspaces',
+      WORKSPACE_ID,
+      'state',
+      'workspace-nodes.json',
+    );
+    const nodeCache = JSON.parse(readFileSync(nodeCachePath, 'utf8')) as {
+      summary: {
+        currentNode: Record<string, unknown> | null;
+        nodes: Array<Record<string, unknown>>;
+      };
+    };
+    const oversizedDisplayName = 'oversized node metadata '.repeat(10_000);
+    nodeCache.summary.nodes[0]!.displayName = oversizedDisplayName;
+    if (nodeCache.summary.currentNode) {
+      nodeCache.summary.currentNode.displayName = oversizedDisplayName;
+    }
+    writeJson(nodeCachePath, nodeCache);
+
+    const steering = runSteering();
+
+    expect(steering.length).toBeLessThanOrEqual(65_536);
+    expect(steering).toContain('installed_skill_metadata_truncated');
+    expect(steering).toContain('node_summary_metadata_truncated');
+    for (const tool of readEffectiveCoreManifest(home).tools) {
+      expect(steering).toContain(`"name": "${tool.name}"`);
+    }
+  });
+
   it.each([
     ['zero updates', { available: 0 }],
     ['notifications off', { notifications: { mode: 'off' as const } }],

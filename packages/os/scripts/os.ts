@@ -38,6 +38,9 @@ import { loadOsConfig } from './lib/install-state';
 import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
 import {
   readSteeringRuntimeContext,
+  type CompactInstalledSkill,
+  type CompactNodeListSummary,
+  type SteeringRuntimeContext,
   type SteeringMarkdownFile,
 } from './lib/steering-runtime-context';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
@@ -454,6 +457,165 @@ const STEERING_MAX_INSTALLED_SKILLS = 50;
 const STEERING_MAX_MARKDOWN_FILES = 12;
 const STEERING_MANAGED_FILE_MAX_CHARS = 28_000;
 const STEERING_USER_FILE_MAX_CHARS = 6_000;
+const STEERING_ID_MAX_CHARS = 128;
+const STEERING_LABEL_MAX_CHARS = 160;
+const STEERING_DESCRIPTION_MAX_CHARS = 320;
+const STEERING_TRIGGER_MAX_CHARS = 240;
+const STEERING_NODE_JSON_MAX_CHARS = 12_000;
+const STEERING_SKILL_JSON_MAX_CHARS = 12_000;
+
+function boundedString(value: string | null, maxChars: number): {
+  value: string | null;
+  truncated: boolean;
+} {
+  if (value === null || value.length <= maxChars) return { value, truncated: false };
+  return {
+    value: `${value.slice(0, Math.max(0, maxChars - 1))}…`,
+    truncated: true,
+  };
+}
+
+function boundedRequiredString(value: string, maxChars: number): {
+  value: string;
+  truncated: boolean;
+} {
+  const bounded = boundedString(value, maxChars);
+  return { value: bounded.value ?? '', truncated: bounded.truncated };
+}
+
+function boundedIdentity(identity: SteeringRuntimeContext['identity']): {
+  value: SteeringRuntimeContext['identity'];
+  truncated: boolean;
+} {
+  const fields = {
+    nodeId: boundedString(identity.nodeId, STEERING_ID_MAX_CHARS),
+    displayName: boundedString(identity.displayName, STEERING_LABEL_MAX_CHARS),
+    platform: boundedString(identity.platform, STEERING_ID_MAX_CHARS),
+    architecture: boundedString(identity.architecture, STEERING_ID_MAX_CHARS),
+    channel: boundedString(identity.channel, STEERING_ID_MAX_CHARS),
+    installedVersion: boundedString(identity.installedVersion, STEERING_ID_MAX_CHARS),
+    workspaceId: boundedString(identity.workspaceId, STEERING_ID_MAX_CHARS),
+    workspaceSlug: boundedString(identity.workspaceSlug, STEERING_ID_MAX_CHARS),
+    workspaceHost: boundedString(identity.workspaceHost, STEERING_LABEL_MAX_CHARS),
+  };
+  return {
+    value: {
+      nodeId: fields.nodeId.value,
+      displayName: fields.displayName.value,
+      platform: fields.platform.value,
+      architecture: fields.architecture.value,
+      channel: fields.channel.value,
+      installedVersion: fields.installedVersion.value,
+      workspaceId: fields.workspaceId.value,
+      workspaceSlug: fields.workspaceSlug.value,
+      workspaceHost: fields.workspaceHost.value,
+      isDefaultNode: identity.isDefaultNode,
+    },
+    truncated: Object.values(fields).some((field) => field.truncated),
+  };
+}
+
+function boundedNodes(nodes: CompactNodeListSummary | null): {
+  value: CompactNodeListSummary | null;
+  truncated: boolean;
+} {
+  if (!nodes) return { value: null, truncated: false };
+  let truncated = false;
+  const workspaceId = boundedRequiredString(nodes.workspaceId, STEERING_ID_MAX_CHARS);
+  const workspaceHost = boundedRequiredString(nodes.workspaceHost, STEERING_LABEL_MAX_CHARS);
+  const currentNodeId = boundedString(nodes.currentNodeId, STEERING_ID_MAX_CHARS);
+  const defaultNodeId = boundedString(nodes.defaultNodeId, STEERING_ID_MAX_CHARS);
+  truncated ||= workspaceId.truncated
+    || workspaceHost.truncated
+    || currentNodeId.truncated
+    || defaultNodeId.truncated;
+
+  const candidates = nodes.nodes.slice(0, STEERING_MAX_NODE_SUMMARIES).map((node) => {
+    const fields = {
+      nodeId: boundedRequiredString(node.nodeId, STEERING_ID_MAX_CHARS),
+      displayName: boundedRequiredString(node.displayName, STEERING_LABEL_MAX_CHARS),
+      role: boundedRequiredString(node.role, STEERING_ID_MAX_CHARS),
+      platform: boundedRequiredString(node.platform, STEERING_ID_MAX_CHARS),
+      architecture: boundedRequiredString(node.architecture, STEERING_ID_MAX_CHARS),
+      channel: boundedRequiredString(node.channel, STEERING_ID_MAX_CHARS),
+      state: boundedRequiredString(node.state, STEERING_ID_MAX_CHARS),
+      lastSeenAt: boundedString(node.lastSeenAt, STEERING_ID_MAX_CHARS),
+    };
+    if (Object.values(fields).some((field) => field.truncated)) truncated = true;
+    return {
+      nodeId: fields.nodeId.value,
+      displayName: fields.displayName.value,
+      role: fields.role.value,
+      platform: fields.platform.value,
+      architecture: fields.architecture.value,
+      channel: fields.channel.value,
+      presence: node.presence,
+      state: fields.state.value,
+      lastSeenAt: fields.lastSeenAt.value,
+    };
+  });
+  if (nodes.nodes.length > candidates.length) truncated = true;
+
+  const kept: typeof candidates = [];
+  for (const candidate of candidates) {
+    const next = [...kept, candidate];
+    if (safeJson(next).length > STEERING_NODE_JSON_MAX_CHARS) {
+      truncated = true;
+      break;
+    }
+    kept.push(candidate);
+  }
+
+  return {
+    value: {
+      workspaceId: workspaceId.value,
+      workspaceHost: workspaceHost.value,
+      currentNodeId: currentNodeId.value,
+      defaultNodeId: defaultNodeId.value,
+      nodeCount: nodes.nodeCount,
+      presence: nodes.presence,
+      nodes: kept,
+    },
+    truncated,
+  };
+}
+
+function boundedInstalledSkills(skills: CompactInstalledSkill[]): {
+  value: CompactInstalledSkill[];
+  truncated: boolean;
+} {
+  let truncated = skills.length > STEERING_MAX_INSTALLED_SKILLS;
+  const candidates = skills.slice(0, STEERING_MAX_INSTALLED_SKILLS).map((skill) => {
+    const fields = {
+      name: boundedRequiredString(skill.name, STEERING_ID_MAX_CHARS),
+      title: boundedRequiredString(skill.title, STEERING_LABEL_MAX_CHARS),
+      description: boundedString(skill.description, STEERING_DESCRIPTION_MAX_CHARS),
+      trigger: boundedString(skill.trigger, STEERING_TRIGGER_MAX_CHARS),
+      status: boundedRequiredString(skill.status, STEERING_ID_MAX_CHARS),
+      entrypoint: boundedRequiredString(skill.entrypoint, STEERING_LABEL_MAX_CHARS),
+    };
+    if (Object.values(fields).some((field) => field.truncated)) truncated = true;
+    return {
+      name: fields.name.value,
+      title: fields.title.value,
+      description: fields.description.value,
+      trigger: fields.trigger.value,
+      status: fields.status.value,
+      entrypoint: fields.entrypoint.value,
+    };
+  });
+
+  const kept: CompactInstalledSkill[] = [];
+  for (const candidate of candidates) {
+    const next = [...kept, candidate];
+    if (safeJson(next).length > STEERING_SKILL_JSON_MAX_CHARS) {
+      truncated = true;
+      break;
+    }
+    kept.push(candidate);
+  }
+  return { value: kept, truncated };
+}
 
 function compactEffectiveCoreManifest(home: string): Record<string, unknown> {
   const manifest = readEffectiveCoreManifest(home);
@@ -495,19 +657,12 @@ export function getSteering(): string {
   const runtimePaths = ensureRuntimePaths();
   const context = readSteeringRuntimeContext({ home: runtimePaths.home });
   const diagnostics = new Set(context.diagnostics);
-  const nodeSummary = context.nodes
-    ? {
-        ...context.nodes,
-        nodes: context.nodes.nodes.slice(0, STEERING_MAX_NODE_SUMMARIES),
-      }
-    : null;
-  if (context.nodes && context.nodes.nodes.length > STEERING_MAX_NODE_SUMMARIES) {
-    diagnostics.add('node_summary_truncated');
-  }
-  const installedSkills = context.installedSkills.slice(0, STEERING_MAX_INSTALLED_SKILLS);
-  if (context.installedSkills.length > STEERING_MAX_INSTALLED_SKILLS) {
-    diagnostics.add('installed_skills_truncated');
-  }
+  const identity = boundedIdentity(context.identity);
+  const nodeSummary = boundedNodes(context.nodes);
+  const installedSkills = boundedInstalledSkills(context.installedSkills);
+  if (identity.truncated) diagnostics.add('runtime_identity_metadata_truncated');
+  if (nodeSummary.truncated) diagnostics.add('node_summary_metadata_truncated');
+  if (installedSkills.truncated) diagnostics.add('installed_skill_metadata_truncated');
   const markdownFiles = context.steeringFiles
     .slice(0, STEERING_MAX_MARKDOWN_FILES)
     .map(boundedSteeringFile);
@@ -527,19 +682,19 @@ export function getSteering(): string {
     '## Runtime identity',
     '',
     '```json',
-    safeJson(context.identity),
+    safeJson(identity.value),
     '```',
     '',
     '## Workspace nodes',
     '',
     '```json',
-    safeJson(nodeSummary),
+    safeJson(nodeSummary.value),
     '```',
     '',
     '## Installed skills',
     '',
     '```json',
-    safeJson(installedSkills),
+    safeJson(installedSkills.value),
     '```',
     '',
     '## Update summary',

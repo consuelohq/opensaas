@@ -94,6 +94,19 @@ All failures below must be summarized on the PR with the successful recovery pat
 - Full package suite: `trc_608a5fbac719` — 129 test files, 530 tests, all green.
 - Generated core manifest drift check: `trc_021df376d386` — current.
 - Measured oversized steering fixture: `trc_de3764b9db98` — exactly 65,534 characters, below the 65,536-character ceiling.
+- Grok candidate red: `trc_d5f9a9adead1` — oversized installed-skill and node metadata consumed the fixed steering prefix before diagnostics/core-tool routing, confirming the reliability issue suggested independently by both truncated Grok runs.
+- Grok candidate fix: `trc_bdf8940fa667` — bounded runtime identity, node, and installed-skill string fields and bounded node/skill JSON sections with explicit truncation diagnostics.
+- Grok candidate green: `trc_6253aafd50c0` — focused oversized installed-metadata regression passed while retaining every canonical core-tool name.
+- Post-fix focused/typecheck validation: `trc_f5f56983a059` — 43/43 focused tests green with syntax checks.
+- Strict assigned regression lane after the Grok-derived fix: `trc_f3e01a824fbe` — `set -euo pipefail`, syntax/typecheck green, 12 required suites / 128 tests green, generated manifests current.
+- Post-fix strict workspace review: `trc_728d2c6f001b` — 12 owned product/test files, static rules + eslint + typecheck + spec compliance, 0 task issues, 0 pre-existing issues, 0 blockers.
+
+## Broad repository sweep diagnosis
+
+- A later unscoped `vitest run` covered 226 repository test files rather than the Worker 07 lane and reported 17 failing files / 67 failing tests (`trc_d113e96d7c82`). The diagnostic shell omitted `set -e`, so the following manifest command masked the test exit; this validation invocation is invalid and is not reported as green.
+- Failure inventory (`trc_bd0027bf22c7`) is outside the Worker 07 diff and spans concurrent foundation work: Trace Sites SQLite cursor behavior, installer TTY/daemon scripts, memory imports, task-hook assumptions, browser parity, provider validation, deployment package paths, hard-coded full-manifest counts, script parity inventory, missing migration-era manifest paths, and tests that require a `task/os/*` branch while this assigned branch is correctly `task/os-distribution/*`.
+- Current task diff verification (`trc_b5e10772f54c`) shows the only product/test changes are the 12 Worker 07-owned files reviewed by `review.run`; none of the broad failing suites or their production surfaces are modified by this task.
+- The worker brief re-read (`trc_879653cdc7e7`) explicitly names the required regression contracts and assigns broad manifest regeneration/integration debt elsewhere. Therefore the 226-file sweep is recorded as concurrent stream/repository instability, not bypassed or fixed outside ownership. The exact assigned lane was rerun with strict failure handling and is green (`trc_f3e01a824fbe`).
 
 ## Governance/read evidence
 
@@ -104,25 +117,77 @@ All failures below must be summarized on the PR with the successful recovery pat
 
 ## Current status
 
-Implementation and local validation are complete. The task is ready for checkpoint/push, CI, CodeRabbit, mandatory Grok 4.5 review, finding dispositions, and merge into `stream/os-distribution`. No install/update/reset/restart/uninstall command has been run on Ko's Mac Mini or MacBook Air.
+The first implementation checkpoint is pushed. A medium reliability issue suggested by two invalid/truncated Grok runs was independently reproduced, fixed, and verified with TDD. The strict assigned regression lane and strict workspace review are green; the unrelated broad repository sweep failure is diagnosed and recorded. Next actions are second checkpoint/push, CodeRabbit refresh, CI verification, and a final schema-valid Grok review on the fixed head. No install/update/reset/restart/uninstall command has been run on Ko's Mac Mini or MacBook Air.
+
+## Wait cycle: Grok wrapper completion
+
+- Start time (UTC): 2026-07-24T17:11:20Z
+- Wait reason: the outer `code.call` returned a timeout while the exact mandated Grok 4.5 wrapper and child process remained live for task session `tsk_e769309696fc`.
+- Duration: 60 seconds, one bounded poll attempt.
+- Resume action: inspect the task-scoped Grok/subagent process list immediately, then inspect any completed wrapper output/log artifact.
+- Expected signal: task-session Grok/subagent processes have exited and a non-empty valid JSON review is recoverable.
+- Fallback: if still active, log the observation and run another bounded poll within the wrapper's 900,000 ms limit; if exited without valid JSON, mark the run incomplete/fail closed and retry the exact wrapper with output redirected to a task-local temporary file.
+- First wake observation: the original run (`trc_004bfba1d271`, PIDs 69243/69244/69246/69262) remained active. An unexpected duplicate run (`trc_69d1015748d9`) was also present; it was terminated and discarded as incomplete (`trc_8fa5e6fea4e2`). The original capture directory contained only the wrapper program while the process was live (`trc_ffc857974d7b`).
+- Second poll start (UTC): 2026-07-24T17:13:05Z
+- Second duration: 60 seconds.
+- Second resume action: immediately check only PIDs 69243/69244/69246/69262 and inspect the original capture/output state.
+- Second expected signal: all original PIDs exited with a non-empty valid JSON review recoverable from the wrapper/capture path.
+- Second wake observation: the original PIDs exited and the ephemeral capture directory had already been removed (`trc_79291549e265`). Direct OS trace inspection showed the run was forcibly terminated at the facade's hard 180,000 ms limit with SIGTERM, despite the wrapper's requested `--timeout-ms 900000` (`trc_c79d624cbba0`). This run is incomplete and fails closed; no output is accepted or posted.
+- Recovery rerun plan (UTC 2026-07-24T17:14:30Z): launch the exact required wrapper command once through task-scoped `code.call`, but detach only the command execution from the 180-second facade lifetime and redirect stdout, stderr, exit code, and PID into `packages/os/.tmp-reviews/07-steering-runtime-context/`. Poll every 60 seconds within this response. Success requires exit code 0 plus non-empty valid JSON matching the review schema. Any cancellation, empty output, nonzero exit, or invalid JSON fails closed.
+- Recovery run launched successfully as PID 73221 (`trc_451c1d0f2495`). First recovery poll start: 2026-07-24T17:14:46Z; duration 60 seconds; resume action is immediate PID/exit/output-size verification; expected signal is an exit-code file and non-empty JSON output.
+- First recovery wake observation: PID 73221 remained active, stdout was still empty, stderr contained only the expected wrapper invocation, and no exit-code file existed (`trc_c58a0aa4d784`, `trc_d052668eb087`). No provider/auth failure was present.
+- Second recovery poll start: 2026-07-24T17:16:10Z; duration 60 seconds; resume action remains immediate PID/exit/output-size verification; fallback remains another bounded poll within the 900,000 ms wrapper limit.
+- Second recovery wake observation: PID 73221 remained active with zero-byte stdout, unchanged startup-only stderr, and no exit code (`trc_8969fcfe9561`).
+- Third recovery poll start: 2026-07-24T17:17:35Z; duration 60 seconds; resume action remains immediate PID/exit/output-size verification.
+- Third recovery wake observation: PID 73221 remained active with no output or exit code and unchanged startup-only stderr (`trc_75f8e07c32b5`).
+- Fourth recovery poll start: 2026-07-24T17:19:05Z; duration 60 seconds; resume action remains immediate PID/exit/output-size verification.
+- Fourth recovery wake observation: PID 73221 remained active with no output or exit code and unchanged startup-only stderr (`trc_82219280b136`).
+- Fifth recovery poll start: 2026-07-24T17:20:30Z; duration 60 seconds; resume action remains immediate PID/exit/output-size verification.
+- Fifth recovery wake observation: PID 73221 remained active with no output or exit code and unchanged startup-only stderr (`trc_540f62808330`).
+- Sixth recovery poll start: 2026-07-24T17:21:45Z; duration 60 seconds; resume action remains immediate PID/exit/output-size verification.
+- Sixth recovery wake observation: PID 73221 remained active with no output or exit code (`trc_01b5e97ef2fc`). Process-state inspection showed the full wrapper/subagent/Grok child chain alive in normal sleeping/running states, not zombie, with the Grok child consuming CPU intermittently (`trc_3f6243d35455`).
+- Seventh recovery poll start: 2026-07-24T17:23:05Z; duration 60 seconds; resume action remains immediate PID/exit/output-size verification.
+- Seventh recovery wake observation: PID 73221 exited with wrapper exit code 0 and a 28,772-byte envelope (`trc_9ace9c81ea0f`). The wrapper envelope was valid and reported provider trace `trc_aa3afcf38769`, completed status, and 8,028 provider stdout characters (`trc_57098c16e67a`, `trc_d8dc71c779de`). However, the inner provider stdout was truncated mid-string and not valid JSON (`trc_c9baabeb1650`, `trc_816f0c20ba2f`, `trc_7c25b630021f`). This completed run therefore fails closed and is not posted.
+- The incomplete stdout suggested, but did not durably establish, one potential reliability finding: unbounded installed-skill metadata can enlarge the fixed steering prefix enough for the final hard slice to remove enabled core-tool routing. The rendered template now includes a transport-only instruction to return JSON under 6,500 characters with no preamble/fence and to independently verify that candidate (`trc_1b1b5990c6b5`).
+- Concise retry plan: run the same exact mandated wrapper command once against the same rendered template path, capture task-local stdout/stderr/exit/PID as `grok-retry-*`, poll every 60 seconds, and accept only exit 0 plus one complete schema-valid review object. Any other result fails closed.
+- Concise retry launched as PID 80121 (`trc_0a9c43e8fc33`). Poll cycle start: 2026-07-24T17:25:25Z. Duration/attempts: up to 120 seconds, checking every 15 seconds and stopping early. Resume action: inspect PID, exit code, stdout bytes, and stderr bytes immediately. Expected signal: exited process, exit code 0, non-empty stdout. Fallback: another bounded cycle within the 900,000 ms wrapper limit.
+- Concise retry poll 1 observation: PID 80121 remained active after 120 seconds, stdout stayed empty, stderr stayed at the expected 610-byte startup line, and no exit code existed (`trc_64bee6581eeb`).
+- Concise retry poll 2 start: 2026-07-24T17:27:42Z; up to 120 seconds at 15-second intervals, same immediate verification and success/failure conditions.
 
 - 2026-07-24 16:52:37 write: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
 
 ## files changed
 
+- `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/steering-runtime-context.ts`
+- `packages/os/scripts/lib/workspace-node-client.ts`
 - `packages/os/scripts/lib/workspace-node-summary.ts`
+- `packages/os/scripts/os.ts`
+- `packages/os/scripts/workspace-nodes.ts`
+- `packages/os/tests/install-state.test.ts`
+- `packages/os/tests/os-get-steering-trace.test.ts`
 - `packages/os/tests/os-raw-steering.test.ts`
 - `packages/os/tests/os-steering-runtime-context.test.ts`
 - `packages/os/tests/workspace-node-summary.test.ts`
+- `packages/os/tests/workspace-nodes-cli.test.ts`
+
 
 ## workspace-owned: files changed
 
+- `packages/os/.tmp-reviews/07-steering-runtime-context/grok-context.json`
+- `packages/os/.tmp-reviews/07-steering-runtime-context/pr-initial-comment.md`
+- `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/steering-runtime-context.ts`
+- `packages/os/scripts/lib/workspace-node-client.ts`
 - `packages/os/scripts/lib/workspace-node-summary.ts`
+- `packages/os/scripts/os.ts`
+- `packages/os/scripts/workspace-nodes.ts`
+- `packages/os/tests/install-state.test.ts`
+- `packages/os/tests/os-get-steering-trace.test.ts`
 - `packages/os/tests/os-raw-steering.test.ts`
 - `packages/os/tests/os-steering-runtime-context.test.ts`
 - `packages/os/tests/workspace-node-summary.test.ts`
+- `packages/os/tests/workspace-nodes-cli.test.ts`
 
 ## workspace-owned: activity log
 
@@ -141,11 +206,46 @@ Implementation and local validation are complete. The task is ready for checkpoi
 - 2026-07-24 16:55:27 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
 - 2026-07-24 16:55:59 fs.write: `packages/os/scripts/lib/workspace-node-summary.ts`
 - 2026-07-24 16:57:39 fs.write: `packages/os/scripts/lib/steering-runtime-context.ts`
+- 2026-07-24 17:04:48 fs.write: `packages/os/.tmp-reviews/07-steering-runtime-context/pr-initial-comment.md`
+- 2026-07-24 17:05:50 fs.write: `packages/os/.tmp-reviews/07-steering-runtime-context/grok-context.json`
 
 ## workspace-owned: files read
 
 - `packages/os/package.json`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
+- `packages/os/scripts/github.js`
 - `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/task-push.js`
 - `packages/os/scripts/workspace-nodes.ts`
 
-- 2026-07-24 17:03:54 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+## workspace-owned: validation evidence
+
+- TDD red: `trc_ec1dd6d7a10e` — 30 pre-existing tests passed; new contracts failed only on the intentionally absent Worker 07 behavior.
+- Focused green: `trc_e705ea615bd0` — 39/39; strengthened budget/core-tool suite `trc_e722bed6e404` — 40/40.
+- Required regression matrix: `trc_caf6cc13f165` — 125/125 across steering trace/raw, install state, skills registry, managed components, Worker 25 node routes/client/cache, MCP gateway/action scopes, and security gateway.
+- Package syntax gate: `trc_b8f54d11e862` — green.
+- Full package suite: `trc_608a5fbac719` — 129 test files, 530 tests, all green.
+- Generated core manifest drift check: `trc_021df376d386` — current.
+- Measured oversized steering fixture: `trc_de3764b9db98` — exactly 65,534 characters, below the 65,536-character ceiling.
+- 2026-07-24 17:05:19 `review.run`: passed — OK
+- 2026-07-24 17:05:50 write: `packages/os/.tmp-reviews/07-steering-runtime-context/grok-context.json`
+- 2026-07-24 17:11:27 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:13:09 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:14:38 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:14:52 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:16:13 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:17:53 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:19:16 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:20:33 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:21:45 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:23:07 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:25:09 apply-patch: `packages/os/.tmp-reviews/07-steering-runtime-context/grok-prompt.md`
+- 2026-07-24 17:25:16 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:25:32 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:27:46 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:30:52 apply-patch: `packages/os/tests/os-steering-runtime-context.test.ts`
+- 2026-07-24 17:32:16 apply-patch: `packages/os/scripts/os.ts`
+- 2026-07-24 17:32:31 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:36:55 `review.run`: passed — OK
+- 2026-07-24 17:37:07 apply-patch: `.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/workpad.md`
+- 2026-07-24 17:38:08 `verify`: passed — OK
