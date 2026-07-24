@@ -55,6 +55,57 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'config.json'))).toBe(false);
   });
 
+  it('indexes immutable runtime components without hidden editable bundled copies', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      const result = provisionLocalOs({ mode: 'local', selectedSkills: ['task'] });
+      process.stdout.write(JSON.stringify(result));
+    `));
+
+    expect(existsSync(join(tempHome, 'skills', 'task'))).toBe(false);
+    expect(existsSync(join(tempHome, 'tools', 'status'))).toBe(false);
+
+    const skillsIndex = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-skills.json'), 'utf8'));
+    expect(skillsIndex).toMatchObject({
+      schemaVersion: 1,
+      kind: 'consuelo-installed-skill-index',
+      selected: [expect.objectContaining({
+        id: 'task',
+        kind: 'skill',
+        ownership: 'bundled-managed',
+      })],
+    });
+
+    const toolsIndex = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-tools.json'), 'utf8'));
+    expect(toolsIndex.kind).toBe('consuelo-installed-tool-index');
+    expect(toolsIndex.components.some((component: { id: string; ownership: string }) =>
+      component.id === 'status' && component.ownership === 'bundled-managed',
+    )).toBe(true);
+
+    const provenance = JSON.parse(readFileSync(join(tempHome, 'components', 'provenance.json'), 'utf8'));
+    const plan = JSON.parse(readFileSync(join(tempHome, 'components', 'update-plan.json'), 'utf8'));
+    expect(provenance.kind).toBe('consuelo-managed-component-provenance');
+    expect(plan).toMatchObject({
+      schemaVersion: 1,
+      kind: 'consuelo-managed-component-update-plan',
+      summary: expect.objectContaining({ requiresReview: 0 }),
+    });
+  });
+
+  it('fails closed when existing managed component provenance is corrupt', () => {
+    JSON.parse(runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local', selectedSkills: ['task'] })));
+    `));
+    writeFileSync(join(tempHome, 'components', 'provenance.json'), '{not-json');
+
+    expect(() => runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      process.stdout.write(JSON.stringify(provisionLocalOs({ mode: 'local', selectedSkills: ['task'] })));
+    `)).toThrow();
+    expect(readFileSync(join(tempHome, 'components', 'provenance.json'), 'utf8')).toBe('{not-json');
+  });
+
   it('rewrites existing ChatGPT MCP config to the central endpoint without rotating tokens', () => {
     JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
@@ -262,6 +313,7 @@ describe('local OS install state', () => {
 
     for (const dir of [
       'agents',
+      'components',
       'skills',
       'tools',
       'scripts',
@@ -304,13 +356,12 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'source', 'package.json'))).toBe(false);
     expect(existsSync(join(tempHome, 'scripts', 'server', 'main.ts'))).toBe(true);
     expect(existsSync(join(tempHome, 'scripts', 'server.js'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'skills.json'))).toBe(true);
-    expect(existsSync(join(tempHome, 'tools', 'tools.json'))).toBe(true);
-    expect(existsSync(join(tempHome, 'tools', 'status', 'tool.json'))).toBe(true);
-    expect(existsSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'))).toBe(true);
-    expect(existsSync(join(tempHome, 'tools', 'browser.open', '.consuelo-tool.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'skills', 'task'))).toBe(false);
+    expect(existsSync(join(tempHome, 'tools', 'status'))).toBe(false);
+    expect(existsSync(join(tempHome, 'components', 'installed-skills.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'components', 'installed-tools.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'components', 'provenance.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'components', 'update-plan.json'))).toBe(true);
     expect(existsSync(join(tempHome, 'bin', 'status'))).toBe(true);
     expect(existsSync(join(tempHome, 'operator', 'operator.ts'))).toBe(true);
     const workspaceYaml = readFileSync(join(tempHome, 'workspaces', 'local-consuelo-os', 'shared', 'workspace.yaml'), 'utf8');
@@ -342,16 +393,13 @@ describe('local OS install state', () => {
     expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('# decision process');
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'system_prompt.md')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')) && action.status === 'created')).toBe(true);
-    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_skill' && action.path.endsWith(join('skills', 'task')) && action.status === 'created')).toBe(true);
-    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('tools', 'status')) && action.status === 'created')).toBe(true);
+    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'create_file' && action.path.endsWith(join('components', 'installed-skills.json')) && action.status === 'created')).toBe(true);
+    expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('bin', 'status')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_operator' && action.path.endsWith('operator') && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'created')).toBe(true);
-    const installedTaskSkill = JSON.parse(readFileSync(join(tempHome, 'skills', 'task', 'skill.json'), 'utf8'));
-    expect(installedTaskSkill.load.path).toBe('skills/task/SKILL.md');
-    const installedTaskMetadata = JSON.parse(readFileSync(join(tempHome, 'skills', 'task', '.consuelo-skill.json'), 'utf8'));
-    expect(installedTaskMetadata).toMatchObject({ name: 'task', source: 'bundled' });
-    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'skills', 'skills.json'), 'utf8'));
-    expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'task')).toBe(true);
+    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-skills.json'), 'utf8'));
+    const installedTaskSkill = installedRegistry.selected.find((skill: { id: string }) => skill.id === 'task');
+    expect(installedTaskSkill).toMatchObject({ id: 'task', kind: 'skill', ownership: 'bundled-managed', sourcePath: 'skills/task' });
 
     const sitesIndexPath = join(tempHome, 'sites', 'index.html');
     const artifactsSiteIndexPath = join(tempHome, 'sites', 'artifacts', 'index.html');
@@ -368,10 +416,10 @@ describe('local OS install state', () => {
 
     const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'generated', 'tool.manifest.json'), 'utf8'));
     const coreToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'generated', 'core.manifest.json'), 'utf8'));
-    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
-    const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
-    expect(installedToolRegistry.tools).toHaveLength(fullToolManifest.tools.length);
-    expect(installedToolRegistry.tools.length).toBeGreaterThan(coreToolManifest.tools.length);
+    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-tools.json'), 'utf8'));
+    const installedToolNames = installedToolRegistry.components.map((tool: { id: string }) => tool.id);
+    expect(installedToolRegistry.components).toHaveLength(fullToolManifest.tools.length);
+    expect(installedToolRegistry.components.length).toBeGreaterThan(coreToolManifest.tools.length);
     expect(installedToolNames).toContain('status');
     expect(installedToolNames).toContain('browser.open');
     expect(installedToolNames).toContain('railway.logs');    expect(installedToolNames).toHaveLength(148);
@@ -380,8 +428,7 @@ describe('local OS install state', () => {
     const coreCodeCall = coreToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
     expect(fullCodeCall?.core).toBe(true);
     expect(coreCodeCall?.core).toBe(true);
-    expect(existsSync(join(tempHome, 'tools', 'code.call', 'tool.json'))).toBe(true);
-    expect(existsSync(join(tempHome, 'tools', 'code.call', '.consuelo-tool.json'))).toBe(true);
+    expect(existsSync(join(tempHome, 'tools', 'code.call'))).toBe(false);
     const codeCallWrapper = readFileSync(join(tempHome, 'bin', 'code.call'), 'utf8');
     expect(codeCallWrapper).toContain('scripts/tool-runner.ts');
     expect(codeCallWrapper).toContain('code.call');
@@ -400,8 +447,9 @@ describe('local OS install state', () => {
     expect(statusWrapper).not.toContain('~/.consuelo/source/opensaas');
     expect(statusWrapper).not.toContain('/Users/kokayi/Dev/opensaas');
     expect(statusWrapper).not.toContain('packages/os');
-    const installedStatusMetadata = JSON.parse(readFileSync(join(tempHome, 'tools', 'status', '.consuelo-tool.json'), 'utf8'));
-    expect(installedStatusMetadata.sourcePath).toBe('manifests/generated/tool.manifest.json');
+    const installedStatus = installedToolRegistry.components.find((tool: { id: string }) => tool.id === 'status');
+    const canonicalStatus = fullToolManifest.tools.find((tool: { name: string }) => tool.name === 'status');
+    expect(installedStatus.sourcePath).toBe(canonicalStatus.sourcePath);
     writeFileSync(join(tempHome, 'steering', 'system_prompt.md'), '# User system prompt\n\nuser-owned system prompt\n');
     writeFileSync(join(tempHome, 'steering', 'decision.md'), '# User decision\n\nuser-owned decision\n');
 
@@ -596,10 +644,10 @@ describe('local OS install state', () => {
     `));
 
     expect(readFileSync(join(localSkillDir, 'SKILL.md'), 'utf8')).toBe('local skill body\n');
-    expect(result.actions.some((action: { path: string; status: string; message: string }) => action.path.endsWith(join('skills', 'local-research')) && action.status === 'skipped' && action.message === 'local skill preserved')).toBe(true);
-    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'skills', 'skills.json'), 'utf8'));
-    expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'local-research')).toBe(true);
-    expect(installedRegistry.skills.some((skill: { name: string }) => skill.name === 'task')).toBe(true);
+    expect(result.actions.some((action: { path: string; status: string; message: string }) => action.path.endsWith(join('skills', 'local-research')) && action.status === 'preserved' && action.message.includes('legacy hidden skill preserved'))).toBe(true);
+    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-skills.json'), 'utf8'));
+    expect(installedRegistry.legacyCustom.some((skill: { id: string; ownership: string }) => skill.id === 'local-research' && skill.ownership === 'custom')).toBe(true);
+    expect(installedRegistry.selected.some((skill: { id: string }) => skill.id === 'task')).toBe(true);
   });
 
 
@@ -638,14 +686,16 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
 
-    expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'task'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'research-ingest'))).toBe(false);
+    const installedSkillRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-skills.json'), 'utf8'));
+    expect(installedSkillRegistry.selected.map((skill: { id: string }) => skill.id)).toEqual(['task']);
 
     const fullToolManifest = JSON.parse(readFileSync(join(process.cwd(), 'manifests', 'generated', 'tool.manifest.json'), 'utf8'));
-    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
-    const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
+    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-tools.json'), 'utf8'));
+    const installedToolNames = installedToolRegistry.components.map((tool: { id: string }) => tool.id);
 
-    expect(installedToolRegistry.tools).toHaveLength(fullToolManifest.tools.length);
+    expect(installedToolRegistry.components).toHaveLength(fullToolManifest.tools.length);
     expect(installedToolNames).toContain('task.start');
     expect(installedToolNames).toContain('browser.open');
     expect(installedToolNames).toContain('railway.logs');    expect(installedToolNames).toHaveLength(148);
@@ -669,11 +719,11 @@ describe('local OS install state', () => {
     `));
 
     expect(readFileSync(join(localToolDir, 'tool.json'), 'utf8')).toContain('User-owned local tool.');
-    expect(result.actions.some((action: { path: string; status: string; message: string }) => action.path.endsWith(join('tools', 'local-tool')) && action.status === 'skipped' && action.message === 'local tool preserved')).toBe(true);
+    expect(result.actions.some((action: { path: string; status: string; message: string }) => action.path.endsWith(join('tools', 'local-tool')) && action.status === 'preserved' && action.message.includes('legacy hidden tool preserved'))).toBe(true);
 
-    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'tools', 'tools.json'), 'utf8'));
-    const installedToolNames = installedToolRegistry.tools.map((tool: { name: string }) => tool.name);
-    expect(installedToolNames).toContain('local-tool');
+    const installedToolRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-tools.json'), 'utf8'));
+    const installedToolNames = installedToolRegistry.components.map((tool: { id: string }) => tool.id);
+    expect(installedToolRegistry.legacyCustom.some((tool: { id: string; ownership: string }) => tool.id === 'local-tool' && tool.ownership === 'custom')).toBe(true);
     expect(installedToolNames).toContain('status');
   });
 
@@ -684,13 +734,13 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
 
-    expect(existsSync(join(tempHome, 'skills', 'task', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'senior-engineer', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(false);
-    expect(result.actions.some((action: { path: string; status: string; message: string }) => action.path.endsWith(join('skills', 'research-ingest')) && action.status === 'skipped' && action.message === 'bundled skill not selected')).toBe(true);
+    expect(existsSync(join(tempHome, 'skills', 'task'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'senior-engineer'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'research-ingest'))).toBe(false);
+    expect(result.actions.some((action: { path: string }) => action.path.endsWith(join('skills', 'research-ingest')))).toBe(false);
 
-    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'skills', 'skills.json'), 'utf8'));
-    const installedNames = installedRegistry.skills.map((skill: { name: string }) => skill.name);
+    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-skills.json'), 'utf8'));
+    const installedNames = installedRegistry.selected.map((skill: { id: string }) => skill.id);
     expect(installedNames).toContain('task');
     expect(installedNames).toContain('senior-engineer');
     expect(installedNames).not.toContain('research-ingest');
@@ -703,9 +753,14 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
 
-    expect(existsSync(join(tempHome, 'skills', 'senior-engineer', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'research-ingest', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempHome, 'skills', 'office-landing-page', 'skill.json'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'senior-engineer'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'research-ingest'))).toBe(false);
+    expect(existsSync(join(tempHome, 'skills', 'office-landing-page'))).toBe(false);
+    const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-skills.json'), 'utf8'));
+    const installedNames = installedRegistry.selected.map((skill: { id: string }) => skill.id);
+    expect(installedNames).toContain('senior-engineer');
+    expect(installedNames).toContain('research-ingest');
+    expect(installedNames).not.toContain('office-landing-page');
 
     const config = JSON.parse(readFileSync(join(tempHome, 'config.json'), 'utf8'));
     expect(config.selectedSkills).toContain('senior-engineer');

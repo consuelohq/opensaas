@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/implement-retention-rollback-uninstall-and-dev-reset",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1600,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1600",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1600",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1600/implement-retention-rollback-uninstall-and-dev-reset",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1600",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1600/implement-retention-rollback-uninstall-and-dev-reset",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-retention-rollback-uninstall-and-dev-reset",
+  "taskSession": "tsk_fd4a2542a629",
+  "tmuxSession": "opensaas-os-distribution-implement-retention-rollback-uninstall-and-dev-r-fd4a2542",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-retention-rollback-uninstall-and-dev-reset/.task/os-distribution/implement-retention-rollback-uninstall-and-dev-reset/session.json",
+  "createdAt": "2026-07-23T20:35:59.037Z"
+}
