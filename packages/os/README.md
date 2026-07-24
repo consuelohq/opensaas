@@ -213,6 +213,7 @@ Status and stop paths are available through the local server helper and `launchc
 bun --cwd packages/os run server -- status
 bun --cwd packages/os run server -- stop
 launchctl bootout "gui/$(id -u)/com.consuelo.watchdog" || true
+launchctl bootout "gui/$(id -u)/com.consuelo.availability" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/com.consuelo.portless.system" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/com.consuelo.system" || true
 ```
@@ -222,6 +223,7 @@ To remove the user LaunchAgent plists after stopping them:
 ```bash
 rm -f ~/Library/LaunchAgents/com.consuelo.system.plist
 rm -f ~/Library/LaunchAgents/com.consuelo.watchdog.plist
+rm -f ~/Library/LaunchAgents/com.consuelo.availability.plist
 rm -f ~/Library/LaunchAgents/com.consuelo.portless.system.plist
 ```
 ## Current Boundary

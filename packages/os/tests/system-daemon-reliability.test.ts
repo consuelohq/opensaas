@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('macOS runtime service reliability', () => {
-  it('wires opt-in availability and OS-owned watchdog state through install and uninstall', () => {
+  it('should wire opt-in availability and OS-owned watchdog state when installing and uninstalling daemons', () => {
     const install = readFileSync(
       resolve(osRoot, 'scripts/install-system-daemons.sh'),
       'utf8',
@@ -61,7 +61,7 @@ describe('macOS runtime service reliability', () => {
     expect(uninstall).toContain('remove_agent "$availability_label"');
   });
 
-  it('does not install a host power assertion unless availability is explicitly enabled', () => {
+  it('should omit the host power assertion when availability is not explicitly enabled', () => {
     const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-disabled-');
     const scriptsDirectory = join(fixtureRoot, 'scripts');
     const home = join(fixtureRoot, 'home');
@@ -87,7 +87,7 @@ describe('macOS runtime service reliability', () => {
     ).toBe(false);
   });
 
-  it('generates an AC-only availability assertion when explicitly enabled and a scheduled one-shot watchdog', () => {
+  it('should generate an AC-only availability assertion and scheduled watchdog when availability is explicitly enabled', () => {
     const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-');
     const scriptsDirectory = join(fixtureRoot, 'scripts');
     const home = join(fixtureRoot, 'home');
@@ -130,7 +130,7 @@ describe('macOS runtime service reliability', () => {
     expect(watchdog).toContain(`<string>${consueloHome}</string>`);
   });
 
-  it('persists one-shot probe failures under Consuelo home and restarts only at threshold', () => {
+  it('should persist probe failures and restart only when the failure threshold is reached', () => {
     const fixtureRoot = temporaryDirectory('consuelo-watchdog-threshold-');
     const fakeBin = join(fixtureRoot, 'bin');
     const home = join(fixtureRoot, 'home');
@@ -174,7 +174,7 @@ describe('macOS runtime service reliability', () => {
     expect(readFileSync(launchLog, 'utf8')).toContain('com.consuelo.system');
   });
 
-  it('opens a recovery circuit instead of creating an unbounded restart storm', () => {
+  it('should open a recovery circuit when restart attempts exceed the bounded window', () => {
     const fixtureRoot = temporaryDirectory('consuelo-watchdog-circuit-');
     const fakeBin = join(fixtureRoot, 'bin');
     const home = join(fixtureRoot, 'home');
