@@ -116,7 +116,7 @@ every change — even tiny ones — follows this flow. no exceptions.
  7. bun run task:pr                                      # merge task→stream, create stream→main PR
  8. bun run task:prs                                     # show both PR links (human review)
  9. bun run task:merge -- --pr <N> --wait                # merge + wait for deploy
-10. bun run railway:logs -- --status                     # check deploy health + logs
+10. call deployment.status or deployment.logs with an explicit provider and target
 11. bun run browser -- consuelo                          # verify UI in production
 12. bun run task:finish                                  # remove worktree, delete branch
 13. bun run tmp -- save handoffs "description"           # save memory for next agent
@@ -152,7 +152,7 @@ node --check <touched-js-file>
 git status --porcelain -uall -- . ':!node_modules'
 ```
 
-**railway logs are truth.** don't guess about production — run `bun run railway:logs -- --errors` or `--filter "keyword"`.
+**provider logs are truth.** don't guess about production — use `deployment.logs` with an explicit provider, service/project target, and bounded filter.
 
 **SCRIPTS.md is part of the fix.** if you add or change a script, update SCRIPTS.md in the same commit.
 
@@ -898,52 +898,22 @@ Use `browser.headed` whenever Ko must complete a human-only authentication step.
 
 ---
 
-### railway:logs — deploy observability
+### deployment provider tools — deploy observability and mutations
 
-USE THIS OFTEN. this is how you get truth about what's happening in production. don't guess — read the logs.
+Use the canonical provider-neutral surface. Always select `provider: railway|vercel|cloudflare`; never rely on a repository, project, service, zone, or account default.
 
-```bash
-bun run railway:logs                  # deploy logs + http traffic in one place
-bun run railway:logs -- --errors      # errors only — deploy errors + http 4xx/5xx
-bun run railway:logs -- --filter "voice"  # search across deploy, http, & network
-bun run railway:logs -- --filter "twilio OR queue"
-bun run railway:logs -- --filter "@level:error"
-bun run railway:logs -- --network     # network logs
-bun run railway:logs -- --lines 50    # control how many lines
-bun run railway:logs -- --build       # build logs — did docker build succeed?
-bun run railway:logs -- --raw         # no formatting, no noise filtering
-bun run railway:logs -- --json        # for piping to other tools
-bun run railway:logs -- --env TWILIO_ACCOUNT_SID  # check if env var is set
-bun run railway:logs -- --status      # quick health check — is service up? what commit?
-bun run railway:logs -- --service twenty-worker --errors  # different service
-bun run railway:redeploy -- --wait    # redeploy opensaas and wait for completion
-bun run railway:redeploy -- --service twenty-worker --wait  # redeploy worker and wait
-bun run railway:redeploy -- --all --wait  # redeploy opensaas + twenty-worker and wait
-```
-
-**railway failure modes**
 ```text
-bad: "i think the deploy is broken" (guessing without checking)
- → run: bun run railway:logs -- --errors
- (always check logs before claiming something is broken)
-
-bad: railway logs --service opensaas (raw CLI)
- → use: bun run railway:logs
- (the script adds noise filtering, formatting, and http log merging)
+deployment.detect       # CLI/version capability
+deployment.context      # auth or current linked context
+deployment.list         # projects, services, deployments, or domains
+deployment.status       # one deployment status
+deployment.logs         # bounded runtime/build logs
+deployment.deploy       # deploy, redeploy, or promote; explicit approval required
+deployment.environment  # list names or approved set/delete; values are never returned
+deployment.raw          # guarded escape hatch with explicit approval
 ```
 
----
-
-### railway:redeploy — trigger railway deploys
-
-redeploys Railway services and can wait for completion. use this after merges when production needs a fresh deploy.
-
-```bash
-bun run railway:redeploy -- --wait
-bun run railway:redeploy -- --service twenty-worker --wait
-bun run railway:redeploy -- --all --wait
-bun run railway:redeploy -- --json
-```
+Read operations do not require write approval. Deploy, redeploy, promote, environment set/delete, and raw argv require explicit approval. Use `tools.search` to discover the right operation, then call it with the exact provider and target. Consuelo operator deployment and Cloudflare provisioning are separate and are not exposed through this customer surface.
 
 ---
 

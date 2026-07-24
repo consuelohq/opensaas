@@ -45,23 +45,9 @@ secret through an error envelope.
   command. Link the desired project first with `railway link`.
 - A generic new-deploy operation is not implemented. Worker 09 owns inspection,
   logs, redeploy, and environment-variable operations only.
-- The package intentionally contributes no public tool definitions, handlers, or
-  schemas yet. Worker 12 owns central manifest publication and should register
-  `packages/os/tools/railway/manifest.ts`, then add provider-neutral public tool
-  routes without changing this adapter's CLI or approval contracts.
-
-## Compatibility entrypoints
-
-The existing commands now route to this package:
-
-```text
-bun run railway:logs -- --service <name-or-id> [options]
-bun run railway:redeploy -- --service <name-or-id> --yes [options]
-```
-
-Both commands support `--json` and `--quiet`. Redeploy can use `--wait` with a
-bounded `--timeout`; logs support runtime/build selection, line bounds, Railway
-filters, `--since`, `--until`, and `--latest`.
+- The adapter is published through the provider-neutral `deployment.*` tool family.
+  Repository-only CLI wrappers remain available for legacy workspace development,
+  but they are excluded from customer runtime bundles and are not public OS tools.
 
 ## Human live-validation checkpoint
 
@@ -70,8 +56,9 @@ automatically on Ko's machines. A human with a disposable, already-linked
 Railway project can run:
 
 ```text
-bun run railway:logs -- --service <disposable-service> --lines 5 --json --quiet
-bun run railway:redeploy -- --service <disposable-service> --yes --wait --timeout 10m --json --quiet
+Call `deployment.logs` with `provider: railway`, the disposable service id, and a bounded limit.
+Call `deployment.deploy` with `provider: railway`, `action: redeploy`, the disposable service id,
+and explicit approval; optionally request a bounded wait.
 ```
 
 Expected result: the first command returns a bounded JSON log envelope; the

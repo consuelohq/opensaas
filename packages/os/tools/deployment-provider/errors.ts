@@ -44,6 +44,12 @@ export type ProviderCommandDiagnostics = {
   stderrTruncated?: boolean;
 };
 
+export type ProviderRecoveryGuidance = {
+  action: 'install_cli' | 'authenticate_cli';
+  command: string;
+  message: string;
+};
+
 export class ProviderError extends Data.TaggedError('ProviderError')<{
   code: ProviderErrorCode;
   provider: string;
@@ -51,6 +57,7 @@ export class ProviderError extends Data.TaggedError('ProviderError')<{
   message: string;
   diagnostics?: ProviderCommandDiagnostics;
   approval?: ProviderApprovalMetadata;
+  recovery?: ProviderRecoveryGuidance;
   cause?: { name: string; message: string };
 }> {}
 
@@ -61,6 +68,7 @@ export const providerError = (input: {
   message: string;
   diagnostics?: ProviderCommandDiagnostics;
   approval?: ProviderApprovalMetadata;
+  recovery?: ProviderRecoveryGuidance;
   cause?: unknown;
 }): ProviderError => {
   const cause = input.cause === undefined
@@ -75,6 +83,7 @@ export const providerError = (input: {
     message: input.message,
     ...(input.diagnostics ? { diagnostics: input.diagnostics } : {}),
     ...(input.approval ? { approval: input.approval } : {}),
+    ...(input.recovery ? { recovery: input.recovery } : {}),
     ...(cause ? { cause } : {}),
   });
 };

@@ -77,4 +77,19 @@ describe('OS tools.search v2 intent resolution', () => {
     expect((await runSearch('apply anchored patch', 5)).recommended).toBe('fs.apply_patch');
     expect((await runSearch('write patch file contents', 5)).recommended).toBe('fs.apply_patch');
   });
+
+  it('routes provider deployment intents to the canonical deployment surface', async () => {
+    const expectations: Array<[string, string]> = [
+      ['show railway deployment logs', 'deployment.logs'],
+      ['check vercel deployment status', 'deployment.status'],
+      ['list cloudflare environment variable names', 'deployment.environment'],
+      ['redeploy railway service', 'deployment.deploy'],
+    ];
+
+    for (const [query, expected] of expectations) {
+      const payload = await runSearch(query, 8);
+      expect(payload.recommended, query).toBe(expected);
+      expect(names(payload)[0], query).toBe(expected);
+    }
+  });
 });

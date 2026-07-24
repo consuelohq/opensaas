@@ -95,7 +95,7 @@ try {
   if (!(await sidebar.getByRole('link', { name: 'Google Workspace', exact: true }).getAttribute('aria-current'))) throw new Error('Deep link did not mark Google Workspace current');
 
   await page.goto(`${origin}/connect/apps-and-services/railway/`, { waitUntil: 'networkidle' });
-  if (!(await page.getByText('railway.logs', { exact: false }).first().isVisible())) throw new Error('Railway partial support guidance is missing');
+  if (!(await page.getByText('deployment.logs', { exact: false }).first().isVisible())) throw new Error('Railway canonical deployment guidance is missing');
 
   await page.goto(`${origin}/connect/nodes/local-nodes/`, { waitUntil: 'networkidle' });
   if (!(await page.getByText('cloudflare-tunnel', { exact: false }).first().isVisible())) throw new Error('Local node transport guidance is missing');

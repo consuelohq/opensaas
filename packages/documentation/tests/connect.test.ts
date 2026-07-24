@@ -107,7 +107,7 @@ describe('Connect documentation contract', () => {
     for (const [sourcePath] of connectPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toMatch(/verifiedAt: 2026-07-(13|14)/);
+      expect(source).toMatch(/verifiedAt: 2026-07-\d{2}/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');
@@ -178,8 +178,6 @@ describe('Connect documentation contract', () => {
     }
 
     for (const file of [
-      'cloudflare',
-      'vercel',
       'datadog',
       'snowflake',
       'gohighlevel',
@@ -200,9 +198,19 @@ describe('Connect documentation contract', () => {
 
   test('documents current built-in provider support separately from planned provider families', () => {
     const railway = read('src/content/docs/connect/apps-and-services/railway.mdx');
-    expect(railway).toContain('railway.logs');
-    expect(railway).toContain('railway.redeploy');
-    expect(railway).toContain('Partially available');
+    expect(railway).toContain('deployment.logs');
+    expect(railway).toContain('deployment.deploy');
+    expect(railway).toContain('Native Consuelo tool: Available');
+
+    const cloudflare = read('src/content/docs/connect/apps-and-services/cloudflare.mdx');
+    expect(cloudflare).toContain('deployment.logs');
+    expect(cloudflare).toContain('provider: \"cloudflare\"');
+    expect(cloudflare).toContain('Native Consuelo tool: Available');
+
+    const vercel = read('src/content/docs/connect/apps-and-services/vercel.mdx');
+    expect(vercel).toContain('deployment.deploy');
+    expect(vercel).toContain('provider: \"vercel\"');
+    expect(vercel).toContain('Native Consuelo tool: Available');
 
     const linear = read('src/content/docs/connect/apps-and-services/linear.mdx');
     expect(linear).toContain('linear.search');
