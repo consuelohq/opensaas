@@ -14,10 +14,12 @@ function makeHome(): string {
 }
 
 function runOsSnippet<TOutput>(home: string, code: string): TOutput {
+  const userHome = path.join(home, 'user-home');
+  fs.mkdirSync(userHome, { recursive: true });
   const result = spawnSync('bun', ['--eval', code], {
     cwd: process.cwd(),
     encoding: 'utf8',
-    env: { ...process.env, CONSUELO_HOME: home },
+    env: { ...process.env, HOME: userHome, CONSUELO_HOME: home },
   });
 
   if (result.status !== 0) {
@@ -52,11 +54,16 @@ describe('OS steering execution recording', () => {
   it('loads supported local steering files while excluding decision and legacy steering', () => {
     const home = makeHome();
     const steeringDir = path.join(home, 'steering');
+    const visibleSteeringDir = path.join(home, 'user-home', 'Consuelo', 'Steering');
     fs.mkdirSync(steeringDir, { recursive: true });
+    fs.mkdirSync(visibleSteeringDir, { recursive: true });
     fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Local system prompt\n\nlocal system body\n');
     fs.writeFileSync(path.join(steeringDir, 'decision.md'), '# Local decision\n\nlocal decision body\n');
-    fs.writeFileSync(path.join(steeringDir, 'operator-notes.md'), '# Operator notes\n\noperator notes body\n');
+    fs.writeFileSync(path.join(steeringDir, 'hidden-notes.md'), '# Hidden notes\n\nhidden notes body\n');
     fs.writeFileSync(path.join(steeringDir, 'steering.md'), '# Legacy steering\n\nlegacy body must be ignored\n');
+    fs.writeFileSync(path.join(visibleSteeringDir, 'operator-notes.md'), '# Operator notes\n\noperator notes body\n');
+    fs.writeFileSync(path.join(visibleSteeringDir, 'decision.md'), '# Visible decision\n\nvisible decision body\n');
+    fs.writeFileSync(path.join(visibleSteeringDir, 'steering.md'), '# Visible legacy\n\nvisible legacy body\n');
 
     const { first, second } = runOsSnippet<{ first: string; second: string }>(home, `
       const fs = await import('node:fs');
@@ -74,7 +81,10 @@ describe('OS steering execution recording', () => {
     expect(first).toContain('operator notes body');
     expect(first).not.toContain('# decision.md');
     expect(first).not.toContain('local decision body');
+    expect(first).not.toContain('hidden notes body');
     expect(first).not.toContain('legacy body must be ignored');
+    expect(first).not.toContain('visible decision body');
+    expect(first).not.toContain('visible legacy body');
     expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# operator-notes.md'));
     expect(second).toContain('updated system body');
     expect(second).not.toContain('local system body');
