@@ -185,18 +185,29 @@ const SOURCE_ONLY_FILES = new Set([
   'scripts/generate-types.ts',
   'scripts/prepare-release-publication.ts',
   'scripts/release-channels.ts',
+  'scripts/railway-logs.js',
+  'scripts/railway-redeploy.js',
 ]);
 
 const CUSTOMER_PROVIDER_FILES = new Set([
+  'tools/deployment-provider/errors.ts',
+  'tools/deployment-provider/facade.ts',
+  'tools/deployment-provider/process.ts',
+  'tools/deployment-provider/redaction.ts',
+  'tools/deployment-provider/service.ts',
+  'tools/deployment-provider/types.ts',
+  'tools/deployment-provider/vercel.ts',
   'tools/deployment-provider/cloudflare-runner.ts',
   'tools/deployment-provider/cloudflare.ts',
+  'tools/railway/adapter.ts',
+  'tools/railway/cli.ts',
+  'tools/railway/service.ts',
 ]);
 
 const CUSTOMER_PROVIDER_PREFIXES = [
   'scripts/browser',
   'scripts/github',
   'scripts/linear',
-  'scripts/railway-',
   'scripts/sentry',
   'scripts/lib/app-files-client',
   'scripts/lib/connector-origin-hostname',

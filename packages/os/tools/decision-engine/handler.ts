@@ -48,11 +48,6 @@ export const toolHandlers = [
           "kind": "boolean"
         },
         {
-          "source": "runtime",
-          "flag": "--runtime",
-          "kind": "boolean"
-        },
-        {
           "source": "test",
           "flag": "--test",
           "kind": "value"

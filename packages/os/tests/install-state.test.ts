@@ -422,7 +422,8 @@ describe('local OS install state', () => {
     expect(installedToolRegistry.components.length).toBeGreaterThan(coreToolManifest.tools.length);
     expect(installedToolNames).toContain('status');
     expect(installedToolNames).toContain('browser.open');
-    expect(installedToolNames).toContain('railway.logs');    expect(installedToolNames).toHaveLength(148);
+    expect(installedToolNames).toContain('deployment.logs');
+    expect(installedToolNames).toHaveLength(154);
     expect(installedToolNames).toContain('code.call');
     const fullCodeCall = fullToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
     const coreCodeCall = coreToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
@@ -698,7 +699,8 @@ describe('local OS install state', () => {
     expect(installedToolRegistry.components).toHaveLength(fullToolManifest.tools.length);
     expect(installedToolNames).toContain('task.start');
     expect(installedToolNames).toContain('browser.open');
-    expect(installedToolNames).toContain('railway.logs');    expect(installedToolNames).toHaveLength(148);
+    expect(installedToolNames).toContain('deployment.logs');
+    expect(installedToolNames).toHaveLength(154);
   });
 
   it('preserves local user tools while refreshing the installed registry', () => {

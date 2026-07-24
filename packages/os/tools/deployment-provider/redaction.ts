@@ -31,3 +31,16 @@ export const redactProviderText = (value: string): string => {
     );
   return redactText(output);
 };
+
+export const redactDeploymentTraceInput = <T extends Record<string, unknown>>(
+  toolName: string,
+  input: T,
+): T => {
+  if (toolName === 'deployment.environment' && input.action === 'set' && 'value' in input) {
+    return { ...input, value: REDACTED } as T;
+  }
+  if (toolName === 'deployment.raw' && Array.isArray(input.args)) {
+    return { ...input, args: ['[REDACTED_RAW_PAYLOAD]'] } as T;
+  }
+  return input;
+};

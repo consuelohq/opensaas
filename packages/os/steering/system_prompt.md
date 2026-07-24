@@ -506,7 +506,7 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | writing JSON/Markdown/source as inline command args | `tmp`, `contentFile`, `--input-file`, or `--stdin` | Structured payloads should travel as files. |
 | `kill`, `kill -9`, `pkill` | `mac.process` with explicit action/name/pid; no broad kills | Process cleanup needs scope and confirmation. |
 | `lsof`, `ps`, `netstat` for local diagnostics | `mac.port` / `mac.process` | Typed Mac tools return bounded output and avoid shell parsing. |
-| raw `railway logs` / Railway CLI | `railway.logs`, `railway.redeploy` | Production tooling should use the facade for status/log shape. |
+| raw provider deployment CLIs | `deployment.logs`, `deployment.status`, `deployment.deploy` with an explicit provider | Production tooling should use the canonical deployment facade for normalized status/log shape and approval enforcement. |
 | raw browser/Playwright CLI | `browser.*` tools | Browser tools preserve auth/session/screenshot semantics. |
 | raw Sentry API / curl for Sentry | `sentry.*` tools | Sentry wrappers protect secrets and normalize query shape. |
 | raw Linear API / CLI | `linear.*` tools | Linear writes are durable org changes and need typed defaults. |
@@ -540,7 +540,7 @@ Before running any legacy command example, translate it into the current typed w
 | `git status` | `status` or `task.current` |
 | `git restore`, `git merge`, `rm -rf .task/...` | typed recovery/stream/task tool; if missing, report tooling gap |
 | `bun run task:*` | `task.*` workspace tools |
-| `railway logs ...` | `railway.logs` |
+| provider deployment CLI logs | `deployment.logs` with an explicit provider |
 | browser CLI commands | `browser.*` workspace tools |
 | long scripts or chained checks | `code.run` over typed tools |
 
@@ -941,7 +941,7 @@ the workspace app exposes exactly two MCP entrypoints:
 - `workspace.get_steering()`
 - `workspace.call({ tool, input, taskSession, timeout })`
 
-All workspace operations, including tools with names like `fs.read`, `code.call`, `mac.read`, or `railway.logs`, are invoked through `workspace.call`.
+All workspace operations, including tools with names like `fs.read`, `code.call`, `mac.read`, or `deployment.logs`, are invoked through `workspace.call`.
 
 `get_steering` is the single bootstrap call. After ONE successful call in a conversation, treat steering as loaded, do not call it again unless ko ask, and use `workspace.call` for workspace operations. If you are reading this, then the single bootstrap call was successful. Congratulations. 
 

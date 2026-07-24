@@ -245,9 +245,9 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const generatedDefinitions = registry.full.tools.map((entry) => entry.definition);
     expect(generatedDefinitions).toEqual(baselineDefinitions);
-    expect(registry.full.tools).toHaveLength(148);
+    expect(registry.full.tools).toHaveLength(154);
     expect(registry.report.oldRegularToolCount).toBe(0);
-    expect(registry.report.oldDevToolCount).toBe(148);
+    expect(registry.report.oldDevToolCount).toBe(154);
     expect(registry.report.duplicateNames).toEqual([]);
     expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'media.svg.convert']));
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
@@ -274,7 +274,7 @@ describe('tool manifest generator', () => {
     }
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
-    expect(coreNames).not.toContain('railway.logs');
+    expect(coreNames).not.toContain('deployment.logs');
     expect(coreNames).not.toContain('website.deploy');
     expect(coreNames).not.toContain('browser.open');
     expect(coreNames).not.toContain('design.publish');
@@ -405,6 +405,32 @@ describe('tool manifest generator', () => {
     expect(generatedClient).toContain('createWorkspaceClient');
   });
 
+  it('publishes one non-core provider-neutral deployment surface and generated client types', () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+    const deploymentNames = fullNames.filter((name) => name.startsWith('deployment.')).sort();
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    expect(deploymentNames).toEqual([
+      'deployment.context',
+      'deployment.deploy',
+      'deployment.detect',
+      'deployment.environment',
+      'deployment.list',
+      'deployment.logs',
+      'deployment.raw',
+      'deployment.status',
+    ]);
+    expect(coreNames.filter((name) => name.startsWith('deployment.'))).toEqual([]);
+    expect(fullNames.filter((name) => /^(railway|vercel|cloudflare)\./.test(name))).toEqual([]);
+    expect(registry.full.tools
+      .filter((entry) => entry.name.startsWith('deployment.'))
+      .every((entry) => entry.definition.command.internal === 'deployment')).toBe(true);
+    expect(generatedWorkspace).toContain('deployment: {');
+    expect(generatedWorkspace).toContain('provider: "railway" | "vercel" | "cloudflare"');
+  });
+
   it('should expose runtime fs result envelopes when generating OS TypeScript surfaces', () => {
     const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
 
@@ -460,7 +486,7 @@ describe('tool manifest generator', () => {
 
   it('keeps the generated catalog limited to canonical facade packages', () => {
     const registry = buildToolManifest({ write: false });
-    expect(registry.full.tools).toHaveLength(148);
+    expect(registry.full.tools).toHaveLength(154);
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });
