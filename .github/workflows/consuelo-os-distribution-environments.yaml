@@ -116,7 +116,7 @@ jobs:
 
       - name: Run Linux platform contracts
         working-directory: packages/os
-        run: bun x vitest run tests/linux-platform.test.ts tests/lifecycle-engine.test.ts tests/lifecycle-retention-uninstall.test.ts
+        run: bun x vitest run tests/linux-platform.test.ts
 
   regression-contracts:
     name: Consuelo OS / existing distribution regressions

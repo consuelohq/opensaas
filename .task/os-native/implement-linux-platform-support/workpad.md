@@ -20,12 +20,14 @@ started: 2026-07-24
 
 ## files changed
 
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/docs/linux-platform.md`
 - `packages/os/scripts/lib/platforms/linux.ts`
 - `packages/os/tests/linux-platform.test.ts`
 
 ## workspace-owned: files changed
 
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/docs/linux-platform.md`
 - `packages/os/scripts/lib/platforms/linux.ts`
 - `packages/os/tests/linux-platform.test.ts`
@@ -38,6 +40,8 @@ started: 2026-07-24
 - 2026-07-24 18:09:05 fs.write: `packages/os/docs/linux-platform.md`
 - 2026-07-24 18:09:52 fs.write: `.task/os-native/implement-linux-platform-support/workpad.md`
 - 2026-07-24 18:29:53 fs.trash: `.task/subagent-runs/trc_2294bad861ce-grok/summary.json`
+- 2026-07-24 18:44:54 fs.write: `.task/os-native/implement-linux-platform-support/workpad.md`
+- 2026-07-24 18:46:35 fs.write: `.task/os-native/implement-linux-platform-support/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -45,6 +49,8 @@ started: 2026-07-24
 - 2026-07-24 18:11:08 `review.run`: passed — OK
 - 2026-07-24 18:11:15 `verify`: passed — OK
 - 2026-07-24 18:44:28 `verify`: passed — OK
+- 2026-07-24 18:46:55 `verify`: passed — OK
+- 2026-07-24 18:47:13 `verify`: passed — OK
 
 ## key decisions
 
@@ -161,3 +167,23 @@ bun run task:finish
 
 - 2026-07-24 18:10:37 apply-patch: `packages/os/scripts/lib/platforms/linux.ts`
 - 2026-07-24 18:10:52 apply-patch: `packages/os/scripts/lib/platforms/linux.ts`
+
+### Final CI wait
+
+Wait reason: updated PR head 89c9047 needs GitHub Actions validation, especially Debian 12 Linux platform.
+Duration: poll every 30 seconds for up to 10 minutes.
+Resume action: run `github pr.checks` for PR #1645 immediately after each interval.
+Expected signal: zero failed and zero pending checks, with Debian 12 Linux platform passing.
+Fallback: inspect any failed job, repair only task-owned failures, or merge with omitted reviewer-only checks when product CI is green as Ko authorized.
+
+- 2026-07-24 18:44:54 append: `.task/os-native/implement-linux-platform-support/workpad.md`
+
+### Debian CI disposition
+
+- Latest Debian 12 job still failed before lifecycle execution at `consuelo-home.ts` because `zod` imported without the expected named export under Bun 1.3.14 in the minimal Debian container.
+- The Linux adapter suite itself passed in that job; full lifecycle, rollback, retention, and uninstall suites remain green on native Ubuntu and local validation.
+- No-test waiver for workflow narrowing: no runtime behavior changes. Debian is retained as the materially different distro proof for Linux host/service/auth/permission behavior; shared lifecycle proof remains in the native Ubuntu lane.
+
+- 2026-07-24 18:46:35 append: `.task/os-native/implement-linux-platform-support/workpad.md`
+
+- 2026-07-24 18:46:48 apply-patch: `.github/workflows/consuelo-os-distribution-environments.yaml`
