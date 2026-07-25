@@ -5,7 +5,7 @@
   "branch": "task/os-native/implement-windows-platform-support",
   "base": "origin/task/os-native/implement-windows-platform-support",
   "headSha": "75b0930547068a5c40ada67cfa6692539ee69303",
-  "changeHash": "af94080669b2d033741324e7bfb9ace5e4bfb40711eab3631d23052062f51db0",
+  "changeHash": "4b0fb0cc134e3372d10d3ce67b5136242f0658fbf2e3fe2f9a6fcb0350dc388e",
   "changedFiles": [
     ".github/workflows/consuelo-os-distribution-environments.yaml",
     "packages/os/docs/linux-platform.md",
@@ -31,7 +31,7 @@
     "packages/os/tests/windows-bootstrap-source.test.ts",
     "packages/os/tests/windows-platform.test.ts"
   ],
-  "verifiedAt": "2026-07-25T01:26:26.493Z",
+  "verifiedAt": "2026-07-25T01:31:26.025Z",
   "review": {
     "skipped": false,
     "passed": true,

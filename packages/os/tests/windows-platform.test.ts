@@ -256,6 +256,69 @@ describe('Windows Service Control Manager adapter', () => {
     await expect(controller.preflight()).resolves.toBeUndefined();
   });
 
+  it('collects bounded SCM, ACL, and event diagnostics when service startup fails', async () => {
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const fileSystem = createMemoryFileSystem([
+      bunExecutable,
+      serviceHostExecutable,
+    ]);
+    const controller = createWindowsServiceController({
+      bunExecutable,
+      currentUserSid: 'S-1-5-21-1000',
+      fileSystem,
+      home,
+      host,
+      isElevated: true,
+      run: async (command, args) => {
+        calls.push({ command, args });
+        if (command === 'sc.exe' && args[0] === 'start') {
+          return {
+            exitCode: 5,
+            stdout: '',
+            stderr: '[SC] StartService FAILED 5: Access is denied.',
+          };
+        }
+        if (command === 'sc.exe' && args[0] === 'qc') {
+          return {
+            exitCode: 0,
+            stdout: 'SERVICE_START_NAME : NT SERVICE\\ConsueloOS',
+            stderr: '',
+          };
+        }
+        if (command === 'powershell.exe') {
+          return {
+            exitCode: 0,
+            stdout: '[{"Id":7000,"Message":"Access denied"}]',
+            stderr: '',
+          };
+        }
+        return { exitCode: 0, stdout: 'diagnostic-ok', stderr: '' };
+      },
+      serviceHostExecutable,
+    });
+
+    await expect(controller.install()).rejects.toThrow(
+      /Windows service startup diagnostics/i,
+    );
+    const rendered = calls
+      .map(({ command, args }) => `${command} ${args.join(' ')}`)
+      .join('\n');
+    expect(rendered).toContain('sc.exe qc ConsueloOS');
+    expect(rendered).toContain('sc.exe sdshow ConsueloOS');
+    expect(rendered).toContain('sc.exe qsidtype ConsueloOS');
+    expect(rendered).toContain(`icacls.exe ${serviceHostExecutable}`);
+    expect(rendered).toContain(`icacls.exe ${bunExecutable}`);
+    expect(rendered).toContain(
+      `icacls.exe ${home}\\node\\service\\windows-service.json`,
+    );
+    expect(rendered).toContain(`icacls.exe ${home}\\runtime\\current`);
+    expect(rendered).toContain(
+      'powershell.exe -NoProfile -NonInteractive -Command',
+    );
+    expect(rendered).toContain('Get-WinEvent');
+    expect(rendered).toContain('Service Control Manager');
+  });
+
   it('rejects a service Bun executable outside the protected Consuelo home', async () => {
     const externalBun = 'D:\\Profiles\\Ko User\\.bun\\bin\\bun.exe';
     const calls: Array<{ command: string; args: string[] }> = [];

@@ -163,6 +163,14 @@ function contextualError(operation: string, error: unknown): Error {
   );
 }
 
+function truncateWindowsDiagnostic(value: string, limit = 3_000): string {
+  const normalized = value.trim();
+  if (!normalized) return '<empty>';
+  return normalized.length <= limit
+    ? normalized
+    : `${normalized.slice(0, limit)}\n...[truncated ${normalized.length - limit} chars]`;
+}
+
 function isServiceAbsent(result: WindowsProcessResult): boolean {
   return (
     result.exitCode === 1060 ||
@@ -356,6 +364,90 @@ export function createWindowsServiceController(input: {
     }
   };
 
+  const collectStartupDiagnostics = async (): Promise<string> => {
+    const eventQuery = [
+      '$since = (Get-Date).AddMinutes(-10)',
+      "$system = Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Service Control Manager'; StartTime = $since } -ErrorAction SilentlyContinue",
+      "$application = Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = $since } -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -in @('.NET Runtime', 'Application Error', 'Windows Error Reporting') }",
+      "@($system; $application) | Where-Object { $_.Message -match 'ConsueloOS|Consuelo.Windows.Service|bun.exe' } | Sort-Object TimeCreated -Descending | Select-Object -First 20 TimeCreated, LogName, ProviderName, Id, LevelDisplayName, Message | ConvertTo-Json -Compress",
+    ].join('; ');
+    const commands: Array<{
+      label: string;
+      command: string;
+      args: string[];
+    }> = [
+      { label: 'service-config', command: 'sc.exe', args: ['qc', serviceName] },
+      {
+        label: 'service-security',
+        command: 'sc.exe',
+        args: ['sdshow', serviceName],
+      },
+      {
+        label: 'service-sid-type',
+        command: 'sc.exe',
+        args: ['qsidtype', serviceName],
+      },
+      {
+        label: 'service-host-acl',
+        command: 'icacls.exe',
+        args: [input.serviceHostExecutable],
+      },
+      {
+        label: 'bun-acl',
+        command: 'icacls.exe',
+        args: [input.bunExecutable],
+      },
+      {
+        label: 'service-config-acl',
+        command: 'icacls.exe',
+        args: [paths.serviceConfig],
+      },
+      {
+        label: 'runtime-current-acl',
+        command: 'icacls.exe',
+        args: [paths.runtimeCurrent],
+      },
+      {
+        label: 'windows-events',
+        command: 'powershell.exe',
+        args: ['-NoProfile', '-NonInteractive', '-Command', eventQuery],
+      },
+    ];
+    const details: string[] = [];
+    for (const diagnostic of commands) {
+      try {
+        const result = await run(diagnostic.command, diagnostic.args);
+        details.push(
+          `[${diagnostic.label}] exit=${result.exitCode}\n${truncateWindowsDiagnostic(
+            [result.stdout, result.stderr].filter(Boolean).join('\n'),
+          )}`,
+        );
+      } catch (error: unknown) {
+        details.push(
+          `[${diagnostic.label}] diagnostic failed: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+    return truncateWindowsDiagnostic(details.join('\n\n'), 16_000);
+  };
+
+  const startService = async (): Promise<void> => {
+    const started = await run('sc.exe', ['start', serviceName]);
+    if (started.exitCode !== 0 && !isServiceAlreadyRunning(started)) {
+      const original = failure(
+        started,
+        `failed to start Windows service ${serviceName}`,
+      );
+      const diagnostics = await collectStartupDiagnostics();
+      throw new Error(
+        `${original.message}\n\nWindows service startup diagnostics:\n${diagnostics}`,
+        { cause: original },
+      );
+    }
+  };
+
   return {
     preflight,
     async install(options = {}) {
@@ -490,13 +582,7 @@ export function createWindowsServiceController(input: {
         }
 
         if (options.start !== false) {
-          const started = await run('sc.exe', ['start', serviceName]);
-          if (started.exitCode !== 0 && !isServiceAlreadyRunning(started)) {
-            throw failure(
-              started,
-              `failed to start Windows service ${serviceName}`,
-            );
-          }
+          await startService();
           await waitForState('running');
         }
       } catch (error: unknown) {
@@ -523,13 +609,7 @@ export function createWindowsServiceController(input: {
         if (!isServiceAlreadyStopped(stopped) && !isServiceAbsent(stopped)) {
           await waitForState('stopped');
         }
-        const started = await run('sc.exe', ['start', serviceName]);
-        if (started.exitCode !== 0 && !isServiceAlreadyRunning(started)) {
-          throw failure(
-            started,
-            `failed to start Windows service ${serviceName}`,
-          );
-        }
+        await startService();
         if (options.waitForCompletion) await waitForState('running');
       } catch (error: unknown) {
         throw contextualError(
