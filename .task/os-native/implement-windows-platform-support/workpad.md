@@ -97,6 +97,8 @@ started: 2026-07-24
 - RED: after Worker 20 merged Linux support into `stream/os-native`, the combined source contract failed because the task lifecycle and workflow did not yet preserve the Linux adapter/job (`trc_a78b503b2059`).
 - GREEN: shared lifecycle dispatch now selects Linux, Windows, or the existing reload controller through one factory; the workflow retains both native Windows and Debian Linux acceptance lanes. Focused platform/workflow suite: 26 tests (`trc_9ffa07513a46`).
 - GREEN: combined platform/lifecycle/distribution/installer regression suite: 158 tests (`trc_8e0d0e90a287`); syntax and supported-format checks passed (`trc_a373acf0e96b`); strict review reported zero findings (`trc_ca6d917d21ee`). The managed-component corruption stack trace is intentional test evidence; Vitest exited 0.
+- RED: final `windows-2025` acceptance failed before service installation because PowerShell treats `$home` as the read-only automatic `$HOME` variable (`trc_be77ac7ebac5`). Source contract reproduced the collision (`trc_31f5e91150b5`).
+- GREEN: acceptance now uses `$consueloHome`; 18 focused Windows contracts passed (`trc_04712e6a2d84`), all 159 combined platform/lifecycle/distribution/installer regressions passed (`trc_647eb8b77269`), formatting passed (`trc_a17ee74eed0d`), and strict review reported zero findings (`trc_a3f54df8f85c`).
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
 - 2026-07-24 19:00:19 `review.run`: passed — OK
@@ -105,6 +107,8 @@ started: 2026-07-24
 - 2026-07-25 00:57:44 `review.run`: passed — OK
 - 2026-07-25 00:58:03 `verify`: passed — OK
 - 2026-07-25 01:02:08 `verify`: passed — OK
+- 2026-07-25 01:08:53 `review.run`: passed — OK
+- 2026-07-25 01:09:19 `verify`: passed — OK
 
 ## key decisions
 
@@ -149,10 +153,13 @@ started: 2026-07-24
 - Restored the Linux adapter, test, and documentation byte-for-byte from `stream/os-native` (`trc_cc95d0c141fb`). All 26 combined platform contracts still passed (`trc_147e072063bb`). A follow-up blob check printed matching SHAs but failed because the test consumed each hasher twice (`trc_dd2eda94ea3a`); the printed remote/local SHA equality is the relevant evidence.
 - Rebuilt candidate `f9a045fea84d77a3a3baf910fdadaaf10a49dedd` with exactly 27 task overlays, inherited Linux product blobs, both exact parents, zero commits behind either parent, and all seven Linux task-evidence files preserved (`trc_df9eac65cc4a`). Advanced the task ref from `5ae052e7` to `f9a045fe` using GitHub's Git-data API with `force: false` (`trc_a9fbef22fb11`). Post-update comparison reports `ahead`, behind 0, and 27 files; PR #1646 is no longer `DIRTY` and CI started on the corrected head (`trc_bdb22248be9f`, `trc_edb563697cf9`, `trc_47a4d6aa6f8c`).
 - Requested CodeRabbit on the final narrowed PR (`trc_a42003702cf7`). CodeRabbit acknowledged the command but posted no inline findings or review; its check reports that reviews are disabled for this base branch, so this is recorded as an unavailable external review rather than an approval (`trc_abb99c85749d`).
+- Final review polling ran four 30-second wake checks. Grok remained active with no partial result, while the native Windows check transitioned to failure (`trc_5a91d6f03b73`). The polling call itself used read mode, but automatic task evidence logging mutated task metadata and the facade rejected the call after all four checks; subsequent polling will use an edit-capable task route.
+- Final Windows CI proved the 17 TypeScript contracts and C# service host build were green, then failed at PowerShell acceptance startup with `Cannot overwrite variable HOME because it is read-only or constant` (`trc_b4be7479d602`, `trc_4484584609b1`, `trc_be77ac7ebac5`). Cancelled the stale Grok run and its child process before editing (`trc_cae21c247a55`). Added a failing source contract (`trc_31f5e91150b5`), renamed only the local `$home` path variable to `$consueloHome`, and preserved `$env:HOME` setup/restoration. Focused and broad gates are green (`trc_04712e6a2d84`, `trc_647eb8b77269`, `trc_a17ee74eed0d`, `trc_a3f54df8f85c`).
+- A validation command incorrectly used `bun --check` on a Vitest module, which initialized Vitest without its runner (`trc_f1240b9526c0`). Replaced it with the supported Prettier check; no product failure was involved (`trc_a17ee74eed0d`).
 
 ## final wait plan
 
-- Wait reason: final SHA must receive a complete Grok 4.5 structured review and authoritative GitHub CI results, especially `Consuelo OS / native windows` and the Debian Linux integration lane.
+- Wait reason: the newly published `$HOME` collision fix must receive a complete Grok 4.5 structured review and authoritative GitHub CI results, especially `Consuelo OS / native windows` and the Debian Linux integration lane.
 - Duration: poll every 30 seconds for up to 20 minutes, stopping early only when Grok has a non-empty valid JSON result and GitHub has no required failed or pending checks.
 - Resume action: immediately inspect Grok exit/output/stderr and `github pr.checks` for PR #1646 after every poll interval.
 - Expected signal: Grok wrapper exit `0` with a valid `consuelo_high_signal_pr_review` JSON object; native Windows, Debian Linux, distribution regressions, and all required checks report success or an explicitly acceptable skip.
@@ -200,6 +207,7 @@ bun run task:finish
 - `packages/os/scripts/lifecycle.ts`
 - `packages/os/scripts/server/main.ts`
 - `packages/os/scripts/start-consuelo-daemon.sh`
+- `packages/os/scripts/testing/windows-platform-acceptance.ps1`
 - `packages/os/skills/senior-engineer/SKILL.md`
 - `packages/os/skills/task/SKILL.md`
 - `packages/os/tests/bootstrap-source.test.ts`
@@ -209,8 +217,10 @@ bun run task:finish
 - `packages/os/tests/lifecycle-retention-uninstall.test.ts`
 - `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/native-lifecycle-client.test.ts`
+- `packages/os/tests/windows-platform.test.ts`
 - `packages/os/tsconfig.json`
 - `packages/workspace/scripts/task-pr.js`
 - `packages/workspace/scripts/task-push.js`
+- `packages/workspace/senior-engineer.md`
 
-- 2026-07-25 01:04:05 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+- 2026-07-25 01:09:11 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`

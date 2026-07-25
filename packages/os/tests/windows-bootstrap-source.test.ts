@@ -67,6 +67,20 @@ describe('Windows PowerShell bootstrap source', () => {
   });
 });
 
+describe('Windows native acceptance source', () => {
+  it('does not shadow PowerShell HOME with a case-insensitive local variable', () => {
+    const acceptance = source(
+      'scripts/testing/windows-platform-acceptance.ps1',
+    );
+
+    expect(acceptance).not.toMatch(/^\s*\$home\s*=/im);
+    expect(acceptance).toContain(
+      "$consueloHome = Join-Path $testProfile '.consuelo'",
+    );
+    expect(acceptance).toContain('--home $consueloHome');
+  });
+});
+
 describe('Windows browser-first device authorization', () => {
   it('opens the verification URL and copies fallback text with native Windows tools', () => {
     const installer = source('scripts/install.ts');
