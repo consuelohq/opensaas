@@ -12,9 +12,10 @@
     "packages/os/scripts/lib/windows-platform.ts",
     "packages/os/tests/distribution/runtime-bundle.test.ts",
     "packages/os/tests/distribution/workflow-contract.test.ts",
+    "packages/os/tests/linux-platform.test.ts",
     "packages/os/tests/windows-platform.test.ts",
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-25T00:54:31.172Z"
+  "updatedAt": "2026-07-25T00:56:05.903Z"
 }

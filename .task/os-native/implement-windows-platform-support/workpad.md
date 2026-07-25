@@ -50,6 +50,7 @@ started: 2026-07-24
 ## files changed
 
 - `.github/workflows/consuelo-os-distribution-environments.yaml`
+- `packages/os/docs/linux-platform.md`
 - `packages/os/docs/windows-platform.md`
 - `packages/os/native/windows-service/Consuelo.Windows.Service.csproj`
 - `packages/os/native/windows-service/Program.cs`
@@ -62,11 +63,13 @@ started: 2026-07-24
 - `packages/os/scripts/lib/lifecycle/retention.ts`
 - `packages/os/scripts/lib/lifecycle/runtime-links.ts`
 - `packages/os/scripts/lib/lifecycle/runtime-release-path.ts`
+- `packages/os/scripts/lib/platforms/linux.ts`
 - `packages/os/scripts/lib/windows-platform.ts`
 - `packages/os/scripts/lifecycle.ts`
 - `packages/os/scripts/testing/windows-platform-acceptance.ps1`
 - `packages/os/scripts/windows-platform.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/windows-bootstrap-source.test.ts`
 - `packages/os/tests/windows-platform.test.ts`
 
@@ -91,11 +94,16 @@ started: 2026-07-24
 - RED: Grok CR-002 was reproduced by tests proving an external `.bun` path was not rejected and service-owned executables were retained on uninstall (`trc_f1ced0e904ed`).
 - GREEN: protected service Bun copy, path-containment, and owned-artifact cleanup contracts, 16 tests (`trc_8f1929e6ba1a`).
 - GREEN: post-finding strict review zero issues (`trc_cbb124fb4c24`), syntax (`trc_168fed5b4471`), and 142 lifecycle/distribution/installer regressions (`trc_c389ee5b46f0`). Existing corruption-contract stderr is intentional; Vitest exited 0.
+- RED: after Worker 20 merged Linux support into `stream/os-native`, the combined source contract failed because the task lifecycle and workflow did not yet preserve the Linux adapter/job (`trc_a78b503b2059`).
+- GREEN: shared lifecycle dispatch now selects Linux, Windows, or the existing reload controller through one factory; the workflow retains both native Windows and Debian Linux acceptance lanes. Focused platform/workflow suite: 26 tests (`trc_9ffa07513a46`).
+- GREEN: combined platform/lifecycle/distribution/installer regression suite: 158 tests (`trc_8e0d0e90a287`); syntax and supported-format checks passed (`trc_a373acf0e96b`); strict review reported zero findings (`trc_ca6d917d21ee`). The managed-component corruption stack trace is intentional test evidence; Vitest exited 0.
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
 - 2026-07-24 19:00:19 `review.run`: passed — OK
 - 2026-07-24 19:04:16 `review.run`: passed — OK
 - 2026-07-25 00:54:18 `verify`: passed — OK
+- 2026-07-25 00:57:44 `review.run`: passed — OK
+- 2026-07-25 00:58:03 `verify`: passed — OK
 
 ## key decisions
 
@@ -133,6 +141,8 @@ started: 2026-07-24
 - The first combined CR-002 implementation patch missed a formatted TypeScript hunk (`trc_ed9e9537d2f2`). Re-read exact file ranges and recovered with smaller anchored patches (`trc_4f054e1a51dc`, `trc_a8eef29ed606`, `trc_9acd303cf36b`, `trc_02db22fbaba2`).
 - A formatting check incorrectly included `.ps1` files, for which repository Prettier has no parser (`trc_2fd081b2d4c2`). TypeScript/YAML/Markdown formatting remains green; PowerShell parsing and execution stay delegated to the authoritative Windows runner.
 - After resuming, `task.push` failed because the server-side active-task registry no longer recognized the existing session (`trc_38254c9c4f1a`). `task.init` restored branch/worktree metadata but did not restore the active registry (`trc_c7e05a7cbeb6`). Re-running the original `task.start` identity recovered the same branch, worktree, PR #1646, and exact session `tsk_54add4ed7243` without creating anything new (`trc_03de3fe06454`). That recovery reset the local workpad template; the complete published workpad was restored from GitHub through the task-scoped GitHub route (`trc_f99111ff57d0`, `trc_8cfd603d408f`) before reapplying unpushed evidence.
+- Once Windows hardening was published, PR #1646 became conflicted because Worker 20 had merged Linux support into the same stream and shared lifecycle/workflow files (`trc_85bd03723f1d`, `trc_fc2461f9661f`). Imported Worker 20's stream-owned Linux adapter, tests, and documentation unchanged (`trc_c19ae5dbe6d6`), wrote a failing combined-dispatch/workflow contract (`trc_a78b503b2059`), and composed both adapters in the shared lifecycle/workflow without replacing either worker's behavior (`trc_8f41e84fc500`, `trc_9ffa07513a46`).
+- The first broad post-integration test call executed from repository root, causing 54 path-resolution failures in legacy package-relative suites while 104 applicable tests passed (`trc_c64fd0b6ce4b`). Retried the identical suite with an explicit `cd packages/os`; all 158 tests passed (`trc_8e0d0e90a287`). This was a harness invocation error, not a product regression.
 
 ---
 
@@ -181,6 +191,13 @@ bun run task:finish
 - `packages/os/tests/distribution/workflow-contract.test.ts`
 - `packages/os/tests/lifecycle-restart-contract.test.ts`
 - `packages/os/tests/lifecycle-retention-uninstall.test.ts`
+- `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/native-lifecycle-client.test.ts`
 - `packages/os/tsconfig.json`
 - `packages/workspace/scripts/task-push.js`
+
+- 2026-07-25 00:56:11 apply-patch: `packages/os/tests/windows-platform.test.ts`
+- 2026-07-25 00:56:55 apply-patch: `packages/os/scripts/lifecycle.ts`
+- 2026-07-25 00:56:55 apply-patch: `.github/workflows/consuelo-os-distribution-environments.yaml`
+
+- 2026-07-25 00:57:54 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`

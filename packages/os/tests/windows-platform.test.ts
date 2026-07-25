@@ -342,6 +342,19 @@ describe('Windows Service Control Manager adapter', () => {
 });
 
 describe('Windows native service and workflow source contracts', () => {
+  it('composes Linux and Windows through the shared lifecycle service boundary', () => {
+    const lifecycle = readFileSync(
+      resolve(osRoot, 'scripts', 'lifecycle.ts'),
+      'utf8',
+    );
+
+    expect(lifecycle).toContain('createLinuxPlatformAdapter');
+    expect(lifecycle).toContain('createWindowsServiceController');
+    expect(lifecycle).toContain("platform === 'linux'");
+    expect(lifecycle).toContain("platform === 'win32'");
+    expect(lifecycle).toContain('createDefaultLifecycleServiceController');
+  });
+
   it('ships a non-interactive SCM service host that owns the Bun process tree', () => {
     const service = readFileSync(
       resolve(osRoot, 'native', 'windows-service', 'Program.cs'),
@@ -370,6 +383,8 @@ describe('Windows native service and workflow source contracts', () => {
     );
 
     expect(workflow).toContain('runner: windows-2025');
+    expect(workflow).toContain('debian-linux-platform:');
+    expect(workflow).toContain('tests/linux-platform.test.ts');
     expect(workflow).toContain('Build the Windows service host');
     expect(workflow).toContain('vswhere.exe');
     expect(workflow).toContain('Microsoft.Component.MSBuild');

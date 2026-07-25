@@ -19,8 +19,10 @@ import {
   type LifecycleOperationResult,
   type LifecycleProgressEvent,
   type LifecycleReleaseChannel,
+  type LifecycleServiceController,
   type ReleaseSource,
 } from './lib/lifecycle';
+import { createLinuxPlatformAdapter } from './lib/platforms/linux';
 import { createWindowsServiceController } from './lib/windows-platform';
 
 export type LifecycleCliIo = {
@@ -228,6 +230,37 @@ function trustedReleaseKeysFromEnvironment(): Record<string, string> {
   return keyId && publicKey ? { [keyId]: publicKey } : {};
 }
 
+export function createDefaultLifecycleServiceController(input: {
+  home?: string;
+  osRoot: string;
+  platform?: NodeJS.Platform;
+  bunExecutable?: string;
+}): LifecycleServiceController {
+  const platform = input.platform ?? process.platform;
+  const lifecycleHome = resolveLifecyclePaths(input.home).home;
+  const bunExecutable =
+    input.bunExecutable ?? process.env.BUN_BIN ?? process.execPath;
+  if (platform === 'linux') {
+    return createLinuxPlatformAdapter({
+      home: lifecycleHome,
+      bunExecutable,
+    });
+  }
+  if (platform === 'win32') {
+    return createWindowsServiceController({
+      home: lifecycleHome,
+      bunExecutable,
+      serviceHostExecutable: resolve(
+        lifecycleHome,
+        'bin',
+        'Consuelo.Windows.Service.exe',
+      ),
+      currentUserSid: process.env.CONSUELO_WINDOWS_USER_SID || 'S-1-0-0',
+    });
+  }
+  return createReloadServiceController({ osRoot: input.osRoot, platform });
+}
+
 function createDefaultLifecycleEngine(input: {
   home?: string;
   quiet: boolean;
@@ -235,29 +268,18 @@ function createDefaultLifecycleEngine(input: {
   progress: (event: LifecycleProgressEvent) => void;
 }): LifecycleEngine {
   const osRoot = resolve(import.meta.dirname, '..');
-  const lifecycleHome = resolveLifecyclePaths(input.home).home;
   const port = process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
   const releaseBaseUrl = process.env.CONSUELO_RELEASE_BASE_URL;
-  const service =
-    process.platform === 'win32'
-      ? createWindowsServiceController({
-          home: lifecycleHome,
-          bunExecutable: process.env.BUN_BIN || process.execPath,
-          serviceHostExecutable: resolve(
-            lifecycleHome,
-            'bin',
-            'Consuelo.Windows.Service.exe',
-          ),
-          currentUserSid: process.env.CONSUELO_WINDOWS_USER_SID || 'S-1-0-0',
-        })
-      : createReloadServiceController({ osRoot });
   return createLifecycleEngine({
     home: input.home,
     releaseSource: releaseBaseUrl
       ? createHttpReleaseSource({ baseUrl: releaseBaseUrl })
       : unavailableReleaseSource(),
     trustedReleaseKeys: trustedReleaseKeysFromEnvironment(),
-    service,
+    service: createDefaultLifecycleServiceController({
+      home: input.home,
+      osRoot,
+    }),
     runtime: createBunRuntimeMaterializer(),
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
