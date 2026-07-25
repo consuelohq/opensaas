@@ -495,5 +495,18 @@ describe('Windows native service and workflow source contracts', () => {
     expect(workflow).toContain(
       'scripts/testing/windows-platform-acceptance.ps1',
     );
+    const nativeAcceptance = workflow.indexOf(
+      'Run native Windows platform acceptance',
+    );
+    const cleanup = workflow.indexOf(
+      'Remove Windows service build intermediates',
+    );
+    const distributionContracts = workflow.indexOf(
+      'Run distribution harness contracts',
+    );
+    expect(cleanup).toBeGreaterThan(nativeAcceptance);
+    expect(cleanup).toBeLessThan(distributionContracts);
+    expect(workflow).toContain('packages/os/native/windows-service/bin');
+    expect(workflow).toContain('packages/os/native/windows-service/obj');
   });
 });

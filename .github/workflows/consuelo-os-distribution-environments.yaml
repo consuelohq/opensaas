@@ -122,6 +122,13 @@ jobs:
         working-directory: packages/os
         run: ./scripts/testing/windows-platform-acceptance.ps1
 
+      - name: Remove Windows service build intermediates
+        if: matrix.name == 'windows'
+        shell: pwsh
+        run: |
+          Remove-Item -LiteralPath packages/os/native/windows-service/bin -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -LiteralPath packages/os/native/windows-service/obj -Recurse -Force -ErrorAction SilentlyContinue
+
       - name: Run distribution harness contracts
         working-directory: packages/os
         run: bun x vitest run tests/distribution
