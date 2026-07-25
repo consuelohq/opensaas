@@ -49,7 +49,7 @@ started: 2026-07-24
 
 ## files changed
 
-- `packages/os/scripts/testing/windows-platform-acceptance.ps1`
+- `packages/os/scripts/bootstrap.ps1`
 - `packages/os/tests/windows-bootstrap-source.test.ts`
 
 
@@ -63,9 +63,6 @@ started: 2026-07-24
 
 ## workspace-owned: validation evidence
 
-- RED: focused Windows suite failed on intentionally missing adapter/bootstrap/host/workflow/browser contracts (`trc_07aa9a9f01c3`).
-- GREEN: Windows and workflow contract suite, 16 tests (`trc_345424ee2065`).
-- GREEN: syntax checks plus 141 targeted lifecycle/distribution/installer regressions and formatting (`trc_1d344c41f8b3`). Existing corruption-contract stderr is intentional; Vitest exited 0 with all 141 tests passing.
 - GREEN: focused Windows suite after contextual error handling, 15 tests (`trc_ad96fe876e1e`).
 - GREEN: strict repository review against `origin/main`, zero findings after fixing all 12 initial contextual error-handling findings (`trc_be4491bc19e1`).
 - RED: workflow contract failed until the Windows runner resolved MSBuild through Visual Studio Installer discovery (`trc_0779c10ba809`).
@@ -80,6 +77,8 @@ started: 2026-07-24
 - GREEN: acceptance now uses `$consueloHome`; 18 focused Windows contracts passed (`trc_04712e6a2d84`), all 159 combined platform/lifecycle/distribution/installer regressions passed (`trc_647eb8b77269`), formatting passed (`trc_a17ee74eed0d`), and strict review reported zero findings (`trc_a3f54df8f85c`).
 - RED: the next native run showed the remaining collision was the bootstrap parameter `[string]$Home`, not the already-renamed acceptance local (`trc_59e1557f3ffe`). A source contract reproduced the parameter collision while requiring public `-Home` compatibility (`trc_6bc0196045ff`).
 - GREEN: `bootstrap.ps1` now binds `[Alias('Home')] [string]$ConsueloHome`, preserving callers while avoiding the automatic variable. Nineteen focused Windows contracts passed (`trc_8419c7579a46`), all 160 combined regressions passed (`trc_673dbce129af`), formatting passed (`trc_53f382b94dd2`), and strict review reported zero findings (`trc_d5d81d9eaf8b`).
+- RED: the next native run reached `StartService` and failed with Win32 access denied because the restricted service SID could access `.consuelo` but lacked traversal on its parent profile directory (`trc_408816caf9e8`, `trc_1b4bfb65871d`). A behavioral test required a folder-only, non-inherited `(RX)` grant before service start (`trc_620c306dc380`).
+- GREEN: service installation now grants `NT SERVICE\\ConsueloOS:(RX)` on the immediate profile directory before `StartService`, while the recursive modify grant remains confined to `.consuelo`. The native acceptance script verifies both ACL entries. Nineteen focused Windows contracts passed (`trc_0747407c4300`), all 160 combined regressions passed (`trc_952aad5a0f44`), formatting passed (`trc_8cf31cab5c11`), and strict review reported zero findings (`trc_2efdd5c3e9ee`).
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
 - 2026-07-24 19:00:19 `review.run`: passed — OK
@@ -92,6 +91,8 @@ started: 2026-07-24
 - 2026-07-25 01:09:19 `verify`: passed — OK
 - 2026-07-25 01:12:45 `review.run`: passed — OK
 - 2026-07-25 01:13:02 `verify`: passed — OK
+- 2026-07-25 01:16:42 `review.run`: passed — OK
+- 2026-07-25 01:17:06 `verify`: passed — OK
 
 ## key decisions
 
@@ -140,6 +141,7 @@ started: 2026-07-24
 - Final Windows CI proved the 17 TypeScript contracts and C# service host build were green, then failed at PowerShell acceptance startup with `Cannot overwrite variable HOME because it is read-only or constant` (`trc_b4be7479d602`, `trc_4484584609b1`, `trc_be77ac7ebac5`). Cancelled the stale Grok run and its child process before editing (`trc_cae21c247a55`). Added a failing source contract (`trc_31f5e91150b5`), renamed only the local `$home` path variable to `$consueloHome`, and preserved `$env:HOME` setup/restoration. Focused and broad gates are green (`trc_04712e6a2d84`, `trc_647eb8b77269`, `trc_a17ee74eed0d`, `trc_a3f54df8f85c`).
 - A validation command incorrectly used `bun --check` on a Vitest module, which initialized Vitest without its runner (`trc_f1240b9526c0`). Replaced it with the supported Prettier check; no product failure was involved (`trc_a17ee74eed0d`).
 - The first `$HOME` fix removed the acceptance script's local `$home`, but the following native run still failed because `bootstrap.ps1` declared a parameter named `$Home` (`trc_b95dc7ac04fd`, `trc_59e1557f3ffe`). Cancelled the stale Grok run (`trc_20403198bad6`), reproduced the bootstrap parameter collision red while asserting `-Home` compatibility (`trc_6bc0196045ff`), then renamed the internal parameter to `$ConsueloHome` with `[Alias('Home')]`. All local gates are green (`trc_8419c7579a46`, `trc_673dbce129af`, `trc_53f382b94dd2`, `trc_d5d81d9eaf8b`).
+- The subsequent native run cleared both PowerShell collisions and reached SCM startup, then failed `StartService` with error 5 (`trc_408816caf9e8`, `trc_1b4bfb65871d`). The service SID already had recursive modify access to `.consuelo`; the missing boundary was traverse permission on the immediate profile directory. Added a red ordering/ACL contract (`trc_620c306dc380`), then a non-inherited profile `(RX)` grant and native acceptance assertion. Local gates are green (`trc_0747407c4300`, `trc_952aad5a0f44`, `trc_8cf31cab5c11`, `trc_2efdd5c3e9ee`).
 
 ## final wait plan
 
@@ -188,10 +190,12 @@ bun run task:finish
 - `packages/os/scripts/lib/lifecycle/types.ts`
 - `packages/os/scripts/lib/lifecycle/uninstall.ts`
 - `packages/os/scripts/lib/native-lifecycle-client.ts`
+- `packages/os/scripts/lib/windows-platform.ts`
 - `packages/os/scripts/lifecycle.ts`
 - `packages/os/scripts/server/main.ts`
 - `packages/os/scripts/start-consuelo-daemon.sh`
 - `packages/os/scripts/testing/windows-platform-acceptance.ps1`
+- `packages/os/scripts/windows-platform.ts`
 - `packages/os/skills/senior-engineer/SKILL.md`
 - `packages/os/skills/task/SKILL.md`
 - `packages/os/tests/bootstrap-source.test.ts`
@@ -207,9 +211,8 @@ bun run task:finish
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-25 01:09:11 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+- 2026-07-25 01:15:38 apply-patch: `packages/os/tests/windows-platform.test.ts`
+- 2026-07-25 01:16:12 apply-patch: `packages/os/scripts/lib/windows-platform.ts`
+- 2026-07-25 01:16:12 apply-patch: `packages/os/scripts/testing/windows-platform-acceptance.ps1`
 
-- 2026-07-25 01:12:04 apply-patch: `packages/os/tests/windows-bootstrap-source.test.ts`
-- 2026-07-25 01:12:14 apply-patch: `packages/os/scripts/bootstrap.ps1`
-
-- 2026-07-25 01:12:54 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+- 2026-07-25 01:16:55 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`

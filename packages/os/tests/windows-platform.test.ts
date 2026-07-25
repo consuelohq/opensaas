@@ -216,6 +216,12 @@ describe('Windows Service Control Manager adapter', () => {
     expect(rendered).toContain('*S-1-5-21-1000:(OI)(CI)F');
     expect(rendered).toContain('*S-1-5-18:(OI)(CI)F');
     expect(rendered).toContain('NT SERVICE\\ConsueloOS:(OI)(CI)M');
+    const traversalAcl = rendered.indexOf(
+      'icacls.exe D:\\Profiles\\Ko User /grant:r NT SERVICE\\ConsueloOS:(RX) /c',
+    );
+    const serviceStart = rendered.indexOf('sc.exe start ConsueloOS');
+    expect(traversalAcl).toBeGreaterThan(-1);
+    expect(traversalAcl).toBeLessThan(serviceStart);
     expect(rendered).not.toMatch(/token|secret|password|credential/i);
   });
 

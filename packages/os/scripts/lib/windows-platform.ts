@@ -463,6 +463,19 @@ export function createWindowsServiceController(input: {
         if (acl.exitCode !== 0)
           throw failure(acl, 'failed to apply restrictive Consuelo ACLs');
 
+        const profileTraversalAcl = await run('icacls.exe', [
+          win32.dirname(paths.home),
+          '/grant:r',
+          `NT SERVICE\\${serviceName}:(RX)`,
+          '/c',
+        ]);
+        if (profileTraversalAcl.exitCode !== 0) {
+          throw failure(
+            profileTraversalAcl,
+            'failed to grant Windows service profile traversal',
+          );
+        }
+
         if (options.start !== false) {
           const started = await run('sc.exe', ['start', serviceName]);
           if (started.exitCode !== 0 && !isServiceAlreadyRunning(started)) {
