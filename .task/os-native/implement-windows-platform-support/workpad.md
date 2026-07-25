@@ -45,7 +45,7 @@ started: 2026-07-24
 
 ## current status
 
-- The Windows implementation, Grok hardening fixes, and Linux/Windows shared-boundary integration are locally green. The task branch now contains a validated two-parent, non-forced merge of `stream/os-native`, is behind by zero, and exposes only the intended 27-file task delta. Publishing this workpad update establishes the final SHA for authoritative CI, CodeRabbit disposition, and current-head Grok review.
+- The Windows implementation, Grok hardening fixes, and Linux/Windows shared-boundary integration are locally green. The task branch contains a validated two-parent, non-forced merge of `stream/os-native`, is behind by zero, and exposes only the intended 27-file task delta. CodeRabbit was requested again on the corrected PR but produced no substantive review because reviews are disabled for the `stream/os-native` base. Final CI and current-head Grok review are now the remaining gates.
 
 ## files changed
 
@@ -148,6 +148,15 @@ started: 2026-07-24
 - Prepared a GitHub Git-data merge using the current stream tree as `base_tree`, the current task and stream SHAs as two parents, and only reviewed task blobs as overlays (`trc_535774545002`). The first candidate validation used an incorrect “one commit ahead” assumption for a two-parent merge (`trc_ca3f32e20889`) and then exposed three unintended Prettier-only changes to Worker 20's Linux files (`trc_56cbabcf6ce5`). Discarded that candidate without updating a ref.
 - Restored the Linux adapter, test, and documentation byte-for-byte from `stream/os-native` (`trc_cc95d0c141fb`). All 26 combined platform contracts still passed (`trc_147e072063bb`). A follow-up blob check printed matching SHAs but failed because the test consumed each hasher twice (`trc_dd2eda94ea3a`); the printed remote/local SHA equality is the relevant evidence.
 - Rebuilt candidate `f9a045fea84d77a3a3baf910fdadaaf10a49dedd` with exactly 27 task overlays, inherited Linux product blobs, both exact parents, zero commits behind either parent, and all seven Linux task-evidence files preserved (`trc_df9eac65cc4a`). Advanced the task ref from `5ae052e7` to `f9a045fe` using GitHub's Git-data API with `force: false` (`trc_a9fbef22fb11`). Post-update comparison reports `ahead`, behind 0, and 27 files; PR #1646 is no longer `DIRTY` and CI started on the corrected head (`trc_bdb22248be9f`, `trc_edb563697cf9`, `trc_47a4d6aa6f8c`).
+- Requested CodeRabbit on the final narrowed PR (`trc_a42003702cf7`). CodeRabbit acknowledged the command but posted no inline findings or review; its check reports that reviews are disabled for this base branch, so this is recorded as an unavailable external review rather than an approval (`trc_abb99c85749d`).
+
+## final wait plan
+
+- Wait reason: final SHA must receive a complete Grok 4.5 structured review and authoritative GitHub CI results, especially `Consuelo OS / native windows` and the Debian Linux integration lane.
+- Duration: poll every 30 seconds for up to 20 minutes, stopping early only when Grok has a non-empty valid JSON result and GitHub has no required failed or pending checks.
+- Resume action: immediately inspect Grok exit/output/stderr and `github pr.checks` for PR #1646 after every poll interval.
+- Expected signal: Grok wrapper exit `0` with a valid `consuelo_high_signal_pr_review` JSON object; native Windows, Debian Linux, distribution regressions, and all required checks report success or an explicitly acceptable skip.
+- Fallback: fail closed on Grok timeout/cancellation/empty/invalid output; diagnose any failed CI job through GitHub logs, fix only verified findings, rerun validation, and restart the final review/check cycle on the new head.
 
 ---
 
@@ -165,6 +174,7 @@ bun run task:finish
 - `AGENTS.md`
 - `CODING-STANDARDS.md`
 - `package.json`
+- `packages/os/.tmp-reviews/implement-windows-platform-support/grok-prompt.md`
 - `packages/os/AGENTS.md`
 - `packages/os/SCRIPTS.md`
 - `packages/os/docs/architecture/native-platform-spike.md`
@@ -172,6 +182,7 @@ bun run task:finish
 - `packages/os/plans/consuelo-os-foundation/workers/04-lifecycle-engine.md`
 - `packages/os/plans/consuelo-os-foundation/workers/05-retention-rollback-uninstall.md`
 - `packages/os/plans/consuelo-os-foundation/workers/18-native-platform-spike.md`
+- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
 - `packages/os/scripts/bootstrap.sh`
 - `packages/os/scripts/install.ts`
 - `packages/os/scripts/lib/consuelo-home.ts`
@@ -202,4 +213,4 @@ bun run task:finish
 - `packages/workspace/scripts/task-pr.js`
 - `packages/workspace/scripts/task-push.js`
 
-- 2026-07-25 01:01:56 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+- 2026-07-25 01:04:05 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`

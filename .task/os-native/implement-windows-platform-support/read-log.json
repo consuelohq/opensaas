@@ -6,6 +6,7 @@
     ".task/subagent-runs/trc_d05a120f4bb6-grok/summary.json",
     "packages/os/package.json",
     "packages/os/plans/consuelo-os-foundation/workers/21-windows-platform.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
     "packages/os/scripts/lib/consuelo-home.ts",
     "packages/os/scripts/lib/lifecycle/retention.ts",
     "packages/os/scripts/lib/lifecycle/uninstall.ts",
@@ -18,5 +19,5 @@
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-25T00:59:11.274Z"
+  "updatedAt": "2026-07-25T01:02:30.785Z"
 }
