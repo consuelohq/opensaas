@@ -199,12 +199,13 @@ export type SitePageLeaseResult = {
 };
 
 type ReservedSite = {
-  slug: 'diffs' | 'docs';
+  slug: 'gtm' | 'diffs' | 'docs';
   title: string;
   description: string;
 };
 
 const RESERVED_SITES: ReservedSite[] = [
+  { slug: 'gtm', title: 'Go to market', description: 'Open the protected go-to-market workspace.' },
   { slug: 'diffs', title: 'Diffs', description: 'Review generated changes and decision context.' },
   { slug: 'docs', title: 'Documentation', description: 'Open Consuelo OS operating documentation.' },
 ];
@@ -614,9 +615,16 @@ function launcherLocalAgents(home: string): LauncherLocalAgent[] {
     }));
 }
 
-function buildSitesIndex(home: string): string {
+function launcherWorkspaceHost(home: string): string | undefined {
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  const workspaceHost = config?.workspace?.host?.trim();
+  return workspaceHost && workspaceHost.length > 0 ? workspaceHost : undefined;
+}
+
+function buildSitesIndex(home: string, workspaceHost?: string | null): string {
   return renderLauncherOnboarding({
     mcpUrl: launcherMcpUrl(home),
+    ...(workspaceHost ? { workspaceHost } : {}),
     localAgents: launcherLocalAgents(home),
   });
 }
@@ -703,6 +711,9 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir, paths.toolsDir, paths.environmentsDir, paths.secretsDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
   }
+  for (const site of RESERVED_SITES) {
+    addDirectoryAction(actions, path.join(paths.sitesDir, site.slug), options.dryRun);
+  }
   const data = readArtifactCatalog(options.home);
   const registry = readSitePageRegistry(paths.pagesRegistryPath);
   addFileAction(actions, paths.indexPath, options.dryRun, 'Sites index generated');
@@ -716,7 +727,11 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   addFileAction(actions, paths.secretsIndexPath, options.dryRun, 'Secrets site generated');
   addFileAction(actions, paths.configurationSnapshotPath, options.dryRun, 'Configuration snapshot generated');
   if (!options.dryRun) {
-    fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
+    fs.writeFileSync(
+      paths.indexPath,
+      buildSitesIndex(options.home, options.workspaceHost ?? launcherWorkspaceHost(options.home)),
+      { mode: 0o600 },
+    );
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     refreshArtifactsSite(options.home, data);
     fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });

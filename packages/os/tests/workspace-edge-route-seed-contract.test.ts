@@ -87,6 +87,7 @@ contractDescribe('workspace edge route seed contract', () => {
       status: 'active',
     });
     expect(record.routes.map((route) => route.pathPrefix)).toEqual([
+      '/gtm',
       '/',
       '/artifacts',
       '/observability',
@@ -113,7 +114,8 @@ contractDescribe('workspace edge route seed contract', () => {
       '/design-wiki',
     ]);
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
-      expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
+      expect.objectContaining({ pathPrefix: '/gtm', surface: 'sites', auth: 'workspace-session', target: expect.objectContaining({ siteId: 'gtm', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/gtm/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
+      expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'workspace-session', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
       expect.objectContaining({ pathPrefix: '/artifacts', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'artifacts', manifestKey: 'sites/workspace_internal/artifacts/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/observability', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
       expect.objectContaining({ pathPrefix: '/traces', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
@@ -242,6 +244,41 @@ contractDescribe('workspace edge route seed contract', () => {
         target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
       }),
     ]));
+  });
+
+  it('should isolate launcher and GTM snapshot targets by authenticated workspace identity', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+    const internal = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+    }) as { routes: Array<{ pathPrefix: string; auth: string; target: { kind: string; manifestKey?: string } }> };
+    const customer = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_acme',
+      workspaceSlug: 'acme',
+      hostname: 'acme.consuelohq.com',
+    }) as { routes: Array<{ pathPrefix: string; auth: string; target: { kind: string; manifestKey?: string } }> };
+
+    for (const record of [internal, customer]) {
+      expect(record.routes[0]).toMatchObject({
+        pathPrefix: '/gtm',
+        auth: 'workspace-session',
+        target: { kind: 'site-snapshot' },
+      });
+      expect(record.routes[1]).toMatchObject({
+        pathPrefix: '/',
+        auth: 'workspace-session',
+        target: { kind: 'site-snapshot' },
+      });
+    }
+
+    expect(internal.routes[0]?.target.manifestKey).toBe(
+      'sites/workspace_internal/gtm/seeded-workspace-site-shell/index.html',
+    );
+    expect(customer.routes[0]?.target.manifestKey).toBe(
+      'sites/workspace_acme/gtm/seeded-workspace-site-shell/index.html',
+    );
+    expect(JSON.stringify(customer.routes)).not.toMatch(/internal\.consuelohq\.com|testing\.consuelohq\.com|app\.consuelohq\.com/);
   });
 
   it('should replace empty seed identity inputs with defaults before normalization', async () => {

@@ -788,7 +788,10 @@ export const createWorkspaceCloudflareEdgeRouter = (
         }
 
         if (resolution.target.kind === 'site-snapshot') {
-          if (resolution.auth !== 'public') {
+          if (
+            resolution.auth !== 'public' &&
+            resolution.auth !== 'workspace-session'
+          ) {
             return createSafeErrorResponse({
               status: 503,
               code: 'WORKSPACE_EDGE_AUTH_REQUIRED',

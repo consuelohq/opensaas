@@ -1,10 +1,45 @@
 import { describe, expect, it } from 'vitest';
 
-import { renderLauncherOnboarding } from '../scripts/lib/launcher-onboarding';
+import {
+  createWorkspaceProductUrls,
+  renderLauncherOnboarding,
+} from '../scripts/lib/launcher-onboarding';
 
 describe('launcher onboarding', () => {
+  it.each([
+    {
+      workspaceHost: 'internal.consuelohq.com',
+      expected: {
+        launcher: 'https://internal.consuelohq.com/',
+        gtm: 'https://internal.consuelohq.com/gtm',
+        artifacts: 'https://internal.consuelohq.com/artifacts',
+        observability: 'https://internal.consuelohq.com/observability',
+        diffs: 'https://internal.consuelohq.com/diffs',
+      },
+    },
+    {
+      workspaceHost: 'acme-customer.consuelohq.com',
+      expected: {
+        launcher: 'https://acme-customer.consuelohq.com/',
+        gtm: 'https://acme-customer.consuelohq.com/gtm',
+        artifacts: 'https://acme-customer.consuelohq.com/artifacts',
+        observability: 'https://acme-customer.consuelohq.com/observability',
+        diffs: 'https://acme-customer.consuelohq.com/diffs',
+      },
+    },
+  ])('derives product URLs from authenticated workspace host $workspaceHost', ({ workspaceHost, expected }) => {
+    expect(createWorkspaceProductUrls(workspaceHost)).toMatchObject(expected);
+  });
+
+  it('rejects platform hosts instead of using a GTM fallback', () => {
+    for (const host of ['app.consuelohq.com', 'sites.consuelohq.com', 'os.consuelohq.com']) {
+      expect(() => createWorkspaceProductUrls(host)).toThrow(/workspace host/i);
+    }
+  });
+
   it('renders ChatGPT cloud-agent onboarding with copyable MCP URL and local agent status', () => {
     const html = renderLauncherOnboarding({
+      workspaceHost: 'acme-customer.consuelohq.com',
       mcpUrl: 'https://kokayi.consuelohq.com/mcp',
       localAgents: [
         { name: 'codex', label: 'Codex', status: 'verified' },
@@ -39,8 +74,11 @@ describe('launcher onboarding', () => {
     expect(html).toContain('Go to market');
     expect(html).toContain('Artifacts');
     expect(html).toContain('Observability');
-    expect(html).toContain('href="https://sites.consuelohq.com/observability"');
-    expect(html).not.toContain('href="https://sites.consuelohq.com/tracing"');
+    expect(html).toContain('href="https://acme-customer.consuelohq.com/gtm"');
+    expect(html).toContain('href="https://acme-customer.consuelohq.com/artifacts"');
+    expect(html).toContain('href="https://acme-customer.consuelohq.com/observability"');
+    expect(html).toContain('href="https://acme-customer.consuelohq.com/diffs"');
+    expect(html).not.toMatch(/https:\/\/(?:sites|app|internal|testing)\.consuelohq\.com\/(?:gtm|artifacts|observability|diffs)/);
     expect(html).toContain('Code review');
     expect(html).toContain('Guides and Tips');
     expect(html).toContain('Documentation');
@@ -75,6 +113,7 @@ describe('launcher onboarding', () => {
 
   it('uses workspace-specific empty local-agent copy', () => {
     const html = renderLauncherOnboarding({
+      workspaceHost: 'internal.consuelohq.com',
       mcpUrl: 'https://os.consuelohq.com/mcp',
       localAgents: [],
     });

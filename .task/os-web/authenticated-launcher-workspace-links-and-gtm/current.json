@@ -1,0 +1,19 @@
+{
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/authenticated-launcher-workspace-links-and-gtm",
+  "baseBranch": "stream/os-web",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1648,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1648",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1648",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1648/authenticated-launcher-workspace-links-and-gtm",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1648",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1648/authenticated-launcher-workspace-links-and-gtm",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-authenticated-launcher-workspace-links-and-gtm",
+  "taskSession": "tsk_6075fdb62048",
+  "tmuxSession": "opensaas-os-web-authenticated-launcher-workspace-links-and-gtm-6075fdb6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-authenticated-launcher-workspace-links-and-gtm/.task/os-web/authenticated-launcher-workspace-links-and-gtm/session.json",
+  "createdAt": "2026-07-25T00:36:49.186Z"
+}

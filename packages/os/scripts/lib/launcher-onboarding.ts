@@ -6,21 +6,66 @@ export type LauncherLocalAgent = {
 
 export type LauncherOnboardingOptions = {
   mcpUrl: string;
+  workspaceHost?: string;
   localAgents?: LauncherLocalAgent[];
 };
 
 const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
+const RESERVED_PLATFORM_HOSTS = new Set([
+  'api.consuelohq.com',
+  'app.consuelohq.com',
+  'diffs.consuelohq.com',
+  'docs.consuelohq.com',
+  'install.consuelohq.com',
+  'linear.consuelohq.com',
+  'os.consuelohq.com',
+  'sites.consuelohq.com',
+  'www.consuelohq.com',
+]);
 
-const launcherLinks = {
-  sites: [
-    { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-    { label: 'Artifacts', href: 'https://sites.consuelohq.com/artifacts' },
-    { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
-    { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
-  ],
+export type WorkspaceProductUrls = {
+  launcher: string;
+  gtm: string;
+  artifacts: string;
+  observability: string;
+  diffs: string;
+};
+
+function normalizeWorkspaceHost(value: string): string {
+  const hostname = value.trim().toLowerCase().replace(/\.$/, '');
+  if (
+    !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.consuelohq\.com$/.test(hostname) ||
+    RESERVED_PLATFORM_HOSTS.has(hostname)
+  ) {
+    throw new Error('launcher workspace host must be a canonical workspace hostname');
+  }
+  return hostname;
+}
+
+export function createWorkspaceProductUrls(workspaceHost: string): WorkspaceProductUrls {
+  const origin = `https://${normalizeWorkspaceHost(workspaceHost)}`;
+  return {
+    launcher: `${origin}/`,
+    gtm: `${origin}/gtm`,
+    artifacts: `${origin}/artifacts`,
+    observability: `${origin}/observability`,
+    diffs: `${origin}/diffs`,
+  };
+}
+
+const launcherLinks = (workspaceHost?: string) => {
+  const workspaceUrls = workspaceHost ? createWorkspaceProductUrls(workspaceHost) : null;
+  return {
+    sites: [
+      { label: 'Go to market', href: workspaceUrls?.gtm ?? '/gtm' },
+      { label: 'Artifacts', href: workspaceUrls?.artifacts ?? '/artifacts' },
+      { label: 'Observability', href: workspaceUrls?.observability ?? '/observability' },
+      { label: 'Code review', href: workspaceUrls?.diffs ?? '/diffs' },
+    ],
   guides: [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }],
   writing: [{ label: 'Decision loops', href: '/writing/on-decision-loops' }],
-} as const;
+  } as const;
+};
 
 function escapeHtml(value: string): string {
   return value
@@ -48,6 +93,7 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
 
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
   const localAgents = options.localAgents ?? [];
+  const links = launcherLinks(options.workspaceHost);
   const connectedLocalAgentCount = localAgents.filter((agent) => agent.status === 'verified').length;
   const localAgentNoun = connectedLocalAgentCount === 1 ? 'agent' : 'agents';
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
@@ -156,15 +202,15 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         </section>
         <section class="section">
           <h2 class="section-title">Sites</h2>
-          ${navLinks(launcherLinks.sites)}
+          ${navLinks(links.sites)}
         </section>
         <section class="section">
           <h2 class="section-title">Guides and Tips</h2>
-          ${navLinks(launcherLinks.guides)}
+          ${navLinks(links.guides)}
         </section>
         <section class="section">
           <h2 class="section-title">Writing</h2>
-          ${navLinks(launcherLinks.writing)}
+          ${navLinks(links.writing)}
         </section>
         <section class="section">
           <h2 class="section-title">Configuration</h2>

@@ -209,6 +209,7 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-edge-sites-gateway-'));
   const sitePaths = [
     ['index.html'],
+    ['gtm', 'index.html'],
     ['artifacts', 'index.html'],
     ['traces', 'index.html'],
     ['diffs', 'index.html'],
@@ -226,7 +227,7 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
   return home;
 }
 
-function siteSnapshotTarget(siteId: 'launcher' | 'artifacts' | 'traces' | 'diffs' | 'docs' | 'configuration' | 'tools' | 'environments' | 'secrets' = 'launcher'): SiteSnapshotTarget {
+function siteSnapshotTarget(siteId: 'launcher' | 'gtm' | 'artifacts' | 'traces' | 'diffs' | 'docs' | 'configuration' | 'tools' | 'environments' | 'secrets' = 'launcher'): SiteSnapshotTarget {
   return {
     kind: 'site-snapshot',
     siteId,
@@ -374,8 +375,13 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
 
     expect(record.routes.find((route) => route.pathPrefix === '/')).toMatchObject({
       surface: 'sites',
-      auth: 'public',
+      auth: 'workspace-session',
       target: { kind: 'site-snapshot' },
+    });
+    expect(record.routes.find((route) => route.pathPrefix === '/gtm')).toMatchObject({
+      surface: 'sites',
+      auth: 'workspace-session',
+      target: { kind: 'site-snapshot', siteId: 'gtm' },
     });
     expect(traceRoute).toMatchObject({
       surface: 'sites',
@@ -383,6 +389,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       target: { kind: 'site-snapshot', siteId: 'traces' },
     });
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot').map((route) => route.pathPrefix)).toEqual([
+      '/gtm',
       '/',
       '/artifacts',
       '/observability',
@@ -912,6 +919,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
     });
 
     expect(expectedPlan.verifyUrl).toBe('https://internal.consuelohq.com/');
+    expect(expectedPlan.routeSql).toContain('\"pathPrefix\":\"/gtm\"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/artifacts"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/observability"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/traces"');
@@ -924,6 +932,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
     expect(expectedPlan.routeSql).toContain('"kind":"consuelo-gateway-service"');
     expect(verificationUrls).toEqual([
       'https://internal.consuelohq.com/',
+      'https://internal.consuelohq.com/gtm',
       'https://internal.consuelohq.com/artifacts',
       'https://internal.consuelohq.com/observability',
       'https://internal.consuelohq.com/traces',
@@ -939,6 +948,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       verifyUrl: 'https://internal.consuelohq.com/',
       verifiedUrls: [
         'https://internal.consuelohq.com/',
+        'https://internal.consuelohq.com/gtm',
         'https://internal.consuelohq.com/artifacts',
         'https://internal.consuelohq.com/observability',
         'https://internal.consuelohq.com/traces',

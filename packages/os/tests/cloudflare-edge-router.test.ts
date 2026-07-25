@@ -78,6 +78,11 @@ type WorkspaceCloudflareEdgeRouterContract = {
     registry: WorkspaceCloudflareEdgeRouteRegistry;
     internalSigningSecret?: string;
     fetchUpstream?: (request: Request) => Promise<Response>;
+    authorizeWorkspaceSession?: (input: {
+      request: Request;
+      workspaceId: string;
+      workspaceHost: string;
+    }) => Promise<boolean>;
     siteSnapshots?: WorkspaceSitesSnapshotStore;
   }) => WorkspaceCloudflareEdgeRouter;
 };
@@ -875,6 +880,136 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(cachePuts).toEqual([]);
     expect(r2Reads).toEqual(['sites/workspace_123/launcher/version_1/index.html']);
     expect(upstreamRequests).toHaveLength(0);
+  });
+
+  it('should require one workspace session for launcher and GTM snapshots without a second login', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const authorizedPaths: string[] = [];
+    const r2Reads: string[] = [];
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          const isGtm = input.path === '/gtm';
+          return {
+            allowed: true,
+            workspaceId: 'workspace_acme',
+            hostname: 'acme.consuelohq.com',
+            route: isGtm ? '/gtm' : '/',
+            surface: 'sites',
+            auth: 'workspace-session',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: isGtm ? 'gtm' : 'launcher',
+              versionId: 'version_acme',
+              manifestKey: `sites/workspace_acme/${isGtm ? 'gtm' : 'launcher'}/version_acme/index.html`,
+              cachePolicy: 'static-shell',
+            },
+          };
+        },
+      },
+      authorizeWorkspaceSession: async ({ request, workspaceId, workspaceHost }) => {
+        authorizedPaths.push(new URL(request.url).pathname);
+        expect(workspaceId).toBe('workspace_acme');
+        expect(workspaceHost).toBe('acme.consuelohq.com');
+        return request.headers.get('cookie') === '__Host-consuelo_os_session=session_acme';
+      },
+      siteSnapshots: {
+        r2: {
+          async get(key) {
+            r2Reads.push(key);
+            return { text: async () => key.includes('/gtm/') ? '<title>Acme GTM</title>' : '<title>Acme launcher</title>' };
+          },
+        },
+      },
+    });
+
+    const anonymous = await router.fetch(new Request('https://acme.consuelohq.com/', {
+      headers: { accept: 'text/html' },
+    }));
+    expect(anonymous.status).toBe(302);
+    expect(new URL(anonymous.headers.get('location') ?? '').searchParams.get('return_to')).toBe('/');
+
+    const cookie = '__Host-consuelo_os_session=session_acme';
+    const launcher = await router.fetch(new Request('https://acme.consuelohq.com/', {
+      headers: { cookie },
+    }));
+    const gtm = await router.fetch(new Request('https://acme.consuelohq.com/gtm', {
+      headers: { cookie },
+    }));
+
+    expect(launcher.status).toBe(200);
+    expect(await launcher.text()).toContain('Acme launcher');
+    expect(gtm.status).toBe(200);
+    expect(gtm.headers.get('location')).toBeNull();
+    expect(await gtm.text()).toContain('Acme GTM');
+    expect(authorizedPaths).toEqual(['/', '/', '/gtm']);
+    expect(r2Reads).toEqual([
+      'sites/workspace_acme/launcher/version_acme/index.html',
+      'sites/workspace_acme/gtm/version_acme/index.html',
+    ]);
+  });
+
+  it('should isolate cache keys and snapshots by workspace hostname', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const cacheMatches: string[] = [];
+    const cachePuts: string[] = [];
+    const r2Reads: string[] = [];
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve(input) {
+          const workspaceSlug = input.host.split('.')[0] ?? 'missing';
+          return {
+            allowed: true,
+            workspaceId: `workspace_${workspaceSlug}`,
+            hostname: input.host,
+            route: '/gtm',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'gtm',
+              versionId: 'version_shared',
+              manifestKey: `sites/workspace_${workspaceSlug}/gtm/version_shared/index.html`,
+              cachePolicy: 'versioned-asset',
+            },
+          };
+        },
+      },
+      siteSnapshots: {
+        cache: {
+          async match(request) {
+            cacheMatches.push(request.url);
+            return null;
+          },
+          async put(request) {
+            cachePuts.push(request.url);
+          },
+        },
+        r2: {
+          async get(key) {
+            r2Reads.push(key);
+            return { text: async () => `<title>${key}</title>` };
+          },
+        },
+      },
+    });
+
+    await router.fetch(new Request('https://alpha.consuelohq.com/gtm?utm_source=one'));
+    await router.fetch(new Request('https://beta.consuelohq.com/gtm?utm_source=two'));
+
+    expect(cacheMatches).toEqual([
+      'https://alpha.consuelohq.com/gtm',
+      'https://beta.consuelohq.com/gtm',
+    ]);
+    expect(cachePuts).toEqual(cacheMatches);
+    expect(r2Reads).toEqual([
+      'sites/workspace_alpha/gtm/version_shared/index.html',
+      'sites/workspace_beta/gtm/version_shared/index.html',
+    ]);
   });
 
   it('should fail closed when a site snapshot cannot be read', async () => {

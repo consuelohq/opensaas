@@ -160,6 +160,7 @@ async function issueSingleMembershipHandoff(input: {
 async function createEdge(input: {
   authority: AuthorityHandler;
   workspaceHost?: string;
+  includeLauncherGtm?: boolean;
 }): Promise<{
   handler: (request: Request) => Promise<Response>;
   upstreamRequests: Request[];
@@ -175,17 +176,47 @@ async function createEdge(input: {
     provider: 'cloudflare',
     owner: 'consuelo-os-cloud',
     status: 'active',
-    routes: [{
-      surface: 'app',
-      pathPrefix: '/agents',
-      auth: 'workspace-session',
-      status: 'active',
-      target: {
-        kind: 'service-upstream',
-        service: 'app',
-        upstreamUrl: 'https://agents.internal.test',
+    routes: [
+      ...(input.includeLauncherGtm ? [
+        {
+          surface: 'sites' as const,
+          pathPrefix: '/gtm',
+          auth: 'workspace-session' as const,
+          status: 'active' as const,
+          target: {
+            kind: 'site-snapshot' as const,
+            siteId: 'gtm',
+            versionId: 'version_workspace_one',
+            manifestKey: 'sites/workspace_one/gtm/version_workspace_one/index.html',
+            cachePolicy: 'static-shell' as const,
+          },
+        },
+        {
+          surface: 'sites' as const,
+          pathPrefix: '/',
+          auth: 'workspace-session' as const,
+          status: 'active' as const,
+          target: {
+            kind: 'site-snapshot' as const,
+            siteId: 'launcher',
+            versionId: 'version_workspace_one',
+            manifestKey: 'sites/workspace_one/launcher/version_workspace_one/index.html',
+            cachePolicy: 'static-shell' as const,
+          },
+        },
+      ] : []),
+      {
+        surface: 'app',
+        pathPrefix: '/agents',
+        auth: 'workspace-session',
+        status: 'active',
+        target: {
+          kind: 'service-upstream',
+          service: 'app',
+          upstreamUrl: 'https://agents.internal.test',
+        },
       },
-    }],
+    ],
   });
   const upstreamRequests: Request[] = [];
   const namespace = {
@@ -199,6 +230,15 @@ async function createEdge(input: {
       CONSUELO_EDGE_SIGNING_SECRET: internalSigningSecret,
       WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: internalSigningSecret,
       OS_DEVICE_AUTHORITY: namespace,
+      ...(input.includeLauncherGtm ? {
+        SITES_SNAPSHOTS: {
+          async get(key: string) {
+            if (key.includes('/gtm/')) return { text: async () => '<!doctype html><title>Workspace GTM</title>' };
+            if (key.includes('/launcher/')) return { text: async () => '<!doctype html><title>Workspace launcher</title>' };
+            return null;
+          },
+        },
+      } : {}),
     }, {
       fetchUpstream: async (request) => {
         upstreamRequests.push(request);
@@ -354,6 +394,49 @@ describe('Consuelo OS universal login', () => {
       },
     ));
     expect(afterLogout.status).toBe(302);
+  });
+
+  it('reuses one consumed workspace session for launcher-to-GTM navigation', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedMembership(store, {
+      workspaceId: 'workspace_one',
+      workspaceSlug: 'one',
+      workspaceHost: 'one.consuelohq.com',
+    });
+    const { handler: authority, nonce } = createAuthority({ store });
+    const issued = await issueSingleMembershipHandoff({
+      handler: authority,
+      nonce,
+      returnTo: '/',
+    });
+    const edge = await createEdge({
+      authority,
+      includeLauncherGtm: true,
+    });
+    const consumed = await edge.handler(new Request(issued.location));
+    const session = cookieValue(consumed, '__Host-consuelo_os_session');
+    const cookie = cookieHeader({ '__Host-consuelo_os_session': session });
+
+    const launcher = await edge.handler(new Request('https://one.consuelohq.com/', {
+      headers: { cookie },
+    }));
+    const gtm = await edge.handler(new Request('https://one.consuelohq.com/gtm', {
+      headers: { cookie },
+    }));
+
+    expect(launcher.status).toBe(200);
+    expect(await launcher.text()).toContain('Workspace launcher');
+    expect(gtm.status).toBe(200);
+    expect(gtm.headers.get('location')).toBeNull();
+    expect(await gtm.text()).toContain('Workspace GTM');
+
+    const anonymousGtm = await edge.handler(new Request('https://one.consuelohq.com/gtm', {
+      headers: { accept: 'text/html' },
+    }));
+    expect(anonymousGtm.status).toBe(302);
+    const login = new URL(anonymousGtm.headers.get('location') ?? '');
+    expect(login.pathname).toBe('/login/google/start');
+    expect(login.searchParams.get('return_to')).toBe('/gtm');
   });
 
   it('requires an explicit CSRF-protected choice for multiple active memberships and ignores browser-supplied hosts', async () => {

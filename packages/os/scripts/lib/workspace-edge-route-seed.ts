@@ -32,17 +32,18 @@ const DEFAULT_SITE_VERSION_ID = 'seeded-workspace-site-shell';
 const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_ID}/${DEFAULT_SITE_VERSION_ID}/index.html`;
 const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
 const SITE_SNAPSHOT_ROUTES = [
-  { pathPrefix: '/', siteId: 'launcher' },
-  { pathPrefix: '/artifacts', siteId: 'artifacts' },
-  { pathPrefix: '/observability', siteId: 'traces' },
-  { pathPrefix: '/traces', siteId: 'traces' },
-  { pathPrefix: '/tracing', siteId: 'traces' },
-  { pathPrefix: '/diffs', siteId: 'diffs' },
-  { pathPrefix: '/docs', siteId: 'docs' },
-  { pathPrefix: '/configuration', siteId: 'configuration' },
-  { pathPrefix: '/tools', siteId: 'tools' },
-  { pathPrefix: '/environments', siteId: 'environments' },
-  { pathPrefix: '/secrets', siteId: 'secrets' },
+  { pathPrefix: '/gtm', siteId: 'gtm', auth: 'workspace-session' },
+  { pathPrefix: '/', siteId: 'launcher', auth: 'workspace-session' },
+  { pathPrefix: '/artifacts', siteId: 'artifacts', auth: 'public' },
+  { pathPrefix: '/observability', siteId: 'traces', auth: 'public' },
+  { pathPrefix: '/traces', siteId: 'traces', auth: 'public' },
+  { pathPrefix: '/tracing', siteId: 'traces', auth: 'public' },
+  { pathPrefix: '/diffs', siteId: 'diffs', auth: 'public' },
+  { pathPrefix: '/docs', siteId: 'docs', auth: 'public' },
+  { pathPrefix: '/configuration', siteId: 'configuration', auth: 'public' },
+  { pathPrefix: '/tools', siteId: 'tools', auth: 'public' },
+  { pathPrefix: '/environments', siteId: 'environments', auth: 'public' },
+  { pathPrefix: '/secrets', siteId: 'secrets', auth: 'public' },
 ] as const;
 type SiteSnapshotRoute = typeof SITE_SNAPSHOT_ROUTES[number];
 
@@ -98,7 +99,7 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
 }): WorkspaceRouteD1Route => ({
   surface: 'sites',
   pathPrefix: input.pathPrefix,
-  auth: 'public',
+  auth: input.auth,
   status: 'active',
   target: {
     kind: 'site-snapshot',

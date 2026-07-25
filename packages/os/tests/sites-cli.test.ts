@@ -196,6 +196,10 @@ describe('Sites CLI', () => {
 
 
   it('renders the first-install launcher onboarding with the local OS connection URL', () => {
+    writeFileSync(join(tempHome, 'config.json'), JSON.stringify({
+      workspace: { host: 'acme-customer.consuelohq.com' },
+      agents: [],
+    }, null, 2));
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
@@ -211,9 +215,13 @@ describe('Sites CLI', () => {
       'support@consuelohq.com',
       'Systems Engineer',
       'Go to market',
+      'https://acme-customer.consuelohq.com/gtm',
       'Artifacts',
+      'https://acme-customer.consuelohq.com/artifacts',
       'Observability',
+      'https://acme-customer.consuelohq.com/observability',
       'Code review',
+      'https://acme-customer.consuelohq.com/diffs',
       'Guides and Tips',
       'Documentation',
       'Decision loops',
@@ -233,6 +241,7 @@ describe('Sites CLI', () => {
     expect(html).not.toContain('[Tracing]');
     expect(html).not.toContain('[Diffs]');
     expect(html).not.toContain('const siteHotkeys = {');
+    expect(html).not.toMatch(/https:\/\/(?:sites|app|internal|testing)\.consuelohq\.com\/(?:gtm|artifacts|observability|diffs)/);
     expect(html).not.toContain('Versioned local Sites pages with current pointers');
     expect(html).not.toContain('<div class="grid">');
   });
