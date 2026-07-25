@@ -15,7 +15,6 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
     docs: {
       description:
         'Ensure recoil value and setter are named after their atom name',
-      recommended: 'recommended',
     },
     fixable: 'code',
     schema: [],
@@ -91,9 +90,9 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
                 node,
                 messageId: 'invalidVariableName',
                 data: {
-                  actual: actualVariableName,
-                  expected: expectedVariableNameBase,
-                  callee: node.init.callee.name,
+                  actualName: actualVariableName,
+                  expectedName: expectedVariableNameBase,
+                  hookName: node.init.callee.name,
                 },
                 fix: (fixer) => {
                   if (node.id.type === AST_NODE_TYPES.ArrayPattern) {

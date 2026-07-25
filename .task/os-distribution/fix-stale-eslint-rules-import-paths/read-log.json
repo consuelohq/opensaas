@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/eslint-rules/rules/mdx-component-newlines.ts",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-07-25T02:23:27.973Z"
+}

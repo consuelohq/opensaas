@@ -59,6 +59,15 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('lints only changed frontend files while preserving full typecheck and test tasks', () => {
+    const frontWorkflow = readFileSync(join(workflowDir, 'ci-front.yaml'), 'utf8');
+
+    expect(frontWorkflow).toContain("if: matrix.task == 'lint'");
+    expect(frontWorkflow).toContain('tasks: lint:diff-with-main');
+    expect(frontWorkflow).toContain("if: matrix.task != 'lint'");
+    expect(frontWorkflow).toContain('tasks: ${{ matrix.task }}');
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),

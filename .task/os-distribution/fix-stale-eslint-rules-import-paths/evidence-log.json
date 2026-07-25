@@ -1,0 +1,552 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+  "events": [
+    {
+      "id": "bfd4b4be-d5fc-4387-8221-d9dc744a3e9e",
+      "occurred_at": "2026-07-25T01:15:03.668Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-ui/eslint.config.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "0bc7a989-6abf-49b2-a5cb-5324e78482aa",
+      "occurred_at": "2026-07-25T01:18:41.861Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/project.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "42ef049a-b3de-4db7-a83f-eeb571827d88",
+      "occurred_at": "2026-07-25T01:18:58.211Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/ci-front.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "13a701c3-b15f-4b3d-aa83-ddf6712938ed",
+      "occurred_at": "2026-07-25T01:19:37.734Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/github-workflow-policy.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "5da55398-09aa-4333-a1bb-7573141d6ac5",
+      "occurred_at": "2026-07-25T01:20:41.040Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "2149ecb1-c1ed-4b24-8b35-226c97445ff6",
+      "occurred_at": "2026-07-25T01:21:05.633Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "bf03e98f-f205-4b46-ab6b-947cd3f43c49",
+      "occurred_at": "2026-07-25T01:24:43.994Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "53d0fcd7-b2f2-418f-846a-8e2567529e74",
+      "occurred_at": "2026-07-25T01:27:27.130Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/jest.config.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "39c33684-74cb-4e80-9034-7253dfcfe39a",
+      "occurred_at": "2026-07-25T01:28:46.127Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/rules/effect-components.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "e26efa80-cb0a-4291-9f5e-5e4cf6f7f6aa",
+      "occurred_at": "2026-07-25T01:30:09.454Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "64ea5afc-dcb5-42a7-9fdd-e9889d959f49",
+      "occurred_at": "2026-07-25T01:30:09.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "d8b48256-7aa8-41d5-a69b-f9e1e0d45c95",
+      "occurred_at": "2026-07-25T01:30:17.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/utils/typedTokenHelpers.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "cbe634a9-159a-4e7e-bd7e-fbf5bfd0cf28",
+      "occurred_at": "2026-07-25T01:31:00.198Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/rules/mdx-component-newlines.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "b3c1e072-09bd-4090-bb1a-811bd9275f0d",
+      "occurred_at": "2026-07-25T01:31:43.271Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/eslint-config-paths.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "c752f9ac-bb2a-423e-92f8-0c9c681efb92",
+      "occurred_at": "2026-07-25T01:32:28.535Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "eb7acb60-550d-4856-be45-486d61f4fdab",
+      "occurred_at": "2026-07-25T01:34:02.859Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "8b58543a-d1cf-4210-8b6d-25b7b1c5d4c1",
+      "occurred_at": "2026-07-25T01:45:55.381Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-distribution/fix-stale-eslint-rules-import-paths/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "9460110e-4f68-4060-aaa8-66e13f7babac",
+      "occurred_at": "2026-07-25T01:52:03.552Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-distribution/fix-stale-eslint-rules-import-paths/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "9a0c376c-8922-4f14-ac66-aeb0d6c1e8fb",
+      "occurred_at": "2026-07-25T02:07:50.911Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "78f22e3b-e243-45c4-b872-e375394aa913",
+      "occurred_at": "2026-07-25T02:07:51.253Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "20280f22-9b48-472d-acbe-ce95a1ed2826",
+      "occurred_at": "2026-07-25T02:07:51.602Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "aa7c8968-b7ff-46e9-a20a-1f1b8c146426",
+      "occurred_at": "2026-07-25T02:07:52.741Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "01453a9c-0fb0-4e17-802f-3a9271a4c482",
+      "occurred_at": "2026-07-25T02:07:52.795Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "a6652300-2b50-4e98-a4d9-dfeb1b5e2b4e",
+      "occurred_at": "2026-07-25T02:08:06.393Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "4573b21a-9b87-435f-a526-fe18436d0ed2",
+      "occurred_at": "2026-07-25T02:08:24.480Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "2e23e55f-f552-4890-a01f-d637b34fdc0a",
+      "occurred_at": "2026-07-25T02:08:40.021Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "419768c3-499b-43df-882c-ca264ccf1d49",
+      "occurred_at": "2026-07-25T02:13:09.254Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "844b1d08-5911-4bb4-84a2-ad8d033e2a73",
+      "occurred_at": "2026-07-25T02:13:25.468Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "9c33bda2-44db-49d6-b5d9-136590476c79",
+      "occurred_at": "2026-07-25T02:13:58.620Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "52d225c5-f45e-4f3a-a59e-551a69a98112",
+      "occurred_at": "2026-07-25T02:14:34.658Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/review-test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "b2df24ba-d0eb-4d17-9a84-c6f0236bdc36",
+      "occurred_at": "2026-07-25T02:18:19.449Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "ceb93906-2ac1-449e-8062-9de3d711a374",
+      "occurred_at": "2026-07-25T02:18:30.184Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/verification.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "e81ae216-61dc-4a03-92e1-130301837db7",
+      "occurred_at": "2026-07-25T02:20:22.475Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/eslint-rules/rules/mdx-component-newlines.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    },
+    {
+      "id": "46b2f745-d872-4603-8155-26faf029c804",
+      "occurred_at": "2026-07-25T02:23:28.032Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-stale-eslint-rules-import-paths"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-25T02:23:28.091Z"
+}

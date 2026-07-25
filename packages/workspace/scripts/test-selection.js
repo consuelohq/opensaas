@@ -160,6 +160,7 @@ function normalizeRule(rule, source = 'explicit') {
   return {
     id: rule.id,
     source: rule.source || [],
+    exclude: rule.exclude || [],
     tests: rule.tests || [],
     critical: Boolean(rule.critical),
     reason: rule.reason || '',
@@ -183,6 +184,7 @@ function createAutoRules(tests, projects, packageScripts) {
     rules.push(normalizeRule({
       id: `auto:${project.name}:test`,
       source: [`${project.root}/**`],
+      exclude: [`${project.root}/eslint.config.*`],
       tests: [{ name: `${project.name} test`, command: ['npx', 'nx', 'test', project.name, '--coverage=false'] }],
       critical: false,
       reason: `Auto-discovered Nx test target for ${project.root}.`,
@@ -290,7 +292,10 @@ function select(registry, files) {
   const suites = [];
   const seen = new Set();
   for (const rule of registry.rules) {
-    const matchedFiles = files.filter((file) => rule.source.some((pattern) => matchesPattern(file, pattern)));
+    const matchedFiles = files.filter((file) =>
+      rule.source.some((pattern) => matchesPattern(file, pattern))
+      && !(rule.exclude || []).some((pattern) => matchesPattern(file, pattern))
+    );
     if (matchedFiles.length === 0) continue;
     matchedRules.push({ id: rule.id, critical: rule.critical, reason: rule.reason, matchedFiles, origin: rule.origin });
     for (const test of rule.tests) {
