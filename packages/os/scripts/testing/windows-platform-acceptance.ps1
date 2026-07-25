@@ -100,8 +100,14 @@ process.on('SIGTERM', () => server.stop(true));
 
   $acl = (& icacls.exe $consueloHome 2>&1 | Out-String)
   if ($acl -notmatch 'ConsueloOS') { throw 'Consuelo service ACL entry is missing.' }
-  $profileAcl = (& icacls.exe $testProfile 2>&1 | Out-String)
-  if ($profileAcl -notmatch 'ConsueloOS') { throw 'Consuelo service profile traversal ACL entry is missing.' }
+  $profileAncestor = $testProfile
+  while ($profileAncestor -and $profileAncestor -ne [IO.Path]::GetPathRoot($profileAncestor)) {
+    $profileAcl = (& icacls.exe $profileAncestor 2>&1 | Out-String)
+    if ($profileAcl -notmatch 'ConsueloOS') {
+      throw "Consuelo service profile traversal ACL entry is missing: $profileAncestor"
+    }
+    $profileAncestor = Split-Path -Parent $profileAncestor
+  }
 
   & $ownedBun $platformCli uninstall-service --home $consueloHome --bun $serviceBun --service-host $serviceHost --dry-run --json | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Windows uninstall dry run failed.' }

@@ -220,9 +220,17 @@ describe('Windows Service Control Manager adapter', () => {
     const traversalAcl = rendered.indexOf(
       'icacls.exe D:\\Profiles\\Ko User /grant:r NT SERVICE\\ConsueloOS:(RX) /c',
     );
+    const parentTraversalAcl = rendered.indexOf(
+      'icacls.exe D:\\Profiles /grant:r NT SERVICE\\ConsueloOS:(RX) /c',
+    );
     const serviceStart = rendered.indexOf('sc.exe start ConsueloOS');
     expect(traversalAcl).toBeGreaterThan(-1);
+    expect(parentTraversalAcl).toBeGreaterThan(-1);
     expect(traversalAcl).toBeLessThan(serviceStart);
+    expect(parentTraversalAcl).toBeLessThan(serviceStart);
+    expect(rendered).not.toContain(
+      'icacls.exe D:\\ /grant:r NT SERVICE\\ConsueloOS:(RX)',
+    );
     expect(rendered).not.toMatch(/token|secret|password|credential/i);
   });
 
@@ -340,6 +348,20 @@ describe('Windows Service Control Manager adapter', () => {
     expect(calls).toHaveLength(beforeDryRun);
     expect(fileSystem.removed).toEqual([]);
     await expect(controller.uninstall({ home })).resolves.toBeUndefined();
+    const uninstallRendered = calls
+      .map(({ command, args }) => `${command} ${args.join(' ')}`)
+      .join('\n');
+    const homeAclCleanup = uninstallRendered.indexOf(
+      `icacls.exe ${home} /remove:g NT SERVICE\\ConsueloOS /t /c`,
+    );
+    const traversalAclCleanup = uninstallRendered.indexOf(
+      'icacls.exe D:\\Profiles\\Ko User /remove:g NT SERVICE\\ConsueloOS /c',
+    );
+    const serviceDelete = uninstallRendered.indexOf('sc.exe delete ConsueloOS');
+    expect(homeAclCleanup).toBeGreaterThan(-1);
+    expect(traversalAclCleanup).toBeGreaterThan(-1);
+    expect(homeAclCleanup).toBeLessThan(serviceDelete);
+    expect(traversalAclCleanup).toBeLessThan(serviceDelete);
     expect(fileSystem.removed).toEqual([
       `${home}\\node\\service\\windows-service.json`,
       serviceHostExecutable,

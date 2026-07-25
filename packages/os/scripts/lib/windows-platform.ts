@@ -214,6 +214,17 @@ function isWindowsPathWithin(parent: string, candidate: string): boolean {
   return normalizedCandidate.startsWith(`${normalizedParent}\\`);
 }
 
+function windowsTraversalAncestors(path: string): string[] {
+  const ancestors: string[] = [];
+  let current = win32.dirname(win32.resolve(path));
+  while (true) {
+    const parent = win32.dirname(current);
+    if (parent === current) return ancestors;
+    ancestors.push(current);
+    current = parent;
+  }
+}
+
 function assertProtectedServiceExecutable(input: {
   home: string;
   path: string;
@@ -463,17 +474,19 @@ export function createWindowsServiceController(input: {
         if (acl.exitCode !== 0)
           throw failure(acl, 'failed to apply restrictive Consuelo ACLs');
 
-        const profileTraversalAcl = await run('icacls.exe', [
-          win32.dirname(paths.home),
-          '/grant:r',
-          `NT SERVICE\\${serviceName}:(RX)`,
-          '/c',
-        ]);
-        if (profileTraversalAcl.exitCode !== 0) {
-          throw failure(
-            profileTraversalAcl,
-            'failed to grant Windows service profile traversal',
-          );
+        for (const ancestor of windowsTraversalAncestors(paths.home)) {
+          const profileTraversalAcl = await run('icacls.exe', [
+            ancestor,
+            '/grant:r',
+            `NT SERVICE\\${serviceName}:(RX)`,
+            '/c',
+          ]);
+          if (profileTraversalAcl.exitCode !== 0) {
+            throw failure(
+              profileTraversalAcl,
+              `failed to grant Windows service traversal on ${ancestor}`,
+            );
+          }
         }
 
         if (options.start !== false) {
@@ -560,6 +573,33 @@ export function createWindowsServiceController(input: {
             stopped,
             `failed to stop Windows service ${serviceName}`,
           );
+        }
+        const homeAclCleanup = await run('icacls.exe', [
+          paths.home,
+          '/remove:g',
+          `NT SERVICE\\${serviceName}`,
+          '/t',
+          '/c',
+        ]);
+        if (homeAclCleanup.exitCode !== 0) {
+          throw failure(
+            homeAclCleanup,
+            `failed to remove Windows service ACLs from ${paths.home}`,
+          );
+        }
+        for (const ancestor of windowsTraversalAncestors(paths.home)) {
+          const traversalAclCleanup = await run('icacls.exe', [
+            ancestor,
+            '/remove:g',
+            `NT SERVICE\\${serviceName}`,
+            '/c',
+          ]);
+          if (traversalAclCleanup.exitCode !== 0) {
+            throw failure(
+              traversalAclCleanup,
+              `failed to remove Windows service traversal ACL from ${ancestor}`,
+            );
+          }
         }
         const deleted = await run('sc.exe', ['delete', serviceName]);
         if (deleted.exitCode !== 0 && !isServiceAbsent(deleted)) {
