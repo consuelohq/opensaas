@@ -319,7 +319,28 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
     owner: 'consuelo-os-cloud',
     status: 'active',
     routes: [
-      { surface: 'sites', pathPrefix: '/', auth: 'public', status: 'active', target: siteSnapshotTarget('launcher') },
+      {
+        surface: 'os',
+        pathPrefix: '/gtm',
+        auth: 'workspace-session',
+        status: 'active',
+        target: {
+          kind: 'os-connector',
+          connectorId: 'connector_internal',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
+        },
+      },
+      {
+        surface: 'sites',
+        pathPrefix: '/',
+        auth: 'workspace-session',
+        status: 'active',
+        target: {
+          ...siteSnapshotTarget('launcher'),
+          cachePolicy: 'private-preview',
+        },
+      },
       { surface: 'sites', pathPrefix: '/artifacts', auth: 'public', status: 'active', target: siteSnapshotTarget('artifacts') },
       { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
       { surface: 'sites', pathPrefix: '/tracing', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
@@ -356,6 +377,31 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
 }
 
 contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integration', () => {
+  it('should keep the integrated route fixture aligned with the authenticated launcher and GTM contract', () => {
+    const record = integratedRouteRecord();
+
+    expect(record.routes.find((route) => route.pathPrefix === '/')).toMatchObject({
+      surface: 'sites',
+      auth: 'workspace-session',
+      target: {
+        kind: 'site-snapshot',
+        siteId: 'launcher',
+        cachePolicy: 'private-preview',
+      },
+    });
+    expect(record.routes.find((route) => route.pathPrefix === '/gtm')).toMatchObject({
+      surface: 'os',
+      auth: 'workspace-session',
+      target: {
+        kind: 'os-connector',
+        connectorId: 'connector_internal',
+      },
+    });
+    expect(
+      record.routes.findIndex((route) => route.pathPrefix === '/gtm'),
+    ).toBeLessThan(record.routes.findIndex((route) => route.pathPrefix === '/'));
+  });
+
   it('should seed workspace routes with Trace as a Site shell and Gateway as the data boundary when connector inputs exist', async () => {
     const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
 
