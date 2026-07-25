@@ -59,6 +59,20 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('invalidates dependency caches when workspace topology changes', () => {
+    const action = readFileSync(
+      join(repoRoot, '.github/actions/yarn-install/action.yaml'),
+      'utf8',
+    );
+
+    expect(action).toContain('TOPOLOGY_HASH=');
+    expect(action).toContain("git ls-files package.json yarn.lock .yarnrc.yml 'packages/*/package.json' 'packages/*/project.json'");
+    expect(action).toContain("printf '%s\\t%s\\n'");
+    expect(action).toContain('git hash-object "${file}"');
+    expect(action).toContain('${TOPOLOGY_HASH}');
+    expect(action).not.toContain("hashFiles('yarn.lock')");
+  });
+
   test('separates frontend config lint from source typecheck, tests, and builds', () => {
     const frontWorkflow = readFileSync(join(workflowDir, 'ci-front.yaml'), 'utf8');
 
@@ -86,20 +100,6 @@ describe('GitHub workflow policy', () => {
       "needs.classify-shared-source-changes.outputs.source_changed == 'true'",
     );
     expect(sharedWorkflow).toContain('task: [lint, typecheck, test]');
-  });
-
-  test('invalidates dependency caches when workspace topology changes', () => {
-    const action = readFileSync(
-      join(repoRoot, '.github/actions/yarn-install/action.yaml'),
-      'utf8',
-    );
-
-    expect(action).toContain('TOPOLOGY_HASH=');
-    expect(action).toContain("git ls-files package.json yarn.lock .yarnrc.yml 'packages/*/package.json' 'packages/*/project.json'");
-    expect(action).toContain("printf '%s\\t%s\\n'");
-    expect(action).toContain('git hash-object "${file}"');
-    expect(action).toContain('${TOPOLOGY_HASH}');
-    expect(action).not.toContain("hashFiles('yarn.lock')");
   });
 
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
