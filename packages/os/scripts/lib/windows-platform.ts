@@ -381,7 +381,7 @@ export function createWindowsServiceController(input: {
           'start=',
           'auto',
           'obj=',
-          'NT AUTHORITY\\LocalService',
+          `NT SERVICE\\${serviceName}`,
           'DisplayName=',
           'Consuelo OS',
         ]);
@@ -404,7 +404,7 @@ export function createWindowsServiceController(input: {
             'start=',
             'auto',
             'obj=',
-            'NT AUTHORITY\\LocalService',
+            `NT SERVICE\\${serviceName}`,
             'DisplayName=',
             'Consuelo OS',
           ]);

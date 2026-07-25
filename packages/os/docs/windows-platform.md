@@ -17,7 +17,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
 
 The logical Consuelo home remains `~/.consuelo/`; on Windows it maps to `%USERPROFILE%\.consuelo` unless explicitly overridden. Non-default profiles, alternate drives, and paths containing spaces are supported.
 
-Consuelo runs as the non-interactive `ConsueloOS` Windows Service Control Manager service under `NT AUTHORITY\LocalService`. The service has:
+Consuelo runs as the non-interactive `ConsueloOS` Windows Service Control Manager service under the passwordless, service-specific virtual account `NT SERVICE\ConsueloOS`. The service has:
 
 - automatic boot startup;
 - a restricted service SID;

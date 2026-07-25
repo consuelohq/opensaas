@@ -89,7 +89,7 @@ process.on('SIGTERM', () => server.stop(true));
 
   $configuration = (& sc.exe qc ConsueloOS 2>&1 | Out-String)
   if ($configuration -notmatch 'AUTO_START') { throw 'Windows service is not configured for boot persistence.' }
-  if ($configuration -notmatch 'LocalService') { throw 'Windows service is not using the least-privilege account.' }
+  if ($configuration -notmatch 'NT SERVICE\\ConsueloOS') { throw 'Windows service is not using its service-specific virtual account.' }
 
   $status = & $ownedBun $platformCli status --home $consueloHome --bun $serviceBun --service-host $serviceHost --json | ConvertFrom-Json
   if ($status.state -ne 'running') { throw "Unexpected Windows service state: $($status.state)" }

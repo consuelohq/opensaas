@@ -49,8 +49,9 @@ started: 2026-07-24
 
 ## files changed
 
-- `packages/os/scripts/bootstrap.ps1`
-- `packages/os/tests/windows-bootstrap-source.test.ts`
+- `packages/os/scripts/lib/windows-platform.ts`
+- `packages/os/scripts/testing/windows-platform-acceptance.ps1`
+- `packages/os/tests/windows-platform.test.ts`
 
 
 ## workspace-owned: files changed
@@ -63,10 +64,6 @@ started: 2026-07-24
 
 ## workspace-owned: validation evidence
 
-- GREEN: focused Windows suite after contextual error handling, 15 tests (`trc_ad96fe876e1e`).
-- GREEN: strict repository review against `origin/main`, zero findings after fixing all 12 initial contextual error-handling findings (`trc_be4491bc19e1`).
-- RED: workflow contract failed until the Windows runner resolved MSBuild through Visual Studio Installer discovery (`trc_0779c10ba809`).
-- GREEN: updated Windows/bootstrap/workflow contracts, 16 tests (`trc_a8d3612f363a`); supported-format Prettier check passed (`trc_5831e8d4e1e9`).
 - RED: Grok CR-002 was reproduced by tests proving an external `.bun` path was not rejected and service-owned executables were retained on uninstall (`trc_f1ced0e904ed`).
 - GREEN: protected service Bun copy, path-containment, and owned-artifact cleanup contracts, 16 tests (`trc_8f1929e6ba1a`).
 - GREEN: post-finding strict review zero issues (`trc_cbb124fb4c24`), syntax (`trc_168fed5b4471`), and 142 lifecycle/distribution/installer regressions (`trc_c389ee5b46f0`). Existing corruption-contract stderr is intentional; Vitest exited 0.
@@ -79,6 +76,8 @@ started: 2026-07-24
 - GREEN: `bootstrap.ps1` now binds `[Alias('Home')] [string]$ConsueloHome`, preserving callers while avoiding the automatic variable. Nineteen focused Windows contracts passed (`trc_8419c7579a46`), all 160 combined regressions passed (`trc_673dbce129af`), formatting passed (`trc_53f382b94dd2`), and strict review reported zero findings (`trc_d5d81d9eaf8b`).
 - RED: the next native run reached `StartService` and failed with Win32 access denied because the restricted service SID could access `.consuelo` but lacked traversal on its parent profile directory (`trc_408816caf9e8`, `trc_1b4bfb65871d`). A behavioral test required a folder-only, non-inherited `(RX)` grant before service start (`trc_620c306dc380`).
 - GREEN: service installation now grants `NT SERVICE\\ConsueloOS:(RX)` on the immediate profile directory before `StartService`, while the recursive modify grant remains confined to `.consuelo`. The native acceptance script verifies both ACL entries. Nineteen focused Windows contracts passed (`trc_0747407c4300`), all 160 combined regressions passed (`trc_952aad5a0f44`), formatting passed (`trc_8cf31cab5c11`), and strict review reported zero findings (`trc_2efdd5c3e9ee`).
+- RED: native Windows still returned `StartService FAILED 5` after the profile traversal grant (`trc_531cb7b820fd`, `trc_90130f9aa0b5`). The remaining mismatch was the shared `LocalService` identity combined with `SERVICE_SID_TYPE_RESTRICTED`: resource access was granted to the service SID, but the normal account SID remained a separate principal. A behavioral contract required a passwordless `NT SERVICE\\ConsueloOS` virtual account and prohibited `LocalService` (`trc_e431f0a51383`).
+- GREEN: the service now runs as the service-specific virtual account `NT SERVICE\\ConsueloOS`, retains the restricted service SID, and uses the same SID for home and profile-traversal ACLs. Nineteen focused Windows contracts passed (`trc_972467d051f0`), all 160 combined regressions passed (`trc_2eecabe9d16e`), formatting passed (`trc_860e5ab89f55`), and strict review reported zero findings (`trc_80de1378e7ed`).
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
 - 2026-07-24 19:00:19 `review.run`: passed — OK
@@ -93,6 +92,8 @@ started: 2026-07-24
 - 2026-07-25 01:13:02 `verify`: passed — OK
 - 2026-07-25 01:16:42 `review.run`: passed — OK
 - 2026-07-25 01:17:06 `verify`: passed — OK
+- 2026-07-25 01:20:53 `review.run`: passed — OK
+- 2026-07-25 01:21:12 `verify`: passed — OK
 
 ## key decisions
 
@@ -142,6 +143,7 @@ started: 2026-07-24
 - A validation command incorrectly used `bun --check` on a Vitest module, which initialized Vitest without its runner (`trc_f1240b9526c0`). Replaced it with the supported Prettier check; no product failure was involved (`trc_a17ee74eed0d`).
 - The first `$HOME` fix removed the acceptance script's local `$home`, but the following native run still failed because `bootstrap.ps1` declared a parameter named `$Home` (`trc_b95dc7ac04fd`, `trc_59e1557f3ffe`). Cancelled the stale Grok run (`trc_20403198bad6`), reproduced the bootstrap parameter collision red while asserting `-Home` compatibility (`trc_6bc0196045ff`), then renamed the internal parameter to `$ConsueloHome` with `[Alias('Home')]`. All local gates are green (`trc_8419c7579a46`, `trc_673dbce129af`, `trc_53f382b94dd2`, `trc_d5d81d9eaf8b`).
 - The subsequent native run cleared both PowerShell collisions and reached SCM startup, then failed `StartService` with error 5 (`trc_408816caf9e8`, `trc_1b4bfb65871d`). The service SID already had recursive modify access to `.consuelo`; the missing boundary was traverse permission on the immediate profile directory. Added a red ordering/ACL contract (`trc_620c306dc380`), then a non-inherited profile `(RX)` grant and native acceptance assertion. Local gates are green (`trc_0747407c4300`, `trc_952aad5a0f44`, `trc_8cf31cab5c11`, `trc_2efdd5c3e9ee`).
+- The traversal-grant rerun still failed immediately at `StartService` (`trc_531cb7b820fd`, `trc_90130f9aa0b5`), proving ancestor traversal alone was insufficient. The Windows restricted-token model and the worker brief's “least-privilege where practical” boundary support a service-specific virtual account rather than broadening access for the shared `LocalService` SID. Added a red account-identity contract (`trc_e431f0a51383`), changed both SCM create/configure paths to `NT SERVICE\\ConsueloOS`, updated native acceptance and documentation, and retained restricted SID plus service-specific ACLs. Local gates are green (`trc_972467d051f0`, `trc_2eecabe9d16e`, `trc_860e5ab89f55`, `trc_80de1378e7ed`).
 
 ## final wait plan
 
@@ -216,3 +218,10 @@ bun run task:finish
 - 2026-07-25 01:16:12 apply-patch: `packages/os/scripts/testing/windows-platform-acceptance.ps1`
 
 - 2026-07-25 01:16:55 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+
+- 2026-07-25 01:20:01 apply-patch: `packages/os/tests/windows-platform.test.ts`
+- 2026-07-25 01:20:01 apply-patch: `packages/os/scripts/testing/windows-platform-acceptance.ps1`
+- 2026-07-25 01:20:21 apply-patch: `packages/os/scripts/lib/windows-platform.ts`
+- 2026-07-25 01:20:21 apply-patch: `packages/os/docs/windows-platform.md`
+
+- 2026-07-25 01:21:04 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`

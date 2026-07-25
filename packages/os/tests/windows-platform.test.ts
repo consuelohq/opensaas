@@ -208,7 +208,8 @@ describe('Windows Service Control Manager adapter', () => {
       .join('\n');
     expect(rendered).toContain('sc.exe create ConsueloOS');
     expect(rendered).toContain('start= auto');
-    expect(rendered).toContain('obj= NT AUTHORITY\\LocalService');
+    expect(rendered).toContain('obj= NT SERVICE\\ConsueloOS');
+    expect(rendered).not.toContain('NT AUTHORITY\\LocalService');
     expect(rendered).toContain('sc.exe sidtype ConsueloOS restricted');
     expect(rendered).toContain('sc.exe failure ConsueloOS');
     expect(rendered).toContain('sc.exe sdset ConsueloOS');
