@@ -337,6 +337,7 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 16:17:04 `verify`: passed — OK
 - 2026-07-25 17:49:12 `verify`: passed — OK
 - 2026-07-25 17:50:40 `verify`: passed — OK
+- 2026-07-25 17:52:23 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -358,3 +359,5 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - GREEN conflict-resolution contracts: workflow policy plus ESLint config imports passed 9/9 (`trc_1f5428fb3f84`).
 
 - Mergeability refinement: the first combined file still conflicted because both branches inserted distinct test blocks at the same ancestor location. Reordered the branch so the target stream's cache test appears first, byte-for-byte, followed by this task's frontend/shared tests. The task branch is now a content superset of the stream insertion rather than a competing insertion.
+
+- Final overlap removal: content ordering still produced a textual conflict because the historical branch and stream both inserted tests at the same ancestor boundary. Restored `github-workflow-policy.test.js` byte-for-byte from the target stream and moved this task's two frontend/shared source-gate contracts into `workflow-source-gates.test.js`. This preserves both behaviors while eliminating shared-file ownership.
