@@ -71,6 +71,8 @@ started: 2026-07-25
 - GREEN: final full verification is publish-valid (`trc_eac82eb7206a`).
 - 2026-07-25 20:26:31 `review.run`: passed — OK
 - 2026-07-25 20:27:00 `verify`: passed — OK
+- 2026-07-25 20:39:51 `review.run`: passed — OK
+- 2026-07-25 20:40:23 `verify`: passed — OK
 
 ## Clean dialer-help dependency precondition
 
@@ -79,6 +81,14 @@ started: 2026-07-25
 - Change: the behavioral test keeps executing the real dialer source CLI and exact command-catalog assertions, but first builds the declared Twenty SDK workspace dependency only when its exported CLI artifact is absent. The test has a bounded 120-second timeout for this clean-build precondition.
 - GREEN clean-checkout simulation: temporarily removed the entire SDK `dist` directory; the test built the dependency and all 10 Worker 30 assertions passed (`trc_34c58302156d`).
 - GREEN exact registry gate: workspace selection 9/9, Worker 30 10/10, and the OS package rule all passed (`trc_cf441bb3db16`).
+
+## Cross-platform command-catalog correction
+
+- Authoritative Linux rerun proved the remaining assertion was not a missing artifact: once `twenty-sdk/cli` resolves, the dialer intentionally registers additional auth/app/entity/function commands before rendering help.
+- The prior test incorrectly required the entire command list to equal only the 14 core sales commands, contradicting the existing optional SDK registration that the same test also required in source.
+- Final contract: preserve the exact order and presence of the 14 core sales/GTM commands, allow the supported SDK platform command extensions, and continue forbidding the removed `os` command group.
+- The temporary SDK-build precondition was removed; it is unnecessary for this ownership assertion and would couple the test to generated output.
+- GREEN: Worker 30 passed 10/10 and the exact registry gate passed after the corrected command-catalog contract (`trc_7ce1c9539a98`, `trc_9388ca94f458`).
 - 2026-07-25 19:54:21 `review.run`: passed — OK
 - 2026-07-25 19:55:14 `review.run`: passed — OK
 - 2026-07-25 19:56:07 `verify`: failed — COMMAND_FAILED
@@ -146,3 +156,7 @@ bun run task:finish
 - 2026-07-25 20:25:36 apply-patch: `packages/os/tests/cli-product-split.test.ts`
 
 - 2026-07-25 20:26:02 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+
+- 2026-07-25 20:39:08 apply-patch: `packages/os/tests/cli-product-split.test.ts`
+
+- 2026-07-25 20:39:20 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
