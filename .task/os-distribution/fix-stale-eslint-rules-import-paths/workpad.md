@@ -102,59 +102,9 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 
 ## files changed
 
-- `.github/workflows/ci-front.yaml`
-- `eslint.config.mjs`
-- `nx.json`
-- `package.json`
-- `packages/eslint-rules/eslint-config-paths.test.ts`
-- `packages/eslint-rules/eslint.config.react.mjs`
-- `packages/eslint-rules/jest.config.mjs`
-- `packages/eslint-rules/jest.setup.cjs`
-- `packages/eslint-rules/project.json`
-- `packages/eslint-rules/rules/component-props-naming.spec.ts`
-- `packages/eslint-rules/rules/component-props-naming.ts`
-- `packages/eslint-rules/rules/effect-components.spec.ts`
-- `packages/eslint-rules/rules/effect-components.ts`
-- `packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts`
-- `packages/eslint-rules/rules/inject-workspace-repository.spec.ts`
-- `packages/eslint-rules/rules/inject-workspace-repository.ts`
-- `packages/eslint-rules/rules/matching-state-variable.spec.ts`
-- `packages/eslint-rules/rules/matching-state-variable.ts`
-- `packages/eslint-rules/rules/max-consts-per-file.spec.ts`
-- `packages/eslint-rules/rules/max-consts-per-file.ts`
-- `packages/eslint-rules/rules/mdx-component-newlines.ts`
-- `packages/eslint-rules/rules/no-hardcoded-colors.spec.ts`
-- `packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts`
-- `packages/eslint-rules/rules/no-navigate-prefer-link.ts`
-- `packages/eslint-rules/rules/no-state-useref.spec.ts`
-- `packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts`
-- `packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts`
-- `packages/eslint-rules/rules/sort-css-properties-alphabetically.ts`
-- `packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts`
-- `packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts`
-- `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts`
-- `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts`
-- `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts`
-- `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts`
-- `packages/eslint-rules/tsconfig.json`
-- `packages/eslint-rules/utils/ruleTesterParser.ts`
-- `packages/eslint-rules/utils/typedTokenHelpers.ts`
-- `packages/twenty-docker/twenty-website/Dockerfile`
-- `packages/twenty-front/eslint.config.mjs`
-- `packages/twenty-server/eslint.config.mjs`
-- `packages/twenty-shared/eslint.config.mjs`
-- `packages/twenty-ui/eslint.config.mjs`
-- `packages/workspace/scripts/ci/classify-front-source-change.cjs`
-- `packages/workspace/scripts/lib/review-test-selection.js`
-- `packages/workspace/scripts/review.js`
 - `packages/workspace/scripts/test-selection.js`
-- `packages/workspace/test-selection.registry.json`
-- `packages/workspace/test-selection.rules.json`
-- `packages/workspace/tests/eslint-config-paths.test.ts`
-- `packages/workspace/tests/front-source-change-classifier.test.js`
-- `packages/workspace/tests/github-workflow-policy.test.js`
-- `packages/workspace/tests/review-test-selection.test.js`
 - `packages/workspace/tests/test-selection.test.js`
+
 
 ## workspace-owned: files changed
 
@@ -310,9 +260,6 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 
 ## workspace-owned: validation evidence
 
-- GREEN: `twenty-eslint-rules` tests passed 14 suites / 129 tests.
-- GREEN: `twenty-eslint-rules` typecheck passed.
-- GREEN: `twenty-eslint-rules` lint passed with zero errors and two inherited warnings.
 - GREEN: config-path and workflow-policy contracts passed 7/7.
 - GREEN: all root/front/server/shared/UI configs imported successfully in clean Node subprocesses.
 - GREEN: `twenty-front:lint:diff-with-main` passed.
@@ -340,6 +287,9 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 18:19:43 `review.run`: passed — OK
 - 2026-07-25 18:20:20 `verify`: passed — OK
 - 2026-07-25 18:20:39 `verify`: passed — OK
+- 2026-07-25 18:35:25 `review.run`: passed — OK
+- 2026-07-25 18:35:54 `verify`: passed — OK
+- 2026-07-25 18:37:09 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -379,3 +329,17 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - Review classification: broad review tests exposed pre-existing Twenty-front/Twenty-UI failures and three pre-existing typecheck findings (`trc_65207c5c28c8`); none are owned by this PR. The CI-equivalent strict review with tests disabled reports zero owned issues and zero blockers (`trc_0fc5b1385bd5`).
 
 - Final full verification is publish-valid against current `stream/os-distribution`; review, precise registry tests, and DB guard all pass (`trc_625dae15aa23`).
+
+
+## Registry failure observability
+
+- The corrected four-suite CI selection still failed on GitHub, while each suite passed separately under Node 24 and the aggregate passed locally with `CI=true` and `NX_SKIP_NX_CACHE=true`.
+- The verifier previously reduced all child details to `registry ... failed`, hiding suite name, exit code, signal, spawn error, duration, and output.
+- Added bounded failure summaries in `scripts/lib/verification.js`; `verify.js` now carries child signal/error into human, JSON, and stamp evidence.
+- GREEN: diagnostic helper tests passed 5/5 (`trc_0751077bd6fb`).
+- GREEN: focused workspace contracts passed 22/22 (`trc_deaa37bcde93`).
+- GREEN: exact four-suite aggregate with Nx cache disabled passed; durations were 501ms, 1306ms, 3165ms, and 2453ms with no signals or errors (`trc_ff7e0ba5126b`).
+- Disposition: no timeout or suite policy is weakened. The next authoritative Linux run must expose the exact non-portable failure before any further behavior change.
+
+- GREEN: post-diagnostics strict review reports zero owned/blocking findings (`trc_779db350ee19`).
+- GREEN: full verification is publish-valid with diagnostic evidence included (`trc_06afc6012f4e`).
