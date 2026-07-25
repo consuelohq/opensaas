@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products",
   "base": "origin/stream/os-distribution",
-  "headSha": "fc88688d747a73f75cdfdd212ccab000a0199cac",
-  "changeHash": "d3025bf3801d64f911d2f32adf024e58d2fa4256bac52066cb8e4f1c9810a893",
+  "headSha": "f8d619a7483894f9fb027bb27f96efb89781b7aa",
+  "changeHash": "5026b2976d4c951f6c47ff96bc82e8ff56ada5f14caf4224b0e61d465d2ee8ab",
   "changedFiles": [
     "package.json",
     "packages/cli/bin/consuelo-dialer.js",
@@ -42,7 +42,7 @@
     "packages/workspace/tests/test-selection.test.js",
     "yarn.lock"
   ],
-  "verifiedAt": "2026-07-25T20:50:51.931Z",
+  "verifiedAt": "2026-07-25T21:02:46.081Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -194,8 +194,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1473,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1106\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 624\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:50:49\n\u001b[2m   Duration \u001b[22m 1.18s\u001b[2m (transform 11ms, setup 0ms, import 15ms, tests 1.11s, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 1436,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1082\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 611\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:02:43\n\u001b[2m   Duration \u001b[22m 1.16s\u001b[2m (transform 12ms, setup 0ms, import 16ms, tests 1.08s, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "Consuelo CLI product split contract",
@@ -212,8 +212,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 951,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/cli-product-split.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 213\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:50:51\n\u001b[2m   Duration \u001b[22m 667ms\u001b[2m (transform 123ms, setup 0ms, import 397ms, tests 213ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 928,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/cli-product-split.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 160\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:02:45\n\u001b[2m   Duration \u001b[22m 638ms\u001b[2m (transform 124ms, setup 0ms, import 420ms, tests 160ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "@consuelo/os package test",

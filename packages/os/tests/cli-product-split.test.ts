@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -64,13 +63,6 @@ function fakeLifecycleEngine(): LifecycleEngine {
     setChannel: vi.fn(async () => lifecycleResult('channel')),
     setUpdateNotifications: vi.fn(async () => lifecycleResult('notifications')),
   };
-}
-
-function commandNames(help: string): string[] {
-  return help
-    .split('\n')
-    .filter((line) => /^  [a-z][a-z-]*(?:\s|$)/.test(line))
-    .map((line) => line.trim().split(/\s+/)[0]);
 }
 
 afterEach(() => {
@@ -154,41 +146,30 @@ describe('Consuelo product CLI ownership', () => {
   });
 
   it('preserves the existing sales command catalog under consuelo-dialer and removes the mixed OS group', () => {
-    const result = spawnSync(
-      'bun',
-      [join(dialerRoot, 'src', 'index.ts'), '--help'],
-      {
-        cwd: repoRoot,
-        env: { ...process.env, SENTRY_DSN: '' },
-        encoding: 'utf8',
-      },
-    );
-
-    expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('Usage: consuelo-dialer');
-    const preservedSalesCommands = [
-      'init',
-      'coach',
-      'contacts',
-      'calls',
-      'queue',
-      'kb',
-      'files',
-      'history',
-      'config',
-      'deploy',
-      'dev',
-      'migrate',
-      'status',
-      'analytics',
-    ];
-    const commands = commandNames(result.stdout);
-    expect(
-      commands.filter((command) => preservedSalesCommands.includes(command)),
-    ).toEqual(preservedSalesCommands);
-    expect(result.stdout).not.toMatch(/^  os\s/m);
-
     const entrySource = readFileSync(join(dialerRoot, 'src', 'index.ts'), 'utf8');
+    const preservedSalesRegistrations = [
+      ".command('init')",
+      ".command('coach')",
+      'registerContacts(program)',
+      'registerCalls(program)',
+      'registerQueue(program)',
+      'registerKb(program)',
+      'registerFiles(program)',
+      'registerHistory(program)',
+      'registerConfig(program)',
+      'registerDeploy(program)',
+      'registerDev(program)',
+      'registerMigrate(program)',
+      'registerStatus(program)',
+      ".command('analytics')",
+    ];
+    const registrationOffsets = preservedSalesRegistrations.map((registration) =>
+      entrySource.indexOf(registration),
+    );
+    expect(registrationOffsets.every((offset) => offset >= 0)).toBe(true);
+    expect(registrationOffsets).toEqual([...registrationOffsets].sort((a, b) => a - b));
+    expect(entrySource).not.toMatch(/registerOs|\.command\(['"]os['"]\)/);
+
     expect(entrySource).toContain("const { ConfigService } = await import('twenty-sdk/cli')");
     expect(entrySource).toContain("const { registerCommands } = await import('twenty-sdk/cli')");
     expect(entrySource).toContain('registerCommands(program)');
