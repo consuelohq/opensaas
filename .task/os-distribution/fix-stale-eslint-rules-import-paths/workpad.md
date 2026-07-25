@@ -62,6 +62,9 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - GREEN: all root/front/server/shared/UI configs imported successfully in clean Node subprocesses.
 - GREEN: `twenty-front:lint:diff-with-main` passed.
 - GREEN: GitHub workflow policy/security check passed.
+- GREEN: fresh strict review on head `3265568d46` reported zero task-owned or blocking findings; three unrelated pre-existing Twenty typecheck findings remain (`trc_f1c284120219`).
+- GREEN: fresh full verify on head `3265568d46` is publish-valid; all selected review, registry, ESLint configuration, custom-rule, and DB gates passed (`trc_5da22c1f50dc`).
+- The red GitHub jobs currently displayed on PR #1651 are from an earlier head before the final RuleTester, test-selection, and frontend-source classification fixes. This evidence commit intentionally refreshes authoritative CI without requesting any external AI review.
 - GREEN: the split frontend workflow policy is covered by the workspace workflow contract; config-only changes cannot silently skip changed-file lint, and source changes still select typecheck/test/build/Storybook.
 - GREEN: task-local strict review passed with zero owned or related-pre-existing blockers and one intended test suite (`trc_a05c5a0a568c`).
 - GREEN: full verification passed, all four registry-selected suites passed, DB guardrails passed, and `.task/os-distribution/fix-stale-eslint-rules-import-paths/verify.json` is publish-valid (`trc_a05c5a0a568c`).
@@ -225,6 +228,7 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - `.github/workflows/changed-files.yaml`
 - `.github/workflows/ci-front.yaml`
 - `package.json`
+- `packages/eslint-rules/eslint.config.react.mjs`
 - `packages/eslint-rules/index.ts`
 - `packages/eslint-rules/jest.config.mjs`
 - `packages/eslint-rules/project.json`
@@ -318,40 +322,15 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 02:12:44 `review.run`: passed — OK
 - 2026-07-25 02:16:32 `review.run`: passed — OK
 - 2026-07-25 02:23:01 `review.run`: passed — OK
+- 2026-07-25 16:04:03 `review.run`: passed — OK
+- 2026-07-25 16:04:37 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
-- changed files: `.github/workflows/ci-front.yaml`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/current.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/evidence-log.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/read-log.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/session.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`, `.task/tasks/os-distribution/fix-stale-eslint-rules-import-paths.json`, `eslint.config.mjs`, `nx.json`, `package.json`, `packages/eslint-rules/eslint.config.react.mjs`, `packages/eslint-rules/jest.config.mjs`, `packages/eslint-rules/jest.setup.cjs`, `packages/eslint-rules/project.json`, `packages/eslint-rules/rules/component-props-naming.spec.ts`, `packages/eslint-rules/rules/component-props-naming.ts`, `packages/eslint-rules/rules/effect-components.spec.ts`, `packages/eslint-rules/rules/effect-components.ts`, `packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts`, `packages/eslint-rules/rules/inject-workspace-repository.spec.ts`, `packages/eslint-rules/rules/inject-workspace-repository.ts`, `packages/eslint-rules/rules/matching-state-variable.spec.ts`, `packages/eslint-rules/rules/matching-state-variable.ts`, `packages/eslint-rules/rules/max-consts-per-file.spec.ts`, `packages/eslint-rules/rules/max-consts-per-file.ts`, `packages/eslint-rules/rules/mdx-component-newlines.ts`, `packages/eslint-rules/rules/no-hardcoded-colors.spec.ts`, `packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts`, `packages/eslint-rules/rules/no-navigate-prefer-link.ts`, `packages/eslint-rules/rules/no-state-useref.spec.ts`, `packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts`, `packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts`, `packages/eslint-rules/rules/sort-css-properties-alphabetically.ts`, `packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts`, `packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts`, `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts`, `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts`, `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts`, `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts`, `packages/eslint-rules/tsconfig.json`, `packages/eslint-rules/utils/ruleTesterParser.ts`, `packages/eslint-rules/utils/typedTokenHelpers.ts`, `packages/twenty-docker/twenty-website/Dockerfile`, `packages/twenty-front/eslint.config.mjs`, `packages/twenty-server/eslint.config.mjs`, `packages/twenty-shared/eslint.config.mjs`, `packages/twenty-ui/eslint.config.mjs`, `packages/workspace/scripts/test-selection.js`, `packages/workspace/test-selection.registry.json`, `packages/workspace/test-selection.rules.json`, `packages/workspace/tests/eslint-config-paths.test.ts`, `packages/workspace/tests/github-workflow-policy.test.js`, `packages/workspace/tests/test-selection.test.js`
-- matched rules: `workspace-test-selection`, `eslint-config-contract`, `auto:twenty-eslint-rules:test`
-- selected suites: `workspace test selection tests`, `shared ESLint configuration contract`, `twenty-eslint-rules test`
-- run results: `workspace test selection tests` passed, `shared ESLint configuration contract` passed, `twenty-eslint-rules test` passed
+- changed files: `.github/workflows/ci-front.yaml`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/current.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/evidence-log.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/read-log.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/session.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/verify.json`, `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`, `.task/tasks/os-distribution/fix-stale-eslint-rules-import-paths.json`, `eslint.config.mjs`, `nx.json`, `package.json`, `packages/eslint-rules/eslint.config.react.mjs`, `packages/eslint-rules/jest.config.mjs`, `packages/eslint-rules/jest.setup.cjs`, `packages/eslint-rules/project.json`, `packages/eslint-rules/rules/component-props-naming.spec.ts`, `packages/eslint-rules/rules/component-props-naming.ts`, `packages/eslint-rules/rules/effect-components.spec.ts`, `packages/eslint-rules/rules/effect-components.ts`, `packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts`, `packages/eslint-rules/rules/inject-workspace-repository.spec.ts`, `packages/eslint-rules/rules/inject-workspace-repository.ts`, `packages/eslint-rules/rules/matching-state-variable.spec.ts`, `packages/eslint-rules/rules/matching-state-variable.ts`, `packages/eslint-rules/rules/max-consts-per-file.spec.ts`, `packages/eslint-rules/rules/max-consts-per-file.ts`, `packages/eslint-rules/rules/mdx-component-newlines.ts`, `packages/eslint-rules/rules/no-hardcoded-colors.spec.ts`, `packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts`, `packages/eslint-rules/rules/no-navigate-prefer-link.ts`, `packages/eslint-rules/rules/no-state-useref.spec.ts`, `packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts`, `packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts`, `packages/eslint-rules/rules/sort-css-properties-alphabetically.ts`, `packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts`, `packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts`, `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts`, `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts`, `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts`, `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts`, `packages/eslint-rules/tsconfig.json`, `packages/eslint-rules/utils/ruleTesterParser.ts`, `packages/eslint-rules/utils/typedTokenHelpers.ts`, `packages/twenty-docker/twenty-website/Dockerfile`, `packages/twenty-front/eslint.config.mjs`, `packages/twenty-server/eslint.config.mjs`, `packages/twenty-shared/eslint.config.mjs`, `packages/twenty-ui/eslint.config.mjs`, `packages/workspace/scripts/ci/classify-front-source-change.cjs`, `packages/workspace/scripts/lib/review-test-selection.js`, `packages/workspace/scripts/review.js`, `packages/workspace/scripts/test-selection.js`, `packages/workspace/test-selection.registry.json`, `packages/workspace/test-selection.rules.json`, `packages/workspace/tests/eslint-config-paths.test.ts`, `packages/workspace/tests/front-source-change-classifier.test.js`, `packages/workspace/tests/github-workflow-policy.test.js`, `packages/workspace/tests/review-test-selection.test.js`, `packages/workspace/tests/test-selection.test.js`
+- matched rules: `workspace-publish-gate`, `workspace-test-selection`, `eslint-config-contract`, `auto:twenty-eslint-rules:test`
+- selected suites: `workspace verification stamp tests`, `workspace test selection tests`, `shared ESLint configuration contract`, `twenty-eslint-rules test`
+- run results: `workspace verification stamp tests` passed, `workspace test selection tests` passed, `shared ESLint configuration contract` passed, `twenty-eslint-rules test` passed
 - failed suites: none
 
-- 2026-07-25 02:14:21 write: `packages/workspace/scripts/lib/review-test-selection.js`
-
-- 2026-07-25 02:14:48 apply-patch: `packages/workspace/scripts/review.js`
-- 2026-07-25 02:14:48 apply-patch: `packages/workspace/tests/review-test-selection.test.js`
-
-- 2026-07-25 02:20:36 apply-patch: `packages/eslint-rules/rules/mdx-component-newlines.ts`
-- 2026-07-25 02:20:36 apply-patch: `packages/eslint-rules/rules/sort-css-properties-alphabetically.ts`
-- 2026-07-25 02:21:00 apply-patch: `packages/eslint-rules/rules/mdx-component-newlines.ts`
-
-- 2026-07-25 02:23:44 apply-patch: `packages/workspace/scripts/lib/review-test-selection.js`
-- 2026-07-25 02:23:44 apply-patch: `packages/workspace/scripts/review.js`
-- 2026-07-25 02:23:44 apply-patch: `packages/workspace/tests/review-test-selection.test.js`
-
-- 2026-07-25 02:24:59 apply-patch: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`
-
-- 2026-07-25 02:28:11 apply-patch: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`
-
-- 2026-07-25 02:32:58 apply-patch: `.github/workflows/ci-front.yaml`
-- 2026-07-25 02:32:58 apply-patch: `packages/workspace/tests/github-workflow-policy.test.js`
-
-- 2026-07-25 02:33:28 apply-patch: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`
-
-- 2026-07-25 02:40:56 write: `packages/workspace/scripts/ci/classify-front-source-change.cjs`
-
-- 2026-07-25 02:41:05 write: `packages/workspace/tests/front-source-change-classifier.test.js`
-
-- 2026-07-25 02:41:29 apply-patch: `.github/workflows/ci-front.yaml`
-- 2026-07-25 02:41:29 apply-patch: `packages/workspace/tests/github-workflow-policy.test.js`
+- 2026-07-25 16:05:22 apply-patch: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`
