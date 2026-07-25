@@ -107,7 +107,7 @@ services:
     restart: always
 
   db:
-    image: postgres:16
+    image: twentycrm/twenty-postgres-spilo
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
