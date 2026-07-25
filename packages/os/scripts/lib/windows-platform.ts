@@ -560,11 +560,22 @@ export function createWindowsServiceController(input: {
           `*${input.currentUserSid}:(OI)(CI)F`,
           '*S-1-5-18:(OI)(CI)F',
           `NT SERVICE\\${serviceName}:(OI)(CI)M`,
-          '/t',
-          '/c',
         ]);
         if (acl.exitCode !== 0)
           throw failure(acl, 'failed to apply restrictive Consuelo ACLs');
+
+        const descendantInheritance = await run('icacls.exe', [
+          win32.join(paths.home, '*'),
+          '/inheritance:e',
+          '/t',
+          '/c',
+        ]);
+        if (descendantInheritance.exitCode !== 0) {
+          throw failure(
+            descendantInheritance,
+            'failed to propagate restrictive Consuelo ACLs',
+          );
+        }
 
         for (const ancestor of windowsTraversalAncestors(paths.home)) {
           const profileTraversalAcl = await run('icacls.exe', [

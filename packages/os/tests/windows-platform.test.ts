@@ -217,6 +217,17 @@ describe('Windows Service Control Manager adapter', () => {
     expect(rendered).toContain('*S-1-5-21-1000:(OI)(CI)F');
     expect(rendered).toContain('*S-1-5-18:(OI)(CI)F');
     expect(rendered).toContain('NT SERVICE\\ConsueloOS:(OI)(CI)M');
+    const homeAcl = rendered.indexOf(
+      `icacls.exe ${home} /inheritance:r /grant:r *S-1-5-21-1000:(OI)(CI)F *S-1-5-18:(OI)(CI)F NT SERVICE\\ConsueloOS:(OI)(CI)M`,
+    );
+    const descendantInheritance = rendered.indexOf(
+      `icacls.exe ${home}\\* /inheritance:e /t /c`,
+    );
+    expect(homeAcl).toBeGreaterThan(-1);
+    expect(descendantInheritance).toBeGreaterThan(homeAcl);
+    expect(rendered).not.toContain(
+      `icacls.exe ${home} /inheritance:r /grant:r *S-1-5-21-1000:(OI)(CI)F *S-1-5-18:(OI)(CI)F NT SERVICE\\ConsueloOS:(OI)(CI)M /t`,
+    );
     const traversalAcl = rendered.indexOf(
       'icacls.exe D:\\Profiles\\Ko User /grant:r NT SERVICE\\ConsueloOS:(RX) /c',
     );

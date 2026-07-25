@@ -50,7 +50,6 @@ started: 2026-07-24
 ## files changed
 
 - `packages/os/scripts/lib/windows-platform.ts`
-- `packages/os/scripts/testing/windows-platform-acceptance.ps1`
 - `packages/os/tests/windows-platform.test.ts`
 
 
@@ -64,16 +63,14 @@ started: 2026-07-24
 
 ## workspace-owned: validation evidence
 
-- RED: the next native run showed the remaining collision was the bootstrap parameter `[string]$Home`, not the already-renamed acceptance local (`trc_59e1557f3ffe`). A source contract reproduced the parameter collision while requiring public `-Home` compatibility (`trc_6bc0196045ff`).
-- GREEN: `bootstrap.ps1` now binds `[Alias('Home')] [string]$ConsueloHome`, preserving callers while avoiding the automatic variable. Nineteen focused Windows contracts passed (`trc_8419c7579a46`), all 160 combined regressions passed (`trc_673dbce129af`), formatting passed (`trc_53f382b94dd2`), and strict review reported zero findings (`trc_d5d81d9eaf8b`).
-- RED: the next native run reached `StartService` and failed with Win32 access denied because the restricted service SID could access `.consuelo` but lacked traversal on its parent profile directory (`trc_408816caf9e8`, `trc_1b4bfb65871d`). A behavioral test required a folder-only, non-inherited `(RX)` grant before service start (`trc_620c306dc380`).
-- GREEN: service installation now grants `NT SERVICE\\ConsueloOS:(RX)` on the immediate profile directory before `StartService`, while the recursive modify grant remains confined to `.consuelo`. The native acceptance script verifies both ACL entries. Nineteen focused Windows contracts passed (`trc_0747407c4300`), all 160 combined regressions passed (`trc_952aad5a0f44`), formatting passed (`trc_8cf31cab5c11`), and strict review reported zero findings (`trc_2efdd5c3e9ee`).
 - RED: native Windows still returned `StartService FAILED 5` after the profile traversal grant (`trc_531cb7b820fd`, `trc_90130f9aa0b5`). The remaining mismatch was the shared `LocalService` identity combined with `SERVICE_SID_TYPE_RESTRICTED`: resource access was granted to the service SID, but the normal account SID remained a separate principal. A behavioral contract required a passwordless `NT SERVICE\\ConsueloOS` virtual account and prohibited `LocalService` (`trc_e431f0a51383`).
 - GREEN: the service now runs as the service-specific virtual account `NT SERVICE\\ConsueloOS`, retains the restricted service SID, and uses the same SID for home and profile-traversal ACLs. Nineteen focused Windows contracts passed (`trc_972467d051f0`), all 160 combined regressions passed (`trc_2eecabe9d16e`), formatting passed (`trc_860e5ab89f55`), and strict review reported zero findings (`trc_80de1378e7ed`).
 - RED: the virtual-account native run still failed at service start because the CI profile is nested under additional restrictive ancestors (`D:\\a\\_temp`, `D:\\a`); granting only the immediate profile directory did not provide a complete traversal chain (`trc_5af0920afa1d`, `trc_dcec660e0f52`). A behavioral contract required `(RX)` on every non-root ancestor and prohibited modifying the volume root (`trc_65b1fd442f45`).
 - GREEN: service installation now grants non-inherited `(RX)` to the service identity on every non-root ancestor of `.consuelo`; uninstall removes the recursive home grant and every ancestor grant before deleting the service identity. Native acceptance verifies the entire chain. Nineteen focused Windows contracts passed (`trc_3d21d6165e70`), all 160 regressions passed (`trc_3685cb390d04`), formatting passed (`trc_a0f6e830a54a`), and strict review reported zero findings (`trc_469ec082f336`).
 - RED: the full ancestor chain still produced the same opaque SCM `StartService FAILED 5` without exposing whether denial occurred in SCM, service-host initialization, filesystem access, or runtime launch (`trc_3a2230d3b008`, `trc_0041af06f107`). A diagnostic contract required bounded service configuration/security/SID, executable/config/runtime ACLs, and matching recent Windows events on startup failure (`trc_06938bc3b318`).
 - GREEN: start and restart failures now retain the original SCM error and append bounded startup diagnostics without masking it. Twenty focused Windows contracts passed (`trc_068790cb5243`), all 161 combined regressions passed (`trc_0e3756cd2be1`), formatting passed after the expected Prettier repair (`trc_7c9c90398d14`, `trc_f815dbd52c66`), and strict review reported zero findings (`trc_36a9a975e6ce`).
+- RED: the diagnostic run proved SCM/service identity/SID configuration were valid, but the service host, protected Bun executable, and service config reported no effective ACL entries while `runtime/current` did (`trc_5cf24c09272e`, `trc_bfec6b0cca0b`). The recursive root-style `/inheritance:r` command was stripping descendant inheritance. A behavioral contract required root-only protection/grants followed by recursive inheritance enablement for `home\\*` (`trc_cf992affde92`).
+- GREEN: ACL application now protects and grants the Consuelo home root once, then re-enables inheritance on all descendants so critical files receive effective inherited user/System/service ACEs. Twenty focused Windows contracts passed (`trc_cff608e574b9`), all 161 combined regressions passed (`trc_37f9b886b29b`), formatting passed (`trc_fb50718c51ff`), and strict review reported zero findings (`trc_012a8b4d31c0`).
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
 - 2026-07-24 19:00:19 `review.run`: passed — OK
@@ -94,6 +91,8 @@ started: 2026-07-24
 - 2026-07-25 01:26:26 `verify`: passed — OK
 - 2026-07-25 01:31:07 `review.run`: passed — OK
 - 2026-07-25 01:31:26 `verify`: passed — OK
+- 2026-07-25 01:35:46 `review.run`: passed — OK
+- 2026-07-25 01:36:11 `verify`: passed — OK
 
 ## key decisions
 
@@ -146,6 +145,7 @@ started: 2026-07-24
 - The traversal-grant rerun still failed immediately at `StartService` (`trc_531cb7b820fd`, `trc_90130f9aa0b5`), proving ancestor traversal alone was insufficient. The Windows restricted-token model and the worker brief's “least-privilege where practical” boundary support a service-specific virtual account rather than broadening access for the shared `LocalService` SID. Added a red account-identity contract (`trc_e431f0a51383`), changed both SCM create/configure paths to `NT SERVICE\\ConsueloOS`, updated native acceptance and documentation, and retained restricted SID plus service-specific ACLs. Local gates are green (`trc_972467d051f0`, `trc_2eecabe9d16e`, `trc_860e5ab89f55`, `trc_80de1378e7ed`).
 - The service-specific virtual account cleared the shared-identity mismatch but the nested runner profile still failed at `StartService` (`trc_5af0920afa1d`, `trc_dcec660e0f52`). The prior ACL covered only the immediate profile directory; arbitrary non-default profiles require each non-root ancestor to be traversable. Added a red ancestor-chain contract (`trc_65b1fd442f45`), implemented bounded grants that stop before the volume/share root, and added uninstall cleanup before service deletion so no orphan service ACEs remain. Local gates are green (`trc_3d21d6165e70`, `trc_3685cb390d04`, `trc_a0f6e830a54a`, `trc_469ec082f336`).
 - The full ancestor-chain native rerun remained at `StartService FAILED 5` and the existing error provided no evidence about the denied operation (`trc_3a2230d3b008`, `trc_0041af06f107`). Stopped changing ACL/account policy by inference. Added a red fail-closed diagnostic contract (`trc_06938bc3b318`) and implemented bounded collection of `sc qc`, `sc sdshow`, `sc qsidtype`, relevant `icacls` output, and recent matching System/Application events. The first broad validation passed 161 tests but stopped before strict review because two edited files required Prettier (`trc_f575d8f1be90`, `trc_4d98b798b7c7`); formatted them (`trc_7c9c90398d14`) and reran focused tests, formatting, and strict review successfully (`trc_068790cb5243`, `trc_f815dbd52c66`, `trc_36a9a975e6ce`).
+- The diagnostic Windows run showed valid `NT SERVICE\\ConsueloOS` configuration, a restricted service SID, and correct runtime-junction ACEs, but no displayed ACL entries on the service host, Bun executable, or service config (`trc_5cf24c09272e`, `trc_bfec6b0cca0b`). This isolated the access denial to the recursive ACL operation: applying `/inheritance:r` with root inheritance flags to every child removed effective descendant inheritance. Added a red command-shape contract (`trc_cf992affde92`), changed installation to protect/grant only the home root, then run `icacls home\\* /inheritance:e /t /c`. Local gates are green (`trc_cff608e574b9`, `trc_37f9b886b29b`, `trc_fb50718c51ff`, `trc_012a8b4d31c0`).
 
 ## final wait plan
 
@@ -215,27 +215,7 @@ bun run task:finish
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-25 01:15:38 apply-patch: `packages/os/tests/windows-platform.test.ts`
-- 2026-07-25 01:16:12 apply-patch: `packages/os/scripts/lib/windows-platform.ts`
-- 2026-07-25 01:16:12 apply-patch: `packages/os/scripts/testing/windows-platform-acceptance.ps1`
+- 2026-07-25 01:34:57 apply-patch: `packages/os/tests/windows-platform.test.ts`
+- 2026-07-25 01:35:14 apply-patch: `packages/os/scripts/lib/windows-platform.ts`
 
-- 2026-07-25 01:16:55 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
-
-- 2026-07-25 01:20:01 apply-patch: `packages/os/tests/windows-platform.test.ts`
-- 2026-07-25 01:20:01 apply-patch: `packages/os/scripts/testing/windows-platform-acceptance.ps1`
-- 2026-07-25 01:20:21 apply-patch: `packages/os/scripts/lib/windows-platform.ts`
-- 2026-07-25 01:20:21 apply-patch: `packages/os/docs/windows-platform.md`
-
-- 2026-07-25 01:21:04 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
-
-- 2026-07-25 01:25:11 apply-patch: `packages/os/tests/windows-platform.test.ts`
-- 2026-07-25 01:25:37 apply-patch: `packages/os/scripts/lib/windows-platform.ts`
-- 2026-07-25 01:25:37 apply-patch: `packages/os/scripts/testing/windows-platform-acceptance.ps1`
-- 2026-07-25 01:25:38 apply-patch: `packages/os/tests/windows-platform.test.ts`
-
-- 2026-07-25 01:26:16 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
-
-- 2026-07-25 01:30:08 apply-patch: `packages/os/tests/windows-platform.test.ts`
-- 2026-07-25 01:30:27 apply-patch: `packages/os/scripts/lib/windows-platform.ts`
-
-- 2026-07-25 01:31:16 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+- 2026-07-25 01:35:57 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
