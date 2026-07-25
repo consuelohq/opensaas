@@ -255,7 +255,7 @@ export function createDefaultLifecycleServiceController(input: {
         'bin',
         'Consuelo.Windows.Service.exe',
       ),
-      currentUserSid: process.env.CONSUELO_WINDOWS_USER_SID || 'S-1-0-0',
+      currentUserSid: process.env.CONSUELO_WINDOWS_USER_SID,
     });
   }
   return createReloadServiceController({ osRoot: input.osRoot, platform });

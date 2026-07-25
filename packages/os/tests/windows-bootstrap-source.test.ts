@@ -38,6 +38,14 @@ describe('Windows PowerShell bootstrap source', () => {
     );
   });
 
+  it('detects native Windows safely under Windows PowerShell 5.1 strict mode', () => {
+    const bootstrap = source('scripts/bootstrap.ps1');
+
+    expect(bootstrap).toContain('Test-Path variable:IsWindows');
+    expect(bootstrap).toContain("$env:OS -eq 'Windows_NT'");
+    expect(bootstrap).not.toContain('if (-not $IsWindows');
+  });
+
   it('downloads Consuelo bytes to a temporary file and verifies SHA-256 before extraction or execution', () => {
     const bootstrap = source('scripts/bootstrap.ps1');
 
@@ -65,10 +73,10 @@ describe('Windows PowerShell bootstrap source', () => {
     expect(bootstrap).not.toMatch(/\bwsl\.exe\b/i);
   });
 
-  it('provides browser fallback and actionable execution-policy guidance', () => {
+  it('provides actionable execution-policy guidance without a dead browser helper', () => {
     const bootstrap = source('scripts/bootstrap.ps1');
 
-    expect(bootstrap).toContain('Start-Process');
+    expect(bootstrap).not.toContain('function Open-ConsueloAuthorization');
     expect(bootstrap).toContain('Set-ExecutionPolicy -Scope Process Bypass');
     expect(bootstrap).toContain(
       'powershell.exe -NoProfile -ExecutionPolicy Bypass -File',
@@ -88,6 +96,16 @@ describe('Windows native acceptance source', () => {
     );
     expect(acceptance).toContain('--home $consueloHome');
   });
+
+  it('preserves the intended readiness error when the health response stays null', () => {
+    const acceptance = source(
+      'scripts/testing/windows-platform-acceptance.ps1',
+    );
+
+    expect(acceptance).toContain(
+      "if (-not $health -or $health.name -ne 'consuelo-os')",
+    );
+  });
 });
 
 describe('Windows browser-first device authorization', () => {
@@ -95,8 +113,9 @@ describe('Windows browser-first device authorization', () => {
     const installer = source('scripts/install.ts');
 
     expect(installer).toContain("process.platform === 'win32'");
-    expect(installer).toContain("'powershell.exe'");
-    expect(installer).toContain('Start-Process');
+    expect(installer).toContain("'rundll32.exe'");
+    expect(installer).toContain("'url.dll,FileProtocolHandler'");
+    expect(installer).not.toContain('Start-Process -FilePath $args[0]');
     expect(installer).toContain("'clip.exe'");
     expect(installer).toContain('Full URL: ${sanitizedVerificationUrl}');
   });

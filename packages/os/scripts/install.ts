@@ -608,14 +608,7 @@ async function openDeviceVerificationUrl(url: string): Promise<boolean> {
       process.platform === 'darwin'
         ? ['open', url]
         : process.platform === 'win32'
-          ? [
-              'powershell.exe',
-              '-NoProfile',
-              '-NonInteractive',
-              '-Command',
-              'Start-Process -FilePath $args[0]',
-              url,
-            ]
+          ? ['rundll32.exe', 'url.dll,FileProtocolHandler', url]
           : undefined;
     if (!command) return false;
     const proc = Bun.spawn(command, {
