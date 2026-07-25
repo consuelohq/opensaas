@@ -92,6 +92,7 @@ namespace Consuelo.Windows.Service
         private StreamWriter output;
         private StreamWriter errors;
         private bool stopping;
+        private readonly object logLock = new object();
 
         public ConsueloService(string configPath)
         {
@@ -136,6 +137,11 @@ namespace Consuelo.Windows.Service
         {
             stopping = false;
             var settings = RuntimeSettings.Load(configPath);
+            var homeParent = Directory.GetParent(settings.ConsueloHome);
+            if (homeParent == null)
+            {
+                throw new InvalidOperationException("consueloHome must not be a drive root");
+            }
             Directory.CreateDirectory(settings.Logs);
             output = OpenLog(Path.Combine(settings.Logs, "windows-service.out.log"));
             errors = OpenLog(Path.Combine(settings.Logs, "windows-service.err.log"));
@@ -152,19 +158,19 @@ namespace Consuelo.Windows.Service
                 RedirectStandardError = true,
             };
             start.EnvironmentVariables["CONSUELO_HOME"] = settings.ConsueloHome;
-            start.EnvironmentVariables["HOME"] = Directory.GetParent(settings.ConsueloHome).FullName;
-            start.EnvironmentVariables["USERPROFILE"] = Directory.GetParent(settings.ConsueloHome).FullName;
+            start.EnvironmentVariables["HOME"] = homeParent.FullName;
+            start.EnvironmentVariables["USERPROFILE"] = homeParent.FullName;
             start.EnvironmentVariables["BUN_BIN"] = settings.BunExecutable;
             start.EnvironmentVariables["PATH"] = Path.GetDirectoryName(settings.BunExecutable) + ";" + start.EnvironmentVariables["PATH"];
 
             child = new Process { StartInfo = start, EnableRaisingEvents = true };
             child.OutputDataReceived += delegate(object sender, DataReceivedEventArgs eventArgs)
             {
-                if (eventArgs.Data != null) WriteLine(output, eventArgs.Data);
+                if (eventArgs.Data != null) WriteLine(false, eventArgs.Data);
             };
             child.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs eventArgs)
             {
-                if (eventArgs.Data != null) WriteLine(errors, eventArgs.Data);
+                if (eventArgs.Data != null) WriteLine(true, eventArgs.Data);
             };
             child.Exited += delegate
             {
@@ -180,10 +186,20 @@ namespace Consuelo.Windows.Service
             }
             child.BeginOutputReadLine();
             child.BeginErrorReadLine();
-            job = CreateKillOnCloseJob();
-            if (!AssignProcessToJobObject(job, child.Handle))
+            try
             {
-                throw new InvalidOperationException("Bun runtime process could not join its Windows Job Object");
+                job = CreateKillOnCloseJob();
+                if (!AssignProcessToJobObject(job, child.Handle))
+                {
+                    throw new InvalidOperationException("Bun runtime process could not join its Windows Job Object");
+                }
+            }
+            catch
+            {
+                stopping = true;
+                try { child.Kill(); } catch (InvalidOperationException) { }
+                StopRuntime();
+                throw;
             }
         }
 
@@ -197,6 +213,12 @@ namespace Consuelo.Windows.Service
             }
             if (child != null)
             {
+                try
+                {
+                    child.CancelOutputRead();
+                    child.CancelErrorRead();
+                }
+                catch (InvalidOperationException) { }
                 if (!child.WaitForExit(10000))
                 {
                     try { child.Kill(); } catch (InvalidOperationException) { }
@@ -204,8 +226,11 @@ namespace Consuelo.Windows.Service
                 child.Dispose();
                 child = null;
             }
-            if (output != null) { output.Dispose(); output = null; }
-            if (errors != null) { errors.Dispose(); errors = null; }
+            lock (logLock)
+            {
+                if (output != null) { output.Dispose(); output = null; }
+                if (errors != null) { errors.Dispose(); errors = null; }
+            }
         }
 
         private static StreamWriter OpenLog(string path)
@@ -216,11 +241,17 @@ namespace Consuelo.Windows.Service
             };
         }
 
-        private static void WriteLine(StreamWriter writer, string line)
+        private void WriteLine(bool useErrors, string line)
         {
-            lock (writer)
+            lock (logLock)
             {
-                writer.WriteLine(DateTimeOffset.UtcNow.ToString("O") + " " + line);
+                var writer = useErrors ? errors : output;
+                if (writer == null) return;
+                try
+                {
+                    writer.WriteLine(DateTimeOffset.UtcNow.ToString("O") + " " + line);
+                }
+                catch (ObjectDisposedException) { }
             }
         }
 
