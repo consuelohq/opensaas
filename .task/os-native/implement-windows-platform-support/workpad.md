@@ -49,7 +49,7 @@ started: 2026-07-24
 
 ## files changed
 
-- `packages/os/scripts/lib/windows-platform.ts`
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/tests/windows-platform.test.ts`
 
 
@@ -63,11 +63,9 @@ started: 2026-07-24
 
 ## workspace-owned: validation evidence
 
-- GREEN: start and restart failures now retain the original SCM error and append bounded startup diagnostics without masking it. Twenty focused Windows contracts passed (`trc_068790cb5243`), all 161 combined regressions passed (`trc_0e3756cd2be1`), formatting passed after the expected Prettier repair (`trc_7c9c90398d14`, `trc_f815dbd52c66`), and strict review reported zero findings (`trc_36a9a975e6ce`).
-- RED: the diagnostic run proved SCM/service identity/SID configuration were valid, but the service host, protected Bun executable, and service config reported no effective ACL entries while `runtime/current` did (`trc_5cf24c09272e`, `trc_bfec6b0cca0b`). The recursive root-style `/inheritance:r` command was stripping descendant inheritance. A behavioral contract required root-only protection/grants followed by recursive inheritance enablement for `home\\*` (`trc_cf992affde92`).
-- GREEN: ACL application now protects and grants the Consuelo home root once, then re-enables inheritance on all descendants so critical files receive effective inherited user/System/service ACEs. Twenty focused Windows contracts passed (`trc_cff608e574b9`), all 161 combined regressions passed (`trc_37f9b886b29b`), formatting passed (`trc_fb50718c51ff`), and strict review reported zero findings (`trc_012a8b4d31c0`).
 - NATIVE GREEN: the `windows-2025` lane compiled the service host with zero warnings/errors and completed the entire native Windows acceptance script, including clean/existing Bun, service health, restart, diagnostics, ACLs, dry-run uninstall, real uninstall, preservation, and reinstall (`trc_380db48e56d8`). The job then failed only because MSBuild `bin/`/`obj/` intermediates polluted the later distribution bundle inventory.
 - RED/GREEN: a workflow-ordering contract failed until Windows build intermediates were removed after native acceptance and before distribution tests (`trc_641f6c52f2a1`). The cleanup step and ordering contracts passed (`trc_619bb038ea26`). All 161 broader regressions passed on rerun (`trc_b0a1d4783f9b`); the first broad rerun had one unrelated existing install-state test exceed its 5-second timeout under load (`trc_5b2cd257fe36`), then the exact test passed alone (`trc_5f534f972015`) and the full suite passed. Formatting passed (`trc_016a103a1006`) and strict review reported zero findings (`trc_03d304f6e97c`).
+- RED/GREEN: after cleanup, all runtime-bundle checks passed and native acceptance stayed green, but one existing crypto-heavy release-channel no-op test completed in 6.6 seconds on Windows and exceeded Vitest's 5-second default (`trc_4168da690f1e`). A lane contract failed until the native matrix's distribution command used `--testTimeout 15000` (`trc_70c58a7b81a6`); focused workflow/platform tests passed (`trc_9c850785b654`), all 161 broader regressions passed (`trc_c249f733f38e`), formatting passed (`trc_362c2def7875`), and strict review reported zero findings (`trc_f9ee101148bc`). The test body and non-Windows lanes are unchanged.
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
 - 2026-07-24 19:00:19 `review.run`: passed — OK
@@ -93,6 +91,8 @@ started: 2026-07-24
 - 2026-07-25 01:50:54 `review.run`: passed — OK
 - 2026-07-25 01:52:02 `review.run`: passed — OK
 - 2026-07-25 01:53:33 `verify`: passed — OK
+- 2026-07-25 02:08:50 `review.run`: passed — OK
+- 2026-07-25 02:09:10 `verify`: passed — OK
 
 ## key decisions
 
@@ -147,6 +147,7 @@ started: 2026-07-24
 - The full ancestor-chain native rerun remained at `StartService FAILED 5` and the existing error provided no evidence about the denied operation (`trc_3a2230d3b008`, `trc_0041af06f107`). Stopped changing ACL/account policy by inference. Added a red fail-closed diagnostic contract (`trc_06938bc3b318`) and implemented bounded collection of `sc qc`, `sc sdshow`, `sc qsidtype`, relevant `icacls` output, and recent matching System/Application events. The first broad validation passed 161 tests but stopped before strict review because two edited files required Prettier (`trc_f575d8f1be90`, `trc_4d98b798b7c7`); formatted them (`trc_7c9c90398d14`) and reran focused tests, formatting, and strict review successfully (`trc_068790cb5243`, `trc_f815dbd52c66`, `trc_36a9a975e6ce`).
 - The diagnostic Windows run showed valid `NT SERVICE\\ConsueloOS` configuration, a restricted service SID, and correct runtime-junction ACEs, but no displayed ACL entries on the service host, Bun executable, or service config (`trc_5cf24c09272e`, `trc_bfec6b0cca0b`). This isolated the access denial to the recursive ACL operation: applying `/inheritance:r` with root inheritance flags to every child removed effective descendant inheritance. Added a red command-shape contract (`trc_cf992affde92`), changed installation to protect/grant only the home root, then run `icacls home\\* /inheritance:e /t /c`. Local gates are green (`trc_cff608e574b9`, `trc_37f9b886b29b`, `trc_fb50718c51ff`, `trc_012a8b4d31c0`).
 - The resulting native run passed Windows acceptance completely, then `tests/distribution/runtime-bundle.test.ts` rejected `native/windows-service/obj/x64/Release/Consuelo.Windows.Service.csproj.FileListAbsolute.txt` because it contained runner-specific absolute paths (`trc_380db48e56d8`). Added a red workflow-ordering contract (`trc_641f6c52f2a1`) and a Windows-only step that removes temporary service `bin/` and `obj/` directories after native acceptance but before distribution contracts (`trc_619bb038ea26`). A combined validation transport timed out without evidence, and the first explicit full rerun had one unrelated 5-second install-state timeout under heavy load (`trc_5b2cd257fe36`); the exact test passed alone (`trc_5f534f972015`) and the full 161-test suite passed on retry (`trc_b0a1d4783f9b`). The focused post-format call passed but the facade rejected verify-mode task evidence logging (`trc_2500d34297ae`); formatting and strict review then passed through compatible routes (`trc_016a103a1006`, `trc_03d304f6e97c`).
+- The cleanup rerun proved the artifact-pollution fix: native acceptance and runtime-bundle tests passed. The remaining job failure was `release-channels.test.ts`'s unchanged-runtime no-op case taking 6.6 seconds on Windows versus the default 5-second test timeout (`trc_4168da690f1e`). Kept the test and global defaults unchanged; added a red Windows workflow contract (`trc_70c58a7b81a6`) and raised only the native matrix distribution invocation to `--testTimeout 15000`. Focused and full local gates are green (`trc_9c850785b654`, `trc_c249f733f38e`, `trc_362c2def7875`, `trc_f9ee101148bc`).
 
 ## final wait plan
 
@@ -225,3 +226,7 @@ bun run task:finish
 - 2026-07-25 01:40:20 apply-patch: `.github/workflows/consuelo-os-distribution-environments.yaml`
 
 - 2026-07-25 01:52:14 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+
+- 2026-07-25 02:07:49 apply-patch: `.github/workflows/consuelo-os-distribution-environments.yaml`
+
+- 2026-07-25 02:09:00 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`

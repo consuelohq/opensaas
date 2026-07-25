@@ -506,6 +506,9 @@ describe('Windows native service and workflow source contracts', () => {
     );
     expect(cleanup).toBeGreaterThan(nativeAcceptance);
     expect(cleanup).toBeLessThan(distributionContracts);
+    expect(workflow).toContain(
+      'bun x vitest run tests/distribution --testTimeout 15000',
+    );
     expect(workflow).toContain('packages/os/native/windows-service/bin');
     expect(workflow).toContain('packages/os/native/windows-service/obj');
   });

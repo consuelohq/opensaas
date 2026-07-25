@@ -131,7 +131,7 @@ jobs:
 
       - name: Run distribution harness contracts
         working-directory: packages/os
-        run: bun x vitest run tests/distribution
+        run: bun x vitest run tests/distribution --testTimeout 15000
 
       - name: Probe the native runner
         working-directory: packages/os
