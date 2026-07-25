@@ -62,15 +62,15 @@ describe('GitHub workflow policy', () => {
   test('separates frontend config lint from source typecheck, tests, and builds', () => {
     const frontWorkflow = readFileSync(join(workflowDir, 'ci-front.yaml'), 'utf8');
 
-    expect(frontWorkflow).toContain('changed-source-files-check:');
-    expect(frontWorkflow).toContain('!packages/twenty-front/eslint.config.*');
-    expect(frontWorkflow).toContain('!packages/twenty-ui/eslint.config.*');
-    expect(frontWorkflow).toContain('!packages/twenty-shared/eslint.config.*');
+    expect(frontWorkflow).toContain('classify-front-source-changes:');
+    expect(frontWorkflow).toContain(
+      'node packages/workspace/scripts/ci/classify-front-source-change.cjs',
+    );
     expect(frontWorkflow).toContain('front-lint:');
     expect(frontWorkflow).toContain('tasks: lint:diff-with-main');
     expect(frontWorkflow).toContain('task: [typecheck, test]');
     expect(frontWorkflow).toContain(
-      "if: needs.changed-source-files-check.outputs.any_changed == 'true'",
+      "if: needs.classify-front-source-changes.outputs.any_changed == 'true'",
     );
     expect(frontWorkflow).toContain('tasks: ${{ matrix.task }}');
   });

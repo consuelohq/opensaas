@@ -97,8 +97,10 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - `eslint.config.mjs`
 - `nx.json`
 - `package.json`
+- `packages/eslint-rules/eslint-config-paths.test.ts`
 - `packages/eslint-rules/eslint.config.react.mjs`
 - `packages/eslint-rules/jest.config.mjs`
+- `packages/eslint-rules/jest.setup.cjs`
 - `packages/eslint-rules/project.json`
 - `packages/eslint-rules/rules/component-props-naming.spec.ts`
 - `packages/eslint-rules/rules/component-props-naming.ts`
@@ -126,31 +128,80 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts`
 - `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts`
 - `packages/eslint-rules/tsconfig.json`
+- `packages/eslint-rules/utils/ruleTesterParser.ts`
 - `packages/eslint-rules/utils/typedTokenHelpers.ts`
 - `packages/twenty-docker/twenty-website/Dockerfile`
 - `packages/twenty-front/eslint.config.mjs`
 - `packages/twenty-server/eslint.config.mjs`
 - `packages/twenty-shared/eslint.config.mjs`
 - `packages/twenty-ui/eslint.config.mjs`
+- `packages/workspace/scripts/ci/classify-front-source-change.cjs`
+- `packages/workspace/scripts/lib/review-test-selection.js`
 - `packages/workspace/scripts/review.js`
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/test-selection.registry.json`
 - `packages/workspace/test-selection.rules.json`
-- `packages/workspace/tests/github-workflow-policy.test.js`
-- `packages/workspace/tests/test-selection.test.js`
-- `packages/eslint-rules/jest.setup.cjs`
-- `packages/eslint-rules/utils/ruleTesterParser.ts`
-- `packages/workspace/scripts/lib/review-test-selection.js`
 - `packages/workspace/tests/eslint-config-paths.test.ts`
+- `packages/workspace/tests/front-source-change-classifier.test.js`
+- `packages/workspace/tests/github-workflow-policy.test.js`
 - `packages/workspace/tests/review-test-selection.test.js`
-
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: files changed
 
+- `.github/workflows/ci-front.yaml`
+- `eslint.config.mjs`
+- `nx.json`
+- `package.json`
 - `packages/eslint-rules/eslint-config-paths.test.ts`
+- `packages/eslint-rules/eslint.config.react.mjs`
+- `packages/eslint-rules/jest.config.mjs`
 - `packages/eslint-rules/jest.setup.cjs`
+- `packages/eslint-rules/project.json`
+- `packages/eslint-rules/rules/component-props-naming.spec.ts`
+- `packages/eslint-rules/rules/component-props-naming.ts`
+- `packages/eslint-rules/rules/effect-components.spec.ts`
+- `packages/eslint-rules/rules/effect-components.ts`
+- `packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts`
+- `packages/eslint-rules/rules/inject-workspace-repository.spec.ts`
+- `packages/eslint-rules/rules/inject-workspace-repository.ts`
+- `packages/eslint-rules/rules/matching-state-variable.spec.ts`
+- `packages/eslint-rules/rules/matching-state-variable.ts`
+- `packages/eslint-rules/rules/max-consts-per-file.spec.ts`
+- `packages/eslint-rules/rules/max-consts-per-file.ts`
+- `packages/eslint-rules/rules/mdx-component-newlines.ts`
+- `packages/eslint-rules/rules/no-hardcoded-colors.spec.ts`
+- `packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts`
+- `packages/eslint-rules/rules/no-navigate-prefer-link.ts`
+- `packages/eslint-rules/rules/no-state-useref.spec.ts`
+- `packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts`
+- `packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts`
+- `packages/eslint-rules/rules/sort-css-properties-alphabetically.ts`
+- `packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts`
+- `packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts`
+- `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts`
+- `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts`
+- `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts`
+- `packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts`
+- `packages/eslint-rules/tsconfig.json`
 - `packages/eslint-rules/utils/ruleTesterParser.ts`
+- `packages/eslint-rules/utils/typedTokenHelpers.ts`
+- `packages/twenty-docker/twenty-website/Dockerfile`
+- `packages/twenty-front/eslint.config.mjs`
+- `packages/twenty-server/eslint.config.mjs`
+- `packages/twenty-shared/eslint.config.mjs`
+- `packages/twenty-ui/eslint.config.mjs`
+- `packages/workspace/scripts/ci/classify-front-source-change.cjs`
 - `packages/workspace/scripts/lib/review-test-selection.js`
+- `packages/workspace/scripts/review.js`
+- `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/eslint-config-paths.test.ts`
+- `packages/workspace/tests/front-source-change-classifier.test.js`
+- `packages/workspace/tests/github-workflow-policy.test.js`
+- `packages/workspace/tests/review-test-selection.test.js`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: activity log
 
@@ -165,14 +216,19 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 01:28:33 fs.write: `packages/eslint-rules/jest.setup.cjs`
 - 2026-07-25 01:34:41 fs.write: `packages/eslint-rules/utils/ruleTesterParser.ts`
 - 2026-07-25 02:14:21 fs.write: `packages/workspace/scripts/lib/review-test-selection.js`
+- 2026-07-25 02:40:56 fs.write: `packages/workspace/scripts/ci/classify-front-source-change.cjs`
+- 2026-07-25 02:41:05 fs.write: `packages/workspace/tests/front-source-change-classifier.test.js`
 
 ## workspace-owned: files read
 
 - `.github/actions/nx-affected/action.yaml`
+- `.github/workflows/changed-files.yaml`
 - `.github/workflows/ci-front.yaml`
+- `package.json`
 - `packages/eslint-rules/index.ts`
 - `packages/eslint-rules/jest.config.mjs`
 - `packages/eslint-rules/project.json`
+- `packages/eslint-rules/rules/component-props-naming.spec.ts`
 - `packages/eslint-rules/rules/component-props-naming.ts`
 - `packages/eslint-rules/rules/effect-components.spec.ts`
 - `packages/eslint-rules/rules/effect-components.ts`
@@ -182,6 +238,7 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - `packages/eslint-rules/rules/max-consts-per-file.spec.ts`
 - `packages/eslint-rules/rules/max-consts-per-file.ts`
 - `packages/eslint-rules/rules/mdx-component-newlines.ts`
+- `packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts`
 - `packages/eslint-rules/rules/no-navigate-prefer-link.ts`
 - `packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts`
 - `packages/eslint-rules/rules/rest-api-methods-should-be-guarded.ts`
@@ -189,6 +246,7 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts`
 - `packages/eslint-rules/tsconfig.json`
 - `packages/eslint-rules/utils/createRule.ts`
+- `packages/eslint-rules/utils/ruleTesterParser.ts`
 - `packages/eslint-rules/utils/typedTokenHelpers.ts`
 - `packages/twenty-front/project.json`
 - `packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts`
@@ -199,8 +257,10 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - `packages/workspace/scripts/review.js`
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/verify.js`
+- `packages/workspace/senior-engineer.md`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/eslint-config-paths.test.ts`
+- `packages/workspace/tests/front-source-change-classifier.test.js`
 - `packages/workspace/tests/github-workflow-policy.test.js`
 - `packages/workspace/tests/test-selection.test.js`
 
@@ -288,3 +348,10 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 02:32:58 apply-patch: `packages/workspace/tests/github-workflow-policy.test.js`
 
 - 2026-07-25 02:33:28 apply-patch: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`
+
+- 2026-07-25 02:40:56 write: `packages/workspace/scripts/ci/classify-front-source-change.cjs`
+
+- 2026-07-25 02:41:05 write: `packages/workspace/tests/front-source-change-classifier.test.js`
+
+- 2026-07-25 02:41:29 apply-patch: `.github/workflows/ci-front.yaml`
+- 2026-07-25 02:41:29 apply-patch: `packages/workspace/tests/github-workflow-policy.test.js`
