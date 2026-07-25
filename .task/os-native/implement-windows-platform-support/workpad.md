@@ -45,7 +45,7 @@ started: 2026-07-24
 
 ## current status
 
-- The first native Windows run passed all TypeScript contracts, then exposed an MSBuild discovery issue on the VS2026 runner image. That route is repaired through `vswhere`. Interim Grok review independently found the same build issue plus a valid LocalService/Bun access defect; both are fixed and locally green. Refreshing verification and republishing before the authoritative Windows rerun and final current-head reviews.
+- The Windows implementation, Grok hardening fixes, and Linux/Windows shared-boundary integration are locally green. The task branch now contains a validated two-parent, non-forced merge of `stream/os-native`, is behind by zero, and exposes only the intended 27-file task delta. Publishing this workpad update establishes the final SHA for authoritative CI, CodeRabbit disposition, and current-head Grok review.
 
 ## files changed
 
@@ -104,6 +104,7 @@ started: 2026-07-24
 - 2026-07-25 00:54:18 `verify`: passed — OK
 - 2026-07-25 00:57:44 `review.run`: passed — OK
 - 2026-07-25 00:58:03 `verify`: passed — OK
+- 2026-07-25 01:02:08 `verify`: passed — OK
 
 ## key decisions
 
@@ -143,6 +144,10 @@ started: 2026-07-24
 - After resuming, `task.push` failed because the server-side active-task registry no longer recognized the existing session (`trc_38254c9c4f1a`). `task.init` restored branch/worktree metadata but did not restore the active registry (`trc_c7e05a7cbeb6`). Re-running the original `task.start` identity recovered the same branch, worktree, PR #1646, and exact session `tsk_54add4ed7243` without creating anything new (`trc_03de3fe06454`). That recovery reset the local workpad template; the complete published workpad was restored from GitHub through the task-scoped GitHub route (`trc_f99111ff57d0`, `trc_8cfd603d408f`) before reapplying unpushed evidence.
 - Once Windows hardening was published, PR #1646 became conflicted because Worker 20 had merged Linux support into the same stream and shared lifecycle/workflow files (`trc_85bd03723f1d`, `trc_fc2461f9661f`). Imported Worker 20's stream-owned Linux adapter, tests, and documentation unchanged (`trc_c19ae5dbe6d6`), wrote a failing combined-dispatch/workflow contract (`trc_a78b503b2059`), and composed both adapters in the shared lifecycle/workflow without replacing either worker's behavior (`trc_8f41e84fc500`, `trc_9ffa07513a46`).
 - The first broad post-integration test call executed from repository root, causing 54 path-resolution failures in legacy package-relative suites while 104 applicable tests passed (`trc_c64fd0b6ce4b`). Retried the identical suite with an explicit `cd packages/os`; all 158 tests passed (`trc_8e0d0e90a287`). This was a harness invocation error, not a product regression.
+- Publishing the composed file contents did not resolve PR ancestry: GitHub still reported the task two stream commits behind and `DIRTY` (`trc_5d5f6610fb52`, `trc_e14afc995698`). Inspection of `task-pr.js` confirmed its built-in recovery only auto-merges metadata-only conflicts; no typed `stream.mergeIntoTask` operation exists for already-resolved product conflicts (`trc_38e9e8089e29`, `trc_a49d94c03cbd`).
+- Prepared a GitHub Git-data merge using the current stream tree as `base_tree`, the current task and stream SHAs as two parents, and only reviewed task blobs as overlays (`trc_535774545002`). The first candidate validation used an incorrect “one commit ahead” assumption for a two-parent merge (`trc_ca3f32e20889`) and then exposed three unintended Prettier-only changes to Worker 20's Linux files (`trc_56cbabcf6ce5`). Discarded that candidate without updating a ref.
+- Restored the Linux adapter, test, and documentation byte-for-byte from `stream/os-native` (`trc_cc95d0c141fb`). All 26 combined platform contracts still passed (`trc_147e072063bb`). A follow-up blob check printed matching SHAs but failed because the test consumed each hasher twice (`trc_dd2eda94ea3a`); the printed remote/local SHA equality is the relevant evidence.
+- Rebuilt candidate `f9a045fea84d77a3a3baf910fdadaaf10a49dedd` with exactly 27 task overlays, inherited Linux product blobs, both exact parents, zero commits behind either parent, and all seven Linux task-evidence files preserved (`trc_df9eac65cc4a`). Advanced the task ref from `5ae052e7` to `f9a045fe` using GitHub's Git-data API with `force: false` (`trc_a9fbef22fb11`). Post-update comparison reports `ahead`, behind 0, and 27 files; PR #1646 is no longer `DIRTY` and CI started on the corrected head (`trc_bdb22248be9f`, `trc_edb563697cf9`, `trc_47a4d6aa6f8c`).
 
 ---
 
@@ -194,10 +199,7 @@ bun run task:finish
 - `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/native-lifecycle-client.test.ts`
 - `packages/os/tsconfig.json`
+- `packages/workspace/scripts/task-pr.js`
 - `packages/workspace/scripts/task-push.js`
 
-- 2026-07-25 00:56:11 apply-patch: `packages/os/tests/windows-platform.test.ts`
-- 2026-07-25 00:56:55 apply-patch: `packages/os/scripts/lifecycle.ts`
-- 2026-07-25 00:56:55 apply-patch: `.github/workflows/consuelo-os-distribution-environments.yaml`
-
-- 2026-07-25 00:57:54 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+- 2026-07-25 01:01:56 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
