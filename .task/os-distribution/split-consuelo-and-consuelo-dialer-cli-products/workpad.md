@@ -32,6 +32,14 @@ started: 2026-07-25
 
 - `packages/logger/src/index.ts`
 - `packages/os/tests/cli-product-split.test.ts`
+- `packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts`
+- `packages/workspace/scripts/lib/review-test-selection.js`
+- `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/review-test-selection.test.js`
+- `packages/workspace/tests/test-selection.test.js`
+
 
 ## workspace-owned: files changed
 
@@ -52,10 +60,22 @@ started: 2026-07-25
 - GREEN: review and registry selection now share exclusive ownership; selection regressions passed 13/13 and Worker 30 remained 10/10 (`trc_30669356a6e3`).
 - GREEN: final strict review reports zero owned/blocking findings (`trc_4760079e7ace`).
 - GREEN: full verification is publish-valid against current `stream/os-distribution` (`trc_8817c1014aa9`).
+- RED clean-runner evidence: both Consuelo aggregate jobs failed before tests because `packages/os` declared `effect` but was not a root Yarn workspace, so the package had no lock entry or installed dependency closure (`trc_77e90d94a3b7`).
+- RED package-boundary regression: Worker 30's product suite proved the root workspace list omitted `packages/os` (`trc_9b6a6398b68e`).
+- GREEN: added `packages/os` to root workspaces, regenerated `yarn.lock`, and locked both the OS workspace stanza and its `effect` dependency in the product contract. Immutable Yarn resolution succeeds and Worker 30 remains 10/10 (`trc_332d7dc025f1`, `trc_901b208a3bc1`).
+- CI classification: the independent frontend workflow failed on unchanged existing `GHLSettings.tsx` and UI type debt after the install-copy constant caused broad frontend selection (`trc_fc02a2a2277f`).
+- RED classifier regression: an isolated OS workspace migration plus an exclusively owned frontend copy contract was still classified as a broad `yarn-lock` change (`trc_c31ca9652cb0`).
+- GREEN: the frontend classifier now reads the canonical registry, honors exclusive ownership, and exempts only a root-package change whose sole workspace delta is `packages/os`. Broad source changes, dependency changes, ordinary lockfile changes, and normal frontend files remain broad. Selector tests passed 17/17 and Worker 30 passed 10/10 (`trc_a4132fa6575f`).
+- GREEN: actual PR-diff simulation reports `isolated-workspace-migration`; `effect` resolves through `@consuelo/os`; all exact registry suites pass (`trc_3993a8bd99c0`).
+- GREEN: final strict review reports zero owned/blocking findings (`trc_bc6feceaf327`).
+- GREEN: final full verification is publish-valid (`trc_eac82eb7206a`).
 - 2026-07-25 19:54:21 `review.run`: passed — OK
 - 2026-07-25 19:55:14 `review.run`: passed — OK
 - 2026-07-25 19:56:07 `verify`: failed — COMMAND_FAILED
 - 2026-07-25 19:57:46 `verify`: passed — OK
+- 2026-07-25 20:11:39 `review.run`: passed — OK
+- 2026-07-25 20:12:10 `verify`: passed — OK
+- 2026-07-25 20:13:41 `verify`: passed — OK
 
 ## key decisions
 
@@ -75,6 +95,14 @@ started: 2026-07-25
 
 - The task branch was three stream commits behind after PR #1651 and its infrastructure prerequisites landed. Local changes were stashed, the remote PR branch was updated from the stream, the worktree was fast-forwarded, and the two-file review fix reapplied cleanly.
 
+## CI wait plan
+
+- Wait reason: GitHub must validate Worker 30 commit `7f951720e7e6b85473299bfd47e886233f5902bd` before task-to-stream merge.
+- Duration: poll every 30–90 seconds for up to 15 minutes, stopping on a terminal failure or all-green matrix.
+- Resume action: inspect PR #1647 checks immediately after each interval; inspect exact logs on any failure.
+- Expected signal: precise Consuelo verification selects the Worker 30 contract, product and logger boundaries pass, and all required PR checks terminate successfully.
+- Fallback: fix only attributable Worker 30 or shared-selection defects, rerun strict review/full verify, and republish. Do not merge around a red required gate.
+
 ---
 
 ## publish checklist
@@ -87,16 +115,20 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `package.json`
 - `packages/logger/project.json`
+- `packages/os/package.json`
 - `packages/os/tests/cli-product-split.test.ts`
 - `packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts`
+- `packages/workspace/scripts/ci/classify-front-source-change.cjs`
 - `packages/workspace/scripts/lib/review-test-selection.js`
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/test-selection.registry.json`
 - `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/front-source-change-classifier.test.js`
 - `packages/workspace/tests/test-selection.test.js`
 
-- 2026-07-25 19:56:46 apply-patch: `packages/workspace/tests/review-test-selection.test.js`
-- 2026-07-25 19:57:05 apply-patch: `packages/workspace/scripts/lib/review-test-selection.js`
+- 2026-07-25 20:09:33 apply-patch: `packages/workspace/tests/front-source-change-classifier.test.js`
+- 2026-07-25 20:10:02 apply-patch: `packages/workspace/scripts/ci/classify-front-source-change.cjs`
 
-- 2026-07-25 19:58:00 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+- 2026-07-25 20:12:25 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`

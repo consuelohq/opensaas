@@ -3,6 +3,7 @@
     ".task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/session.json",
     ".task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md",
     ".task/repository-architecture/repository-product-boundary-audit/workpad.md",
+    "package.json",
     "packages/cli/bin/consuelo.js",
     "packages/cli/package.json",
     "packages/cli/src/commands/deploy.ts",
@@ -12,6 +13,7 @@
     "packages/cli/src/output.ts",
     "packages/logger/project.json",
     "packages/os/.tmp-reviews/split-consuelo-and-consuelo-dialer-cli-products/grok-structured-review.json",
+    "packages/os/package.json",
     "packages/os/plans/consuelo-os-foundation/workers/30-cli-product-split.md",
     "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
     "packages/os/scripts/lib/consuelo-home.ts",
@@ -23,11 +25,13 @@
     "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts",
     "packages/twenty-sdk/package.json",
     "packages/twenty-sdk/project.json",
+    "packages/workspace/scripts/ci/classify-front-source-change.cjs",
     "packages/workspace/scripts/lib/review-test-selection.js",
     "packages/workspace/scripts/test-selection.js",
     "packages/workspace/test-selection.registry.json",
     "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/front-source-change-classifier.test.js",
     "packages/workspace/tests/test-selection.test.js"
   ],
-  "updatedAt": "2026-07-25T19:56:18.423Z"
+  "updatedAt": "2026-07-25T20:09:19.462Z"
 }

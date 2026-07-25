@@ -81,9 +81,13 @@ afterEach(() => {
 
 describe('Consuelo product CLI ownership', () => {
   it('assigns the OS lifecycle binary to the OS package and the preserved sales binary to the dialer package', () => {
+    const rootPackage = readJson(join(repoRoot, 'package.json'));
     const osPackage = readJson(join(osRoot, 'package.json'));
     const dialerPackage = readJson(join(dialerRoot, 'package.json'));
 
+    expect(
+      (rootPackage.workspaces as { packages?: string[] }).packages,
+    ).toContain('packages/os');
     expect(osPackage.name).toBe('@consuelo/os');
     expect(osPackage.bin).toEqual({ consuelo: 'scripts/lifecycle.ts' });
     expect(dialerPackage.name).toBe('@consuelo/dialer-cli');
@@ -109,6 +113,11 @@ describe('Consuelo product CLI ownership', () => {
     );
     expect(navigationSupportCopy).not.toContain(
       "'npm install -g @consuelo/cli'",
+    );
+    const lockfile = readFileSync(join(repoRoot, 'yarn.lock'), 'utf8');
+    expect(lockfile).toContain('"@consuelo/os@workspace:packages/os":');
+    expect(lockfile).toMatch(
+      /"@consuelo\/os@workspace:packages\/os":[\s\S]*?effect: "npm:\^3\.21\.3"/,
     );
     expect(statSync(join(osRoot, 'scripts', 'lifecycle.ts')).mode & 0o111).not.toBe(0);
     expect(existsSync(join(dialerRoot, 'bin', 'consuelo.js'))).toBe(false);

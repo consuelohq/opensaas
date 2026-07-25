@@ -316,6 +316,7 @@
       "packages/dialer",
       "packages/logger",
       "packages/metering",
+      "packages/os",
       "packages/sdk",
       "packages/twenty-apps",
       "packages/twenty-cli",
