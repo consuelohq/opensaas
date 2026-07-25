@@ -51,6 +51,40 @@ describe('review test package selection', () => {
     expect(isLintConfigurationFile('packages/twenty-front/src/example.tsx')).toBe(false);
   });
 
+  it('should omit files owned by precise exclusive registry rules from broad package tests', () => {
+    const existingJestConfigs = new Set([
+      path.join('/repo', 'packages', 'twenty-front', 'jest.config.mjs'),
+    ]);
+    const registry = {
+      rules: [
+        {
+          id: 'dialer-cli-install-copy',
+          exclusive: true,
+          source: [
+            'packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts',
+          ],
+          exclude: [],
+        },
+      ],
+    };
+
+    expect(reviewTestPackages(
+      [
+        'packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts',
+      ],
+      '/repo',
+      (file) => existingJestConfigs.has(file),
+      registry,
+    )).toEqual([]);
+
+    expect(reviewTestPackages(
+      ['packages/twenty-front/src/example.tsx'],
+      '/repo',
+      (file) => existingJestConfigs.has(file),
+      registry,
+    )).toEqual(['twenty-front']);
+  });
+
   it('should execute the review implementation from the selected task worktree', () => {
     expect(reviewTaskEntrypoint('/tmp/task-worktree')).toBe(
       path.join('/tmp/task-worktree', 'packages', 'workspace', 'scripts', 'review.js'),

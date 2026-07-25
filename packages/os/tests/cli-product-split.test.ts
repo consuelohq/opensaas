@@ -91,6 +91,25 @@ describe('Consuelo product CLI ownership', () => {
     expect(dialerPackage.bin).toEqual({
       'consuelo-dialer': 'bin/consuelo-dialer.js',
     });
+    const navigationSupportCopy = readFileSync(
+      join(
+        repoRoot,
+        'packages',
+        'twenty-front',
+        'src',
+        'modules',
+        'navigation',
+        'constants',
+        'navigation-drawer-support-menu.constants.ts',
+      ),
+      'utf8',
+    );
+    expect(navigationSupportCopy).toContain(
+      "'npm install -g @consuelo/dialer-cli'",
+    );
+    expect(navigationSupportCopy).not.toContain(
+      "'npm install -g @consuelo/cli'",
+    );
     expect(statSync(join(osRoot, 'scripts', 'lifecycle.ts')).mode & 0o111).not.toBe(0);
     expect(existsSync(join(dialerRoot, 'bin', 'consuelo.js'))).toBe(false);
   });
@@ -233,10 +252,13 @@ describe('Consuelo Dialer config and telemetry boundary', () => {
     const outputSource = readFileSync(join(dialerRoot, 'src', 'output.ts'), 'utf8');
     const entrySource = readFileSync(join(dialerRoot, 'src', 'index.ts'), 'utf8');
     const sentrySource = readFileSync(join(dialerRoot, 'src', 'sentry.ts'), 'utf8');
+    const loggerSource = readFileSync(join(repoRoot, 'packages', 'logger', 'src', 'index.ts'), 'utf8');
 
     expect(`${outputSource}\n${entrySource}`).toContain('__consuelo_dialer_json');
     expect(`${outputSource}\n${entrySource}`).toContain('__consuelo_dialer_quiet');
     expect(`${outputSource}\n${entrySource}`).not.toMatch(/__consuelo_(?:json|quiet|cli_mode)\b/);
+    expect(loggerSource).toContain('__consuelo_dialer_cli_mode');
+    expect(loggerSource).not.toContain('__consuelo_cli_mode');
     expect(sentrySource).toContain("process.argv.includes('--no-telemetry')");
     expect(sentrySource).toMatch(/twilioAuthToken|llmApiKey|apiKey|token|password/);
     expect(readFileSync(join(osRoot, 'scripts', 'lifecycle.ts'), 'utf8')).not.toMatch(/@sentry|twilio|twenty-sdk/i);

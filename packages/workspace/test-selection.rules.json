@@ -248,6 +248,27 @@
       "reason": "ESLint configuration changes must import cleanly without selecting unrelated application test suites."
     },
     {
+      "id": "dialer-cli-install-copy",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CLI product split contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/cli-product-split.test.ts"
+          ]
+        }
+      ],
+      "reason": "The navigation install command is a cross-product CLI ownership contract covered precisely by Worker 30, not by the full frontend suite."
+    },
+    {
       "id": "twenty-server-project",
       "critical": true,
       "source": [

@@ -1,0 +1,241 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products",
+  "base": "origin/stream/os-distribution",
+  "headSha": "f230f87bc4d72f26dd0d7d434be013daf2a726f5",
+  "changeHash": "7e44cd39a843960ef67673ebea0a9bbee382edd4b11fa7fdbbcecfb13e401b9b",
+  "changedFiles": [
+    "packages/cli/bin/consuelo-dialer.js",
+    "packages/cli/package.json",
+    "packages/cli/src/api-client.ts",
+    "packages/cli/src/commands/analytics.ts",
+    "packages/cli/src/commands/call.ts",
+    "packages/cli/src/commands/coach.ts",
+    "packages/cli/src/commands/contacts.ts",
+    "packages/cli/src/commands/deploy.ts",
+    "packages/cli/src/commands/files.ts",
+    "packages/cli/src/commands/init.ts",
+    "packages/cli/src/commands/kb.ts",
+    "packages/cli/src/commands/update.ts",
+    "packages/cli/src/config.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/output.ts",
+    "packages/logger/src/index.ts",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/lib/lifecycle/types.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/tests/cli-product-split.test.ts",
+    "packages/os/tests/distribution/release-publication-preparer.test.ts",
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
+    "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts",
+    "packages/workspace/scripts/lib/review-test-selection.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/review-test-selection.test.js",
+    "packages/workspace/tests/test-selection.test.js",
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-07-25T19:57:46.311Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/current.json",
+        ".task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/evidence-log.json",
+        ".task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/read-log.json",
+        ".task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/session.json",
+        ".task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md",
+        ".task/tasks/os-distribution/split-consuelo-and-consuelo-dialer-cli-products.json",
+        "packages/cli/bin/consuelo-dialer.js",
+        "packages/cli/package.json",
+        "packages/cli/src/api-client.ts",
+        "packages/cli/src/commands/analytics.ts",
+        "packages/cli/src/commands/call.ts",
+        "packages/cli/src/commands/coach.ts",
+        "packages/cli/src/commands/contacts.ts",
+        "packages/cli/src/commands/deploy.ts",
+        "packages/cli/src/commands/files.ts",
+        "packages/cli/src/commands/init.ts",
+        "packages/cli/src/commands/kb.ts",
+        "packages/cli/src/commands/os.ts",
+        "packages/cli/src/commands/update.ts",
+        "packages/cli/src/config.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/src/output.ts",
+        "packages/logger/src/index.ts",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+        "packages/os/scripts/lib/lifecycle/types.ts",
+        "packages/os/scripts/lifecycle.ts",
+        "packages/os/tests/cli-product-split.test.ts",
+        "packages/os/tests/distribution/release-publication-preparer.test.ts",
+        "packages/os/tests/distribution/runtime-bundle.test.ts",
+        "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts",
+        "packages/workspace/scripts/lib/review-test-selection.js",
+        "packages/workspace/scripts/test-selection.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/review-test-selection.test.js",
+        "packages/workspace/tests/test-selection.test.js",
+        "yarn.lock"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/scripts/test-selection.js",
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-cli-install-copy",
+          "critical": true,
+          "reason": "The navigation install command is a cross-product CLI ownership contract covered precisely by Worker 30, not by the full frontend suite.",
+          "matchedFiles": [
+            "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/package.json",
+            "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+            "packages/os/scripts/lib/lifecycle/types.ts",
+            "packages/os/scripts/lifecycle.ts",
+            "packages/os/tests/cli-product-split.test.ts",
+            "packages/os/tests/distribution/release-publication-preparer.test.ts",
+            "packages/os/tests/distribution/runtime-bundle.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "Consuelo CLI product split contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/cli-product-split.test.ts"
+          ],
+          "ruleId": "dialer-cli-install-copy",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1472,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1117\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 637\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:43\n\u001b[2m   Duration \u001b[22m 1.19s\u001b[2m (transform 11ms, setup 0ms, import 16ms, tests 1.12s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Consuelo CLI product split contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/cli-product-split.test.ts"
+          ],
+          "ruleId": "dialer-cli-install-copy",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 942,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-split-consuelo-and-consuelo-dialer-cli-products\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/cli-product-split.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 198\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:45\n\u001b[2m   Duration \u001b[22m 632ms\u001b[2m (transform 123ms, setup 0ms, import 374ms, tests 198ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4,
+          "outputTail": "aemons.sh\n\n  $ bun run uninstall:system-daemons:dry-run\n    bash ./scripts/uninstall-system-daemons.sh --dry-run\n\n  $ bun run get-raw-steering\n    bun ./scripts/os.ts get-raw-steering\n\n  $ bun run task:hook\n    bun ./scripts/task-hook.js\n\n  $ bun run operator\n    bun ./operator/operator.ts\n\n  $ bun run doctor:watch\n    bun ./scripts/doctor-watch.ts\n\n  $ bun run artifact:render\n    bun ./scripts/artifact-render.ts\n\n  $ bun run artifact:publish\n    bun ./scripts/artifacts.ts publish\n\n  $ bun run artifact:validate\n    bun ./scripts/artifact-validate.ts\n\n  $ bun run semantic:embeddings\n    bun ./scripts/semantic-embeddings.js\n\n  $ bun run cloudflare:workspace-edge:dev\n    wrangler dev --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:deploy:dry-run\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n\n  $ bun run cloudflare:workspace-edge:deploy\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:migrate\n    wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:seed\n    bun ./scripts/seed-workspace-edge-route.ts\n\n  $ bun run platform:managed-os-mcp-ingress:provision\n    bun ./scripts/provision-managed-os-mcp-ingress-policy.ts\n\n  $ bun run smoke:workspace-edge\n    bun ./scripts/smoke-workspace-edge.ts\n\n  $ bun run media\n    bun ./scripts/media.ts\n\n  $ bun run media:doctor\n    bun ./scripts/media.ts doctor --json\n\n  $ bun run media:install\n    bun ./scripts/media.ts install\n\n  $ bun run media:screenshot\n    bun ./scripts/media.ts screenshot render\n\n  $ bun run media:test\n    vitest run tests/media\n\n  $ bun run media:test:manifest\n    vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts\n\n  $ bun run media:test:deps\n    vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts\n\n  $ bun run media:test:contracts\n    vitest run tests/media/06-effect-architecture.test.ts tests/media/07-contracts-asset.test.ts tests/media/08-contracts-timeline.test.ts tests/media/09-contracts-render-result.test.ts tests/media/10-cli-json-envelope.test.ts\n\n  $ bun run media:test:core\n    vitest run tests/media/11-core-probe.test.ts tests/media/12-core-frames-extract.test.ts tests/media/13-core-timeline-validate.test.ts tests/media/14-core-compose.test.ts tests/media/15-core-qa.test.ts\n\n  $ bun run media:test:youtube\n    vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:audio\n    vitest run tests/media/20-audio-transcribe.test.ts\n\n  $ bun run media:test:vision\n    vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts\n\n  $ bun run media:test:render\n    vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts\n\n  $ bun run media:test:handoff\n    vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts\n\n  $ bun run media:test:ingest\n    vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:svg\n    vitest run tests/media/31-svg-convert.test.ts\n\n  $ bun run media:svg\n    python3 ./scripts/media-svg.py\n\n  $ bun run trace:watch\n    bun ./scripts/trace-watch.ts\n\n  $ bun run generate-tool-manifest:check\n    bun ./scripts/generate-tool-manifest.ts --check\n\n  $ bun run lifecycle\n    bun ./scripts/lifecycle.ts\n\n  $ bun run managed-components\n    bun ./scripts/managed-components.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,3 +1,4 @@
+/* eslint-disable twenty/max-consts-per-file -- This module intentionally centralizes the support-menu contract. */
 export const NAVIGATION_DRAWER_SUPPORT_DROPDOWN_ID =
   'navigation-drawer-support-dropdown';
 

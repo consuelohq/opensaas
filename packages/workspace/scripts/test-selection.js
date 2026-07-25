@@ -163,6 +163,7 @@ function normalizeRule(rule, source = 'explicit') {
     exclude: rule.exclude || [],
     tests: rule.tests || [],
     critical: Boolean(rule.critical),
+    exclusive: Boolean(rule.exclusive),
     reason: rule.reason || '',
     origin: source,
   };
@@ -292,9 +293,11 @@ function select(registry, files) {
   const matchedRules = [];
   const suites = [];
   const seen = new Set();
+  const exclusivelyOwnedFiles = new Set();
   for (const rule of registry.rules) {
     const matchedFiles = files.filter((file) =>
-      rule.source.some((pattern) => matchesPattern(file, pattern))
+      !exclusivelyOwnedFiles.has(file)
+      && rule.source.some((pattern) => matchesPattern(file, pattern))
       && !(rule.exclude || []).some((pattern) => matchesPattern(file, pattern))
     );
     if (matchedFiles.length === 0) continue;
@@ -304,6 +307,9 @@ function select(registry, files) {
       if (seen.has(key)) continue;
       seen.add(key);
       suites.push({ ...test, ruleId: rule.id, critical: rule.critical });
+    }
+    if (rule.exclusive) {
+      for (const file of matchedFiles) exclusivelyOwnedFiles.add(file);
     }
   }
   const criticalMatched = matchedRules.some((rule) => rule.critical);
