@@ -108,6 +108,30 @@ describe('test selection registry', () => {
     expect(data.zeroSuiteReason).toContain('changed files are docs');
   });
 
+  it('ignores post-checkout workspace dirt when running in CI', () => {
+    const dirtyFile = path.join(
+      process.cwd(),
+      'packages',
+      'twenty-sdk',
+      `.test-selection-ci-dirt-${process.pid}-${Date.now()}.ts`,
+    );
+
+    fs.writeFileSync(dirtyFile, 'export const generatedDuringCi = true;\n');
+
+    try {
+      const localData = json(run(['check', '--base', 'HEAD', '--json'], { env: { CI: 'false' } }));
+      expect(localData.matchedRules.map((rule) => rule.id)).toContain('auto:twenty-sdk:test');
+
+      const ciData = json(run(['check', '--base', 'HEAD', '--json'], { env: { CI: 'true' } }));
+      expect(ciData.changedFiles).not.toContain(
+        path.relative(process.cwd(), dirtyFile).replaceAll('\\', '/'),
+      );
+      expect(ciData.matchedRules.map((rule) => rule.id)).not.toContain('auto:twenty-sdk:test');
+    } finally {
+      fs.rmSync(dirtyFile, { force: true });
+    }
+  });
+
   it('fails timed out suite commands', () => {
     const registryPath = path.join(os.tmpdir(), `test-selection-timeout-${Date.now()}.json`);
     fs.writeFileSync(registryPath, JSON.stringify({

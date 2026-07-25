@@ -310,8 +310,6 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 
 ## workspace-owned: validation evidence
 
-- RED: config-path/import contract failed 2/2 because active consumers referenced a missing directory.
-- RED: restored ESLint package selection initially failed all 14 rule suites under the legacy RuleTester contract.
 - GREEN: `twenty-eslint-rules` tests passed 14 suites / 129 tests.
 - GREEN: `twenty-eslint-rules` typecheck passed.
 - GREEN: `twenty-eslint-rules` lint passed with zero errors and two inherited warnings.
@@ -338,6 +336,10 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 17:49:12 `verify`: passed — OK
 - 2026-07-25 17:50:40 `verify`: passed — OK
 - 2026-07-25 17:52:23 `verify`: passed — OK
+- 2026-07-25 18:19:14 `review.run`: passed — OK
+- 2026-07-25 18:19:43 `review.run`: passed — OK
+- 2026-07-25 18:20:20 `verify`: passed — OK
+- 2026-07-25 18:20:39 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -361,3 +363,19 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - Mergeability refinement: the first combined file still conflicted because both branches inserted distinct test blocks at the same ancestor location. Reordered the branch so the target stream's cache test appears first, byte-for-byte, followed by this task's frontend/shared tests. The task branch is now a content superset of the stream insertion rather than a competing insertion.
 
 - Final overlap removal: content ordering still produced a textual conflict because the historical branch and stream both inserted tests at the same ancestor boundary. Restored `github-workflow-policy.test.js` byte-for-byte from the target stream and moved this task's two frontend/shared source-gate contracts into `workflow-source-gates.test.js`. This preserves both behaviors while eliminating shared-file ownership.
+
+
+## CI registry dirt diagnosis and fix
+
+- Fresh GitHub CI on synthetic merge `c5fc9b9e996fb066e84fe44932cb31fb06fb9cb2` selected an unrelated fifth suite, `auto:twenty-sdk:test`, although neither the PR file list nor the exact committed diff contains a `packages/twenty-sdk/**` path.
+- All five commands passed independently. The committed synthetic diff selected exactly four intended suites locally; therefore the extra SDK match came from post-checkout workspace dirt created before registry execution.
+- RED: added a behavioral test that creates an untracked SDK source file and proves the existing CI-mode selector incorrectly includes it (`trc_ab12b60ef9d3`).
+- Fix: `test-selection.js` now treats `CI=true` (or explicit `--committed-only`) as committed-diff-only. Local/default execution still includes working, staged, and untracked files so task verification remains strict.
+- GREEN: test-selection suite passed 8/8 (`trc_a3a1338926c2`).
+- GREEN: focused workspace/ESLint/workflow suite passed 20/20 (`trc_defb944280a3`).
+- GREEN: clean-cache CI simulation selected only the four intended rules and all four commands passed (`trc_f79d0fc5b48c`).
+- Disposition: no suite was removed from its legitimate source mapping; only non-PR runtime dirt is excluded in CI.
+
+- Review classification: broad review tests exposed pre-existing Twenty-front/Twenty-UI failures and three pre-existing typecheck findings (`trc_65207c5c28c8`); none are owned by this PR. The CI-equivalent strict review with tests disabled reports zero owned issues and zero blockers (`trc_0fc5b1385bd5`).
+
+- Final full verification is publish-valid against current `stream/os-distribution`; review, precise registry tests, and DB guard all pass (`trc_625dae15aa23`).
