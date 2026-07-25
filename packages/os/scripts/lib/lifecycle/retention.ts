@@ -8,7 +8,6 @@ import {
   renameSync,
   rmSync,
   statSync,
-  symlinkSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -17,6 +16,8 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import type { RuntimeBundleManifest } from '../distribution/runtime-bundle';
 import { lifecycleError } from './errors';
 import { isPathWithin, resolveLifecyclePaths } from './paths';
+import { createRuntimeDirectoryLink } from './runtime-links';
+import { runtimeReleaseDirectoryName } from './runtime-release-path';
 import { verifyInstalledRuntimeRelease } from './state';
 
 type ActivationJournal = {
@@ -50,43 +51,79 @@ function writeJsonAtomically(path: string, value: unknown): void {
   mkdirSync(dirname(path), { recursive: true });
   const temporaryPath = `${path}.${process.pid}.${crypto.randomUUID()}.tmp`;
   try {
-    writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
+    writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, {
+      mode: 0o600,
+      flag: 'wx',
+    });
     renameSync(temporaryPath, path);
   } finally {
     rmSync(temporaryPath, { force: true });
   }
 }
 
-function assertManagedReleasePath(home: string | undefined, releasePath: string): string {
+function assertManagedReleasePath(
+  home: string | undefined,
+  releasePath: string,
+): string {
   const paths = resolveLifecyclePaths(home);
   const resolvedPath = resolve(releasePath);
-  if (!isPathWithin(paths.releasesDir, resolvedPath) || resolvedPath === resolve(paths.releasesDir)) {
-    throw lifecycleError('RETENTION_FAILED', 'runtime release reference escapes runtime/releases');
+  if (
+    !isPathWithin(paths.releasesDir, resolvedPath) ||
+    resolvedPath === resolve(paths.releasesDir)
+  ) {
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      'runtime release reference escapes runtime/releases',
+    );
   }
   if (!existsSync(resolvedPath)) {
-    throw lifecycleError('RETENTION_FAILED', `runtime release is missing: ${basename(resolvedPath)}`);
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      `runtime release is missing: ${basename(resolvedPath)}`,
+    );
   }
   const rootStat = lstatSync(resolvedPath);
   if (rootStat.isSymbolicLink()) {
-    throw lifecycleError('RETENTION_FAILED', `runtime release root is a symbolic link: ${basename(resolvedPath)}`);
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      `runtime release root is a symbolic link: ${basename(resolvedPath)}`,
+    );
   }
   if (!statSync(resolvedPath).isDirectory()) {
-    throw lifecycleError('RETENTION_FAILED', `runtime release is not a directory: ${basename(resolvedPath)}`);
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      `runtime release is not a directory: ${basename(resolvedPath)}`,
+    );
   }
   const manifest = verifyInstalledRuntimeRelease(resolvedPath);
-  if (manifest.bundleId !== basename(resolvedPath)) {
-    throw lifecycleError('RETENTION_FAILED', 'runtime release directory does not match its verified bundle identity');
+  if (
+    runtimeReleaseDirectoryName(manifest.bundleId) !== basename(resolvedPath)
+  ) {
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      'runtime release directory does not match its verified bundle identity',
+    );
   }
   return resolvedPath;
 }
 
-function replaceRuntimeLink(linkPath: string, releasePath: string, operationId: string): void {
+function replaceRuntimeLink(
+  linkPath: string,
+  releasePath: string,
+  operationId: string,
+): void {
   const paths = resolveLifecyclePaths(dirname(dirname(linkPath)));
   const resolvedReleasePath = assertManagedReleasePath(paths.home, releasePath);
-  const temporaryLink = join(paths.runtimeDir, `.${basename(linkPath)}-${operationId}`);
+  const temporaryLink = join(
+    paths.runtimeDir,
+    `.${basename(linkPath)}-${operationId}`,
+  );
   rmSync(temporaryLink, { recursive: true, force: true });
   try {
-    symlinkSync(relative(paths.runtimeDir, resolvedReleasePath), temporaryLink, 'dir');
+    createRuntimeDirectoryLink({
+      target: relative(paths.runtimeDir, resolvedReleasePath),
+      linkPath: temporaryLink,
+    });
     renameSync(temporaryLink, linkPath);
   } finally {
     rmSync(temporaryLink, { recursive: true, force: true });
@@ -102,23 +139,36 @@ export function readLifecycleReleaseReference(
   const linkPath = name === 'current' ? paths.currentLink : paths.previousLink;
   if (!lstatExists(linkPath)) {
     if (options.required) {
-      throw lifecycleError('RETENTION_FAILED', `runtime/${name} reference is missing`);
+      throw lifecycleError(
+        'RETENTION_FAILED',
+        `runtime/${name} reference is missing`,
+      );
     }
     return undefined;
   }
   const linkStat = lstatSync(linkPath);
   if (!linkStat.isSymbolicLink()) {
-    throw lifecycleError('RETENTION_FAILED', `runtime/${name} must be a symbolic link`);
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      `runtime/${name} must be a symbolic link`,
+    );
   }
   const releasePath = resolve(dirname(linkPath), readlinkSync(linkPath));
   try {
     const managedPath = assertManagedReleasePath(home, releasePath);
-    return { path: managedPath, manifest: verifyInstalledRuntimeRelease(managedPath) };
+    return {
+      path: managedPath,
+      manifest: verifyInstalledRuntimeRelease(managedPath),
+    };
   } catch (error: unknown) {
     const detail = error instanceof Error ? error.message : String(error);
-    throw lifecycleError('RETENTION_FAILED', `runtime/${name} reference is inconsistent: ${detail}`, {
-      cause: error,
-    });
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      `runtime/${name} reference is inconsistent: ${detail}`,
+      {
+        cause: error,
+      },
+    );
   }
 }
 
@@ -129,7 +179,10 @@ export function writeLifecycleActivationJournal(input: {
   nextReleasePath: string;
 }): void {
   const paths = resolveLifecyclePaths(input.home);
-  const nextReleasePath = assertManagedReleasePath(paths.home, input.nextReleasePath);
+  const nextReleasePath = assertManagedReleasePath(
+    paths.home,
+    input.nextReleasePath,
+  );
   const previousReleasePath = input.previousReleasePath
     ? assertManagedReleasePath(paths.home, input.previousReleasePath)
     : undefined;
@@ -152,20 +205,23 @@ function readActivationJournal(home?: string): ActivationJournal | undefined {
   try {
     parsed = JSON.parse(readFileSync(path, 'utf8'));
   } catch (error: unknown) {
-    throw lifecycleError('ROLLBACK_FAILED', 'activation journal is malformed', { cause: error });
+    throw lifecycleError('ROLLBACK_FAILED', 'activation journal is malformed', {
+      cause: error,
+    });
   }
   if (
-    !parsed
-    || typeof parsed !== 'object'
-    || (parsed as ActivationJournal).schemaVersion !== 1
-    || typeof (parsed as ActivationJournal).operationId !== 'string'
-    || typeof (parsed as ActivationJournal).nextReleasePath !== 'string'
-    || (
-      (parsed as ActivationJournal).previousReleasePath !== undefined
-      && typeof (parsed as ActivationJournal).previousReleasePath !== 'string'
-    )
+    !parsed ||
+    typeof parsed !== 'object' ||
+    (parsed as ActivationJournal).schemaVersion !== 1 ||
+    typeof (parsed as ActivationJournal).operationId !== 'string' ||
+    typeof (parsed as ActivationJournal).nextReleasePath !== 'string' ||
+    ((parsed as ActivationJournal).previousReleasePath !== undefined &&
+      typeof (parsed as ActivationJournal).previousReleasePath !== 'string')
   ) {
-    throw lifecycleError('ROLLBACK_FAILED', 'activation journal failed validation');
+    throw lifecycleError(
+      'ROLLBACK_FAILED',
+      'activation journal failed validation',
+    );
   }
   return parsed as ActivationJournal;
 }
@@ -179,9 +235,16 @@ export function recoverInterruptedLifecycleActivation(home?: string): {
   if (!journal) return { recovered: false };
   try {
     if (journal.previousReleasePath) {
-      const previousPath = assertManagedReleasePath(paths.home, journal.previousReleasePath);
+      const previousPath = assertManagedReleasePath(
+        paths.home,
+        journal.previousReleasePath,
+      );
       const manifest = verifyInstalledRuntimeRelease(previousPath);
-      replaceRuntimeLink(paths.currentLink, previousPath, `${journal.operationId}-recover`);
+      replaceRuntimeLink(
+        paths.currentLink,
+        previousPath,
+        `${journal.operationId}-recover`,
+      );
       const previous = readLifecycleReleaseReference(paths.home, 'previous');
       if (previous?.path === previousPath) unlinkSync(paths.previousLink);
       clearLifecycleActivationJournal(paths.home);
@@ -201,7 +264,10 @@ export function recoverInterruptedLifecycleActivation(home?: string): {
 
 function validateBundleId(value: unknown, field: string): string {
   if (typeof value !== 'string' || !/^sha256:[a-f0-9]{64}$/.test(value)) {
-    throw lifecycleError('RETENTION_FAILED', `${field} contains an invalid bundle id`);
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      `${field} contains an invalid bundle id`,
+    );
   }
   return value;
 }
@@ -214,11 +280,20 @@ export function writeLifecycleRetentionState(input: {
   const paths = resolveLifecyclePaths(input.home);
   const state: RetentionState = {
     schemaVersion: 1,
-    pinnedBundleIds: [...new Set(input.pinnedBundleIds.map((value) => validateBundleId(value, 'pinnedBundleIds')))],
-    unresolvedContentBaseBundleIds: [...new Set(
-      input.unresolvedContentBaseBundleIds.map((value) =>
-        validateBundleId(value, 'unresolvedContentBaseBundleIds')),
-    )],
+    pinnedBundleIds: [
+      ...new Set(
+        input.pinnedBundleIds.map((value) =>
+          validateBundleId(value, 'pinnedBundleIds'),
+        ),
+      ),
+    ],
+    unresolvedContentBaseBundleIds: [
+      ...new Set(
+        input.unresolvedContentBaseBundleIds.map((value) =>
+          validateBundleId(value, 'unresolvedContentBaseBundleIds'),
+        ),
+      ),
+    ],
   };
   writeJsonAtomically(paths.retentionStatePath, state);
 }
@@ -226,31 +301,53 @@ export function writeLifecycleRetentionState(input: {
 function readRetentionState(home?: string): RetentionState {
   const path = resolveLifecyclePaths(home).retentionStatePath;
   if (!existsSync(path)) {
-    return { schemaVersion: 1, pinnedBundleIds: [], unresolvedContentBaseBundleIds: [] };
+    return {
+      schemaVersion: 1,
+      pinnedBundleIds: [],
+      unresolvedContentBaseBundleIds: [],
+    };
   }
   let parsed: unknown;
   try {
     parsed = JSON.parse(readFileSync(path, 'utf8'));
   } catch (error: unknown) {
-    throw lifecycleError('RETENTION_FAILED', 'retention state is malformed', { cause: error });
+    throw lifecycleError('RETENTION_FAILED', 'retention state is malformed', {
+      cause: error,
+    });
   }
-  if (!parsed || typeof parsed !== 'object' || (parsed as RetentionState).schemaVersion !== 1) {
-    throw lifecycleError('RETENTION_FAILED', 'retention state failed validation');
+  if (
+    !parsed ||
+    typeof parsed !== 'object' ||
+    (parsed as RetentionState).schemaVersion !== 1
+  ) {
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      'retention state failed validation',
+    );
   }
   const pinned = (parsed as RetentionState).pinnedBundleIds;
-  const contentBases = (parsed as RetentionState).unresolvedContentBaseBundleIds;
+  const contentBases = (parsed as RetentionState)
+    .unresolvedContentBaseBundleIds;
   if (!Array.isArray(pinned) || !Array.isArray(contentBases)) {
-    throw lifecycleError('RETENTION_FAILED', 'retention state arrays are required');
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      'retention state arrays are required',
+    );
   }
   return {
     schemaVersion: 1,
-    pinnedBundleIds: pinned.map((value) => validateBundleId(value, 'pinnedBundleIds')),
+    pinnedBundleIds: pinned.map((value) =>
+      validateBundleId(value, 'pinnedBundleIds'),
+    ),
     unresolvedContentBaseBundleIds: contentBases.map((value) =>
-      validateBundleId(value, 'unresolvedContentBaseBundleIds')),
+      validateBundleId(value, 'unresolvedContentBaseBundleIds'),
+    ),
   };
 }
 
-function listStrictVerifiedReleases(home?: string): LifecycleReleaseReference[] {
+function listStrictVerifiedReleases(
+  home?: string,
+): LifecycleReleaseReference[] {
   const paths = resolveLifecyclePaths(home);
   if (!existsSync(paths.releasesDir)) return [];
   const releases: LifecycleReleaseReference[] = [];
@@ -258,14 +355,23 @@ function listStrictVerifiedReleases(home?: string): LifecycleReleaseReference[] 
     const releasePath = join(paths.releasesDir, entry.name);
     const stat = lstatSync(releasePath);
     if (stat.isSymbolicLink()) {
-      throw lifecycleError('RETENTION_FAILED', `runtime release entry is a symbolic link: ${entry.name}`);
+      throw lifecycleError(
+        'RETENTION_FAILED',
+        `runtime release entry is a symbolic link: ${entry.name}`,
+      );
     }
     if (!stat.isDirectory()) {
-      throw lifecycleError('RETENTION_FAILED', `runtime release entry is not a directory: ${entry.name}`);
+      throw lifecycleError(
+        'RETENTION_FAILED',
+        `runtime release entry is not a directory: ${entry.name}`,
+      );
     }
     const manifest = verifyInstalledRuntimeRelease(releasePath);
-    if (manifest.bundleId !== entry.name) {
-      throw lifecycleError('RETENTION_FAILED', `runtime release identity mismatch: ${entry.name}`);
+    if (runtimeReleaseDirectoryName(manifest.bundleId) !== entry.name) {
+      throw lifecycleError(
+        'RETENTION_FAILED',
+        `runtime release identity mismatch: ${entry.name}`,
+      );
     }
     releases.push({ path: releasePath, manifest });
   }
@@ -280,22 +386,32 @@ function pruneEphemeralDirectory(input: {
   dryRun: boolean;
 }): string[] {
   if (!existsSync(input.root)) return [];
-  const entries = readdirSync(input.root).map((name) => {
-    const path = join(input.root, name);
-    const stat = lstatSync(path);
-    if (stat.isSymbolicLink()) {
-      throw lifecycleError('RETENTION_FAILED', `ephemeral lifecycle entry is a symbolic link: ${path}`);
-    }
-    if (!stat.isDirectory()) {
-      throw lifecycleError('RETENTION_FAILED', `ephemeral lifecycle entry is not a directory: ${path}`);
-    }
-    return { name, path, modifiedAt: stat.mtimeMs };
-  }).sort((left, right) => right.modifiedAt - left.modifiedAt);
-  const removals = entries.filter((entry, index) =>
-    input.nowMs - entry.modifiedAt > input.ttlMs || index >= input.maxEntries,
+  const entries = readdirSync(input.root)
+    .map((name) => {
+      const path = join(input.root, name);
+      const stat = lstatSync(path);
+      if (stat.isSymbolicLink()) {
+        throw lifecycleError(
+          'RETENTION_FAILED',
+          `ephemeral lifecycle entry is a symbolic link: ${path}`,
+        );
+      }
+      if (!stat.isDirectory()) {
+        throw lifecycleError(
+          'RETENTION_FAILED',
+          `ephemeral lifecycle entry is not a directory: ${path}`,
+        );
+      }
+      return { name, path, modifiedAt: stat.mtimeMs };
+    })
+    .sort((left, right) => right.modifiedAt - left.modifiedAt);
+  const removals = entries.filter(
+    (entry, index) =>
+      input.nowMs - entry.modifiedAt > input.ttlMs || index >= input.maxEntries,
   );
   if (!input.dryRun) {
-    for (const entry of removals) rmSync(entry.path, { recursive: true, force: true });
+    for (const entry of removals)
+      rmSync(entry.path, { recursive: true, force: true });
   }
   return removals.map((entry) => entry.path);
 }
@@ -311,17 +427,26 @@ export function pruneLifecycleEphemeralDirectories(input: {
   const nowMs = (input.now ?? new Date()).getTime();
   const ttlMs = input.ttlMs ?? 24 * 60 * 60 * 1000;
   const maxEntries = input.maxEntries ?? 4;
-  if (!Number.isFinite(ttlMs) || ttlMs < 0 || !Number.isInteger(maxEntries) || maxEntries < 0) {
-    throw lifecycleError('RETENTION_FAILED', 'ephemeral retention limits are invalid');
+  if (
+    !Number.isFinite(ttlMs) ||
+    ttlMs < 0 ||
+    !Number.isInteger(maxEntries) ||
+    maxEntries < 0
+  ) {
+    throw lifecycleError(
+      'RETENTION_FAILED',
+      'ephemeral retention limits are invalid',
+    );
   }
-  return [paths.stagingDir, paths.testHomesDir, paths.devSlotsDir].flatMap((root) =>
-    pruneEphemeralDirectory({
-      root,
-      nowMs,
-      ttlMs,
-      maxEntries,
-      dryRun: input.dryRun ?? false,
-    }),
+  return [paths.stagingDir, paths.testHomesDir, paths.devSlotsDir].flatMap(
+    (root) =>
+      pruneEphemeralDirectory({
+        root,
+        nowMs,
+        ttlMs,
+        maxEntries,
+        dryRun: input.dryRun ?? false,
+      }),
   );
 }
 
@@ -341,7 +466,9 @@ export function pruneLifecycleReleases(input: {
   const previous = readLifecycleReleaseReference(paths.home, 'previous');
   const state = readRetentionState(paths.home);
   const releases = listStrictVerifiedReleases(paths.home);
-  const byId = new Map(releases.map((release) => [release.manifest.bundleId, release]));
+  const byId = new Map(
+    releases.map((release) => [release.manifest.bundleId, release]),
+  );
   const protectedBundleIds = new Set([
     ...(current ? [current.manifest.bundleId] : []),
     ...(previous ? [previous.manifest.bundleId] : []),
@@ -350,16 +477,26 @@ export function pruneLifecycleReleases(input: {
   ]);
   for (const bundleId of protectedBundleIds) {
     if (!byId.has(bundleId)) {
-      throw lifecycleError('RETENTION_FAILED', `protected runtime release is missing: ${bundleId}`);
+      throw lifecycleError(
+        'RETENTION_FAILED',
+        `protected runtime release is missing: ${bundleId}`,
+      );
     }
   }
   const removedBundleIds: string[] = [];
   for (const release of releases) {
     if (protectedBundleIds.has(release.manifest.bundleId)) continue;
-    if (!isPathWithin(paths.releasesDir, release.path) || release.path === resolve(paths.releasesDir)) {
-      throw lifecycleError('RETENTION_FAILED', 'refusing to remove release outside runtime/releases');
+    if (
+      !isPathWithin(paths.releasesDir, release.path) ||
+      release.path === resolve(paths.releasesDir)
+    ) {
+      throw lifecycleError(
+        'RETENTION_FAILED',
+        'refusing to remove release outside runtime/releases',
+      );
     }
-    if (!(input.dryRun ?? false)) rmSync(release.path, { recursive: true, force: true });
+    if (!(input.dryRun ?? false))
+      rmSync(release.path, { recursive: true, force: true });
     removedBundleIds.push(release.manifest.bundleId);
   }
   const removedEphemeralPaths = pruneLifecycleEphemeralDirectories({
