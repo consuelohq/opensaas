@@ -124,7 +124,10 @@ const SAFE_ERROR_MESSAGES: Record<string, string> = {
   WORKSPACE_HOSTNAME_NOT_FOUND: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_HOSTNAME_RESERVED: PLATFORM_SAFETY_MESSAGE,
-  WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE: PLATFORM_SAFETY_MESSAGE,
+  WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE:
+    'The selected workspace node is currently unavailable.',
+  WORKSPACE_NODE_OFFLINE:
+    'The selected workspace node is currently unavailable.',
   WORKSPACE_EDGE_ROUTER_ERROR: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_EDGE_AUTH_REQUIRED: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE: PLATFORM_SAFETY_MESSAGE,
@@ -788,7 +791,10 @@ export const createWorkspaceCloudflareEdgeRouter = (
         }
 
         if (resolution.target.kind === 'site-snapshot') {
-          if (resolution.auth !== 'public') {
+          if (
+            resolution.auth !== 'public' &&
+            resolution.auth !== 'workspace-session'
+          ) {
             return createSafeErrorResponse({
               status: 503,
               code: 'WORKSPACE_EDGE_AUTH_REQUIRED',

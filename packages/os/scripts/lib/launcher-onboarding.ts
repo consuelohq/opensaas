@@ -6,21 +6,58 @@ export type LauncherLocalAgent = {
 
 export type LauncherOnboardingOptions = {
   mcpUrl: string;
+  workspaceHostname?: string | null;
   localAgents?: LauncherLocalAgent[];
 };
 
 const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
 
 const launcherLinks = {
-  sites: [
-    { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-    { label: 'Artifacts', href: 'https://sites.consuelohq.com/artifacts' },
-    { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
-    { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
-  ],
   guides: [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }],
   writing: [{ label: 'Decision loops', href: '/writing/on-decision-loops' }],
 } as const;
+
+const WORKSPACE_HOSTNAME_PATTERN =
+  /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.consuelohq\.com$/;
+
+const RESERVED_WORKSPACE_HOSTNAMES = new Set([
+  'api.consuelohq.com',
+  'app.consuelohq.com',
+  'diffs.consuelohq.com',
+  'docs.consuelohq.com',
+  'install.consuelohq.com',
+  'linear.consuelohq.com',
+  'os.consuelohq.com',
+  'sites.consuelohq.com',
+  'www.consuelohq.com',
+]);
+
+function normalizeWorkspaceHostname(
+  value: string | null | undefined,
+): string | null {
+  const hostname = value?.trim().toLowerCase().replace(/\.$/, '') ?? '';
+  if (!hostname) return null;
+  if (
+    !WORKSPACE_HOSTNAME_PATTERN.test(hostname) ||
+    RESERVED_WORKSPACE_HOSTNAMES.has(hostname)
+  ) {
+    throw new Error(`Invalid workspace hostname: ${value ?? ''}`);
+  }
+  return hostname;
+}
+
+function workspaceHref(hostname: string | null, pathname: string): string {
+  return hostname ? `https://${hostname}${pathname}` : pathname;
+}
+
+function workspaceLauncherLinks(hostname: string | null) {
+  return [
+    { label: 'Go to market', href: workspaceHref(hostname, '/gtm') },
+    { label: 'Artifacts', href: workspaceHref(hostname, '/artifacts') },
+    { label: 'Observability', href: workspaceHref(hostname, '/observability') },
+    { label: 'Code review', href: workspaceHref(hostname, '/diffs') },
+  ];
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -48,6 +85,7 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
 
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
   const localAgents = options.localAgents ?? [];
+  const workspaceHostname = normalizeWorkspaceHostname(options.workspaceHostname);
   const connectedLocalAgentCount = localAgents.filter((agent) => agent.status === 'verified').length;
   const localAgentNoun = connectedLocalAgentCount === 1 ? 'agent' : 'agents';
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
@@ -156,7 +194,7 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         </section>
         <section class="section">
           <h2 class="section-title">Sites</h2>
-          ${navLinks(launcherLinks.sites)}
+          ${navLinks(workspaceLauncherLinks(workspaceHostname))}
         </section>
         <section class="section">
           <h2 class="section-title">Guides and Tips</h2>
