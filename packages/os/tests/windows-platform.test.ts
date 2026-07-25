@@ -229,10 +229,10 @@ describe('Windows Service Control Manager adapter', () => {
       `icacls.exe ${home} /inheritance:r /grant:r *S-1-5-21-1000:(OI)(CI)F *S-1-5-18:(OI)(CI)F NT SERVICE\\ConsueloOS:(OI)(CI)M /t`,
     );
     const traversalAcl = rendered.indexOf(
-      'icacls.exe D:\\Profiles\\Ko User /grant:r NT SERVICE\\ConsueloOS:(RX) /c',
+      'icacls.exe D:\\Profiles\\Ko User /grant:r NT SERVICE\\ConsueloOS:(X) /c',
     );
     const parentTraversalAcl = rendered.indexOf(
-      'icacls.exe D:\\Profiles /grant:r NT SERVICE\\ConsueloOS:(RX) /c',
+      'icacls.exe D:\\Profiles /grant:r NT SERVICE\\ConsueloOS:(X) /c',
     );
     const serviceStart = rendered.indexOf('sc.exe start ConsueloOS');
     expect(traversalAcl).toBeGreaterThan(-1);
@@ -240,7 +240,7 @@ describe('Windows Service Control Manager adapter', () => {
     expect(traversalAcl).toBeLessThan(serviceStart);
     expect(parentTraversalAcl).toBeLessThan(serviceStart);
     expect(rendered).not.toContain(
-      'icacls.exe D:\\ /grant:r NT SERVICE\\ConsueloOS:(RX)',
+      'icacls.exe D:\\ /grant:r NT SERVICE\\ConsueloOS:(X)',
     );
     expect(rendered).not.toMatch(/token|secret|password|credential/i);
   });
@@ -265,6 +265,48 @@ describe('Windows Service Control Manager adapter', () => {
       /Run PowerShell as Administrator/i,
     );
     await expect(controller.preflight()).resolves.toBeUndefined();
+  });
+
+  it('resolves and validates the interactive Windows SID only when installation needs it', async () => {
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const fileSystem = createMemoryFileSystem([
+      bunExecutable,
+      serviceHostExecutable,
+    ]);
+    const controller = createWindowsServiceController({
+      bunExecutable,
+      fileSystem,
+      home,
+      host,
+      isElevated: true,
+      run: async (command, args) => {
+        calls.push({ command, args });
+        if (
+          command === 'powershell.exe' &&
+          args.at(-1)?.includes('WindowsIdentity')
+        ) {
+          return {
+            exitCode: 0,
+            stdout: 'S-1-5-21-4242\n',
+            stderr: '',
+          };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+      serviceHostExecutable,
+    });
+
+    await controller.install({ start: false });
+
+    const rendered = calls
+      .map(({ command, args }) => `${command} ${args.join(' ')}`)
+      .join('\n');
+    expect(rendered).toContain(
+      '[Security.Principal.WindowsIdentity]::GetCurrent().User.Value',
+    );
+    expect(rendered).toContain('S-1-5-21-4242');
+    expect(rendered).not.toContain('S-1-0-0');
+    expect(rendered).not.toContain('undefined');
   });
 
   it('collects bounded SCM, ACL, and event diagnostics when service startup fails', async () => {
@@ -359,7 +401,8 @@ describe('Windows Service Control Manager adapter', () => {
 
   it('supports bounded restart, status, diagnostics, dry-run uninstall, and idempotent removal', async () => {
     const calls: Array<{ command: string; args: string[] }> = [];
-    let queryCount = 0;
+    let stopPollsRemaining = 0;
+    let serviceState: 'running' | 'stopped' = 'running';
     const fileSystem = createMemoryFileSystem([
       bunExecutable,
       serviceHostExecutable,
@@ -374,16 +417,26 @@ describe('Windows Service Control Manager adapter', () => {
       pollIntervalMs: 0,
       run: async (command, args) => {
         calls.push({ command, args });
+        if (command === 'sc.exe' && args[0] === 'stop') {
+          stopPollsRemaining = 2;
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        if (command === 'sc.exe' && args[0] === 'start') {
+          serviceState = 'running';
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
         if (command === 'sc.exe' && args[0] === 'query') {
-          queryCount += 1;
-          if (queryCount === 1) {
+          if (stopPollsRemaining > 1) {
+            stopPollsRemaining -= 1;
             return {
               exitCode: 0,
               stdout: 'STATE              : 3  STOP_PENDING',
               stderr: '',
             };
           }
-          if (queryCount === 2) {
+          if (stopPollsRemaining === 1) {
+            stopPollsRemaining = 0;
+            serviceState = 'stopped';
             return {
               exitCode: 0,
               stdout: 'STATE              : 1  STOPPED',
@@ -392,7 +445,10 @@ describe('Windows Service Control Manager adapter', () => {
           }
           return {
             exitCode: 0,
-            stdout: 'STATE              : 4  RUNNING',
+            stdout:
+              serviceState === 'running'
+                ? 'STATE              : 4  RUNNING'
+                : 'STATE              : 1  STOPPED',
             stderr: '',
           };
         }
@@ -442,6 +498,59 @@ describe('Windows Service Control Manager adapter', () => {
       bunExecutable,
     ]);
   });
+
+  it('waits for a requested service stop before ACL and binary cleanup', async () => {
+    const calls: Array<{ command: string; args: string[] }> = [];
+    let queryCount = 0;
+    const fileSystem = createMemoryFileSystem([
+      bunExecutable,
+      serviceHostExecutable,
+    ]);
+    const controller = createWindowsServiceController({
+      bunExecutable,
+      currentUserSid: 'S-1-5-21-1000',
+      fileSystem,
+      home,
+      host,
+      isElevated: true,
+      pollIntervalMs: 0,
+      run: async (command, args) => {
+        calls.push({ command, args });
+        if (command === 'sc.exe' && args[0] === 'query') {
+          queryCount += 1;
+          return queryCount === 1
+            ? {
+                exitCode: 0,
+                stdout: 'STATE              : 3  STOP_PENDING',
+                stderr: '',
+              }
+            : {
+                exitCode: 0,
+                stdout: 'STATE              : 1  STOPPED',
+                stderr: '',
+              };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+      serviceHostExecutable,
+    });
+
+    await controller.uninstall({ home });
+
+    const rendered = calls.map(
+      ({ command, args }) => `${command} ${args.join(' ')}`,
+    );
+    const stopIndex = rendered.indexOf('sc.exe stop ConsueloOS');
+    const firstQuery = rendered.indexOf('sc.exe query ConsueloOS');
+    const lastQuery = rendered.lastIndexOf('sc.exe query ConsueloOS');
+    const aclCleanup = rendered.findIndex((line) =>
+      line.startsWith(`icacls.exe ${home} /remove:g`),
+    );
+    expect(stopIndex).toBeGreaterThan(-1);
+    expect(firstQuery).toBeGreaterThan(stopIndex);
+    expect(lastQuery).toBeGreaterThan(firstQuery);
+    expect(aclCleanup).toBeGreaterThan(lastQuery);
+  });
 });
 
 describe('Windows native service and workflow source contracts', () => {
@@ -456,6 +565,7 @@ describe('Windows native service and workflow source contracts', () => {
     expect(lifecycle).toContain("platform === 'linux'");
     expect(lifecycle).toContain("platform === 'win32'");
     expect(lifecycle).toContain('createDefaultLifecycleServiceController');
+    expect(lifecycle).not.toContain("|| 'S-1-0-0'");
   });
 
   it('ships a non-interactive SCM service host that owns the Bun process tree', () => {
@@ -469,7 +579,34 @@ describe('Windows native service and workflow source contracts', () => {
     expect(service).toContain('UseShellExecute = false');
     expect(service).toContain('CreateNoWindow = true');
     expect(service).toContain('CONSUELO_HOME');
+    expect(service).toContain(
+      'var homeParent = Directory.GetParent(settings.ConsueloHome);',
+    );
+    expect(service).toContain('if (homeParent == null)');
+    expect(service).toContain('try { child.Kill(); }');
+    expect(service).toContain('child.CancelOutputRead()');
+    expect(service).toContain('child.CancelErrorRead()');
+    expect(service).toContain('private readonly object logLock');
+    expect(service).toContain('WriteLine(false, eventArgs.Data)');
+    expect(service).toContain('WriteLine(true, eventArgs.Data)');
     expect(service).not.toMatch(/token|secret|password|credential/i);
+  });
+
+  it('provides predictable Debug and Release x64 service build outputs', () => {
+    const project = readFileSync(
+      resolve(
+        osRoot,
+        'native',
+        'windows-service',
+        'Consuelo.Windows.Service.csproj',
+      ),
+      'utf8',
+    );
+
+    expect(project).toContain("'Debug|x64'");
+    expect(project).toContain('<OutputPath>bin\\Debug\\</OutputPath>');
+    expect(project).toContain('<DebugType>full</DebugType>');
+    expect(project).toContain("'Release|x64'");
   });
 
   it('runs the native Windows acceptance lane on windows-2025', () => {

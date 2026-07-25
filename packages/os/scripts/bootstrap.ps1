@@ -12,7 +12,8 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 function Assert-SupportedWindowsHost {
-  if (-not $IsWindows -and $env:OS -ne 'Windows_NT') {
+  $isWindowsHost = if (Test-Path variable:IsWindows) { $IsWindows } else { $env:OS -eq 'Windows_NT' }
+  if (-not $isWindowsHost) {
     throw 'Consuelo OS Windows bootstrap requires native Windows. WSL is not supported.'
   }
   if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne 'X64') {
@@ -57,16 +58,6 @@ function Install-BunRuntime {
   }
   finally {
     Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue
-  }
-}
-
-function Open-ConsueloAuthorization {
-  param([Parameter(Mandatory = $true)][string]$Url)
-  try {
-    Start-Process -FilePath $Url
-  }
-  catch {
-    Write-Host "Open this URL in a browser: $Url"
   }
 }
 

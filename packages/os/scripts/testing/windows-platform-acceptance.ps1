@@ -85,7 +85,7 @@ process.on('SIGTERM', () => server.stop(true));
       Start-Sleep -Milliseconds 500
     }
   } while (-not $health -and [DateTime]::UtcNow -lt $deadline)
-  if ($health.name -ne 'consuelo-os') { throw 'Native Windows service health did not become ready.' }
+  if (-not $health -or $health.name -ne 'consuelo-os') { throw 'Native Windows service health did not become ready.' }
 
   $configuration = (& sc.exe qc ConsueloOS 2>&1 | Out-String)
   if ($configuration -notmatch 'AUTO_START') { throw 'Windows service is not configured for boot persistence.' }

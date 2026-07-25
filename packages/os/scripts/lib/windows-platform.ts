@@ -250,7 +250,7 @@ export function createWindowsServiceController(input: {
   home: string;
   bunExecutable: string;
   serviceHostExecutable: string;
-  currentUserSid: string;
+  currentUserSid?: string;
   host?: WindowsHostInfo;
   isElevated?: boolean | (() => Promise<boolean>);
   serviceName?: string;
@@ -364,6 +364,37 @@ export function createWindowsServiceController(input: {
     }
   };
 
+  const resolveCurrentUserSid = async (): Promise<string> => {
+    try {
+      const configured = input.currentUserSid?.trim();
+      if (configured) {
+        if (!/^S-\d(?:-\d+)+$/.test(configured)) {
+          throw new Error('current Windows user SID is invalid');
+        }
+        return configured;
+      }
+      const result = await run('powershell.exe', [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        '[Security.Principal.WindowsIdentity]::GetCurrent().User.Value',
+      ]);
+      const resolved = result.stdout.trim();
+      if (result.exitCode !== 0 || !/^S-\d(?:-\d+)+$/.test(resolved)) {
+        throw failure(
+          result,
+          'failed to resolve the current interactive Windows user SID',
+        );
+      }
+      return resolved;
+    } catch (error: unknown) {
+      throw contextualError(
+        'failed to resolve the current interactive Windows user SID',
+        error,
+      );
+    }
+  };
+
   const collectStartupDiagnostics = async (): Promise<string> => {
     const eventQuery = [
       '$since = (Get-Date).AddMinutes(-10)',
@@ -455,6 +486,7 @@ export function createWindowsServiceController(input: {
         assertSupportedWindowsHost(host);
         await preflight();
         await requireElevation();
+        const currentUserSid = await resolveCurrentUserSid();
 
         fileSystem.mkdir(paths.home);
         fileSystem.mkdir(paths.serviceDirectory);
@@ -544,7 +576,7 @@ export function createWindowsServiceController(input: {
         const serviceDacl = await run('sc.exe', [
           'sdset',
           serviceName,
-          `D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWRPWPDTLOCRRC;;;${input.currentUserSid})`,
+          `D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWRPWPDTLOCRRC;;;${currentUserSid})`,
         ]);
         if (serviceDacl.exitCode !== 0) {
           throw failure(
@@ -557,7 +589,7 @@ export function createWindowsServiceController(input: {
           paths.home,
           '/inheritance:r',
           '/grant:r',
-          `*${input.currentUserSid}:(OI)(CI)F`,
+          `*${currentUserSid}:(OI)(CI)F`,
           '*S-1-5-18:(OI)(CI)F',
           `NT SERVICE\\${serviceName}:(OI)(CI)M`,
         ]);
@@ -581,7 +613,7 @@ export function createWindowsServiceController(input: {
           const profileTraversalAcl = await run('icacls.exe', [
             ancestor,
             '/grant:r',
-            `NT SERVICE\\${serviceName}:(RX)`,
+            `NT SERVICE\\${serviceName}:(X)`,
             '/c',
           ]);
           if (profileTraversalAcl.exitCode !== 0) {
@@ -664,6 +696,9 @@ export function createWindowsServiceController(input: {
             stopped,
             `failed to stop Windows service ${serviceName}`,
           );
+        }
+        if (!isServiceAlreadyStopped(stopped) && !isServiceAbsent(stopped)) {
+          await waitForState('stopped');
         }
         const homeAclCleanup = await run('icacls.exe', [
           paths.home,
