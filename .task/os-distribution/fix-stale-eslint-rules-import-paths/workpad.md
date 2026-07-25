@@ -102,8 +102,15 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 
 ## files changed
 
+<<<<<<< Updated upstream
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/tests/test-selection.test.js`
+=======
+- `packages/workspace/scripts/lib/verification.js`
+- `packages/workspace/scripts/verify.js`
+- `packages/workspace/tests/verification.test.js`
+
+>>>>>>> Stashed changes
 
 
 ## workspace-owned: files changed
@@ -212,6 +219,7 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - `packages/twenty-front/project.json`
 - `packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts`
 - `packages/twenty-ui/project.json`
+- `packages/workspace/SCRIPTS.md`
 - `packages/workspace/scripts/ci/classify-front-source-change.cjs`
 - `packages/workspace/scripts/lib/review-run-state.js`
 - `packages/workspace/scripts/lib/review-test-selection.js`
@@ -260,13 +268,6 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 
 ## workspace-owned: validation evidence
 
-- GREEN: config-path and workflow-policy contracts passed 7/7.
-- GREEN: all root/front/server/shared/UI configs imported successfully in clean Node subprocesses.
-- GREEN: `twenty-front:lint:diff-with-main` passed.
-- GREEN: GitHub workflow policy/security check passed.
-- 2026-07-25 01:15:17 write: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`
-- 2026-07-25 01:33:48 `review.run`: passed — OK
-- 2026-07-25 01:34:41 write: `packages/eslint-rules/utils/ruleTesterParser.ts`
 - 2026-07-25 01:35:06 apply-patch: `packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts`
 - 2026-07-25 01:36:11 `review.run`: passed — OK
 - 2026-07-25 01:46:24 `verify`: failed — COMMAND_FAILED
@@ -290,6 +291,13 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 18:35:25 `review.run`: passed — OK
 - 2026-07-25 18:35:54 `verify`: passed — OK
 - 2026-07-25 18:37:09 `verify`: passed — OK
+<<<<<<< Updated upstream
+=======
+- 2026-07-25 19:23:09 `review.run`: passed — OK
+- 2026-07-25 19:23:40 `verify`: passed — OK
+>>>>>>> Stashed changes
+- 2026-07-25 19:25:13 `review.run`: passed — OK
+- 2026-07-25 19:25:45 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -343,3 +351,15 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 
 - GREEN: post-diagnostics strict review reports zero owned/blocking findings (`trc_779db350ee19`).
 - GREEN: full verification is publish-valid with diagnostic evidence included (`trc_06afc6012f4e`).
+## Linux clean-import timeout cleanup
+
+- Behavior under test: all five active ESLint configuration modules import successfully from a clean Linux checkout.
+- Existing pattern: Vitest permits a test-specific timeout for intentionally process-heavy integration-style checks.
+- RED evidence: both authoritative Consuelo CI jobs failed because the clean-import test took about 7.8 seconds on the Node 24 Linux runner and exceeded Vitest's 5-second default; the imports themselves completed successfully before the timeout report.
+- Change: keep the same five clean subprocess imports and assign this test a bounded 20-second timeout. No assertion, path, or suite-selection behavior is weakened.
+- Focused validation: run only `packages/workspace/tests/eslint-config-paths.test.ts`, then the four-suite registry gate, review, and full verify.
+
+- 2026-07-25 19:22:12 apply-patch: `packages/workspace/tests/eslint-config-paths.test.ts`
+- 2026-07-25 19:22:12 apply-patch: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`
+
+- 2026-07-25 19:24:39 apply-patch: `.task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md`

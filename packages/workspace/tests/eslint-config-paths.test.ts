@@ -66,5 +66,5 @@ describe('shared React ESLint configuration paths', () => {
 
       expect(result.status, `${path}\n${result.stderr}`).toBe(0);
     }
-  });
+  }, 20_000);
 });
