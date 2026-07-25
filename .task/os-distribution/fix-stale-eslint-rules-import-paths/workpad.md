@@ -335,6 +335,7 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - 2026-07-25 16:15:07 `review.run`: passed — OK
 - 2026-07-25 16:15:38 `verify`: passed — OK
 - 2026-07-25 16:17:04 `verify`: passed — OK
+- 2026-07-25 17:49:12 `verify`: passed — OK
 
 ## workspace-owned: test selection
 
@@ -343,3 +344,14 @@ Worker 30 PR #1647 legitimately changes the frontend's CLI install command. Clea
 - selected suites: `workspace verification stamp tests`, `workspace test selection tests`, `shared ESLint configuration contract`, `twenty-eslint-rules test`
 - run results: `workspace verification stamp tests` passed, `workspace test selection tests` passed, `shared ESLint configuration contract` passed, `twenty-eslint-rules test` passed
 - failed suites: none
+
+
+## stream conflict disposition
+
+- After PR #1661 merged, the only overlapping path was `packages/workspace/tests/github-workflow-policy.test.js`.
+- The conflict was additive: this task owns frontend/shared lint-gate contracts, while #1661 owns dependency-cache topology invalidation.
+- Resolution: copied the already-green #1661 cache contract into this branch without modifying either ownership assertion, allowing the eventual three-way merge to preserve both behaviors.
+
+- RED conflict-resolution contract: adding only the #1661 assertion failed 1/9 because this branch did not yet contain the target stream's cache-action implementation (`trc_4a7a213759c9`).
+- Resolution implementation: copied `.github/actions/yarn-install/action.yaml` byte-for-byte from `origin/stream/os-distribution`; this is reconciliation state, not new ownership, and should vanish from the eventual PR diff against the stream.
+- GREEN conflict-resolution contracts: workflow policy plus ESLint config imports passed 9/9 (`trc_1f5428fb3f84`).

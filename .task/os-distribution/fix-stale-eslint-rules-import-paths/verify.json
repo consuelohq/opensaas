@@ -4,9 +4,10 @@
   "mode": "full",
   "branch": "task/os-distribution/fix-stale-eslint-rules-import-paths",
   "base": "origin/stream/os-distribution",
-  "headSha": "02f2e9eb6b6c61ed255baa4551354dd62bf39ada",
-  "changeHash": "17d7071150b7704301c7a6dcd4f483f42a2e9296cb81a51e848514486da04b88",
+  "headSha": "819c250c3d62c0466e23818e5150986f1810eaf8",
+  "changeHash": "28246ce6b8fa7f41118b40e9d48d84c5fa3765eb4a7fae263879e262cc4d1f69",
   "changedFiles": [
+    ".github/actions/yarn-install/action.yaml",
     ".github/workflows/ci-front.yaml",
     ".github/workflows/ci-shared.yaml",
     "eslint.config.mjs",
@@ -61,7 +62,7 @@
     "packages/workspace/tests/review-test-selection.test.js",
     "packages/workspace/tests/test-selection.test.js"
   ],
-  "verifiedAt": "2026-07-25T16:17:04.737Z",
+  "verifiedAt": "2026-07-25T17:49:12.344Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -75,6 +76,7 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
+        ".github/actions/yarn-install/action.yaml",
         ".github/workflows/ci-front.yaml",
         ".github/workflows/ci-shared.yaml",
         ".task/os-distribution/fix-stale-eslint-rules-import-paths/current.json",
@@ -281,8 +283,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 606,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 230\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:16:59\n\u001b[2m   Duration \u001b[22m 295ms\u001b[2m (transform 7ms, setup 0ms, import 13ms, tests 230ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 633,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 237\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:49:07\n\u001b[2m   Duration \u001b[22m 315ms\u001b[2m (transform 11ms, setup 0ms, import 17ms, tests 237ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "workspace test selection tests",
@@ -299,8 +301,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1073,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 771\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 577\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:17:00\n\u001b[2m   Duration \u001b[22m 835ms\u001b[2m (transform 8ms, setup 0ms, import 12ms, tests 771ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 1096,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 787\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 590\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:49:07\n\u001b[2m   Duration \u001b[22m 852ms\u001b[2m (transform 8ms, setup 0ms, import 12ms, tests 787ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "shared ESLint configuration contract",
@@ -317,8 +319,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 3149,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/eslint-config-paths.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2837\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should import both React consumer configurations from a clean checkout \u001b[33m 2835\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:17:01\n\u001b[2m   Duration \u001b[22m 2.91s\u001b[2m (transform 16ms, setup 0ms, import 20ms, tests 2.84s, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 3236,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/eslint-config-paths.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2894\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should import both React consumer configurations from a clean checkout \u001b[33m 2892\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 13:49:08\n\u001b[2m   Duration \u001b[22m 2.99s\u001b[2m (transform 39ms, setup 0ms, import 43ms, tests 2.89s, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "twenty-eslint-rules test",
@@ -335,7 +337,7 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 346,
+          "durationMs": 394,
           "outputTail": "\n> nx run twenty-eslint-rules:test --coverage=false  [existing outputs match the cache, left as is]\n\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mrest-api-methods-should-be-guarded.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mno-navigate-prefer-link.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mmatching-state-variable.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1msort-css-properties-alphabetically.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mgraphql-resolvers-should-be-guarded.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mno-state-useref.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1minject-workspace-repository.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1muse-getLoadable-and-getValue-to-get-atoms.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mno-hardcoded-colors.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mcomponent-props-naming.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mstyled-components-prefixed-with-styled.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1meffect-components.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1museRecoilCallback-has-dependency-array.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mmax-consts-per-file.spec.ts\u001b[22m\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m, 14 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[32m129 passed\u001b[39m\u001b[22m, 129 total\n\u001b[1mSnapshots:   \u001b[22m0 total\n\u001b[1mTime:\u001b[22m        1.634 s\n\u001b[2mRan all test suites\u001b[22m\u001b[2m.\u001b[22m\n\n\n\n NX   Successfully ran target test for project twenty-eslint-rules\n\nNx read the output from the cache instead of running the command for 1 out of 1 tasks.\n\n"
         }
       ],

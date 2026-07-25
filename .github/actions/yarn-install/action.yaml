@@ -12,7 +12,14 @@ runs:
       shell: bash
       run: |
         echo "ACTION_SHELL=bash" >> "${GITHUB_OUTPUT}"
-        echo "CACHE_KEY_PREFIX=node_modules-cache-node-${{ inputs.node-version }}-${{ hashFiles('yarn.lock') }}"  >> "${GITHUB_OUTPUT}"
+        TOPOLOGY_HASH="$(
+          git ls-files package.json yarn.lock .yarnrc.yml 'packages/*/package.json' 'packages/*/project.json' |
+            while IFS= read -r file; do
+              printf '%s\t%s\n' "${file}" "$(git hash-object "${file}")"
+            done |
+            git hash-object --stdin
+        )"
+        echo "CACHE_KEY_PREFIX=node_modules-cache-node-${{ inputs.node-version }}-${TOPOLOGY_HASH}" >> "${GITHUB_OUTPUT}"
         echo 'PATH_TO_CACHE<<EOF' >> $GITHUB_OUTPUT
         echo "node_modules" >> $GITHUB_OUTPUT
         echo "packages/*/node_modules" >> $GITHUB_OUTPUT
