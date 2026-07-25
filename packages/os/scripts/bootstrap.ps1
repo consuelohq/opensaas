@@ -2,7 +2,8 @@
 param(
   [string]$BundleUrl = $env:CONSUELO_WINDOWS_BUNDLE_URL,
   [string]$BundleSha256 = $env:CONSUELO_WINDOWS_BUNDLE_SHA256,
-  [string]$Home = (Join-Path $env:USERPROFILE '.consuelo'),
+  [Alias('Home')]
+  [string]$ConsueloHome = (Join-Path $env:USERPROFILE '.consuelo'),
   [switch]$SkipBunInstall,
   [switch]$ResolveBunOnly
 )
@@ -94,7 +95,7 @@ function Invoke-ConsueloWindowsBootstrap {
     throw 'CONSUELO_WINDOWS_BUNDLE_SHA256 or -BundleSha256 must be a SHA-256 digest.'
   }
 
-  $resolvedHome = [IO.Path]::GetFullPath($Home)
+  $resolvedHome = [IO.Path]::GetFullPath($ConsueloHome)
   $staging = Join-Path ([IO.Path]::GetTempPath()) "consuelo-windows-$PID"
   $archive = Join-Path $staging 'consuelo-os.tar.gz'
   $extracted = Join-Path $staging 'extracted'

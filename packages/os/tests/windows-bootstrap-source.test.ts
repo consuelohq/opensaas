@@ -8,6 +8,15 @@ const source = (path: string): string =>
   readFileSync(resolve(osRoot, path), 'utf8');
 
 describe('Windows PowerShell bootstrap source', () => {
+  it('preserves the public Home flag without shadowing PowerShell HOME', () => {
+    const bootstrap = source('scripts/bootstrap.ps1');
+
+    expect(bootstrap).not.toMatch(/\[string\]\$Home\b/);
+    expect(bootstrap).toContain("[Alias('Home')]");
+    expect(bootstrap).toContain('[string]$ConsueloHome');
+    expect(bootstrap).toContain('GetFullPath($ConsueloHome)');
+  });
+
   it('rejects unsupported hosts before any download, directory, Bun, or service mutation', () => {
     const bootstrap = source('scripts/bootstrap.ps1');
     const main = bootstrap.slice(

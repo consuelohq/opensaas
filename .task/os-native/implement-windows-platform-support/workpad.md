@@ -49,29 +49,8 @@ started: 2026-07-24
 
 ## files changed
 
-- `.github/workflows/consuelo-os-distribution-environments.yaml`
-- `packages/os/docs/linux-platform.md`
-- `packages/os/docs/windows-platform.md`
-- `packages/os/native/windows-service/Consuelo.Windows.Service.csproj`
-- `packages/os/native/windows-service/Program.cs`
-- `packages/os/package.json`
-- `packages/os/scripts/bootstrap.ps1`
-- `packages/os/scripts/install.ts`
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- `packages/os/scripts/lib/lifecycle/index.ts`
-- `packages/os/scripts/lib/lifecycle/release.ts`
-- `packages/os/scripts/lib/lifecycle/retention.ts`
-- `packages/os/scripts/lib/lifecycle/runtime-links.ts`
-- `packages/os/scripts/lib/lifecycle/runtime-release-path.ts`
-- `packages/os/scripts/lib/platforms/linux.ts`
-- `packages/os/scripts/lib/windows-platform.ts`
-- `packages/os/scripts/lifecycle.ts`
 - `packages/os/scripts/testing/windows-platform-acceptance.ps1`
-- `packages/os/scripts/windows-platform.ts`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
-- `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/windows-bootstrap-source.test.ts`
-- `packages/os/tests/windows-platform.test.ts`
 
 
 ## workspace-owned: files changed
@@ -99,6 +78,8 @@ started: 2026-07-24
 - GREEN: combined platform/lifecycle/distribution/installer regression suite: 158 tests (`trc_8e0d0e90a287`); syntax and supported-format checks passed (`trc_a373acf0e96b`); strict review reported zero findings (`trc_ca6d917d21ee`). The managed-component corruption stack trace is intentional test evidence; Vitest exited 0.
 - RED: final `windows-2025` acceptance failed before service installation because PowerShell treats `$home` as the read-only automatic `$HOME` variable (`trc_be77ac7ebac5`). Source contract reproduced the collision (`trc_31f5e91150b5`).
 - GREEN: acceptance now uses `$consueloHome`; 18 focused Windows contracts passed (`trc_04712e6a2d84`), all 159 combined platform/lifecycle/distribution/installer regressions passed (`trc_647eb8b77269`), formatting passed (`trc_a17ee74eed0d`), and strict review reported zero findings (`trc_a3f54df8f85c`).
+- RED: the next native run showed the remaining collision was the bootstrap parameter `[string]$Home`, not the already-renamed acceptance local (`trc_59e1557f3ffe`). A source contract reproduced the parameter collision while requiring public `-Home` compatibility (`trc_6bc0196045ff`).
+- GREEN: `bootstrap.ps1` now binds `[Alias('Home')] [string]$ConsueloHome`, preserving callers while avoiding the automatic variable. Nineteen focused Windows contracts passed (`trc_8419c7579a46`), all 160 combined regressions passed (`trc_673dbce129af`), formatting passed (`trc_53f382b94dd2`), and strict review reported zero findings (`trc_d5d81d9eaf8b`).
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
 - 2026-07-24 19:00:19 `review.run`: passed — OK
@@ -109,6 +90,8 @@ started: 2026-07-24
 - 2026-07-25 01:02:08 `verify`: passed — OK
 - 2026-07-25 01:08:53 `review.run`: passed — OK
 - 2026-07-25 01:09:19 `verify`: passed — OK
+- 2026-07-25 01:12:45 `review.run`: passed — OK
+- 2026-07-25 01:13:02 `verify`: passed — OK
 
 ## key decisions
 
@@ -156,6 +139,7 @@ started: 2026-07-24
 - Final review polling ran four 30-second wake checks. Grok remained active with no partial result, while the native Windows check transitioned to failure (`trc_5a91d6f03b73`). The polling call itself used read mode, but automatic task evidence logging mutated task metadata and the facade rejected the call after all four checks; subsequent polling will use an edit-capable task route.
 - Final Windows CI proved the 17 TypeScript contracts and C# service host build were green, then failed at PowerShell acceptance startup with `Cannot overwrite variable HOME because it is read-only or constant` (`trc_b4be7479d602`, `trc_4484584609b1`, `trc_be77ac7ebac5`). Cancelled the stale Grok run and its child process before editing (`trc_cae21c247a55`). Added a failing source contract (`trc_31f5e91150b5`), renamed only the local `$home` path variable to `$consueloHome`, and preserved `$env:HOME` setup/restoration. Focused and broad gates are green (`trc_04712e6a2d84`, `trc_647eb8b77269`, `trc_a17ee74eed0d`, `trc_a3f54df8f85c`).
 - A validation command incorrectly used `bun --check` on a Vitest module, which initialized Vitest without its runner (`trc_f1240b9526c0`). Replaced it with the supported Prettier check; no product failure was involved (`trc_a17ee74eed0d`).
+- The first `$HOME` fix removed the acceptance script's local `$home`, but the following native run still failed because `bootstrap.ps1` declared a parameter named `$Home` (`trc_b95dc7ac04fd`, `trc_59e1557f3ffe`). Cancelled the stale Grok run (`trc_20403198bad6`), reproduced the bootstrap parameter collision red while asserting `-Home` compatibility (`trc_6bc0196045ff`), then renamed the internal parameter to `$ConsueloHome` with `[Alias('Home')]`. All local gates are green (`trc_8419c7579a46`, `trc_673dbce129af`, `trc_53f382b94dd2`, `trc_d5d81d9eaf8b`).
 
 ## final wait plan
 
@@ -224,3 +208,8 @@ bun run task:finish
 - `packages/workspace/senior-engineer.md`
 
 - 2026-07-25 01:09:11 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+
+- 2026-07-25 01:12:04 apply-patch: `packages/os/tests/windows-bootstrap-source.test.ts`
+- 2026-07-25 01:12:14 apply-patch: `packages/os/scripts/bootstrap.ps1`
+
+- 2026-07-25 01:12:54 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
