@@ -1,7 +1,21 @@
-import { ESLintUtils } from '@typescript-eslint/utils';
+import {
+  AST_NODE_TYPES,
+  ESLintUtils,
+  type TSESTree,
+} from '@typescript-eslint/utils';
 
 // NOTE: The rule will be available in ESLint configs as "@nx/workspace-usage-getLoadable-and-getValue-to-get-atoms"
 export const RULE_NAME = 'use-getLoadable-and-getValue-to-get-atoms';
+
+const isSnapshotGetLoadableCall = (
+  node: TSESTree.Node,
+): node is TSESTree.CallExpression =>
+  node.type === AST_NODE_TYPES.CallExpression &&
+  node.callee.type === AST_NODE_TYPES.MemberExpression &&
+  node.callee.object.type === AST_NODE_TYPES.Identifier &&
+  node.callee.object.name === 'snapshot' &&
+  node.callee.property.type === AST_NODE_TYPES.Identifier &&
+  node.callee.property.name === 'getLoadable';
 
 export const rule = ESLintUtils.RuleCreator(() => __filename)({
   name: RULE_NAME,
@@ -9,7 +23,6 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
     type: 'problem',
     docs: {
       description: 'Ensure you are using getLoadable and getValue',
-      recommended: 'recommended',
     },
     fixable: 'code',
     schema: [],
@@ -24,31 +37,39 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
   defaultOptions: [],
   create: (context) => ({
     AwaitExpression: (node) => {
-      const { argument, range }: any = node;
+      const { argument, range } = node;
+      if (argument.type !== AST_NODE_TYPES.CallExpression || !range) {
+        return;
+      }
+
+      const { callee } = argument;
+      const directlyAwaitsLoadable =
+        callee.type === AST_NODE_TYPES.MemberExpression &&
+        callee.object.type === AST_NODE_TYPES.Identifier &&
+        callee.object.name === 'snapshot' &&
+        callee.property.type === AST_NODE_TYPES.Identifier &&
+        callee.property.name === 'getLoadable';
+      const awaitsLoadableResult =
+        callee.type === AST_NODE_TYPES.MemberExpression &&
+        isSnapshotGetLoadableCall(callee.object);
+
       if (
-        (argument.callee?.object?.callee?.object?.name === 'snapshot' &&
-          argument?.callee?.object?.callee?.property?.name === 'getLoadable') ||
-        (argument.callee?.object?.name === 'snapshot' &&
-          argument?.callee?.property?.name === 'getLoadable')
+        directlyAwaitsLoadable ||
+        awaitsLoadableResult
       ) {
-        // remove await
         context.report({
           node,
           messageId: 'redundantAwait',
-          data: {
-            propertyName: argument.callee.property.name,
-          },
           fix: (fixer) => fixer.removeRange([range[0], range[0] + 5]),
         });
       }
     },
     MemberExpression: (node) => {
-      const { object, property }: any = node;
+      const { object, property } = node;
 
       if (
-        object.callee?.type === 'MemberExpression' &&
-        object.callee.object?.name === 'snapshot' &&
-        object.callee.property?.name === 'getLoadable'
+        isSnapshotGetLoadableCall(object) &&
+        property.type === AST_NODE_TYPES.Identifier
       ) {
         const propertyName = property.name;
 
@@ -66,12 +87,14 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
       }
     },
     CallExpression: (node) => {
-      const { callee }: any = node;
+      const { callee } = node;
 
       if (
-        callee.type === 'MemberExpression' &&
-        callee.object?.name === 'snapshot' &&
-        callee.property?.name === 'getPromise'
+        callee.type === AST_NODE_TYPES.MemberExpression &&
+        callee.object.type === AST_NODE_TYPES.Identifier &&
+        callee.object.name === 'snapshot' &&
+        callee.property.type === AST_NODE_TYPES.Identifier &&
+        callee.property.name === 'getPromise'
       ) {
         context.report({
           node: callee.property,

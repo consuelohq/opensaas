@@ -1,11 +1,14 @@
-import { TSESLint } from '@typescript-eslint/utils';
+import { ruleTesterParser } from '../utils/ruleTesterParser';
+import { type Rule, RuleTester } from 'eslint';
 import { rule, RULE_NAME } from './inject-workspace-repository';
 
-const ruleTester = new TSESLint.RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
+const ruleTester = new RuleTester({
+  languageOptions: {
+    parser: ruleTesterParser,
+  },
 });
 
-ruleTester.run(RULE_NAME, rule, {
+ruleTester.run(RULE_NAME, rule as unknown as Rule.RuleModule, {
   valid: [
     {
       code: `
