@@ -42,11 +42,16 @@ describe('Windows PowerShell bootstrap source', () => {
     expect(bootstrap).not.toContain('Invoke-Expression');
   });
 
-  it('uses the Bun-owned installer path, persists the resolved executable, and never requires WSL', () => {
+  it('uses the Bun-owned installer path, copies a verified service executable into the protected home, and never requires WSL', () => {
     const bootstrap = source('scripts/bootstrap.ps1');
 
     expect(bootstrap).toContain('https://bun.sh/install.ps1');
     expect(bootstrap).toContain('.bun\\bin\\bun.exe');
+    expect(bootstrap).toContain("Join-Path $binDirectory 'bun.exe'");
+    expect(bootstrap).toContain('Copy-Item -LiteralPath $sourceBunExecutable');
+    expect(bootstrap).toContain('$sourceBunHash');
+    expect(bootstrap).toContain('$serviceBunHash');
+    expect(bootstrap).toContain('--bun $serviceBunExecutable');
     expect(bootstrap).toContain('BUN_BIN');
     expect(bootstrap).not.toMatch(/\bwsl\.exe\b/i);
   });

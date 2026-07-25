@@ -96,11 +96,19 @@ jobs:
       - name: Build the Windows service host
         if: matrix.name == 'windows'
         shell: pwsh
-        run: >-
-          msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj
-          /p:Configuration=Release
-          /p:Platform=x64
-          /m
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path -LiteralPath $vswhere)) {
+            throw "Visual Studio installer discovery is unavailable: $vswhere"
+          }
+          $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) {
+            throw 'MSBuild was not found through Visual Studio installer discovery.'
+          }
+          & $msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj /p:Configuration=Release /p:Platform=x64 /m
+          if ($LASTEXITCODE -ne 0) {
+            throw "MSBuild exited with code $LASTEXITCODE."
+          }
 
       - name: Run native Windows platform acceptance
         if: matrix.name == 'windows'

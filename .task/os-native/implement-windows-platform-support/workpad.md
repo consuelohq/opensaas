@@ -45,12 +45,11 @@ started: 2026-07-24
 
 ## current status
 
-- Local implementation and validation are complete. Focused Windows contracts, lifecycle/distribution/installer regressions, syntax, formatting, and strict repository review are green. Publishing the task PR next so the registered `windows-2025` lane, CodeRabbit, and Grok can provide the remaining acceptance evidence.
+- The first native Windows run passed all TypeScript contracts, then exposed an MSBuild discovery issue on the VS2026 runner image. That route is repaired through `vswhere`. Interim Grok review independently found the same build issue plus a valid LocalService/Bun access defect; both are fixed and locally green. Refreshing verification and republishing before the authoritative Windows rerun and final current-head reviews.
 
 ## files changed
 
 - `.github/workflows/consuelo-os-distribution-environments.yaml`
-- `.task/os-native/implement-windows-platform-support/workpad.md`
 - `packages/os/docs/windows-platform.md`
 - `packages/os/native/windows-service/Consuelo.Windows.Service.csproj`
 - `packages/os/native/windows-service/Program.cs`
@@ -71,6 +70,7 @@ started: 2026-07-24
 - `packages/os/tests/windows-bootstrap-source.test.ts`
 - `packages/os/tests/windows-platform.test.ts`
 
+
 ## workspace-owned: files changed
 
 - none yet
@@ -86,8 +86,16 @@ started: 2026-07-24
 - GREEN: syntax checks plus 141 targeted lifecycle/distribution/installer regressions and formatting (`trc_1d344c41f8b3`). Existing corruption-contract stderr is intentional; Vitest exited 0 with all 141 tests passing.
 - GREEN: focused Windows suite after contextual error handling, 15 tests (`trc_ad96fe876e1e`).
 - GREEN: strict repository review against `origin/main`, zero findings after fixing all 12 initial contextual error-handling findings (`trc_be4491bc19e1`).
+- RED: workflow contract failed until the Windows runner resolved MSBuild through Visual Studio Installer discovery (`trc_0779c10ba809`).
+- GREEN: updated Windows/bootstrap/workflow contracts, 16 tests (`trc_a8d3612f363a`); supported-format Prettier check passed (`trc_5831e8d4e1e9`).
+- RED: Grok CR-002 was reproduced by tests proving an external `.bun` path was not rejected and service-owned executables were retained on uninstall (`trc_f1ced0e904ed`).
+- GREEN: protected service Bun copy, path-containment, and owned-artifact cleanup contracts, 16 tests (`trc_8f1929e6ba1a`).
+- GREEN: post-finding strict review zero issues (`trc_cbb124fb4c24`), syntax (`trc_168fed5b4471`), and 142 lifecycle/distribution/installer regressions (`trc_c389ee5b46f0`). Existing corruption-contract stderr is intentional; Vitest exited 0.
 - 2026-07-24 18:44:22 `review.run`: passed — OK
 - 2026-07-24 18:45:29 `review.run`: passed — OK
+- 2026-07-24 19:00:19 `review.run`: passed — OK
+- 2026-07-24 19:04:16 `review.run`: passed — OK
+- 2026-07-25 00:54:18 `verify`: passed — OK
 
 ## key decisions
 
@@ -96,6 +104,7 @@ started: 2026-07-24
 - Treat `windows-2025` CI as the authoritative native host for service, ACL, PowerShell, and path behavior.
 - Preserve signed bundle IDs as `sha256:<digest>` while mapping only the Windows release directory name to `sha256-<digest>`; activation uses directory junctions rather than privileged symbolic links.
 - Keep public signing and reputation outside this worker: CI builds an unsigned service host for behavioral proof, while Worker 22 remains the Authenticode/release-artifact gate.
+- Use Bun's approved installer or an existing Bun only as the source binary. Copy it into `%USERPROFILE%\\.consuelo\\bin\\bun.exe`, verify source/destination SHA-256 parity, and persist only that ACL-protected service path. Default service uninstall removes the protected Bun copy, service host, and service configuration without touching the user's Bun installation.
 
 ## notes for ko
 
@@ -116,6 +125,14 @@ started: 2026-07-24
 - The first formatter invocation used unsupported `code.call` mode `write` and was rejected (`trc_f71a9d823ee8`). Retried with the typed `edit` mode and formatted all changed TypeScript files successfully (`trc_f48c458fd334`).
 - Strict repository review initially reported 12 `ERROR_HANDLING` findings in the Windows controller/CLI (`trc_606ac65ffe5c`). Added local contextual wrapping at every async process/service boundary, reran focused tests and syntax, and received zero strict-review findings (`trc_be4491bc19e1`).
 - A large workpad refresh patch missed a stale hunk after review automation had appended evidence (`trc_e11db7ddc252`). Re-read the current workpad and recovered with smaller anchored patches (`trc_372ca6f400cd`).
+- The first publish attempt failed closed because the mandatory verify stamp was absent (`trc_ee0ff4dacbe3`). The advertised `task.call` route was unavailable in the live manifest, so the repository `bun run verify` workflow was run through task-scoped `code.call`; the first read-only invocation correctly rejected its stamp mutation (`trc_9bd754d9622d`), and the explicit edit-mode retry passed and wrote the publish-valid stamp (`trc_6c96f9074d28`).
+- PR #1646 initially showed 300 unrelated files because `stream/os-native` was 98 commits behind the fresh-main task branch (`trc_7567bb88bb76`). `task.ensureSynced` confirmed drift (`trc_0ee80ff8c73c`). The first stream context fetch hit a remote-ref race (`trc_c8dd6de932c5`), and the first `stream.sync` call exposed an unsupported advertised `--repo` flag (`trc_2d9a6a01c27d`). Retrying the typed stream sync without that flag merged current main into `stream/os-native` with no conflicts and passing checks (`trc_3f89615ed036`), reducing the true task diff to 27 files (`trc_95a0496510fc`).
+- The GitHub PR diff facade used unsupported `gh pr diff --stat` (`trc_32187df0b218`), then the PR diff endpoint retained a stale pre-sync 300-file cache and returned HTTP 406 (`trc_a8c80897841c`). Recovered by rendering the exact 27-file diff from the GitHub compare API (`trc_4d39974ba72d`).
+- The first Grok wrapper transport timed out while the bounded subprocess continued. Process inspection confirmed the wrapper and Grok child were still active but their output remained attached to the dead transport (`trc_290bfc4d478f`, `trc_312e0088f15f`). The same mandated wrapper was restarted with task-local redirected output and bounded polling. It completed with exit `0`, a non-empty structured review, and two high findings: CR-001, bare `msbuild` discovery; and CR-002, LocalService executing Bun from the installing user's `.bun` directory. Both were accepted, reproduced, and fixed. Because the head changed, the result is interim and must be rerun on the published current head.
+- The first `windows-2025` CI run passed all 15 Windows TypeScript tests, then failed because the VS2026 image no longer exposes `msbuild` on `PATH` (`trc_9253f8f0bc08`). Added a failing workflow contract (`trc_0779c10ba809`), changed the build step to resolve MSBuild through `vswhere.exe -requires Microsoft.Component.MSBuild`, and passed the focused contracts (`trc_a8d3612f363a`).
+- The first combined CR-002 implementation patch missed a formatted TypeScript hunk (`trc_ed9e9537d2f2`). Re-read exact file ranges and recovered with smaller anchored patches (`trc_4f054e1a51dc`, `trc_a8eef29ed606`, `trc_9acd303cf36b`, `trc_02db22fbaba2`).
+- A formatting check incorrectly included `.ps1` files, for which repository Prettier has no parser (`trc_2fd081b2d4c2`). TypeScript/YAML/Markdown formatting remains green; PowerShell parsing and execution stay delegated to the authoritative Windows runner.
+- After resuming, `task.push` failed because the server-side active-task registry no longer recognized the existing session (`trc_38254c9c4f1a`). `task.init` restored branch/worktree metadata but did not restore the active registry (`trc_c7e05a7cbeb6`). Re-running the original `task.start` identity recovered the same branch, worktree, PR #1646, and exact session `tsk_54add4ed7243` without creating anything new (`trc_03de3fe06454`). That recovery reset the local workpad template; the complete published workpad was restored from GitHub through the task-scoped GitHub route (`trc_f99111ff57d0`, `trc_8cfd603d408f`) before reapplying unpushed evidence.
 
 ---
 
@@ -166,7 +183,4 @@ bun run task:finish
 - `packages/os/tests/lifecycle-retention-uninstall.test.ts`
 - `packages/os/tests/native-lifecycle-client.test.ts`
 - `packages/os/tsconfig.json`
-
-- 2026-07-24 18:46:43 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
-
-- 2026-07-24 18:46:57 apply-patch: `.task/os-native/implement-windows-platform-support/workpad.md`
+- `packages/workspace/scripts/task-push.js`

@@ -4,7 +4,7 @@ Consuelo OS supports native x64 Windows hosts beginning with Windows 10 22H2 (bu
 
 ## Installation boundary
 
-The Windows bootstrap is `scripts/bootstrap.ps1`. It downloads the Windows release artifact into a temporary directory, verifies its required SHA-256 digest, and only then extracts or executes release content. It reuses Bun when present or invokes Bun's official PowerShell installer and persists the resolved absolute `bun.exe` path. Service startup never depends on an interactive user's `PATH`.
+The Windows bootstrap is `scripts/bootstrap.ps1`. It downloads the Windows release artifact into a temporary directory, verifies its required SHA-256 digest, and only then extracts or executes release content. It reuses Bun when present or invokes Bun's official PowerShell installer, then creates a hash-verified service copy at `%USERPROFILE%\.consuelo\bin\bun.exe`. The service persists that protected absolute path, so startup never depends on an interactive user's `PATH` or access to the user's `.bun` directory.
 
 Service registration and removal require an elevated PowerShell window. Normal status, start, stop, restart, lifecycle update, rollback, repair, and diagnostics do not require continuing administrator access. When PowerShell policy blocks the bootstrap, use a process-scoped bypass rather than changing machine policy:
 
@@ -32,7 +32,7 @@ The service configuration stores only absolute executable and runtime paths. Aut
 
 Windows does not implement a separate updater. `scripts/lifecycle.ts` remains the single authority for signed release manifests, bundle verification, activation, health acceptance, update, rollback, repair, retention, and ownership-safe uninstall. Windows activation uses directory junctions, and digest bundle identities are mapped to Windows-safe release directory names without changing their signed manifest identity.
 
-Default uninstall removes the Consuelo-owned service and runtime-owned paths while preserving workspace membership, node identity, provider authorization state, and user-modified content. Destructive node or user-content removal remains explicit through the shared lifecycle flags.
+Default uninstall removes the Consuelo-owned service, service configuration, service host, protected Bun copy, and runtime-owned paths while preserving workspace membership, node identity, provider authorization state, and user-modified content. Destructive node or user-content removal remains explicit through the shared lifecycle flags.
 
 ## Authentication and diagnostics
 

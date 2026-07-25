@@ -20,13 +20,16 @@ function createMemoryFileSystem(
 ): WindowsPlatformFileSystem & {
   directories: string[];
   files: Map<string, string>;
+  removed: string[];
 } {
   const paths = new Set(existing);
   const directories: string[] = [];
   const files = new Map<string, string>();
+  const removed: string[] = [];
   return {
     directories,
     files,
+    removed,
     exists(path) {
       return paths.has(path) || files.has(path);
     },
@@ -37,6 +40,11 @@ function createMemoryFileSystem(
     writeFile(path, contents) {
       files.set(path, contents);
       paths.add(path);
+    },
+    remove(path) {
+      removed.push(path);
+      files.delete(path);
+      paths.delete(path);
     },
   };
 }
@@ -118,7 +126,7 @@ describe('Windows Service Control Manager adapter', () => {
     productName: 'Windows Server 2025',
   };
   const home = 'D:\\Profiles\\Ko User\\.consuelo';
-  const bunExecutable = 'D:\\Profiles\\Ko User\\.bun\\bin\\bun.exe';
+  const bunExecutable = `${home}\\bin\\bun.exe`;
   const serviceHostExecutable = `${home}\\bin\\Consuelo.Windows.Service.exe`;
 
   it('fails unsupported hosts before any filesystem or service mutation', async () => {
@@ -233,6 +241,33 @@ describe('Windows Service Control Manager adapter', () => {
     await expect(controller.preflight()).resolves.toBeUndefined();
   });
 
+  it('rejects a service Bun executable outside the protected Consuelo home', async () => {
+    const externalBun = 'D:\\Profiles\\Ko User\\.bun\\bin\\bun.exe';
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const fileSystem = createMemoryFileSystem([
+      externalBun,
+      serviceHostExecutable,
+    ]);
+    const controller = createWindowsServiceController({
+      bunExecutable: externalBun,
+      currentUserSid: 'S-1-5-21-1000',
+      fileSystem,
+      home,
+      host,
+      isElevated: true,
+      run: async (command, args) => {
+        calls.push({ command, args });
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+      serviceHostExecutable,
+    });
+
+    await expect(controller.install()).rejects.toThrow(
+      /Bun executable must be inside the protected Consuelo home/i,
+    );
+    expect(calls).toEqual([]);
+  });
+
   it('supports bounded restart, status, diagnostics, dry-run uninstall, and idempotent removal', async () => {
     const calls: Array<{ command: string; args: string[] }> = [];
     let queryCount = 0;
@@ -296,7 +331,13 @@ describe('Windows Service Control Manager adapter', () => {
     const beforeDryRun = calls.length;
     await controller.uninstall({ dryRun: true, home });
     expect(calls).toHaveLength(beforeDryRun);
+    expect(fileSystem.removed).toEqual([]);
     await expect(controller.uninstall({ home })).resolves.toBeUndefined();
+    expect(fileSystem.removed).toEqual([
+      `${home}\\node\\service\\windows-service.json`,
+      serviceHostExecutable,
+      bunExecutable,
+    ]);
   });
 });
 
@@ -330,6 +371,8 @@ describe('Windows native service and workflow source contracts', () => {
 
     expect(workflow).toContain('runner: windows-2025');
     expect(workflow).toContain('Build the Windows service host');
+    expect(workflow).toContain('vswhere.exe');
+    expect(workflow).toContain('Microsoft.Component.MSBuild');
     expect(workflow).toContain('Run native Windows platform acceptance');
     expect(workflow).toContain(
       'scripts/testing/windows-platform-acceptance.ps1',

@@ -1,10 +1,20 @@
 {
   "files": [
+    ".github/workflows/consuelo-os-distribution-environments.yaml",
     ".task/os-native/implement-windows-platform-support/workpad.md",
+    ".task/subagent-runs/trc_d05a120f4bb6-grok/stdout.log",
+    ".task/subagent-runs/trc_d05a120f4bb6-grok/summary.json",
     "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/workers/21-windows-platform.md",
+    "packages/os/scripts/lib/consuelo-home.ts",
     "packages/os/scripts/lib/lifecycle/retention.ts",
+    "packages/os/scripts/lib/lifecycle/uninstall.ts",
+    "packages/os/scripts/lib/windows-platform.ts",
     "packages/os/tests/distribution/runtime-bundle.test.ts",
-    "packages/os/tests/distribution/workflow-contract.test.ts"
+    "packages/os/tests/distribution/workflow-contract.test.ts",
+    "packages/os/tests/windows-platform.test.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-24T18:46:33.011Z"
+  "updatedAt": "2026-07-25T00:54:31.172Z"
 }

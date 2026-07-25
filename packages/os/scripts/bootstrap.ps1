@@ -101,8 +101,7 @@ function Invoke-ConsueloWindowsBootstrap {
   New-Item -ItemType Directory -Path $staging, $extracted -Force | Out-Null
 
   try {
-    $bunExecutable = Install-BunRuntime -SkipInstall:$SkipBunInstall
-    $env:BUN_BIN = $bunExecutable
+    $sourceBunExecutable = Install-BunRuntime -SkipInstall:$SkipBunInstall
 
     Invoke-WebRequest -UseBasicParsing -Uri $BundleUrl -OutFile $archive
     $actualDigest = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -126,12 +125,21 @@ function Invoke-ConsueloWindowsBootstrap {
 
     $binDirectory = Join-Path $resolvedHome 'bin'
     New-Item -ItemType Directory -Path $binDirectory -Force | Out-Null
+    $serviceBunExecutable = Join-Path $binDirectory 'bun.exe'
+    Copy-Item -LiteralPath $sourceBunExecutable -Destination $serviceBunExecutable -Force
+    $sourceBunHash = (Get-FileHash -LiteralPath $sourceBunExecutable -Algorithm SHA256).Hash
+    $serviceBunHash = (Get-FileHash -LiteralPath $serviceBunExecutable -Algorithm SHA256).Hash
+    if ($sourceBunHash -ne $serviceBunHash) {
+      Remove-Item -LiteralPath $serviceBunExecutable -Force -ErrorAction SilentlyContinue
+      throw 'The protected Consuelo Bun service copy failed integrity verification.'
+    }
+    $env:BUN_BIN = $serviceBunExecutable
     $serviceHost = Join-Path $binDirectory 'Consuelo.Windows.Service.exe'
     Copy-Item -LiteralPath $serviceSource -Destination $serviceHost -Force
 
-    & $bunExecutable (Join-Path $packageRoot 'scripts\windows-platform.ts') install-service `
+    & $serviceBunExecutable (Join-Path $packageRoot 'scripts\windows-platform.ts') install-service `
       --home $resolvedHome `
-      --bun $bunExecutable `
+      --bun $serviceBunExecutable `
       --service-host $serviceHost `
       --defer-start `
       --json
@@ -139,7 +147,7 @@ function Invoke-ConsueloWindowsBootstrap {
       throw 'Consuelo Windows service registration failed.'
     }
 
-    & $bunExecutable (Join-Path $packageRoot 'scripts\lifecycle.ts') install --home $resolvedHome
+    & $serviceBunExecutable (Join-Path $packageRoot 'scripts\lifecycle.ts') install --home $resolvedHome
     if ($LASTEXITCODE -ne 0) {
       throw 'Consuelo lifecycle installation failed. The registered service remains stopped for diagnosis or retry.'
     }

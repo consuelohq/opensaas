@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import { win32 } from 'node:path';
 
@@ -29,6 +29,7 @@ export type WindowsPlatformFileSystem = {
   exists(path: string): boolean;
   mkdir(path: string): void;
   writeFile(path: string, contents: string): void;
+  remove(path: string): void;
 };
 
 export type WindowsServiceStatus = {
@@ -63,6 +64,9 @@ const defaultFileSystem: WindowsPlatformFileSystem = {
   },
   writeFile(path, contents) {
     writeFileSync(path, contents, { encoding: 'utf8', mode: 0o600 });
+  },
+  remove(path) {
+    rmSync(path, { force: true, recursive: true });
   },
 };
 
@@ -201,6 +205,28 @@ function assertAbsoluteWindowsExecutable(path: string, label: string): void {
     throw new Error(`${label} must be an absolute Windows path`);
 }
 
+function isWindowsPathWithin(parent: string, candidate: string): boolean {
+  const normalizedParent = win32
+    .resolve(parent)
+    .replace(/[\\/]+$/, '')
+    .toLowerCase();
+  const normalizedCandidate = win32.resolve(candidate).toLowerCase();
+  return normalizedCandidate.startsWith(`${normalizedParent}\\`);
+}
+
+function assertProtectedServiceExecutable(input: {
+  home: string;
+  path: string;
+  label: string;
+}): void {
+  assertAbsoluteWindowsExecutable(input.path, input.label);
+  if (!isWindowsPathWithin(input.home, input.path)) {
+    throw new Error(
+      `${input.label} must be inside the protected Consuelo home: ${input.home}`,
+    );
+  }
+}
+
 export function createWindowsServiceController(input: {
   home: string;
   bunExecutable: string;
@@ -260,11 +286,16 @@ export function createWindowsServiceController(input: {
   const preflight = (): Promise<void> => {
     try {
       assertSupportedWindowsHost(host);
-      assertAbsoluteWindowsExecutable(input.bunExecutable, 'Bun executable');
-      assertAbsoluteWindowsExecutable(
-        input.serviceHostExecutable,
-        'Windows service host',
-      );
+      assertProtectedServiceExecutable({
+        home: paths.home,
+        path: input.bunExecutable,
+        label: 'Bun executable',
+      });
+      assertProtectedServiceExecutable({
+        home: paths.home,
+        path: input.serviceHostExecutable,
+        label: 'Windows service host',
+      });
       if (!fileSystem.exists(input.bunExecutable)) {
         throw new Error(
           `persisted Bun executable is missing: ${input.bunExecutable}`,
@@ -523,6 +554,13 @@ export function createWindowsServiceController(input: {
             deleted,
             `failed to delete Windows service ${serviceName}`,
           );
+        }
+        for (const path of [
+          paths.serviceConfig,
+          input.serviceHostExecutable,
+          input.bunExecutable,
+        ]) {
+          if (isWindowsPathWithin(paths.home, path)) fileSystem.remove(path);
         }
       } catch (error: unknown) {
         throw contextualError(

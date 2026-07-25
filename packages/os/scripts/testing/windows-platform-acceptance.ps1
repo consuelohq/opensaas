@@ -21,6 +21,7 @@ $originalHome = $env:HOME
 $originalPath = $env:PATH
 $testProfile = Join-Path $env:RUNNER_TEMP 'Consuelo Windows Profile'
 $home = Join-Path $testProfile '.consuelo'
+$serviceBun = Join-Path $home 'bin\bun.exe'
 $serviceHost = Join-Path $home 'bin\Consuelo.Windows.Service.exe'
 $bundleDigest = ('a' * 64)
 $release = Join-Path $home "runtime\releases\sha256-$bundleDigest"
@@ -51,6 +52,10 @@ try {
   }
 
   New-Item -ItemType Directory -Path (Split-Path $serviceHost), (Join-Path $release 'scripts\server'), (Split-Path $contentMarker) -Force | Out-Null
+  Copy-Item -LiteralPath $ownedBun -Destination $serviceBun -Force
+  if ((Get-FileHash -LiteralPath $ownedBun -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath $serviceBun -Algorithm SHA256).Hash) {
+    throw 'Protected service Bun copy failed integrity verification.'
+  }
   Copy-Item -LiteralPath $builtService -Destination $serviceHost -Force
   Set-Content -LiteralPath (Join-Path $release 'scripts\server\main.ts') -Encoding utf8 -Value @'
 const server = Bun.serve({
@@ -66,7 +71,7 @@ process.on('SIGTERM', () => server.stop(true));
   Set-Content -LiteralPath $workspaceMarker -Encoding utf8 -Value '{"workspace":"preserve"}'
   Set-Content -LiteralPath $contentMarker -Encoding utf8 -Value 'preserve'
 
-  & $ownedBun $platformCli install-service --home $home --bun $ownedBun --service-host $serviceHost --json
+  & $ownedBun $platformCli install-service --home $home --bun $serviceBun --service-host $serviceHost --json
   if ($LASTEXITCODE -ne 0) { throw 'Native Windows service installation failed.' }
   $installed = $true
 
@@ -86,31 +91,36 @@ process.on('SIGTERM', () => server.stop(true));
   if ($configuration -notmatch 'AUTO_START') { throw 'Windows service is not configured for boot persistence.' }
   if ($configuration -notmatch 'LocalService') { throw 'Windows service is not using the least-privilege account.' }
 
-  $status = & $ownedBun $platformCli status --home $home --bun $ownedBun --service-host $serviceHost --json | ConvertFrom-Json
+  $status = & $ownedBun $platformCli status --home $home --bun $serviceBun --service-host $serviceHost --json | ConvertFrom-Json
   if ($status.state -ne 'running') { throw "Unexpected Windows service state: $($status.state)" }
-  & $ownedBun $platformCli restart --home $home --bun $ownedBun --service-host $serviceHost --json | Out-Null
+  & $ownedBun $platformCli restart --home $home --bun $serviceBun --service-host $serviceHost --json | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Native Windows service restart failed.' }
-  $diagnostics = & $ownedBun $platformCli diagnostics --home $home --bun $ownedBun --service-host $serviceHost --json | ConvertFrom-Json
-  if ($diagnostics.bunExecutable -ne $ownedBun) { throw 'Diagnostics did not report the persisted Bun path.' }
+  $diagnostics = & $ownedBun $platformCli diagnostics --home $home --bun $serviceBun --service-host $serviceHost --json | ConvertFrom-Json
+  if ($diagnostics.bunExecutable -ne $serviceBun) { throw 'Diagnostics did not report the protected persisted Bun path.' }
 
   $acl = (& icacls.exe $home 2>&1 | Out-String)
   if ($acl -notmatch 'ConsueloOS') { throw 'Consuelo service ACL entry is missing.' }
 
-  & $ownedBun $platformCli uninstall-service --home $home --bun $ownedBun --service-host $serviceHost --dry-run --json | Out-Null
+  & $ownedBun $platformCli uninstall-service --home $home --bun $serviceBun --service-host $serviceHost --dry-run --json | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Windows uninstall dry run failed.' }
   if ((& sc.exe query ConsueloOS 2>&1 | Out-String) -notmatch 'RUNNING') { throw 'Dry-run uninstall mutated the service.' }
 
-  & $ownedBun $platformCli uninstall-service --home $home --bun $ownedBun --service-host $serviceHost --json | Out-Null
+  & $ownedBun $platformCli uninstall-service --home $home --bun $serviceBun --service-host $serviceHost --json | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Windows service uninstall failed.' }
   $installed = $false
   if (-not (Test-Path -LiteralPath $workspaceMarker) -or -not (Test-Path -LiteralPath $contentMarker)) {
     throw 'Default Windows uninstall removed preserved workspace or user content.'
   }
+  if ((Test-Path -LiteralPath $serviceBun) -or (Test-Path -LiteralPath $serviceHost)) {
+    throw 'Default Windows uninstall retained service-owned executables.'
+  }
 
-  & $ownedBun $platformCli install-service --home $home --bun $ownedBun --service-host $serviceHost --json | Out-Null
+  Copy-Item -LiteralPath $ownedBun -Destination $serviceBun -Force
+  Copy-Item -LiteralPath $builtService -Destination $serviceHost -Force
+  & $ownedBun $platformCli install-service --home $home --bun $serviceBun --service-host $serviceHost --json | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Windows service reinstall failed.' }
   $installed = $true
-  & $ownedBun $platformCli uninstall-service --home $home --bun $ownedBun --service-host $serviceHost --json | Out-Null
+  & $ownedBun $platformCli uninstall-service --home $home --bun $serviceBun --service-host $serviceHost --json | Out-Null
   if ($LASTEXITCODE -ne 0) { throw 'Final Windows service cleanup failed.' }
   $installed = $false
 
@@ -118,7 +128,7 @@ process.on('SIGTERM', () => server.stop(true));
 }
 finally {
   if ($installed -and (Test-Path -LiteralPath $ownedBun)) {
-    & $ownedBun $platformCli uninstall-service --home $home --bun $ownedBun --service-host $serviceHost --json 2>$null | Out-Null
+    & $ownedBun $platformCli uninstall-service --home $home --bun $serviceBun --service-host $serviceHost --json 2>$null | Out-Null
   }
   $env:USERPROFILE = $originalProfile
   $env:HOME = $originalHome
