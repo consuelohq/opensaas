@@ -259,7 +259,7 @@
       "inputs": [
         "default",
         "{workspaceRoot}/eslint.config.mjs",
-        "{workspaceRoot}/packages/twenty-eslint-rules/**/*"
+        "{workspaceRoot}/packages/eslint-rules/**/*"
       ]
     },
     "@nx/vite:build": {

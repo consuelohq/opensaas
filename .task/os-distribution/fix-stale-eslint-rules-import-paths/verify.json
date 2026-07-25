@@ -1,0 +1,347 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+  "base": "origin/stream/os-distribution",
+  "headSha": "53efc9394db02684ec73c6cecab1beb8acbe1450",
+  "changeHash": "388e937cd965981d8b6889e36765fc25e0e6d6556c640f0d5a305dc37669f8bc",
+  "changedFiles": [
+    ".github/workflows/ci-front.yaml",
+    "eslint.config.mjs",
+    "nx.json",
+    "package.json",
+    "packages/eslint-rules/eslint.config.react.mjs",
+    "packages/eslint-rules/jest.config.mjs",
+    "packages/eslint-rules/jest.setup.cjs",
+    "packages/eslint-rules/project.json",
+    "packages/eslint-rules/rules/component-props-naming.spec.ts",
+    "packages/eslint-rules/rules/component-props-naming.ts",
+    "packages/eslint-rules/rules/effect-components.spec.ts",
+    "packages/eslint-rules/rules/effect-components.ts",
+    "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
+    "packages/eslint-rules/rules/inject-workspace-repository.spec.ts",
+    "packages/eslint-rules/rules/inject-workspace-repository.ts",
+    "packages/eslint-rules/rules/matching-state-variable.spec.ts",
+    "packages/eslint-rules/rules/matching-state-variable.ts",
+    "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
+    "packages/eslint-rules/rules/max-consts-per-file.ts",
+    "packages/eslint-rules/rules/mdx-component-newlines.ts",
+    "packages/eslint-rules/rules/no-hardcoded-colors.spec.ts",
+    "packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts",
+    "packages/eslint-rules/rules/no-navigate-prefer-link.ts",
+    "packages/eslint-rules/rules/no-state-useref.spec.ts",
+    "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
+    "packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
+    "packages/eslint-rules/rules/sort-css-properties-alphabetically.ts",
+    "packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
+    "packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts",
+    "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
+    "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts",
+    "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
+    "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts",
+    "packages/eslint-rules/tsconfig.json",
+    "packages/eslint-rules/utils/ruleTesterParser.ts",
+    "packages/eslint-rules/utils/typedTokenHelpers.ts",
+    "packages/twenty-docker/twenty-website/Dockerfile",
+    "packages/twenty-front/eslint.config.mjs",
+    "packages/twenty-server/eslint.config.mjs",
+    "packages/twenty-shared/eslint.config.mjs",
+    "packages/twenty-ui/eslint.config.mjs",
+    "packages/workspace/scripts/lib/review-test-selection.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/eslint-config-paths.test.ts",
+    "packages/workspace/tests/github-workflow-policy.test.js",
+    "packages/workspace/tests/review-test-selection.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-07-25T02:34:43.463Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/ci-front.yaml",
+        ".task/os-distribution/fix-stale-eslint-rules-import-paths/current.json",
+        ".task/os-distribution/fix-stale-eslint-rules-import-paths/evidence-log.json",
+        ".task/os-distribution/fix-stale-eslint-rules-import-paths/read-log.json",
+        ".task/os-distribution/fix-stale-eslint-rules-import-paths/session.json",
+        ".task/os-distribution/fix-stale-eslint-rules-import-paths/verify.json",
+        ".task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md",
+        ".task/tasks/os-distribution/fix-stale-eslint-rules-import-paths.json",
+        "eslint.config.mjs",
+        "nx.json",
+        "package.json",
+        "packages/eslint-rules/eslint.config.react.mjs",
+        "packages/eslint-rules/jest.config.mjs",
+        "packages/eslint-rules/jest.setup.cjs",
+        "packages/eslint-rules/project.json",
+        "packages/eslint-rules/rules/component-props-naming.spec.ts",
+        "packages/eslint-rules/rules/component-props-naming.ts",
+        "packages/eslint-rules/rules/effect-components.spec.ts",
+        "packages/eslint-rules/rules/effect-components.ts",
+        "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
+        "packages/eslint-rules/rules/inject-workspace-repository.spec.ts",
+        "packages/eslint-rules/rules/inject-workspace-repository.ts",
+        "packages/eslint-rules/rules/matching-state-variable.spec.ts",
+        "packages/eslint-rules/rules/matching-state-variable.ts",
+        "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
+        "packages/eslint-rules/rules/max-consts-per-file.ts",
+        "packages/eslint-rules/rules/mdx-component-newlines.ts",
+        "packages/eslint-rules/rules/no-hardcoded-colors.spec.ts",
+        "packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts",
+        "packages/eslint-rules/rules/no-navigate-prefer-link.ts",
+        "packages/eslint-rules/rules/no-state-useref.spec.ts",
+        "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
+        "packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
+        "packages/eslint-rules/rules/sort-css-properties-alphabetically.ts",
+        "packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
+        "packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts",
+        "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
+        "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts",
+        "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
+        "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts",
+        "packages/eslint-rules/tsconfig.json",
+        "packages/eslint-rules/utils/ruleTesterParser.ts",
+        "packages/eslint-rules/utils/typedTokenHelpers.ts",
+        "packages/twenty-docker/twenty-website/Dockerfile",
+        "packages/twenty-front/eslint.config.mjs",
+        "packages/twenty-server/eslint.config.mjs",
+        "packages/twenty-shared/eslint.config.mjs",
+        "packages/twenty-ui/eslint.config.mjs",
+        "packages/workspace/scripts/lib/review-test-selection.js",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/test-selection.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/eslint-config-paths.test.ts",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/workspace/tests/review-test-selection.test.js",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/review.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/scripts/test-selection.js",
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "eslint-config-contract",
+          "critical": true,
+          "reason": "ESLint configuration changes must import cleanly without selecting unrelated application test suites.",
+          "matchedFiles": [
+            "eslint.config.mjs",
+            "packages/eslint-rules/eslint.config.react.mjs",
+            "packages/twenty-front/eslint.config.mjs",
+            "packages/twenty-server/eslint.config.mjs",
+            "packages/twenty-shared/eslint.config.mjs",
+            "packages/twenty-ui/eslint.config.mjs"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:twenty-eslint-rules:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/eslint-rules.",
+          "matchedFiles": [
+            "packages/eslint-rules/jest.config.mjs",
+            "packages/eslint-rules/jest.setup.cjs",
+            "packages/eslint-rules/project.json",
+            "packages/eslint-rules/rules/component-props-naming.spec.ts",
+            "packages/eslint-rules/rules/component-props-naming.ts",
+            "packages/eslint-rules/rules/effect-components.spec.ts",
+            "packages/eslint-rules/rules/effect-components.ts",
+            "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
+            "packages/eslint-rules/rules/inject-workspace-repository.spec.ts",
+            "packages/eslint-rules/rules/inject-workspace-repository.ts",
+            "packages/eslint-rules/rules/matching-state-variable.spec.ts",
+            "packages/eslint-rules/rules/matching-state-variable.ts",
+            "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
+            "packages/eslint-rules/rules/max-consts-per-file.ts",
+            "packages/eslint-rules/rules/mdx-component-newlines.ts",
+            "packages/eslint-rules/rules/no-hardcoded-colors.spec.ts",
+            "packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts",
+            "packages/eslint-rules/rules/no-navigate-prefer-link.ts",
+            "packages/eslint-rules/rules/no-state-useref.spec.ts",
+            "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
+            "packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
+            "packages/eslint-rules/rules/sort-css-properties-alphabetically.ts",
+            "packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
+            "packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts",
+            "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
+            "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts",
+            "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
+            "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts",
+            "packages/eslint-rules/tsconfig.json",
+            "packages/eslint-rules/utils/ruleTesterParser.ts",
+            "packages/eslint-rules/utils/typedTokenHelpers.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "shared ESLint configuration contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/eslint-config-paths.test.ts"
+          ],
+          "ruleId": "eslint-config-contract",
+          "critical": true
+        },
+        {
+          "name": "twenty-eslint-rules test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-eslint-rules",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-eslint-rules:test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 636,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 222\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:34:37\n\u001b[2m   Duration \u001b[22m 301ms\u001b[2m (transform 10ms, setup 0ms, import 17ms, tests 222ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1189,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 879\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 674\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:34:37\n\u001b[2m   Duration \u001b[22m 945ms\u001b[2m (transform 8ms, setup 0ms, import 13ms, tests 879ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "shared ESLint configuration contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/eslint-config-paths.test.ts"
+          ],
+          "ruleId": "eslint-config-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4004,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/eslint-config-paths.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3614\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should import both React consumer configurations from a clean checkout \u001b[33m 3612\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:34:39\n\u001b[2m   Duration \u001b[22m 3.73s\u001b[2m (transform 50ms, setup 0ms, import 56ms, tests 3.61s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "twenty-eslint-rules test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-eslint-rules",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-eslint-rules:test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 357,
+          "outputTail": "\n> nx run twenty-eslint-rules:test --coverage=false  [existing outputs match the cache, left as is]\n\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mrest-api-methods-should-be-guarded.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mno-navigate-prefer-link.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mmatching-state-variable.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1msort-css-properties-alphabetically.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mgraphql-resolvers-should-be-guarded.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mno-state-useref.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1minject-workspace-repository.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1muse-getLoadable-and-getValue-to-get-atoms.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mno-hardcoded-colors.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mcomponent-props-naming.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mstyled-components-prefixed-with-styled.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1meffect-components.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1museRecoilCallback-has-dependency-array.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-eslint-rules \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/eslint-rules/rules/\u001b[22m\u001b[1mmax-consts-per-file.spec.ts\u001b[22m\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m, 14 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[32m129 passed\u001b[39m\u001b[22m, 129 total\n\u001b[1mSnapshots:   \u001b[22m0 total\n\u001b[1mTime:\u001b[22m        1.634 s\n\u001b[2mRan all test suites\u001b[22m\u001b[2m.\u001b[22m\n\n\n\n NX   Successfully ran target test for project twenty-eslint-rules\n\nNx read the output from the cache instead of running the command for 1 out of 1 tasks.\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

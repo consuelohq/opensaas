@@ -59,6 +59,22 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('separates frontend config lint from source typecheck, tests, and builds', () => {
+    const frontWorkflow = readFileSync(join(workflowDir, 'ci-front.yaml'), 'utf8');
+
+    expect(frontWorkflow).toContain('changed-source-files-check:');
+    expect(frontWorkflow).toContain('!packages/twenty-front/eslint.config.*');
+    expect(frontWorkflow).toContain('!packages/twenty-ui/eslint.config.*');
+    expect(frontWorkflow).toContain('!packages/twenty-shared/eslint.config.*');
+    expect(frontWorkflow).toContain('front-lint:');
+    expect(frontWorkflow).toContain('tasks: lint:diff-with-main');
+    expect(frontWorkflow).toContain('task: [typecheck, test]');
+    expect(frontWorkflow).toContain(
+      "if: needs.changed-source-files-check.outputs.any_changed == 'true'",
+    );
+    expect(frontWorkflow).toContain('tasks: ${{ matrix.task }}');
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
