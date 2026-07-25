@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/os-distribution/support-pgvector-in-docker-compose-acceptance",
   "base": "origin/stream/os-distribution",
-  "headSha": "bdbfd483e1b8faa9a287ff58c8a40d663fb7ddf3",
-  "changeHash": "f1b7ca9720c0f75beec7116c9546ce1d4f0064d38c67a83daf4b4d993929d221",
+  "headSha": "82ee5276dfc4e41d0ea278585ecc766d3c9257e8",
+  "changeHash": "331b206a70dfc25bed64fa08f822869b27afdb9629b71ca35ac9ccc38663246e",
   "changedFiles": [
     "packages/twenty-docker/docker-compose.yml",
     "packages/workspace/tests/docker-compose-pgvector.test.ts"
   ],
-  "verifiedAt": "2026-07-25T17:28:20.949Z",
+  "verifiedAt": "2026-07-25T17:47:10.256Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -26,6 +26,7 @@
       "changedFiles": [
         ".task/os-distribution/support-pgvector-in-docker-compose-acceptance/current.json",
         ".task/os-distribution/support-pgvector-in-docker-compose-acceptance/session.json",
+        ".task/os-distribution/support-pgvector-in-docker-compose-acceptance/verify.json",
         ".task/os-distribution/support-pgvector-in-docker-compose-acceptance/workpad.md",
         ".task/tasks/os-distribution/support-pgvector-in-docker-compose-acceptance.json",
         "packages/twenty-docker/docker-compose.yml",

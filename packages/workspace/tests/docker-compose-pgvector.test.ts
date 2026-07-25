@@ -12,7 +12,8 @@ describe('Docker Compose database extensions', () => {
     const compose = readRepoFile('packages/twenty-docker/docker-compose.yml');
 
     expect(workflow).toContain('working-directory: ./packages/twenty-docker/');
-    expect(compose).toContain('image: twentycrm/twenty-postgres-spilo');
+    expect(compose).toContain('image: pgvector/pgvector:0.8.5-pg16');
     expect(compose).not.toContain('image: postgres:16');
+    expect(compose).not.toContain('twenty-postgres-spilo');
   });
 });
