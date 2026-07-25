@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1e4b5b90c42f",
+  "tmuxSession": "opensaas-os-distribution-invalidate-dependency-cache-on-workspace-topolog-1e4b5b90",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/invalidate-dependency-cache-on-workspace-topology-changes",
+  "branch": "task/os-distribution/invalidate-dependency-cache-on-workspace-topology-changes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-invalidate-dependency-cache-on-workspace-topology-changes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-invalidate-dependency-cache-on-workspace-topology-changes",
+  "prNumber": 1661,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1661",
+  "createdAt": "2026-07-25T17:31:15.031Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-invalidate-dependency-cache-on-workspace-topology-changes/.task/os-distribution/invalidate-dependency-cache-on-workspace-topology-changes/session.json"
+}
