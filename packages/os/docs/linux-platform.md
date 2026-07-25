@@ -4,15 +4,15 @@ Consuelo OS uses the same signed, immutable runtime bundle and shared lifecycle 
 
 ## Supported hosts
 
-| Dimension               | Supported contract                                                           |
-| ----------------------- | ---------------------------------------------------------------------------- |
-| Operating system        | Linux                                                                        |
-| Architectures           | x64 and arm64                                                                |
-| C libraries             | glibc and musl                                                               |
-| Validated distributions | Ubuntu 24.04 native runner and Debian 12 container                           |
-| Runtime dependency      | Bundled or explicitly resolved Bun executable; no Docker runtime requirement |
-| Primary service manager | systemd user service                                                         |
-| Fallback                | Session-scoped detached process when a systemd user manager is unavailable   |
+| Dimension | Supported contract |
+| --- | --- |
+| Operating system | Linux |
+| Architectures | x64 and arm64 |
+| C libraries | glibc and musl |
+| Validated distributions | Ubuntu 24.04 native runner and Debian 12 container |
+| Runtime dependency | Bundled or explicitly resolved Bun executable; no Docker runtime requirement |
+| Primary service manager | systemd user service |
+| Fallback | Session-scoped detached process when a systemd user manager is unavailable |
 
 Unsupported operating systems, architectures, or unidentifiable C libraries fail before a service unit or fallback process is created.
 

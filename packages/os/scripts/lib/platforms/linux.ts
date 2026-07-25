@@ -1,12 +1,5 @@
 import { spawn } from 'node:child_process';
-import {
-  chmodSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 import type { LifecycleServiceController } from '../lifecycle/types';
@@ -30,14 +23,8 @@ export type LinuxCommand = {
   cwd?: string;
 };
 
-export type LinuxCommandResult = {
-  exitCode: number;
-  stdout: string;
-  stderr: string;
-};
-export type LinuxCommandRunner = (
-  command: LinuxCommand,
-) => Promise<LinuxCommandResult>;
+export type LinuxCommandResult = { exitCode: number; stdout: string; stderr: string };
+export type LinuxCommandRunner = (command: LinuxCommand) => Promise<LinuxCommandResult>;
 
 export type LinuxPlatformPaths = {
   home: string;
@@ -71,10 +58,7 @@ export type LinuxAuthHandoff = {
 export type LinuxPlatformAdapter = LifecycleServiceController & {
   install(): Promise<{ manager: LinuxServiceManager }>;
   status(): Promise<LinuxPlatformStatus>;
-  handoffAuth(input: {
-    verificationUrl: string;
-    userCode: string;
-  }): Promise<LinuxAuthHandoff>;
+  handoffAuth(input: { verificationUrl: string; userCode: string }): Promise<LinuxAuthHandoff>;
 };
 
 const UNIT_NAME = 'consuelo-os.service';
@@ -95,17 +79,11 @@ async function defaultRun(command: LinuxCommand): Promise<LinuxCommandResult> {
     ]);
     return { exitCode, stdout, stderr };
   } catch (error: unknown) {
-    return {
-      exitCode: 127,
-      stdout: '',
-      stderr: error instanceof Error ? error.message : String(error),
-    };
+    return { exitCode: 127, stdout: '', stderr: error instanceof Error ? error.message : String(error) };
   }
 }
 
-async function defaultSpawnSessionProcess(
-  command: LinuxCommand,
-): Promise<number> {
+async function defaultSpawnSessionProcess(command: LinuxCommand): Promise<number> {
   const child = spawn(command.executable, command.args, {
     cwd: command.cwd,
     env: command.environment ?? process.env,
@@ -113,8 +91,7 @@ async function defaultSpawnSessionProcess(
     stdio: 'ignore',
   });
   child.unref();
-  if (child.pid === undefined)
-    throw new Error('failed to start Linux session process');
+  if (child.pid === undefined) throw new Error('failed to start Linux session process');
   return child.pid;
 }
 
@@ -134,34 +111,17 @@ function parseLibc(value: string): LinuxLibc {
 }
 
 function hostSupport(host: LinuxHost): LinuxHost & { supported: boolean } {
-  if (host.platform !== 'linux')
-    return {
-      ...host,
-      supported: false,
-      reason: `platform ${host.platform} is not Linux`,
-    };
-  if (!SUPPORTED_ARCHITECTURES.has(host.architecture))
-    return {
-      ...host,
-      supported: false,
-      reason: `architecture ${host.architecture} is unsupported`,
-    };
-  if (host.libc !== 'glibc' && host.libc !== 'musl')
-    return {
-      ...host,
-      supported: false,
-      reason: 'libc could not be identified as glibc or musl',
-    };
+  if (host.platform !== 'linux') return { ...host, supported: false, reason: `platform ${host.platform} is not Linux` };
+  if (!SUPPORTED_ARCHITECTURES.has(host.architecture)) return { ...host, supported: false, reason: `architecture ${host.architecture} is unsupported` };
+  if (host.libc !== 'glibc' && host.libc !== 'musl') return { ...host, supported: false, reason: 'libc could not be identified as glibc or musl' };
   return { ...host, supported: true };
 }
 
-export async function detectLinuxHost(
-  input: {
-    platform?: NodeJS.Platform | string;
-    architecture?: NodeJS.Architecture | string;
-    run?: LinuxCommandRunner;
-  } = {},
-): Promise<LinuxHost & { supported: boolean }> {
+export async function detectLinuxHost(input: {
+  platform?: NodeJS.Platform | string;
+  architecture?: NodeJS.Architecture | string;
+  run?: LinuxCommandRunner;
+} = {}): Promise<LinuxHost & { supported: boolean }> {
   try {
     const platform = input.platform ?? process.platform;
     const architecture = input.architecture ?? process.arch;
@@ -169,60 +129,33 @@ export async function detectLinuxHost(
       return hostSupport({ platform, architecture, libc: 'unknown' });
     }
     const run = input.run ?? defaultRun;
-    const getconf = await run({
-      executable: 'getconf',
-      args: ['GNU_LIBC_VERSION'],
-    });
-    let libc =
-      getconf.exitCode === 0
-        ? parseLibc(`${getconf.stdout}\n${getconf.stderr}`)
-        : 'unknown';
+    const getconf = await run({ executable: 'getconf', args: ['GNU_LIBC_VERSION'] });
+    let libc = getconf.exitCode === 0 ? parseLibc(`${getconf.stdout}\n${getconf.stderr}`) : 'unknown';
     if (libc === 'unknown') {
       const ldd = await run({ executable: 'ldd', args: ['--version'] });
       libc = parseLibc(`${ldd.stdout}\n${ldd.stderr}`);
     }
     return hostSupport({ platform, architecture, libc });
   } catch (error: unknown) {
-    throw new Error(
-      `Linux host detection failed: ${error instanceof Error ? error.message : String(error)}`,
-      { cause: error },
-    );
+    throw new Error(`Linux host detection failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
   }
 }
 
-export function resolveLinuxPlatformPaths(
-  home: string,
-  environment: NodeJS.ProcessEnv = process.env,
-): LinuxPlatformPaths {
+export function resolveLinuxPlatformPaths(home: string, environment: NodeJS.ProcessEnv = process.env): LinuxPlatformPaths {
   const resolvedHome = resolve(home);
-  const inferredUserHome =
-    basename(resolvedHome) === '.consuelo'
-      ? dirname(resolvedHome)
-      : resolvedHome;
-  const configHome = resolve(
-    environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'),
-  );
+  const inferredUserHome = basename(resolvedHome) === '.consuelo'
+    ? dirname(resolvedHome)
+    : resolvedHome;
+  const configHome = resolve(environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'));
   const systemdUserDir = join(configHome, 'systemd', 'user');
   return {
     home: resolvedHome,
     systemdUserDir,
     unitPath: join(systemdUserDir, UNIT_NAME),
-    runtimeEntryPath: join(
-      resolvedHome,
-      'runtime',
-      'current',
-      'scripts',
-      'server',
-      'main.ts',
-    ),
+    runtimeEntryPath: join(resolvedHome, 'runtime', 'current', 'scripts', 'server', 'main.ts'),
     runsDir: join(resolvedHome, 'node', 'runs'),
     logsDir: join(resolvedHome, 'node', 'logs'),
-    sessionStatePath: join(
-      resolvedHome,
-      'node',
-      'runs',
-      'linux-session-process.json',
-    ),
+    sessionStatePath: join(resolvedHome, 'node', 'runs', 'linux-session-process.json'),
   };
 }
 
@@ -230,10 +163,7 @@ function systemdEscape(value: string): string {
   return value.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 }
 
-export function renderSystemdUserUnit(input: {
-  home: string;
-  bunExecutable: string;
-}): string {
+export function renderSystemdUserUnit(input: { home: string; bunExecutable: string }): string {
   const paths = resolveLinuxPlatformPaths(input.home);
   return [
     '[Unit]',
@@ -268,25 +198,15 @@ function writePrivateFile(path: string, content: string): void {
   chmodSync(path, 0o600);
 }
 
-function commandError(
-  command: LinuxCommand,
-  result: LinuxCommandResult,
-): Error {
-  const detail =
-    result.stderr.trim() || result.stdout.trim() || `exit ${result.exitCode}`;
-  return new Error(
-    `${command.executable} ${command.args.join(' ')} failed: ${detail}`,
-  );
+function commandError(command: LinuxCommand, result: LinuxCommandResult): Error {
+  const detail = result.stderr.trim() || result.stdout.trim() || `exit ${result.exitCode}`;
+  return new Error(`${command.executable} ${command.args.join(' ')} failed: ${detail}`);
 }
 
 function readSessionPid(path: string): number | undefined {
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf8')) as { pid?: unknown };
-    return typeof parsed.pid === 'number' &&
-      Number.isInteger(parsed.pid) &&
-      parsed.pid > 0
-      ? parsed.pid
-      : undefined;
+    return typeof parsed.pid === 'number' && Number.isInteger(parsed.pid) && parsed.pid > 0 ? parsed.pid : undefined;
   } catch {
     return undefined;
   }
@@ -305,34 +225,23 @@ export function createLinuxPlatformAdapter(input: {
   const paths = resolveLinuxPlatformPaths(input.home, environment);
   const run = input.run ?? defaultRun;
   const bunExecutable = resolve(input.bunExecutable ?? process.execPath);
-  const spawnSessionProcess =
-    input.spawnSessionProcess ?? defaultSpawnSessionProcess;
+  const spawnSessionProcess = input.spawnSessionProcess ?? defaultSpawnSessionProcess;
   const isProcessAlive = input.isProcessAlive ?? defaultIsProcessAlive;
   let detectedHost: (LinuxHost & { supported: boolean }) | undefined;
 
   const host = async (): Promise<LinuxHost & { supported: boolean }> => {
     try {
-      detectedHost ??= input.host
-        ? hostSupport(input.host)
-        : await detectLinuxHost({ run });
+      detectedHost ??= input.host ? hostSupport(input.host) : await detectLinuxHost({ run });
       return detectedHost;
     } catch (error: unknown) {
-      throw new Error(
-        `Linux host inspection failed: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error },
-      );
+      throw new Error(`Linux host inspection failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
   };
 
-  const assertSupported = async (): Promise<
-    LinuxHost & { supported: true }
-  > => {
+  const assertSupported = async (): Promise<LinuxHost & { supported: true }> => {
     try {
       const current = await host();
-      if (!current.supported)
-        throw new Error(
-          `unsupported Linux host: ${current.reason ?? 'unknown compatibility failure'}`,
-        );
+      if (!current.supported) throw new Error(`unsupported Linux host: ${current.reason ?? 'unknown compatibility failure'}`);
       return current as LinuxHost & { supported: true };
     } catch (error: unknown) {
       throw error;
@@ -341,17 +250,10 @@ export function createLinuxPlatformAdapter(input: {
 
   const systemdAvailable = async (): Promise<boolean> => {
     try {
-      const result = await run({
-        executable: 'systemctl',
-        args: ['--user', 'show-environment'],
-        environment,
-      });
+      const result = await run({ executable: 'systemctl', args: ['--user', 'show-environment'], environment });
       return result.exitCode === 0;
     } catch (error: unknown) {
-      throw new Error(
-        `systemd user-manager probe failed: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error },
-      );
+      throw new Error(`systemd user-manager probe failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
   };
 
@@ -362,10 +264,7 @@ export function createLinuxPlatformAdapter(input: {
       if (sessionPid) rmSync(paths.sessionStatePath, { force: true });
       return (await systemdAvailable()) ? 'systemd-user' : 'session-process';
     } catch (error: unknown) {
-      throw new Error(
-        `Linux service-manager selection failed: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error },
-      );
+      throw new Error(`Linux service-manager selection failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
   };
 
@@ -381,27 +280,17 @@ export function createLinuxPlatformAdapter(input: {
       const existingPid = readSessionPid(paths.sessionStatePath);
       if (existingPid && isProcessAlive(existingPid)) return existingPid;
       const pid = await spawnSessionProcess(runtimeCommand());
-      writePrivateFile(
-        paths.sessionStatePath,
-        `${JSON.stringify({ schemaVersion: 1, pid }, null, 2)}\n`,
-      );
+      writePrivateFile(paths.sessionStatePath, `${JSON.stringify({ schemaVersion: 1, pid }, null, 2)}\n`);
       return pid;
     } catch (error: unknown) {
-      throw new Error(
-        `Linux session fallback failed to start: ${error instanceof Error ? error.message : String(error)}`,
-        { cause: error },
-      );
+      throw new Error(`Linux session fallback failed to start: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
   };
 
   const stopSessionProcess = (): void => {
     const pid = readSessionPid(paths.sessionStatePath);
     if (pid && isProcessAlive(pid)) {
-      try {
-        process.kill(pid, 'SIGTERM');
-      } catch {
-        /* process exited between check and signal */
-      }
+      try { process.kill(pid, 'SIGTERM'); } catch { /* process exited between check and signal */ }
     }
     rmSync(paths.sessionStatePath, { force: true });
   };
@@ -423,21 +312,10 @@ export function createLinuxPlatformAdapter(input: {
         ensurePrivateDirectory(paths.runsDir);
         ensurePrivateDirectory(paths.logsDir);
         if (await systemdAvailable()) {
-          writePrivateFile(
-            paths.unitPath,
-            renderSystemdUserUnit({ home: paths.home, bunExecutable }),
-          );
+          writePrivateFile(paths.unitPath, renderSystemdUserUnit({ home: paths.home, bunExecutable }));
           for (const command of [
-            {
-              executable: 'systemctl',
-              args: ['--user', 'daemon-reload'],
-              environment,
-            },
-            {
-              executable: 'systemctl',
-              args: ['--user', 'enable', '--now', UNIT_NAME],
-              environment,
-            },
+            { executable: 'systemctl', args: ['--user', 'daemon-reload'], environment },
+            { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment },
           ]) {
             const result = await run(command);
             if (result.exitCode !== 0) throw commandError(command, result);
@@ -447,10 +325,7 @@ export function createLinuxPlatformAdapter(input: {
         await startSessionProcess();
         return { manager: 'session-process' };
       } catch (error: unknown) {
-        throw new Error(
-          `Linux service installation failed: ${error instanceof Error ? error.message : String(error)}`,
-          { cause: error },
-        );
+        throw new Error(`Linux service installation failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
       }
     },
     async restart() {
@@ -458,31 +333,16 @@ export function createLinuxPlatformAdapter(input: {
         await preflight();
         if ((await activeManager()) === 'systemd-user') {
           if (!existsSync(paths.unitPath)) {
-            writePrivateFile(
-              paths.unitPath,
-              renderSystemdUserUnit({ home: paths.home, bunExecutable }),
-            );
+            writePrivateFile(paths.unitPath, renderSystemdUserUnit({ home: paths.home, bunExecutable }));
             for (const command of [
-              {
-                executable: 'systemctl',
-                args: ['--user', 'daemon-reload'],
-                environment,
-              },
-              {
-                executable: 'systemctl',
-                args: ['--user', 'enable', '--now', UNIT_NAME],
-                environment,
-              },
+              { executable: 'systemctl', args: ['--user', 'daemon-reload'], environment },
+              { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment },
             ]) {
               const result = await run(command);
               if (result.exitCode !== 0) throw commandError(command, result);
             }
           } else {
-            const command = {
-              executable: 'systemctl',
-              args: ['--user', 'restart', UNIT_NAME],
-              environment,
-            };
+            const command = { executable: 'systemctl', args: ['--user', 'restart', UNIT_NAME], environment };
             const result = await run(command);
             if (result.exitCode !== 0) throw commandError(command, result);
           }
@@ -491,44 +351,25 @@ export function createLinuxPlatformAdapter(input: {
         stopSessionProcess();
         await startSessionProcess();
       } catch (error: unknown) {
-        throw new Error(
-          `Linux service restart failed: ${error instanceof Error ? error.message : String(error)}`,
-          { cause: error },
-        );
+        throw new Error(`Linux service restart failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
       }
     },
     async status() {
       try {
         const currentHost = await assertSupported();
         if ((await activeManager()) === 'systemd-user') {
-          const command = {
-            executable: 'systemctl',
-            args: ['--user', 'is-active', UNIT_NAME],
-            environment,
-          };
+          const command = { executable: 'systemctl', args: ['--user', 'is-active', UNIT_NAME], environment };
           const result = await run(command);
-          const active =
-            result.exitCode === 0 && result.stdout.trim() === 'active';
+          const active = result.exitCode === 0 && result.stdout.trim() === 'active';
           return {
             schemaVersion: 1,
             platform: 'linux',
             architecture: currentHost.architecture,
             libc: currentHost.libc,
             manager: 'systemd-user',
-            state: active
-              ? 'healthy'
-              : result.stdout.trim() === 'inactive'
-                ? 'stopped'
-                : 'failed',
+            state: active ? 'healthy' : result.stdout.trim() === 'inactive' ? 'stopped' : 'failed',
             unitPath: paths.unitPath,
-            ...(!active
-              ? {
-                  detail:
-                    result.stderr.trim() ||
-                    result.stdout.trim() ||
-                    `exit ${result.exitCode}`,
-                }
-              : {}),
+            ...(!active ? { detail: result.stderr.trim() || result.stdout.trim() || `exit ${result.exitCode}` } : {}),
           };
         }
         const pid = readSessionPid(paths.sessionStatePath);
@@ -543,32 +384,19 @@ export function createLinuxPlatformAdapter(input: {
           ...(pid ? { pid } : {}),
         };
       } catch (error: unknown) {
-        throw new Error(
-          `Linux service status failed: ${error instanceof Error ? error.message : String(error)}`,
-          { cause: error },
-        );
+        throw new Error(`Linux service status failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
       }
     },
     async handoffAuth(auth) {
       try {
-        const displayAvailable = Boolean(
-          environment.DISPLAY || environment.WAYLAND_DISPLAY,
-        );
+        const displayAvailable = Boolean(environment.DISPLAY || environment.WAYLAND_DISPLAY);
         if (displayAvailable) {
-          const result = await run({
-            executable: 'xdg-open',
-            args: [auth.verificationUrl],
-            environment,
-          });
-          if (result.exitCode === 0)
-            return { ...auth, mode: 'browser', browserOpened: true };
+          const result = await run({ executable: 'xdg-open', args: [auth.verificationUrl], environment });
+          if (result.exitCode === 0) return { ...auth, mode: 'browser', browserOpened: true };
         }
         return { ...auth, mode: 'headless', browserOpened: false };
       } catch (error: unknown) {
-        throw new Error(
-          `Linux authentication handoff failed: ${error instanceof Error ? error.message : String(error)}`,
-          { cause: error },
-        );
+        throw new Error(`Linux authentication handoff failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
       }
     },
     async uninstall(options = {}) {
@@ -576,34 +404,19 @@ export function createLinuxPlatformAdapter(input: {
         await assertSupported();
         if (options.dryRun) return;
         if (await systemdAvailable()) {
-          const disable = {
-            executable: 'systemctl',
-            args: ['--user', 'disable', '--now', UNIT_NAME],
-            environment,
-          };
+          const disable = { executable: 'systemctl', args: ['--user', 'disable', '--now', UNIT_NAME], environment };
           const result = await run(disable);
           const detail = `${result.stdout}\n${result.stderr}`;
-          if (
-            result.exitCode !== 0 &&
-            !/not loaded|not found|does not exist|no such file/i.test(detail)
-          )
-            throw commandError(disable, result);
+          if (result.exitCode !== 0 && !/not loaded|not found|does not exist|no such file/i.test(detail)) throw commandError(disable, result);
           rmSync(paths.unitPath, { force: true });
-          const reload = {
-            executable: 'systemctl',
-            args: ['--user', 'daemon-reload'],
-            environment,
-          };
+          const reload = { executable: 'systemctl', args: ['--user', 'daemon-reload'], environment };
           const reloaded = await run(reload);
           if (reloaded.exitCode !== 0) throw commandError(reload, reloaded);
         }
         stopSessionProcess();
         rmSync(paths.unitPath, { force: true });
       } catch (error: unknown) {
-        throw new Error(
-          `Linux service uninstall failed: ${error instanceof Error ? error.message : String(error)}`,
-          { cause: error },
-        );
+        throw new Error(`Linux service uninstall failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
       }
     },
   };
