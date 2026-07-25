@@ -69,6 +69,16 @@ started: 2026-07-25
 - GREEN: actual PR-diff simulation reports `isolated-workspace-migration`; `effect` resolves through `@consuelo/os`; all exact registry suites pass (`trc_3993a8bd99c0`).
 - GREEN: final strict review reports zero owned/blocking findings (`trc_bc6feceaf327`).
 - GREEN: final full verification is publish-valid (`trc_eac82eb7206a`).
+- 2026-07-25 20:26:31 `review.run`: passed — OK
+- 2026-07-25 20:27:00 `verify`: passed — OK
+
+## Clean dialer-help dependency precondition
+
+- RED authoritative evidence: after the OS workspace dependency fix, both Consuelo aggregate jobs loaded the package but failed one Worker 30 assertion: the real `consuelo-dialer --help` subprocess imported `twenty-sdk/cli` before the untracked `packages/twenty-sdk/dist/register.mjs` build artifact existed on a clean checkout (`trc_77df41fcebd0`).
+- Root cause: local developer worktrees already contained `packages/twenty-sdk/dist`, masking the build-order requirement; the distribution runner correctly starts without generated SDK output.
+- Change: the behavioral test keeps executing the real dialer source CLI and exact command-catalog assertions, but first builds the declared Twenty SDK workspace dependency only when its exported CLI artifact is absent. The test has a bounded 120-second timeout for this clean-build precondition.
+- GREEN clean-checkout simulation: temporarily removed the entire SDK `dist` directory; the test built the dependency and all 10 Worker 30 assertions passed (`trc_34c58302156d`).
+- GREEN exact registry gate: workspace selection 9/9, Worker 30 10/10, and the OS package rule all passed (`trc_cf441bb3db16`).
 - 2026-07-25 19:54:21 `review.run`: passed — OK
 - 2026-07-25 19:55:14 `review.run`: passed — OK
 - 2026-07-25 19:56:07 `verify`: failed — COMMAND_FAILED
@@ -132,3 +142,7 @@ bun run task:finish
 - 2026-07-25 20:10:02 apply-patch: `packages/workspace/scripts/ci/classify-front-source-change.cjs`
 
 - 2026-07-25 20:12:25 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+
+- 2026-07-25 20:25:36 apply-patch: `packages/os/tests/cli-product-split.test.ts`
+
+- 2026-07-25 20:26:02 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`

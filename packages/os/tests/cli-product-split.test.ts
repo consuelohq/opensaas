@@ -23,6 +23,13 @@ import type {
 const repoRoot = resolve(import.meta.dirname, '..', '..', '..');
 const osRoot = resolve(repoRoot, 'packages', 'os');
 const dialerRoot = resolve(repoRoot, 'packages', 'cli');
+const twentySdkCliArtifact = resolve(
+  repoRoot,
+  'packages',
+  'twenty-sdk',
+  'dist',
+  'register.mjs',
+);
 const temporaryPaths: string[] = [];
 
 function readJson(path: string): Record<string, unknown> {
@@ -71,6 +78,29 @@ function commandNames(help: string): string[] {
     .split('\n')
     .filter((line) => /^  [a-z][a-z-]*(?:\s|$)/.test(line))
     .map((line) => line.trim().split(/\s+/)[0]);
+}
+
+function ensureTwentySdkCliArtifact(): void {
+  if (existsSync(twentySdkCliArtifact)) return;
+
+  const result = spawnSync('npx', ['nx', 'build', 'twenty-sdk'], {
+    cwd: repoRoot,
+    env: process.env,
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
+  });
+
+  if (result.status !== 0 || !existsSync(twentySdkCliArtifact)) {
+    throw new Error(
+      [
+        'Failed to build the twenty-sdk CLI artifact required by the dialer help contract.',
+        result.stdout,
+        result.stderr,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    );
+  }
 }
 
 afterEach(() => {
@@ -154,6 +184,7 @@ describe('Consuelo product CLI ownership', () => {
   });
 
   it('preserves the existing sales command catalog under consuelo-dialer and removes the mixed OS group', () => {
+    ensureTwentySdkCliArtifact();
     const result = spawnSync(
       'bun',
       [join(dialerRoot, 'src', 'index.ts'), '--help'],
@@ -195,7 +226,7 @@ describe('Consuelo product CLI ownership', () => {
       'utf8',
     );
     expect(knowledgeBaseSource).toContain('consuelo-dialer files upload <path>');
-  });
+  }, 120_000);
 
   it('removes the old mixed OS registration and stale product command/package references', () => {
     expect(existsSync(join(dialerRoot, 'src', 'commands', 'os.ts'))).toBe(false);
