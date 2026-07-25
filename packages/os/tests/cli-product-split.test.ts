@@ -164,8 +164,7 @@ describe('Consuelo product CLI ownership', () => {
       },
     );
 
-    expect(result.status).toBe(0);
-    expect(result.stderr).toBe('');
+    expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain('Usage: consuelo-dialer');
     const preservedSalesCommands = [
       'init',

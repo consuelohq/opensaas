@@ -73,6 +73,8 @@ started: 2026-07-25
 - 2026-07-25 20:27:00 `verify`: passed — OK
 - 2026-07-25 20:39:51 `review.run`: passed — OK
 - 2026-07-25 20:40:23 `verify`: passed — OK
+- 2026-07-25 20:50:21 `review.run`: passed — OK
+- 2026-07-25 20:50:51 `verify`: passed — OK
 
 ## Clean dialer-help dependency precondition
 
@@ -89,6 +91,12 @@ started: 2026-07-25
 - Final contract: preserve the exact order and presence of the 14 core sales/GTM commands, allow the supported SDK platform command extensions, and continue forbidding the removed `os` command group.
 - The temporary SDK-build precondition was removed; it is unnecessary for this ownership assertion and would couple the test to generated output.
 - GREEN: Worker 30 passed 10/10 and the exact registry gate passed after the corrected command-catalog contract (`trc_7ce1c9539a98`, `trc_9388ca94f458`).
+
+## Node 24 stderr disposition
+
+- The final Linux rerun preserved exit status and help output but still failed the same test because Node 24 dependency deprecation warnings are emitted on stderr in the aggregate runner.
+- Empty stderr is not a Worker 30 acceptance criterion and is not evidence of command ownership. The test now includes stderr as the diagnostic message if the process exits non-zero, but does not reject successful help output solely for runtime warnings.
+- The behavioral contract remains: successful exit, `consuelo-dialer` usage, exact core sales command sequence, supported SDK registration in source, and no mixed `os` group.
 - 2026-07-25 19:54:21 `review.run`: passed — OK
 - 2026-07-25 19:55:14 `review.run`: passed — OK
 - 2026-07-25 19:56:07 `verify`: failed — COMMAND_FAILED
@@ -160,3 +168,7 @@ bun run task:finish
 - 2026-07-25 20:39:08 apply-patch: `packages/os/tests/cli-product-split.test.ts`
 
 - 2026-07-25 20:39:20 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
+
+- 2026-07-25 20:49:34 apply-patch: `packages/os/tests/cli-product-split.test.ts`
+
+- 2026-07-25 20:49:43 apply-patch: `.task/os-distribution/split-consuelo-and-consuelo-dialer-cli-products/workpad.md`
