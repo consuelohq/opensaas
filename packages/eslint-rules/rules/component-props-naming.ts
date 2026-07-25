@@ -49,7 +49,6 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
     type: 'problem',
     docs: {
       description: 'Ensure component props follow naming convention',
-      recommended: 'recommended',
     },
     fixable: 'code',
     schema: [],
@@ -71,7 +70,9 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
         }
       },
       FunctionDeclaration: (node) => {
-        checkPropsTypeName({ node, context, functionName: node.id.name });
+        if (isIdentifier(node.id)) {
+          checkPropsTypeName({ node, context, functionName: node.id.name });
+        }
       },
     };
   },

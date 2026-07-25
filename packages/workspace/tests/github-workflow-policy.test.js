@@ -59,6 +59,20 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('invalidates dependency caches when workspace topology changes', () => {
+    const action = readFileSync(
+      join(repoRoot, '.github/actions/yarn-install/action.yaml'),
+      'utf8',
+    );
+
+    expect(action).toContain('TOPOLOGY_HASH=');
+    expect(action).toContain("git ls-files package.json yarn.lock .yarnrc.yml 'packages/*/package.json' 'packages/*/project.json'");
+    expect(action).toContain("printf '%s\\t%s\\n'");
+    expect(action).toContain('git hash-object "${file}"');
+    expect(action).toContain('${TOPOLOGY_HASH}');
+    expect(action).not.toContain("hashFiles('yarn.lock')");
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),

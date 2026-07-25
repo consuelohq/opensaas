@@ -18,9 +18,21 @@ jobs:
     with:
       files: |
         packages/twenty-shared/**
+  classify-shared-source-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      source_changed: ${{ steps.classify.outputs.source_changed }}
+    steps:
+      - name: Fetch repository and base branch history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Classify shared source changes
+        id: classify
+        run: node packages/workspace/scripts/ci/classify-front-source-change.cjs
   shared-test:
-    needs: changed-files-check
-    if: needs.changed-files-check.outputs.any_changed == 'true'
+    needs: [changed-files-check, classify-shared-source-changes]
+    if: needs.changed-files-check.outputs.any_changed == 'true' && needs.classify-shared-source-changes.outputs.source_changed == 'true'
     timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
@@ -46,7 +58,7 @@ jobs:
     if: always() && !cancelled()
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [changed-files-check, shared-test]
+    needs: [changed-files-check, classify-shared-source-changes, shared-test]
     steps:
       - name: Fail job if any needs failed
         if: contains(needs.*.result, 'failure')

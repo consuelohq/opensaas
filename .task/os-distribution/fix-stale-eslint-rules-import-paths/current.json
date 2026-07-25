@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1651,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1651",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1651",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1651/fix-stale-eslint-rules-import-paths",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1651",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1651/fix-stale-eslint-rules-import-paths",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths",
+  "taskSession": "tsk_fd25ceecbf06",
+  "tmuxSession": "opensaas-os-distribution-fix-stale-eslint-rules-import-paths-fd25ceec",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths/.task/os-distribution/fix-stale-eslint-rules-import-paths/session.json",
+  "createdAt": "2026-07-25T01:14:52.830Z"
+}

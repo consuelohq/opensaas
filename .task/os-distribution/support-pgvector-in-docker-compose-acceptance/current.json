@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/support-pgvector-in-docker-compose-acceptance",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1660,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1660",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1660",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1660/support-pgvector-in-docker-compose-acceptance",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1660",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1660/support-pgvector-in-docker-compose-acceptance",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-support-pgvector-in-docker-compose-acceptance",
+  "taskSession": "tsk_d81ee08e71d8",
+  "tmuxSession": "opensaas-os-distribution-support-pgvector-in-docker-compose-acceptance-d81ee08e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-support-pgvector-in-docker-compose-acceptance/.task/os-distribution/support-pgvector-in-docker-compose-acceptance/session.json",
+  "createdAt": "2026-07-25T17:26:40.735Z"
+}

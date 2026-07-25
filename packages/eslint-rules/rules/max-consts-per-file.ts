@@ -1,16 +1,20 @@
-import { ESLintUtils, type TSESTree } from '@typescript-eslint/utils';
+import { type TSESTree } from '@typescript-eslint/utils';
+
+import { createRule } from '../utils/createRule';
 
 // NOTE: The rule will be available in ESLint configs as "@nx/workspace-max-consts-per-file"
 export const RULE_NAME = 'max-consts-per-file';
 
-export const rule = ESLintUtils.RuleCreator(() => __filename)({
+type Options = [{ max: number }];
+type MessageIds = 'tooManyConstants';
+
+export const rule = createRule<Options, MessageIds>({
   name: RULE_NAME,
   meta: {
     type: 'problem',
     docs: {
       description:
         'Ensure there are at most a specified number of const declarations constant file',
-      recommended: 'recommended',
     },
     fixable: 'code',
     schema: [
@@ -30,7 +34,7 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
         'Only a maximum of ({{ max }}) const declarations are allowed in this file.',
     },
   },
-  defaultOptions: [],
+  defaultOptions: [{ max: 1 }],
   create: (context) => {
     const [{ max }] = context.options;
 
