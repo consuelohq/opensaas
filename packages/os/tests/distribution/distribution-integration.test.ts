@@ -40,9 +40,24 @@ describe('distribution integration contract', () => {
     const plan = buildDistributionIntegrationPlan();
 
     expect(plan.platformEvidence).toEqual([
-      expect.objectContaining({ name: 'oci', required: true }),
-      expect.objectContaining({ name: 'macos', required: true }),
-      expect.objectContaining({ name: 'windows', required: true }),
+      {
+        name: 'oci',
+        required: true,
+        workflow: '.github/workflows/consuelo-os-distribution-environments.yaml',
+        job: 'oci-clean-host',
+      },
+      {
+        name: 'macos',
+        required: true,
+        workflow: '.github/workflows/consuelo-os-distribution-environments.yaml',
+        job: 'platform-contracts (macos)',
+      },
+      {
+        name: 'windows',
+        required: true,
+        workflow: '.github/workflows/consuelo-os-distribution-environments.yaml',
+        job: 'platform-contracts (windows)',
+      },
     ]);
     expect(DISTRIBUTION_INTEGRATION_SCRIPT).toBe('test:distribution:integration');
   });
