@@ -2835,7 +2835,13 @@ describe('sanitized Cloudflare trace preview', () => {
     );
 
     expect(routesSource).toContain("'/gateway/traces/recent'");
-    expect(routesSource).toContain('return traceGatewayEndpoints().handle(request)');
+    expect(routesSource).toContain(
+      'const endpoints = options.endpoints ?? traceGatewayEndpoints()',
+    );
+    expect(routesSource).toContain(
+      'return handleTraceRequest(context.req.raw, endpoints)',
+    );
+    expect(routesSource).toContain('const response = await endpoints.handle(');
     expect(appSource.indexOf("app.route('/', createTraceRoutes())")).toBeLessThan(
       appSource.indexOf('app.notFound('),
     );

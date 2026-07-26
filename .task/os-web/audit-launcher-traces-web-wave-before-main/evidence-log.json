@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-web/audit-launcher-traces-web-wave-before-main",
+  "events": [
+    {
+      "id": "6228136b-efb6-4030-b44f-ecfb050db6a7",
+      "occurred_at": "2026-07-25T01:11:01.523Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-web/authenticated-launcher-workspace-links-and-gtm/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-web/audit-launcher-traces-web-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-web/audit-launcher-traces-web-wave-before-main"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-25T01:11:01.604Z"
+}

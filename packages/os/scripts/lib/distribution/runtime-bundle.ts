@@ -14,7 +14,8 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 export const RUNTIME_BUNDLE_SCHEMA_VERSION = 1 as const;
 export const RUNTIME_BUNDLE_POLICY_VERSION = 1 as const;
 export const RUNTIME_BUNDLE_MANIFEST_PATH = 'runtime-bundle.manifest.json';
-export const RUNTIME_BUNDLE_BUILDER_ENTRYPOINT = 'scripts/build-runtime-bundle.ts';
+export const RUNTIME_BUNDLE_BUILDER_ENTRYPOINT =
+  'scripts/build-runtime-bundle.ts';
 export const RUNTIME_BUNDLE_INTEGRATION_SCRIPT_KEYS = {
   build: 'runtime-bundle:build',
   fingerprint: 'runtime-bundle:fingerprint',
@@ -33,7 +34,8 @@ export const RUNTIME_BUNDLE_CONTENT_ROLES = [
   'source-only',
 ] as const;
 
-export type RuntimeBundleContentRole = typeof RUNTIME_BUNDLE_CONTENT_ROLES[number];
+export type RuntimeBundleContentRole =
+  (typeof RUNTIME_BUNDLE_CONTENT_ROLES)[number];
 export type RuntimeBundleIncludedRole = Exclude<
   RuntimeBundleContentRole,
   'operator-only' | 'source-only' | 'test-only'
@@ -139,6 +141,7 @@ const DEFAULT_DISCOVERY_PATHS = [
   'manifests',
   'workflows',
   'hooks',
+  'native',
   'skills',
   'steering',
   'streams',
@@ -166,10 +169,13 @@ const OPERATOR_ONLY_FILES = new Set([
 ]);
 
 const PLATFORM_ADAPTER_FILES = new Set([
+  'scripts/bootstrap.ps1',
   'scripts/bootstrap.sh',
   'scripts/generate-system-daemons.sh',
   'scripts/install-system-daemons.sh',
   'scripts/install.ts',
+  'scripts/windows-platform.ts',
+  'scripts/lib/windows-platform.ts',
   'scripts/start-consuelo-daemon.sh',
   'scripts/start-portless-daemon.sh',
   'scripts/uninstall-system-daemons.sh',
@@ -261,7 +267,8 @@ const TEXT_EXTENSIONS = new Set([
   '.yml',
 ]);
 
-const SEMVER_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+const SEMVER_PATTERN =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 function normalizeRelativePath(input: string): string {
   const normalized = input.replaceAll('\\', '/').replace(/^\.\//, '');
@@ -272,7 +279,9 @@ function normalizeRelativePath(input: string): string {
     normalized.startsWith('../') ||
     normalized.includes('/../')
   ) {
-    throw new Error(`runtime-bundle path must be relative and traversal-free: ${input}`);
+    throw new Error(
+      `runtime-bundle path must be relative and traversal-free: ${input}`,
+    );
   }
   return normalized;
 }
@@ -281,7 +290,9 @@ function startsWithAny(value: string, prefixes: readonly string[]): boolean {
   return prefixes.some((prefix) => value.startsWith(prefix));
 }
 
-export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRole | null {
+export function classifyRuntimeBundlePath(
+  input: string,
+): RuntimeBundleContentRole | null {
   const filePath = normalizeRelativePath(input);
 
   if (filePath.startsWith('operator/') || filePath.startsWith('cloudflare/')) {
@@ -314,16 +325,25 @@ export function classifyRuntimeBundlePath(input: string): RuntimeBundleContentRo
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
   if (filePath.startsWith('skills/')) return 'managed-skill';
   if (/^tools\/[^/]+\/[^/]+\.ts$/.test(filePath)) return 'managed-tool';
-  if (filePath.startsWith('manifests/generated/') || filePath.startsWith('workflows/generated/') || filePath.startsWith('src/generated/')) {
+  if (
+    filePath.startsWith('manifests/generated/') ||
+    filePath.startsWith('workflows/generated/') ||
+    filePath.startsWith('src/generated/')
+  ) {
     return 'managed-tool';
   }
-  if (filePath.startsWith('steering/') || filePath.startsWith('streams/')) return 'runtime';
+  if (filePath.startsWith('steering/') || filePath.startsWith('streams/'))
+    return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';
+  if (filePath.startsWith('native/windows-service/')) return 'platform-adapter';
   if (PLATFORM_ADAPTER_FILES.has(filePath)) return 'platform-adapter';
-  if (startsWithAny(filePath, CUSTOMER_PROVIDER_PREFIXES)) return 'customer-provider';
-  if (startsWithAny(filePath, MANAGED_SITE_PREFIXES)) return 'managed-site-template';
+  if (startsWithAny(filePath, CUSTOMER_PROVIDER_PREFIXES))
+    return 'customer-provider';
+  if (startsWithAny(filePath, MANAGED_SITE_PREFIXES))
+    return 'managed-site-template';
   if (startsWithAny(filePath, MANAGED_TOOL_PREFIXES)) return 'managed-tool';
-  if (filePath.startsWith('scripts/') || filePath.startsWith('src/')) return 'runtime';
+  if (filePath.startsWith('scripts/') || filePath.startsWith('src/'))
+    return 'runtime';
 
   return null;
 }
@@ -358,7 +378,9 @@ function listFilesRecursively(root: string, relativeRoot: string): string[] {
   if (!existsSync(absoluteRoot)) return [];
   const stat = lstatSync(absoluteRoot);
   if (stat.isSymbolicLink()) {
-    throw new Error(`runtime-bundle source cannot be a symbolic link: ${relativeRoot}`);
+    throw new Error(
+      `runtime-bundle source cannot be a symbolic link: ${relativeRoot}`,
+    );
   }
   if (stat.isFile()) return [normalizeRelativePath(relativeRoot)];
   if (!stat.isDirectory()) return [];
@@ -368,7 +390,9 @@ function listFilesRecursively(root: string, relativeRoot: string): string[] {
     if (entry.name === 'node_modules' || entry.name === '.git') continue;
     const child = normalizeRelativePath(`${relativeRoot}/${entry.name}`);
     if (entry.isSymbolicLink()) {
-      throw new Error(`runtime-bundle source cannot be a symbolic link: ${child}`);
+      throw new Error(
+        `runtime-bundle source cannot be a symbolic link: ${child}`,
+      );
     }
     if (entry.isDirectory()) files.push(...listFilesRecursively(root, child));
     else if (entry.isFile()) files.push(child);
@@ -405,15 +429,22 @@ function portableFileMode(bytes: Buffer): number {
   return bytes.subarray(0, 2).equals(Buffer.from('#!')) ? 0o755 : 0o644;
 }
 
-export function containsMachineSpecificAbsolutePath(text: string, sourceRoot: string): boolean {
-  const resolvedRoot = sourceRoot.startsWith('/') || /^[A-Za-z]:[\\/]/.test(sourceRoot)
-    ? sourceRoot
-    : resolve(sourceRoot);
+export function containsMachineSpecificAbsolutePath(
+  text: string,
+  sourceRoot: string,
+): boolean {
+  const resolvedRoot =
+    sourceRoot.startsWith('/') || /^[A-Za-z]:[\\/]/.test(sourceRoot)
+      ? sourceRoot
+      : resolve(sourceRoot);
   const normalizedRoot = resolvedRoot.replaceAll('\\', '/');
   const rootCandidates = [...new Set([resolvedRoot, normalizedRoot])];
-  const embeddedSourceRoots = rootCandidates.map((candidate) => new RegExp(
-    escapeRegExp(candidate) + '(?:\\\\|/|$|[\\s\"\'=,:;(){}\[\]])',
-  ));
+  const embeddedSourceRoots = rootCandidates.map(
+    (candidate) =>
+      new RegExp(
+        escapeRegExp(candidate) + '(?:\\\\|/|$|[\\s\"\'=,:;(){}\[\]])',
+      ),
+  );
   if (embeddedSourceRoots.some((pattern) => pattern.test(text))) return true;
 
   const textWithoutSourceRoot = rootCandidates.reduce(
@@ -425,17 +456,29 @@ export function containsMachineSpecificAbsolutePath(text: string, sourceRoot: st
     /\/home\/(?!\.\.\.)([A-Za-z0-9_-]+)\//,
     /[A-Za-z]:\\Users\\(?!\.\.\.)([^\\\r\n]+)\\/,
   ];
-  return machinePathPatterns.some((pattern) => pattern.test(textWithoutSourceRoot));
+  return machinePathPatterns.some((pattern) =>
+    pattern.test(textWithoutSourceRoot),
+  );
 }
-function portableContent(filePath: string, bytes: Buffer, sourceRoot: string): Buffer {
+function portableContent(
+  filePath: string,
+  bytes: Buffer,
+  sourceRoot: string,
+): Buffer {
   if (!isTextFile(filePath, bytes)) return bytes;
   const originalText = bytes.toString('utf8');
-  const portableText = originalText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-  const isSanitizedDocumentation = filePath.startsWith('steering/') && filePath.endsWith('.md');
+  const portableText = originalText
+    .replaceAll('\r\n', '\n')
+    .replaceAll('\r', '\n');
+  const isSanitizedDocumentation =
+    filePath.startsWith('steering/') && filePath.endsWith('.md');
   const text = isSanitizedDocumentation
     ? portableText
         .replaceAll(/\/Users\/(?!\.\.\.\/)[A-Za-z0-9_-]+\//g, '/Users/.../')
-        .replaceAll(/[A-Za-z]:\\Users\\(?!\.\.\.\\)[^\\\r\n]+\\/g, 'C:\\Users\\...\\')
+        .replaceAll(
+          /[A-Za-z]:\\Users\\(?!\.\.\.\\)[^\\\r\n]+\\/g,
+          'C:\\Users\\...\\',
+        )
     : portableText;
   if (containsMachineSpecificAbsolutePath(text, sourceRoot)) {
     throw new Error(`machine-specific absolute path found in ${filePath}`);
@@ -456,13 +499,17 @@ type CollectedRuntimeFiles = {
   files: Array<RuntimeBundleFile & { bytes: Buffer }>;
 };
 
-function collectRuntimeFiles(input: RuntimeBundleFingerprintOptions): CollectedRuntimeFiles {
+function collectRuntimeFiles(
+  input: RuntimeBundleFingerprintOptions,
+): CollectedRuntimeFiles {
   const sourceRoot = resolve(input.sourceRoot);
   assertRequiredInputs(sourceRoot);
 
   const requestedPaths = input.includePaths
     ? [...new Set(input.includePaths.map(normalizeRelativePath))]
-    : DEFAULT_DISCOVERY_PATHS.flatMap((candidate) => listFilesRecursively(sourceRoot, candidate));
+    : DEFAULT_DISCOVERY_PATHS.flatMap((candidate) =>
+        listFilesRecursively(sourceRoot, candidate),
+      );
   const paths = [...new Set(requestedPaths)].sort();
   const excludedCounts = {
     'operator-only': 0,
@@ -477,9 +524,13 @@ function collectRuntimeFiles(input: RuntimeBundleFingerprintOptions): CollectedR
     if (EXCLUDED_ROLES.has(role)) {
       if (input.includePaths) {
         if (role === 'operator-only') {
-          throw new Error(`operator-only content cannot enter a runtime bundle: ${filePath}`);
+          throw new Error(
+            `operator-only content cannot enter a runtime bundle: ${filePath}`,
+          );
         }
-        throw new Error(`${role} content cannot enter a runtime bundle: ${filePath}`);
+        throw new Error(
+          `${role} content cannot enter a runtime bundle: ${filePath}`,
+        );
       }
       excludedCounts[role as keyof typeof excludedCounts] += 1;
       continue;
@@ -491,9 +542,15 @@ function collectRuntimeFiles(input: RuntimeBundleFingerprintOptions): CollectedR
     }
     const stat = lstatSync(absolutePath);
     if (stat.isSymbolicLink() || !stat.isFile()) {
-      throw new Error(`runtime-bundle input must be a regular file: ${filePath}`);
+      throw new Error(
+        `runtime-bundle input must be a regular file: ${filePath}`,
+      );
     }
-    const bytes = portableContent(filePath, readFileSync(absolutePath), sourceRoot);
+    const bytes = portableContent(
+      filePath,
+      readFileSync(absolutePath),
+      sourceRoot,
+    );
     files.push({
       bytes,
       digest: sha256(bytes),
@@ -507,7 +564,9 @@ function collectRuntimeFiles(input: RuntimeBundleFingerprintOptions): CollectedR
   const includedPaths = new Set(files.map((file) => file.path));
   for (const requiredPath of REQUIRED_RUNTIME_INPUTS) {
     if (!includedPaths.has(requiredPath)) {
-      throw new Error(`required runtime input is not included: ${requiredPath}`);
+      throw new Error(
+        `required runtime input is not included: ${requiredPath}`,
+      );
     }
   }
 
@@ -515,11 +574,19 @@ function collectRuntimeFiles(input: RuntimeBundleFingerprintOptions): CollectedR
 }
 
 function releaseFingerprintForFiles(files: RuntimeBundleFile[]): string {
-  return sha256(canonicalJson({
-    files: files.map(({ digest, mode, path, role, size }) => ({ digest, mode, path, role, size })),
-    policyVersion: RUNTIME_BUNDLE_POLICY_VERSION,
-    schemaVersion: RUNTIME_BUNDLE_SCHEMA_VERSION,
-  }));
+  return sha256(
+    canonicalJson({
+      files: files.map(({ digest, mode, path, role, size }) => ({
+        digest,
+        mode,
+        path,
+        role,
+        size,
+      })),
+      policyVersion: RUNTIME_BUNDLE_POLICY_VERSION,
+      schemaVersion: RUNTIME_BUNDLE_SCHEMA_VERSION,
+    }),
+  );
 }
 
 export async function computeReleaseFingerprint(
@@ -539,15 +606,19 @@ export async function computeReleaseFingerprint(
 }
 
 function assertSemver(value: string, label: string): void {
-  if (!SEMVER_PATTERN.test(value)) throw new Error(`${label} must be a SemVer value`);
+  if (!SEMVER_PATTERN.test(value))
+    throw new Error(`${label} must be a SemVer value`);
 }
 
 function assertBuildOptions(options: RuntimeBundleBuildOptions): void {
   assertSemver(options.version, 'runtime-bundle version');
   assertSemver(options.minimumUpdaterVersion, 'minimum updater version');
-  if (!options.platform.trim()) throw new Error('runtime-bundle platform is required');
-  if (!options.architecture.trim()) throw new Error('runtime-bundle architecture is required');
-  if (!options.sourceCommit.trim()) throw new Error('runtime-bundle source commit is required');
+  if (!options.platform.trim())
+    throw new Error('runtime-bundle platform is required');
+  if (!options.architecture.trim())
+    throw new Error('runtime-bundle architecture is required');
+  if (!options.sourceCommit.trim())
+    throw new Error('runtime-bundle source commit is required');
 }
 
 function assertAuthoritativeToolManifestsAgree(
@@ -558,14 +629,19 @@ function assertAuthoritativeToolManifestsAgree(
     const normalized = normalizeRelativePath(manifestPath);
     const absolutePath = join(sourceRoot, normalized);
     if (!existsSync(absolutePath)) {
-      throw new Error(`authoritative customer tool manifest is missing: ${normalized}`);
+      throw new Error(
+        `authoritative customer tool manifest is missing: ${normalized}`,
+      );
     }
     try {
       return canonicalJson(JSON.parse(readFileSync(absolutePath, 'utf8')));
     } catch (error: unknown) {
-      throw new Error(`authoritative customer tool manifest is invalid JSON: ${normalized}`, {
-        cause: error,
-      });
+      throw new Error(
+        `authoritative customer tool manifest is invalid JSON: ${normalized}`,
+        {
+          cause: error,
+        },
+      );
     }
   });
   if (new Set(canonicalManifests).size > 1) {
@@ -573,35 +649,56 @@ function assertAuthoritativeToolManifestsAgree(
   }
 }
 
-function bundleIdentityPayload(manifest: Omit<RuntimeBundleManifest, 'bundleId'>): unknown {
+function bundleIdentityPayload(
+  manifest: Omit<RuntimeBundleManifest, 'bundleId'>,
+): unknown {
   return manifest;
 }
 
-function bundleIdForManifest(manifest: Omit<RuntimeBundleManifest, 'bundleId'>): string {
+function bundleIdForManifest(
+  manifest: Omit<RuntimeBundleManifest, 'bundleId'>,
+): string {
   return sha256(canonicalJson(bundleIdentityPayload(manifest)));
 }
 
-function normalizeMigrations(migrations: RuntimeBundleMigration[] = []): RuntimeBundleMigration[] {
+function normalizeMigrations(
+  migrations: RuntimeBundleMigration[] = [],
+): RuntimeBundleMigration[] {
   const normalized = migrations.map((migration) => {
-    if (!migration.id.trim()) throw new Error('runtime-bundle migration id is required');
+    if (!migration.id.trim())
+      throw new Error('runtime-bundle migration id is required');
     return {
       id: migration.id,
-      ...(migration.path ? { path: normalizeRelativePath(migration.path) } : {}),
+      ...(migration.path
+        ? { path: normalizeRelativePath(migration.path) }
+        : {}),
     };
   });
   normalized.sort((left, right) => left.id.localeCompare(right.id));
   const ids = normalized.map((migration) => migration.id);
-  if (new Set(ids).size !== ids.length) throw new Error('runtime-bundle migration ids must be unique');
+  if (new Set(ids).size !== ids.length)
+    throw new Error('runtime-bundle migration ids must be unique');
   return normalized;
 }
 
-function writeTarString(buffer: Buffer, value: string, offset: number, length: number): void {
+function writeTarString(
+  buffer: Buffer,
+  value: string,
+  offset: number,
+  length: number,
+): void {
   const bytes = Buffer.from(value);
-  if (bytes.byteLength > length) throw new Error(`tar field exceeds ${length} bytes: ${value}`);
+  if (bytes.byteLength > length)
+    throw new Error(`tar field exceeds ${length} bytes: ${value}`);
   bytes.copy(buffer, offset);
 }
 
-function writeTarOctal(buffer: Buffer, value: number, offset: number, length: number): void {
+function writeTarOctal(
+  buffer: Buffer,
+  value: number,
+  offset: number,
+  length: number,
+): void {
   const encoded = value.toString(8).padStart(length - 1, '0');
   writeTarString(buffer, `${encoded}\0`, offset, length);
 }
@@ -616,7 +713,9 @@ function splitTarPath(filePath: string): { name: string; prefix: string } {
       return { name, prefix };
     }
   }
-  throw new Error(`runtime-bundle path is too long for deterministic ustar output: ${filePath}`);
+  throw new Error(
+    `runtime-bundle path is too long for deterministic ustar output: ${filePath}`,
+  );
 }
 
 function createTarHeader(entry: RuntimeBundleArchiveEntry): Buffer {
@@ -643,7 +742,9 @@ function createTarHeader(entry: RuntimeBundleArchiveEntry): Buffer {
 
 function createDeterministicTar(entries: RuntimeBundleArchiveEntry[]): Buffer {
   const parts: Buffer[] = [];
-  for (const entry of [...entries].sort((left, right) => left.path.localeCompare(right.path))) {
+  for (const entry of [...entries].sort((left, right) =>
+    left.path.localeCompare(right.path),
+  )) {
     const header = createTarHeader(entry);
     parts.push(header, entry.bytes);
     const remainder = entry.bytes.byteLength % 512;
@@ -655,12 +756,15 @@ function createDeterministicTar(entries: RuntimeBundleArchiveEntry[]): Buffer {
 
 function readTarString(buffer: Buffer, offset: number, length: number): string {
   const end = buffer.indexOf(0, offset);
-  const boundedEnd = end >= offset && end < offset + length ? end : offset + length;
+  const boundedEnd =
+    end >= offset && end < offset + length ? end : offset + length;
   return buffer.subarray(offset, boundedEnd).toString('utf8').trim();
 }
 
 function readTarOctal(buffer: Buffer, offset: number, length: number): number {
-  const value = readTarString(buffer, offset, length).replaceAll('\0', '').trim();
+  const value = readTarString(buffer, offset, length)
+    .replaceAll('\0', '')
+    .trim();
   return value ? Number.parseInt(value, 8) : 0;
 }
 
@@ -677,7 +781,9 @@ function parseDeterministicTar(tarBytes: Buffer): RuntimeBundleArchiveEntry[] {
     const size = readTarOctal(header, 124, 12);
     const type = String.fromCharCode(header[156] || '0'.charCodeAt(0));
     if (type !== '0' && type !== '\0') {
-      throw new Error(`runtime-bundle archive contains unsupported tar entry type ${type}: ${filePath}`);
+      throw new Error(
+        `runtime-bundle archive contains unsupported tar entry type ${type}: ${filePath}`,
+      );
     }
     const dataStart = offset + 512;
     const dataEnd = dataStart + size;
@@ -712,27 +818,43 @@ export function inspectRuntimeBundleArchive(
   archiveBytes: Buffer | Uint8Array,
 ): { entries: RuntimeBundleArchiveEntry[]; manifest: RuntimeBundleManifest } {
   const entries = archiveEntriesFromInput(archiveBytes);
-  const manifestEntry = entries.find((entry) => entry.path === RUNTIME_BUNDLE_MANIFEST_PATH);
-  if (!manifestEntry) throw new Error(`runtime bundle archive is missing ${RUNTIME_BUNDLE_MANIFEST_PATH}`);
+  const manifestEntry = entries.find(
+    (entry) => entry.path === RUNTIME_BUNDLE_MANIFEST_PATH,
+  );
+  if (!manifestEntry)
+    throw new Error(
+      `runtime bundle archive is missing ${RUNTIME_BUNDLE_MANIFEST_PATH}`,
+    );
   let manifest: RuntimeBundleManifest;
   try {
-    manifest = JSON.parse(manifestEntry.bytes.toString('utf8')) as RuntimeBundleManifest;
+    manifest = JSON.parse(
+      manifestEntry.bytes.toString('utf8'),
+    ) as RuntimeBundleManifest;
   } catch (error: unknown) {
-    throw new Error('runtime bundle manifest is invalid JSON', { cause: error });
+    throw new Error('runtime bundle manifest is invalid JSON', {
+      cause: error,
+    });
   }
   return { entries, manifest };
 }
 
 function assertManifestShape(manifest: RuntimeBundleManifest): void {
   if (manifest.schemaVersion !== RUNTIME_BUNDLE_SCHEMA_VERSION) {
-    throw new Error(`unsupported runtime bundle schema version: ${String(manifest.schemaVersion)}`);
+    throw new Error(
+      `unsupported runtime bundle schema version: ${String(manifest.schemaVersion)}`,
+    );
   }
   if (manifest.policyVersion !== RUNTIME_BUNDLE_POLICY_VERSION) {
-    throw new Error(`unsupported runtime bundle policy version: ${String(manifest.policyVersion)}`);
+    throw new Error(
+      `unsupported runtime bundle policy version: ${String(manifest.policyVersion)}`,
+    );
   }
-  if (manifest.kind !== 'consuelo-runtime-bundle') throw new Error('invalid runtime bundle kind');
-  if (!Array.isArray(manifest.files)) throw new Error('runtime bundle manifest files must be an array');
-  if (!Array.isArray(manifest.migrations)) throw new Error('runtime bundle manifest migrations must be an array');
+  if (manifest.kind !== 'consuelo-runtime-bundle')
+    throw new Error('invalid runtime bundle kind');
+  if (!Array.isArray(manifest.files))
+    throw new Error('runtime bundle manifest files must be an array');
+  if (!Array.isArray(manifest.migrations))
+    throw new Error('runtime bundle manifest migrations must be an array');
   assertSemver(manifest.version, 'runtime-bundle version');
   assertSemver(manifest.minimumUpdaterVersion, 'minimum updater version');
 }
@@ -745,15 +867,26 @@ export function verifyRuntimeBundleArchive(
     .map((entry) => entry.path)
     .filter((filePath, index, paths) => paths.indexOf(filePath) !== index);
   if (duplicatePaths.length > 0) {
-    throw new Error(`runtime bundle archive contains duplicate path: ${duplicatePaths[0]}`);
+    throw new Error(
+      `runtime bundle archive contains duplicate path: ${duplicatePaths[0]}`,
+    );
   }
-  const manifestEntry = entries.find((entry) => entry.path === RUNTIME_BUNDLE_MANIFEST_PATH);
-  if (!manifestEntry) throw new Error(`runtime bundle archive is missing ${RUNTIME_BUNDLE_MANIFEST_PATH}`);
+  const manifestEntry = entries.find(
+    (entry) => entry.path === RUNTIME_BUNDLE_MANIFEST_PATH,
+  );
+  if (!manifestEntry)
+    throw new Error(
+      `runtime bundle archive is missing ${RUNTIME_BUNDLE_MANIFEST_PATH}`,
+    );
   let manifest: RuntimeBundleManifest;
   try {
-    manifest = JSON.parse(manifestEntry.bytes.toString('utf8')) as RuntimeBundleManifest;
+    manifest = JSON.parse(
+      manifestEntry.bytes.toString('utf8'),
+    ) as RuntimeBundleManifest;
   } catch (error: unknown) {
-    throw new Error('runtime bundle manifest is invalid JSON', { cause: error });
+    throw new Error('runtime bundle manifest is invalid JSON', {
+      cause: error,
+    });
   }
   assertManifestShape(manifest);
 
@@ -766,21 +899,30 @@ export function verifyRuntimeBundleArchive(
 
   for (const file of manifest.files) {
     const entry = payloadEntries.get(file.path);
-    if (!entry) throw new Error(`runtime bundle archive is missing ${file.path}`);
-    if (entry.mode !== file.mode) throw new Error(`runtime bundle mode mismatch for ${file.path}`);
-    if (entry.bytes.byteLength !== file.size || sha256(entry.bytes) !== file.digest) {
+    if (!entry)
+      throw new Error(`runtime bundle archive is missing ${file.path}`);
+    if (entry.mode !== file.mode)
+      throw new Error(`runtime bundle mode mismatch for ${file.path}`);
+    if (
+      entry.bytes.byteLength !== file.size ||
+      sha256(entry.bytes) !== file.digest
+    ) {
       throw new Error(`runtime bundle digest mismatch for ${file.path}`);
     }
   }
   for (const filePath of payloadEntries.keys()) {
     if (!expectedPaths.has(filePath)) {
-      throw new Error(`runtime bundle archive contains unlisted file: ${filePath}`);
+      throw new Error(
+        `runtime bundle archive contains unlisted file: ${filePath}`,
+      );
     }
   }
 
   const expectedFingerprint = releaseFingerprintForFiles(manifest.files);
   if (manifest.releaseFingerprint !== expectedFingerprint) {
-    throw new Error('runtime bundle release fingerprint does not match its file inventory');
+    throw new Error(
+      'runtime bundle release fingerprint does not match its file inventory',
+    );
   }
   const { bundleId, ...manifestWithoutBundleId } = manifest;
   if (bundleIdForManifest(manifestWithoutBundleId) !== bundleId) {
@@ -796,7 +938,9 @@ export async function buildRuntimeBundle(
   const sourceRoot = resolve(options.sourceRoot);
   assertAuthoritativeToolManifestsAgree(
     sourceRoot,
-    options.authoritativeToolManifestPaths ?? ['manifests/generated/tool.manifest.json'],
+    options.authoritativeToolManifestPaths ?? [
+      'manifests/generated/tool.manifest.json',
+    ],
   );
   const collected = collectRuntimeFiles({
     sourceRoot,

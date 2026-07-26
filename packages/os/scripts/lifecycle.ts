@@ -14,11 +14,13 @@ import {
   lifecycleSuccessEnvelope,
   renderLifecycleProgress,
   renderLifecycleResult,
+  resolveLifecyclePaths,
   type LifecycleEngine,
   type LifecycleNotificationPreference,
   type LifecycleOperationResult,
   type LifecycleProgressEvent,
   type LifecycleReleaseChannel,
+  type LifecycleServiceController,
   type ReleaseSource,
 } from './lib/lifecycle';
 import {
@@ -26,6 +28,8 @@ import {
   loadNodeYamlConfig,
   resolveConsueloHomeLayout,
 } from './lib/consuelo-home';
+import { createLinuxPlatformAdapter } from './lib/platforms/linux';
+import { createWindowsServiceController } from './lib/windows-platform';
 
 export type LifecycleCliIo = {
   stdout(value: string): void;
@@ -73,7 +77,8 @@ Channels: stable, beta, canary, dev, nightly
 
 function nextValue(argv: string[], index: number, flag: string): string {
   const value = argv[index + 1];
-  if (!value || value.startsWith('-')) throw new Error(`${flag} requires a value`);
+  if (!value || value.startsWith('-'))
+    throw new Error(`${flag} requires a value`);
   return value;
 }
 
@@ -102,7 +107,9 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
     else if (arg === '--remove-user-content') parsed.removeUserContent = true;
     else if (arg === '--channel') {
       const value = nextValue(argv, index, arg);
-      if (!lifecycleReleaseChannels.includes(value as LifecycleReleaseChannel)) {
+      if (
+        !lifecycleReleaseChannels.includes(value as LifecycleReleaseChannel)
+      ) {
         throw new Error(`unsupported release channel: ${value}`);
       }
       parsed.channel = value as LifecycleReleaseChannel;
@@ -127,7 +134,9 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
 function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   const rejectPositionals = (): void => {
     if (parsed.positional.length > 0) {
-      throw new Error(`unexpected positional argument: ${parsed.positional[0]}`);
+      throw new Error(
+        `unexpected positional argument: ${parsed.positional[0]}`,
+      );
     }
   };
   switch (parsed.command) {
@@ -155,9 +164,9 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
     }
     case 'updates':
       if (
-        parsed.positional.length !== 2
-        || parsed.positional[0] !== 'notifications'
-        || !['on', 'off', 'snooze'].includes(parsed.positional[1])
+        parsed.positional.length !== 2 ||
+        parsed.positional[0] !== 'notifications' ||
+        !['on', 'off', 'snooze'].includes(parsed.positional[1])
       ) {
         throw new Error('updates requires `notifications on|off|snooze`');
       }
@@ -171,8 +180,13 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   if (parsed.yes && parsed.command !== 'update' && parsed.command !== 'dev') {
     throw new Error('--yes is only valid for update or dev reset');
   }
-  if (parsed.dryRun && !['rollback', 'uninstall', 'dev'].includes(parsed.command)) {
-    throw new Error('--dry-run is only valid for rollback, uninstall, or dev reset');
+  if (
+    parsed.dryRun &&
+    !['rollback', 'uninstall', 'dev'].includes(parsed.command)
+  ) {
+    throw new Error(
+      '--dry-run is only valid for rollback, uninstall, or dev reset',
+    );
   }
   if (parsed.removeNode && parsed.command !== 'uninstall') {
     throw new Error('--remove-node is only valid for uninstall');
@@ -190,7 +204,9 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
 
 function unavailableReleaseSource(): ReleaseSource {
   const missing = async (): Promise<never> => {
-    throw new Error('CONSUELO_RELEASE_BASE_URL is required for install and update');
+    throw new Error(
+      'CONSUELO_RELEASE_BASE_URL is required for install and update',
+    );
   };
   return {
     fetchManifest: missing,
@@ -203,12 +219,16 @@ function trustedReleaseKeysFromEnvironment(): Record<string, string> {
   if (encoded) {
     const parsed = JSON.parse(encoded) as unknown;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      throw new Error('CONSUELO_RELEASE_PUBLIC_KEYS_JSON must be a JSON object');
+      throw new Error(
+        'CONSUELO_RELEASE_PUBLIC_KEYS_JSON must be a JSON object',
+      );
     }
     return Object.fromEntries(
       Object.entries(parsed as Record<string, unknown>).map(([key, value]) => {
         if (typeof value !== 'string' || !value.trim()) {
-          throw new Error(`release public key ${key} must be a non-empty PEM string`);
+          throw new Error(
+            `release public key ${key} must be a non-empty PEM string`,
+          );
         }
         return [key, value];
       }),
@@ -217,6 +237,37 @@ function trustedReleaseKeysFromEnvironment(): Record<string, string> {
   const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
   const publicKey = process.env.CONSUELO_RELEASE_PUBLIC_KEY;
   return keyId && publicKey ? { [keyId]: publicKey } : {};
+}
+
+export function createDefaultLifecycleServiceController(input: {
+  home?: string;
+  osRoot: string;
+  platform?: NodeJS.Platform;
+  bunExecutable?: string;
+}): LifecycleServiceController {
+  const platform = input.platform ?? process.platform;
+  const lifecycleHome = resolveLifecyclePaths(input.home).home;
+  const bunExecutable =
+    input.bunExecutable ?? process.env.BUN_BIN ?? process.execPath;
+  if (platform === 'linux') {
+    return createLinuxPlatformAdapter({
+      home: lifecycleHome,
+      bunExecutable,
+    });
+  }
+  if (platform === 'win32') {
+    return createWindowsServiceController({
+      home: lifecycleHome,
+      bunExecutable,
+      serviceHostExecutable: resolve(
+        lifecycleHome,
+        'bin',
+        'Consuelo.Windows.Service.exe',
+      ),
+      currentUserSid: process.env.CONSUELO_WINDOWS_USER_SID,
+    });
+  }
+  return createReloadServiceController({ osRoot: input.osRoot, platform });
 }
 
 function createDefaultLifecycleEngine(input: {
@@ -234,7 +285,10 @@ function createDefaultLifecycleEngine(input: {
       ? createHttpReleaseSource({ baseUrl: releaseBaseUrl })
       : unavailableReleaseSource(),
     trustedReleaseKeys: trustedReleaseKeysFromEnvironment(),
-    service: createReloadServiceController({ osRoot }),
+    service: createDefaultLifecycleServiceController({
+      home: input.home,
+      osRoot,
+    }),
     runtime: createBunRuntimeMaterializer(),
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
@@ -243,7 +297,10 @@ function createDefaultLifecycleEngine(input: {
     progress: input.quiet || input.json ? undefined : input.progress,
     onboarding: async () => {
       try {
-        const args = [resolve(osRoot, 'scripts', 'install.ts'), '--skip-daemons'];
+        const args = [
+          resolve(osRoot, 'scripts', 'install.ts'),
+          '--skip-daemons',
+        ];
         if (input.home) args.push('--home', input.home);
         const child = Bun.spawn([process.execPath, ...args], {
           cwd: osRoot,
@@ -253,7 +310,8 @@ function createDefaultLifecycleEngine(input: {
           stderr: 'inherit',
         });
         const exitCode = await child.exited;
-        if (exitCode !== 0) throw new Error(`installer exited with code ${exitCode}`);
+        if (exitCode !== 0)
+          throw new Error(`installer exited with code ${exitCode}`);
       } catch (error: unknown) {
         throw new Error(
           `interactive onboarding failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -264,13 +322,16 @@ function createDefaultLifecycleEngine(input: {
   });
 }
 
-function notificationPreference(parsed: ParsedLifecycleArgs): LifecycleNotificationPreference {
+function notificationPreference(
+  parsed: ParsedLifecycleArgs,
+): LifecycleNotificationPreference {
   const action = parsed.positional[1];
   if (action === 'on') return { mode: 'on' };
   if (action === 'off') return { mode: 'off' };
   if (action === 'snooze') {
-    const snoozedUntil = parsed.snoozedUntil
-      ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const snoozedUntil =
+      parsed.snoozedUntil ??
+      new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     if (!Number.isFinite(Date.parse(snoozedUntil))) {
       throw new Error('--until must be a valid ISO timestamp');
     }
@@ -341,7 +402,9 @@ async function executeCommand(
       if (action === 'show') return engine.status();
       if (action !== 'set') throw new Error('channel requires show or set');
       const channel = parsed.positional[1];
-      if (!lifecycleReleaseChannels.includes(channel as LifecycleReleaseChannel)) {
+      if (
+        !lifecycleReleaseChannels.includes(channel as LifecycleReleaseChannel)
+      ) {
         throw new Error(`unsupported release channel: ${String(channel)}`);
       }
       return engine.setChannel(channel as LifecycleReleaseChannel);
@@ -361,8 +424,10 @@ export async function runLifecycleCli(
   argv: string[],
   dependencies: LifecycleCliDependencies = {},
 ): Promise<number> {
-  const stdout = dependencies.stdout ?? ((value: string) => process.stdout.write(value));
-  const stderr = dependencies.stderr ?? ((value: string) => process.stderr.write(value));
+  const stdout =
+    dependencies.stdout ?? ((value: string) => process.stdout.write(value));
+  const stderr =
+    dependencies.stderr ?? ((value: string) => process.stderr.write(value));
   let parsed: ParsedLifecycleArgs;
   try {
     parsed = parseArgs(argv);
@@ -377,21 +442,29 @@ export async function runLifecycleCli(
     return 0;
   }
 
-  const engine = dependencies.engine ?? createDefaultLifecycleEngine({
-    home: parsed.home,
-    quiet: parsed.quiet,
-    json: parsed.json,
-    progress: (event) => stderr(renderLifecycleProgress(event)),
-  });
+  const engine =
+    dependencies.engine ??
+    createDefaultLifecycleEngine({
+      home: parsed.home,
+      quiet: parsed.quiet,
+      json: parsed.json,
+      progress: (event) => stderr(renderLifecycleProgress(event)),
+    });
   const nodeStatus = dependencies.nodeStatus ?? readNodeStatus;
 
   try {
     const result = await executeCommand(parsed, engine, nodeStatus);
-    if (parsed.json) stdout(`${JSON.stringify(lifecycleSuccessEnvelope(parsed.command, result))}\n`);
+    if (parsed.json)
+      stdout(
+        `${JSON.stringify(lifecycleSuccessEnvelope(parsed.command, result))}\n`,
+      );
     else if (!parsed.quiet) stdout(renderLifecycleResult(result));
     return 0;
   } catch (error: unknown) {
-    if (parsed.json) stderr(`${JSON.stringify(lifecycleFailureEnvelope(parsed.command, error))}\n`);
+    if (parsed.json)
+      stderr(
+        `${JSON.stringify(lifecycleFailureEnvelope(parsed.command, error))}\n`,
+      );
     else stderr(`${error instanceof Error ? error.message : String(error)}\n`);
     return 1;
   }

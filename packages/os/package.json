@@ -115,6 +115,7 @@
     "trace:watch": "bun ./scripts/trace-watch.ts",
     "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check",
     "lifecycle": "bun ./scripts/lifecycle.ts",
+    "windows-platform": "bun ./scripts/windows-platform.ts",
     "managed-components": "bun ./scripts/managed-components.ts"
   },
   "dependencies": {
