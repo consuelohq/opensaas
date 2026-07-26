@@ -60,21 +60,18 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - Final post-review validation is 65/65 + 175/175, syntax/typecheck, selected formatting, and workflow YAML parsing green (`trc_610bb9c7fa6b`).
 - Current-head Codex review found two valid release-lane issues: the live job used a synthetic Worker instead of the real secured artifacts, and deterministic security tests were manual-only. The expanded acceptance test captured both failures red (`trc_35778b9f9c16`). The fix adds real authority/edge Wrangler configs and HTTP probes plus a dedicated automatic deterministic job; focused green is `trc_fd1142682eb8` and the final combined lane is 66/66 + 175/175 with typecheck, formatting, and both workflow YAML files green (`trc_7402a85c6370`).
 - Generated authority and edge configurations both pass Wrangler dry-run using only run-owned D1/R2/DO bindings (`trc_c06fc4cc876f`). Strict review found five missing local probe error boundaries (`trc_c60f08933d07`); after typed contextual wrapping, strict review is clean (`trc_b45256543c90`).
+- Review fixes were published in commit `0f964506351b221bd1a53a0b21c5c93fcee49d3b`. The corrected PR remains exactly 18 files, three commits ahead and zero behind `stream/os-web` (`trc_fdbb43e7ad94`).
+- GitHub CI is terminal and green with no failed checks. The dedicated `Consuelo OS / deterministic web security` job passed, no shared distribution workflow ran, and the manual live Cloudflare job was correctly skipped on the pull request (`trc_ce7d226da641`, `trc_30fabb8436d8`).
+- Eight review-thread dispositions were posted: the two current Worker 17 Codex findings are fixed and six pre-restack/unrelated findings are stale (`trc_ca1d3c431de3`). CodeRabbit was requested; its first response hit the hourly limit, while the current successful check states that reviews are disabled for the `stream/os-web` base branch.
+- The complete implementation, validation, review dispositions, Grok blocker, and exact human-only live command are durable at https://github.com/consuelohq/opensaas/pull/1662#issuecomment-5084389050 (`trc_690a3b06649b`). PR #1662 remains unmerged because the mandatory Grok review did not complete.
 
 ## files changed
 
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `.github/workflows/consuelo-os-web-security-e2e.yaml`
-- `.task/os-web/implement-web-security-e2e/workpad.md`
-- `packages/os/cloudflare/os-device-authority/src/constants.ts`
-- `packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts`
-- `packages/os/cloudflare/os-device-authority/src/stores.ts`
-- `packages/os/cloudflare/os-device-authority/src/types.ts`
-- `packages/os/cloudflare/web-security-route-matrix.ts`
 - `packages/os/scripts/testing/web-security/cloudflare-acceptance.ts`
-- `packages/os/tests/mcp-oauth-refresh-rotation.test.ts`
-- `packages/os/tests/os-device-authority-worker.test.ts`
-- `packages/os/tests/platform-cloudflare-provisioning-contract.test.ts`
 - `packages/os/tests/web-security-e2e.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -115,6 +112,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - 2026-07-26 16:26:55 `review.run`: passed — OK
 - 2026-07-26 16:27:28 `review.run`: passed — OK
 - 2026-07-26 16:28:21 `verify`: passed — OK
+- 2026-07-26 16:36:31 `verify`: passed — OK
 
 ## key decisions
 
@@ -163,6 +161,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - Current-head Codex findings identified that the original live lane deployed a synthetic unsecured Worker and that deterministic tests were manual-only. The strengthened tests failed for both intended reasons (`trc_35778b9f9c16`), then passed after the dedicated workflow and real-artifact acceptance implementation (`trc_fd1142682eb8`).
 - The first generated-config dry run failed because CLI rendering resolved `packages/os` relative to the caller's current directory (`trc_420b9f82e3aa`). Recovery: anchor the project root to `import.meta.url`; both actual Workers then compiled in Wrangler dry-run (`trc_c06fc4cc876f`).
 - The final formatting check found only the two newly expanded files (`trc_77d110fa83b6`); repository Prettier corrected them (`trc_f5145164512d`). Strict review then found five probe-local error boundaries (`trc_c60f08933d07`); all were wrapped with typed contextual failures, the focused test remained green (`trc_d509305c9cd5`), and strict review passed with zero findings (`trc_b45256543c90`).
+- The first terminal CI poll exceeded the outer tool window before returning (`trc_7d667339efb8`). Recovery: inspect the current checks directly, confirm the dedicated security job passed and only the general verify job remained (`trc_ce7d226da641`), then poll that single remaining state to terminal success with zero failures (`trc_30fabb8436d8`).
 
 ---
 
@@ -206,3 +205,5 @@ bun run task:finish
 - `packages/os/tests/web-security-e2e.test.ts`
 
 - 2026-07-26 16:28:03 apply-patch: `.task/os-web/implement-web-security-e2e/workpad.md`
+
+- 2026-07-26 16:36:21 apply-patch: `.task/os-web/implement-web-security-e2e/workpad.md`
