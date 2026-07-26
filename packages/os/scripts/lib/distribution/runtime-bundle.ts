@@ -334,7 +334,12 @@ export function classifyRuntimeBundlePath(
   if (filePath.startsWith('steering/') || filePath.startsWith('streams/'))
     return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';
-  if (filePath.startsWith('native/windows-service/')) return 'platform-adapter';
+  if (
+    filePath.startsWith('native/windows-service/') ||
+    filePath.startsWith('native/macos/')
+  ) {
+    return 'platform-adapter';
+  }
   if (PLATFORM_ADAPTER_FILES.has(filePath)) return 'platform-adapter';
   if (startsWithAny(filePath, CUSTOMER_PROVIDER_PREFIXES))
     return 'customer-provider';

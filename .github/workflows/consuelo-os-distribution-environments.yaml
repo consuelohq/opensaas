@@ -8,18 +8,22 @@ on:
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
       - packages/os/native/windows-service/**
+      - packages/os/native/macos/**
       - packages/os/scripts/bootstrap.ps1
       - packages/os/scripts/windows-platform.ts
       - packages/os/scripts/lib/windows-platform.ts
       - packages/os/scripts/lib/lifecycle/**
       - packages/os/scripts/install.ts
       - packages/os/scripts/testing/windows-platform-acceptance.ps1
+      - packages/os/scripts/testing/macos-alpha-package.sh
       - packages/os/tests/windows-*.test.ts
+      - packages/os/tests/macos-platform.test.ts
       - packages/os/scripts/testing/distribution/**
       - packages/os/scripts/lib/platforms/**
       - packages/os/tests/distribution/**
       - packages/os/tests/linux-platform.test.ts
       - packages/os/docs/linux-platform.md
+      - packages/os/docs/macos-platform.md
   push:
     branches:
       - main
@@ -28,18 +32,22 @@ on:
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
       - packages/os/native/windows-service/**
+      - packages/os/native/macos/**
       - packages/os/scripts/bootstrap.ps1
       - packages/os/scripts/windows-platform.ts
       - packages/os/scripts/lib/windows-platform.ts
       - packages/os/scripts/lib/lifecycle/**
       - packages/os/scripts/install.ts
       - packages/os/scripts/testing/windows-platform-acceptance.ps1
+      - packages/os/scripts/testing/macos-alpha-package.sh
       - packages/os/tests/windows-*.test.ts
+      - packages/os/tests/macos-platform.test.ts
       - packages/os/scripts/testing/distribution/**
       - packages/os/scripts/lib/platforms/**
       - packages/os/tests/distribution/**
       - packages/os/tests/linux-platform.test.ts
       - packages/os/docs/linux-platform.md
+      - packages/os/docs/macos-platform.md
   workflow_dispatch:
 
 concurrency:
@@ -93,6 +101,22 @@ jobs:
       - name: Install OS dependencies
         working-directory: packages/os
         run: bun install --frozen-lockfile
+
+      - name: Run macOS menu-bar contracts
+        if: matrix.name == 'macos'
+        run: swift run --package-path packages/os/native/macos ConsueloMacContractTests
+
+      - name: Package the macOS alpha app
+        if: matrix.name == 'macos'
+        run: packages/os/scripts/testing/macos-alpha-package.sh packages/os/.tmp-macos-alpha
+
+      - name: Upload the macOS alpha app
+        if: matrix.name == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: consuelo-macos-alpha-${{ github.run_id }}
+          path: packages/os/.tmp-macos-alpha/Consuelo.app
+          if-no-files-found: error
 
       - name: Run Windows platform contracts
         if: matrix.name == 'windows'

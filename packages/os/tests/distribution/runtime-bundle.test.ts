@@ -360,6 +360,14 @@ describe('runtime bundle contract', () => {
         'native/windows-service/Consuelo.Windows.Service.csproj',
       ),
     ).toBe('platform-adapter');
+    expect(classifyRuntimeBundlePath('native/macos/Package.swift')).toBe(
+      'platform-adapter',
+    );
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/Sources/ConsueloMenuBarApp/main.swift',
+      ),
+    ).toBe('platform-adapter');
     await expect(
       buildRuntimeBundle(
         buildOptions(root, {
