@@ -115,6 +115,7 @@ export type RuntimeBundleBuildResult = {
 const REQUIRED_RUNTIME_INPUTS = [
   'package.json',
   'bun.lock',
+  'scripts/lifecycle.ts',
   'scripts/os.ts',
   'scripts/server/main.ts',
   'scripts/lib/install-state.ts',

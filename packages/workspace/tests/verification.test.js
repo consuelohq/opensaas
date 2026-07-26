@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url);
 const {
   computeVerificationState,
   getVerifyStampMismatch,
+  summarizeTestSelectionFailures,
   writeVerifyStamp,
 } = require('../scripts/lib/verification.js');
 
@@ -84,4 +85,39 @@ test('partial or skipped gates are rejected', () => {
 
   writeVerifyStamp(repoRoot, validStamp(repoRoot, { db: { skipped: false, passed: true, warnOnly: true, risks: [], findings: [] } }));
   expect(getVerifyStampMismatch(repoRoot, 'main')).toContain('db');
+});
+
+test('test-selection failure summaries expose the failing suite and bounded output', () => {
+  expect(summarizeTestSelectionFailures({
+    passed: false,
+    status: 1,
+    data: {
+      failedSuites: [{
+        name: 'ESLint rules',
+        ruleId: 'auto:twenty-eslint-rules:test',
+        exitCode: null,
+        signal: 'SIGKILL',
+        error: { code: 'ENOBUFS' },
+        durationMs: 1234,
+        outputTail: 'first line\nsecond line',
+      }],
+    },
+  })).toEqual([
+    'registry failed suite ESLint rules (rule auto:twenty-eslint-rules:test, signal SIGKILL, error ENOBUFS, 1234ms)',
+    'registry output tail: first line | second line',
+  ]);
+});
+
+test('test-selection failure summaries expose runner-level failures', () => {
+  expect(summarizeTestSelectionFailures({
+    passed: false,
+    status: null,
+    signal: 'SIGTERM',
+    error: { code: 'ETIMEDOUT' },
+    stderr: 'runner stopped',
+    data: {},
+  })).toEqual([
+    'registry runner failed (signal SIGTERM, error ETIMEDOUT)',
+    'registry runner output: runner stopped',
+  ]);
 });

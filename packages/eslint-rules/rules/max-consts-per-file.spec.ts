@@ -1,14 +1,17 @@
-import { TSESLint } from '@typescript-eslint/utils';
+import { ruleTesterParser } from '../utils/ruleTesterParser';
+import { type Rule, RuleTester } from 'eslint';
 
 import { rule, RULE_NAME } from './max-consts-per-file';
 
 const max = 1;
 
-const ruleTester = new TSESLint.RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
+const ruleTester = new RuleTester({
+  languageOptions: {
+    parser: ruleTesterParser,
+  },
 });
 
-ruleTester.run(RULE_NAME, rule, {
+ruleTester.run(RULE_NAME, rule as unknown as Rule.RuleModule, {
   valid: [
     {
       code: 'const A = 1;',

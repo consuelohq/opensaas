@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1640,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1640",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1640",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1640/installed-skills-node-identity-and-update-summary-in-steering",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1640",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1640/installed-skills-node-identity-and-update-summary-in-steering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-installed-skills-node-identity-and-update-summary-in-steering",
+  "taskSession": "tsk_e769309696fc",
+  "tmuxSession": "opensaas-os-distribution-installed-skills-node-identity-and-update-summar-e7693096",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-installed-skills-node-identity-and-update-summary-in-steering/.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/session.json",
+  "createdAt": "2026-07-24T16:45:08.491Z"
+}

@@ -70,7 +70,7 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
         // Check for navigate call directly on onClick
         if (
           node.name.name === 'onClick' &&
-          node.value.type === 'JSXExpressionContainer'
+          node.value?.type === 'JSXExpressionContainer'
         ) {
           const expression = node.value.expression;
 

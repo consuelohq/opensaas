@@ -1,10 +1,40 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as os from 'node:os';
+import {
+  chmodSync,
+  constants,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, join } from 'node:path';
 
-const CONFIG_DIR = path.join(os.homedir(), '.consuelo');
-const GLOBAL_CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
-const PROJECT_CONFIG_FILE = path.resolve('consuelo.config.json');
+export type DialerConfigPathOptions = {
+  home?: string;
+  cwd?: string;
+};
+
+export type DialerConfigPaths = {
+  global: string;
+  project: string;
+  legacyGlobal: string;
+  legacyProject: string;
+};
+
+export const resolveDialerConfigPaths = (
+  options: DialerConfigPathOptions = {},
+): DialerConfigPaths => {
+  const home = options.home ?? homedir();
+  const cwd = options.cwd ?? process.cwd();
+  const configRoot = join(home, '.consuelo');
+  return {
+    global: join(configRoot, 'dialer', 'config.json'),
+    project: join(cwd, 'consuelo-dialer.config.json'),
+    legacyGlobal: join(configRoot, 'config.json'),
+    legacyProject: join(cwd, 'consuelo.config.json'),
+  };
+};
 
 // backward-compat — existing commands use this
 export interface CliConfig {
@@ -64,28 +94,63 @@ const DEFAULT_CONFIG: ConsuloConfig = {
 };
 
 // backward-compat — other commands depend on these
-export const loadConfig = (): CliConfig => {
+export function migrateLegacyConfig(
+  destination: string,
+  legacySource: string,
+  copyFile: typeof copyFileSync = copyFileSync,
+): void {
+  if (existsSync(destination) || !existsSync(legacySource)) return;
+  mkdirSync(dirname(destination), { recursive: true, mode: 0o700 });
   try {
-    return JSON.parse(fs.readFileSync(GLOBAL_CONFIG_FILE, 'utf-8'));
+    copyFile(legacySource, destination, constants.COPYFILE_EXCL);
+  } catch (error: unknown) {
+    const code = typeof error === 'object' && error !== null && 'code' in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+    if (code !== 'EEXIST') throw error;
+  }
+  chmodSync(destination, 0o600);
+}
+
+export const loadConfig = (options: DialerConfigPathOptions = {}): CliConfig => {
+  const paths = resolveDialerConfigPaths(options);
+  migrateLegacyConfig(paths.global, paths.legacyGlobal);
+  try {
+    return JSON.parse(readFileSync(paths.global, 'utf-8'));
   } catch (_err: unknown) {
     return {};
   }
 };
 
-export const saveConfig = (config: CliConfig): void => {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
-  fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2), {
+export const saveConfig = (
+  config: CliConfig,
+  options: DialerConfigPathOptions = {},
+): void => {
+  const filePath = resolveDialerConfigPaths(options).global;
+  mkdirSync(dirname(filePath), { recursive: true, mode: 0o700 });
+  writeFileSync(filePath, JSON.stringify(config, null, 2), {
     mode: 0o600,
   });
 };
 
 // new config system
-const configPath = (scope: ConfigScope): string =>
-  scope === 'global' ? GLOBAL_CONFIG_FILE : PROJECT_CONFIG_FILE;
+const configPath = (
+  scope: ConfigScope,
+  options: DialerConfigPathOptions = {},
+): string => {
+  const paths = resolveDialerConfigPaths(options);
+  const destination = scope === 'global' ? paths.global : paths.project;
+  const legacySource = scope === 'global' ? paths.legacyGlobal : paths.legacyProject;
+  migrateLegacyConfig(destination, legacySource);
+  return destination;
+};
 
-export const loadFullConfig = (scope: ConfigScope): Partial<ConsuloConfig> => {
+export const loadFullConfig = (
+  scope: ConfigScope,
+  options: DialerConfigPathOptions = {},
+): Partial<ConsuloConfig> => {
   try {
-    return JSON.parse(fs.readFileSync(configPath(scope), 'utf-8'));
+    return JSON.parse(readFileSync(configPath(scope, options), 'utf-8'));
   } catch (_err: unknown) {
     return {};
   }
@@ -94,11 +159,11 @@ export const loadFullConfig = (scope: ConfigScope): Partial<ConsuloConfig> => {
 export const saveFullConfig = (
   scope: ConfigScope,
   config: Partial<ConsuloConfig>,
+  options: DialerConfigPathOptions = {},
 ): void => {
-  const filePath = configPath(scope);
-  if (scope === 'global')
-    fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
-  fs.writeFileSync(filePath, JSON.stringify(config, null, 2), { mode: 0o600 });
+  const filePath = configPath(scope, options);
+  mkdirSync(dirname(filePath), { recursive: true, mode: 0o700 });
+  writeFileSync(filePath, JSON.stringify(config, null, 2), { mode: 0o600 });
 };
 
 export const getDefaultConfig = (): ConsuloConfig =>

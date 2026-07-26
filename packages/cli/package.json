@@ -1,12 +1,12 @@
 {
-  "name": "@consuelo/cli",
+  "name": "@consuelo/dialer-cli",
   "version": "0.0.1",
-  "description": "CLI tool for Consuelo SDK",
+  "description": "Consuelo Dialer sales and GTM CLI",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "consuelo": "bin/consuelo.js"
+    "consuelo-dialer": "bin/consuelo-dialer.js"
   },
   "scripts": {
     "build": "npx tsc",

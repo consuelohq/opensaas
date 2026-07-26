@@ -34,7 +34,7 @@ interface KBStats {
 const kbErrorMessage = (data: unknown, ctx: Record<string, string>): string | null => {
   const code = getErrorCode(data);
   if (code === 'COLLECTION_NOT_FOUND') return `collection not found: ${ctx.collection ?? 'unknown'}`;
-  if (code === 'FILE_NOT_FOUND') return `file not found: ${ctx.fileId ?? 'unknown'} — upload it first with \`consuelo files upload\``;
+  if (code === 'FILE_NOT_FOUND') return `file not found: ${ctx.fileId ?? 'unknown'} — upload it first with \`consuelo-dialer files upload <path>\``;
   if (code === 'ALREADY_INDEXED') return 'file is already indexed in this collection';
   if (code === 'EMBEDDING_FAILED') return 'failed to generate embeddings — check your API key';
   return null;

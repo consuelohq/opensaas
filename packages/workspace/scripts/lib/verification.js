@@ -55,6 +55,51 @@ function computeVerificationState(repoRoot, branchOverride) {
   };
 }
 
+
+function compactFailureOutput(value, limit = 1200) {
+  const normalized = String(value || '')
+    .trim()
+    .replace(/\s*\n\s*/g, ' | ')
+    .replace(/\s+/g, ' ');
+  if (!normalized) return '';
+  return normalized.length > limit
+    ? `${normalized.slice(0, limit)} ... truncated ${normalized.length - limit} chars`
+    : normalized;
+}
+
+function summarizeTestSelectionFailures(testSelection) {
+  if (!testSelection || testSelection.passed) return [];
+
+  const data = testSelection.data || {};
+  const failedSuites = Array.isArray(data.failedSuites) ? data.failedSuites : [];
+  if (failedSuites.length > 0) {
+    return failedSuites.flatMap((suite) => {
+      const details = [
+        suite.ruleId ? `rule ${suite.ruleId}` : null,
+        suite.exitCode !== null && suite.exitCode !== undefined ? `exit ${suite.exitCode}` : null,
+        suite.signal ? `signal ${suite.signal}` : null,
+        suite.error?.code ? `error ${suite.error.code}` : null,
+        Number.isFinite(suite.durationMs) ? `${suite.durationMs}ms` : null,
+      ].filter(Boolean).join(', ');
+      const lines = [`registry failed suite ${suite.name || 'unnamed'}${details ? ` (${details})` : ''}`];
+      const output = compactFailureOutput(suite.outputTail);
+      if (output) lines.push(`registry output tail: ${output}`);
+      return lines;
+    });
+  }
+
+  const runnerDetails = [
+    testSelection.status !== null && testSelection.status !== undefined ? `exit ${testSelection.status}` : null,
+    testSelection.signal ? `signal ${testSelection.signal}` : null,
+    testSelection.error?.code ? `error ${testSelection.error.code}` : null,
+    data.error || null,
+  ].filter(Boolean).join(', ');
+  const lines = [`registry runner failed${runnerDetails ? ` (${runnerDetails})` : ''}`];
+  const output = compactFailureOutput(testSelection.stderr || data.stdout);
+  if (output) lines.push(`registry runner output: ${output}`);
+  return lines;
+}
+
 function getVerifyStampPath(repoRoot, branchOverride) {
   const taskMeta = findTaskMeta(repoRoot, { currentBranch: branchOverride, taskBranch: branchOverride });
   if (taskMeta?.data) return getTaskVerifyPath(repoRoot, taskMeta.data);
@@ -131,5 +176,6 @@ module.exports = {
   getVerifyStampMismatch,
   getVerifyStampPath,
   readVerifyStamp,
+  summarizeTestSelectionFailures,
   writeVerifyStamp,
 };

@@ -2,19 +2,19 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2360,
-    "mappedTestCount": 2291,
-    "unmappedTestCount": 69,
-    "ruleCount": 29,
-    "explicitRuleCount": 10,
+    "testFileCount": 2445,
+    "mappedTestCount": 2368,
+    "unmappedTestCount": 77,
+    "ruleCount": 32,
+    "explicitRuleCount": 13,
     "autoRuleCount": 19,
     "projectCount": 13,
     "packageTestScriptCount": 17,
     "byGroup": {
-      "packages/os/tests": 112,
+      "packages/os/tests": 151,
       "packages/twenty-server/test/integration/graphql/utils": 65,
+      "packages/workspace/tests": 53,
       "packages/twenty-sdk/src/cli": 51,
-      "packages/workspace/tests": 45,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/utils": 31,
@@ -45,6 +45,7 @@
       "packages/twenty-server/test/integration/metadata/suites/skill/utils": 14,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
       "packages/twenty-shared/src/utils/filter/utils": 13,
+      "packages/os/tests/distribution": 12,
       "packages/twenty-server/src/engine/twenty-orm/utils": 12,
       "packages/twenty-server/test/integration/graphql/suites/object-records-permissions": 12,
       "packages/twenty-server/test/integration/metadata/suites/page-layout/utils": 12,
@@ -60,6 +61,7 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
+      "packages/consuelo-website/tests": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -70,7 +72,6 @@
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group": 10,
       "packages/twenty-server/test/integration/metadata/suites/view-filter/utils": 10,
       "packages/twenty-server/test/integration/utils": 10,
-      "packages/consuelo-website/tests": 9,
       "packages/dialer/src/services": 9,
       "packages/documentation/tests": 9,
       "packages/twenty-front/src/modules/object-record/utils": 9,
@@ -148,6 +149,7 @@
       "packages/twenty-server/test/integration/metadata/suites/utils": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
+      "packages/os/tools/deployment-provider": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
       "packages/twenty-front/src/modules/favorites/hooks": 4,
@@ -323,6 +325,27 @@
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
       "packages/dialer/src": 1,
       "packages/os/tests/fixtures": 1,
+      "packages/os/tools/artifacts": 1,
+      "packages/os/tools/codemode": 1,
+      "packages/os/tools/composed": 1,
+      "packages/os/tools/decision-engine": 1,
+      "packages/os/tools/filesystem": 1,
+      "packages/os/tools/generation": 1,
+      "packages/os/tools/git": 1,
+      "packages/os/tools/github": 1,
+      "packages/os/tools/http": 1,
+      "packages/os/tools/linear": 1,
+      "packages/os/tools/mac": 1,
+      "packages/os/tools/media": 1,
+      "packages/os/tools/memory": 1,
+      "packages/os/tools/railway": 1,
+      "packages/os/tools/review": 1,
+      "packages/os/tools/sentry": 1,
+      "packages/os/tools/stream": 1,
+      "packages/os/tools/subagent": 1,
+      "packages/os/tools/task-lifecycle": 1,
+      "packages/os/tools/tool-discovery": 1,
+      "packages/os/tools/utilities": 1,
       "packages/twenty-front/src/modules/accounts/utils": 1,
       "packages/twenty-front/src/modules/action-menu/actions/record-actions/utils": 1,
       "packages/twenty-front/src/modules/action-menu/actions/record-agnostic-actions/hooks": 1,
@@ -594,7 +617,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 276,
+      "test": 361,
       "spec": 145,
       "other": 7,
       "tests-dir": 6,
@@ -609,6 +632,7 @@
         "packages/workspace/tooling/tool-manifest.json",
         "packages/workspace/src/generated/workspace.d.ts"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "workspace facade input contracts",
@@ -622,6 +646,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
       "origin": "explicit"
     },
@@ -633,6 +658,7 @@
         "packages/workspace/scripts/task-push.js",
         "packages/workspace/scripts/lib/verification.js"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "workspace verification stamp tests",
@@ -646,6 +672,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
       "origin": "explicit"
     },
@@ -659,6 +686,7 @@
         "packages/workspace/scripts/lib/task-selection*.js",
         "packages/workspace/scripts/lib/task-metadata*.js"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "workspace task session tests",
@@ -671,6 +699,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Task routing and metadata changes must prove task-session behavior.",
       "origin": "explicit"
     },
@@ -682,6 +711,7 @@
         "packages/workspace/test-selection.registry.json",
         "packages/workspace/tests/test-selection.test.js"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "workspace test selection tests",
@@ -695,6 +725,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
       "origin": "explicit"
     },
@@ -703,6 +734,7 @@
       "source": [
         "packages/os/scripts/trace-watch.ts"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "OS trace watcher behavior",
@@ -716,6 +748,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior.",
       "origin": "explicit"
     },
@@ -727,6 +760,7 @@
         "packages/workspace/scripts/audit.js",
         "packages/workspace/tests/audit/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "workspace audit tests",
@@ -740,7 +774,61 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Workspace script/docs changes should keep audit behavior covered.",
+      "origin": "explicit"
+    },
+    {
+      "id": "trace-site-pagination",
+      "source": [
+        "packages/os/scripts/lib/trace-sites-gateway-*.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/scripts/server/services/trace-gateway.ts",
+        "packages/os/tests/trace-gateway-service.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/trace-site-inspector/**",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "exclude": [],
+      "tests": [
+        {
+          "name": "trace gateway history endpoints",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ]
+        },
+        {
+          "name": "trace gateway DB resolution",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-gateway-service.test.ts"
+          ]
+        },
+        {
+          "name": "trace site inspector pagination",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/workspace",
+            "tests/trace-site-inspector.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": false,
+      "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
       "origin": "explicit"
     },
     {
@@ -748,6 +836,7 @@
       "source": [
         "packages/dialer/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "dialer specs",
@@ -759,6 +848,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Dialer changes are call-path critical and must run package specs.",
       "origin": "explicit"
     },
@@ -767,6 +857,7 @@
       "source": [
         "packages/api/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "api specs",
@@ -778,7 +869,59 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "API changes must run API route and service specs.",
+      "origin": "explicit"
+    },
+    {
+      "id": "eslint-config-contract",
+      "source": [
+        "eslint.config.mjs",
+        "packages/eslint-rules/eslint.config.react.mjs",
+        "packages/twenty-front/eslint.config.mjs",
+        "packages/twenty-server/eslint.config.mjs",
+        "packages/twenty-shared/eslint.config.mjs",
+        "packages/twenty-ui/eslint.config.mjs"
+      ],
+      "exclude": [],
+      "tests": [
+        {
+          "name": "shared ESLint configuration contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/eslint-config-paths.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": false,
+      "reason": "ESLint configuration changes must import cleanly without selecting unrelated application test suites.",
+      "origin": "explicit"
+    },
+    {
+      "id": "dialer-cli-install-copy",
+      "source": [
+        "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts"
+      ],
+      "exclude": [],
+      "tests": [
+        {
+          "name": "Consuelo CLI product split contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/cli-product-split.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "The navigation install command is a cross-product CLI ownership contract covered precisely by Worker 30, not by the full frontend suite.",
       "origin": "explicit"
     },
     {
@@ -787,6 +930,9 @@
         "packages/twenty-server/**",
         "packages/twenty-server/src/engine/**/*.resolver.ts",
         "packages/twenty-server/src/**/migrations/**"
+      ],
+      "exclude": [
+        "packages/twenty-server/eslint.config.*"
       ],
       "tests": [
         {
@@ -800,6 +946,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Server changes have the broadest backend impact and should run the project test target.",
       "origin": "explicit"
     },
@@ -807,6 +954,9 @@
       "id": "twenty-front-project",
       "source": [
         "packages/twenty-front/**"
+      ],
+      "exclude": [
+        "packages/twenty-front/eslint.config.*"
       ],
       "tests": [
         {
@@ -820,6 +970,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Frontend package changes should run the project test target.",
       "origin": "explicit"
     },
@@ -828,6 +979,7 @@
       "source": [
         "packages/consuelo-core/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@consuelo/core package test",
@@ -841,6 +993,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-core.",
       "origin": "auto"
     },
@@ -849,6 +1002,7 @@
       "source": [
         "packages/diff-cockpit/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@consuelo/diff-cockpit package test",
@@ -862,6 +1016,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/diff-cockpit.",
       "origin": "auto"
     },
@@ -870,6 +1025,7 @@
       "source": [
         "packages/os/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@consuelo/os package test",
@@ -883,6 +1039,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/os.",
       "origin": "auto"
     },
@@ -891,6 +1048,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/apps/daemon/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/daemon package test",
@@ -904,6 +1062,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/apps/daemon.",
       "origin": "auto"
     },
@@ -912,6 +1071,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/e2e/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/e2e package test",
@@ -925,6 +1085,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/e2e.",
       "origin": "auto"
     },
@@ -933,6 +1094,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/packages/platform/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/platform package test",
@@ -946,6 +1108,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/packages/platform.",
       "origin": "auto"
     },
@@ -954,6 +1117,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/packages/sidecar-proto/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/sidecar-proto package test",
@@ -967,6 +1131,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/packages/sidecar-proto.",
       "origin": "auto"
     },
@@ -975,6 +1140,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/packages/sidecar/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/sidecar package test",
@@ -988,6 +1154,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/packages/sidecar.",
       "origin": "auto"
     },
@@ -996,6 +1163,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/tools/dev/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/tools-dev package test",
@@ -1009,6 +1177,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/tools/dev.",
       "origin": "auto"
     },
@@ -1017,6 +1186,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/tools/pack/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/tools-pack package test",
@@ -1030,6 +1200,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/tools/pack.",
       "origin": "auto"
     },
@@ -1038,6 +1209,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/apps/web/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "@open-design/web package test",
@@ -1051,6 +1223,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/apps/web.",
       "origin": "auto"
     },
@@ -1059,6 +1232,7 @@
       "source": [
         "packages/consuelo-design/upstream/open-design/**"
       ],
+      "exclude": [],
       "tests": [
         {
           "name": "open-design package test",
@@ -1072,6 +1246,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design.",
       "origin": "auto"
     },
@@ -1079,6 +1254,9 @@
       "id": "auto:twenty-e2e-testing:test",
       "source": [
         "packages/twenty-e2e-testing/**"
+      ],
+      "exclude": [
+        "packages/twenty-e2e-testing/eslint.config.*"
       ],
       "tests": [
         {
@@ -1093,6 +1271,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-e2e-testing.",
       "origin": "auto"
     },
@@ -1100,6 +1279,9 @@
       "id": "auto:twenty-eslint-rules:test",
       "source": [
         "packages/eslint-rules/**"
+      ],
+      "exclude": [
+        "packages/eslint-rules/eslint.config.*"
       ],
       "tests": [
         {
@@ -1114,6 +1296,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/eslint-rules.",
       "origin": "auto"
     },
@@ -1121,6 +1304,9 @@
       "id": "auto:twenty-front:test",
       "source": [
         "packages/twenty-front/**"
+      ],
+      "exclude": [
+        "packages/twenty-front/eslint.config.*"
       ],
       "tests": [
         {
@@ -1135,6 +1321,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-front.",
       "origin": "auto"
     },
@@ -1142,6 +1329,9 @@
       "id": "auto:twenty-sdk:test",
       "source": [
         "packages/twenty-sdk/**"
+      ],
+      "exclude": [
+        "packages/twenty-sdk/eslint.config.*"
       ],
       "tests": [
         {
@@ -1156,6 +1346,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-sdk.",
       "origin": "auto"
     },
@@ -1163,6 +1354,9 @@
       "id": "auto:twenty-server:test",
       "source": [
         "packages/twenty-server/**"
+      ],
+      "exclude": [
+        "packages/twenty-server/eslint.config.*"
       ],
       "tests": [
         {
@@ -1177,6 +1371,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-server.",
       "origin": "auto"
     },
@@ -1184,6 +1379,9 @@
       "id": "auto:twenty-shared:test",
       "source": [
         "packages/twenty-shared/**"
+      ],
+      "exclude": [
+        "packages/twenty-shared/eslint.config.*"
       ],
       "tests": [
         {
@@ -1198,6 +1396,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-shared.",
       "origin": "auto"
     },
@@ -1205,6 +1404,9 @@
       "id": "auto:twenty-ui:test",
       "source": [
         "packages/twenty-ui/**"
+      ],
+      "exclude": [
+        "packages/twenty-ui/eslint.config.*"
       ],
       "tests": [
         {
@@ -1219,6 +1421,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-ui.",
       "origin": "auto"
     }
@@ -1630,6 +1833,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/consuelo-website/tests/footer-art.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
@@ -1915,6 +2123,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/cli-product-split.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -1950,7 +2163,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/code-call-snapshot.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/code-call.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/coderabbit-config.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -1965,7 +2188,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/consuelo-reload.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/consuelo-sites-artifacts-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-environment-adapter.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -1995,11 +2228,6 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/consuelo-workspace-snapshot.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/daemon-bun-path.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2010,12 +2238,92 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/distribution/environment-probe.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/fixture-harness.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/lifecycle-contract.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/local-container-runner.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channel-provider-retries.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channel-schema.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channel-workflows.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channels-cli.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channels.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-publication-preparer.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/runtime-bundle.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/workflow-contract.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/doctor-logs.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/doctor-redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-sites-gateway-endpoints.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2056,6 +2364,11 @@
     },
     {
       "path": "packages/os/tests/github.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/health-readiness.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2105,6 +2418,21 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/lifecycle-engine.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/local-agent-connectivity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2130,12 +2458,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/managed-components.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/manifest-overlay.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-gateway-action-scopes.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2315,6 +2653,21 @@
       "kind": "tests-dir"
     },
     {
+      "path": "packages/os/tests/memory-adjacent.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-lifecycle-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/oauth-device-http-client.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2335,7 +2688,7 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/os-call-artifacts.test.ts",
+      "path": "packages/os/tests/os-device-agent-status.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2375,6 +2728,21 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/os-steering-runtime-context.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-universal-login.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-web-auth-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2386,6 +2754,11 @@
     },
     {
       "path": "packages/os/tests/pr-review.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/provider-cutover.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2430,6 +2803,21 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/senior-engineer-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/settings-gateway.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2461,6 +2849,31 @@
     },
     {
       "path": "packages/os/tests/skills-registry.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-context-memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-install-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-service.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-executable-discovery.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/system-daemon-reliability.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2500,7 +2913,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/task-start-output.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/tool-manifest.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tool-package-layout.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tool-scope-authorization.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2515,7 +2943,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/trace-history-redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-persistence.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-renderer.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2565,6 +3003,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/traces-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/verification.test.js",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2610,8 +3053,153 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-node-summary.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-nodes-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/workspace-site-snapshot-publishing.test.ts",
       "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/artifacts/handler.test.ts",
+      "group": "packages/os/tools/artifacts",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/codemode/handler.test.ts",
+      "group": "packages/os/tools/codemode",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/composed/handler.test.ts",
+      "group": "packages/os/tools/composed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/decision-engine/handler.test.ts",
+      "group": "packages/os/tools/decision-engine",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/cloudflare.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/facade.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/handler.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/vercel.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/filesystem/handler.test.ts",
+      "group": "packages/os/tools/filesystem",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/generation/handler.test.ts",
+      "group": "packages/os/tools/generation",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/git/handler.test.ts",
+      "group": "packages/os/tools/git",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/github/handler.test.ts",
+      "group": "packages/os/tools/github",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/http/handler.test.ts",
+      "group": "packages/os/tools/http",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/linear/handler.test.ts",
+      "group": "packages/os/tools/linear",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/mac/handler.test.ts",
+      "group": "packages/os/tools/mac",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/media/handler.test.ts",
+      "group": "packages/os/tools/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/memory/handler.test.ts",
+      "group": "packages/os/tools/memory",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/railway/handler.test.ts",
+      "group": "packages/os/tools/railway",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/review/handler.test.ts",
+      "group": "packages/os/tools/review",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/sentry/handler.test.ts",
+      "group": "packages/os/tools/sentry",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/stream/handler.test.ts",
+      "group": "packages/os/tools/stream",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/subagent/handler.test.ts",
+      "group": "packages/os/tools/subagent",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/task-lifecycle/handler.test.ts",
+      "group": "packages/os/tools/task-lifecycle",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/tool-discovery/handler.test.ts",
+      "group": "packages/os/tools/tool-discovery",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/utilities/handler.test.ts",
+      "group": "packages/os/tools/utilities",
       "kind": "test"
     },
     {
@@ -12785,6 +13373,11 @@
       "kind": "__tests__"
     },
     {
+      "path": "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/audit/audit.test.ts",
       "group": "packages/workspace/tests/audit",
       "kind": "test"
@@ -12835,6 +13428,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/docker-compose-pgvector.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/docs-production-release.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -12850,6 +13448,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/eslint-config-paths.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/explore-ranker.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -12857,6 +13460,11 @@
     {
       "path": "packages/workspace/tests/facade/facade.test.ts",
       "group": "packages/workspace/tests/facade",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/front-source-change-classifier.test.js",
+      "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
@@ -12920,6 +13528,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/review-test-selection.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-lifecycle.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -12951,6 +13564,11 @@
     },
     {
       "path": "packages/workspace/tests/task-node-modules.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-push-session.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -13000,6 +13618,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/verification.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -13020,6 +13643,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/workflow-source-gates.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "tests/operator.test.ts",
       "group": "tests",
       "kind": "test"
@@ -13032,6 +13660,7 @@
     "packages/consuelo-website/tests/blog-refresh.test.mjs",
     "packages/consuelo-website/tests/blog-toc-responsive.test.mjs",
     "packages/consuelo-website/tests/brand-assets.test.mjs",
+    "packages/consuelo-website/tests/footer-art.test.mjs",
     "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
     "packages/consuelo-website/tests/homepage-responsive.test.mjs",
     "packages/consuelo-website/tests/pricing-interactions.test.mjs",
@@ -13049,6 +13678,7 @@
     "packages/documentation/tests/secure.test.ts",
     "packages/documentation/tests/sites.test.ts",
     "packages/documentation/tests/start.test.ts",
+    "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
     "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
@@ -13058,11 +13688,14 @@
     "packages/workspace/tests/codemode.test.ts",
     "packages/workspace/tests/context-trace.test.js",
     "packages/workspace/tests/deploy-wrappers.test.js",
+    "packages/workspace/tests/docker-compose-pgvector.test.ts",
     "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
+    "packages/workspace/tests/eslint-config-paths.test.ts",
     "packages/workspace/tests/explore-ranker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/front-source-change-classifier.test.js",
     "packages/workspace/tests/fs-apply-patch.test.ts",
     "packages/workspace/tests/fs-read.test.ts",
     "packages/workspace/tests/fs-search.test.ts",
@@ -13075,6 +13708,7 @@
     "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/review-test-selection.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
@@ -13082,6 +13716,7 @@
     "packages/workspace/tests/task-hooks.test.ts",
     "packages/workspace/tests/task-meta.test.ts",
     "packages/workspace/tests/task-node-modules.test.js",
+    "packages/workspace/tests/task-push-session.test.ts",
     "packages/workspace/tests/task-selector-pr-ref.test.js",
     "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tests/task-workpad.test.js",
@@ -13089,11 +13724,12 @@
     "packages/workspace/tests/tool-manifest.test.ts",
     "packages/workspace/tests/tools-search-v2.test.ts",
     "packages/workspace/tests/trace-home.test.ts",
-    "packages/workspace/tests/trace-site-inspector.test.ts",
+    "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
     "packages/workspace/tests/verification.test.js",
     "packages/workspace/tests/wait.test.js",
     "packages/workspace/tests/website-deploy.test.js",
     "packages/workspace/tests/workflow-intent.test.ts",
+    "packages/workspace/tests/workflow-source-gates.test.js",
     "tests/operator.test.ts"
   ],
   "projects": [

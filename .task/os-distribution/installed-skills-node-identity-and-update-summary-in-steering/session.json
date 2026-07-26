@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e769309696fc",
+  "tmuxSession": "opensaas-os-distribution-installed-skills-node-identity-and-update-summar-e7693096",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering",
+  "branch": "task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-installed-skills-node-identity-and-update-summary-in-steering",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-installed-skills-node-identity-and-update-summary-in-steering",
+  "prNumber": 1640,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1640",
+  "createdAt": "2026-07-24T16:45:08.489Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-installed-skills-node-identity-and-update-summary-in-steering/.task/os-distribution/installed-skills-node-identity-and-update-summary-in-steering/session.json"
+}

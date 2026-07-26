@@ -1,4 +1,4 @@
-import * as fs from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { Analytics } from '@consuelo/analytics';
 import { loadConfig } from '../config.js';
 import { log, error, json, isJson } from '../output.js';
@@ -8,22 +8,22 @@ import { parseTranscript } from '../utils/transcript.js';
 export async function analyticsCommand(callSid: string, opts: { transcript?: string } = {}): Promise<void> {
   try {
     if (!opts.transcript) {
-      error('provide a transcript: consuelo analytics --transcript <file> [callSid]');
+      error('provide a transcript: consuelo-dialer analytics --transcript <file> [callSid]');
       process.exit(1);
     }
 
-    if (!fs.existsSync(opts.transcript)) {
+    if (!existsSync(opts.transcript)) {
       error(`file not found: ${opts.transcript}`);
       process.exit(1);
     }
 
     const config = loadConfig();
     if (!config.llmApiKey) {
-      error('not configured — run `consuelo init` to set your LLM API key');
+      error('not configured — run `consuelo-dialer init` to set your LLM API key');
       process.exit(1);
     }
 
-    const content = fs.readFileSync(opts.transcript, 'utf-8');
+    const content = readFileSync(opts.transcript, 'utf-8');
     const messages = parseTranscript(content);
     if (!messages.length) {
       error('no conversation found — expected lines like "Agent: ..." and "Customer: ..."');
@@ -93,7 +93,7 @@ export async function analyticsCommand(callSid: string, opts: { transcript?: str
     captureError(err, { command: 'analytics' });
     const status = err instanceof Object && 'status' in err ? (err as { status: number }).status : undefined;
     if (status === 401) {
-      error('invalid API key — run `consuelo init` to update');
+      error('invalid API key — run `consuelo-dialer init` to update');
     } else if (status === 429) {
       error('rate limited — try again in a moment');
     } else {

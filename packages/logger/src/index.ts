@@ -2,7 +2,7 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 declare global {
   // eslint-disable-next-line no-var
-  var __consuelo_cli_mode: boolean | undefined;
+  var __consuelo_dialer_cli_mode: boolean | undefined;
 }
 
 export interface LogEntry {
@@ -70,7 +70,7 @@ export class Logger {
     };
 
     // CLI mode: plain message only, no structured format
-    if (globalThis.__consuelo_cli_mode) {
+    if (globalThis.__consuelo_dialer_cli_mode) {
       if (level === 'error') {
         process.stderr.write(`${message}\n`);
       } else {

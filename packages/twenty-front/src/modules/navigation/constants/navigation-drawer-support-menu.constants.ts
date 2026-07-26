@@ -1,3 +1,4 @@
+/* eslint-disable twenty/max-consts-per-file -- This module intentionally centralizes the support-menu contract. */
 export const NAVIGATION_DRAWER_SUPPORT_DROPDOWN_ID =
   'navigation-drawer-support-dropdown';
 
@@ -10,7 +11,8 @@ export const CONSUELO_GOHIGHLEVEL_URL = 'https://www.consuelohq.com/ghl';
 export const CONSUELO_DISCORD_COMMUNITY_URL = 'https://discord.gg/87YtkVUBvc';
 export const CONSUELO_CHROME_EXTENSION_URL =
   'https://chromewebstore.google.com/detail/consuelo-dialer';
-export const CONSUELO_CLI_INSTALL_COMMAND = 'npm install -g @consuelo/cli';
+export const CONSUELO_CLI_INSTALL_COMMAND =
+  'npm install -g @consuelo/dialer-cli';
 export const CONSUELO_DISCORD_DOCS_URL =
   'https://docs.consuelohq.com/user-guide/discord-bot/overview';
 

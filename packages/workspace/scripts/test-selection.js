@@ -160,8 +160,10 @@ function normalizeRule(rule, source = 'explicit') {
   return {
     id: rule.id,
     source: rule.source || [],
+    exclude: rule.exclude || [],
     tests: rule.tests || [],
     critical: Boolean(rule.critical),
+    exclusive: Boolean(rule.exclusive),
     reason: rule.reason || '',
     origin: source,
   };
@@ -183,6 +185,7 @@ function createAutoRules(tests, projects, packageScripts) {
     rules.push(normalizeRule({
       id: `auto:${project.name}:test`,
       source: [`${project.root}/**`],
+      exclude: [`${project.root}/eslint.config.*`],
       tests: [{ name: `${project.name} test`, command: ['npx', 'nx', 'test', project.name, '--coverage=false'] }],
       critical: false,
       reason: `Auto-discovered Nx test target for ${project.root}.`,
@@ -257,11 +260,12 @@ function changedFiles(root, args) {
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
   const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: root, encoding: 'utf8' });
-  const working = spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' });
-  const staged = spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' });
-  const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' });
+  const committedOnly = Boolean(args['committed-only']) || process.env.CI === 'true';
+  const working = committedOnly ? null : spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' });
+  const staged = committedOnly ? null : spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' });
+  const untracked = committedOnly ? null : spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' });
   const files = new Set();
-  for (const result of [committed, working, staged, untracked]) {
+  for (const result of [committed, working, staged, untracked].filter(Boolean)) {
     if (result.status !== 0) continue;
     for (const line of result.stdout.split(/\r?\n/)) if (line.trim()) files.add(line.trim());
   }
@@ -289,8 +293,13 @@ function select(registry, files) {
   const matchedRules = [];
   const suites = [];
   const seen = new Set();
+  const exclusivelyOwnedFiles = new Set();
   for (const rule of registry.rules) {
-    const matchedFiles = files.filter((file) => rule.source.some((pattern) => matchesPattern(file, pattern)));
+    const matchedFiles = files.filter((file) =>
+      !exclusivelyOwnedFiles.has(file)
+      && rule.source.some((pattern) => matchesPattern(file, pattern))
+      && !(rule.exclude || []).some((pattern) => matchesPattern(file, pattern))
+    );
     if (matchedFiles.length === 0) continue;
     matchedRules.push({ id: rule.id, critical: rule.critical, reason: rule.reason, matchedFiles, origin: rule.origin });
     for (const test of rule.tests) {
@@ -298,6 +307,9 @@ function select(registry, files) {
       if (seen.has(key)) continue;
       seen.add(key);
       suites.push({ ...test, ruleId: rule.id, critical: rule.critical });
+    }
+    if (rule.exclusive) {
+      for (const file of matchedFiles) exclusivelyOwnedFiles.add(file);
     }
   }
   const criticalMatched = matchedRules.some((rule) => rule.critical);
@@ -360,7 +372,7 @@ function parseArgs(argv) {
     const raw = rest[i];
     if (!raw.startsWith('--')) { args._.push(raw); continue; }
     const [key, inline] = raw.slice(2).split('=', 2);
-    if (['json', 'run', 'no-run'].includes(key)) args[key] = true;
+    if (['json', 'run', 'no-run', 'committed-only'].includes(key)) args[key] = true;
     else {
       const value = inline !== undefined ? inline : rest[++i];
       if (args[key] === undefined) args[key] = value;
