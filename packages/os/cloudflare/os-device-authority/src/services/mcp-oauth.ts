@@ -2,6 +2,7 @@ import {
   GOOGLE_AUTH_URL,
   GOOGLE_SCOPE,
   MCP_OAUTH_CODE_TTL_MS,
+  MCP_OAUTH_REFRESH_REPLAY_TTL_MS,
   MCP_OAUTH_REFRESH_TTL_MS,
   MCP_OAUTH_SCOPES,
   MCP_OAUTH_TTL_MS,
@@ -15,6 +16,8 @@ import type {
   Store,
 } from '../types';
 import {
+  b64,
+  b64Decode,
   hash,
   hashChallenge,
   host,
@@ -328,36 +331,129 @@ type McpOAuthTokenClaims = Omit<
   'tokenHash' | 'issuedAt' | 'expiresAt'
 >;
 
+type McpOAuthTokenResponseBody = {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'Bearer';
+  expires_in: number;
+  scope: string;
+};
+
+async function createMcpOAuthTokenPair(input: {
+  claims: McpOAuthTokenClaims;
+  nowMs: number;
+}): Promise<{
+  accessToken: McpOAuthAccessToken;
+  refreshToken: McpOAuthRefreshToken;
+  responseBody: McpOAuthTokenResponseBody;
+}> {
+  try {
+    const rawAccessToken = rand('coa', 32);
+    const rawRefreshToken = rand('cor', 32);
+    return {
+      accessToken: {
+        ...input.claims,
+        tokenHash: await hash(rawAccessToken),
+        issuedAt: input.nowMs,
+        expiresAt: input.nowMs + MCP_OAUTH_TTL_MS,
+      },
+      refreshToken: {
+        ...input.claims,
+        tokenHash: await hash(rawRefreshToken),
+        issuedAt: input.nowMs,
+        expiresAt: input.nowMs + MCP_OAUTH_REFRESH_TTL_MS,
+      },
+      responseBody: {
+        access_token: rawAccessToken,
+        refresh_token: rawRefreshToken,
+        token_type: 'Bearer',
+        expires_in: Math.floor(MCP_OAUTH_TTL_MS / 1000),
+        scope: input.claims.scope,
+      },
+    };
+  } catch {
+    throw new Error('MCP OAuth token material generation failed.');
+  }
+}
+
+async function refreshReplayEncryptionKey(rawRefreshToken: string) {
+  try {
+    const keyBytes = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(`consuelo:mcp-refresh-replay:${rawRefreshToken}`),
+    );
+    return await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, [
+      'encrypt',
+      'decrypt',
+    ]);
+  } catch {
+    throw new Error('MCP OAuth refresh replay key derivation failed.');
+  }
+}
+
+async function encryptRefreshReplayResponse(
+  rawRefreshToken: string,
+  responseBody: McpOAuthTokenResponseBody,
+): Promise<string> {
+  try {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ciphertext = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      await refreshReplayEncryptionKey(rawRefreshToken),
+      new TextEncoder().encode(JSON.stringify(responseBody)),
+    );
+    return `${b64(iv)}.${b64(new Uint8Array(ciphertext))}`;
+  } catch {
+    throw new Error('MCP OAuth refresh replay encryption failed.');
+  }
+}
+
+async function decryptRefreshReplayResponse(
+  rawRefreshToken: string,
+  encryptedResponse: string,
+): Promise<McpOAuthTokenResponseBody> {
+  try {
+    const [encodedIv, encodedCiphertext, ...extra] = encryptedResponse.split('.');
+    if (!encodedIv || !encodedCiphertext || extra.length > 0)
+      throw new Error('MCP OAuth refresh replay receipt is invalid.');
+    const plaintext = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: b64Decode(encodedIv) },
+      await refreshReplayEncryptionKey(rawRefreshToken),
+      b64Decode(encodedCiphertext),
+    );
+    const parsed = JSON.parse(
+      new TextDecoder().decode(plaintext),
+    ) as Partial<McpOAuthTokenResponseBody>;
+    if (
+      typeof parsed.access_token !== 'string' ||
+      typeof parsed.refresh_token !== 'string' ||
+      parsed.token_type !== 'Bearer' ||
+      typeof parsed.expires_in !== 'number' ||
+      typeof parsed.scope !== 'string'
+    ) {
+      throw new Error('MCP OAuth refresh replay receipt is invalid.');
+    }
+    return parsed as McpOAuthTokenResponseBody;
+  } catch {
+    throw new Error('MCP OAuth refresh replay receipt is invalid.');
+  }
+}
+
 async function issueMcpOAuthTokenPair(input: {
   store: Store;
   claims: McpOAuthTokenClaims;
   nowMs: number;
 }): Promise<Response> {
-  const accessToken = rand('coa', 32);
-  const refreshToken = rand('cor', 32);
+  const pair = await createMcpOAuthTokenPair(input);
   try {
-    await input.store.putMcpOAuthAccessToken({
-      ...input.claims,
-      tokenHash: await hash(accessToken),
-      issuedAt: input.nowMs,
-      expiresAt: input.nowMs + MCP_OAUTH_TTL_MS,
-    });
-    await input.store.putMcpOAuthRefreshToken({
-      ...input.claims,
-      tokenHash: await hash(refreshToken),
-      issuedAt: input.nowMs,
-      expiresAt: input.nowMs + MCP_OAUTH_REFRESH_TTL_MS,
+    await input.store.putMcpOAuthTokenPair({
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
     });
   } catch {
     throw new Error('MCP OAuth token issuance failed.');
   }
-  return json({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-    token_type: 'Bearer',
-    expires_in: Math.floor(MCP_OAUTH_TTL_MS / 1000),
-    scope: input.claims.scope,
-  });
+  return json(pair.responseBody);
 }
 
 async function exchangeMcpOAuthAuthorizationCode(input: {
@@ -453,9 +549,14 @@ async function exchangeMcpOAuthRefreshToken(input: {
     );
   }
   const scopes = requestedScopes.length > 0 ? requestedScopes : stored.scopes;
-  await input.store.delMcpOAuthRefreshToken(tokenHash);
-  return issueMcpOAuthTokenPair({
-    store: input.store,
+  const requestFingerprint = await hash(
+    JSON.stringify({
+      clientId,
+      resource,
+      scope: requestedScopes.join(' '),
+    }),
+  );
+  const pair = await createMcpOAuthTokenPair({
     nowMs: input.nowMs,
     claims: {
       clientId: stored.clientId,
@@ -467,6 +568,35 @@ async function exchangeMcpOAuthRefreshToken(input: {
       email: stored.email,
     },
   });
+  const receipt = {
+    requestFingerprint,
+    encryptedTokenResponse: await encryptRefreshReplayResponse(
+      rawRefreshToken,
+      pair.responseBody,
+    ),
+    replacementAccessTokenHash: pair.accessToken.tokenHash,
+    replacementRefreshTokenHash: pair.refreshToken.tokenHash,
+    replayExpiresAt: input.nowMs + MCP_OAUTH_REFRESH_REPLAY_TTL_MS,
+  };
+  const rotation = await input.store.rotateMcpOAuthRefreshToken({
+    tokenHash,
+    requestFingerprint,
+    nowMs: input.nowMs,
+    accessToken: pair.accessToken,
+    refreshToken: pair.refreshToken,
+    receipt,
+  });
+  if (rotation.kind === 'invalid')
+    return invalidOauthRequest('invalid_grant', 'Refresh token was not found.');
+  if (rotation.kind === 'replayed') {
+    return json(
+      await decryptRefreshReplayResponse(
+        rawRefreshToken,
+        rotation.receipt.encryptedTokenResponse,
+      ),
+    );
+  }
+  return json(pair.responseBody);
 }
 
 export async function exchangeMcpOAuthToken(input: {

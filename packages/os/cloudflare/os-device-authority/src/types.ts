@@ -213,7 +213,21 @@ export type McpOAuthRefreshToken = {
   email: string;
   expiresAt: number;
   issuedAt: number;
+  replay?: McpOAuthRefreshReplayReceipt;
 };
+
+export type McpOAuthRefreshReplayReceipt = {
+  requestFingerprint: string;
+  encryptedTokenResponse: string;
+  replacementAccessTokenHash: string;
+  replacementRefreshTokenHash: string;
+  replayExpiresAt: number;
+};
+
+export type McpOAuthRefreshRotationResult =
+  | { kind: 'rotated' }
+  | { kind: 'replayed'; receipt: McpOAuthRefreshReplayReceipt }
+  | { kind: 'invalid' };
 
 export type WorkspaceRouteRegistryBinding = WorkspaceRouteD1Database;
 export type DefaultSiteSnapshot = {
@@ -268,11 +282,23 @@ export type Store = {
     tokenHash: string,
   ): Promise<McpOAuthAccessToken | undefined>;
   delMcpOAuthAccessToken(tokenHash: string): Promise<void>;
+  putMcpOAuthTokenPair(input: {
+    accessToken: McpOAuthAccessToken;
+    refreshToken: McpOAuthRefreshToken;
+  }): Promise<void>;
   putMcpOAuthRefreshToken(t: McpOAuthRefreshToken): Promise<void>;
   byMcpOAuthRefreshToken(
     tokenHash: string,
   ): Promise<McpOAuthRefreshToken | undefined>;
   delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
+  rotateMcpOAuthRefreshToken(input: {
+    tokenHash: string;
+    requestFingerprint: string;
+    nowMs: number;
+    accessToken: McpOAuthAccessToken;
+    refreshToken: McpOAuthRefreshToken;
+    receipt: McpOAuthRefreshReplayReceipt;
+  }): Promise<McpOAuthRefreshRotationResult>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
   putWorkspaceMembership(membership: WorkspaceMembership): Promise<void>;

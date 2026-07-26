@@ -482,10 +482,8 @@ describe('os device authority worker', () => {
         resource: origin + '/mcp',
       }),
     }));
-    expect(replayResponse.status).toBe(400);
-    await expect(replayResponse.json()).resolves.toMatchObject({
-      error: 'invalid_grant',
-    });
+    expect(replayResponse.status).toBe(200);
+    await expect(replayResponse.json()).resolves.toEqual(refreshJson);
 
     const revokeResponse = await handler(new Request(origin + '/oauth/revoke', {
       method: 'POST',
