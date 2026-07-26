@@ -31,9 +31,9 @@ started: 2026-07-26
 
 - `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/scripts/testing/distribution/integration-runner.ts`
-- `packages/os/tests/distribution/distribution-integration.test.ts`
 - `packages/os/tests/daemon-bun-path.test.ts`
-- `.task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes/workpad.md`
+- `packages/os/tests/distribution/distribution-integration.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -47,6 +47,8 @@ started: 2026-07-26
 
 - 2026-07-26 21:00:57 `review.run`: passed — OK
 - 2026-07-26 21:01:15 `verify`: passed — OK
+- 2026-07-26 21:05:40 `review.run`: passed — OK
+- 2026-07-26 21:05:49 `verify`: passed — OK
 
 ## test-first contract
 
@@ -90,9 +92,11 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/scripts/testing/distribution/integration-runner.ts`
 - `packages/os/tests/daemon-bun-path.test.ts`
 - `packages/os/tests/distribution/distribution-integration.test.ts`
+- `packages/os/tests/windows-platform.test.ts`
 
 ## validation summary
 
@@ -100,3 +104,28 @@ bun run task:finish
 - Green: focused distribution contract 3/3.
 - Portability regression: daemon Bun-path + integration contracts 5/5.
 - Complete rehearsal: 17 files, 212/212 tests passed in 17.21 seconds.
+
+## wait cycle 1
+
+- Start: 2026-07-26T21:02:00Z
+- Wait reason: GitHub required checks for PR #1665, including native Linux/macOS/Windows rehearsal lanes, are still running.
+- Duration: 60 seconds.
+- Resume action: query PR #1665 checks and merge state immediately.
+- Expected signal: all distribution environment lanes and required repository checks are terminal green/skipped.
+- Fallback: inspect exact failed platform logs and repair on this task branch; classify unassigned-runner queues separately.
+
+## CI platform failure and recovery
+
+- PR #1665 native Linux failed because the full macOS-oriented lifecycle suite builds Darwin fixtures and invokes macOS tools such as `plutil`; it is not a portable all-platform suite.
+- PR #1665 native Windows failed before rehearsal because `windows-platform.test.ts` still asserted the removed partial workflow step.
+- Recovery decision: macOS remains the authoritative complete lifecycle rehearsal. Linux and Windows run the portable distribution harness plus their existing dedicated platform contracts/acceptance. All three remain mandatory evidence lanes.
+
+- Recovery red: updated source contracts failed because guarded macOS/full and non-macOS/portable steps were not yet present.
+- Implementation: macOS executes the complete 212-test lifecycle rehearsal; Linux and Windows execute the portable distribution contracts after any Windows build cleanup. Dedicated Linux and Windows platform acceptance remains unchanged.
+
+## platform recovery validation
+
+- Focused cross-platform source contracts: 27/27 passed.
+- Portable Linux/Windows distribution command: 12 files, 80/80 tests passed.
+- Complete macOS lifecycle rehearsal: 17 files, 212/212 tests passed.
+- The corrupt-provenance negative test still emits its expected stack trace while the suite exits zero.

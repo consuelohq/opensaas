@@ -89,7 +89,12 @@ describe('distribution integration contract', () => {
 
     expect(workflow).toContain('native-runtime:');
     expect(workflow).toContain('name: Consuelo OS / native ${{ matrix.name }}');
+    expect(workflow).toContain("if: matrix.name == 'macos'");
     expect(workflow).toContain('run: bun run test:distribution:integration');
+    expect(workflow).toContain("if: matrix.name != 'macos'");
+    expect(workflow).toContain(
+      'run: bun x vitest run tests/distribution --testTimeout 15000',
+    );
     for (const requiredPath of [
       'packages/os/package.json',
       'packages/os/cloudflare/**',

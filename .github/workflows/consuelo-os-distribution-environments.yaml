@@ -117,7 +117,13 @@ jobs:
           Remove-Item -LiteralPath packages/os/native/windows-service/bin -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -LiteralPath packages/os/native/windows-service/obj -Recurse -Force -ErrorAction SilentlyContinue
 
+      - name: Run portable distribution contracts
+        if: matrix.name != 'macos'
+        working-directory: packages/os
+        run: bun x vitest run tests/distribution --testTimeout 15000
+
       - name: Run complete distribution rehearsal
+        if: matrix.name == 'macos'
         working-directory: packages/os
         run: bun run test:distribution:integration
 

@@ -5,14 +5,15 @@
   "branch": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes",
   "base": "origin/stream/os-distribution",
   "headSha": "605ccda8de285fcd33b0eaafc5a8ae4bb74cfe71",
-  "changeHash": "b31371f75e03e46c3585445159386e170a901aaa7bc734e9f61dc4f43d1e6ac6",
+  "changeHash": "a69d47a8a6ca4fec486154a77a88b294ae2ca5c26563bcf22910d0acd9b82b25",
   "changedFiles": [
     ".github/workflows/consuelo-os-distribution-environments.yaml",
     "packages/os/scripts/testing/distribution/integration-runner.ts",
     "packages/os/tests/daemon-bun-path.test.ts",
-    "packages/os/tests/distribution/distribution-integration.test.ts"
+    "packages/os/tests/distribution/distribution-integration.test.ts",
+    "packages/os/tests/windows-platform.test.ts"
   ],
-  "verifiedAt": "2026-07-26T21:01:15.634Z",
+  "verifiedAt": "2026-07-26T21:05:49.304Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -31,11 +32,13 @@
         ".task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes/evidence-log.json",
         ".task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes/read-log.json",
         ".task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes/session.json",
+        ".task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes/verify.json",
         ".task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes/workpad.md",
         ".task/tasks/os-distribution/align-distribution-rehearsal-with-mandatory-lanes.json",
         "packages/os/scripts/testing/distribution/integration-runner.ts",
         "packages/os/tests/daemon-bun-path.test.ts",
-        "packages/os/tests/distribution/distribution-integration.test.ts"
+        "packages/os/tests/distribution/distribution-integration.test.ts",
+        "packages/os/tests/windows-platform.test.ts"
       ],
       "matchedRules": [
         {
@@ -45,7 +48,8 @@
           "matchedFiles": [
             "packages/os/scripts/testing/distribution/integration-runner.ts",
             "packages/os/tests/daemon-bun-path.test.ts",
-            "packages/os/tests/distribution/distribution-integration.test.ts"
+            "packages/os/tests/distribution/distribution-integration.test.ts",
+            "packages/os/tests/windows-platform.test.ts"
           ],
           "origin": "auto"
         }
