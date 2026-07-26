@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/os-distribution/implement-distribution-integration",
   "base": "origin/stream/os-distribution",
-  "headSha": "45a25686118ea57bf66a50967fecdccead990c9d",
-  "changeHash": "8298649056326a6bf51c37e76a466046ecbc662e4a6d9c406eddba7e41e1f28c",
+  "headSha": "770e892476215971b9ff941b3c637a0e882cbbbe",
+  "changeHash": "89946494d44a919c40bb2850d2a20c21e1bab9b82bedbd46c32b365105f9cab3",
   "changedFiles": [
     "packages/os/SCRIPTS.md",
     "packages/os/package.json",
@@ -13,7 +13,7 @@
     "packages/os/tests/distribution/distribution-integration.test.ts",
     "packages/os/tests/lifecycle-retention-uninstall.test.ts"
   ],
-  "verifiedAt": "2026-07-26T20:42:14.461Z",
+  "verifiedAt": "2026-07-26T20:42:49.832Z",
   "review": {
     "skipped": false,
     "passed": true,

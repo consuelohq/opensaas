@@ -60,9 +60,8 @@ started: 2026-07-26
 
 ## files changed
 
-- `.task/os-distribution/implement-distribution-integration/workpad.md`
-- `packages/os/scripts/testing/distribution/integration-runner.ts`
 - `packages/os/tests/distribution/distribution-integration.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -90,6 +89,7 @@ started: 2026-07-26
 - 2026-07-26 15:55:12 `review.run`: passed — OK
 - 2026-07-26 15:55:23 `verify`: passed — OK
 - 2026-07-26 20:42:14 `verify`: passed — OK
+- 2026-07-26 20:42:49 `verify`: passed — OK
 
 ## key decisions
 
@@ -151,3 +151,10 @@ bun run task:finish
 - Full rehearsal first exposed fixture/concurrency defects: `trc_c18121e5e33f`.
 - Full rehearsal green: `trc_0f289a687eb7` (14 files, 177 tests). The JSON parse stack on stderr is emitted by the intentional corrupt-provenance child-process fixture; the suite asserts fail-closed behavior and exits successfully.
 - Real Mac mutation remains forbidden. Human checkpoint command will be provided only after CI/review completion.
+## Final review status (2026-07-26)
+- CodeRabbit completed and reported one minor valid finding: assert full platform workflow/job coordinates. Fixed in `770e892476215971b9ff941b3c637a0e882cbbbe`.
+- Focused contract and full integration rehearsal pass after the fix: 14 files / 177 tests (`trc_4ddc3cae5b84`).
+- Publish-valid verify passes after the fix (`trc_e5bdb14dcab1`).
+- Grok 4.5 review remains externally blocked. Exact wrapper retry failed with HTTP 402: `Grok Build usage balance exhausted` (`trc_9d621aca5ed2`, wrapper trace `trc_20fda4a297a2`). Earlier bounded runs were cancelled and did not produce a valid review.
+- Merge is intentionally withheld because the plan requires durable Grok review evidence; no substitute reviewer or silent waiver was used.
+
