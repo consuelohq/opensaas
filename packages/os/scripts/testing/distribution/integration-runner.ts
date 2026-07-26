@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 export const DISTRIBUTION_INTEGRATION_SCRIPT =
   'test:distribution:integration' as const;
+export const DISTRIBUTION_INTEGRATION_TIMEOUT_MS = 15 * 60 * 1000;
 
 export const DISTRIBUTION_LIFECYCLE_STAGES = [
   'build',
@@ -19,6 +20,9 @@ export const DISTRIBUTION_LIFECYCLE_STAGES = [
 ] as const;
 
 export const DISTRIBUTION_INTEGRATION_SUITES = [
+  'tests/bootstrap-source.test.ts',
+  'tests/daemon-bun-path.test.ts',
+  'tests/installer-runtime-dependencies.test.ts',
   'tests/distribution/distribution-integration.test.ts',
   'tests/distribution/runtime-bundle.test.ts',
   'tests/distribution/release-channel-schema.test.ts',
@@ -40,6 +44,7 @@ export type DistributionPlatformEvidence = {
   required: true;
   workflow: string;
   job: string;
+  matrixName?: 'macos' | 'windows';
 };
 
 const PLATFORM_EVIDENCE: readonly DistributionPlatformEvidence[] = [
@@ -53,13 +58,15 @@ const PLATFORM_EVIDENCE: readonly DistributionPlatformEvidence[] = [
     name: 'macos',
     required: true,
     workflow: '.github/workflows/consuelo-os-distribution-environments.yaml',
-    job: 'platform-contracts (macos)',
+    job: 'native-runtime',
+    matrixName: 'macos',
   },
   {
     name: 'windows',
     required: true,
     workflow: '.github/workflows/consuelo-os-distribution-environments.yaml',
-    job: 'platform-contracts (windows)',
+    job: 'native-runtime',
+    matrixName: 'windows',
   },
 ] as const;
 
@@ -87,6 +94,7 @@ export function runDistributionIntegration(): number {
       cwd: new URL('../../..', import.meta.url),
       encoding: 'utf8',
       stdio: 'inherit',
+      timeout: DISTRIBUTION_INTEGRATION_TIMEOUT_MS,
     },
   );
 

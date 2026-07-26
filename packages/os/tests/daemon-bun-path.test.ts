@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { chmodSync, copyFileSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -22,8 +23,7 @@ function runDaemonWrapper(workspacePath: string): string {
   chmodSync(daemonScript, 0o755);
   chmodSync(bunBinary, 0o755);
 
-  const result = Bun.spawnSync({
-    cmd: ['/bin/bash', daemonScript],
+  const result = spawnSync('/bin/bash', [daemonScript], {
     env: {
       HOME: root,
       USER: 'consuelo-test',
@@ -33,12 +33,11 @@ function runDaemonWrapper(workspacePath: string): string {
       WORKSPACE_DAEMON_CONSUELO_HOME: path.join(root, '.consuelo'),
       WORKSPACE_DAEMON_PATH: workspacePath.replaceAll('{BUN_DIR}', bunDirectory),
     },
-    stdout: 'pipe',
-    stderr: 'pipe',
+    encoding: 'utf8',
   });
 
-  expect(result.exitCode).toBe(0);
-  return new TextDecoder().decode(result.stdout).trim();
+  expect(result.status, result.stderr).toBe(0);
+  return result.stdout.trim();
 }
 
 afterEach(() => {
@@ -47,7 +46,7 @@ afterEach(() => {
   }
 });
 
-describe('Consuelo OS daemon Bun PATH', () => {
+describe.skipIf(process.platform === 'win32')('Consuelo OS daemon Bun PATH', () => {
   it('should prepend the configured Bun directory when launchd PATH omits it', () => {
     const outputPath = runDaemonWrapper('/usr/bin:/bin');
     const segments = outputPath.split(':');

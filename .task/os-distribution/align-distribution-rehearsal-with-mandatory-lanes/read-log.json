@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-distribution-environments.yaml",
+    "packages/os/scripts/testing/distribution/integration-runner.ts",
+    "packages/os/tests/daemon-bun-path.test.ts",
+    "packages/os/tests/windows-platform.test.ts"
+  ],
+  "updatedAt": "2026-07-26T21:04:21.202Z"
+}
