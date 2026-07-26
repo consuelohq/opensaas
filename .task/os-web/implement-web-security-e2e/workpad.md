@@ -55,6 +55,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - Diff cleanup restored four legacy files from exact `main` blobs through the authenticated GitHub API, then reapplied only semantic hunks. The patch shrank from 3,619 additions/914 deletions (`trc_60dd0f3effce`) to 2,114 additions/28 deletions (`trc_706f336bbea6`). Post-cleanup validation remained 65/65 + 175/175 with syntax checks green (`trc_b89a6a9fe6d6`).
 - No live Cloudflare deployment, browser login, account mutation, or real-Mac lifecycle action was performed.
 - PR ancestry changed after implementation: `stream/os-web` advanced while this fresh-main task was in progress. Exact comparison first showed 5 commits ahead and 15 behind (`trc_4eaa6b7d7247`). GitHub's update-branch API merged the assigned stream into the task (`trc_79b70e7c01eb`), removing the behind count, but correctly exposed that the fresh-main ancestry still carries three unrelated main-only promotion commits and 63 files (`trc_e7dff335cf58`). The task therefore requires a true API restack onto the current stream before Grok, CodeRabbit disposition, or merge.
+- Restack completed through the authenticated repository GitHub library: commit `3d20cda4032e02212cfc9c681c1cc964b96133e8` was created directly from `stream/os-web` SHA `735bd5f3ce66e66ebd3a732de122380cd93aacf3`, using only 18 Worker 17 product and scoped metadata files (`trc_a009f22fe24b`). Exact comparison is now one commit ahead, zero behind, 18 files (`trc_50070943c73a`). No main-only promotion commit remains in the task PR.
 - Strict review initially found 19 missing explicit async-boundary handlers (`trc_402c1382b0b3`). The complete list was extracted (`trc_f797e40a049f`), all new crypto, transaction, Cloudflare API, resource lifecycle, and CLI boundaries were converted to typed contextual fail-closed handling, and strict review is now 0 findings (`trc_f2c92b40cc5e`).
 - Final post-review validation is 65/65 + 175/175, syntax/typecheck, selected formatting, and workflow YAML parsing green (`trc_610bb9c7fa6b`).
 
@@ -103,6 +104,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - 2026-07-26 16:00:47 `verify`: passed — OK
 - 2026-07-26 16:04:09 `verify`: passed — OK
 - 2026-07-26 16:04:27 `verify`: passed — OK
+- 2026-07-26 16:05:53 `verify`: passed — OK
 
 ## key decisions
 
@@ -142,6 +144,7 @@ real-machine boundary: no install, update, reset, restart, or uninstall on Ko's 
 - Prettier had reformatted four legacy files, inflating the working patch to 3,619 additions and 914 deletions (`trc_60dd0f3effce`). A scoped filesystem attempt to read `main` was correctly rejected because the task session is branch-bound (`trc_0b314569d758`). The first raw GitHub call omitted its required reason (`trc_cb40fae887c5`); the corrected typed GitHub read succeeded (`trc_ad5d625099fe`). Recovery: use the authenticated GitHub API inside task-scoped `code.call` to restore exact `main` blobs (`trc_3195fbbd2e90`), reapply only semantic patches (`trc_75f85e331213`, `trc_83e3914466fe`, `trc_a6c9124d17f3`), and rerun all selected tests (`trc_b89a6a9fe6d6`).
 - Strict review found 19 `ERROR_HANDLING` findings across newly added async paths (`trc_402c1382b0b3`). Recovery: extract all findings (`trc_f797e40a049f`), add explicit contextual error boundaries (`trc_1e2b01af4acd`, `trc_5ad4999b0241`), inspect the remaining 15 error/catch-typing findings (`trc_1beaa6b5662f`, `trc_08c1e5190fd9`), type every catch as `unknown`, wrap all Cloudflare client methods and CLI execution (`trc_c2c7a48a74db`, `trc_b350b853ea14`), and rerun strict review clean (`trc_f2c92b40cc5e`).
 - The live tool catalog advertised `task.call`, but the generated Consuelo manifest rejected it again with `UNKNOWN_TOOL_SCOPE` during branch recovery. Recovery used the audited GitHub PR update-branch endpoint through `os.call` rather than native Git (`trc_79b70e7c01eb`). Because a merge cannot remove unrelated fresh-main ancestry, the next recovery is to create a commit tree from the current `stream/os-web` SHA using only the exact Worker 17 files and force-update only the task branch through the authenticated GitHub API. The task PR and session remain unchanged.
+- The first explicit-file push used repository-root-relative paths from the OS package runtime and failed as outside the repository (`trc_7f7b7b46d509`). Retry with exact task-worktree absolute paths succeeded and durably captured all post-review changes at `ab7ff0912e79265a87827a22c60e32674ba38e60` (`trc_50828184f861`). The first API restack script resolved its module relative to the staged program and failed before mutation (`trc_7307cfcd410e`); retry resolved the repository library from `process.cwd()` and completed the exact restack (`trc_a009f22fe24b`).
 - CodeRabbit was requested at https://github.com/consuelohq/opensaas/pull/1662#issuecomment-5084255216 after the typed comment operation proved unavailable. CodeRabbit reported its hourly review limit; retry is required after the external window resets. Grok packet creation was paused when the moving-base divergence was detected, and the temporary packet must be regenerated after restacking.
 
 ---
@@ -168,3 +171,5 @@ bun run task:finish
 - `packages/os/tests/platform-cloudflare-provisioning-contract.test.ts`
 
 - 2026-07-26 16:04:20 apply-patch: `.task/os-web/implement-web-security-e2e/workpad.md`
+
+- 2026-07-26 16:05:46 apply-patch: `.task/os-web/implement-web-security-e2e/workpad.md`
