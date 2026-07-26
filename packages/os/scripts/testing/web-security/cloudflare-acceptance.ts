@@ -1,11 +1,19 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const RESOURCE_PREFIX = 'consuelo-os-dist-test-';
 const R2_OBJECT_PREFIX = 'consuelo-os-dist-test';
 const MAX_TTL_MS = 6 * 60 * 60 * 1000;
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
+const DEFAULT_VERIFY_ATTEMPTS = 12;
+const DEFAULT_VERIFY_DELAY_MS = 5_000;
+const DEFAULT_PROJECT_ROOT = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  '..',
+);
 
 function cloudflareAcceptanceError(operation: string, error: unknown): Error {
   const message = error instanceof Error ? error.message : String(error);
@@ -15,10 +23,12 @@ function cloudflareAcceptanceError(operation: string, error: unknown): Error {
 export type CloudflareAcceptanceNames = {
   runId: string;
   workerName: string;
+  edgeWorkerName: string;
   d1Name: string;
   r2BucketName: string;
   r2Prefix: string;
   hostname: string;
+  edgeHostname: string;
 };
 
 export type CloudflareAcceptanceInventory = {
@@ -29,11 +39,13 @@ export type CloudflareAcceptanceInventory = {
   names: CloudflareAcceptanceNames;
   resources: {
     workerName: string;
+    edgeWorkerName: string;
     d1Name: string;
     d1Id?: string;
     r2BucketName: string;
     r2Prefix: string;
     hostname: string;
+    edgeHostname: string;
   };
 };
 
@@ -44,11 +56,8 @@ export type CloudflareResourceListing = {
 };
 
 export type CloudflareAcceptanceClient = {
-  createWorker(name: string): Promise<void>;
   createD1(name: string): Promise<{ id: string; name: string }>;
-  migrateD1(id: string): Promise<void>;
   createR2Bucket(name: string): Promise<void>;
-  verifyWorker(name: string): Promise<void>;
   listResources(): Promise<CloudflareResourceListing>;
   deleteWorker(name: string): Promise<void>;
   deleteD1(id: string): Promise<void>;
@@ -59,6 +68,17 @@ export type CloudflareCleanupResult = {
   runId: string;
   deleted: string[];
   unknown: string[];
+};
+
+export type CloudflareAcceptanceWranglerConfigs = {
+  authority: Record<string, unknown>;
+  edge: Record<string, unknown>;
+};
+
+export type CloudflareAcceptanceVerification = {
+  ok: true;
+  runId: string;
+  checks: number;
 };
 
 function normalizeRunId(runId: string): string {
@@ -77,10 +97,12 @@ export function buildCloudflareAcceptanceNames(
   return {
     runId: normalized,
     workerName: resourceName,
+    edgeWorkerName: `${resourceName}-edge`,
     d1Name: resourceName,
     r2BucketName: resourceName,
     r2Prefix: `${R2_OBJECT_PREFIX}/${normalized}/`,
     hostname: `os-dist-${normalized}.consuelohq.com`,
+    edgeHostname: `workspace-dist-${normalized}.consuelohq.com`,
   };
 }
 
@@ -98,10 +120,12 @@ export function createCloudflareAcceptanceInventory(input: {
     names,
     resources: {
       workerName: names.workerName,
+      edgeWorkerName: names.edgeWorkerName,
       d1Name: names.d1Name,
       r2BucketName: names.r2BucketName,
       r2Prefix: names.r2Prefix,
       hostname: names.hostname,
+      edgeHostname: names.edgeHostname,
     },
   };
 }
@@ -113,16 +137,14 @@ function assertRunOwnedInventory(
   if (inventory.schemaVersion !== 1) {
     throw new Error('Unsupported Cloudflare acceptance inventory schema.');
   }
-  if (
-    inventory.names.workerName !== expected.workerName ||
-    inventory.names.d1Name !== expected.d1Name ||
-    inventory.names.r2BucketName !== expected.r2BucketName ||
-    inventory.names.r2Prefix !== expected.r2Prefix ||
-    inventory.names.hostname !== expected.hostname
-  ) {
-    throw new Error(
-      'Cloudflare acceptance inventory is not owned by this run.',
-    );
+  for (const key of Object.keys(expected) as Array<
+    keyof CloudflareAcceptanceNames
+  >) {
+    if (inventory.names[key] !== expected[key]) {
+      throw new Error(
+        'Cloudflare acceptance inventory is not owned by this run.',
+      );
+    }
   }
   const ttlMs =
     Date.parse(inventory.expiresAt) - Date.parse(inventory.createdAt);
@@ -139,16 +161,13 @@ export async function provisionCloudflareAcceptance(
 ): Promise<CloudflareAcceptanceInventory> {
   try {
     assertRunOwnedInventory(inventory);
-    await client.createWorker(inventory.names.workerName);
     const d1 = await client.createD1(inventory.names.d1Name);
     if (d1.name !== inventory.names.d1Name) {
       throw new Error(
         'Cloudflare returned a D1 database outside the current run.',
       );
     }
-    await client.migrateD1(d1.id);
     await client.createR2Bucket(inventory.names.r2BucketName);
-    await client.verifyWorker(inventory.names.workerName);
     return {
       ...inventory,
       resources: {
@@ -161,13 +180,119 @@ export async function provisionCloudflareAcceptance(
   }
 }
 
+export function renderCloudflareAcceptanceWranglerConfigs(
+  inventory: CloudflareAcceptanceInventory,
+  options: { projectRoot: string },
+): CloudflareAcceptanceWranglerConfigs {
+  assertRunOwnedInventory(inventory);
+  const d1Id = inventory.resources.d1Id?.trim();
+  if (!d1Id) {
+    throw new Error('Cloudflare acceptance D1 database ID is required.');
+  }
+  const projectRoot = resolve(options.projectRoot);
+  const authorityOrigin = `https://${inventory.names.hostname}`;
+  const sharedSigningSecret = `acceptance-${inventory.runId}-edge-signing`;
+  const d1Binding = {
+    binding: 'WORKSPACE_ROUTE_REGISTRY',
+    database_name: inventory.names.d1Name,
+    database_id: d1Id,
+    migrations_dir: join(
+      projectRoot,
+      'cloudflare',
+      'workspace-edge',
+      'migrations',
+    ),
+  };
+
+  return {
+    authority: {
+      name: inventory.names.workerName,
+      main: join(
+        projectRoot,
+        'cloudflare',
+        'os-device-authority',
+        'src',
+        'worker.ts',
+      ),
+      compatibility_date: '2026-06-11',
+      compatibility_flags: ['nodejs_compat'],
+      routes: [
+        {
+          pattern: inventory.names.hostname,
+          custom_domain: true,
+        },
+      ],
+      vars: {
+        OS_DEVICE_AUTH_ORIGIN: authorityOrigin,
+        OS_DEVICE_AUTH_BASE_DOMAIN: 'consuelohq.com',
+        OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME: inventory.names.edgeHostname,
+        WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: sharedSigningSecret,
+      },
+      d1_databases: [d1Binding],
+      durable_objects: {
+        bindings: [
+          {
+            name: 'DEVICE_GRANTS',
+            class_name: 'OsDeviceGrantDurableObject',
+          },
+        ],
+      },
+      migrations: [
+        {
+          tag: 'v1',
+          new_sqlite_classes: ['OsDeviceGrantDurableObject'],
+        },
+      ],
+    },
+    edge: {
+      name: inventory.names.edgeWorkerName,
+      main: join(
+        projectRoot,
+        'cloudflare',
+        'workspace-edge',
+        'src',
+        'index.ts',
+      ),
+      compatibility_date: '2026-06-11',
+      compatibility_flags: ['nodejs_compat'],
+      routes: [
+        {
+          pattern: inventory.names.edgeHostname,
+          custom_domain: true,
+        },
+      ],
+      vars: {
+        CONSUELO_EDGE_SIGNING_SECRET: sharedSigningSecret,
+        WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: sharedSigningSecret,
+      },
+      durable_objects: {
+        bindings: [
+          {
+            name: 'OS_DEVICE_AUTHORITY',
+            class_name: 'OsDeviceGrantDurableObject',
+            script_name: inventory.names.workerName,
+          },
+        ],
+      },
+      d1_databases: [d1Binding],
+      r2_buckets: [
+        {
+          binding: 'SITES_SNAPSHOTS',
+          bucket_name: inventory.names.r2BucketName,
+        },
+      ],
+    },
+  };
+}
+
 function reservedUnknownResources(
   listing: CloudflareResourceListing,
   names: CloudflareAcceptanceNames,
 ): string[] {
+  const ownedWorkers = new Set([names.workerName, names.edgeWorkerName]);
   const unknown: string[] = [];
   for (const worker of listing.workers) {
-    if (worker.startsWith(RESOURCE_PREFIX) && worker !== names.workerName) {
+    if (worker.startsWith(RESOURCE_PREFIX) && !ownedWorkers.has(worker)) {
       unknown.push(`worker:${worker}`);
     }
   }
@@ -196,9 +321,14 @@ export async function cleanupCloudflareAcceptance(
     const listing = await client.listResources();
     const deleted: string[] = [];
 
-    if (listing.workers.includes(inventory.names.workerName)) {
-      await client.deleteWorker(inventory.names.workerName);
-      deleted.push(`worker:${inventory.names.workerName}`);
+    for (const workerName of [
+      inventory.names.workerName,
+      inventory.names.edgeWorkerName,
+    ]) {
+      if (listing.workers.includes(workerName)) {
+        await client.deleteWorker(workerName);
+        deleted.push(`worker:${workerName}`);
+      }
     }
 
     const database = listing.d1.find(
@@ -336,40 +466,6 @@ export function createCloudflareAcceptanceClient(input: {
   };
 
   return {
-    async createWorker(name) {
-      try {
-        const form = new FormData();
-        form.set(
-          'metadata',
-          new Blob(
-            [
-              JSON.stringify({
-                main_module: 'worker.mjs',
-                compatibility_date: '2026-07-01',
-              }),
-            ],
-            { type: 'application/json' },
-          ),
-          'metadata.json',
-        );
-        form.set(
-          'worker.mjs',
-          new Blob(
-            [
-              "export default { async fetch(request) { const url = new URL(request.url); return Response.json({ ok: true, path: url.pathname }, { headers: { 'cache-control': 'no-store' } }); } };\n",
-            ],
-            { type: 'application/javascript+module' },
-          ),
-          'worker.mjs',
-        );
-        await request(`/accounts/${accountId}/workers/scripts/${name}`, {
-          method: 'PUT',
-          body: form,
-        });
-      } catch (error: unknown) {
-        throw cloudflareAcceptanceError(`worker creation ${name}`, error);
-      }
-    },
     async createD1(name) {
       try {
         const listing = await listResources();
@@ -384,23 +480,12 @@ export function createCloudflareAcceptanceClient(input: {
           body: JSON.stringify({ name }),
         });
         const id = result.uuid ?? result.id;
-        if (!id)
+        if (!id) {
           throw new Error('Cloudflare D1 creation returned no database ID.');
+        }
         return { id, name: result.name };
       } catch (error: unknown) {
         throw cloudflareAcceptanceError(`D1 creation ${name}`, error);
-      }
-    },
-    async migrateD1(id) {
-      try {
-        await request(`/accounts/${accountId}/d1/database/${id}/query`, {
-          method: 'POST',
-          body: JSON.stringify({
-            sql: 'CREATE TABLE IF NOT EXISTS web_security_acceptance (run_id TEXT PRIMARY KEY, created_at TEXT NOT NULL)',
-          }),
-        });
-      } catch (error: unknown) {
-        throw cloudflareAcceptanceError(`D1 migration ${id}`, error);
       }
     },
     async createR2Bucket(name) {
@@ -413,16 +498,6 @@ export function createCloudflareAcceptanceClient(input: {
         });
       } catch (error: unknown) {
         throw cloudflareAcceptanceError(`R2 creation ${name}`, error);
-      }
-    },
-    async verifyWorker(name) {
-      try {
-        const listing = await listResources();
-        if (!listing.workers.includes(name)) {
-          throw new Error(`Cloudflare worker was not found: ${name}`);
-        }
-      } catch (error: unknown) {
-        throw cloudflareAcceptanceError(`worker verification ${name}`, error);
       }
     },
     listResources,
@@ -456,6 +531,204 @@ export function createCloudflareAcceptanceClient(input: {
   };
 }
 
+async function responseJson(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return undefined;
+  }
+}
+
+async function runVerificationCheck(input: {
+  label: string;
+  attempts: number;
+  delayMs: number;
+  sleep: (ms: number) => Promise<void>;
+  check: () => Promise<void>;
+}): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= input.attempts; attempt += 1) {
+    try {
+      await input.check();
+      return;
+    } catch (error: unknown) {
+      lastError = error;
+      if (attempt < input.attempts) await input.sleep(input.delayMs);
+    }
+  }
+  throw cloudflareAcceptanceError(input.label, lastError);
+}
+
+export async function verifyCloudflareAcceptance(
+  client: CloudflareAcceptanceClient,
+  inventory: CloudflareAcceptanceInventory,
+  options: {
+    fetchImpl?: typeof fetch;
+    attempts?: number;
+    delayMs?: number;
+    sleep?: (ms: number) => Promise<void>;
+  } = {},
+): Promise<CloudflareAcceptanceVerification> {
+  try {
+    assertRunOwnedInventory(inventory);
+    if (Date.now() >= Date.parse(inventory.expiresAt)) {
+      throw new Error('Cloudflare acceptance inventory has expired.');
+    }
+    const listing = await client.listResources();
+    for (const workerName of [
+      inventory.names.workerName,
+      inventory.names.edgeWorkerName,
+    ]) {
+      if (!listing.workers.includes(workerName)) {
+        throw new Error(`Cloudflare worker was not found: ${workerName}`);
+      }
+    }
+    const database = listing.d1.find(
+      (candidate) => candidate.name === inventory.names.d1Name,
+    );
+    if (!database || database.id !== inventory.resources.d1Id) {
+      throw new Error('Cloudflare acceptance D1 identity is incomplete.');
+    }
+    if (!listing.r2Buckets.includes(inventory.names.r2BucketName)) {
+      throw new Error('Cloudflare acceptance R2 bucket was not found.');
+    }
+
+    const fetchImpl = options.fetchImpl ?? fetch;
+    const attempts = options.attempts ?? DEFAULT_VERIFY_ATTEMPTS;
+    const delayMs = options.delayMs ?? DEFAULT_VERIFY_DELAY_MS;
+    const sleep =
+      options.sleep ??
+      ((ms: number) =>
+        new Promise<void>((resolveSleep) => setTimeout(resolveSleep, ms)));
+    const authorityOrigin = `https://${inventory.names.hostname}`;
+    const edgeOrigin = `https://${inventory.names.edgeHostname}`;
+    const checks: Array<{ label: string; check: () => Promise<void> }> = [
+      {
+        label: 'authority health',
+        check: async () => {
+          try {
+            const response = await fetchImpl(`${authorityOrigin}/health`);
+            if (response.status !== 200) {
+              throw new Error(`expected 200, received ${response.status}`);
+            }
+          } catch (error: unknown) {
+            throw cloudflareAcceptanceError('authority health probe', error);
+          }
+        },
+      },
+      {
+        label: 'public OAuth metadata',
+        check: async () => {
+          try {
+            const response = await fetchImpl(
+              `${authorityOrigin}/.well-known/oauth-protected-resource`,
+            );
+            const payload = (await responseJson(response)) as
+              | { resource?: string }
+              | undefined;
+            if (
+              response.status !== 200 ||
+              payload?.resource !== `${authorityOrigin}/mcp`
+            ) {
+              throw new Error(
+                'protected-resource metadata did not match authority origin',
+              );
+            }
+          } catch (error: unknown) {
+            throw cloudflareAcceptanceError('OAuth metadata probe', error);
+          }
+        },
+      },
+      {
+        label: 'MCP bearer challenge',
+        check: async () => {
+          try {
+            const response = await fetchImpl(`${authorityOrigin}/mcp`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+              }),
+            });
+            const challenge = response.headers.get('www-authenticate') ?? '';
+            if (
+              response.status !== 401 ||
+              !challenge.includes(
+                `${authorityOrigin}/.well-known/oauth-protected-resource`,
+              )
+            ) {
+              throw new Error(
+                'MCP endpoint did not return the expected bearer challenge',
+              );
+            }
+          } catch (error: unknown) {
+            throw cloudflareAcceptanceError(
+              'MCP bearer challenge probe',
+              error,
+            );
+          }
+        },
+      },
+      {
+        label: 'edge authority binding',
+        check: async () => {
+          try {
+            const response = await fetchImpl(`${edgeOrigin}/auth/consume`);
+            const payload = (await responseJson(response)) as
+              | { error?: string }
+              | undefined;
+            if (
+              response.status !== 400 ||
+              payload?.error !== 'invalid_handoff'
+            ) {
+              throw new Error(
+                'workspace edge did not reach the authority Durable Object',
+              );
+            }
+          } catch (error: unknown) {
+            throw cloudflareAcceptanceError('edge authority probe', error);
+          }
+        },
+      },
+      {
+        label: 'edge fail-closed routing',
+        check: async () => {
+          try {
+            const response = await fetchImpl(`${edgeOrigin}/`, {
+              headers: { accept: 'application/json' },
+            });
+            if (
+              response.status !== 404 ||
+              response.headers.get('cache-control') !== 'no-store'
+            ) {
+              throw new Error(
+                'workspace edge did not fail closed for an unknown hostname',
+              );
+            }
+          } catch (error: unknown) {
+            throw cloudflareAcceptanceError('edge fail-closed probe', error);
+          }
+        },
+      },
+    ];
+
+    for (const check of checks) {
+      await runVerificationCheck({
+        label: check.label,
+        attempts,
+        delayMs,
+        sleep,
+        check: check.check,
+      });
+    }
+    return { ok: true, runId: inventory.runId, checks: checks.length };
+  } catch (error: unknown) {
+    throw cloudflareAcceptanceError('verification', error);
+  }
+}
+
 function arg(name: string): string | undefined {
   const index = process.argv.indexOf(name);
   return index >= 0 ? process.argv[index + 1] : undefined;
@@ -482,15 +755,14 @@ async function main(): Promise<void> {
       `packages/os/cloudflare-acceptance-${runId ?? 'unknown'}.json`;
     if (!command || !runId) {
       throw new Error(
-        'Usage: cloudflare-acceptance.ts <provision|verify|cleanup> --run-id <id> --inventory <path>',
+        'Usage: cloudflare-acceptance.ts <provision|render|verify|cleanup> --run-id <id> --inventory <path>',
       );
     }
-    const client = createCloudflareAcceptanceClient({
-      accountId: process.env.CLOUDFLARE_ACCOUNT_ID ?? '',
-      apiToken: process.env.CLOUDFLARE_API_TOKEN ?? '',
-    });
-
     if (command === 'provision') {
+      const client = createCloudflareAcceptanceClient({
+        accountId: process.env.CLOUDFLARE_ACCOUNT_ID ?? '',
+        apiToken: process.env.CLOUDFLARE_API_TOKEN ?? '',
+      });
       const inventory = await provisionCloudflareAcceptance(
         client,
         createCloudflareAcceptanceInventory({ runId }),
@@ -500,29 +772,37 @@ async function main(): Promise<void> {
       return;
     }
 
-    const inventory = existsSync(resolve(inventoryPath))
-      ? readInventory(inventoryPath)
-      : createCloudflareAcceptanceInventory({ runId });
+    if (!existsSync(resolve(inventoryPath))) {
+      throw new Error('Cloudflare acceptance inventory was not found.');
+    }
+    const inventory = readInventory(inventoryPath);
+
+    if (command === 'render') {
+      const outputDir = arg('--output-dir');
+      if (!outputDir) {
+        throw new Error('Cloudflare acceptance render requires --output-dir.');
+      }
+      const configs = renderCloudflareAcceptanceWranglerConfigs(inventory, {
+        projectRoot: DEFAULT_PROJECT_ROOT,
+      });
+      const authorityPath = resolve(outputDir, 'authority.wrangler.json');
+      const edgePath = resolve(outputDir, 'edge.wrangler.json');
+      writeJson(authorityPath, configs.authority);
+      writeJson(edgePath, configs.edge);
+      process.stdout.write(
+        `${JSON.stringify({ authorityPath, edgePath, runId: inventory.runId })}\n`,
+      );
+      return;
+    }
+
+    const client = createCloudflareAcceptanceClient({
+      accountId: process.env.CLOUDFLARE_ACCOUNT_ID ?? '',
+      apiToken: process.env.CLOUDFLARE_API_TOKEN ?? '',
+    });
 
     if (command === 'verify') {
-      assertRunOwnedInventory(inventory);
-      if (Date.now() >= Date.parse(inventory.expiresAt)) {
-        throw new Error('Cloudflare acceptance inventory has expired.');
-      }
-      await client.verifyWorker(inventory.names.workerName);
-      const listing = await client.listResources();
-      if (
-        !listing.workers.includes(inventory.names.workerName) ||
-        !listing.d1.some(
-          (database) => database.name === inventory.names.d1Name,
-        ) ||
-        !listing.r2Buckets.includes(inventory.names.r2BucketName)
-      ) {
-        throw new Error('Cloudflare acceptance resources are incomplete.');
-      }
-      process.stdout.write(
-        `${JSON.stringify({ ok: true, runId: inventory.runId })}\n`,
-      );
+      const result = await verifyCloudflareAcceptance(client, inventory);
+      process.stdout.write(`${JSON.stringify(result)}\n`);
       return;
     }
 

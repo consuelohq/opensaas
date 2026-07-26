@@ -7,52 +7,17 @@ on:
   pull_request:
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/tests/windows-*.test.ts
       - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
       - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/cloudflare/web-security-route-matrix.ts
-      - packages/os/scripts/testing/web-security/**
-      - packages/os/tests/web-security-e2e.test.ts
   push:
     branches:
       - main
       - stream/os-distribution
-      - stream/os-native
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/tests/windows-*.test.ts
       - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
       - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/cloudflare/web-security-route-matrix.ts
-      - packages/os/scripts/testing/web-security/**
-      - packages/os/tests/web-security-e2e.test.ts
   workflow_dispatch:
-    inputs:
-      run_cloudflare_web_security_acceptance:
-        description: Provision isolated six-hour Cloudflare web-security fixtures and clean them up.
-        required: true
-        default: false
-        type: boolean
 
 concurrency:
   group: consuelo-os-distribution-${{ github.ref }}
@@ -94,7 +59,7 @@ jobs:
           - name: windows
             runner: windows-2025
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -106,44 +71,9 @@ jobs:
         working-directory: packages/os
         run: bun install --frozen-lockfile
 
-      - name: Run Windows platform contracts
-        if: matrix.name == 'windows'
-        working-directory: packages/os
-        run: bun x vitest run tests/windows-platform.test.ts tests/windows-bootstrap-source.test.ts
-
-      - name: Build the Windows service host
-        if: matrix.name == 'windows'
-        shell: pwsh
-        run: |
-          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-          if (-not (Test-Path -LiteralPath $vswhere)) {
-            throw "Visual Studio installer discovery is unavailable: $vswhere"
-          }
-          $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
-          if (-not $msbuild) {
-            throw 'MSBuild was not found through Visual Studio installer discovery.'
-          }
-          & $msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj /p:Configuration=Release /p:Platform=x64 /m
-          if ($LASTEXITCODE -ne 0) {
-            throw "MSBuild exited with code $LASTEXITCODE."
-          }
-
-      - name: Run native Windows platform acceptance
-        if: matrix.name == 'windows'
-        shell: pwsh
-        working-directory: packages/os
-        run: ./scripts/testing/windows-platform-acceptance.ps1
-
-      - name: Remove Windows service build intermediates
-        if: matrix.name == 'windows'
-        shell: pwsh
-        run: |
-          Remove-Item -LiteralPath packages/os/native/windows-service/bin -Recurse -Force -ErrorAction SilentlyContinue
-          Remove-Item -LiteralPath packages/os/native/windows-service/obj -Recurse -Force -ErrorAction SilentlyContinue
-
       - name: Run distribution harness contracts
         working-directory: packages/os
-        run: bun x vitest run tests/distribution --testTimeout 15000
+        run: bun x vitest run tests/distribution
 
       - name: Probe the native runner
         working-directory: packages/os
@@ -157,29 +87,6 @@ jobs:
         with:
           name: consuelo-os-distribution-${{ matrix.name }}-${{ github.run_id }}
           path: packages/os/distribution-environment.json
-
-  debian-linux-platform:
-    name: Consuelo OS / Debian 12 Linux platform
-    runs-on: ubuntu-24.04
-    container: debian:12-slim
-    timeout-minutes: 15
-    steps:
-      - name: Install runner prerequisites
-        run: apt-get update && apt-get install -y --no-install-recommends ca-certificates git unzip && rm -rf /var/lib/apt/lists/*
-
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install OS dependencies
-        working-directory: packages/os
-        run: bun install --frozen-lockfile
-
-      - name: Run Linux platform contracts
-        working-directory: packages/os
-        run: bun x vitest run tests/linux-platform.test.ts
 
   regression-contracts:
     name: Consuelo OS / existing distribution regressions
@@ -207,98 +114,3 @@ jobs:
           tests/mcp-gateway.test.ts
           tests/security-gateway.test.ts
           tests/workspace-gateway-contract.test.ts
-
-  cloudflare-web-security-acceptance:
-    name: Consuelo OS / Cloudflare web security acceptance
-    if: github.event_name == 'workflow_dispatch' && inputs.run_cloudflare_web_security_acceptance
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    environment: consuelo-os-dev
-    env:
-      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_TEST_API_TOKEN }}
-      TEST_RESOURCE_NAME: consuelo-os-dist-test-${{ github.run_id }}
-      INVENTORY_PATH: packages/os/.tmp-cloudflare/consuelo-os-dist-test-${{ github.run_id }}.json
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install OS dependencies
-        working-directory: packages/os
-        run: bun install --frozen-lockfile
-
-      - name: Guard the registered Cloudflare test lane
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "::error::Missing registered GitHub variable CLOUDFLARE_ACCOUNT_ID"
-            exit 1
-          fi
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "::error::Missing least-privilege GitHub secret CLOUDFLARE_OS_TEST_API_TOKEN"
-            exit 1
-          fi
-          if [ "$TEST_RESOURCE_NAME" != "consuelo-os-dist-test-$GITHUB_RUN_ID" ]; then
-            echo "::error::Cloudflare fixture name is not scoped to this workflow run"
-            exit 1
-          fi
-
-      - name: Run deterministic web security contracts
-        working-directory: packages/os
-        run: >-
-          bun x vitest run
-          tests/web-security-e2e.test.ts
-          tests/mcp-oauth-refresh-rotation.test.ts
-          tests/os-device-authority-worker.test.ts
-          tests/os-device-authority-architecture.test.ts
-          tests/os-universal-login.test.ts
-          tests/cloudflare-provisioning-contract.test.ts
-          tests/managed-os-mcp-origin-class-migration.test.ts
-          tests/cloudflare-edge-router.test.ts
-          tests/workspace-node-registry-routing.test.ts
-          tests/traces-hono-routes.test.ts
-
-      - name: Provision isolated Cloudflare acceptance resources
-        run: >-
-          bun packages/os/scripts/testing/web-security/cloudflare-acceptance.ts provision
-          --run-id "$GITHUB_RUN_ID"
-          --inventory "$INVENTORY_PATH"
-
-      - name: Verify release and migration fixtures
-        run: >-
-          bun packages/os/scripts/testing/web-security/cloudflare-acceptance.ts verify
-          --run-id "$GITHUB_RUN_ID"
-          --inventory "$INVENTORY_PATH"
-
-      - name: Upload Cloudflare acceptance inventory
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: consuelo-os-dist-test-${{ github.run_id }}
-          path: packages/os/.tmp-cloudflare/
-          if-no-files-found: warn
-
-      - name: Clean up only current-run Cloudflare resources
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] || [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "Cloudflare test credentials were unavailable; no mutation could have succeeded."
-            exit 0
-          fi
-          bun packages/os/scripts/testing/web-security/cloudflare-acceptance.ts cleanup \
-            --run-id "$GITHUB_RUN_ID" \
-            --inventory "$INVENTORY_PATH"
-
-      - name: Upload Cloudflare cleanup inventory
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: consuelo-os-dist-test-cleanup-${{ github.run_id }}
-          path: packages/os/.tmp-cloudflare/
-          if-no-files-found: warn

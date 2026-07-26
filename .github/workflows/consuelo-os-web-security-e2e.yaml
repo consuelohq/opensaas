@@ -1,0 +1,176 @@
+name: Consuelo OS Web Security E2E
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/consuelo-os-web-security-e2e.yaml
+      - packages/os/cloudflare/**
+      - packages/os/scripts/testing/web-security/**
+      - packages/os/tests/mcp-oauth-refresh-rotation.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
+      - packages/os/tests/os-device-authority-architecture.test.ts
+      - packages/os/tests/os-universal-login.test.ts
+      - packages/os/tests/web-security-e2e.test.ts
+  push:
+    branches:
+      - main
+      - stream/os-web
+    paths:
+      - .github/workflows/consuelo-os-web-security-e2e.yaml
+      - packages/os/cloudflare/**
+      - packages/os/scripts/testing/web-security/**
+      - packages/os/tests/mcp-oauth-refresh-rotation.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
+      - packages/os/tests/os-device-authority-architecture.test.ts
+      - packages/os/tests/os-universal-login.test.ts
+      - packages/os/tests/web-security-e2e.test.ts
+  workflow_dispatch:
+    inputs:
+      run_cloudflare_web_security_acceptance:
+        description: Deploy run-owned authority and workspace-edge fixtures for live security acceptance.
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: consuelo-os-web-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+jobs:
+  deterministic-web-security:
+    name: Consuelo OS / deterministic web security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install OS dependencies
+        working-directory: packages/os
+        run: bun install --frozen-lockfile
+
+      - name: Run deterministic web security contracts
+        working-directory: packages/os
+        run: >-
+          bun x vitest run
+          tests/web-security-e2e.test.ts
+          tests/mcp-oauth-refresh-rotation.test.ts
+          tests/os-device-authority-worker.test.ts
+          tests/os-device-authority-architecture.test.ts
+          tests/os-universal-login.test.ts
+          tests/cloudflare-provisioning-contract.test.ts
+          tests/managed-os-mcp-origin-class-migration.test.ts
+          tests/cloudflare-edge-router.test.ts
+          tests/workspace-node-registry-routing.test.ts
+          tests/traces-hono-routes.test.ts
+
+  cloudflare-web-security-acceptance:
+    name: Consuelo OS / live Cloudflare web security acceptance
+    if: github.event_name == 'workflow_dispatch' && inputs.run_cloudflare_web_security_acceptance
+    needs: deterministic-web-security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: consuelo-os-dev
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_TEST_API_TOKEN }}
+      TEST_RESOURCE_NAME: consuelo-os-dist-test-${{ github.run_id }}
+      D1_NAME: consuelo-os-dist-test-${{ github.run_id }}
+      INVENTORY_PATH: packages/os/.tmp-cloudflare/consuelo-os-dist-test-${{ github.run_id }}.json
+      CONFIG_DIR: packages/os/.tmp-cloudflare/config-${{ github.run_id }}
+      AUTHORITY_CONFIG: packages/os/.tmp-cloudflare/config-${{ github.run_id }}/authority.wrangler.json
+      EDGE_CONFIG: packages/os/.tmp-cloudflare/config-${{ github.run_id }}/edge.wrangler.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install OS dependencies
+        working-directory: packages/os
+        run: bun install --frozen-lockfile
+
+      - name: Guard the registered Cloudflare test lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::Missing registered GitHub variable CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing least-privilege GitHub secret CLOUDFLARE_OS_TEST_API_TOKEN"
+            exit 1
+          fi
+          if [ "$TEST_RESOURCE_NAME" != "consuelo-os-dist-test-$GITHUB_RUN_ID" ]; then
+            echo "::error::Cloudflare fixture name is not scoped to this workflow run"
+            exit 1
+          fi
+
+      - name: Provision isolated D1 and R2 resources
+        run: >-
+          bun packages/os/scripts/testing/web-security/cloudflare-acceptance.ts provision
+          --run-id "$GITHUB_RUN_ID"
+          --inventory "$INVENTORY_PATH"
+
+      - name: Render run-owned Wrangler configurations
+        run: >-
+          bun packages/os/scripts/testing/web-security/cloudflare-acceptance.ts render
+          --run-id "$GITHUB_RUN_ID"
+          --inventory "$INVENTORY_PATH"
+          --output-dir "$CONFIG_DIR"
+
+      - name: Apply workspace route registry migrations
+        run: bun x wrangler d1 migrations apply "$D1_NAME" --remote --config "$EDGE_CONFIG"
+
+      - name: Deploy actual device-authority Worker
+        run: bun x wrangler deploy --config "$AUTHORITY_CONFIG"
+
+      - name: Deploy actual workspace-edge Worker
+        run: bun x wrangler deploy --config "$EDGE_CONFIG"
+
+      - name: Verify live security behavior
+        run: >-
+          bun packages/os/scripts/testing/web-security/cloudflare-acceptance.ts verify
+          --run-id "$GITHUB_RUN_ID"
+          --inventory "$INVENTORY_PATH"
+
+      - name: Upload Cloudflare acceptance inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: consuelo-os-dist-test-${{ github.run_id }}
+          path: packages/os/.tmp-cloudflare/
+          if-no-files-found: warn
+
+      - name: Clean up only current-run Cloudflare resources
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] || [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "Cloudflare test credentials were unavailable; no mutation could have succeeded."
+            exit 0
+          fi
+          if [ ! -f "$INVENTORY_PATH" ]; then
+            echo "No run inventory exists; no owned resources can be deleted safely."
+            exit 0
+          fi
+          bun packages/os/scripts/testing/web-security/cloudflare-acceptance.ts cleanup \
+            --run-id "$GITHUB_RUN_ID" \
+            --inventory "$INVENTORY_PATH"
+
+      - name: Upload Cloudflare cleanup inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: consuelo-os-dist-test-cleanup-${{ github.run_id }}
+          path: packages/os/.tmp-cloudflare/
+          if-no-files-found: warn
