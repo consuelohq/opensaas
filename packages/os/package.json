@@ -1,6 +1,9 @@
 {
   "name": "@consuelo/os",
   "private": true,
+  "bin": {
+    "consuelo": "scripts/lifecycle.ts"
+  },
   "scripts": {
     "os": "bun ./scripts/os.ts",
     "get-steering": "bun ./scripts/os.ts get-steering",

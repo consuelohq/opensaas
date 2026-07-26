@@ -18,6 +18,29 @@ const migratedPackage = {
   workspaces: { packages: ['packages/eslint-rules', 'packages/twenty-front'] },
 };
 
+const osWorkspacePackage = {
+  ...basePackage,
+  workspaces: {
+    packages: [
+      ...basePackage.workspaces.packages,
+      'packages/os',
+    ],
+  },
+};
+
+const exclusiveRegistry = {
+  rules: [
+    {
+      id: 'dialer-cli-install-copy',
+      exclusive: true,
+      source: [
+        'packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts',
+      ],
+      exclude: [],
+    },
+  ],
+};
+
 describe('frontend source change classifier', () => {
   it('should treat the ESLint workspace directory migration as configuration infrastructure', () => {
     expect(
@@ -59,5 +82,25 @@ describe('frontend source change classifier', () => {
         ],
       }),
     ).toEqual({ sourceChanged: false, reason: 'configuration-only' });
+  });
+
+  it('should skip broad frontend gates for an isolated OS workspace migration with an exclusively owned frontend copy contract', () => {
+    expect(
+      classifyFrontSourceChange({
+        changedFiles: [
+          'package.json',
+          'yarn.lock',
+          'packages/os/package.json',
+          'packages/os/tests/cli-product-split.test.ts',
+          'packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts',
+        ],
+        basePackage,
+        headPackage: osWorkspacePackage,
+        registry: exclusiveRegistry,
+      }),
+    ).toEqual({
+      sourceChanged: false,
+      reason: 'isolated-workspace-migration',
+    });
   });
 });

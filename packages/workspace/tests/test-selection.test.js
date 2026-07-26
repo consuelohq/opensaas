@@ -82,6 +82,23 @@ describe('test selection registry', () => {
     );
   });
 
+  it('lets a precise exclusive rule own an exact cross-product consumer file', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts',
+      '--json',
+    ]);
+    const data = json(result);
+
+    expect(data.matchedRules.map((rule) => rule.id)).toEqual([
+      'dialer-cli-install-copy',
+    ]);
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Consuelo CLI product split contract',
+    ]);
+  });
+
   it('reports zero-suite warnings for unmapped code', () => {
     const result = run(['check', '--changed-file', 'packages/unknown/src/example.ts', '--json']);
     const data = json(result);

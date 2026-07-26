@@ -2,19 +2,19 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2440,
-    "mappedTestCount": 2367,
-    "unmappedTestCount": 73,
-    "ruleCount": 31,
-    "explicitRuleCount": 12,
+    "testFileCount": 2445,
+    "mappedTestCount": 2368,
+    "unmappedTestCount": 77,
+    "ruleCount": 32,
+    "explicitRuleCount": 13,
     "autoRuleCount": 19,
     "projectCount": 13,
     "packageTestScriptCount": 17,
     "byGroup": {
-      "packages/os/tests": 150,
+      "packages/os/tests": 151,
       "packages/twenty-server/test/integration/graphql/utils": 65,
+      "packages/workspace/tests": 53,
       "packages/twenty-sdk/src/cli": 51,
-      "packages/workspace/tests": 49,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/utils": 31,
@@ -617,7 +617,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 356,
+      "test": 361,
       "spec": 145,
       "other": 7,
       "tests-dir": 6,
@@ -646,6 +646,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
       "origin": "explicit"
     },
@@ -671,6 +672,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
       "origin": "explicit"
     },
@@ -697,6 +699,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Task routing and metadata changes must prove task-session behavior.",
       "origin": "explicit"
     },
@@ -722,6 +725,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
       "origin": "explicit"
     },
@@ -744,6 +748,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior.",
       "origin": "explicit"
     },
@@ -769,6 +774,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Workspace script/docs changes should keep audit behavior covered.",
       "origin": "explicit"
     },
@@ -821,6 +827,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
       "origin": "explicit"
     },
@@ -841,6 +848,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Dialer changes are call-path critical and must run package specs.",
       "origin": "explicit"
     },
@@ -861,6 +869,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "API changes must run API route and service specs.",
       "origin": "explicit"
     },
@@ -888,7 +897,31 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "ESLint configuration changes must import cleanly without selecting unrelated application test suites.",
+      "origin": "explicit"
+    },
+    {
+      "id": "dialer-cli-install-copy",
+      "source": [
+        "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts"
+      ],
+      "exclude": [],
+      "tests": [
+        {
+          "name": "Consuelo CLI product split contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/cli-product-split.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "The navigation install command is a cross-product CLI ownership contract covered precisely by Worker 30, not by the full frontend suite.",
       "origin": "explicit"
     },
     {
@@ -913,6 +946,7 @@
         }
       ],
       "critical": true,
+      "exclusive": false,
       "reason": "Server changes have the broadest backend impact and should run the project test target.",
       "origin": "explicit"
     },
@@ -936,6 +970,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Frontend package changes should run the project test target.",
       "origin": "explicit"
     },
@@ -958,6 +993,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-core.",
       "origin": "auto"
     },
@@ -980,6 +1016,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/diff-cockpit.",
       "origin": "auto"
     },
@@ -1002,6 +1039,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/os.",
       "origin": "auto"
     },
@@ -1024,6 +1062,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/apps/daemon.",
       "origin": "auto"
     },
@@ -1046,6 +1085,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/e2e.",
       "origin": "auto"
     },
@@ -1068,6 +1108,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/packages/platform.",
       "origin": "auto"
     },
@@ -1090,6 +1131,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/packages/sidecar-proto.",
       "origin": "auto"
     },
@@ -1112,6 +1154,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/packages/sidecar.",
       "origin": "auto"
     },
@@ -1134,6 +1177,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/tools/dev.",
       "origin": "auto"
     },
@@ -1156,6 +1200,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/tools/pack.",
       "origin": "auto"
     },
@@ -1178,6 +1223,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design/apps/web.",
       "origin": "auto"
     },
@@ -1200,6 +1246,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design.",
       "origin": "auto"
     },
@@ -1224,6 +1271,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-e2e-testing.",
       "origin": "auto"
     },
@@ -1248,6 +1296,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/eslint-rules.",
       "origin": "auto"
     },
@@ -1272,6 +1321,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-front.",
       "origin": "auto"
     },
@@ -1296,6 +1346,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-sdk.",
       "origin": "auto"
     },
@@ -1320,6 +1371,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-server.",
       "origin": "auto"
     },
@@ -1344,6 +1396,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-shared.",
       "origin": "auto"
     },
@@ -1368,6 +1421,7 @@
         }
       ],
       "critical": false,
+      "exclusive": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-ui.",
       "origin": "auto"
     }
@@ -2065,6 +2119,11 @@
     },
     {
       "path": "packages/os/tests/bun-product-server-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cli-product-split.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -13369,6 +13428,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/docker-compose-pgvector.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/docs-production-release.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -13396,6 +13460,11 @@
     {
       "path": "packages/workspace/tests/facade/facade.test.ts",
       "group": "packages/workspace/tests/facade",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/front-source-change-classifier.test.js",
+      "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
@@ -13455,6 +13524,11 @@
     },
     {
       "path": "packages/workspace/tests/review-run-state.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/review-test-selection.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -13569,6 +13643,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/workflow-source-gates.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "tests/operator.test.ts",
       "group": "tests",
       "kind": "test"
@@ -13609,12 +13688,14 @@
     "packages/workspace/tests/codemode.test.ts",
     "packages/workspace/tests/context-trace.test.js",
     "packages/workspace/tests/deploy-wrappers.test.js",
+    "packages/workspace/tests/docker-compose-pgvector.test.ts",
     "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
     "packages/workspace/tests/eslint-config-paths.test.ts",
     "packages/workspace/tests/explore-ranker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/front-source-change-classifier.test.js",
     "packages/workspace/tests/fs-apply-patch.test.ts",
     "packages/workspace/tests/fs-read.test.ts",
     "packages/workspace/tests/fs-search.test.ts",
@@ -13627,6 +13708,7 @@
     "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/review-test-selection.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
@@ -13647,6 +13729,7 @@
     "packages/workspace/tests/wait.test.js",
     "packages/workspace/tests/website-deploy.test.js",
     "packages/workspace/tests/workflow-intent.test.ts",
+    "packages/workspace/tests/workflow-source-gates.test.js",
     "tests/operator.test.ts"
   ],
   "projects": [
