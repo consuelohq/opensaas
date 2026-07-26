@@ -181,7 +181,7 @@ describe('web security release acceptance', () => {
     const inventory = {
       ...createCloudflareAcceptanceInventory({
         runId: '1662',
-        nowMs: Date.parse('2026-07-26T12:00:00Z'),
+        nowMs: Date.now(),
       }),
       resources: {
         ...createCloudflareAcceptanceInventory({ runId: '1662' }).resources,
@@ -313,7 +313,20 @@ describe('web security release acceptance', () => {
     };
     const webSecurityPaths = [
       'packages/os/cloudflare/**',
+      'packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts',
+      'packages/os/scripts/lib/workspace-cloudflare-edge-router.ts',
+      'packages/os/scripts/server/routes/traces.ts',
+      'packages/os/scripts/testing/web-security/**',
+      'packages/os/tests/cloudflare-edge-router.test.ts',
+      'packages/os/tests/cloudflare-provisioning-contract.test.ts',
+      'packages/os/tests/managed-os-mcp-origin-class-migration.test.ts',
+      'packages/os/tests/mcp-oauth-refresh-rotation.test.ts',
+      'packages/os/tests/os-device-authority-architecture.test.ts',
+      'packages/os/tests/os-device-authority-worker.test.ts',
+      'packages/os/tests/os-universal-login.test.ts',
+      'packages/os/tests/traces-hono-routes.test.ts',
       'packages/os/tests/web-security-e2e.test.ts',
+      'packages/os/tests/workspace-node-registry-routing.test.ts',
     ];
 
     expect(workflow).toContain('run_cloudflare_web_security_acceptance:');

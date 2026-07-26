@@ -1,0 +1,19 @@
+{
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/fix-web-security-workflow-source-coverage",
+  "baseBranch": "stream/os-web",
+  "sourceBranch": "stream/os-web",
+  "startFrom": "stream",
+  "prNumber": 1664,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1664",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1664",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1664/fix-web-security-workflow-source-coverage",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1664",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1664/fix-web-security-workflow-source-coverage",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-web-security-workflow-source-coverage",
+  "taskSession": "tsk_22e2eec57be6",
+  "tmuxSession": "opensaas-os-web-fix-web-security-workflow-source-coverage-22e2eec5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-web-security-workflow-source-coverage/.task/os-web/fix-web-security-workflow-source-coverage/session.json",
+  "createdAt": "2026-07-26T20:55:55.346Z"
+}

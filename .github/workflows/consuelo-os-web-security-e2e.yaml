@@ -5,12 +5,20 @@ on:
     paths:
       - .github/workflows/consuelo-os-web-security-e2e.yaml
       - packages/os/cloudflare/**
+      - packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts
+      - packages/os/scripts/lib/workspace-cloudflare-edge-router.ts
+      - packages/os/scripts/server/routes/traces.ts
       - packages/os/scripts/testing/web-security/**
+      - packages/os/tests/cloudflare-edge-router.test.ts
+      - packages/os/tests/cloudflare-provisioning-contract.test.ts
+      - packages/os/tests/managed-os-mcp-origin-class-migration.test.ts
       - packages/os/tests/mcp-oauth-refresh-rotation.test.ts
-      - packages/os/tests/os-device-authority-worker.test.ts
       - packages/os/tests/os-device-authority-architecture.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
       - packages/os/tests/os-universal-login.test.ts
+      - packages/os/tests/traces-hono-routes.test.ts
       - packages/os/tests/web-security-e2e.test.ts
+      - packages/os/tests/workspace-node-registry-routing.test.ts
   push:
     branches:
       - main
@@ -18,12 +26,20 @@ on:
     paths:
       - .github/workflows/consuelo-os-web-security-e2e.yaml
       - packages/os/cloudflare/**
+      - packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts
+      - packages/os/scripts/lib/workspace-cloudflare-edge-router.ts
+      - packages/os/scripts/server/routes/traces.ts
       - packages/os/scripts/testing/web-security/**
+      - packages/os/tests/cloudflare-edge-router.test.ts
+      - packages/os/tests/cloudflare-provisioning-contract.test.ts
+      - packages/os/tests/managed-os-mcp-origin-class-migration.test.ts
       - packages/os/tests/mcp-oauth-refresh-rotation.test.ts
-      - packages/os/tests/os-device-authority-worker.test.ts
       - packages/os/tests/os-device-authority-architecture.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
       - packages/os/tests/os-universal-login.test.ts
+      - packages/os/tests/traces-hono-routes.test.ts
       - packages/os/tests/web-security-e2e.test.ts
+      - packages/os/tests/workspace-node-registry-routing.test.ts
   workflow_dispatch:
     inputs:
       run_cloudflare_web_security_acceptance:
