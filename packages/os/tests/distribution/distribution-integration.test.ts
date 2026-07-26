@@ -1,12 +1,20 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
   buildDistributionIntegrationPlan,
   DISTRIBUTION_INTEGRATION_SCRIPT,
+  DISTRIBUTION_INTEGRATION_TIMEOUT_MS,
 } from '../../scripts/testing/distribution/integration-runner';
 
+const repositoryRoot = existsSync(join(process.cwd(), '.github'))
+  ? process.cwd()
+  : join(process.cwd(), '..', '..');
+
 describe('distribution integration contract', () => {
-  it('covers the complete lifecycle and migration sequence with executable suites', () => {
+  it('covers the complete lifecycle, migration, and clean-host sequence', () => {
     const plan = buildDistributionIntegrationPlan();
 
     expect(plan.lifecycleStages).toEqual([
@@ -25,6 +33,9 @@ describe('distribution integration contract', () => {
     ]);
     expect(plan.suites).toEqual(
       expect.arrayContaining([
+        'tests/bootstrap-source.test.ts',
+        'tests/daemon-bun-path.test.ts',
+        'tests/installer-runtime-dependencies.test.ts',
         'tests/distribution/runtime-bundle.test.ts',
         'tests/distribution/release-channels.test.ts',
         'tests/lifecycle-engine.test.ts',
@@ -34,9 +45,10 @@ describe('distribution integration contract', () => {
       ]),
     );
     expect(plan.suites.some((suite) => suite.includes('lifecycle-contract'))).toBe(false);
+    expect(DISTRIBUTION_INTEGRATION_TIMEOUT_MS).toBe(15 * 60 * 1000);
   });
 
-  it('defines mandatory OCI, macOS, and Windows evidence lanes', () => {
+  it('uses real OCI and native matrix coordinates for mandatory evidence', () => {
     const plan = buildDistributionIntegrationPlan();
 
     expect(plan.platformEvidence).toEqual([
@@ -50,15 +62,41 @@ describe('distribution integration contract', () => {
         name: 'macos',
         required: true,
         workflow: '.github/workflows/consuelo-os-distribution-environments.yaml',
-        job: 'platform-contracts (macos)',
+        job: 'native-runtime',
+        matrixName: 'macos',
       },
       {
         name: 'windows',
         required: true,
         workflow: '.github/workflows/consuelo-os-distribution-environments.yaml',
-        job: 'platform-contracts (windows)',
+        job: 'native-runtime',
+        matrixName: 'windows',
       },
     ]);
     expect(DISTRIBUTION_INTEGRATION_SCRIPT).toBe('test:distribution:integration');
+  });
+
+  it('runs the full rehearsal in the native matrix and triggers for its source closure', () => {
+    const workflow = readFileSync(
+      join(
+        repositoryRoot,
+        '.github',
+        'workflows',
+        'consuelo-os-distribution-environments.yaml',
+      ),
+      'utf8',
+    );
+
+    expect(workflow).toContain('native-runtime:');
+    expect(workflow).toContain('name: Consuelo OS / native ${{ matrix.name }}');
+    expect(workflow).toContain('run: bun run test:distribution:integration');
+    for (const requiredPath of [
+      'packages/os/package.json',
+      'packages/os/cloudflare/**',
+      'packages/os/scripts/**',
+      'packages/os/tests/**',
+    ]) {
+      expect(workflow).toContain(`- ${requiredPath}`);
+    }
   });
 });

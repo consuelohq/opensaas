@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes",
+  "events": [
+    {
+      "id": "bb9a163b-162b-40cf-9ece-4f45c0c96958",
+      "occurred_at": "2026-07-26T20:57:44.694Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/testing/distribution/integration-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes"
+      }
+    },
+    {
+      "id": "07480dd8-cc1f-45cc-ae9c-a164d8c19331",
+      "occurred_at": "2026-07-26T20:59:05.399Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/daemon-bun-path.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-26T20:59:05.453Z"
+}

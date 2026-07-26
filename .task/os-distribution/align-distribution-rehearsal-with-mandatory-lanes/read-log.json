@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/testing/distribution/integration-runner.ts",
+    "packages/os/tests/daemon-bun-path.test.ts"
+  ],
+  "updatedAt": "2026-07-26T20:59:05.343Z"
+}
