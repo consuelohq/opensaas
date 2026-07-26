@@ -1567,6 +1567,18 @@ The legacy `settings` command remains an alias during migration. Mutations are s
 
 ---
 
+## test:distribution:integration -- final distribution rehearsal
+
+Runs the curated Worker 24 integration matrix across runtime-bundle build/publication, lifecycle install/update/repair/rollback/uninstall, managed components, steering context, and multi-node continuity. The mandatory OCI, macOS, and Windows evidence lanes remain defined in `.github/workflows/consuelo-os-distribution-environments.yaml`.
+
+```bash
+bun run --cwd packages/os test:distribution:integration
+```
+
+This command uses isolated fixtures and does not install, update, restart, rollback, or uninstall Consuelo OS on a real machine.
+
+---
+
 ## release channels -- immutable Consuelo OS runtime publication
 
 `release:channels` is the Bun-owned JSON CLI for automatic version allocation, immutable publication, signed channel inspection, protected promotion, and rollback. It supports `publish`, `promote`, `inspect`, and `rollback-channel`; mutating commands default to dry-run and require `--apply` for provider changes.
