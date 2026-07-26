@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_546a718c96a9",
+  "tmuxSession": "opensaas-os-web-implement-web-security-e2e-546a718c",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/implement-web-security-e2e",
+  "branch": "task/os-web/implement-web-security-e2e",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-implement-web-security-e2e",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-implement-web-security-e2e",
+  "prNumber": 1662,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1662",
+  "createdAt": "2026-07-26T15:39:32.359Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-implement-web-security-e2e/.task/os-web/implement-web-security-e2e/session.json"
+}

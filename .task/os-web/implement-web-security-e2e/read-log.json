@@ -1,0 +1,20 @@
+{
+  "files": [
+    ".task/os-web/implement-web-security-e2e/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+    "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/17-web-security-e2e.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/os/scripts/testing/web-security/cloudflare-acceptance.ts",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-26T16:01:20.659Z"
+}

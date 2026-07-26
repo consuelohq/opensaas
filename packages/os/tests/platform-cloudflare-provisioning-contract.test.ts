@@ -106,7 +106,7 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
       join(process.cwd(), 'scripts', 'install.ts'),
       'utf8',
     );
-    const provisionIndex = installSource.indexOf('const result = provisionLocalOs');
+    const provisionIndex = installSource.indexOf('provisionLocalOs({');
     const platformPayloadIndex = installSource.indexOf('const platformProvisioning =');
     const payloadIndex = installSource.indexOf('const payload = {');
     const successIndex = installSource.indexOf('spin?.succeed');

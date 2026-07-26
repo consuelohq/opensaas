@@ -24,6 +24,14 @@ const cloneWorkspaceNode = (node: WorkspaceNode): WorkspaceNode => ({
   ...(node.capabilities ? { capabilities: [...node.capabilities] } : {}),
 });
 
+const cloneMcpOAuthRefreshToken = (
+  token: McpOAuthRefreshToken,
+): McpOAuthRefreshToken => ({
+  ...token,
+  scopes: [...token.scopes],
+  ...(token.replay ? { replay: { ...token.replay } } : {}),
+});
+
 export class DurableStore implements Store {
   constructor(private storage: StorageLike) {}
   async put(g: Grant) {
@@ -163,6 +171,27 @@ export class DurableStore implements Store {
       throw new Error('mcp oauth token delete failed');
     }
   }
+  async putMcpOAuthTokenPair(input: {
+    accessToken: McpOAuthAccessToken;
+    refreshToken: McpOAuthRefreshToken;
+  }) {
+    try {
+      if (!this.storage.transaction)
+        throw new Error('durable transaction unavailable');
+      await this.storage.transaction(async (transaction) => {
+        await transaction.put(
+          `mot:${input.accessToken.tokenHash}`,
+          input.accessToken,
+        );
+        await transaction.put(
+          `mrt:${input.refreshToken.tokenHash}`,
+          input.refreshToken,
+        );
+      });
+    } catch {
+      throw new Error('mcp oauth token pair write failed');
+    }
+  }
   async putMcpOAuthRefreshToken(t: McpOAuthRefreshToken) {
     try {
       await this.storage.put(`mrt:${t.tokenHash}`, t);
@@ -184,6 +213,57 @@ export class DurableStore implements Store {
       await this.storage.delete(`mrt:${tokenHash}`);
     } catch {
       throw new Error('mcp oauth refresh token delete failed');
+    }
+  }
+  async rotateMcpOAuthRefreshToken(input: {
+    tokenHash: string;
+    requestFingerprint: string;
+    nowMs: number;
+    accessToken: McpOAuthAccessToken;
+    refreshToken: McpOAuthRefreshToken;
+    receipt: NonNullable<McpOAuthRefreshToken['replay']>;
+  }) {
+    try {
+      if (!this.storage.transaction)
+        throw new Error('durable transaction unavailable');
+      return await this.storage.transaction(async (transaction) => {
+        try {
+          const key = `mrt:${input.tokenHash}`;
+          const current = await transaction.get<McpOAuthRefreshToken>(key);
+          if (!current) return { kind: 'invalid' as const };
+          if (current.replay) {
+            if (input.nowMs > current.replay.replayExpiresAt) {
+              await transaction.delete(key);
+              return { kind: 'invalid' as const };
+            }
+            if (current.replay.requestFingerprint !== input.requestFingerprint)
+              return { kind: 'invalid' as const };
+            return {
+              kind: 'replayed' as const,
+              receipt: { ...current.replay },
+            };
+          }
+          await transaction.put(
+            `mot:${input.accessToken.tokenHash}`,
+            input.accessToken,
+          );
+          await transaction.put(
+            `mrt:${input.refreshToken.tokenHash}`,
+            input.refreshToken,
+          );
+          await transaction.put(key, {
+            ...current,
+            scopes: [...current.scopes],
+            expiresAt: input.receipt.replayExpiresAt,
+            replay: { ...input.receipt },
+          });
+          return { kind: 'rotated' as const };
+        } catch {
+          throw new Error('mcp oauth refresh token transaction failed');
+        }
+      });
+    } catch {
+      throw new Error('mcp oauth refresh token rotation failed');
     }
   }
   async putAccountWorkspace(workspace: AccountWorkspace) {
@@ -536,17 +616,58 @@ export function createMemoryDeviceGrantStore(): Store {
       mcpTokens.delete(tokenHash);
       return Promise.resolve();
     },
+    putMcpOAuthTokenPair(input) {
+      mcpTokens.set(input.accessToken.tokenHash, {
+        ...input.accessToken,
+        scopes: [...input.accessToken.scopes],
+      });
+      mcpRefreshTokens.set(
+        input.refreshToken.tokenHash,
+        cloneMcpOAuthRefreshToken(input.refreshToken),
+      );
+      return Promise.resolve();
+    },
     putMcpOAuthRefreshToken(t) {
-      mcpRefreshTokens.set(t.tokenHash, { ...t, scopes: [...t.scopes] });
+      mcpRefreshTokens.set(t.tokenHash, cloneMcpOAuthRefreshToken(t));
       return Promise.resolve();
     },
     byMcpOAuthRefreshToken(tokenHash) {
       const t = mcpRefreshTokens.get(tokenHash);
-      return Promise.resolve(t ? { ...t, scopes: [...t.scopes] } : undefined);
+      return Promise.resolve(t ? cloneMcpOAuthRefreshToken(t) : undefined);
     },
     delMcpOAuthRefreshToken(tokenHash) {
       mcpRefreshTokens.delete(tokenHash);
       return Promise.resolve();
+    },
+    rotateMcpOAuthRefreshToken(input) {
+      const current = mcpRefreshTokens.get(input.tokenHash);
+      if (!current) return Promise.resolve({ kind: 'invalid' as const });
+      if (current.replay) {
+        if (input.nowMs > current.replay.replayExpiresAt) {
+          mcpRefreshTokens.delete(input.tokenHash);
+          return Promise.resolve({ kind: 'invalid' as const });
+        }
+        if (current.replay.requestFingerprint !== input.requestFingerprint)
+          return Promise.resolve({ kind: 'invalid' as const });
+        return Promise.resolve({
+          kind: 'replayed' as const,
+          receipt: { ...current.replay },
+        });
+      }
+      mcpTokens.set(input.accessToken.tokenHash, {
+        ...input.accessToken,
+        scopes: [...input.accessToken.scopes],
+      });
+      mcpRefreshTokens.set(
+        input.refreshToken.tokenHash,
+        cloneMcpOAuthRefreshToken(input.refreshToken),
+      );
+      mcpRefreshTokens.set(input.tokenHash, {
+        ...cloneMcpOAuthRefreshToken(current),
+        expiresAt: input.receipt.replayExpiresAt,
+        replay: { ...input.receipt },
+      });
+      return Promise.resolve({ kind: 'rotated' as const });
     },
     putAccountWorkspace(workspace) {
       accountWorkspaces.set(workspace.accountId, { ...workspace });
