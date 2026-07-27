@@ -480,6 +480,11 @@ private struct ContractSuite {
 
         try await transport.waitForPendingRequests(2)
         transport.completeRequest(at: 1, with: .snapshot(snapshot().with(sequence: 10, version: "1.6.0")))
+        for _ in 0..<100 {
+            if client.current()?.sequence == 10 { break }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        try expect(client.current()?.sequence, 10, "newer refresh is applied before stale completion")
         transport.completeRequest(at: 0, with: .snapshot(snapshot().with(sequence: 9, version: "1.5.0")))
         _ = try await first.value
         _ = try await second.value
