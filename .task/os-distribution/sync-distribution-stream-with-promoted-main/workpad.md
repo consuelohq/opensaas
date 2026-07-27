@@ -146,3 +146,8 @@ started: 2026-07-27
 - Additional Codex finding verified: timed-out release checks could overlap. RED trace `trc_3e7c479c964d`; fixed with generation-safe single-flight inspection.
 - Single-flight GREEN: 3 files and 42 tests passed, trace `trc_b05657fae04d`.
 - Post-single-flight strict review clean, trace `trc_50574c2a633e`; full verify publish-valid, trace `trc_b0a4fbb02bef`.
+- 2026-07-27 05:43:12 `review.run`: passed — OK
+- 2026-07-27 05:43:20 `verify`: passed — OK
+- Qodo checksum rule verified as valid. RED trace `trc_10a8ab28ab7d`; workflow now records local SHA-256, downloads the stored artifact, and compares remote bytes before passing.
+- Checksum GREEN: 2 files and 28 tests passed, trace `trc_aed53e8ba0bd`.
+- Final strict review clean, trace `trc_0d0a4a08b246`; final full verify publish-valid, trace `trc_99e946578c58`.

@@ -655,6 +655,11 @@ describe('Windows native service and workflow source contracts', () => {
     expect(workflow).toContain('tests/native-lifecycle-endpoint.test.ts');
     expect(workflow).toContain('tests/native-lifecycle-operation.test.ts');
     expect(workflow).toContain('Package the macOS alpha app');
+    expect(workflow).toContain('Record the macOS alpha app checksum');
+    expect(workflow).toContain('id: macos-alpha-checksum');
+    expect(workflow).toContain('actions/download-artifact@v4');
+    expect(workflow).toContain('Verify the uploaded macOS alpha app');
+    expect(workflow).toContain('shasum -a 256');
     for (const requiredPath of [
       'packages/os/package.json',
       'packages/os/cloudflare/**',
