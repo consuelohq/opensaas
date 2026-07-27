@@ -186,6 +186,7 @@ export type LifecycleEngine = {
     channel?: LifecycleReleaseChannel;
     check?: boolean;
     yes?: boolean;
+    expectedVersion?: string;
   }): Promise<LifecycleOperationResult>;
   restart(): Promise<LifecycleOperationResult>;
   repair(): Promise<LifecycleOperationResult>;
