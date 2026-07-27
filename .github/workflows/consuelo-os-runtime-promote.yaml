@@ -33,19 +33,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  promote:
+  approve:
     runs-on: ubuntu-latest
     environment: consuelo-os-${{ inputs.to }}
+    steps:
+      - name: Record channel approval gate
+        run: echo "Approved promotion into ${{ inputs.to }}."
+
+  promote:
+    needs: approve
+    runs-on: ubuntu-latest
+    environment: consuelo / production
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
+        working-directory: packages/os
         run: bun install --frozen-lockfile
+      - name: Install Wrangler
+        run: bun install --global wrangler@4.105.0
       - name: Restore authoritative release state
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
           CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
         run: |
@@ -55,7 +66,7 @@ jobs:
             --file .release/release-state.json
       - name: Promote existing immutable bytes
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_OS_RELEASE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
           CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
           CONSUELO_OS_RELEASE_SIGNING_KEY_ID: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_KEY_ID }}

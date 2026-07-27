@@ -1,0 +1,19 @@
+{
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/resolve-distribution-provider-main-sync-conflict",
+  "baseBranch": "stream/os-provider-tools",
+  "sourceBranch": "stream/os-provider-tools",
+  "startFrom": "stream",
+  "prNumber": 1620,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1620",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1620",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1620/resolve-distribution-provider-main-sync-conflict",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1620",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1620/resolve-distribution-provider-main-sync-conflict",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-resolve-distribution-provider-main-sync-conflict",
+  "taskSession": "tsk_400af50b4b61",
+  "tmuxSession": "opensaas-os-provider-tools-resolve-distribution-provider-main-sync-conflict-400af50b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-resolve-distribution-provider-main-sync-conflict/.task/os-provider-tools/resolve-distribution-provider-main-sync-conflict/session.json",
+  "createdAt": "2026-07-24T04:42:58.004Z"
+}

@@ -7,16 +7,47 @@ on:
   pull_request:
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
+      - packages/os/native/windows-service/**
+      - packages/os/native/macos/**
+      - packages/os/scripts/bootstrap.ps1
+      - packages/os/scripts/windows-platform.ts
+      - packages/os/scripts/lib/windows-platform.ts
+      - packages/os/scripts/lib/lifecycle/**
+      - packages/os/scripts/install.ts
+      - packages/os/scripts/testing/windows-platform-acceptance.ps1
+      - packages/os/scripts/testing/macos-alpha-package.sh
+      - packages/os/tests/windows-*.test.ts
+      - packages/os/tests/macos-platform.test.ts
       - packages/os/scripts/testing/distribution/**
+      - packages/os/scripts/lib/platforms/**
       - packages/os/tests/distribution/**
+      - packages/os/tests/linux-platform.test.ts
+      - packages/os/docs/linux-platform.md
+      - packages/os/docs/macos-platform.md
   push:
     branches:
       - main
       - stream/os-distribution
+      - stream/os-native
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
+      - packages/os/native/windows-service/**
+      - packages/os/native/macos/**
+      - packages/os/scripts/bootstrap.ps1
+      - packages/os/scripts/windows-platform.ts
+      - packages/os/scripts/lib/windows-platform.ts
+      - packages/os/scripts/lib/lifecycle/**
+      - packages/os/scripts/install.ts
+      - packages/os/scripts/testing/windows-platform-acceptance.ps1
+      - packages/os/scripts/testing/macos-alpha-package.sh
+      - packages/os/tests/windows-*.test.ts
+      - packages/os/tests/macos-platform.test.ts
       - packages/os/scripts/testing/distribution/**
+      - packages/os/scripts/lib/platforms/**
       - packages/os/tests/distribution/**
+      - packages/os/tests/linux-platform.test.ts
+      - packages/os/docs/linux-platform.md
+      - packages/os/docs/macos-platform.md
   workflow_dispatch:
 
 concurrency:
@@ -59,7 +90,7 @@ jobs:
           - name: windows
             runner: windows-2025
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -71,9 +102,60 @@ jobs:
         working-directory: packages/os
         run: bun install --frozen-lockfile
 
+      - name: Run macOS menu-bar contracts
+        if: matrix.name == 'macos'
+        run: swift run --package-path packages/os/native/macos ConsueloMacContractTests
+
+      - name: Package the macOS alpha app
+        if: matrix.name == 'macos'
+        run: bash packages/os/scripts/testing/macos-alpha-package.sh packages/os/.tmp-macos-alpha
+
+      - name: Upload the macOS alpha app
+        if: matrix.name == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: consuelo-macos-alpha-${{ github.run_id }}
+          path: packages/os/.tmp-macos-alpha/Consuelo.app.tar.gz
+          if-no-files-found: error
+
+      - name: Run Windows platform contracts
+        if: matrix.name == 'windows'
+        working-directory: packages/os
+        run: bun x vitest run tests/windows-platform.test.ts tests/windows-bootstrap-source.test.ts
+
+      - name: Build the Windows service host
+        if: matrix.name == 'windows'
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path -LiteralPath $vswhere)) {
+            throw "Visual Studio installer discovery is unavailable: $vswhere"
+          }
+          $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) {
+            throw 'MSBuild was not found through Visual Studio installer discovery.'
+          }
+          & $msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj /p:Configuration=Release /p:Platform=x64 /m
+          if ($LASTEXITCODE -ne 0) {
+            throw "MSBuild exited with code $LASTEXITCODE."
+          }
+
+      - name: Run native Windows platform acceptance
+        if: matrix.name == 'windows'
+        shell: pwsh
+        working-directory: packages/os
+        run: ./scripts/testing/windows-platform-acceptance.ps1
+
+      - name: Remove Windows service build intermediates
+        if: matrix.name == 'windows'
+        shell: pwsh
+        run: |
+          Remove-Item -LiteralPath packages/os/native/windows-service/bin -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -LiteralPath packages/os/native/windows-service/obj -Recurse -Force -ErrorAction SilentlyContinue
+
       - name: Run distribution harness contracts
         working-directory: packages/os
-        run: bun x vitest run tests/distribution
+        run: bun x vitest run tests/distribution --testTimeout 15000
 
       - name: Probe the native runner
         working-directory: packages/os
@@ -87,6 +169,29 @@ jobs:
         with:
           name: consuelo-os-distribution-${{ matrix.name }}-${{ github.run_id }}
           path: packages/os/distribution-environment.json
+
+  debian-linux-platform:
+    name: Consuelo OS / Debian 12 Linux platform
+    runs-on: ubuntu-24.04
+    container: debian:12-slim
+    timeout-minutes: 15
+    steps:
+      - name: Install runner prerequisites
+        run: apt-get update && apt-get install -y --no-install-recommends ca-certificates git unzip && rm -rf /var/lib/apt/lists/*
+
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install OS dependencies
+        working-directory: packages/os
+        run: bun install --frozen-lockfile
+
+      - name: Run Linux platform contracts
+        working-directory: packages/os
+        run: bun x vitest run tests/linux-platform.test.ts
 
   regression-contracts:
     name: Consuelo OS / existing distribution regressions

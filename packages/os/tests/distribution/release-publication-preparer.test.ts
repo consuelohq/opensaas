@@ -43,8 +43,13 @@ function createRuntimeSource(root: string): string {
     'package.json': '{"name":"@consuelo/os-fixture","private":true}\n',
     'bun.lock': 'fixture-lock\n',
     'scripts/os.ts': 'export const osFixture = true;\n',
+    'scripts/native-lifecycle-operation.ts':
+      'export const nativeLifecycleOperationFixture = true;\n',
     'scripts/server/main.ts': 'export const serverFixture = true;\n',
     'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
+    'scripts/managed-components.ts': 'export const managedComponentsCliFixture = true;\n',
+    'scripts/lib/managed-components.ts': 'export const managedComponentsFixture = true;\n',
+    'scripts/lib/managed-component-install.ts': 'export const managedComponentInstallFixture = true;\n',
     'manifests/generated/tool.manifest.json': '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
     'manifests/generated/core.manifest.json': '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
     'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',

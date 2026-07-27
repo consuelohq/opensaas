@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import {
   existsSync,
   lstatSync,
@@ -7,39 +6,52 @@ import {
   readdirSync,
   statSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
-import type { RuntimeBundleManifest } from '../distribution/runtime-bundle';
+import {
+  verifyRuntimeBundleArchive,
+  type RuntimeBundleArchiveEntry,
+  type RuntimeBundleManifest,
+} from '../distribution/runtime-bundle';
 import { isPathWithin, resolveLifecyclePaths } from './paths';
 import type { LifecycleInstallState } from './types';
 
-function sha256(bytes: Uint8Array): string {
-  return `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
+function collectInstalledRuntimeEntries(
+  releasePath: string,
+  directory = releasePath,
+): RuntimeBundleArchiveEntry[] {
+  const entries: RuntimeBundleArchiveEntry[] = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.name === 'node_modules') continue;
+    const absolutePath = join(directory, entry.name);
+    const relativePath = relative(releasePath, absolutePath).replaceAll('\\', '/');
+    const stat = lstatSync(absolutePath);
+    if (stat.isSymbolicLink()) {
+      throw new Error(`runtime release contains symbolic link: ${relativePath}`);
+    }
+    if (stat.isDirectory()) {
+      entries.push(...collectInstalledRuntimeEntries(releasePath, absolutePath));
+      continue;
+    }
+    if (!stat.isFile()) {
+      throw new Error(`runtime release contains unsupported entry: ${relativePath}`);
+    }
+    entries.push({
+      bytes: readFileSync(absolutePath),
+      mode: stat.mode & 0o777,
+      path: relativePath,
+    });
+  }
+  return entries;
 }
 
 export function verifyInstalledRuntimeRelease(releasePath: string): RuntimeBundleManifest {
-  const manifestPath = join(releasePath, 'runtime-bundle.manifest.json');
-  if (!existsSync(manifestPath)) throw new Error('runtime release manifest is missing');
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as RuntimeBundleManifest;
-  if (manifest.kind !== 'consuelo-runtime-bundle' || manifest.schemaVersion !== 1) {
-    throw new Error('runtime release manifest is invalid');
+  const resolvedReleasePath = resolve(releasePath);
+  if (!existsSync(resolvedReleasePath) || !statSync(resolvedReleasePath).isDirectory()) {
+    throw new Error('runtime release directory is missing');
   }
-  for (const file of manifest.files) {
-    const absolutePath = resolve(releasePath, file.path);
-    if (!isPathWithin(releasePath, absolutePath) || !existsSync(absolutePath)) {
-      throw new Error(`runtime release is missing ${file.path}`);
-    }
-    const stat = statSync(absolutePath);
-    if (!stat.isFile()) throw new Error(`runtime release entry is not a file: ${file.path}`);
-    const bytes = readFileSync(absolutePath);
-    if (bytes.byteLength !== file.size || sha256(bytes) !== file.digest) {
-      throw new Error(`runtime release digest mismatch for ${file.path}`);
-    }
-    if ((stat.mode & 0o777) !== file.mode) {
-      throw new Error(`runtime release mode mismatch for ${file.path}`);
-    }
-  }
-  return manifest;
+  const entries = collectInstalledRuntimeEntries(resolvedReleasePath);
+  return verifyRuntimeBundleArchive(entries);
 }
 
 function currentRelease(paths: ReturnType<typeof resolveLifecyclePaths>): {

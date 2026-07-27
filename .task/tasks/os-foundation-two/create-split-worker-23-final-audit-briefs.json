@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/create-split-worker-23-final-audit-briefs",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1673,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1673",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1673",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1673/create-split-worker-23-final-audit-briefs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1673",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1673/create-split-worker-23-final-audit-briefs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-create-split-worker-23-final-audit-briefs",
+  "taskSession": "tsk_1763d68ddab5",
+  "tmuxSession": "opensaas-os-foundation-two-create-split-worker-23-final-audit-briefs-1763d68d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-create-split-worker-23-final-audit-briefs/.task/os-foundation-two/create-split-worker-23-final-audit-briefs/session.json",
+  "createdAt": "2026-07-27T18:22:19.479Z"
+}

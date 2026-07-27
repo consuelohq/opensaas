@@ -71,7 +71,7 @@ These GitHub deployment environments exist and intentionally contain no copied p
 - `consuelo-os-beta`
 - `consuelo-os-stable`
 
-The existing `consuelo / production` environment remains unchanged. Later release workers attach immutable artifacts and promotion approvals to the new environments.
+The existing `consuelo / production` environment is the release credential vault for Cloudflare provider authority. The `consuelo-os-dev`, `consuelo-os-canary`, `consuelo-os-beta`, and `consuelo-os-stable` environments remain credential-free channel approval/deployment boundaries. Promotion and rollback gate on the destination channel environment before a separate credentialed mutation job runs through `consuelo / production`; credentials must not be copied into channel environments.
 
 ## Runtime-bundle fixtures
 

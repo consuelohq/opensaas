@@ -53,6 +53,7 @@ export const manifestConfig = {
     "excludePrefixes": [
       "browser.",
       "linear.",
+      "deployment.",
       "railway.",
       "sentry.",
       "task.",
@@ -63,6 +64,7 @@ export const manifestConfig = {
     "excludeCategories": [
       "browser",
       "linear",
+      "deployment",
       "railway",
       "sentry",
       "artifacts"

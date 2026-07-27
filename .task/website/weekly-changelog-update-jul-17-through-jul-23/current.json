@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/weekly-changelog-update-jul-17-through-jul-23",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1606,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1606",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1606",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1606/weekly-changelog-update-jul-17-through-jul-23",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1606",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1606/weekly-changelog-update-jul-17-through-jul-23",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-weekly-changelog-update-jul-17-through-jul-23",
+  "taskSession": "tsk_c1e90d4f8d52",
+  "tmuxSession": "opensaas-website-weekly-changelog-update-jul-17-through-jul-23-c1e90d4f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-weekly-changelog-update-jul-17-through-jul-23/.task/website/weekly-changelog-update-jul-17-through-jul-23/session.json",
+  "createdAt": "2026-07-23T22:16:25.180Z"
+}

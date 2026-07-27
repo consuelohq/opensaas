@@ -26,6 +26,7 @@ import {
   type LocalAgentDetection,
 } from './local-agent-connectivity';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
+import { provisionManagedComponentIndexes } from './managed-component-install';
 import {
   createGatewaySecurityConfig,
   getAgentAppCredentialStatus,
@@ -155,6 +156,7 @@ export type DoctorResult = {
 
 const REQUIRED_DIRS = [
   'agents',
+  'components',
   'skills',
   'tools',
   'scripts',
@@ -173,7 +175,6 @@ const REQUIRED_DIRS = [
   'tmp',
   'runtime',
   'runtime/releases',
-  'runtime/current',
   'node',
   'node/keys',
   'node/security',
@@ -1620,8 +1621,13 @@ export function provisionLocalOs(
     getDefaultSelectedSkillNames(),
   );
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
-  actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
-  actions.push(...seedBundledTools(home, dryRun));
+  actions.push(...provisionManagedComponentIndexes({
+    home,
+    selectedSkills: config.selectedSkills,
+    dryRun,
+    generatedAt: nowIso(),
+    userRoot: path.join(os.homedir(), 'Consuelo'),
+  }));
 
   const requestedAgentNames = options.connectAgents ?? [];
   const agentConfiguration = requestedAgentNames.length > 0

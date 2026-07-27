@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2884c981b637",
+  "tmuxSession": "opensaas-os-native-audit-macos-native-wave-before-main-2884c981",
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/audit-macos-native-wave-before-main",
+  "branch": "task/os-native/audit-macos-native-wave-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-audit-macos-native-wave-before-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-audit-macos-native-wave-before-main",
+  "prNumber": 1667,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1667",
+  "createdAt": "2026-07-27T02:26:05.233Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-audit-macos-native-wave-before-main/.task/os-native/audit-macos-native-wave-before-main/session.json"
+}

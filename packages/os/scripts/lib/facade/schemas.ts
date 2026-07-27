@@ -559,7 +559,6 @@ export const ExploitInput = z.object({
 export const ConfirmInput = z.object({
   ...requestFields,
   verify: z.boolean().optional(),
-  runtime: z.boolean().optional(),
   test: optionalString,
 });
 
@@ -1022,6 +1021,92 @@ export const ResearchIngestInput = z.object({
   noMemorySave: z.boolean().optional(),
 });
 
+const DeploymentProvider = z.enum(['railway', 'vercel', 'cloudflare']);
+const deploymentCommonFields = {
+  ...requestFields,
+  provider: DeploymentProvider,
+  timeout: z.number().int().positive().optional(),
+};
+const deploymentApprovalFields = {
+  approved: z.boolean().optional(),
+  approvalReason: optionalString,
+};
+
+export const DeploymentDetectInput = z.object({
+  ...deploymentCommonFields,
+});
+
+export const DeploymentContextInput = z.object({
+  ...deploymentCommonFields,
+  action: z.enum(['auth', 'current']),
+});
+
+export const DeploymentListInput = z.object({
+  ...deploymentCommonFields,
+  resource: z.enum(['projects', 'services', 'deployments', 'domains']),
+  projectId: optionalString,
+  environment: optionalString,
+  serviceId: optionalString,
+  cursor: optionalString,
+  limit: z.number().int().positive().max(1000).optional(),
+});
+
+export const DeploymentStatusInput = z.object({
+  ...deploymentCommonFields,
+  deploymentId: z.string().min(1),
+  serviceId: optionalString,
+  environment: optionalString,
+});
+
+export const DeploymentLogsInput = z.object({
+  ...deploymentCommonFields,
+  deploymentId: optionalString,
+  serviceId: optionalString,
+  environment: optionalString,
+  cursor: optionalString,
+  limit: z.number().int().positive().max(1000).optional(),
+  since: optionalString,
+  until: optionalString,
+  filter: optionalString,
+  kind: z.enum(['runtime', 'build']).optional(),
+  latest: z.boolean().optional(),
+});
+
+export const DeploymentDeployInput = z.object({
+  ...deploymentCommonFields,
+  ...dryRunField,
+  ...deploymentApprovalFields,
+  action: z.enum(['deploy', 'redeploy', 'promote']),
+  target: optionalString,
+  projectId: optionalString,
+  serviceId: optionalString,
+  source: optionalString,
+  deploymentId: optionalString,
+  environment: optionalString,
+  wait: z.boolean().optional(),
+});
+
+export const DeploymentEnvironmentInput = z.object({
+  ...deploymentCommonFields,
+  ...dryRunField,
+  ...deploymentApprovalFields,
+  action: z.enum(['list', 'set', 'delete']),
+  name: optionalString,
+  value: z.string().min(1).optional(),
+  scope: optionalString,
+  projectId: optionalString,
+  environment: optionalString,
+  serviceId: optionalString,
+  skipDeploys: z.boolean().optional(),
+});
+
+export const DeploymentRawInput = z.object({
+  ...deploymentCommonFields,
+  ...dryRunField,
+  ...deploymentApprovalFields,
+  args: z.array(z.string().min(1)).min(1),
+});
+
 export const RailwayLogsInput = z.object({
   ...requestFields,
   service: optionalString,
@@ -1223,6 +1308,14 @@ export const schemaRegistry = {
   MediaSvgConvertInput,
   MediaScreenshotRenderInput,
   ResearchIngestInput,
+  DeploymentDetectInput,
+  DeploymentContextInput,
+  DeploymentListInput,
+  DeploymentStatusInput,
+  DeploymentLogsInput,
+  DeploymentDeployInput,
+  DeploymentEnvironmentInput,
+  DeploymentRawInput,
   RailwayLogsInput,
   RailwayRedeployInput,
   WebsiteDeployInput,
@@ -1285,7 +1378,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
-  ConfirmInput: '{ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }',
+  ConfirmInput: '{ verify?: boolean; test?: string; requestId?: string; taskSession?: string }',
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
@@ -1334,6 +1427,14 @@ export const schemaTypeSignatures: Record<string, string> = {
   MediaSvgConvertInput: '{ input: string; out: string; strategy?: \"wrapper\" | \"trace\" | \"both\" | \"auto\"; traceEngine?: \"auto\" | \"color\" | \"mono\"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaScreenshotRenderInput: '{ input: string; out: string; width?: number; height?: number; theme?: \"dark\" | \"light\"; accent?: string; background?: string; padding?: number; fit?: \"contain\" | \"cover\"; pattern?: \"grid\" | \"lines\" | \"none\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; memoryTitle?: string; memoryCategory?: string; noMemorySave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  DeploymentDetectInput: '{ provider: "railway" | "vercel" | "cloudflare"; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentContextInput: '{ provider: "railway" | "vercel" | "cloudflare"; action: "auth" | "current"; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentListInput: '{ provider: "railway" | "vercel" | "cloudflare"; resource: "projects" | "services" | "deployments" | "domains"; projectId?: string; environment?: string; serviceId?: string; cursor?: string; limit?: number; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentStatusInput: '{ provider: "railway" | "vercel" | "cloudflare"; deploymentId: string; serviceId?: string; environment?: string; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentLogsInput: '{ provider: "railway" | "vercel" | "cloudflare"; deploymentId?: string; serviceId?: string; environment?: string; cursor?: string; limit?: number; since?: string; until?: string; filter?: string; kind?: "runtime" | "build"; latest?: boolean; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentDeployInput: '{ provider: "railway" | "vercel" | "cloudflare"; action: "deploy" | "redeploy" | "promote"; target?: string; projectId?: string; serviceId?: string; source?: string; deploymentId?: string; environment?: string; wait?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  DeploymentEnvironmentInput: '{ provider: "railway" | "vercel" | "cloudflare"; action: "list" | "set" | "delete"; name?: string; value?: string; scope?: string; projectId?: string; environment?: string; serviceId?: string; skipDeploys?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  DeploymentRawInput: '{ provider: "railway" | "vercel" | "cloudflare"; args: string[]; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',

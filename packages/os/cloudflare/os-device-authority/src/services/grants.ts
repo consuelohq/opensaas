@@ -58,6 +58,15 @@ export async function rememberAccountWorkspace(input: {
         existing?.defaultNodeId ?? existing?.homeNodeId ?? input.grant.nodeId,
       updatedAt: input.nowMs,
     });
+    await input.store.putWorkspaceMembership({
+      accountId: input.accountId,
+      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceSlug: workspace.workspaceSlug,
+      workspaceHost: workspace.workspaceHost,
+      status: 'active',
+      createdAt: existing?.updatedAt ?? input.nowMs,
+      updatedAt: input.nowMs,
+    });
   } catch (error: unknown) {
     throw new Error(
       error instanceof Error

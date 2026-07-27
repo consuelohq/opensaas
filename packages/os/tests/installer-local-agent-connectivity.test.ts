@@ -76,11 +76,20 @@ describe('installer local agent connectivity', () => {
     expect(openCodeConfig.mcp['consuelo-os'].command).toEqual([commandPath]);
 
     const launcher = readFileSync(join(osHome, 'sites', 'index.html'), 'utf8');
-    const settings = readFileSync(join(osHome, 'sites', 'settings', 'index.html'), 'utf8');
+    const settings = readFileSync(join(osHome, 'sites', 'configuration', 'index.html'), 'utf8');
+    const settingsSnapshot = JSON.parse(
+      readFileSync(join(osHome, 'sites', '.data', 'configuration', 'snapshot.json'), 'utf8'),
+    ) as {
+      localAgents: Array<{ name: string; status: string; message?: string }>;
+    };
     expect(launcher).toContain('Connected to 1 local agent');
     expect(launcher).toContain('OpenCode');
-    expect(settings).toContain('status-connected">verified</span>');
-    expect(settings).toContain('OpenCode MCP connection is verified.');
+    expect(settings).toContain('/gateway/configuration/snapshot');
+    expect(settings).not.toContain('OpenCode MCP connection is verified.');
+    expect(settingsSnapshot.localAgents.find((agent) => agent.name === 'opencode')).toMatchObject({
+      status: 'verified',
+      message: 'OpenCode MCP connection is verified.',
+    });
     expect(existsSync(join(osHome, 'consuelo.db'))).toBe(false);
   });
 });

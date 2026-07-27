@@ -35,7 +35,6 @@
     "stream:context": "bun ./scripts/stream-context.js",
     "stream:list": "bun ./scripts/stream-list.js",
     "stream:create": "bun ./scripts/stream-create.js",
-    "railway:logs": "bun ./scripts/railway-logs.js",
     "wait": "bun ./scripts/wait.js",
     "browser": "bun ./scripts/browser.js",
     "website:deploy": "bun ./scripts/website-deploy.js",
@@ -112,7 +111,9 @@
     "media:svg": "python3 ./scripts/media-svg.py",
     "trace:watch": "bun ./scripts/trace-watch.ts",
     "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check",
-    "lifecycle": "bun ./scripts/lifecycle.ts"
+    "lifecycle": "bun ./scripts/lifecycle.ts",
+    "windows-platform": "bun ./scripts/windows-platform.ts",
+    "managed-components": "bun ./scripts/managed-components.ts"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

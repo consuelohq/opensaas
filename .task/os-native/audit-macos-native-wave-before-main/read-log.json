@@ -1,0 +1,20 @@
+{
+  "files": [
+    ".task/os-native/audit-macos-native-wave-before-main/workpad.md",
+    "packages/os/native/macos/Package.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift",
+    "packages/os/scripts/lib/lifecycle/diagnostics.ts",
+    "packages/os/scripts/lib/native-lifecycle-client.ts",
+    "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+    "packages/os/scripts/package-macos-alpha.sh",
+    "packages/os/scripts/server/main.ts",
+    "packages/os/scripts/testing/macos-alpha-package.sh",
+    "packages/os/tests/macos-platform.test.ts",
+    "packages/os/tests/native-lifecycle-client.test.ts",
+    "packages/os/tests/native-lifecycle-endpoint.test.ts"
+  ],
+  "updatedAt": "2026-07-27T02:49:59.158Z"
+}

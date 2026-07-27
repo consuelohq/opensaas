@@ -102,6 +102,11 @@ export type WorkspaceCloudflareEdgeRouterInput = {
   registry: WorkspaceCloudflareEdgeRouteRegistry;
   internalSigningSecret?: string;
   fetchUpstream?: (request: Request) => Promise<Response>;
+  authorizeWorkspaceSession?: (input: {
+    request: Request;
+    workspaceId: string;
+    workspaceHost: string;
+  }) => Promise<boolean>;
   siteSnapshots?: WorkspaceSitesSnapshotStore;
   workspaceBaseDomains?: string[];
   reservedHostnames?: string[];
@@ -119,7 +124,10 @@ const SAFE_ERROR_MESSAGES: Record<string, string> = {
   WORKSPACE_HOSTNAME_NOT_FOUND: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_HOSTNAME_RESERVED: PLATFORM_SAFETY_MESSAGE,
-  WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE: PLATFORM_SAFETY_MESSAGE,
+  WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE:
+    'The selected workspace node is currently unavailable.',
+  WORKSPACE_NODE_OFFLINE:
+    'The selected workspace node is currently unavailable.',
   WORKSPACE_EDGE_ROUTER_ERROR: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_EDGE_AUTH_REQUIRED: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE: PLATFORM_SAFETY_MESSAGE,
@@ -724,6 +732,51 @@ export const createWorkspaceCloudflareEdgeRouter = (
           });
         }
 
+        if (resolution.auth === 'workspace-session') {
+          const authorized = input.authorizeWorkspaceSession
+            ? await input.authorizeWorkspaceSession({
+                request,
+                workspaceId: resolution.workspaceId,
+                workspaceHost: resolution.hostname,
+              })
+            : false;
+          if (!authorized) {
+            const acceptsHtml =
+              request.method === 'GET' &&
+              (request.headers.get('accept') ?? '').includes('text/html');
+            if (acceptsHtml) {
+              const login = new URL(
+                '/login/google/start',
+                OAUTH_AUTHORIZATION_SERVER,
+              );
+              login.searchParams.set('purpose', 'web');
+              login.searchParams.set(
+                'return_to',
+                `${inboundUrl.pathname}${inboundUrl.search}`,
+              );
+              return new Response(null, {
+                status: 302,
+                headers: {
+                  location: login.toString(),
+                  'cache-control': 'no-store',
+                  'x-content-type-options': 'nosniff',
+                },
+              });
+            }
+            return new Response(
+              JSON.stringify({ error: 'workspace_session_required' }),
+              {
+                status: 401,
+                headers: {
+                  'content-type': 'application/json; charset=utf-8',
+                  'cache-control': 'no-store',
+                  'x-content-type-options': 'nosniff',
+                },
+              },
+            );
+          }
+        }
+
         if (resolution.target.kind === 'redirect') {
           const suffix = inboundUrl.pathname.slice(resolution.route.length);
           const location = `${resolution.target.location.replace(/\/$/, '')}${suffix}${inboundUrl.search}`;
@@ -738,7 +791,10 @@ export const createWorkspaceCloudflareEdgeRouter = (
         }
 
         if (resolution.target.kind === 'site-snapshot') {
-          if (resolution.auth !== 'public') {
+          if (
+            resolution.auth !== 'public' &&
+            resolution.auth !== 'workspace-session'
+          ) {
             return createSafeErrorResponse({
               status: 503,
               code: 'WORKSPACE_EDGE_AUTH_REQUIRED',

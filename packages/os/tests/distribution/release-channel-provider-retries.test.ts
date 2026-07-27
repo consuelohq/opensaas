@@ -369,6 +369,30 @@ describe('release provider retry safety', () => {
     );
   });
 
+  it('creates a deployment without inheriting the currently running publication status', async () => {
+    let captured: Parameters<ReleaseProviderCommandRunner>[0] | null = null;
+    const runner: ReleaseProviderCommandRunner = async (planned) => {
+      captured = planned;
+      return { exitCode: 0, stderr: '', stdout: '{}' };
+    };
+    const provider = createReleaseProviderCommandBackend(config, runner);
+
+    await provider.createDeployment({
+      bundleId: RELEASE_SET_ID,
+      environment: 'consuelo-os-dev',
+      sourceCommit: SOURCE_COMMIT,
+    });
+
+    expect(captured?.purpose).toBe('create GitHub Deployment consuelo-os-dev');
+    expect(captured?.args).toEqual(expect.arrayContaining([
+      `ref=${SOURCE_COMMIT}`,
+      'environment=consuelo-os-dev',
+      'auto_merge=false',
+      'required_contexts[]',
+      `payload[bundleId]=${RELEASE_SET_ID}`,
+    ]));
+  });
+
   it('requires the promoted source commit to be integrated to main before moving a protected ref', async () => {
     const mutation = promotionMutation();
     const remoteState = createEmptyReleaseState();

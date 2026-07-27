@@ -12,11 +12,26 @@ export type ProviderErrorCode =
   | 'RATE_LIMITED'
   | 'UNAVAILABLE'
   | 'MALFORMED_OUTPUT'
+  | 'INVALID_INPUT'
   | 'COMMAND_FAILED'
   | 'UNSUPPORTED_CAPABILITY'
   | 'APPROVAL_REQUIRED'
   | 'TIMEOUT'
   | 'CANCELLED';
+
+export class ProviderInputError extends Error {
+  readonly field: string;
+
+  constructor(field: string, message: string) {
+    super(message);
+    this.name = 'ProviderInputError';
+    this.field = field;
+  }
+}
+
+export const providerInputError = (field: string, message: string): ProviderInputError => {
+  return new ProviderInputError(field, message);
+};
 
 export type ProviderCommandDiagnostics = {
   command: string;
@@ -29,6 +44,12 @@ export type ProviderCommandDiagnostics = {
   stderrTruncated?: boolean;
 };
 
+export type ProviderRecoveryGuidance = {
+  action: 'install_cli' | 'authenticate_cli';
+  command: string;
+  message: string;
+};
+
 export class ProviderError extends Data.TaggedError('ProviderError')<{
   code: ProviderErrorCode;
   provider: string;
@@ -36,6 +57,7 @@ export class ProviderError extends Data.TaggedError('ProviderError')<{
   message: string;
   diagnostics?: ProviderCommandDiagnostics;
   approval?: ProviderApprovalMetadata;
+  recovery?: ProviderRecoveryGuidance;
   cause?: { name: string; message: string };
 }> {}
 
@@ -46,6 +68,7 @@ export const providerError = (input: {
   message: string;
   diagnostics?: ProviderCommandDiagnostics;
   approval?: ProviderApprovalMetadata;
+  recovery?: ProviderRecoveryGuidance;
   cause?: unknown;
 }): ProviderError => {
   const cause = input.cause === undefined
@@ -60,6 +83,7 @@ export const providerError = (input: {
     message: input.message,
     ...(input.diagnostics ? { diagnostics: input.diagnostics } : {}),
     ...(input.approval ? { approval: input.approval } : {}),
+    ...(input.recovery ? { recovery: input.recovery } : {}),
     ...(cause ? { cause } : {}),
   });
 };

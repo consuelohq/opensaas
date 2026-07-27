@@ -1,0 +1,19 @@
+{
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/orchestrator-audit-provider-integration-before-main",
+  "baseBranch": "stream/os-provider-tools",
+  "sourceBranch": "stream/os-provider-tools",
+  "startFrom": "stream",
+  "prNumber": 1618,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1618",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1618",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1618/orchestrator-audit-provider-integration-before-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1618",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1618/orchestrator-audit-provider-integration-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-orchestrator-audit-provider-integration-before-main",
+  "taskSession": "tsk_97647df58502",
+  "tmuxSession": "opensaas-os-provider-tools-orchestrator-audit-provider-integration-before-m-97647df5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-orchestrator-audit-provider-integration-before-main/.task/os-provider-tools/orchestrator-audit-provider-integration-before-main/session.json",
+  "createdAt": "2026-07-24T04:16:53.494Z"
+}

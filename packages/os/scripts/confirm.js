@@ -21,7 +21,6 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --verify          run bun run verify and interpret the result');
-  writeStdout('  --runtime         run bun run railway:logs -- --errors --json');
   writeStdout('  --test <pattern>  run npx jest <pattern> --runInBand');
   writeStdout('  --json            output structured json');
   writeStdout('  --help            show this help');
@@ -30,7 +29,6 @@ function printHelp() {
 function parseArgs(argv) {
   const args = {
     json: false,
-    runtime: false,
     tests: [],
     verify: false,
   };
@@ -41,9 +39,6 @@ function parseArgs(argv) {
     switch (argument) {
       case '--verify':
         args.verify = true;
-        break;
-      case '--runtime':
-        args.runtime = true;
         break;
       case '--test': {
         const next = argv[index + 1];
@@ -65,7 +60,7 @@ function parseArgs(argv) {
     }
   }
 
-  if (!args.verify && !args.runtime && args.tests.length === 0 && !args.help) {
+  if (!args.verify && args.tests.length === 0 && !args.help) {
     args.verify = true;
   }
 
@@ -115,20 +110,6 @@ function runVerify(repoRoot) {
   };
 }
 
-function runRuntime(repoRoot) {
-  const result = runCommand(repoRoot, 'bun', ['run', 'railway:logs', '--', '--errors', '--json']);
-  const data = parseJson(result.stdout);
-  const errors = Number(data?.errors || 0) + Number(data?.httpErrors || 0);
-
-  return {
-    passed: result.passed && errors === 0,
-    status: result.status,
-    errors,
-    data,
-    stderr: result.stderr.trim(),
-  };
-}
-
 function runTest(repoRoot, pattern) {
   const result = runCommand(repoRoot, 'npx', ['jest', pattern, '--runInBand']);
   const passedMatch = result.stdout.match(/Tests:\s+(\d+) passed/);
@@ -147,7 +128,6 @@ function runTest(repoRoot, pattern) {
 function getVerdict(result) {
   const checks = [
     result.verify ? result.verify.passed : true,
-    result.runtime ? result.runtime.passed : true,
     ...result.tests.map((test) => test.passed),
   ];
 
@@ -167,22 +147,6 @@ function writeConfirmationEvidence(repoRoot, result, state) {
         failed_checks: result.verify.failed_checks || [],
         status: result.verify.status,
         summary: result.verify.passed ? 'verify passed' : 'verify failed',
-      },
-    }, { requireMirror: true });
-  }
-
-  if (result.runtime) {
-    appendEvidenceEvent(repoRoot, {
-      type: result.runtime.passed ? 'runtime.clean' : 'runtime.error',
-      source: 'confirm',
-      question: state?.query || null,
-      action: 'bun run railway:logs -- --errors --json',
-      status: result.runtime.passed ? 'clean' : 'error',
-      confidence_delta: result.runtime.passed ? 0.05 : -0.15,
-      details: {
-        errors: result.runtime.errors,
-        status: result.runtime.status,
-        summary: result.runtime.passed ? 'runtime logs clean' : 'runtime errors recorded',
       },
     }, { requireMirror: true });
   }
@@ -220,10 +184,6 @@ function printHuman(result) {
     writeStdout(`  tests: ${test.passed ? 'pass' : 'fail'} - ${test.pattern}`);
   }
 
-  if (result.runtime) {
-    writeStdout(`  runtime: ${result.runtime.passed ? 'pass' : 'fail'} (${result.runtime.errors} errors)`);
-  }
-
   writeStdout(`  verdict: ${result.verdict}`);
 }
 
@@ -238,7 +198,6 @@ function main() {
   const repoRoot = resolveGitRoot(process.cwd());
   const result = {
     verify: args.verify ? runVerify(repoRoot) : null,
-    runtime: args.runtime ? runRuntime(repoRoot) : null,
     tests: args.tests.map((pattern) => runTest(repoRoot, pattern)),
     updated_at: new Date().toISOString(),
   };

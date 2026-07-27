@@ -12,6 +12,7 @@ import type {
   TraceSitesDashboardEvent,
   TraceSitesDashboardSummary,
 } from './trace-sites-gateway-contract';
+import { redactText, redactTraceJson } from './redaction';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -239,7 +240,9 @@ function rowToDashboardEvent(
 
   return {
     traceId,
-    idempotencyKey: `${input.workspaceId}:${traceId}:${cursor}`,
+    idempotencyKey: input.nodeId
+      ? `${input.workspaceId}:${input.nodeId}:${traceId}:${cursor}`
+      : `${input.workspaceId}:${traceId}:${cursor}`,
     sourceMode: input.sourceMode,
     branch:
       cleanString(row.branch) || cleanString(row.task_session) || '(no branch)',
@@ -273,10 +276,12 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   const inputTokens = numberValue(row.input_tokens);
   const outputTokens = numberValue(row.output_tokens);
   const tokens = numberValue(row.total_tokens) || inputTokens + outputTokens;
-  const rawInputJson = cleanString(row.input_json);
-  const rawResolvedInputJson = cleanString(row.resolved_input_json);
-  const rawResultJson = cleanString(row.result_json);
-  const rawStderr = cleanString(row.stderr);
+  const rawInputJson = sanitizeTracePayloadJson(cleanString(row.input_json));
+  const rawResolvedInputJson = sanitizeTracePayloadJson(
+    cleanString(row.resolved_input_json),
+  );
+  const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
+  const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
   const resultMessage = resultMessageFromJson(rawResultJson);
   const batchResults =
     tool === 'batch' ? batchResultsFromJson(rawResultJson) : [];
@@ -290,7 +295,7 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     branch:
       cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
     taskSession: cleanString(row.task_session),
-    worktree: cleanString(row.worktree),
+    worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
     status: success ? 'success' : cleanString(row.status) || 'error',
     ok: success,
     code: cleanString(row.code) || (success ? 'OK' : 'ERROR'),
@@ -325,6 +330,55 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     historyRow.batchResultsCount = batchResults.length;
   }
   return historyRow;
+}
+
+export function sanitizeTraceHistoryRowForTest(
+  row: TraceRow,
+): TraceSitesGatewayHistoryRow {
+  return historyRowFromTraceRow(row);
+}
+
+const TRACE_PRIVATE_FIELD_PATTERN = /(?:prompt|instruction|messages?|environment|env|authorization|password|passphrase|secret|token|api[_-]?key|cookie|credential|private[_-]?key|client[_-]?secret|session|jwt)/i;
+
+function sanitizeTracePayloadJson(value: string): string {
+  if (!value) return '';
+  const parsed = parseJson(value);
+  if (parsed === null) return sanitizeLocalTraceText(value);
+  const scrubbed = scrubPrivateTraceFields(parsed, undefined, new WeakSet());
+  try {
+    return JSON.stringify(redactTraceJson(scrubbed));
+  } catch {
+    return sanitizeLocalTraceText(value);
+  }
+}
+
+function scrubPrivateTraceFields(
+  value: unknown,
+  key: string | undefined,
+  seen: WeakSet<object>,
+): unknown {
+  if (key && TRACE_PRIVATE_FIELD_PATTERN.test(key)) return '[REDACTED_SECRET]';
+  if (typeof value === 'string') return sanitizeLocalTraceText(value);
+  if (value === null || value === undefined || typeof value !== 'object') {
+    return value;
+  }
+  if (seen.has(value)) return '[REDACTED_CIRCULAR]';
+  seen.add(value);
+  if (Array.isArray(value)) {
+    return value.map((item) => scrubPrivateTraceFields(item, undefined, seen));
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([entryKey, entryValue]) => [
+      entryKey,
+      scrubPrivateTraceFields(entryValue, entryKey, seen),
+    ]),
+  );
+}
+
+function sanitizeLocalTraceText(value: string): string {
+  return redactText(value)
+    .replace(/\/Users\/[^/\s"']+/g, '/Users/[user]')
+    .replace(/\/home\/[^/\s"']+/g, '/home/[user]');
 }
 
 function resolveHistoryBeforeRowid(

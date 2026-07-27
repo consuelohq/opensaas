@@ -5,7 +5,9 @@ const masterPath = `${planRoot}/plan.md`;
 const master = await Bun.file(masterPath).text();
 const readme = await Bun.file(`${root}/README.md`).text();
 const dispatch = await Bun.file(`${planRoot}/dispatch.md`).text();
-const environmentRegistry = await Bun.file(`${planRoot}/environment-registry.md`).text();
+const environmentRegistry = await Bun.file(
+  `${planRoot}/environment-registry.md`,
+).text();
 const reviewTemplate = await Bun.file(`${root}/grok-review-template.md`).text();
 const gitignore = await Bun.file(`${planRoot}/../../../../.gitignore`).text();
 const files: string[] = [];
@@ -20,21 +22,53 @@ const workers = files.filter((name) => /^\d{2}-.*\.md$/.test(name));
 const expectedPrefixes = Array.from({ length: 30 }, (_, index) =>
   String(index + 1).padStart(2, '0'),
 );
+const finalAuditSubbriefs = [
+  '23a-core-runtime-lifecycle-recovery-audit.md',
+  '23b-provider-control-plane-audit.md',
+  '23c-web-auth-launcher-traces-security-audit.md',
+  '23d-native-platform-local-control-audit.md',
+  '23e-distribution-release-ci-audit.md',
+  '23f-multi-node-registry-routing-audit.md',
+  '23g-repository-boundaries-operability-docs-audit.md',
+  '23h-cross-wave-final-go-no-go.md',
+];
+const finalAuditReportTemplates = [
+  'README.md',
+  'finding-ledger.md',
+  '23a-report.md',
+  '23b-report.md',
+  '23c-report.md',
+  '23d-report.md',
+  '23e-report.md',
+  '23f-report.md',
+  '23g-report.md',
+  '23h-go-no-go.md',
+];
+const finalAuditReportRoot = `${planRoot}/reviews/final`;
 const references = [...readme.matchAll(/`((?:\d{2})-.*?\.md)`/g)].map(
   (match) => match[1],
 );
 const uniqueReferences = [...new Set(references)];
-const missingReferences = uniqueReferences.filter((name) => !files.includes(name));
-const unreferencedWorkers = workers.filter((name) => !references.includes(name));
-const groupedPrefixes = workers.reduce<Record<string, string[]>>((groups, name) => {
-  const prefix = name.match(/^(\d{2})-/)?.[1] ?? name;
-  (groups[prefix] ??= []).push(name);
-  return groups;
-}, {});
+const missingReferences = uniqueReferences.filter(
+  (name) => !files.includes(name),
+);
+const unreferencedWorkers = workers.filter(
+  (name) => !references.includes(name),
+);
+const groupedPrefixes = workers.reduce<Record<string, string[]>>(
+  (groups, name) => {
+    const prefix = name.match(/^(\d{2})-/)?.[1] ?? name;
+    (groups[prefix] ??= []).push(name);
+    return groups;
+  },
+  {},
+);
 const duplicatePrefixes = Object.entries(groupedPrefixes).filter(
   ([, names]) => names.length > 1,
 );
-const missingPrefixes = expectedPrefixes.filter((prefix) => !groupedPrefixes[prefix]);
+const missingPrefixes = expectedPrefixes.filter(
+  (prefix) => !groupedPrefixes[prefix],
+);
 const unexpectedPrefixes = Object.keys(groupedPrefixes).filter(
   (prefix) => !expectedPrefixes.includes(prefix),
 );
@@ -53,8 +87,10 @@ for (const name of workers) {
   if (!/^## (?:Mission|Objective)$/m.test(text)) {
     structuralFailures.push(`${name}: missing Mission or Objective section`);
   }
-  if (!/^## .*?(?:Acceptance|Validation|Tests).*$/mi.test(text)) {
-    structuralFailures.push(`${name}: missing acceptance or validation section`);
+  if (!/^## .*?(?:Acceptance|Validation|Tests).*$/im.test(text)) {
+    structuralFailures.push(
+      `${name}: missing acceptance or validation section`,
+    );
   }
   if (/\b(?:TO[D]O|T[B]D|FIXM[E])\b/.test(text)) {
     structuralFailures.push(`${name}: contains placeholder`);
@@ -64,6 +100,94 @@ for (const name of workers) {
   }
   if (!/Grok 4\.5|CodeRabbit\/Grok review/i.test(text)) {
     structuralFailures.push(`${name}: missing independent-review contract`);
+  }
+
+  workerTexts.push(text);
+}
+
+for (const name of finalAuditReportTemplates) {
+  const file = Bun.file(`${finalAuditReportRoot}/${name}`);
+  if (!(await file.exists())) {
+    structuralFailures.push(
+      `reviews/final/${name}: missing final-audit report template`,
+    );
+    continue;
+  }
+  const text = await file.text();
+  totalLines += text.split('\n').length;
+  if (!/^# /m.test(text)) {
+    structuralFailures.push(`reviews/final/${name}: missing title`);
+  }
+  if (!/GitHub/i.test(text)) {
+    structuralFailures.push(
+      `reviews/final/${name}: missing GitHub evidence contract`,
+    );
+  }
+  if (name !== 'README.md' && !/candidate SHA/i.test(text)) {
+    structuralFailures.push(
+      `reviews/final/${name}: missing candidate SHA field`,
+    );
+  }
+  const reportMatch = name.match(/^(23[a-g])-report\.md$/);
+  if (reportMatch) {
+    const expectedBrief = finalAuditSubbriefs.find((brief) =>
+      brief.startsWith(`${reportMatch[1]}-`),
+    );
+    if (!expectedBrief || !text.includes(`workers/${expectedBrief}`)) {
+      structuralFailures.push(
+        `reviews/final/${name}: missing exact matching domain-brief reference`,
+      );
+    }
+  }
+}
+
+for (const name of finalAuditSubbriefs) {
+  if (!files.includes(name)) {
+    structuralFailures.push(`${name}: missing approved final-audit subbrief`);
+    continue;
+  }
+
+  const text = await Bun.file(`${root}/${name}`).text();
+  totalLines += text.split('\n').length;
+
+  if (!readme.includes(`\`${name}\``)) {
+    structuralFailures.push(`${name}: missing worker-index reference`);
+  }
+  if (!text.includes('packages/os/plans/consuelo-os-foundation/plan.md')) {
+    structuralFailures.push(`${name}: missing master-plan reference`);
+  }
+  if (!text.includes('23-final-integration-audit.md')) {
+    structuralFailures.push(
+      `${name}: missing Worker 23 orchestrator reference`,
+    );
+  }
+  if (!/^## Mission$/m.test(text)) {
+    structuralFailures.push(`${name}: missing Mission section`);
+  }
+  if (!/^## .*?(?:Acceptance|Validation).*$/im.test(text)) {
+    structuralFailures.push(
+      `${name}: missing acceptance or validation section`,
+    );
+  }
+  if (!/os\.get_steering|OS-only execution/i.test(text)) {
+    structuralFailures.push(`${name}: missing OS execution contract`);
+  }
+  if (!/Grok 4\.5/i.test(text)) {
+    structuralFailures.push(`${name}: missing Grok 4.5 review contract`);
+  }
+  if (!/review-only GitHub comparison PR/i.test(text)) {
+    structuralFailures.push(`${name}: missing review-only GitHub PR contract`);
+  }
+  if (!/original worker prompt/i.test(text)) {
+    structuralFailures.push(
+      `${name}: missing original-intent lineage contract`,
+    );
+  }
+  if (!/inline (?:review )?comment/i.test(text)) {
+    structuralFailures.push(`${name}: missing inline-comment contract`);
+  }
+  if (!/agent-fix prompt/i.test(text)) {
+    structuralFailures.push(`${name}: missing agent-fix prompt contract`);
   }
 
   workerTexts.push(text);
@@ -79,15 +203,39 @@ const corpus = [
 ].join('\n');
 const forbiddenPatterns: Array<[string, RegExp]> = [
   ['stale worker 02 filename', /02-artifact-builder\.md/i],
-  ['stale no-release-branches rule', /without adding source branches|do not add `canary` or `beta` Git branches/i],
-  ['optional CI container lane', /Containers may cover Linux clean hosts but are optional/i],
+  [
+    'stale no-release-branches rule',
+    /without adding source branches|do not add `canary` or `beta` Git branches/i,
+  ],
+  [
+    'optional CI container lane',
+    /Containers may cover Linux clean hosts but are optional/i,
+  ],
   ['wrong workspace-prefixed GTM route', /\/<workspace>\/gtm/i],
-  ['dispatch before environment registry', /It is dispatchable as written|These prompts may be dispatched in dependency order/i],
-  ['ambiguous tool source extensions', /manifest\.ts or manifest\.json|handler\.ts or handler\.js/i],
-  ['positive temporary shim plan', /temporary compatibility shims with|Preserve compatibility aliases|Keep compatibility shims temporary|Provide a bounded compatibility message/i],
-  ['separate Worker 27 dispatch', /Dispatch Worker 27 by itself first|Worker 27 may establish review infrastructure in parallel/i],
-  ['local review artifacts as authority', /saved Grok 4\.5 review under|Save the redacted prompt, metadata, and response under/i],
-  ['tracked generated review directory', /packages\/os\/plans\/consuelo-os-foundation\/reviews\/<task>\//i],
+  [
+    'dispatch before environment registry',
+    /It is dispatchable as written|These prompts may be dispatched in dependency order/i,
+  ],
+  [
+    'ambiguous tool source extensions',
+    /manifest\.ts or manifest\.json|handler\.ts or handler\.js/i,
+  ],
+  [
+    'positive temporary shim plan',
+    /temporary compatibility shims with|Preserve compatibility aliases|Keep compatibility shims temporary|Provide a bounded compatibility message/i,
+  ],
+  [
+    'separate Worker 27 dispatch',
+    /Dispatch Worker 27 by itself first|Worker 27 may establish review infrastructure in parallel/i,
+  ],
+  [
+    'local review artifacts as authority',
+    /saved Grok 4\.5 review under|Save the redacted prompt, metadata, and response under/i,
+  ],
+  [
+    'tracked generated review directory',
+    /packages\/os\/plans\/consuelo-os-foundation\/reviews\/<task>\//i,
+  ],
 ];
 const forbiddenMatches = forbiddenPatterns
   .filter(([, pattern]) => pattern.test(corpus))
@@ -102,75 +250,116 @@ const coverage = {
     /packages\/os\/plans\/consuelo-os-foundation/.test(corpus) &&
     !/packages\/os\/\.workspace\/consuelo-os-foundation/.test(corpus),
   permanentReleaseBranches:
-    /permanent protected `canary`, `beta`, and `stable` release branches/i.test(corpus),
+    /permanent protected `canary`, `beta`, and `stable` release branches/i.test(
+      corpus,
+    ),
   releaseAuthorityHierarchy:
-    /signed channel manifests.*immutable.*tags.*GitHub Releases.*GitHub Deployments/is.test(corpus) &&
-    /secondary.*promotion refs/is.test(corpus),
+    /signed channel manifests.*immutable.*tags.*GitHub Releases.*GitHub Deployments/is.test(
+      corpus,
+    ) && /secondary.*promotion refs/is.test(corpus),
   automaticVersioning:
     /version-neutral `releaseFingerprint`/.test(corpus) &&
     /Default to a patch bump|defaults to one patch version/i.test(corpus) &&
     /first release.*seed version|first release requires.*seed/is.test(corpus) &&
-    /same source commit and release fingerprint.*reuse.*version|retrying the same source\/fingerprint reuses the same version/is.test(corpus),
+    /same source commit and release fingerprint.*reuse.*version|retrying the same source\/fingerprint reuses the same version/is.test(
+      corpus,
+    ),
   schemaVersionSeparate:
-    /`schemaVersion` is independent of the product version|`schemaVersion` does not follow SemVer/i.test(corpus),
+    /`schemaVersion` is independent of the product version|`schemaVersion` does not follow SemVer/i.test(
+      corpus,
+    ),
   immutablePromotion:
-    /promotion never rebuilds|promotion.*without rebuilding|never rebuild/is.test(corpus),
+    /promotion never rebuilds|promotion.*without rebuilding|never rebuild/is.test(
+      corpus,
+    ),
   githubAndCloudflareDistribution:
-    /GitHub Release/.test(corpus) && /Cloudflare/.test(corpus) && /same digest|match by digest/is.test(corpus),
+    /GitHub Release/.test(corpus) &&
+    /Cloudflare/.test(corpus) &&
+    /same digest|match by digest/is.test(corpus),
   runtimeBundleTerminology: /immutable runtime bundle/i.test(corpus),
   noPrDeployments:
-    /Open pull requests run checks.*do not deploy|Pull requests run build and validation checks only/is.test(corpus),
+    /Open pull requests run checks.*do not deploy|Pull requests run build and validation checks only/is.test(
+      corpus,
+    ),
   mandatoryCleanHostLane:
     /mandatory OCI clean-host|OCI clean-host CI lane.*mandatory/is.test(corpus),
   localDockerNotRequired:
-    /Docker is not required on Ko's Mac|not require Docker on Ko's Mac/i.test(corpus),
+    /Docker is not required on Ko's Mac|not require Docker on Ko's Mac/i.test(
+      corpus,
+    ),
   koOwnsRealMacMutation:
-    /Ko, not a worker agent, runs install, update, reset, and uninstall|Ko runs every install, update, reset, restart, and uninstall/i.test(corpus),
+    /Ko, not a worker agent, runs install, update, reset, and uninstall|Ko runs every install, update, reset, restart, and uninstall/i.test(
+      corpus,
+    ),
   macMiniDev: /Mac Mini.*dev/is.test(corpus),
   macBookAirAcceptance: /MacBook Air.*(?:canary|beta)/is.test(corpus),
   multiNode:
     /server-backed node registry/i.test(corpus) &&
     /signed heartbeats/i.test(corpus) &&
-    /never silently.*another computer|never silently.*cross-machine/is.test(corpus),
+    /never silently.*another computer|never silently.*cross-machine/is.test(
+      corpus,
+    ),
   gtmSubdomainRoute: /workspace.*\/gtm|\/gtm.*workspace/is.test(corpus),
   updateSkipsOnboarding:
-    /update.*without repeating onboarding|updates? skips? OAuth|update.*never repeat.*OAuth/is.test(corpus),
+    /update.*without repeating onboarding|updates? skips? OAuth|update.*never repeat.*OAuth/is.test(
+      corpus,
+    ),
   restartCommand: /consuelo restart/.test(corpus),
   restartReuse:
     /consuelo-reload\.js/.test(corpus) &&
     /workspace-watchdog\.sh|watchdog behavior/.test(corpus) &&
-    /reply-safe.*launchd.*direct.*kill escalation.*bounded health/is.test(corpus),
+    /reply-safe.*launchd.*direct.*kill escalation.*bounded health/is.test(
+      corpus,
+    ),
   userSteering:
-    /~\/Consuelo\/Steering\//.test(corpus) && /never overwrite.*user steering/i.test(corpus),
+    /~\/Consuelo\/Steering\//.test(corpus) &&
+    /never overwrite.*user steering/i.test(corpus),
   notificationPreferences:
     /notification.*(?:off|disable).*snooze|off\/snooze/is.test(corpus),
   decisionMarkdownRemoved:
     /Stop installing `decision\.md`|stop seeding .*decision\.md/i.test(corpus),
   skillsRegistryInSteering: /skills.*steering|steering.*skills/is.test(corpus),
   providerSet:
-    /Railway/.test(corpus) && /Vercel/.test(corpus) && /Cloudflare/.test(corpus),
-  customerOperatorBoundary: /customer.*operator|operator.*customer/is.test(corpus),
+    /Railway/.test(corpus) &&
+    /Vercel/.test(corpus) &&
+    /Cloudflare/.test(corpus),
+  customerOperatorBoundary: /customer.*operator|operator.*customer/is.test(
+    corpus,
+  ),
   canonicalToolPackages:
-    /canonical tool-package/i.test(corpus) && /`packages\/os\/tooling`.*(?:remove|delete)/is.test(corpus),
+    /canonical tool-package/i.test(corpus) &&
+    /`packages\/os\/tooling`.*(?:remove|delete)/is.test(corpus),
   exactTypeScriptToolLayout:
-    /packages\/os\/tools\/<domain>\/\s+manifest\.ts\s+handler\.ts\s+schema\.ts\s+handler\.test\.ts/is.test(corpus),
+    /packages\/os\/tools\/<domain>\/\s+manifest\.ts\s+handler\.ts\s+schema\.ts\s+handler\.test\.ts/is.test(
+      corpus,
+    ),
   fullAndCoreOnly:
     /Full and core are the only shipped tool manifests/i.test(corpus) &&
-    /development-tool and media-tool capability sets|dev and media capabilities/i.test(corpus),
+    /development-tool and media-tool capability sets|dev and media capabilities/i.test(
+      corpus,
+    ),
   workflowSurfaceRetained:
-    /workflow-bundles\.json.*(?:active|workflow runtime)|workflow runtime.*workflow-bundles\.json/is.test(corpus),
+    /workflow-bundles\.json.*(?:active|workflow runtime)|workflow runtime.*workflow-bundles\.json/is.test(
+      corpus,
+    ),
   parityInternalOnly:
-    /script-parity-classifications\.json.*internal.*(?:fixture|audit)/is.test(corpus) &&
-    /exclude.*runtime bundle|stay out of customer bundles/is.test(corpus),
+    /script-parity-classifications\.json.*internal.*(?:fixture|audit)/is.test(
+      corpus,
+    ) && /exclude.*runtime bundle|stay out of customer bundles/is.test(corpus),
   noToolCompatibilityShims:
     /Do not add compatibility shims|Do not add path shims/.test(corpus) &&
-    /delete superseded source.*same release|delete superseded sources in the same release/is.test(corpus),
+    /delete superseded source.*same release|delete superseded sources in the same release/is.test(
+      corpus,
+    ),
   existingTestsPreserved:
     /existing OS behavioral suites remain regression contracts/i.test(corpus) &&
     /os-get-steering-trace\.test\.ts/.test(corpus) &&
-    /change.*assertion.*explicit approved behavior change|change an assertion only for an explicit approved behavior change/is.test(corpus),
+    /change.*assertion.*explicit approved behavior change|change an assertion only for an explicit approved behavior change/is.test(
+      corpus,
+    ),
   cliSplit:
-    /`consuelo`.*OS lifecycle/is.test(corpus) && /`consuelo-dialer`/i.test(corpus),
+    /`consuelo`.*OS lifecycle/is.test(corpus) &&
+    /`consuelo-dialer`/i.test(corpus),
   osWorkerExecution:
     /Bootstrap exactly once with `os\.get_steering\(\)`/.test(master) &&
     /Use `os\.call`/.test(master),
@@ -194,7 +383,9 @@ const coverage = {
     /den(?:y|ies).*edit.*write.*(?:shell|Bash)/is.test(corpus) &&
     /cancelled.*(?:incomplete|empty).*fail closed/is.test(corpus) &&
     /bounded turns/i.test(corpus) &&
-    /(?:disables? memory.*subagents|memory (?:disabled|and subagents disabled))/i.test(corpus) &&
+    /(?:disables? memory.*subagents|memory (?:disabled|and subagents disabled))/i.test(
+      corpus,
+    ) &&
     /--workspace-only preferred/.test(corpus) &&
     !/--workspace-only strict/.test(corpus) &&
     !/Grok plan mode/i.test(environmentRegistry),
@@ -206,17 +397,23 @@ const coverage = {
     /Do not dispatch Worker 27/i.test(corpus) &&
     /review procedure is already available/i.test(corpus),
   environmentFailureStopRule:
-    /If .*environment.*(?:broken|fails|unavailable|mismatch).*stop/is.test(corpus) &&
-    /Do not bypass.*environment|no environment fallback/is.test(corpus),
+    /If .*environment.*(?:broken|fails|unavailable|mismatch).*stop/is.test(
+      corpus,
+    ) && /Do not bypass.*environment|no environment fallback/is.test(corpus),
   workerSummaryCloseoutContract:
-    /PR URL and assigned stream.*what changed.*validation\/review results.*advances the master plan/is.test(corpus) &&
-    /Implementation workers must not reply with only `done`/i.test(corpus),
+    /PR URL and assigned stream.*what changed.*validation\/review results.*advances the master plan/is.test(
+      corpus,
+    ) && /Implementation workers must not reply with only `done`/i.test(corpus),
   grokDoneOnlyException:
-    /Only a standalone Grok review task may use a `done`-only closeout/i.test(corpus),
+    /Only a standalone Grok review task may use a `done`-only closeout/i.test(
+      corpus,
+    ),
   flattenedProductRootContract:
     /`~\/\.consuelo\/` is the product root/.test(master) &&
     /runtime\/releases\/<bundle-id>/.test(master) &&
-    /Never materialize a new install at the legacy `~\/\.consuelo\/os\/` path/.test(corpus),
+    /Never materialize a new install at the legacy `~\/\.consuelo\/os\/` path/.test(
+      corpus,
+    ),
   fullReviewFindingContract:
     /agent_fix_prompt/.test(corpus) &&
     /inline_comment/.test(corpus) &&
@@ -224,7 +421,9 @@ const coverage = {
     /☑️ approved/.test(corpus) &&
     /☑️ issues found/.test(corpus),
   repoBoundaryAudit:
-    /Repository, Product, Brand, License, And Package-Manager Audit/.test(corpus) &&
+    /Repository, Product, Brand, License, And Package-Manager Audit/.test(
+      corpus,
+    ) &&
     /Do not assume the whole repository can simply become MIT/.test(corpus),
   extractionIsGated:
     /Do not start unless Ko explicitly approves Worker 28/.test(corpus),

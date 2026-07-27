@@ -62,6 +62,9 @@ export type LifecycleOperation =
   | 'update'
   | 'restart'
   | 'repair'
+  | 'rollback'
+  | 'uninstall'
+  | 'reset'
   | 'channel'
   | 'notifications';
 
@@ -80,6 +83,10 @@ export type LifecycleProgressPhase =
   | 'service-restart'
   | 'health'
   | 'repair-scan'
+  | 'rollback'
+  | 'retention'
+  | 'uninstall'
+  | 'reset'
   | 'complete';
 
 export type LifecycleProgressEvent = {
@@ -110,11 +117,27 @@ export type LifecycleStatusResult = LifecycleOperationResult & {
 
 export type LifecycleServiceController = {
   preflight(): Promise<void>;
-  restart(): Promise<void>;
+  restart(input?: {
+    operationId?: string;
+    expectedBundleId?: string;
+    waitForCompletion?: boolean;
+  }): Promise<void>;
+  uninstall?(input?: {
+    dryRun?: boolean;
+    home?: string;
+  }): Promise<void>;
 };
 
 export type LifecycleHealthAcceptance = {
-  accept(): Promise<boolean>;
+  accept(input?: { bundleId?: string; version?: string }): Promise<boolean>;
+};
+
+export type LifecycleRuntimeMaterializer = {
+  materialize(input: {
+    home: string;
+    releasePath: string;
+    manifest: RuntimeBundleManifest;
+  }): Promise<void>;
 };
 
 export type LifecycleMigrationRunner = {
@@ -141,6 +164,13 @@ export type LifecycleHooks = {
     nextReleasePath: string;
     manifest: RuntimeBundleManifest;
   }): Promise<void>;
+  onActivationFailure?(input: {
+    home: string;
+    operationId: string;
+    previousReleasePath?: string;
+    nextReleasePath?: string;
+    error: unknown;
+  }): Promise<void>;
   onHealthFailure?(input: {
     home: string;
     operationId: string;
@@ -156,9 +186,17 @@ export type LifecycleEngine = {
     channel?: LifecycleReleaseChannel;
     check?: boolean;
     yes?: boolean;
+    expectedVersion?: string;
   }): Promise<LifecycleOperationResult>;
   restart(): Promise<LifecycleOperationResult>;
   repair(): Promise<LifecycleOperationResult>;
+  rollback(input?: { dryRun?: boolean }): Promise<LifecycleOperationResult>;
+  uninstall(input?: {
+    dryRun?: boolean;
+    removeNode?: boolean;
+    removeUserContent?: boolean;
+  }): Promise<LifecycleOperationResult>;
+  devReset(input?: { yes?: boolean; dryRun?: boolean }): Promise<LifecycleOperationResult>;
   setChannel(channel: LifecycleReleaseChannel): Promise<LifecycleOperationResult>;
   setUpdateNotifications(
     preference: LifecycleNotificationPreference,

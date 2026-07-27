@@ -37,6 +37,7 @@ export type TraceSitesGatewayReadLayerRequest = {
   scope: TraceGatewaySessionScope;
   workspaceId: string;
   workspaceHost: string;
+  nodeId?: string;
   site: TraceSiteSlug;
   sourceMode: TraceSourceMode;
   cursor: string;
@@ -49,6 +50,7 @@ export type TraceSitesGatewayReadLayerRequest = {
 export type TraceSitesGatewayReadBackendInput = {
   workspaceId: string;
   workspaceHost: string;
+  nodeId?: string;
   site: TraceSiteSlug;
   sourceMode: TraceSourceMode;
   cursor: string;
@@ -127,6 +129,7 @@ export type TraceSitesGatewayReadLayerSuccess = {
   publicBoundary: 'consuelo-gateway';
   workspaceId: string;
   workspaceHost: string;
+  nodeId?: string;
   site: TraceSiteSlug;
   sourceMode: TraceSourceMode;
   discovery: TraceGatewayDiscovery;
@@ -144,6 +147,7 @@ export type TraceSitesGatewayReadLayerFailure = {
   publicBoundary: 'consuelo-gateway';
   workspaceId: string;
   workspaceHost: string;
+  nodeId?: string;
   site: TraceSiteSlug;
   sourceMode: TraceSourceMode;
   discovery?: TraceGatewayDiscovery;
@@ -279,6 +283,7 @@ export function createTraceSitesGatewayReadLayer(
       const backendInput: TraceSitesGatewayReadBackendInput = {
         workspaceId: request.workspaceId,
         workspaceHost: request.workspaceHost,
+        ...(request.nodeId ? { nodeId: request.nodeId } : {}),
         site: request.site,
         sourceMode: request.sourceMode,
         cursor: request.cursor,
@@ -302,6 +307,7 @@ export function createTraceSitesGatewayReadLayer(
               publicBoundary: 'consuelo-gateway',
               workspaceId: request.workspaceId,
               workspaceHost: request.workspaceHost,
+              ...(request.nodeId ? { nodeId: request.nodeId } : {}),
               site: request.site,
               sourceMode: request.sourceMode,
               discovery,
@@ -362,6 +368,7 @@ export function createTraceSitesGatewayReadLayer(
         publicBoundary: 'consuelo-gateway',
         workspaceId: request.workspaceId,
         workspaceHost: request.workspaceHost,
+        ...(request.nodeId ? { nodeId: request.nodeId } : {}),
         site: request.site,
         sourceMode: request.sourceMode,
         discovery,
@@ -450,6 +457,7 @@ function failure(
     publicBoundary: 'consuelo-gateway',
     workspaceId: request.workspaceId,
     workspaceHost: request.workspaceHost,
+    ...(request.nodeId ? { nodeId: request.nodeId } : {}),
     site: request.site,
     sourceMode: request.sourceMode,
     discovery,

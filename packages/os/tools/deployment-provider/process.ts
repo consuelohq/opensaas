@@ -94,8 +94,8 @@ const runNodeProcess = (
       shell: false,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
-    let stdout = Buffer.alloc(0);
-    let stderr = Buffer.alloc(0);
+    let stdout: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+    let stderr: Buffer<ArrayBufferLike> = Buffer.alloc(0);
     let stdoutTruncated = false;
     let stderrTruncated = false;
     let settled = false;
