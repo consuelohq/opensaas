@@ -76,9 +76,11 @@ private struct ContractSuite {
         try diagnosticsRedactionRemovesRepresentativeCredentialsAndLocalPaths()
         try operationMessagesAreRedactedBeforeRendering()
         try offlineReasonsAreRedactedBeforeRendering()
+        try lifecycleErrorsAreRedactedBeforeMenuPresentation()
         try endpointValidationRejectsNonSocketFiles()
         try socketWritesDisableSigPipe()
         try socketIOUsesBoundedDeadlines()
+        try snapshotCacheRetainsHighestObservedSequence()
         try await rejectedLifecycleOperationsSurfaceAsErrors()
         try await framedIPCRejectsSecretBearingLifecycleResponses()
         try await mockedFramedIPCReflectsAppUpdateThroughTypedStatus()
@@ -370,6 +372,18 @@ private struct ContractSuite {
         try expectTrue(label.contains("[REDACTED]"), "offline redaction marker")
     }
 
+    private func lifecycleErrorsAreRedactedBeforeMenuPresentation() throws {
+        let error = UnixSocketLifecycleError.invalidPath(
+            "/Users/ko/.consuelo/node/security/Authorization: Bearer abc.def.ghi password=database-secret"
+        )
+        let rendered = DiagnosticsRedactor.redactError(error)
+
+        try expectTrue(!rendered.contains("/Users/ko"), "lifecycle error local path redaction")
+        try expectTrue(!rendered.contains("abc.def.ghi"), "lifecycle error bearer token redaction")
+        try expectTrue(!rendered.contains("database-secret"), "lifecycle error password redaction")
+        try expectTrue(rendered.contains("[REDACTED]"), "lifecycle error redaction marker")
+    }
+
     private func endpointValidationRejectsNonSocketFiles() throws {
         let path = "/tmp/consuelo-macos-file-\(getpid())"
         FileManager.default.createFile(atPath: path, contents: Data("not a socket".utf8))
@@ -426,6 +440,26 @@ private struct ContractSuite {
         try expect(received, -1, "stalled lifecycle read returns an error")
         try expectTrue(errno == EAGAIN || errno == EWOULDBLOCK, "stalled lifecycle read times out")
         try expectTrue(elapsed < 1, "lifecycle read timeout remains bounded")
+    }
+
+    private func snapshotCacheRetainsHighestObservedSequence() throws {
+        let newer = snapshot().with(sequence: 9, version: "1.5.0")
+        let older = snapshot().with(sequence: 8, version: "1.4.0")
+        let newest = snapshot().with(sequence: 10, version: "1.6.0")
+
+        let retained = UnixSocketLifecycleTransport.retainNewestSnapshot(
+            current: newer,
+            incoming: older
+        )
+        try expect(retained.sequence, 9, "stale response cannot regress cached sequence")
+        try expect(retained.runtime.version, "1.5.0", "stale response cannot regress cached runtime")
+
+        let advanced = UnixSocketLifecycleTransport.retainNewestSnapshot(
+            current: retained,
+            incoming: newest
+        )
+        try expect(advanced.sequence, 10, "newer response advances cached sequence")
+        try expect(advanced.runtime.version, "1.6.0", "newer response advances cached runtime")
     }
 
     private func rejectedLifecycleOperationsSurfaceAsErrors() async throws {

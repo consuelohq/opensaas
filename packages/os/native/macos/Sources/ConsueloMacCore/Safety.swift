@@ -71,6 +71,10 @@ public enum DiagnosticsRedactor {
         redactString(value)
     }
 
+    public static func redactError(_ error: Error) -> String {
+        redactString(String(describing: error))
+    }
+
     private static func redact(_ value: Any, key: String? = nil) -> Any {
         if let key, isSensitiveField(key) {
             return "[REDACTED]"

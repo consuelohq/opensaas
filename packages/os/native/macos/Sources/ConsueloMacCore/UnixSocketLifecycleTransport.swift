@@ -65,10 +65,23 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
             try SafeWorkspaceDecoder.validateNoSensitiveFields(response)
             let decoded = try JSONDecoder().decode(LifecycleResponse.self, from: response)
             if case let .snapshot(snapshot) = decoded {
-                self.snapshotLock.withLock { self.lastSnapshot = snapshot }
+                self.snapshotLock.withLock {
+                    self.lastSnapshot = Self.retainNewestSnapshot(
+                        current: self.lastSnapshot,
+                        incoming: snapshot
+                    )
+                }
             }
             return decoded
         }.value
+    }
+
+    public static func retainNewestSnapshot(
+        current: LifecycleSnapshot?,
+        incoming: LifecycleSnapshot
+    ) -> LifecycleSnapshot {
+        guard let current, current.sequence > incoming.sequence else { return incoming }
+        return current
     }
 
     public func subscribe(_ listener: @escaping @Sendable (LifecycleSnapshot) -> Void) -> LifecycleSubscription {

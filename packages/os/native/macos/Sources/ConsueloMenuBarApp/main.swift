@@ -248,7 +248,7 @@ private final class MenuBarModel: ObservableObject {
                 Task { await execute(request) }
             }
         } catch {
-            errorMessage = String(describing: error)
+            errorMessage = DiagnosticsRedactor.redactError(error)
         }
     }
 
@@ -262,7 +262,7 @@ private final class MenuBarModel: ObservableObject {
                 Task { await execute(request) }
             }
         } catch {
-            errorMessage = String(describing: error)
+            errorMessage = DiagnosticsRedactor.redactError(error)
         }
     }
 
@@ -285,7 +285,7 @@ private final class MenuBarModel: ObservableObject {
             }
             errorMessage = nil
         } catch {
-            errorMessage = String(describing: error)
+            errorMessage = DiagnosticsRedactor.redactError(error)
         }
     }
 
@@ -294,7 +294,7 @@ private final class MenuBarModel: ObservableObject {
             apply(try await client.refresh())
             errorMessage = nil
         } catch {
-            errorMessage = String(describing: error)
+            errorMessage = DiagnosticsRedactor.redactError(error)
         }
     }
 
