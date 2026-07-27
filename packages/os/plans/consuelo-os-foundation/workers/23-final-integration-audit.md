@@ -22,7 +22,7 @@ Worker 23 must create one review-only GitHub comparison PR that exposes the comp
 4. Create or fast-forward `audit/os-foundation-final-candidate` to the frozen candidate SHA.
 5. Open `audit/os-foundation-final-candidate` into `audit/os-foundation-baseline` with title `[REVIEW ONLY] Consuelo OS foundation final audit`, labels `review-only` and `do-not-merge`, and a body containing both SHAs, the ordinary promotion PR, the original prompt inventory, and the audit sequence.
 6. Never merge this PR. It is the durable GitHub code-review surface. The ordinary candidate promotion PR remains the only promotion path.
-7. During a review round, do not move the candidate head. After all initial domain audits finish, accepted repairs may merge into the real candidate stream; then fast-forward the audit head once, record the new SHA, and run required verification rounds.
+7. During a review round, do not move the candidate head. After any accepted domain or Worker 23h repair batch merges into the real candidate stream, increment the review-round number, freeze the ordinary all-stream promotion PR’s new head, repeat the ancestry proof, fast-forward the audit head, record the new SHA in the ledger, and rerun every affected reviewer. Repeat this cycle until Worker 23h returns `GO`, or explicitly restart the audit if candidate lineage or independence can no longer be preserved.
 8. Close the review-only PR only after Worker 23h posts its final decision. Retain GitHub comments and reports as the durable audit record.
 
 All domain reviewers must leave inline review comments, structured review objects, consolidated agent-fix prompts, top-level summaries, and dispositions directly on this PR. If a finding cannot attach to a diff line, use a precise file-and-line top-level comment. GitHub is the source of truth; local review output is temporary evidence.
@@ -61,13 +61,13 @@ Domain reviewers remain read-only. Dispatch accepted fixes as narrow task branch
 
 No unresolved P0 or P1 may proceed. Every P2 must be fixed or explicitly waived by Ko on GitHub with rationale. P3 items are recorded but do not block unless they combine into a systemic risk.
 
-### Phase 4: repair verification and second freeze
+### Phase 4: repair verification and candidate refreezes
 
-After accepted repairs merge into the candidate stream, freeze a second candidate SHA. Re-run affected domain audits, current-head CI, Grok 4.5, CodeRabbit when available, and all required platform/clean-host gates. Every original finding thread receives a current disposition.
+After each accepted repair batch merges into the candidate stream, freeze the next numbered candidate SHA and update the review-only PR only between review rounds. Re-run affected domain or synthesis audits, current-head CI, Grok 4.5, CodeRabbit when available, and all required platform/clean-host gates. Every original finding thread receives a current disposition before the next round begins.
 
 ### Phase 5: independent synthesis
 
-Dispatch Worker 23h as a fresh agent. It reviews cross-wave seams, repeats the required end-to-end journeys, verifies that repairs did not invalidate other domains, and posts the final GitHub review plus `23h-go-no-go.md`.
+Dispatch Worker 23h as a fresh agent. It reviews cross-wave seams, repeats the required end-to-end journeys, verifies that repairs did not invalidate other domains, and posts the final GitHub review plus `23h-go-no-go.md`. If 23h raises a finding, return to Phases 3 and 4, preserve that reviewer or assign an explicitly independent replacement, and rerun 23h against the next frozen candidate.
 
 ## Grok-style review contract
 

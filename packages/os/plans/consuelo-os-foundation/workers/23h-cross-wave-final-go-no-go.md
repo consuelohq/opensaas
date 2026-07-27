@@ -129,7 +129,7 @@ Do not mutate Consuelo OS on Ko's Mac Mini or MacBook Air. Ko performs every rea
 
 ## Fix and disposition policy
 
-This synthesis reviewer is read-only. Do not quietly patch product code and approve your own fix. Post findings to GitHub and the shared finding ledger. Worker 23 dispatches accepted repairs as narrow task branches to the original owner when ownership remains clear, or to a fresh narrowly scoped repair worker for cross-cutting defects. The same domain reviewer must verify the repaired candidate and update the original GitHub threads.
+This synthesis reviewer is read-only. Do not quietly patch product code and approve your own fix. Post findings to GitHub and the shared finding ledger. Worker 23 dispatches accepted repairs as narrow task branches to the original owner when ownership remains clear, or to a fresh narrowly scoped repair worker for cross-cutting defects. Findings inherited from Workers 23a-23g remain owned by the same domain reviewer. Findings raised by Worker 23h must be verified and dispositioned by the same independent 23h reviewer; if that reviewer is unavailable or conflicted, the orchestrator assigns a fresh independent synthesis verifier and records the replacement, rationale, candidate SHA, and GitHub disposition in the ledger.
 
 Write the durable final synthesis report to `packages/os/plans/consuelo-os-foundation/reviews/final/23h-go-no-go.md`. The report summarizes evidence and links to GitHub; it does not replace GitHub comments.
 

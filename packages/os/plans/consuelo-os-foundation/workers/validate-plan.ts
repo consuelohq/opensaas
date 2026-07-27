@@ -213,6 +213,18 @@ for (const name of workers) {
   workerTexts.push(text);
 }
 
+const finalAuditOrchestratorText = await Bun.file(
+  `${root}/23-final-integration-audit.md`,
+).text();
+if (
+  !finalAuditOrchestratorText.includes('increment the review-round number') ||
+  !finalAuditOrchestratorText.includes('repeat the ancestry proof')
+) {
+  structuralFailures.push(
+    '23-final-integration-audit.md: missing repeatable domain/synthesis repair-round contract',
+  );
+}
+
 for (const name of FINAL_AUDIT_REPORT_TEMPLATES) {
   const file = Bun.file(`${FINAL_AUDIT_REPORT_ROOT}/${name}`);
   if (!(await file.exists())) {
@@ -246,6 +258,35 @@ for (const name of FINAL_AUDIT_REPORT_TEMPLATES) {
         `reviews/final/${name}: missing exact matching domain-brief reference`,
       );
     }
+  }
+  if (name === 'finding-ledger.md' && !/Validation evidence/i.test(text)) {
+    structuralFailures.push(
+      'reviews/final/finding-ledger.md: missing per-finding validation evidence field',
+    );
+  }
+  if (/^23[a-g]-report\.md$/.test(name)) {
+    const requiredGitHubFields = [
+      '## Required GitHub review outputs',
+      'Structured review object',
+      'Top-level review summary',
+      'Consolidated agent-fix prompt',
+      'Current finding-disposition index',
+    ];
+    for (const field of requiredGitHubFields) {
+      if (!text.includes(field)) {
+        structuralFailures.push(
+          `reviews/final/${name}: missing required GitHub output field ${field}`,
+        );
+      }
+    }
+  }
+  if (
+    name === '23h-go-no-go.md' &&
+    !text.includes('## Synthesis intent-lineage matrix')
+  ) {
+    structuralFailures.push(
+      'reviews/final/23h-go-no-go.md: missing synthesis intent-lineage matrix',
+    );
   }
 }
 
@@ -323,6 +364,15 @@ for (const name of FINAL_AUDIT_SUBBRIEFS) {
         `${name}: non-implementation Worker ${excludedWorker} appears in the primary prompt partition`,
       );
     }
+  }
+  if (
+    name === '23h-cross-wave-final-go-no-go.md' &&
+    (!text.includes('same independent 23h reviewer') ||
+      !text.includes('fresh independent synthesis verifier'))
+  ) {
+    structuralFailures.push(
+      `${name}: missing synthesis repair-verifier ownership contract`,
+    );
   }
   if (!/inline (?:review )?comment/i.test(text)) {
     structuralFailures.push(`${name}: missing inline-comment contract`);

@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/close-final-audit-evidence-loop",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "stream/os-foundation-two",
+  "startFrom": "stream",
+  "prNumber": 1678,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1678",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1678",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1678/close-final-audit-evidence-loop",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1678",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1678/close-final-audit-evidence-loop",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-close-final-audit-evidence-loop",
+  "taskSession": "tsk_f59a4bbb3089",
+  "tmuxSession": "opensaas-os-foundation-two-close-final-audit-evidence-loop-f59a4bbb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-close-final-audit-evidence-loop/.task/os-foundation-two/close-final-audit-evidence-loop/session.json",
+  "createdAt": "2026-07-27T18:59:04.421Z"
+}
