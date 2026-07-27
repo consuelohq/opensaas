@@ -72,7 +72,8 @@ Wave 0 tasks may run concurrently because their implementation ownership is disj
 
 ### Final audit
 
-- `23-final-integration-audit.md` orchestrates the final review only after launch implementation prompts 01-26 and 30 are integrated and the Worker 27 review procedure has been applied to each PR. It verifies Worker 28's planning deliverable and includes Worker 29 only when extraction was separately approved.
+- `independent-review-framework.md` is the direct review-quality contract executed entirely by each assigned Worker 23 agent; no model, wrapper, subagent, or delegated reviewer is invoked.
+- `23-final-integration-audit.md` orchestrates the final review only after launch implementation prompts 01-26 and 30 are integrated. Prior implementation-review history is evidence, but Worker 23 does not invoke Worker 27, Grok, another model, or a delegated review agent. It verifies Worker 28's planning deliverable and includes Worker 29 only when extraction was separately approved.
 - `23a-core-runtime-lifecycle-recovery-audit.md` reviews lifecycle, recovery, managed components, and steering.
 - `23b-provider-control-plane-audit.md` reviews Railway, Vercel, Cloudflare, approvals, and customer/operator separation.
 - `23c-web-auth-launcher-traces-security-audit.md` reviews universal login, workspace sessions, launcher, `/gtm`, traces, and web security.
@@ -82,7 +83,7 @@ Wave 0 tasks may run concurrently because their implementation ownership is disj
 - `23g-repository-boundaries-operability-docs-audit.md` reviews source/package authority, CLI separation, runtime closure, legal scope, operability, and docs.
 - `23h-cross-wave-final-go-no-go.md` is a fresh independent synthesis after accepted repairs and issues the final `GO` or `NO-GO`.
 
-Worker 23 creates one review-only GitHub comparison PR spanning the verified pre-foundation baseline to the frozen final candidate. All domain and synthesis agents review the same PR, post every finding and disposition directly to GitHub, and never merge that review-only PR.
+Worker 23 creates one review-only GitHub comparison PR spanning the verified pre-foundation baseline to the frozen final candidate. All domain and synthesis agents review the same PR themselves, post every finding and disposition directly to GitHub, and never merge that review-only PR. Historical review instructions inside original worker prompts are intent evidence only and are not executed by the final-audit agents.
 
 ## Stream ownership
 

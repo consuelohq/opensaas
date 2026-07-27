@@ -13,9 +13,9 @@
 
 ## Synthesis intent-lineage matrix
 
-| Original worker prompt        | Exact requirement/section | Implementation and repair PRs | Current implementation location | Automated evidence | Runtime/live evidence | Status | Remediation |
-| ----------------------------- | ------------------------- | ----------------------------- | ------------------------------- | ------------------ | --------------------- | ------ | ----------- |
-| No synthesis lineage recorded | -                         | -                             | -                               | -                  | -                     | -      | -           |
+| Original worker prompt        | Exact requirement/section | Authoritative domain | Secondary seam reviewers | Implementation and repair PRs | Current implementation location | Automated evidence | Runtime/live evidence | Status | Remediation |
+| ----------------------------- | ------------------------- | -------------------- | ------------------------ | ----------------------------- | ------------------------------- | ------------------ | --------------------- | ------ | ----------- |
+| No synthesis lineage recorded | -                         | -                    | -                        | -                             | -                               | -                  | -                     | -      | -           |
 
 ## Domain inputs
 
