@@ -187,9 +187,7 @@ const runtimeState = (
   managementMode: NativeLifecycleManagementMode,
 ): LifecycleSnapshot['runtime']['state'] => {
   if (status.installState === 'no-install') return 'stopped';
-  if (managementMode === 'source' && status.installState === 'partial') {
-    return 'running';
-  }
+  if (managementMode === 'source') return 'running';
   if (status.installState === 'corrupt' || status.installState === 'partial')
     return 'failed';
   return 'running';
@@ -1016,7 +1014,9 @@ export const resolveNativeLifecycleManagementMode = (input: {
   if (override === 'source' || override === 'release') return override;
   const entrypoint = input.entrypoint?.trim();
   if (!entrypoint) return 'release';
-  return isPathWithin(resolveLifecyclePaths(input.home).runtimeDir, entrypoint)
+  const paths = resolveLifecyclePaths(input.home);
+  return isPathWithin(paths.currentLink, entrypoint) ||
+    isPathWithin(paths.releasesDir, entrypoint)
     ? 'release'
     : 'source';
 };

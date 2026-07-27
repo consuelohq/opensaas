@@ -301,6 +301,29 @@ describe('native lifecycle endpoint', () => {
     expect(launched).toEqual([{ kind: 'restart' }]);
   });
 
+  it('should keep a source-managed daemon healthy when an unrelated installed release is corrupt', async () => {
+    const { engine } = fakeEngine();
+    engine.status = vi.fn(async () => ({
+      operation: 'status',
+      changed: false,
+      installState: 'corrupt',
+      preferences: { channel: 'stable', notifications: { mode: 'on' } },
+      detail: { reason: 'runtime/current references a corrupt release' },
+    }));
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      managementMode: 'source',
+      sourceVersion: 'source',
+    });
+
+    await expect(controller.handle({ kind: 'status.get' })).resolves.toMatchObject({
+      install: { state: 'installed' },
+      runtime: { version: 'source', state: 'running' },
+      services: [{ id: 'consuelo-os', state: 'healthy' }],
+      actions: { repair: false, uninstall: false },
+    });
+  });
+
   it('should distinguish source-managed and release-managed daemon entrypoints', () => {
     const home = '/Users/operator/.consuelo';
     expect(
@@ -317,6 +340,22 @@ describe('native lifecycle endpoint', () => {
         env: {},
       }),
     ).toBe('release');
+    expect(
+      resolveNativeLifecycleManagementMode({
+        home,
+        entrypoint: `${home}/runtime/current/scripts/server/main.ts`,
+        env: {},
+      }),
+    ).toBe('release');
+    for (const directory of ['staging', 'test-homes', 'dev-slots']) {
+      expect(
+        resolveNativeLifecycleManagementMode({
+          home,
+          entrypoint: `${home}/runtime/${directory}/candidate/scripts/server/main.ts`,
+          env: {},
+        }),
+      ).toBe('source');
+    }
     expect(
       resolveNativeLifecycleManagementMode({
         home,
