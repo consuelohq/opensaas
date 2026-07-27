@@ -38,18 +38,25 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
 
     private let socketPath: String
     private let pollIntervalNanoseconds: UInt64
+    private let ioTimeoutSeconds: Double
     private let snapshotLock = NSLock()
     private var lastSnapshot: LifecycleSnapshot?
 
-    public init(socketPath: String = UnixSocketLifecycleTransport.defaultSocketPath, pollIntervalSeconds: Double = 2) {
+    public init(
+        socketPath: String = UnixSocketLifecycleTransport.defaultSocketPath,
+        pollIntervalSeconds: Double = 2,
+        ioTimeoutSeconds: Double = 5
+    ) {
         self.socketPath = socketPath
         pollIntervalNanoseconds = UInt64(max(0.25, pollIntervalSeconds) * 1_000_000_000)
+        self.ioTimeoutSeconds = max(0.001, ioTimeoutSeconds)
     }
 
     public func request(_ request: LifecycleRequest) async throws -> LifecycleResponse {
         let socketPath = socketPath
+        let ioTimeoutSeconds = ioTimeoutSeconds
         return try await Task.detached(priority: .userInitiated) {
-            let descriptor = try Self.connect(to: socketPath)
+            let descriptor = try Self.connect(to: socketPath, ioTimeoutSeconds: ioTimeoutSeconds)
             defer { Darwin.close(descriptor) }
 
             let payload = try JSONEncoder().encode(request)
@@ -97,12 +104,13 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
         }
     }
 
-    private static func connect(to path: String) throws -> Int32 {
+    private static func connect(to path: String, ioTimeoutSeconds: Double) throws -> Int32 {
         try validateEndpoint(path)
         let descriptor = Darwin.socket(AF_UNIX, SOCK_STREAM, 0)
         guard descriptor >= 0 else { throw UnixSocketLifecycleError.openFailed(errno) }
         do {
             try configureNoSigPipe(descriptor)
+            try configureIOTimeouts(descriptor, timeoutSeconds: ioTimeoutSeconds)
         } catch {
             Darwin.close(descriptor)
             throw error
@@ -154,6 +162,29 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
         )
         guard result == 0 else {
             throw UnixSocketLifecycleError.socketOptionFailed(errno)
+        }
+    }
+
+    public static func configureIOTimeouts(_ descriptor: Int32, timeoutSeconds: Double) throws {
+        let boundedTimeout = max(0.001, timeoutSeconds)
+        let wholeSeconds = Int(boundedTimeout.rounded(.down))
+        var microseconds = Int32((boundedTimeout - Double(wholeSeconds)) * 1_000_000)
+        if wholeSeconds == 0, microseconds == 0 {
+            microseconds = 1
+        }
+        var timeout = timeval(tv_sec: wholeSeconds, tv_usec: microseconds)
+
+        for option in [SO_SNDTIMEO, SO_RCVTIMEO] {
+            let result = Darwin.setsockopt(
+                descriptor,
+                SOL_SOCKET,
+                option,
+                &timeout,
+                socklen_t(MemoryLayout<timeval>.size)
+            )
+            guard result == 0 else {
+                throw UnixSocketLifecycleError.socketOptionFailed(errno)
+            }
         }
     }
 

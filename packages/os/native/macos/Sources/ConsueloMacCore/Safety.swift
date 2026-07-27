@@ -9,7 +9,8 @@ public enum SafeWorkspaceDecoder {
     private static let forbiddenFields: Set<String> = [
         "accesstoken", "refreshtoken", "authorization", "token", "secret", "privatekey",
         "privatekeyjwk", "publickeyjwk", "tunneloriginurl", "tunnelcredentials",
-        "localservice", "localserviceurl", "credential", "credentials",
+        "localservice", "localserviceurl", "credential", "credentials", "password", "passphrase",
+        "passwd", "pwd",
     ]
 
     public static func decode(_ data: Data) throws -> WorkspaceSnapshot {
@@ -46,6 +47,10 @@ public enum SafeWorkspaceDecoder {
             || normalized.contains("authorization")
             || normalized.contains("tunnelorigin")
             || normalized.contains("localservice")
+            || normalized.contains("password")
+            || normalized.contains("passphrase")
+            || normalized == "passwd"
+            || normalized == "pwd"
     }
 }
 
@@ -53,7 +58,7 @@ public enum DiagnosticsRedactor {
     private static let sensitiveFields: Set<String> = [
         "accesstoken", "refreshtoken", "authorization", "token", "secret", "privatekey",
         "privatekeyjwk", "publickeyjwk", "tunneloriginurl", "tunnelcredentials",
-        "credential", "credentials",
+        "credential", "credentials", "password", "passphrase", "passwd", "pwd",
     ]
 
     public static func redactJSON(_ data: Data) throws -> Data {
@@ -93,6 +98,10 @@ public enum DiagnosticsRedactor {
             || normalized.contains("tunnelorigin")
             || normalized.contains("providerkey")
             || normalized.contains("cloudflare")
+            || normalized.contains("password")
+            || normalized.contains("passphrase")
+            || normalized == "passwd"
+            || normalized == "pwd"
     }
 
     private static func redactString(_ value: String) -> String {

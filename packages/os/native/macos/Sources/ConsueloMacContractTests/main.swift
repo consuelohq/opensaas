@@ -75,6 +75,7 @@ private struct ContractSuite {
         try diagnosticsRedactionRemovesRepresentativeCredentialsAndLocalPaths()
         try endpointValidationRejectsNonSocketFiles()
         try socketWritesDisableSigPipe()
+        try socketIOUsesBoundedDeadlines()
         try await framedIPCRejectsSecretBearingLifecycleResponses()
         try await mockedFramedIPCReflectsAppUpdateThroughTypedStatus()
         try await closingShellOnlyCancelsSubscriptionAndNeverStopsService()
@@ -308,6 +309,8 @@ private struct ContractSuite {
           "status":"degraded",
           "accessToken":"oauth-secret",
           "authorization":"Bearer abc.def.ghi",
+          "password":"database-secret-password",
+          "nested":{"databasePassword":"nested-database-secret"},
           "tunnelOriginUrl":"https://secret.example",
           "publicKeyJwk":{"kty":"OKP"},
           "message":"failed under /Users/ko/.consuelo/generated-security/token.json"
@@ -317,9 +320,16 @@ private struct ContractSuite {
         let text = String(decoding: output, as: UTF8.self)
         try expectTrue(!text.contains("oauth-secret"), "access token redaction")
         try expectTrue(!text.contains("abc.def.ghi"), "bearer token redaction")
+        try expectTrue(!text.contains("database-secret-password"), "password field redaction")
+        try expectTrue(!text.contains("nested-database-secret"), "password-like field redaction")
         try expectTrue(!text.contains("secret.example"), "origin redaction")
         try expectTrue(!text.contains("/Users/ko"), "local path redaction")
         try expectTrue(text.contains("[REDACTED]"), "redaction marker")
+
+        let unsafeWorkspace = Data(#"{"workspaceId":"workspace_one","password":"must-not-decode"}"#.utf8)
+        try expectThrows("password fields fail closed before workspace decoding") {
+            try SafeWorkspaceDecoder.validateNoSensitiveFields(unsafeWorkspace)
+        }
     }
 
     private func endpointValidationRejectsNonSocketFiles() throws {
@@ -346,6 +356,38 @@ private struct ContractSuite {
             throw ContractFailure.failed("SO_NOSIGPIPE inspection failed: errno \(errno)")
         }
         try expect(enabled, 1, "lifecycle socket suppresses SIGPIPE")
+    }
+
+    private func socketIOUsesBoundedDeadlines() throws {
+        var descriptors: [Int32] = [0, 0]
+        guard Darwin.socketpair(AF_UNIX, SOCK_STREAM, 0, &descriptors) == 0 else {
+            throw ContractFailure.failed("test socket pair failed: errno \(errno)")
+        }
+        defer {
+            Darwin.close(descriptors[0])
+            Darwin.close(descriptors[1])
+        }
+
+        try UnixSocketLifecycleTransport.configureIOTimeouts(descriptors[0], timeoutSeconds: 0.05)
+
+        for option in [SO_SNDTIMEO, SO_RCVTIMEO] {
+            var timeout = timeval()
+            var length = socklen_t(MemoryLayout<timeval>.size)
+            guard Darwin.getsockopt(descriptors[0], SOL_SOCKET, option, &timeout, &length) == 0 else {
+                throw ContractFailure.failed("socket timeout inspection failed: errno \(errno)")
+            }
+            try expectTrue(timeout.tv_sec > 0 || timeout.tv_usec > 0, "socket timeout option \(option)")
+        }
+
+        var byte: UInt8 = 0
+        let startedAt = Date()
+        let received = withUnsafeMutableBytes(of: &byte) { buffer in
+            Darwin.read(descriptors[0], buffer.baseAddress, buffer.count)
+        }
+        let elapsed = Date().timeIntervalSince(startedAt)
+        try expect(received, -1, "stalled lifecycle read returns an error")
+        try expectTrue(errno == EAGAIN || errno == EWOULDBLOCK, "stalled lifecycle read times out")
+        try expectTrue(elapsed < 1, "lifecycle read timeout remains bounded")
     }
 
     private func framedIPCRejectsSecretBearingLifecycleResponses() async throws {
