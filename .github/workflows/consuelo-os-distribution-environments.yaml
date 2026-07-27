@@ -86,6 +86,15 @@ jobs:
         if: matrix.name == 'macos'
         run: swift run --package-path packages/os/native/macos ConsueloMacContractTests
 
+      - name: Run native lifecycle TypeScript contracts
+        if: matrix.name == 'macos'
+        working-directory: packages/os
+        run: >-
+          bun x vitest run
+          tests/native-lifecycle-client.test.ts
+          tests/native-lifecycle-endpoint.test.ts
+          tests/native-lifecycle-operation.test.ts
+
       - name: Package the macOS alpha app
         if: matrix.name == 'macos'
         run: bash packages/os/scripts/testing/macos-alpha-package.sh packages/os/.tmp-macos-alpha

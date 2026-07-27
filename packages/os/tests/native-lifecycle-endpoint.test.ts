@@ -14,6 +14,7 @@ import {
   NATIVE_LIFECYCLE_MAX_PAYLOAD_BYTES,
   createNativeLifecycleEndpointController,
   encodeNativeLifecycleFrame,
+  normalizeNativeLifecycleWorkspacePayload,
   startDefaultNativeLifecycleEndpoint,
   startNativeLifecycleEndpoint,
 } from '../scripts/lib/native-lifecycle-endpoint';
@@ -217,6 +218,69 @@ describe('native lifecycle endpoint', () => {
     expect(JSON.stringify(first)).not.toMatch(
       /token|secret|password|private.?key/i,
     );
+  });
+
+  it('invalidates cached release inspection after a successful channel change', async () => {
+    const { engine } = fakeEngine();
+    let releaseVersion = '1.5.0';
+    let cached: { available: number; latestVersion: string } | undefined;
+    const inspectRelease = vi.fn(async () => {
+      cached ??= { available: 1, latestVersion: releaseVersion };
+      return cached;
+    });
+    const invalidateReleaseInspection = vi.fn(() => {
+      cached = undefined;
+    });
+    engine.setChannel = vi.fn(async (channel) => {
+      releaseVersion = channel === 'beta' ? '2.0.0' : '1.5.0';
+      return lifecycleResult('channel');
+    });
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      inspectRelease,
+      invalidateReleaseInspection,
+      channelSelectionAllowed: true,
+    });
+
+    await expect(controller.handle({ kind: 'status.get' })).resolves.toMatchObject({
+      updates: { latestVersion: '1.5.0' },
+    });
+    await expect(
+      controller.handle({ kind: 'preferences.channel.set', channel: 'beta' }),
+    ).resolves.toMatchObject({ accepted: true });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(invalidateReleaseInspection).toHaveBeenCalledOnce();
+    await expect(controller.handle({ kind: 'status.get' })).resolves.toMatchObject({
+      updates: { latestVersion: '2.0.0' },
+    });
+  });
+
+  it('rejects secret-bearing fields recursively in workspace authority payloads', () => {
+    expect(() =>
+      normalizeNativeLifecycleWorkspacePayload({
+        workspaceId: 'workspace-one',
+        workspaceHost: 'one.consuelohq.com',
+        nodes: [
+          {
+            workspaceId: 'workspace-one',
+            nodeId: 'node-home',
+            displayName: 'Mac Mini',
+            role: 'home',
+            platform: 'darwin',
+            architecture: 'arm64',
+            channel: 'stable',
+            capabilities: [],
+            createdAt: '2026-07-27T00:00:00.000Z',
+            lastSeenAt: '2026-07-27T00:00:00.000Z',
+            presence: 'online',
+            state: 'active',
+            publicKeyThumbprint: 'sha256:public',
+            metadata: { auth: { token: 'must-not-cross-endpoint' } },
+          },
+        ],
+      }),
+    ).toThrow('secret-bearing field');
   });
 
   it('dispatches restart-affecting mutations outside the daemon and reports persisted state', async () => {
@@ -501,6 +565,15 @@ describe('native lifecycle endpoint', () => {
         accepted: false,
         operationId: expect.stringMatching(/^rejected-/),
         error: 'requested update target does not match the available release',
+      });
+      await expect(
+        requestOverSocket(socketPath, {
+          kind: 'update.apply',
+          targetVersion: '',
+        } as LifecycleRequest),
+      ).resolves.toMatchObject({
+        accepted: false,
+        error: 'lifecycle request targetVersion is required',
       });
       await new Promise<void>((resolve, reject) => {
         const socket = connect(socketPath);

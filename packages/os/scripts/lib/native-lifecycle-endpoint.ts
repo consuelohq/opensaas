@@ -71,6 +71,7 @@ type NativeLifecycleEndpointControllerInput = {
   architecture?: string;
   channelSelectionAllowed?: boolean;
   inspectRelease?: () => Promise<ReleaseInspection>;
+  invalidateReleaseInspection?: () => void;
   inspectConnector?: () => Promise<ConnectorInspection>;
   inspectWorkspace?: () => Promise<LifecycleSnapshot['workspace'] | undefined>;
   setDefaultNode?: (nodeId: string) => Promise<void>;
@@ -220,17 +221,35 @@ const stringField = (value: unknown, label: string): string => {
   return value;
 };
 
+const requestStringField = (value: unknown, label: string): string => {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`lifecycle request ${label} is required`);
+  }
+  return value;
+};
+
+const assertNoSecretBearingFields = (value: unknown): void => {
+  if (Array.isArray(value)) {
+    for (const item of value) assertNoSecretBearingFields(item);
+    return;
+  }
+  if (!value || typeof value !== 'object') return;
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    if (SECRET_KEY.test(key)) {
+      throw new Error('workspace authority returned a secret-bearing field');
+    }
+    assertNoSecretBearingFields(child);
+  }
+};
+
 const optionalString = (value: unknown): string | undefined => {
   return typeof value === 'string' && value.trim() ? value : undefined;
 };
 
-const normalizeWorkspacePayload = (
+export const normalizeNativeLifecycleWorkspacePayload = (
   payload: Record<string, unknown>,
 ): LifecycleSnapshot['workspace'] => {
-  for (const key of Object.keys(payload)) {
-    if (SECRET_KEY.test(key))
-      throw new Error('workspace authority returned a secret-bearing field');
-  }
+  assertNoSecretBearingFields(payload);
   const rawNodes = payload.nodes;
   if (!Array.isArray(rawNodes))
     throw new Error('workspace authority returned invalid nodes');
@@ -241,12 +260,6 @@ const normalizeWorkspacePayload = (
       throw new Error(`workspace authority returned invalid node ${index}`);
     }
     const node = raw as Record<string, unknown>;
-    for (const key of Object.keys(node)) {
-      if (SECRET_KEY.test(key))
-        throw new Error(
-          'workspace authority returned a secret-bearing node field',
-        );
-    }
     const role = node.role;
     const presence = node.presence;
     const state = node.state;
@@ -382,16 +395,20 @@ const createDefaultDiagnosticsExporter = (
   };
 };
 
+type ReleaseInspector = (() => Promise<ReleaseInspection>) & {
+  invalidate(): void;
+};
+
 const createDefaultReleaseInspector = (input: {
   engine: LifecycleEngine;
   home?: string;
   now?: () => number;
   ttlMs?: number;
-}): (() => Promise<ReleaseInspection>) => {
+}): ReleaseInspector => {
   let cached: { expiresAt: number; value: ReleaseInspection } | undefined;
   const now = input.now ?? Date.now;
   const ttlMs = input.ttlMs ?? 60_000;
-  return async () => {
+  const inspect = async (): Promise<ReleaseInspection> => {
     if (cached && cached.expiresAt > now()) return cached.value;
     let rollbackVersion: string | undefined;
     try {
@@ -417,6 +434,10 @@ const createDefaultReleaseInspector = (input: {
     cached = { expiresAt: now() + ttlMs, value };
     return value;
   };
+  inspect.invalidate = () => {
+    cached = undefined;
+  };
+  return inspect;
 };
 
 const parseRequest = (value: unknown): LifecycleRequest => {
@@ -435,7 +456,7 @@ const parseRequest = (value: unknown): LifecycleRequest => {
     case 'update.rollback':
       return {
         kind,
-        targetVersion: stringField(request.targetVersion, 'targetVersion'),
+        targetVersion: requestStringField(request.targetVersion, 'targetVersion'),
       };
     case 'repair.run':
       if (typeof request.destructive !== 'boolean')
@@ -458,7 +479,7 @@ const parseRequest = (value: unknown): LifecycleRequest => {
           kind,
           notifications: {
             state,
-            until: stringField(
+            until: requestStringField(
               (notifications as Record<string, unknown>).until,
               'notification until',
             ),
@@ -468,11 +489,11 @@ const parseRequest = (value: unknown): LifecycleRequest => {
       throw new Error('notification preference is invalid');
     }
     case 'preferences.channel.set': {
-      const channel = stringField(request.channel, 'channel') as ReleaseChannel;
+      const channel = requestStringField(request.channel, 'channel') as ReleaseChannel;
       return { kind, channel };
     }
     case 'workspace.default-node.set':
-      return { kind, nodeId: stringField(request.nodeId, 'nodeId') };
+      return { kind, nodeId: requestStringField(request.nodeId, 'nodeId') };
     case 'uninstall.execute':
       if (
         typeof request.removeNode !== 'boolean' ||
@@ -710,9 +731,9 @@ export const createNativeLifecycleEndpointController = (
               );
             }
             return runOperation('update', () =>
-              input.engine.setChannel(
-                request.channel as LifecycleReleaseChannel,
-              ),
+              input.engine
+                .setChannel(request.channel as LifecycleReleaseChannel)
+                .then(() => input.invalidateReleaseInspection?.()),
             );
           }
           case 'workspace.default-node.set':
@@ -937,7 +958,7 @@ export const startDefaultNativeLifecycleEndpoint = async (
                 ? { currentNodeId: current.currentNodeId }
                 : {}),
             });
-            return normalizeWorkspacePayload(payload);
+            return normalizeNativeLifecycleWorkspacePayload(payload);
           } catch (error: unknown) {
             throw new Error(safeMessage(error));
           }
@@ -957,6 +978,7 @@ export const startDefaultNativeLifecycleEndpoint = async (
       home,
       env,
     });
+    const releaseInspector = createDefaultReleaseInspector({ engine, home });
     const controller = createNativeLifecycleEndpointController({
       engine,
       home,
@@ -965,7 +987,8 @@ export const startDefaultNativeLifecycleEndpoint = async (
       channelSelectionAllowed: /^(1|true|yes)$/i.test(
         env.CONSUELO_CHANNEL_SELECTION_ALLOWED ?? '',
       ),
-      inspectRelease: createDefaultReleaseInspector({ engine, home }),
+      inspectRelease: releaseInspector,
+      invalidateReleaseInspection: releaseInspector.invalidate,
       inspectWorkspace,
       setDefaultNode,
     });

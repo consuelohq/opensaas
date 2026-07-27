@@ -325,6 +325,42 @@ describe('native lifecycle detached operations', () => {
     );
   });
 
+  it('expires stale PID-backed state even when the PID appears live', async () => {
+    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+    temporaryRoots.push(home);
+    const store = createNativeLifecycleOperationStore(home);
+    store.write({
+      schemaVersion: 1,
+      operationId: 'reused-pid-worker',
+      kind: 'update',
+      phase: 'running',
+      updatedAt: '2026-07-27T03:00:00.000Z',
+      workerPid: 777,
+    });
+    const launcher = createDetachedNativeLifecycleOperationLauncher({
+      home,
+      operationId: () => 'replacement-after-pid-reuse',
+      now: () => new Date('2026-07-27T03:02:00.000Z'),
+      pidBackedRunningStaleMs: 60_000,
+      isProcessAlive: () => true,
+      spawnProcess: () => ({
+        pid: 888,
+        unref: () => undefined,
+        once: (_event, _listener) => undefined,
+      }),
+    });
+
+    expect(launcher.read()).toMatchObject({
+      operationId: 'reused-pid-worker',
+      phase: 'failed',
+      message: 'detached lifecycle worker is no longer active',
+    });
+    await expect(launcher.launch({ kind: 'restart' })).resolves.toEqual({
+      accepted: true,
+      operationId: 'replacement-after-pid-reuse',
+    });
+  });
+
   it('expires an abandoned queued state after the bounded startup window', async () => {
     const home = await mkdtemp('/tmp/consuelo-native-operation-');
     temporaryRoots.push(home);
@@ -426,6 +462,13 @@ describe('native lifecycle detached operations', () => {
       temporaryRoots.push(home);
       const { engine, calls } = fakeEngine();
       const store = createNativeLifecycleOperationStore(home);
+      store.write({
+        schemaVersion: 1,
+        operationId: operation.operationId,
+        kind: operation.kind,
+        phase: 'queued',
+        updatedAt: '2026-07-27T02:59:59.000Z',
+      });
 
       await executeNativeLifecycleOperation({
         home,
@@ -457,6 +500,13 @@ describe('native lifecycle detached operations', () => {
     temporaryRoots.push(home);
     const { engine } = fakeEngine();
     const store = createNativeLifecycleOperationStore(home);
+    store.write({
+      schemaVersion: 1,
+      operationId: 'stale-update',
+      kind: 'update',
+      phase: 'queued',
+      updatedAt: '2026-07-27T02:59:59.000Z',
+    });
 
     await expect(
       executeNativeLifecycleOperation({

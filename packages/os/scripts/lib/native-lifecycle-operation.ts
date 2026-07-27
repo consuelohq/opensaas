@@ -312,6 +312,7 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
   isProcessAlive?: (pid: number) => boolean;
   queuedStaleMs?: number;
   pidlessRunningStaleMs?: number;
+  pidBackedRunningStaleMs?: number;
 }): NativeLifecycleOperationLauncher => {
   const store = createNativeLifecycleOperationStore(input.home);
   const executable =
@@ -332,6 +333,10 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
     queuedStaleMs,
     input.pidlessRunningStaleMs ?? 2 * 60 * 60 * 1_000,
   );
+  const pidBackedRunningStaleMs = Math.max(
+    queuedStaleMs,
+    input.pidBackedRunningStaleMs ?? pidlessRunningStaleMs,
+  );
 
   const readCurrentOperation = ():
     | NativeLifecycleOperationState
@@ -341,7 +346,7 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
     const ageMs = Math.max(0, now().getTime() - Date.parse(existing.updatedAt));
     const active =
       existing.phase === 'running' && typeof existing.workerPid === 'number'
-        ? isProcessAlive(existing.workerPid)
+        ? isProcessAlive(existing.workerPid) && ageMs < pidBackedRunningStaleMs
         : existing.phase === 'queued'
           ? ageMs < queuedStaleMs
           : ageMs < pidlessRunningStaleMs;

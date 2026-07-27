@@ -96,3 +96,46 @@ started: 2026-07-27
 - Wait for all required GitHub checks to complete successfully.
 - Merge PR #1670 with merge-commit semantics into `stream/os-distribution` only.
 - Verify the resulting stream remains 0 commits behind the promoted main used for this task.
+
+## wait cycle 1
+
+- Start time (UTC): 2026-07-27T05:33:06.587Z
+- Wait reason: GitHub CI and CodeRabbit are processing final head `96abf669ca4af96e3bace511fcf384958432223a`.
+- Duration: 30-second polling intervals, maximum 10 attempts.
+- Resume action: inspect PR #1670 checks and normalized reviews immediately after each wake.
+- Expected signal: zero pending/failed required checks and a CodeRabbit review response.
+- Fallback: inspect failed checks or review findings through Consuelo OS; stop rather than merge if the bounded poll expires.
+
+## workspace-owned: files read
+
+- `packages/os/scripts/lib/native-lifecycle-operation.ts`
+- `packages/os/tests/native-lifecycle-operation.test.ts`
+
+## review finding verification and fixes
+
+- RED trace `trc_fa8e81258617`: reproduced release-cache staleness, shallow secret filtering, request/authority error conflation, unbounded PID reuse, and missing native lifecycle CI coverage.
+- GREEN trace `trc_da109b24923a`: 5 files and 59 tests passed after fixes.
+- Valid finding: distribution workflow did not execute native lifecycle TypeScript contracts. Fixed with a macOS native-matrix step covering client, endpoint, and operation suites.
+- Valid finding: channel changes could leave cached release metadata stale. Fixed with explicit release-inspector invalidation after successful channel mutation.
+- Valid security finding: workspace authority secret-key validation was shallow. Fixed with recursive object/array validation and a nested-token regression test.
+- Valid observability finding: malformed client requests reused workspace-authority error labels. Fixed with request-specific string validation.
+- Valid finding: a reused PID could keep stale operation state active indefinitely. Fixed with a configurable bounded age for PID-backed running state.
+- Additional test-harness defect exposed by the newly enabled operation suite: canonical worker tests did not seed the required queued claim. Tests now model the detached worker protocol rather than weakening its fail-closed claim guard.
+- First post-fix focused run trace `trc_59fef692c5fb`: endpoint/workflow fixes passed; operation suite exposed the queued-claim fixture defect.
+
+## workspace-owned: validation evidence
+
+- Focused GREEN in the task worktree: Windows 16/16, macOS 4/4, lifecycle 55/55; trace `trc_f5a8d1252fa4`.
+- Workspace strict review against `origin/stream/os-distribution`: 0 owned issues, 0 blocking issues; trace `trc_446d5920304c`.
+- Full workspace verify: passed and publish-valid; trace `trc_59b3d53f54a0`.
+- Exact merged-tree marker scan: 197 candidate paths checked, zero line-anchored conflict markers outside archived task records.
+- Exact merged-tree selected matrix under process isolation: 7 files, 99 tests passed; trace `trc_fcc740c51b3d`.
+- Main ancestry comparison: 0 behind; trace `trc_b09a79fedcd9`.
+- Stream ancestry comparison: 0 behind; trace `trc_898580471935`.
+- 2026-07-27 05:37:45 `review.run`: passed — OK
+- 2026-07-27 05:38:06 `review.run`: passed — OK
+- 2026-07-27 05:38:13 `verify`: passed — OK
+- Strict post-fix review initially found one callback style blocker, trace `trc_c2a0a7de7af7`; rewritten without changing success-only invalidation semantics.
+- Focused regression rerun: 3 files and 41 tests passed, trace `trc_b1d6edf8766d`.
+- Final strict review: 0 owned, pre-existing, or blocking issues, trace `trc_2d00731733c8`.
+- Final full verify: passed and publish-valid, trace `trc_b7d18f4ff138`.

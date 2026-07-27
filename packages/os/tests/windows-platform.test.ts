@@ -650,6 +650,10 @@ describe('Windows native service and workflow source contracts', () => {
     expect(workflow).toContain("if: matrix.name == 'macos'");
     expect(workflow).toContain('bun run test:distribution:integration');
     expect(workflow).toContain('Run macOS menu-bar contracts');
+    expect(workflow).toContain('Run native lifecycle TypeScript contracts');
+    expect(workflow).toContain('tests/native-lifecycle-client.test.ts');
+    expect(workflow).toContain('tests/native-lifecycle-endpoint.test.ts');
+    expect(workflow).toContain('tests/native-lifecycle-operation.test.ts');
     expect(workflow).toContain('Package the macOS alpha app');
     for (const requiredPath of [
       'packages/os/package.json',
