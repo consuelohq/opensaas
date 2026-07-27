@@ -129,9 +129,9 @@ Do not mutate Consuelo OS on Ko's Mac Mini or MacBook Air. Ko performs every rea
 
 ## Fix and disposition policy
 
-This domain reviewer is read-only. Do not quietly patch product code and approve your own fix. Post findings to GitHub and the shared finding ledger. Worker 23 dispatches accepted repairs as narrow task branches to the original owner when ownership remains clear, or to a fresh narrowly scoped repair worker for cross-cutting defects. The same domain reviewer must verify the repaired candidate and update the original GitHub threads.
+This synthesis reviewer is read-only. Do not quietly patch product code and approve your own fix. Post findings to GitHub and the shared finding ledger. Worker 23 dispatches accepted repairs as narrow task branches to the original owner when ownership remains clear, or to a fresh narrowly scoped repair worker for cross-cutting defects. The same domain reviewer must verify the repaired candidate and update the original GitHub threads.
 
-Write the durable domain report to `packages/os/plans/consuelo-os-foundation/reviews/final/23h-go-no-go.md`. The report summarizes evidence and links to GitHub; it does not replace GitHub comments.
+Write the durable final synthesis report to `packages/os/plans/consuelo-os-foundation/reviews/final/23h-go-no-go.md`. The report summarizes evidence and links to GitHub; it does not replace GitHub comments.
 
 ## Acceptance gates
 
@@ -147,4 +147,3 @@ Write the durable domain report to `packages/os/plans/consuelo-os-foundation/rev
 - The structured review, top-level summary, and consolidated agent-fix prompt are posted to GitHub.
 - All existing relevant CodeRabbit, Grok 4.5, and human findings have a current disposition.
 - The report names the exact baseline SHA, candidate SHA, review PR, tests, runtime evidence, unavailable evidence, and unresolved risks.
-- The domain returns `DOMAIN CLEAR`, `DOMAIN CONDITIONAL`, or `DOMAIN BLOCKED`; it does not issue the final launch decision.
