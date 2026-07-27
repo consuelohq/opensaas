@@ -81,6 +81,7 @@ private struct ContractSuite {
         try socketWritesDisableSigPipe()
         try socketIOUsesBoundedDeadlines()
         try snapshotCacheRetainsHighestObservedSequence()
+        try await overlappingRefreshesRetainTheNewestSnapshot()
         try await rejectedLifecycleOperationsSurfaceAsErrors()
         try await framedIPCRejectsSecretBearingLifecycleResponses()
         try await mockedFramedIPCReflectsAppUpdateThroughTypedStatus()
@@ -445,6 +446,7 @@ private struct ContractSuite {
     private func snapshotCacheRetainsHighestObservedSequence() throws {
         let newer = snapshot().with(sequence: 9, version: "1.5.0")
         let older = snapshot().with(sequence: 8, version: "1.4.0")
+        let equal = snapshot().with(sequence: 9, version: "1.5.1")
         let newest = snapshot().with(sequence: 10, version: "1.6.0")
 
         let retained = UnixSocketLifecycleTransport.retainNewestSnapshot(
@@ -454,12 +456,35 @@ private struct ContractSuite {
         try expect(retained.sequence, 9, "stale response cannot regress cached sequence")
         try expect(retained.runtime.version, "1.5.0", "stale response cannot regress cached runtime")
 
-        let advanced = UnixSocketLifecycleTransport.retainNewestSnapshot(
+        let replaced = UnixSocketLifecycleTransport.retainNewestSnapshot(
             current: retained,
+            incoming: equal
+        )
+        try expect(replaced.sequence, 9, "equal-sequence response preserves sequence")
+        try expect(replaced.runtime.version, "1.5.1", "equal-sequence response replaces cached payload")
+
+        let advanced = UnixSocketLifecycleTransport.retainNewestSnapshot(
+            current: replaced,
             incoming: newest
         )
         try expect(advanced.sequence, 10, "newer response advances cached sequence")
         try expect(advanced.runtime.version, "1.6.0", "newer response advances cached runtime")
+    }
+
+    private func overlappingRefreshesRetainTheNewestSnapshot() async throws {
+        let transport = DeferredLifecycleTransport()
+        let client = LifecycleClient(transport: transport)
+        let first = Task { try await client.refresh() }
+        let second = Task { try await client.refresh() }
+
+        try await transport.waitForPendingRequests(2)
+        transport.completeRequest(at: 1, with: .snapshot(snapshot().with(sequence: 10, version: "1.6.0")))
+        transport.completeRequest(at: 0, with: .snapshot(snapshot().with(sequence: 9, version: "1.5.0")))
+        _ = try await first.value
+        _ = try await second.value
+
+        try expect(client.current()?.sequence, 10, "late stale refresh cannot regress client sequence")
+        try expect(client.current()?.runtime.version, "1.6.0", "late stale refresh cannot regress client payload")
     }
 
     private func rejectedLifecycleOperationsSurfaceAsErrors() async throws {
@@ -690,6 +715,41 @@ private final class MockLifecycleServer: @unchecked Sendable {
                 offset += written
             }
         }
+    }
+}
+
+private final class DeferredLifecycleTransport: LifecycleTransport, @unchecked Sendable {
+    private let lock = NSLock()
+    private var pending: [CheckedContinuation<LifecycleResponse, Error>?] = []
+
+    func request(_ request: LifecycleRequest) async throws -> LifecycleResponse {
+        guard request == .statusGet else {
+            return .accepted(.init(accepted: true, operationId: "op-deferred"))
+        }
+        return try await withCheckedThrowingContinuation { continuation in
+            lock.withLock { pending.append(continuation) }
+        }
+    }
+
+    func subscribe(_ listener: @escaping @Sendable (LifecycleSnapshot) -> Void) -> LifecycleSubscription {
+        LifecycleSubscription {}
+    }
+
+    func waitForPendingRequests(_ count: Int) async throws {
+        for _ in 0..<100 {
+            if lock.withLock({ pending.count }) == count { return }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        throw ContractFailure.failed("timed out waiting for \(count) overlapping lifecycle requests")
+    }
+
+    func completeRequest(at index: Int, with response: LifecycleResponse) {
+        let continuation = lock.withLock { () -> CheckedContinuation<LifecycleResponse, Error>? in
+            guard pending.indices.contains(index) else { return nil }
+            defer { pending[index] = nil }
+            return pending[index]
+        }
+        continuation?.resume(returning: response)
     }
 }
 
