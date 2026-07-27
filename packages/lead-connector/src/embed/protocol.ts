@@ -3,6 +3,7 @@ export const LEAD_CONNECTOR_EMBED_PROTOCOL_VERSION = 1 as const;
 export const LEAD_CONNECTOR_PARENT_ORIGINS = [
   'https://app.leadconnectorhq.com',
   'https://app.msgsndr.com',
+  'https://app.gohighlevel.com',
 ] as const;
 
 export type LeadConnectorClickToCallInput = {

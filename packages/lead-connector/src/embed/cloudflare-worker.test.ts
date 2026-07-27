@@ -79,7 +79,7 @@ describe('LeadConnector Cloudflare embed edge', () => {
     expect(fixture.assetRequests).toHaveLength(1);
     expect(response.headers.get('x-frame-options')).toBeNull();
     expect(response.headers.get('content-security-policy')).toContain(
-      'frame-ancestors https://app.leadconnectorhq.com https://app.msgsndr.com',
+      'frame-ancestors https://app.leadconnectorhq.com https://app.msgsndr.com https://app.gohighlevel.com',
     );
     expect(response.headers.get('permissions-policy')).toContain('microphone');
   });

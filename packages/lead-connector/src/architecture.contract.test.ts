@@ -74,7 +74,10 @@ describe('LeadConnector public architecture and branding contracts', () => {
         })),
       )),
     ];
-    const allowedProviderWireNames = ['x-ghl-signature'];
+    const allowedProviderWireNames = [
+      'x-ghl-signature',
+      'https://app.gohighlevel.com',
+    ];
     const forbiddenFragments = [
       ['g', 'h', 'l'].join(''),
       ['go', 'high', 'level'].join(''),
