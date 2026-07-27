@@ -17,7 +17,7 @@ Determine whether the complete approved Consuelo OS foundation is ready for fina
 Worker 23 must create one review-only GitHub comparison PR that exposes the complete foundation diff for inline review:
 
 1. Resolve the pre-foundation baseline SHA from the first foundation task metadata and independently confirm it from the earliest implementation PR merge base. If the sources disagree, stop and document the conflict.
-2. Freeze Worker 22's fully integrated candidate SHA after all required implementation streams are synchronized. Do not start domain audits while the candidate is moving.
+2. Resolve the ordinary all-stream promotion PR that targets `main` after Worker 22 has synchronized every required implementation stream and accepted repair. Freeze that PR's exact head SHA—not the Worker 22 task branch, the Worker 22 stream head, or any single implementation stream. Before freezing, publish an ancestry table proving that the candidate contains every required stream promotion and repair commit; stop if any required lineage is absent or the candidate is still moving.
 3. Create an immutable `audit/os-foundation-baseline` branch at the verified baseline SHA.
 4. Create or fast-forward `audit/os-foundation-final-candidate` to the frozen candidate SHA.
 5. Open `audit/os-foundation-final-candidate` into `audit/os-foundation-baseline` with title `[REVIEW ONLY] Consuelo OS foundation final audit`, labels `review-only` and `do-not-merge`, and a body containing both SHAs, the ordinary promotion PR, the original prompt inventory, and the audit sequence.
@@ -29,7 +29,7 @@ All domain reviewers must leave inline review comments, structured review object
 
 ## Original-intent inventory
 
-Create a master intent matrix covering launch prompts 01-26 and 30, Worker 28's planning deliverable, and Worker 29 only when Ko explicitly approved extraction. Worker 27 is a review procedure, not implementation scope. For each original worker prompt, discover all implementation, stream-promotion, audit, and repair PRs and map requirements to current files and evidence.
+Create a master intent matrix covering implementation prompts 01-22, 24-26, and 30 plus Worker 28's planning deliverable. Worker 23 is this audit orchestrator, Worker 27 is a review procedure rather than implementation scope, and Worker 29 enters scope only when Ko explicitly approved extraction on GitHub. For each in-scope original worker prompt, discover all implementation, stream-promotion, audit, and repair PRs and map requirements to current files and evidence.
 
 The seven domain briefs own the first-pass matrix partitions:
 
