@@ -232,6 +232,7 @@ describe('native lifecycle endpoint', () => {
       operation: 'status',
       changed: false,
       installState: 'partial',
+      version: '1.2.3',
       preferences: { channel: 'stable', notifications: { mode: 'on' } },
       detail: { reason: 'runtime/current is not activated' },
     }));

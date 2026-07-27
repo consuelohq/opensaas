@@ -42,6 +42,7 @@ started: 2026-07-27
 
 - Product defect confirmed from Ko's first live alpha run.
 - Source-runtime projection and action gating are implemented.
+- Codex P2 review found that source mode could still display an unrelated activated release version; fixed test-first so source snapshots always use `sourceVersion`.
 - Focused TypeScript and Swift contracts, strict review, and full verify are green.
 - Ready to publish PR #1672 and request external review.
 - Socket integration works after the human daemon restart checkpoint.
@@ -52,14 +53,9 @@ started: 2026-07-27
 
 ## files changed
 
-- `packages/os/scripts/lib/native-lifecycle-client.ts`
 - `packages/os/scripts/lib/native-lifecycle-endpoint.ts`
-- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
-- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
 - `packages/os/tests/native-lifecycle-endpoint.test.ts`
-- `packages/os/tests/macos-platform.test.ts`
-- `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+
 
 ## workspace-owned: files changed
 
@@ -82,9 +78,13 @@ started: 2026-07-27
 - GREEN: package syntax/typecheck passed.
 - GREEN: strict review reported 0 owned, pre-existing, or blocking issues.
 - GREEN: full verify passed with `publishValid: true` across 8 changed product/test files.
+- RED correction: source status carrying stale release version `1.2.3` rendered that release instead of `source`.
+- GREEN correction: source snapshots now always prefer `sourceVersion`; 72 focused tests, typecheck, strict review, and full verify passed again.
 - 2026-07-27 18:07:36 `review.run`: failed — COMMAND_FAILED
 - 2026-07-27 18:08:06 `review.run`: passed — OK
 - 2026-07-27 18:08:30 `verify`: passed — OK
+- 2026-07-27 18:15:02 `review.run`: passed — OK
+- 2026-07-27 18:15:10 `verify`: passed — OK
 
 ## key decisions
 
@@ -116,7 +116,7 @@ started: 2026-07-27
 - [x] GREEN focused TypeScript and Swift evidence recorded
 - [x] strict review clean
 - [x] full verify clean
-- [ ] task pushed and PR #1672 updated
+- [ ] corrective source-version test and implementation pushed to PR #1672
 - [ ] CodeRabbit requested and findings dispositioned
 - [ ] task merged into `stream/os-distribution`
 
@@ -126,3 +126,4 @@ started: 2026-07-27
 - `packages/os/package.json`
 - `packages/os/scripts/lib/lifecycle/paths.ts`
 - `packages/os/tests/macos-platform.test.ts`
+- `packages/workspace/scripts/task-push.js`

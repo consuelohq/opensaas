@@ -715,8 +715,10 @@ export const createNativeLifecycleEndpointController = (
       observedAt,
       install: installState(status, managementMode),
       runtime: {
-        version: status.version ??
-          (managementMode === 'source' ? sourceVersion : 'unknown'),
+        version:
+          managementMode === 'source'
+            ? sourceVersion
+            : (status.version ?? 'unknown'),
         channel,
         state: projectedRuntimeState,
       },

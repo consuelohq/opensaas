@@ -5,7 +5,7 @@
   "branch": "task/os-distribution/fix-macos-lifecycle-socket-discovery",
   "base": "origin/stream/os-distribution",
   "headSha": "cbfb9daa5ba0f61f9cb4b92b2e42e7a5dc8ece31",
-  "changeHash": "cc60c1e0787d9df97e1f66797a154f89f91aa332f2c503bf37801b133707ce55",
+  "changeHash": "cb05a82b4ff6c551e6ff1a6dca4108f8155b3267574ab4296c5a5bf4c4e923d1",
   "changedFiles": [
     "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
@@ -16,7 +16,7 @@
     "packages/os/tests/macos-platform.test.ts",
     "packages/os/tests/native-lifecycle-endpoint.test.ts"
   ],
-  "verifiedAt": "2026-07-27T18:08:30.413Z",
+  "verifiedAt": "2026-07-27T18:15:10.715Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -34,6 +34,7 @@
         ".task/os-distribution/fix-macos-lifecycle-socket-discovery/evidence-log.json",
         ".task/os-distribution/fix-macos-lifecycle-socket-discovery/read-log.json",
         ".task/os-distribution/fix-macos-lifecycle-socket-discovery/session.json",
+        ".task/os-distribution/fix-macos-lifecycle-socket-discovery/verify.json",
         ".task/os-distribution/fix-macos-lifecycle-socket-discovery/workpad.md",
         ".task/tasks/os-distribution/fix-macos-lifecycle-socket-discovery.json",
         "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",

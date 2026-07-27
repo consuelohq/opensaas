@@ -19,7 +19,8 @@
     "packages/os/scripts/start-consuelo-daemon.sh",
     "packages/os/tests/lifecycle-engine.test.ts",
     "packages/os/tests/macos-platform.test.ts",
-    "packages/os/tests/native-lifecycle-endpoint.test.ts"
+    "packages/os/tests/native-lifecycle-endpoint.test.ts",
+    "packages/workspace/scripts/task-push.js"
   ],
-  "updatedAt": "2026-07-27T18:07:20.158Z"
+  "updatedAt": "2026-07-27T18:15:48.009Z"
 }
