@@ -63,6 +63,7 @@ describe('OS distribution environment workflow', () => {
         expect.objectContaining({
           name: 'Package the macOS alpha app',
           if: "matrix.name == 'macos'",
+          run: 'bash packages/os/scripts/testing/macos-alpha-package.sh packages/os/.tmp-macos-alpha',
         }),
         expect.objectContaining({
           name: 'Upload the macOS alpha app',

@@ -108,7 +108,7 @@ jobs:
 
       - name: Package the macOS alpha app
         if: matrix.name == 'macos'
-        run: packages/os/scripts/testing/macos-alpha-package.sh packages/os/.tmp-macos-alpha
+        run: bash packages/os/scripts/testing/macos-alpha-package.sh packages/os/.tmp-macos-alpha
 
       - name: Upload the macOS alpha app
         if: matrix.name == 'macos'

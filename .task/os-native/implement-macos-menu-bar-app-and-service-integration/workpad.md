@@ -52,25 +52,13 @@ started: 2026-07-26
 
 ## files changed
 
-- `packages/os/.tmp-macos-alpha` (deleted)
-- `packages/os/docs/macos-platform.md`
-- `packages/os/native/macos/.build` (deleted)
-- `packages/os/native/macos/Package.swift`
-- `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/FramedJSONCodec.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/Placeholder.swift` (deleted)
-- `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
-- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
-- `packages/os/native/macos/Tests` (deleted)
-- `packages/os/native/macos/Tests/ConsueloMacCoreTests/ConsueloMacCoreTests.swift`
-- `packages/os/scripts/testing/macos-alpha-package.sh`
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
+- `packages/os/tests/distribution/workflow-contract.test.ts`
+
 
 ## workspace-owned: files changed
 
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/.tmp-macos-alpha` (deleted)
 - `packages/os/docs/macos-platform.md`
 - `packages/os/native/macos/.build` (deleted)
@@ -86,7 +74,13 @@ started: 2026-07-26
 - `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
 - `packages/os/native/macos/Tests` (deleted)
 - `packages/os/native/macos/Tests/ConsueloMacCoreTests/ConsueloMacCoreTests.swift`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- `packages/os/scripts/lib/native-lifecycle-client.ts`
 - `packages/os/scripts/testing/macos-alpha-package.sh`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/os/tests/distribution/workflow-contract.test.ts`
+- `packages/os/tests/macos-platform.test.ts`
+- `packages/os/tests/native-lifecycle-client.test.ts`
 
 ## workspace-owned: activity log
 
@@ -118,6 +112,8 @@ started: 2026-07-26
 - 2026-07-26 23:55:14 fs.trash: `packages/os/native/macos/.build`
 - 2026-07-26 23:57:18 fs.trash: `packages/os/native/macos/.build`
 - 2026-07-26 23:57:19 fs.trash: `packages/os/.tmp-macos-alpha`
+- 2026-07-27 00:01:51 fs.trash: `packages/os/native/macos/.build`
+- 2026-07-27 00:01:52 fs.trash: `packages/os/.tmp-macos-alpha`
 
 ## workspace-owned: validation evidence
 
@@ -126,6 +122,27 @@ started: 2026-07-26
 - Review-fix GREEN: full framed-response secret rejection, tagged-union JSON parity, stable presentation, explicit retention controls, app build, and macOS source contract at `trc_d6d65f1110b6`.
 - Final TypeScript/distribution gate: formatting, scoped lint, package typecheck, and 115 passing tests at `trc_6455424c27a1`.
 - Final Swift/release gate: contract runner, menu app build, isolated alpha bundle, valid plist, verified ad-hoc signature, executable arm64 Mach-O at `trc_ed74f2f793a6`.
+- Wait cycle started 2026-07-26 23:58 UTC.
+  - Wait reason: GitHub CI and the manually requested CodeRabbit review were still pending after commit `ddd8ea0`.
+  - Duration: 30 seconds.
+  - Resume action: immediately read PR #1666 checks and normalized reviews through the typed GitHub facade.
+  - Expected signal: the dedicated macOS check completes and/or CodeRabbit posts its structured review/findings.
+  - Fallback: if signals remain pending, record the observation and run another bounded wait cycle; if a check fails, inspect that check before any merge action.
+- Wait cycle 1 completed at 2026-07-26 23:59 UTC (`trc_5b6cdea2a94b`). Immediate verification found CodeRabbit processing the manually requested review and identified `Consuelo OS / native macos` as the single failed check while six checks remained pending (`trc_8c2ffebd0c3e`, `trc_3c003e13b511`).
+- The first failed-log retrieval was rejected because the enclosing matrix workflow was still running, so GitHub had not published logs (`trc_6088ed4b3d20`).
+- Wait cycle 2 started 2026-07-26 23:59 UTC.
+  - Wait reason: allow the distribution matrix run to finish so the failed macOS job log becomes available, while CodeRabbit continues processing.
+  - Duration: 30 seconds.
+  - Resume action: immediately retrieve the failed macOS job log, PR checks, and normalized reviews.
+  - Expected signal: completed workflow with an accessible macOS failed-step log and/or completed CodeRabbit findings.
+  - Fallback: if the workflow remains active, run one additional bounded wait; if the log is available, diagnose and repair before any merge action.
+- Wait cycle 2 completed at 2026-07-27 00:00 UTC (`trc_c8fe4cbd03fc`). The immediate parallel log request still raced the matrix completion and failed closed (`trc_e7a2048ff1ad`); structured run metadata then confirmed completion while CodeRabbit remained in progress (`trc_af6519ffa116`).
+- Completed CI evidence identified step 6, `Package the macOS alpha app`, as the failure (`trc_b01f2ce65476`). The job log showed the Swift contract runner passed, then direct script execution failed with `Permission denied` because the API-backed task publication did not preserve the local executable bit (`trc_edfb7208ca97`, focused extraction `trc_64343e2d0c9b`).
+- Recovery TDD RED: the workflow contract now requires an explicit Bash invocation and failed against the direct execution form (`trc_5cdbbdd55d33`). Recovery: invoke the portable script through `bash` in CI rather than depending on executable-mode transport.
+- Recovery GREEN: the workflow/macOS source contracts passed 4 tests, and explicit Bash invocation produced a valid ad-hoc-signed alpha app with a valid `Info.plist` (`trc_f969611e0b37`). Generated Swift/package output was removed before publication.
+- The first recovery publication via `task.push --changed` failed closed because API publication of commit `ddd8ea0` had advanced the remote task branch while the local worktree ref remained at its pre-publication commit (`trc_afda038d6c73`). Tool discovery did not expose a separate task-sync command (`trc_d588cb2e0b68`, `trc_6da8f397fca2`, `trc_ad9f49615e27`).
+- Recovery diagnosis inspected the task-push implementation (`trc_1f974fba6477`, `trc_9a8cd02bd4f4`, `trc_747533f71de8`). Its contract deliberately applies the local/remote SHA guard only to `--changed`; explicit files are atomically committed against the live remote branch head and auto-include task metadata. Recovery: publish only the validated workflow and workflow-contract files through the typed explicit-file path, avoiding native Git and preserving remote commit ancestry.
+- The first explicit-file publication used relative paths, which the task-push process resolved from the main repository and correctly rejected as outside the selected task worktree (`trc_83d32cfd1a30`). Recovery: retry the same bounded publication using the exact task-worktree absolute paths; the failed call performed no remote mutation.
 
 ## key decisions
 
@@ -222,30 +239,9 @@ bun run task:finish
 - `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/native-lifecycle-client.test.ts`
 - `packages/os/tests/windows-platform.test.ts`
+- `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-26 23:49:42 apply-patch: `packages/os/tests/distribution/runtime-bundle.test.ts`
+- 2026-07-27 00:03:37 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
 
-- 2026-07-26 23:49:51 apply-patch: `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- 2026-07-26 23:49:51 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-26 23:50:06 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-26 23:52:12 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-26 23:52:59 apply-patch: `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
-- 2026-07-26 23:52:59 apply-patch: `packages/os/tests/macos-platform.test.ts`
-- 2026-07-26 23:52:59 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-26 23:53:37 apply-patch: `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
-- 2026-07-26 23:53:37 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-26 23:53:55 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
-- 2026-07-26 23:53:55 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
-- 2026-07-26 23:53:55 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
-- 2026-07-26 23:53:55 apply-patch: `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
-- 2026-07-26 23:53:55 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-26 23:55:15 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-26 23:57:20 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 00:03:47 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
