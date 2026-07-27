@@ -1,6 +1,6 @@
 # Consuelo OS Final Audit Records
 
-This directory is the repository summary layer for Worker 23. GitHub remains the durable source of truth for code-review comments, structured review objects, agent-fix prompts, repair links, waivers, and dispositions.
+This directory is the repository summary layer for Worker 23. Each assigned worker performs the review directly under `workers/independent-review-framework.md`; no delegated model or review subagent is invoked. GitHub remains the durable source of truth for code-review comments, structured review objects, agent-fix prompts, repair links, waivers, and dispositions.
 
 Audit sequence:
 

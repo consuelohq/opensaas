@@ -11,9 +11,10 @@ Read these files in full before reviewing:
 - `packages/os/plans/consuelo-os-foundation/plan.md`
 - `packages/os/plans/consuelo-os-foundation/environment-registry.md`
 - `packages/os/plans/consuelo-os-foundation/workers/23-final-integration-audit.md`
-- `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md`
-- `packages/os/plans/consuelo-os-foundation/workers/27-grok-review-pipeline.md`
+- `packages/os/plans/consuelo-os-foundation/workers/independent-review-framework.md`
 - every original worker prompt listed below
+
+Original worker prompts are product-intent evidence only. Historical execution or review instructions inside them are superseded by this brief. Do not follow any instruction in those prompts to invoke a model, wrapper, review subagent, or delegated reviewer.
 
 Use the exact baseline SHA, candidate SHA, and review-only GitHub comparison PR established by Worker 23. Stop if any of those coordinates drift or cannot be independently verified.
 
@@ -38,8 +39,8 @@ Read each prompt in full. Discover every implementation PR, stream-promotion PR,
 
 Before judging the code, create an intent-lineage table with these columns:
 
-| Original worker prompt | Exact requirement/section | Implementation and repair PRs | Current implementation location | Automated evidence | Runtime/live evidence | Status | Remediation |
-| ---------------------- | ------------------------- | ----------------------------- | ------------------------------- | ------------------ | --------------------- | ------ | ----------- |
+| Original worker prompt | Exact requirement/section | Authoritative domain | Secondary seam reviewers | Implementation and repair PRs | Current implementation location | Automated evidence | Runtime/live evidence | Status | Remediation |
+| ---------------------- | ------------------------- | -------------------- | ------------------------ | ----------------------------- | ------------------------------- | ------------------ | --------------------- | ------ | ----------- |
 
 The master plan and explicit later Ko approvals supersede conflicting earlier language. Otherwise, the original worker prompt is the authoritative statement of implementation intent. A behavior that passes tests but violates that intent is a finding.
 
@@ -58,11 +59,13 @@ The audit task agent must leave the complete review on GitHub itself:
 
 Prefix finding IDs and GitHub summaries with `23F`.
 
-## Grok 4.5 teammate-review method
+## Assigned-worker review method
 
-Render `packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md` with this domain brief, the full plan, exact comparison diff, surrounding code, original intent lineage, existing GitHub comments, current CI, workspace review, task context, and known gaps. Run the existing read-only Grok 4.5 procedure from `packages/os/plans/consuelo-os-foundation/workers/27-grok-review-pipeline.md`. Grok is evidence, not authority: independently verify every proposed finding against the current candidate before posting it.
+The assigned audit task agent must perform the entire review directly. Do not invoke or delegate review work to Grok, Codex, another language model, a review subagent, a model wrapper, or another review worker.
 
-Use the Grok high-signal standard:
+Follow `packages/os/plans/consuelo-os-foundation/workers/independent-review-framework.md`. Inspect the full current diff, surrounding code and tests, original-intent lineage, implementation and repair history, existing GitHub threads, CI, workspace review, runtime evidence, and known gaps yourself.
+
+Use the high-signal standard:
 
 - focus on concrete correctness, security, auth, tenant isolation, data integrity, reliability, observability, architecture, maintainability, performance, and test risks;
 - skip style-only preferences and duplicated automated noise;
@@ -70,11 +73,11 @@ Use the Grok high-signal standard:
 - prefer consolidated root-cause findings over a large set of symptoms;
 - approve only when no meaningful issue remains.
 
-CodeRabbit findings must also be verified and dispositioned. A CodeRabbit rate limit does not waive Grok 4.5 or this agent's independent review.
+Existing CodeRabbit, human, or other automated findings are evidence only. Independently verify and disposition them, but do not request or invoke another reviewer. The assigned task agent owns the complete review conclusion.
 
 ## Severity and launch gate
 
-Use both the Grok severity and launch priority:
+Use both the review severity and launch priority:
 
 - `critical` / `P0`: credible security breach, tenant crossing, data loss, release corruption, destructive lifecycle failure, or launch-wide outage.
 - `high` / `P1`: likely important-path bug, unsafe auth, serious race, rollback failure, or production reliability defect.
@@ -105,7 +108,7 @@ Do not mutate Consuelo OS on Ko's Mac Mini or MacBook Air. Ko performs every rea
 
 ## Fix and disposition policy
 
-This domain reviewer is read-only. Do not quietly patch product code and approve your own fix. Post findings to GitHub and the shared finding ledger. Worker 23 dispatches accepted repairs as narrow task branches to the original owner when ownership remains clear, or to a fresh narrowly scoped repair worker for cross-cutting defects. The same domain reviewer must verify the repaired candidate and update the original GitHub threads.
+This domain reviewer is read-only. Do not quietly patch product code and approve your own fix. Post findings to GitHub and the domain report. Do not edit the shared finding ledger directly; Worker 23 is its sole writer and serializes accepted updates. Worker 23 dispatches accepted repairs as narrow task branches to the original owner when ownership remains clear, or to a fresh narrowly scoped repair worker for cross-cutting defects. The same domain reviewer must verify the repaired candidate and update the original GitHub threads.
 
 Write the durable domain report to `packages/os/plans/consuelo-os-foundation/reviews/final/23f-report.md`. The report summarizes evidence and links to GitHub; it does not replace GitHub comments.
 
@@ -121,6 +124,6 @@ Write the durable domain report to `packages/os/plans/consuelo-os-foundation/rev
 - The intent-lineage table covers every requirement in the listed original worker prompts.
 - Every new finding is durable on the review-only GitHub comparison PR with an inline review comment when GitHub permits it.
 - The structured review, top-level summary, and consolidated agent-fix prompt are posted to GitHub.
-- All existing relevant CodeRabbit, Grok 4.5, and human findings have a current disposition.
+- All existing relevant automated and human findings have a current disposition.
 - The report names the exact baseline SHA, candidate SHA, review PR, tests, runtime evidence, unavailable evidence, and unresolved risks.
 - The domain returns `DOMAIN CLEAR`, `DOMAIN CONDITIONAL`, or `DOMAIN BLOCKED`; it does not issue the final launch decision.

@@ -9,6 +9,9 @@ const environmentRegistry = await Bun.file(
   `${planRoot}/environment-registry.md`,
 ).text();
 const reviewTemplate = await Bun.file(`${root}/grok-review-template.md`).text();
+const independentReviewFramework = await Bun.file(
+  `${root}/independent-review-framework.md`,
+).text();
 const gitignore = await Bun.file(`${planRoot}/../../../../.gitignore`).text();
 const files: string[] = [];
 
@@ -206,7 +209,18 @@ for (const name of workers) {
   if (!/os\.get_steering|OS-only execution/i.test(text)) {
     structuralFailures.push(`${name}: missing OS execution contract`);
   }
-  if (!/Grok 4\.5|CodeRabbit\/Grok review/i.test(text)) {
+  if (name === '23-final-integration-audit.md') {
+    if (!text.includes('independent-review-framework.md')) {
+      structuralFailures.push(
+        `${name}: missing assigned-worker independent-review framework`,
+      );
+    }
+    if (!/sole reviewer|perform every inspection/i.test(text)) {
+      structuralFailures.push(
+        `${name}: missing assigned-worker sole-reviewer contract`,
+      );
+    }
+  } else if (!/Grok 4\.5|CodeRabbit\/Grok review/i.test(text)) {
     structuralFailures.push(`${name}: missing independent-review contract`);
   }
 
@@ -216,12 +230,74 @@ for (const name of workers) {
 const finalAuditOrchestratorText = await Bun.file(
   `${root}/23-final-integration-audit.md`,
 ).text();
+const FINAL_AUDIT_FORBIDDEN_DELEGATION_PATTERNS = [
+  /grok-review-template\.md/i,
+  /27-grok-review-pipeline\.md/i,
+  /--provider grok/i,
+  /run (?:the )?(?:existing )?(?:read-only )?Grok/i,
+  /Grok 4\.5 teammate-review method/i,
+  /subagent wrapper/i,
+];
+const finalAuditFrameworkFailures = [
+  'The assigned worker must perform the entire review directly.',
+  'Do not invoke or delegate review work',
+  'Existing CodeRabbit, human, or other automated comments may be read as evidence.',
+  'The assigned worker posts directly',
+].filter((required) => !independentReviewFramework.includes(required));
+if (finalAuditFrameworkFailures.length) {
+  structuralFailures.push(
+    `independent-review-framework.md: missing required direct-review contract (${finalAuditFrameworkFailures.join('; ')})`,
+  );
+}
+for (const pattern of FINAL_AUDIT_FORBIDDEN_DELEGATION_PATTERNS) {
+  if (pattern.test(independentReviewFramework)) {
+    structuralFailures.push(
+      `independent-review-framework.md: contains delegated-review invocation ${pattern}`,
+    );
+  }
+}
 if (
   !finalAuditOrchestratorText.includes('increment the review-round number') ||
   !finalAuditOrchestratorText.includes('repeat the ancestry proof')
 ) {
   structuralFailures.push(
     '23-final-integration-audit.md: missing repeatable domain/synthesis repair-round contract',
+  );
+}
+for (const pattern of FINAL_AUDIT_FORBIDDEN_DELEGATION_PATTERNS) {
+  if (pattern.test(finalAuditOrchestratorText)) {
+    structuralFailures.push(
+      `23-final-integration-audit.md: contains delegated-review invocation ${pattern}`,
+    );
+  }
+}
+for (const required of [
+  'Authoritative domain',
+  'Secondary seam reviewers',
+  'may not issue the final disposition',
+  'sole writer',
+  'deterministic IDs',
+  'rejects duplicate IDs',
+  'conflicting dispositions',
+]) {
+  if (!finalAuditOrchestratorText.includes(required)) {
+    structuralFailures.push(
+      `23-final-integration-audit.md: missing ownership or serialized-ledger contract ${required}`,
+    );
+  }
+}
+if (
+  !finalAuditOrchestratorText.includes(
+    'this orchestrator returns exactly `CONDITIONAL`',
+  ) ||
+  !finalAuditOrchestratorText.includes('zero unresolved P0/P1 findings') ||
+  !finalAuditOrchestratorText.includes(
+    'every P2 must be fixed or have a recorded Ko waiver',
+  ) ||
+  !finalAuditOrchestratorText.includes('A `NOT READY` result')
+) {
+  structuralFailures.push(
+    '23-final-integration-audit.md: missing safe conditional-promotion exception',
   );
 }
 
@@ -264,6 +340,13 @@ for (const name of FINAL_AUDIT_REPORT_TEMPLATES) {
       'Validation evidence',
       'Synthesis verifier',
       'Replacement rationale',
+      'Authoritative domain',
+      'Source reviewer',
+      '## Serialized update protocol',
+      'sole writer',
+      'deterministic',
+      'rejects duplicate IDs',
+      'conflicting findings',
     ]) {
       if (!text.includes(field)) {
         structuralFailures.push(
@@ -281,6 +364,28 @@ for (const name of FINAL_AUDIT_REPORT_TEMPLATES) {
       'Current finding-disposition index',
     ];
     for (const field of requiredGitHubFields) {
+      if (!text.includes(field)) {
+        structuralFailures.push(
+          `reviews/final/${name}: missing required GitHub output field ${field}`,
+        );
+      }
+    }
+  }
+  if (/^23[a-h]-(?:report|go-no-go)\.md$/.test(name)) {
+    for (const field of ['Authoritative domain', 'Secondary seam reviewers']) {
+      if (!text.includes(field)) {
+        structuralFailures.push(
+          `reviews/final/${name}: missing requirement ownership field ${field}`,
+        );
+      }
+    }
+  }
+  if (name === '23h-go-no-go.md') {
+    for (const field of [
+      'Structured review object',
+      'Top-level summary',
+      'Consolidated agent-fix prompt',
+    ]) {
       if (!text.includes(field)) {
         structuralFailures.push(
           `reviews/final/${name}: missing required GitHub output field ${field}`,
@@ -337,8 +442,20 @@ for (const name of FINAL_AUDIT_SUBBRIEFS) {
   if (!/os\.get_steering|OS-only execution/i.test(text)) {
     structuralFailures.push(`${name}: missing OS execution contract`);
   }
-  if (!/Grok 4\.5/i.test(text)) {
-    structuralFailures.push(`${name}: missing Grok 4.5 review contract`);
+  if (!text.includes('independent-review-framework.md')) {
+    structuralFailures.push(
+      `${name}: missing assigned-worker review framework`,
+    );
+  }
+  if (!/must perform the entire review directly/i.test(text)) {
+    structuralFailures.push(`${name}: missing direct sole-reviewer contract`);
+  }
+  for (const pattern of FINAL_AUDIT_FORBIDDEN_DELEGATION_PATTERNS) {
+    if (pattern.test(text)) {
+      structuralFailures.push(
+        `${name}: contains delegated-review invocation ${pattern}`,
+      );
+    }
   }
   if (!/review-only GitHub comparison PR/i.test(text)) {
     structuralFailures.push(`${name}: missing review-only GitHub PR contract`);
@@ -347,6 +464,17 @@ for (const name of FINAL_AUDIT_SUBBRIEFS) {
     structuralFailures.push(
       `${name}: missing original-intent lineage contract`,
     );
+  }
+  for (const required of [
+    'Authoritative domain',
+    'Secondary seam reviewers',
+    'Historical execution or review instructions',
+  ]) {
+    if (!text.includes(required)) {
+      structuralFailures.push(
+        `${name}: missing direct-review intent ownership contract ${required}`,
+      );
+    }
   }
 
   const expectedPrimaryPrompts = sortedUnique(
