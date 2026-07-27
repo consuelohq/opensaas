@@ -476,18 +476,16 @@ private struct ContractSuite {
         let transport = DeferredLifecycleTransport()
         let client = LifecycleClient(transport: transport)
         let first = Task { try await client.refresh() }
+        try await transport.waitForPendingRequests(1)
         let second = Task { try await client.refresh() }
 
         try await transport.waitForPendingRequests(2)
         transport.completeRequest(at: 1, with: .snapshot(snapshot().with(sequence: 10, version: "1.6.0")))
-        for _ in 0..<100 {
-            if client.current()?.sequence == 10 { break }
-            try await Task.sleep(nanoseconds: 10_000_000)
-        }
+        let newer = try await second.value
+        try expect(newer.sequence, 10, "newer refresh completes before stale response")
         try expect(client.current()?.sequence, 10, "newer refresh is applied before stale completion")
         transport.completeRequest(at: 0, with: .snapshot(snapshot().with(sequence: 9, version: "1.5.0")))
         _ = try await first.value
-        _ = try await second.value
 
         try expect(client.current()?.sequence, 10, "late stale refresh cannot regress client sequence")
         try expect(client.current()?.runtime.version, "1.6.0", "late stale refresh cannot regress client payload")
@@ -507,7 +505,11 @@ private struct ContractSuite {
         try await failure.waitUntilDescriptionRequested()
         defer { failure.releaseDescription() }
         let newer = snapshot().with(sequence: 10, version: "1.6.0")
-        let subscriptionUpdate = Task.detached { transport.emit(newer) }
+        let subscriptionUpdate = Task.detached {
+            // Simulate a heavily delayed executor. Completion signaling must not fail early.
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            transport.emit(newer)
+        }
         try await transport.waitUntilEmitCompleted()
         try expect(client.current()?.sequence, 10, "subscription update completes before failed refresh resumes")
         try expect(client.current()?.connection.state, .online, "subscription update is online before failed refresh resumes")
@@ -753,16 +755,65 @@ private final class MockLifecycleServer: @unchecked Sendable {
     }
 }
 
+private final class AsyncTestSignal: @unchecked Sendable {
+    private let lock = NSLock()
+    private var isSignaled = false
+    private var waiters: [UUID: CheckedContinuation<Void, Error>] = [:]
+
+    func signal() {
+        let continuations = lock.withLock { () -> [CheckedContinuation<Void, Error>] in
+            guard !isSignaled else { return [] }
+            isSignaled = true
+            defer { waiters.removeAll() }
+            return Array(waiters.values)
+        }
+        continuations.forEach { $0.resume() }
+    }
+
+    func wait(
+        timeoutNanoseconds: UInt64 = 5_000_000_000,
+        message: String
+    ) async throws {
+        let id = UUID()
+        try await withCheckedThrowingContinuation { continuation in
+            let registered = lock.withLock { () -> Bool in
+                guard !isSignaled else { return false }
+                waiters[id] = continuation
+                return true
+            }
+            guard registered else {
+                continuation.resume()
+                return
+            }
+            Task.detached { [weak self] in
+                try? await Task.sleep(nanoseconds: timeoutNanoseconds)
+                self?.timeout(id: id, message: message)
+            }
+        }
+    }
+
+    private func timeout(id: UUID, message: String) {
+        let continuation = lock.withLock { waiters.removeValue(forKey: id) }
+        continuation?.resume(throwing: ContractFailure.failed(message))
+    }
+}
+
 private final class DeferredLifecycleTransport: LifecycleTransport, @unchecked Sendable {
     private let lock = NSLock()
     private var pending: [CheckedContinuation<LifecycleResponse, Error>?] = []
+    private var pendingSignals: [Int: AsyncTestSignal] = [:]
 
     func request(_ request: LifecycleRequest) async throws -> LifecycleResponse {
         guard request == .statusGet else {
             return .accepted(.init(accepted: true, operationId: "op-deferred"))
         }
         return try await withCheckedThrowingContinuation { continuation in
-            lock.withLock { pending.append(continuation) }
+            let signals = lock.withLock { () -> [AsyncTestSignal] in
+                pending.append(continuation)
+                let readyCounts = pendingSignals.keys.filter { $0 <= pending.count }
+                return readyCounts.compactMap { pendingSignals.removeValue(forKey: $0) }
+            }
+            signals.forEach { $0.signal() }
         }
     }
 
@@ -771,11 +822,16 @@ private final class DeferredLifecycleTransport: LifecycleTransport, @unchecked S
     }
 
     func waitForPendingRequests(_ count: Int) async throws {
-        for _ in 0..<100 {
-            if lock.withLock({ pending.count }) == count { return }
-            try await Task.sleep(nanoseconds: 10_000_000)
+        let signal = lock.withLock { () -> AsyncTestSignal? in
+            guard pending.count < count else { return nil }
+            if let existing = pendingSignals[count] { return existing }
+            let created = AsyncTestSignal()
+            pendingSignals[count] = created
+            return created
         }
-        throw ContractFailure.failed("timed out waiting for \(count) overlapping lifecycle requests")
+        if let signal {
+            try await signal.wait(message: "timed out waiting for \(count) overlapping lifecycle requests")
+        }
     }
 
     func completeRequest(at index: Int, with response: LifecycleResponse) {
@@ -789,22 +845,17 @@ private final class DeferredLifecycleTransport: LifecycleTransport, @unchecked S
 }
 
 private final class BlockingDescriptionError: Error, CustomStringConvertible, @unchecked Sendable {
-    private let stateLock = NSLock()
-    private var descriptionRequested = false
+    private let descriptionRequested = AsyncTestSignal()
     private let release = DispatchSemaphore(value: 0)
 
     var description: String {
-        stateLock.withLock { descriptionRequested = true }
+        descriptionRequested.signal()
         _ = release.wait(timeout: .now() + 5)
         return "simulated refresh failure"
     }
 
     func waitUntilDescriptionRequested() async throws {
-        for _ in 0..<100 {
-            if stateLock.withLock({ descriptionRequested }) { return }
-            try await Task.sleep(nanoseconds: 10_000_000)
-        }
-        throw ContractFailure.failed("timed out waiting for refresh error projection")
+        try await descriptionRequested.wait(message: "timed out waiting for refresh error projection")
     }
 
     func releaseDescription() {
@@ -816,7 +867,7 @@ private final class FailingRefreshLifecycleTransport: LifecycleTransport, @unche
     private let error: BlockingDescriptionError
     private let lock = NSLock()
     private var listener: (@Sendable (LifecycleSnapshot) -> Void)?
-    private var emitCompleted = false
+    private let emitCompleted = AsyncTestSignal()
 
     init(error: BlockingDescriptionError) {
         self.error = error
@@ -837,15 +888,11 @@ private final class FailingRefreshLifecycleTransport: LifecycleTransport, @unche
     func emit(_ snapshot: LifecycleSnapshot) {
         let callback = lock.withLock { listener }
         callback?(snapshot)
-        lock.withLock { emitCompleted = true }
+        emitCompleted.signal()
     }
 
     func waitUntilEmitCompleted() async throws {
-        for _ in 0..<100 {
-            if lock.withLock({ emitCompleted }) { return }
-            try await Task.sleep(nanoseconds: 10_000_000)
-        }
-        throw ContractFailure.failed("timed out waiting for subscription callback completion")
+        try await emitCompleted.wait(message: "timed out waiting for subscription callback completion")
     }
 }
 
