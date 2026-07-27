@@ -639,13 +639,27 @@ describe('Windows native service and workflow source contracts', () => {
       'Remove Windows service build intermediates',
     );
     const distributionContracts = workflow.indexOf(
-      'Run distribution harness contracts',
+      'Run portable distribution contracts',
     );
     expect(cleanup).toBeGreaterThan(nativeAcceptance);
     expect(cleanup).toBeLessThan(distributionContracts);
+    expect(workflow).toContain("if: matrix.name != 'macos'");
     expect(workflow).toContain(
       'bun x vitest run tests/distribution --testTimeout 15000',
     );
+    expect(workflow).toContain("if: matrix.name == 'macos'");
+    expect(workflow).toContain('bun run test:distribution:integration');
+    expect(workflow).toContain('Run macOS menu-bar contracts');
+    expect(workflow).toContain('Package the macOS alpha app');
+    for (const requiredPath of [
+      'packages/os/package.json',
+      'packages/os/cloudflare/**',
+      'packages/os/native/**',
+      'packages/os/scripts/**',
+      'packages/os/tests/**',
+    ]) {
+      expect(workflow).toContain(`- ${requiredPath}`);
+    }
     expect(workflow).toContain('packages/os/native/windows-service/bin');
     expect(workflow).toContain('packages/os/native/windows-service/obj');
   });

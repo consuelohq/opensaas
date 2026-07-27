@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_17211911953c",
+  "tmuxSession": "opensaas-os-distribution-sync-distribution-stream-with-promoted-main-17211911",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/sync-distribution-stream-with-promoted-main",
+  "branch": "task/os-distribution/sync-distribution-stream-with-promoted-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-sync-distribution-stream-with-promoted-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-sync-distribution-stream-with-promoted-main",
+  "prNumber": 1670,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1670",
+  "createdAt": "2026-07-27T05:23:00.275Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-sync-distribution-stream-with-promoted-main/.task/os-distribution/sync-distribution-stream-with-promoted-main/session.json"
+}

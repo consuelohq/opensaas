@@ -7,23 +7,13 @@ on:
   pull_request:
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/native/macos/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/scripts/testing/macos-alpha-package.sh
-      - packages/os/tests/windows-*.test.ts
-      - packages/os/tests/macos-platform.test.ts
-      - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
-      - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/docs/macos-platform.md
+      - packages/os/package.json
+      - packages/os/bun.lock
+      - packages/os/cloudflare/**
+      - packages/os/docs/**
+      - packages/os/native/**
+      - packages/os/scripts/**
+      - packages/os/tests/**
   push:
     branches:
       - main
@@ -31,23 +21,13 @@ on:
       - stream/os-native
     paths:
       - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/native/macos/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/scripts/testing/macos-alpha-package.sh
-      - packages/os/tests/windows-*.test.ts
-      - packages/os/tests/macos-platform.test.ts
-      - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
-      - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/docs/macos-platform.md
+      - packages/os/package.json
+      - packages/os/bun.lock
+      - packages/os/cloudflare/**
+      - packages/os/docs/**
+      - packages/os/native/**
+      - packages/os/scripts/**
+      - packages/os/tests/**
   workflow_dispatch:
 
 concurrency:
@@ -90,7 +70,7 @@ jobs:
           - name: windows
             runner: windows-2025
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -153,9 +133,15 @@ jobs:
           Remove-Item -LiteralPath packages/os/native/windows-service/bin -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -LiteralPath packages/os/native/windows-service/obj -Recurse -Force -ErrorAction SilentlyContinue
 
-      - name: Run distribution harness contracts
+      - name: Run portable distribution contracts
+        if: matrix.name != 'macos'
         working-directory: packages/os
         run: bun x vitest run tests/distribution --testTimeout 15000
+
+      - name: Run complete distribution rehearsal
+        if: matrix.name == 'macos'
+        working-directory: packages/os
+        run: bun run test:distribution:integration
 
       - name: Probe the native runner
         working-directory: packages/os
