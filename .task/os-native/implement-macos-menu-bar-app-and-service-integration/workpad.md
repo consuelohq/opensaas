@@ -52,12 +52,9 @@ started: 2026-07-26
 
 ## files changed
 
-- `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
-- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- `packages/os/tests/macos-platform.test.ts`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
 
 
 ## workspace-owned: files changed
@@ -121,11 +118,6 @@ started: 2026-07-26
 
 ## workspace-owned: validation evidence
 
-- CodeRabbit completed the manually requested review with no new actionable findings (`trc_50049b9c4501`). Grok was intentionally skipped under Ko's explicit weekly rate-limit exception; Ko will run the independent review manually after this task reaches `stream/os-native`.
-- Generated Swift build/package artifacts were removed before final publication (`trc_7e2b822edc5c`).
-- Final source-only static gate passed: Prettier, scoped ESLint, and Bash syntax validation (`trc_819a1031ed67`). ESLint emitted only the repository's known optional `packages/twenty-eslint-rules` directory warning; no rule or test failure occurred.
-- Final publication succeeded as commit `9dd726dd7041b49cfc6e91eed7d1f4ffcbcd4a27` (`trc_a550432b163d`). Inline dispositions were posted for all three Codex findings (`trc_8514e49bc9e1`, `trc_9219e12c2773`, `trc_25b2a74f2a88`) and the consolidated GitHub summary was posted at issue comment `5086221772` (`trc_a44189d0ad57`).
-- Wait cycle 4 started 2026-07-27 00:45 UTC.
   - Wait reason: allow the 15 pending PR checks, including `Consuelo OS / native macos`, to evaluate final commit `9dd726d`.
   - Duration: bounded 30-second interval.
   - Resume action: immediately run `github pr.checks` and `github pr.reviews` for PR #1666.
@@ -148,9 +140,15 @@ started: 2026-07-26
 - GREEN passed the Swift operation-message redaction contract and all 22 focused macOS/runtime-bundle tests, including real customer-closure parity while an actual generated `.build` tree was present (`trc_c963cc62f26f`).
 - Final broader validation passed: the clean-tree protocol/distribution set completed 34 tests, and the independent macOS lane passed the expanded Swift contracts, debug app build, production archive, extraction, `Info.plist` validation, arm64 executable-mode verification, and strict code-signature verification (`trc_53055b28d13b`).
 - Generated validation output was removed (`trc_4b51370f34ef`). The first final static check found one formatting-only issue in the new runtime-bundle fixture (`trc_a62a0af22177`); Prettier corrected it (`trc_95898e7985c7`). The next scoped lint exposed five pre-existing named test helpers in the now-modified file (`trc_1be353248d63`); recovery converted those helpers mechanically to arrows without changing behavior (`trc_060bfcc341ae`). Final formatting, scoped lint, and 35 focused protocol/distribution tests all passed (`trc_982e5a656162`).
+- The incremental review after commit `62c852e` surfaced two additional Codex P2 findings (`trc_88031ab1745c`): mutation responses with `accepted: false` were returned as success, and snapshots with unsupported lifecycle schema versions were decoded under version-1 semantics. Both are valid. TDD RED contracts now require rejected mutations to throw a typed client error and schema versions other than `1` to fail during snapshot decoding.
+- RED reached the intended missing `LifecycleClientError.operationRejected` symbol (`trc_411bfdd8252e`). Implementation now throws that typed error when the lifecycle endpoint returns `accepted: false`, and `LifecycleSnapshot` decoding rejects schema versions other than the shared `supportedSchemaVersion = 1` before any presentation or action mapping occurs.
+- GREEN passed the expanded Swift contract suite (`trc_0e5032cb43d2`) and the clean-source protocol/distribution suite completed 35 tests (`trc_fb36eead3878`). The independent macOS lane then passed contracts, menu-bar build, production tar packaging, extraction, `Info.plist` validation, arm64 executable-mode verification, and strict code-signature verification (`trc_ef098b1720c5`).
+- Generated Swift and alpha-package outputs were removed and the source-only worktree was verified clean before publication (`trc_eccda55776b6`).
+- The final Consuelo publish gate passed with zero blocking findings and a publish-valid verification stamp (`trc_63a5b6a6a33a`).
 - 2026-07-27 00:44:06 `verify`: passed — OK
 - 2026-07-27 00:52:09 `verify`: passed — OK
 - 2026-07-27 00:58:53 `verify`: passed — OK
+- 2026-07-27 01:04:31 `verify`: passed — OK
 
 ## key decisions
 
@@ -227,6 +225,8 @@ bun run task:finish
 - `packages/os/docs/windows-platform.md`
 - `packages/os/native/macos/Package.swift`
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
 - `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
@@ -256,6 +256,15 @@ bun run task:finish
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-27 00:58:29 apply-patch: `packages/os/tests/distribution/runtime-bundle.test.ts`
+- 2026-07-27 01:01:09 apply-patch: `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- 2026-07-27 01:01:09 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
 
-- 2026-07-27 00:58:41 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 01:01:46 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
+- 2026-07-27 01:01:46 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
+- 2026-07-27 01:01:46 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+
+- 2026-07-27 01:03:43 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+
+- 2026-07-27 01:04:19 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+
+- 2026-07-27 01:04:37 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`

@@ -93,10 +93,14 @@ public final class LifecycleClient: @unchecked Sendable {
         guard case let .accepted(accepted) = response else {
             throw LifecycleClientError.unexpectedResponse(String(describing: request))
         }
+        guard accepted.accepted else {
+            throw LifecycleClientError.operationRejected(accepted.operationId)
+        }
         return accepted
     }
 }
 
 public enum LifecycleClientError: Error, Equatable {
     case unexpectedResponse(String)
+    case operationRejected(String)
 }

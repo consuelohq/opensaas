@@ -299,6 +299,8 @@ public struct WorkspaceSnapshot: Codable, Equatable, Sendable {
 }
 
 public struct LifecycleSnapshot: Codable, Equatable, Sendable {
+    public static let supportedSchemaVersion = 1
+
     private enum CodingKeys: String, CodingKey {
         case schemaVersion
         case sequence
@@ -362,6 +364,13 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        guard schemaVersion == Self.supportedSchemaVersion else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .schemaVersion,
+                in: container,
+                debugDescription: "Unsupported lifecycle schema version: \(schemaVersion)"
+            )
+        }
         sequence = try container.decode(Int.self, forKey: .sequence)
         observedAt = try container.decode(String.self, forKey: .observedAt)
         install = try container.decodeIfPresent(InstallSnapshot.self, forKey: .install) ?? .init(state: .installed)

@@ -70,6 +70,7 @@ private struct ContractSuite {
         try destructiveRepairAndUninstallRequireExplicitConfirmation()
         try lengthPrefixedJSONFramingIsDeterministicAndBounded()
         try backwardCompatibleSnapshotDecodingDefaultsNewPresentationFields()
+        try rejectsUnsupportedLifecycleSchemaVersions()
         try safeNodeDecoderRendersWorker25MetadataAndRejectsSecrets()
         try multiNodePresentationExplainsDefaultOfflineStaleAndRevokedState()
         try diagnosticsRedactionRemovesRepresentativeCredentialsAndLocalPaths()
@@ -77,6 +78,7 @@ private struct ContractSuite {
         try endpointValidationRejectsNonSocketFiles()
         try socketWritesDisableSigPipe()
         try socketIOUsesBoundedDeadlines()
+        try await rejectedLifecycleOperationsSurfaceAsErrors()
         try await framedIPCRejectsSecretBearingLifecycleResponses()
         try await mockedFramedIPCReflectsAppUpdateThroughTypedStatus()
         try await closingShellOnlyCancelsSubscriptionAndNeverStopsService()
@@ -213,6 +215,19 @@ private struct ContractSuite {
         try expect(decoded.connector.state, .unknown, "legacy connector default")
         try expect(decoded.preferences.channelSelectionAllowed, false, "legacy policy default")
         try expect(decoded.runtime.version, "1.3.0", "legacy runtime version")
+    }
+
+    private func rejectsUnsupportedLifecycleSchemaVersions() throws {
+        var unsupported = snapshot()
+        unsupported.schemaVersion = 2
+        let data = try JSONEncoder().encode(unsupported)
+
+        do {
+            _ = try JSONDecoder().decode(LifecycleSnapshot.self, from: data)
+            throw ContractFailure.failed("unsupported lifecycle schema version was accepted")
+        } catch is DecodingError {
+            // Expected: only the shared schema version is accepted.
+        }
     }
 
     private func safeNodeDecoderRendersWorker25MetadataAndRejectsSecrets() throws {
@@ -399,6 +414,18 @@ private struct ContractSuite {
         try expect(received, -1, "stalled lifecycle read returns an error")
         try expectTrue(errno == EAGAIN || errno == EWOULDBLOCK, "stalled lifecycle read times out")
         try expectTrue(elapsed < 1, "lifecycle read timeout remains bounded")
+    }
+
+    private func rejectedLifecycleOperationsSurfaceAsErrors() async throws {
+        let transport = RecordingLifecycleTransport(snapshot: snapshot(), acceptsMutations: false)
+        let client = LifecycleClient(transport: transport)
+
+        do {
+            _ = try await client.send(.serviceRestart)
+            throw ContractFailure.failed("rejected lifecycle operation was treated as successful")
+        } catch let error as LifecycleClientError {
+            try expect(error, .operationRejected("op-1"), "rejected operation error")
+        }
     }
 
     private func framedIPCRejectsSecretBearingLifecycleResponses() async throws {
@@ -624,15 +651,19 @@ private final class RecordingLifecycleTransport: LifecycleTransport, @unchecked 
     private let lock = NSLock()
     private var listener: (@Sendable (LifecycleSnapshot) -> Void)?
     private let response: LifecycleSnapshot
+    private let acceptsMutations: Bool
     private(set) var requests: [LifecycleRequest] = []
     private(set) var cancelCount = 0
 
-    init(snapshot: LifecycleSnapshot) { response = snapshot }
+    init(snapshot: LifecycleSnapshot, acceptsMutations: Bool = true) {
+        response = snapshot
+        self.acceptsMutations = acceptsMutations
+    }
 
     func request(_ request: LifecycleRequest) async throws -> LifecycleResponse {
         record(request)
         if request == .statusGet { return .snapshot(response) }
-        return .accepted(.init(accepted: true, operationId: "op-1"))
+        return .accepted(.init(accepted: acceptsMutations, operationId: "op-1"))
     }
 
     private func record(_ request: LifecycleRequest) {
