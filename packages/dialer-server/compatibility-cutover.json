@@ -4,9 +4,9 @@
     "deterministicContracts": true,
     "localPostgresRedisRuntime": true,
     "providerTestCredentials": true,
-    "sandboxInstallation": false,
-    "sandboxIframe": false,
-    "sandboxResourceQueries": false,
+    "sandboxInstallation": true,
+    "sandboxIframe": true,
+    "sandboxResourceQueries": true,
     "sandboxWriteback": false,
     "liveHumanWinner": false
   },

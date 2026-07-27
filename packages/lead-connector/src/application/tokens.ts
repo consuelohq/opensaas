@@ -59,7 +59,6 @@ const decodeTokenResponse = (
 export const exchangeLeadConnectorToken = (input: {
   grantType: 'authorization_code' | 'refresh_token';
   code?: string;
-  codeVerifier?: string;
   refreshToken?: string;
   redirectUri?: string;
 }) =>
@@ -70,14 +69,16 @@ export const exchangeLeadConnectorToken = (input: {
       {
         method: 'POST',
         url,
-        headers: providerHeaders(),
+        headers: {
+          ...providerHeaders(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
         body: {
           clientId: config.clientId,
           clientSecret: config.clientSecret,
           grantType: input.grantType,
           userType: config.userType,
           ...(input.code ? { code: input.code } : {}),
-          ...(input.codeVerifier ? { codeVerifier: input.codeVerifier } : {}),
           ...(input.refreshToken ? { refreshToken: input.refreshToken } : {}),
           ...(input.redirectUri ? { redirectUri: input.redirectUri } : {}),
         },

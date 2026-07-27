@@ -178,4 +178,49 @@ describe('LeadConnector infrastructure contracts', () => {
       }),
     });
   });
+
+  it('form-encodes camelCase token bodies when requested by the provider contract', async () => {
+    const requests: Array<{ url: string; init?: RequestInit }> = [];
+    const layer = createLeadConnectorFetchTransportLayer((async (
+      url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      requests.push({ url: String(url), init });
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    }) as typeof fetch);
+
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const transport = yield* LeadConnectorHttpTransport;
+        yield* transport.request({
+          method: 'POST',
+          url: 'https://services.leadconnectorhq.com/oauth/token',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Version: 'v3',
+          },
+          body: {
+            clientId: 'client-id',
+            clientSecret: 'client-secret',
+            grantType: 'authorization_code',
+            userType: 'Location',
+            code: 'code-1',
+            redirectUri: 'https://dialer.example/callback',
+          },
+        });
+      }).pipe(Effect.provide(layer)),
+    );
+
+    expect(requests[0]?.init?.body).toBe(
+      new URLSearchParams({
+        clientId: 'client-id',
+        clientSecret: 'client-secret',
+        grantType: 'authorization_code',
+        userType: 'Location',
+        code: 'code-1',
+        redirectUri: 'https://dialer.example/callback',
+      }).toString(),
+    );
+  });
 });

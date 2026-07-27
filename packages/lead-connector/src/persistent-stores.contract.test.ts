@@ -146,7 +146,6 @@ describe('LeadConnector persistent runtime stores', () => {
         yield* oauth.put({
           state: 'state-1',
           workspaceId: 'workspace-1',
-          codeVerifier: 'verifier',
           redirectUri: 'https://dialer.test/oauth/callback',
           expiresAt: '2026-07-24T00:05:00.000Z',
         });

@@ -32,6 +32,23 @@ const legacyClickAsset = resolve(
 );
 
 describe('dialer compatibility cutover guard', () => {
+  it('records only the standalone sandbox parity demonstrated by branch-eight evidence', () => {
+    expect(manifest.evidence).toEqual(
+      expect.objectContaining({
+        sandboxInstallation: true,
+        sandboxIframe: true,
+        sandboxResourceQueries: true,
+        sandboxWriteback: false,
+        liveHumanWinner: false,
+      }),
+    );
+    expect(manifest.compatibility).toEqual({
+      legacyProviderApiRoutes: 'preserved',
+      legacyTwentyDialerAdapters: 'preserved',
+      legacyTwentyClickToCallAsset: 'preserved',
+    });
+  });
+
   it('preserves legacy provider API routes until sandbox installation, resources, and writeback have parity', () => {
     const parity =
       manifest.evidence.sandboxInstallation &&

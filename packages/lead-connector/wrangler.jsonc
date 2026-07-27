@@ -7,6 +7,6 @@
     "directory": "./dist/embed-app",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/v1/*", "/webhooks/*", "/integrations/*", "/health"],
+    "run_worker_first": true,
   },
 }

@@ -67,6 +67,34 @@ describe('LeadConnector browser architecture and branding', () => {
     ).toContain('href="./main.css"');
   });
 
+  it('targets the actual approved live or sandbox custom-page origin for click-to-call messages', () => {
+    const asset = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      'utf8',
+    );
+    expect(asset).toContain('https://calls.consuelohq.com');
+    expect(asset).toContain(
+      'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
+    );
+    expect(asset).toContain('activeEmbedOrigin');
+    expect(asset).toContain('event.source !== frame.contentWindow');
+    expect(asset).not.toContain("postMessage(message, '*')");
+  });
+
+  it('keeps comma-separated selector literals safe for Marketplace editor persistence', () => {
+    const asset = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      'utf8',
+    );
+    const selectorLiterals = [
+      ...asset.matchAll(/(['"])([^'"\n]*\[[^'"\n]*,[^'"\n]*)\1/g),
+    ].map((match) => match[2]);
+    expect(selectorLiterals.length).toBeGreaterThan(0);
+    expect(
+      Math.max(...selectorLiterals.map((literal) => literal.length)),
+    ).toBeLessThanOrEqual(50);
+  });
+
   it('restarts the trusted parent bootstrap exchange when authentication is retried', () => {
     const source = readFileSync(
       'packages/lead-connector/src/embed/main.ts',
