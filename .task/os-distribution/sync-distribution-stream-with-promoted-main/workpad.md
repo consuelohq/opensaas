@@ -9,10 +9,10 @@ started: 2026-07-27
 ## acceptance criteria
 
 - [ ] Merge the newly promoted `main` ancestry into `stream/os-distribution` through PR #1670.
-- [ ] Preserve the stream's complete distribution rehearsal and broad runtime-closure triggers.
-- [ ] Preserve promoted macOS packaging, native lifecycle runtime inputs, and pinned-update fail-closed coverage.
-- [ ] Run focused cross-platform/lifecycle tests, workspace review, full verify, and required CI.
-- [ ] Request CodeRabbit and disposition every actionable finding.
+- [x] Preserve the stream's complete distribution rehearsal and broad runtime-closure triggers.
+- [x] Preserve promoted macOS packaging, native lifecycle runtime inputs, and pinned-update fail-closed coverage.
+- [x] Run focused cross-platform/lifecycle tests, workspace review, and full verify.
+- [ ] Complete required GitHub CI and disposition CodeRabbit feedback.
 - [ ] Merge only into `stream/os-distribution`; do not promote the stream to `main`.
 
 ## plan
@@ -20,68 +20,79 @@ started: 2026-07-27
 1. Compare `main` and the assigned stream at each conflicted file and define the semantic union.
 2. Add a failing source-contract assertion for the combined workflow behavior.
 3. Apply the narrow union to the workflow and lifecycle runtime fixtures.
-4. Reconcile stream ancestry into the task branch, validate, review, publish, and merge the task PR.
+4. Reconcile stream ancestry into the task branch through the supported GitHub API route.
+5. Validate the exact merged tree, complete automated review and CI, then merge PR #1670 into the assigned stream.
 
 ## current status
 
-- Task started from promoted `main` at PR #1670 with session `tsk_17211911953c`.
-- `stream.sync` identified three additive conflicts: the distribution workflow and two lifecycle fixture lists.
-- The intended union is broad stream triggers + complete rehearsal split + promoted macOS packaging + both lifecycle entrypoints + pinned-update fail-closed coverage.
+- PR #1670 head is `bbea0124fb50dec32391ee8b4a3106d8f96e44e0` before this workpad-only evidence commit.
+- The reviewed merge tree is `103ff7a3e213ee74316d2f0c79f38f60446fe22d`.
+- The merge commit has parents `5b4e9b25dab540e3caf3db9d53ad3d2c19d17127` and `6d97c3fe39f1f6ff55667296401f9474075bc176`.
+- Compared with promoted main `702053057d19c066607d4508b49d42b183d17b32`, the merged task head is 43 commits ahead and 0 behind.
+- Compared with stream head `6d97c3fe39f1f6ff55667296401f9474075bc176`, the merged task head is 4 commits ahead and 0 behind.
+- GitHub CI and final CodeRabbit review are pending. Grok is intentionally deferred per Ko's weekly rate-limit note; Ko will request the independent review manually after this stream task.
 
 ## test-first contract
 
-- Behavior: the native matrix must preserve Windows cleanup ordering, run portable distribution contracts off macOS, run the complete rehearsal on macOS, and retain macOS packaging.
+- Behavior: the native matrix must preserve Windows cleanup ordering, run portable distribution contracts off macOS, run the complete rehearsal on macOS, retain macOS packaging, and trigger for the complete runtime source closure.
 - Existing pattern: source-contract assertions in `packages/os/tests/windows-platform.test.ts` and platform-specific suites.
-- Changed test: strengthen the Windows workflow source contract to assert the combined matrix behavior and broad runtime-closure triggers.
+- Changed test: strengthened the Windows workflow source contract before implementation.
 - RED command: `bun x vitest run tests/windows-platform.test.ts` from `packages/os`.
-- Expected RED: promoted `main` still names `Run distribution harness contracts` and lacks the stream's portable/full rehearsal split and broad trigger paths.
+- RED result: 15 passed, 1 failed because `Run portable distribution contracts` was absent, trace `trc_287d9b5e20f7`.
 
 ## files changed
 
-- none yet
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
+  - broadened pull/push source closure to package, lockfile, Cloudflare, docs, native, scripts, and tests;
+  - retained promoted macOS menu-bar contracts, alpha packaging, and artifact upload;
+  - runs portable distribution contracts on non-macOS and the complete rehearsal on macOS;
+  - raises the native matrix timeout to 30 minutes.
+- `packages/os/tests/windows-platform.test.ts`
+  - locks the combined Windows ordering, portable/full rehearsal split, macOS packaging, and broad trigger contract.
+- `packages/os/tests/lifecycle-engine.test.ts`
+- `packages/os/tests/lifecycle-retention-uninstall.test.ts`
+  - include both `scripts/lifecycle.ts` and `scripts/native-lifecycle-operation.ts` in release runtime fixtures.
+- Task metadata and this workpad.
 
-## workspace-owned: files changed
+## validation evidence
 
-- none yet
-
-## workspace-owned: activity log
-
-- none yet
-
-## workspace-owned: validation evidence
-
-- 2026-07-27 05:26:41 `review.run`: passed — OK
-- 2026-07-27 05:26:50 `verify`: passed — OK
+- Focused GREEN in the task worktree: Windows 16/16, macOS 4/4, lifecycle 55/55; trace `trc_f5a8d1252fa4`.
+- Workspace strict review against `origin/stream/os-distribution`: 0 owned issues, 0 blocking issues; trace `trc_446d5920304c`.
+- Full workspace verify: passed and publish-valid; trace `trc_59b3d53f54a0`.
+- Exact merged-tree marker scan: 197 candidate paths checked, zero line-anchored conflict markers outside archived task records.
+- Exact merged-tree selected matrix under process isolation: 7 files, 99 tests passed; trace `trc_fcc740c51b3d`.
+- Main ancestry comparison: 0 behind; trace `trc_b09a79fedcd9`.
+- Stream ancestry comparison: 0 behind; trace `trc_898580471935`.
 
 ## key decisions
 
-- none yet
-
-## notes for ko
-
-- none yet
-
-## improvements noticed
-
-- none yet
+- The three product conflicts were additive rather than mutually exclusive. The resolution preserves the stream's distribution rehearsal behavior and promoted main's macOS/native lifecycle behavior.
+- The task must retain a merge commit, not squash/rebase, so the promoted-main ancestry remains explicit when PR #1670 lands on `stream/os-distribution`.
+- The failed GitHub update-branch route was recovered with a deterministic Git tree assembled from the OS-created conflict worktree plus four reviewed overrides. Only the task branch ref was advanced, non-force.
+- No Consuelo OS install, update, reset, restart, or uninstall action was run on either real Mac.
 
 ## issues and recovery
 
-- Initial unscoped document reads failed with `AMBIGUOUS_TASK_SELECTION`; retrying against `main` exposed the task-session requirement.
-- Historical task recovery produced stale PR metadata, so a fresh isolated task/PR #1670 was created.
-- `stream.sync` failed closed on three content conflicts; no native-git fallback was used.
-- A discovery `batch` did not propagate the top-level task session to child `fs.read`/`git.diff`; direct task-scoped calls recovered the route.
+- Initial unscoped document reads failed with `AMBIGUOUS_TASK_SELECTION`; explicit-main retry exposed the required task-session contract, and reads were recovered through a real task session.
+- Historical task recovery returned stale PR metadata; a fresh isolated task/PR #1670 was created from promoted `main`.
+- `stream.sync` failed closed on three content conflicts; the conflict worktree was inspected and no native-git fallback was used.
+- A discovery `batch` did not propagate its top-level session to child calls; direct session-scoped calls recovered the route.
+- The advertised `task.call` alias was absent from the active OS manifest; the same scoped commands were run through manifest-backed `code.call`.
+- The first `task.push` was correctly blocked by a missing verify stamp; strict review and full verify produced the stamp before publishing.
+- Two malformed GitHub raw update-branch attempts were corrected; the valid endpoint then returned HTTP 422 because the branch had real merge conflicts.
+- GitHub's update-branch conflict was recovered through API-created tree `103ff7a3...`, two-parent commit `bbea0124...`, and a non-force task-ref update.
+- A marker scan initially matched conflict syntax quoted in an archived workpad; narrowing to line-anchored markers outside `.task` confirmed no unresolved product markers.
+- Exact-tree test startup initially lacked dependencies in the temporary conflict worktree. Existing canonical dependency directories were linked without installation. Vitest threads then exposed a synthetic symlink transform artifact; rerunning the exact tree with process isolation passed all 99 selected tests.
 
----
+## review status
 
-## publish checklist
+- Workspace review: clean.
+- CodeRabbit: request pending on the final evidence head.
+- Grok: intentionally not invoked because Ko reported the provider is rate-limited for the week; manual independent review remains a downstream checkpoint.
 
-```bash
-bun run task:push -- --message "type(os-distribution): description" --changed
-bun run task:pr
-bun run task:finish
-```
+## remaining work
 
-## workspace-owned: files read
-
-- `packages/os/tests/windows-platform.test.ts`
+- Request CodeRabbit on the final head and disposition any actionable findings.
+- Wait for all required GitHub checks to complete successfully.
+- Merge PR #1670 with merge-commit semantics into `stream/os-distribution` only.
+- Verify the resulting stream remains 0 commits behind the promoted main used for this task.
