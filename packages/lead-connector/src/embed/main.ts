@@ -7,10 +7,14 @@ import {
   createLeadConnectorParentBridge,
   normalizeClickToCallTarget,
 } from './protocol.js';
+import { resolveLeadConnectorSurface } from './surface.js';
 import { renderLeadConnectorEmbed } from './view.js';
 
 const root = document.querySelector<HTMLElement>('#app');
 if (!root) throw new Error('LeadConnector embed root is missing');
+
+const surface = resolveLeadConnectorSurface(window.location.pathname);
+document.body.dataset.surface = surface;
 
 const api = createLeadConnectorEmbedApi({ baseUrl: window.location.origin });
 const controller = createLeadConnectorEmbedController({ api });
@@ -101,7 +105,7 @@ const updateRefresh = (): void => {
 };
 
 controller.subscribe((state) => {
-  root.innerHTML = renderLeadConnectorEmbed(state);
+  root.innerHTML = renderLeadConnectorEmbed(state, { surface });
   updateRefresh();
 });
 

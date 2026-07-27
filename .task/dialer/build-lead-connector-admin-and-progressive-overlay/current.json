@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/build-lead-connector-admin-and-progressive-overlay",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1682,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1682",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1682",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1682/build-lead-connector-admin-and-progressive-overlay",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1682",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1682/build-lead-connector-admin-and-progressive-overlay",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-lead-connector-admin-and-progressive-overlay",
+  "taskSession": "tsk_958c175acac1",
+  "tmuxSession": "opensaas-dialer-build-lead-connector-admin-and-progressive-overl-958c175a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-lead-connector-admin-and-progressive-overlay/.task/dialer/build-lead-connector-admin-and-progressive-overlay/session.json",
+  "createdAt": "2026-07-27T22:07:37.871Z"
+}

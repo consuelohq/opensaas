@@ -64,7 +64,32 @@ describe('LeadConnector Cloudflare embed edge', () => {
     expect(fixture.assetRequests).toHaveLength(0);
   });
 
-  it('serves the embed as an iframe-safe static asset without proxying arbitrary paths', async () => {
+  it('serves root, admin, and overlay browser routes through the same iframe-safe application shell', async () => {
+    for (const pathname of ['/', '/admin', '/overlay']) {
+      const fixture = createEnvironment();
+      const worker = createLeadConnectorEdgeWorker(
+        fixture.environment.fetchOrigin,
+      );
+      const response = await worker.fetch(
+        new Request(`https://dialer.example.test${pathname}`),
+        fixture.environment,
+      );
+
+      expect(response.status).toBe(200);
+      expect(fixture.originRequests).toHaveLength(0);
+      expect(fixture.assetRequests).toHaveLength(1);
+      expect(new URL(fixture.assetRequests[0]!.url).pathname).toBe('/');
+      expect(response.headers.get('x-frame-options')).toBeNull();
+      expect(response.headers.get('content-security-policy')).toContain(
+        'frame-ancestors https://app.leadconnectorhq.com https://app.msgsndr.com https://app.gohighlevel.com',
+      );
+      expect(response.headers.get('permissions-policy')).toContain(
+        'microphone',
+      );
+    }
+  });
+
+  it('serves other static assets without rewriting them to the application shell', async () => {
     const fixture = createEnvironment();
     const worker = createLeadConnectorEdgeWorker(
       fixture.environment.fetchOrigin,

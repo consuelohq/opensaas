@@ -92,6 +92,27 @@ describe('LeadConnector browser architecture and branding', () => {
     expect(asset).not.toContain("postMessage(message, '*')");
   });
 
+  it('owns one route-aware launcher and one compact overlay iframe lifecycle', () => {
+    const asset = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      'utf8',
+    );
+    expect(asset).toContain("var overlayPath = '/overlay'");
+    expect(asset).toContain("var launcherId = 'consuelo-dialer-launcher'");
+    expect(asset).toContain(
+      "var overlayHostId = 'consuelo-dialer-overlay-host'",
+    );
+    expect(asset).toContain("frame.name = 'consuelo-dialer'");
+    expect(asset).toContain('function isApprovedCrmRoute');
+    expect(asset).toContain("'/opportunities'");
+    expect(asset).toContain("'/contacts'");
+    expect(asset).toContain('function openOverlay');
+    expect(asset).toContain('function minimizeOverlay');
+    expect(asset).toContain('function closeOverlay');
+    expect(asset).toContain('function syncRoute');
+    expect(asset).not.toContain("postMessage(message, '*')");
+  });
+
   it('keeps comma-separated selector literals safe for Marketplace editor persistence', () => {
     const asset = readFileSync(
       'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
