@@ -54,7 +54,7 @@ const createTransport = (): NativeLifecycleTransport & {
 };
 
 describe('native lifecycle client', () => {
-  test('loads structured status and exposes version, channel, health, and update count', async () => {
+  test('should expose structured status when the endpoint returns a snapshot', async () => {
     const client = createNativeLifecycleClient({
       transport: createTransport(),
     });
@@ -73,7 +73,7 @@ describe('native lifecycle client', () => {
     expect(snapshot.updates.available).toBe(2);
   });
 
-  test('sends typed update and rollback requests without parsing CLI text', async () => {
+  test('should send typed update and rollback requests when mutations are invoked', async () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({ transport });
 
@@ -90,7 +90,7 @@ describe('native lifecycle client', () => {
     ]);
   });
 
-  test('rejects typed lifecycle operation failures from the endpoint', async () => {
+  test('should reject the operation when the endpoint returns an error acknowledgement', async () => {
     const transport: NativeLifecycleTransport = {
       request: async (request) => {
         if (request.kind === 'status.get') return healthySnapshot;
@@ -109,7 +109,7 @@ describe('native lifecycle client', () => {
     );
   });
 
-  test('sends every menu-bar mutation through the allowlisted lifecycle protocol', async () => {
+  test('should send allowlisted lifecycle requests when menu mutations are invoked', async () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({ transport });
     const snoozed: NotificationPreference = {
@@ -142,7 +142,10 @@ describe('native lifecycle client', () => {
     ]);
   });
 
-  test('carries optional presentation and safe workspace metadata without weakening old snapshots', () => {
+  test('should preserve optional safe metadata when an enriched snapshot flows through the client', () => {
+    const transport = createTransport();
+    const client = createNativeLifecycleClient({ transport });
+    client.connect(() => undefined);
     const enriched: LifecycleSnapshot = {
       ...healthySnapshot,
       install: { state: 'installed' },
@@ -178,7 +181,9 @@ describe('native lifecycle client', () => {
       },
     };
 
-    expect(enriched.workspace?.nodes[0]).toMatchObject({
+    transport.emit(enriched);
+
+    expect(client.current()?.workspace?.nodes[0]).toMatchObject({
       role: 'home',
       presence: 'online',
       capabilities: ['local-runtime', 'darwin'],
@@ -186,7 +191,7 @@ describe('native lifecycle client', () => {
     expect(healthySnapshot.install).toBeUndefined();
   });
 
-  test('preserves the last snapshot when the local service is offline', async () => {
+  test('should preserve the last snapshot when the local service becomes offline', async () => {
     const client = createNativeLifecycleClient({
       initialSnapshot: healthySnapshot,
       transport: {
@@ -206,7 +211,7 @@ describe('native lifecycle client', () => {
     });
   });
 
-  test('closing the shell only unsubscribes; it never sends a service stop request', async () => {
+  test('should only unsubscribe when the shell closes', async () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({ transport });
     client.connect(() => undefined);
@@ -216,7 +221,7 @@ describe('native lifecycle client', () => {
     expect(transport.requests).toEqual([]);
   });
 
-  test('accepts a lower sequence from a newer daemon instance and rejects a late old instance', () => {
+  test('should accept a lower sequence when a newer daemon instance appears', () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({
       initialSnapshot: {
@@ -248,7 +253,7 @@ describe('native lifecycle client', () => {
     expect(observed).toEqual([['daemon-new', 1]]);
   });
 
-  test('accepts monotonic lifecycle events and ignores stale snapshots', () => {
+  test('should accept monotonic events when stale snapshots arrive later', () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({
       initialSnapshot: healthySnapshot,
@@ -263,7 +268,7 @@ describe('native lifecycle client', () => {
     expect(observed).toEqual([8]);
   });
 
-  test('supports every existing distribution channel plus nightly', () => {
+  test('should support every distribution channel when snapshots are decoded', () => {
     expect(releaseChannels).toEqual([
       'stable',
       'beta',
@@ -273,7 +278,7 @@ describe('native lifecycle client', () => {
     ]);
   });
 
-  test('accepts an equal-sequence online event after a local offline projection', async () => {
+  test('should accept an equal-sequence event when an offline projection was local', async () => {
     let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
     const transport: NativeLifecycleTransport & {
       emit(snapshot: LifecycleSnapshot): void;
@@ -309,7 +314,7 @@ describe('native lifecycle client', () => {
     });
   });
 
-  test('a stale cleanup cannot unsubscribe a replacement connection', () => {
+  test('should preserve a replacement connection when stale cleanup runs', () => {
     const listeners = new Map<number, (snapshot: LifecycleSnapshot) => void>();
     let nextId = 0;
     const transport: NativeLifecycleTransport & {
@@ -347,7 +352,7 @@ describe('native lifecycle client', () => {
     expect(second).toEqual([8]);
   });
 
-  test('restores a retained offline snapshot from an equal-sequence successful refresh', async () => {
+  test('should restore a retained snapshot when an equal-sequence refresh succeeds', async () => {
     const retainedOfflineSnapshot: LifecycleSnapshot = {
       ...healthySnapshot,
       runtime: { ...healthySnapshot.runtime, state: 'offline' },
@@ -372,7 +377,7 @@ describe('native lifecycle client', () => {
       connection: { state: 'online' },
     });
   });
-  test('keeps a newer subscribed snapshot when an older refresh resolves later', async () => {
+  test('should keep the newer subscription snapshot when an older refresh resolves later', async () => {
     let resolveStatus: ((snapshot: LifecycleSnapshot) => void) | undefined;
     let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
     const transport: NativeLifecycleTransport & {

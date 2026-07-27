@@ -154,15 +154,53 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
             }
         }
 
+        let originalFlags = Darwin.fcntl(descriptor, F_GETFL, 0)
+        guard originalFlags >= 0,
+              Darwin.fcntl(descriptor, F_SETFL, originalFlags | O_NONBLOCK) == 0 else {
+            let code = errno
+            Darwin.close(descriptor)
+            throw UnixSocketLifecycleError.socketOptionFailed(code)
+        }
+        defer { _ = Darwin.fcntl(descriptor, F_SETFL, originalFlags) }
+
         let result = withUnsafePointer(to: &address) { pointer in
             pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { socketAddress in
                 Darwin.connect(descriptor, socketAddress, socklen_t(addressLength))
             }
         }
-        guard result == 0 else {
-            let code = errno
-            Darwin.close(descriptor)
-            throw UnixSocketLifecycleError.connectFailed(code)
+        if result != 0 {
+            let connectError = errno
+            guard connectError == EINPROGRESS || connectError == EAGAIN else {
+                Darwin.close(descriptor)
+                throw UnixSocketLifecycleError.connectFailed(connectError)
+            }
+            var event = pollfd(fd: descriptor, events: Int16(POLLOUT), revents: 0)
+            let timeoutMilliseconds = Int32(
+                min(Double(Int32.max), max(1, ioTimeoutSeconds * 1_000).rounded(.up))
+            )
+            let ready = Darwin.poll(&event, 1, timeoutMilliseconds)
+            guard ready > 0 else {
+                let code = ready == 0 ? ETIMEDOUT : errno
+                Darwin.close(descriptor)
+                throw UnixSocketLifecycleError.connectFailed(code)
+            }
+            var socketError: Int32 = 0
+            var socketErrorLength = socklen_t(MemoryLayout<Int32>.size)
+            guard Darwin.getsockopt(
+                descriptor,
+                SOL_SOCKET,
+                SO_ERROR,
+                &socketError,
+                &socketErrorLength
+            ) == 0 else {
+                let code = errno
+                Darwin.close(descriptor)
+                throw UnixSocketLifecycleError.connectFailed(code)
+            }
+            guard socketError == 0 else {
+                Darwin.close(descriptor)
+                throw UnixSocketLifecycleError.connectFailed(socketError)
+            }
         }
         return descriptor
     }

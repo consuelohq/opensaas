@@ -1,18 +1,38 @@
 import Foundation
 
+private enum SensitiveFieldMatcher {
+    private static let exactFields: Set<String> = [
+        "accesstoken", "refreshtoken", "authorization", "token", "secret", "privatekey",
+        "privatekeyjwk", "publickeyjwk", "tunneloriginurl", "tunnelcredentials",
+        "localservice", "localserviceurl", "providerkey", "cloudflare",
+        "credential", "credentials", "password", "passphrase", "passwd", "pwd",
+    ]
+
+    static func matches(_ key: String) -> Bool {
+        let normalized = key.lowercased()
+        return exactFields.contains(normalized)
+            || normalized.contains("token")
+            || normalized.contains("secret")
+            || normalized.contains("credential")
+            || normalized.contains("privatekey")
+            || normalized.contains("authorization")
+            || normalized.contains("tunnelorigin")
+            || normalized.contains("localservice")
+            || normalized.contains("providerkey")
+            || normalized.contains("cloudflare")
+            || normalized.contains("password")
+            || normalized.contains("passphrase")
+            || normalized == "passwd"
+            || normalized == "pwd"
+    }
+}
+
 public enum SafeWorkspaceError: Error, Equatable {
     case invalidRoot
     case forbiddenField(String)
 }
 
 public enum SafeWorkspaceDecoder {
-    private static let forbiddenFields: Set<String> = [
-        "accesstoken", "refreshtoken", "authorization", "token", "secret", "privatekey",
-        "privatekeyjwk", "publickeyjwk", "tunneloriginurl", "tunnelcredentials",
-        "localservice", "localserviceurl", "credential", "credentials", "password", "passphrase",
-        "passwd", "pwd",
-    ]
-
     public static func decode(_ data: Data) throws -> WorkspaceSnapshot {
         try validateNoSensitiveFields(data)
         return try JSONDecoder().decode(WorkspaceSnapshot.self, from: data)
@@ -27,7 +47,7 @@ public enum SafeWorkspaceDecoder {
     private static func inspect(_ value: Any) throws {
         if let dictionary = value as? [String: Any] {
             for (key, child) in dictionary {
-                if isSensitiveField(key) {
+                if SensitiveFieldMatcher.matches(key) {
                     throw SafeWorkspaceError.forbiddenField(key)
                 }
                 try inspect(child)
@@ -36,35 +56,16 @@ public enum SafeWorkspaceDecoder {
             for child in array { try inspect(child) }
         }
     }
-
-    private static func isSensitiveField(_ key: String) -> Bool {
-        let normalized = key.lowercased()
-        return forbiddenFields.contains(normalized)
-            || normalized.contains("token")
-            || normalized.contains("secret")
-            || normalized.contains("credential")
-            || normalized.contains("privatekey")
-            || normalized.contains("authorization")
-            || normalized.contains("tunnelorigin")
-            || normalized.contains("localservice")
-            || normalized.contains("password")
-            || normalized.contains("passphrase")
-            || normalized == "passwd"
-            || normalized == "pwd"
-    }
 }
 
 public enum DiagnosticsRedactor {
-    private static let sensitiveFields: Set<String> = [
-        "accesstoken", "refreshtoken", "authorization", "token", "secret", "privatekey",
-        "privatekeyjwk", "publickeyjwk", "tunneloriginurl", "tunnelcredentials",
-        "credential", "credentials", "password", "passphrase", "passwd", "pwd",
-    ]
-
     public static func redactJSON(_ data: Data) throws -> Data {
         let json = try JSONSerialization.jsonObject(with: data)
         let redacted = redact(json)
-        return try JSONSerialization.data(withJSONObject: redacted, options: [.prettyPrinted, .sortedKeys])
+        return try JSONSerialization.data(
+            withJSONObject: redacted,
+            options: [.prettyPrinted, .sortedKeys]
+        )
     }
 
     public static func redactText(_ value: String) -> String {
@@ -76,7 +77,7 @@ public enum DiagnosticsRedactor {
     }
 
     private static func redact(_ value: Any, key: String? = nil) -> Any {
-        if let key, isSensitiveField(key) {
+        if let key, SensitiveFieldMatcher.matches(key) {
             return "[REDACTED]"
         }
         if let dictionary = value as? [String: Any] {
@@ -95,23 +96,6 @@ public enum DiagnosticsRedactor {
         return value
     }
 
-    private static func isSensitiveField(_ key: String) -> Bool {
-        let normalized = key.lowercased()
-        return sensitiveFields.contains(normalized)
-            || normalized.contains("token")
-            || normalized.contains("secret")
-            || normalized.contains("credential")
-            || normalized.contains("privatekey")
-            || normalized.contains("authorization")
-            || normalized.contains("tunnelorigin")
-            || normalized.contains("providerkey")
-            || normalized.contains("cloudflare")
-            || normalized.contains("password")
-            || normalized.contains("passphrase")
-            || normalized == "passwd"
-            || normalized == "pwd"
-    }
-
     private static func redactString(_ value: String) -> String {
         var output = value
         let patterns: [(String, String)] = [
@@ -120,7 +104,11 @@ public enum DiagnosticsRedactor {
             (#"(?i)(token|secret|password)=([^&\s]+)"#, "$1=[REDACTED]"),
         ]
         for (pattern, replacement) in patterns {
-            output = output.replacingOccurrences(of: pattern, with: replacement, options: .regularExpression)
+            output = output.replacingOccurrences(
+                of: pattern,
+                with: replacement,
+                options: .regularExpression
+            )
         }
         return output
     }

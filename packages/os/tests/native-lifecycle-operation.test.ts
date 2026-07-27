@@ -1,5 +1,6 @@
-import { statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +14,7 @@ import {
   createNativeLifecycleOperationStore,
   executeNativeLifecycleOperation,
   parseNativeLifecycleOperationArguments,
+  safeNativeLifecycleOperationMessage,
   type NativeLifecycleOperation,
 } from '../scripts/lib/native-lifecycle-operation';
 
@@ -88,7 +90,7 @@ const fakeEngine = () => {
 };
 
 describe('native lifecycle detached operations', () => {
-  it('parses only the detached worker operation contract', () => {
+  it('should parse only the detached worker operation contract when arguments are valid', () => {
     expect(
       parseNativeLifecycleOperationArguments([
         '--home',
@@ -137,8 +139,8 @@ describe('native lifecycle detached operations', () => {
     ).toThrow('must be true or false');
   });
 
-  it('persists owner-only operation state atomically', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should persist owner-only operation state when writes complete atomically', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     const store = createNativeLifecycleOperationStore(home);
     const state = {
@@ -163,8 +165,8 @@ describe('native lifecycle detached operations', () => {
     expect(() => store.read()).toThrow('invalid updatedAt');
   });
 
-  it('launches the canonical worker detached and rejects concurrent active operations', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should launch the canonical worker when no active operation exists', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     const invocations: Array<{
       command: string;
@@ -226,8 +228,8 @@ describe('native lifecycle detached operations', () => {
     );
   });
 
-  it('prefers the persisted Bun executable and records early worker exit', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should prefer the persisted Bun executable when launching the worker', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     let exitListener:
       | ((code: number | null, signal: NodeJS.Signals | null) => void)
@@ -265,8 +267,8 @@ describe('native lifecycle detached operations', () => {
     });
   });
 
-  it('recovers dead or abandoned operation state without overlapping a live worker', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should recover abandoned operation state when no live worker remains', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     const store = createNativeLifecycleOperationStore(home);
     store.write({
@@ -325,8 +327,8 @@ describe('native lifecycle detached operations', () => {
     );
   });
 
-  it('expires stale PID-backed state even when the PID appears live', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should expire stale PID-backed state when a PID appears reused', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     const store = createNativeLifecycleOperationStore(home);
     store.write({
@@ -361,8 +363,8 @@ describe('native lifecycle detached operations', () => {
     });
   });
 
-  it('expires an abandoned queued state after the bounded startup window', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should expire queued state when the startup window is exceeded', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     const store = createNativeLifecycleOperationStore(home);
     store.write({
@@ -390,8 +392,33 @@ describe('native lifecycle detached operations', () => {
     });
   });
 
-  it('prevents a delayed superseded worker from executing lifecycle authority', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should fail fast when a live operation-state lock is already held', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
+    temporaryRoots.push(home);
+    const runDirectory = join(home, 'run');
+    mkdirSync(runDirectory, { recursive: true });
+    writeFileSync(
+      join(runDirectory, 'native-lifecycle-operation.lock'),
+      `${JSON.stringify({ pid: process.pid, acquiredAt: new Date().toISOString() })}
+`,
+    );
+    const launcher = createDetachedNativeLifecycleOperationLauncher({ home });
+
+    const startedAt = performance.now();
+    expect(() => launcher.read()).toThrow('native lifecycle operation state lock is busy');
+    expect(performance.now() - startedAt).toBeLessThan(500);
+  });
+
+  it('should redact sensitive CLI errors when native operation parsing fails', () => {
+    expect(
+      safeNativeLifecycleOperationMessage(
+        new Error('token=abc123 path=/Users/ko/private'),
+      ),
+    ).toBe('token=[REDACTED] path=/Users/[REDACTED]/private');
+  });
+
+  it('should prevent lifecycle execution when a worker claim was superseded', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     const store = createNativeLifecycleOperationStore(home);
     const oldOperation: NativeLifecycleOperation = {
@@ -419,14 +446,16 @@ describe('native lifecycle detached operations', () => {
     await replacement.launch({ kind: 'repair' });
 
     const { engine, calls } = fakeEngine();
-    await executeNativeLifecycleOperation({
-      home,
-      operation: oldOperation,
-      engine,
-      store,
-      now: () => new Date('2026-07-27T03:00:32.000Z'),
-      processId: 1234,
-    });
+    await expect(
+      executeNativeLifecycleOperation({
+        home,
+        operation: oldOperation,
+        engine,
+        store,
+        now: () => new Date('2026-07-27T03:00:32.000Z'),
+        processId: 1234,
+      }),
+    ).resolves.toBe(false);
 
     expect(calls).toEqual([]);
     expect(store.read()).toMatchObject({
@@ -456,9 +485,9 @@ describe('native lifecycle detached operations', () => {
       removeUserContent: false,
     },
   ])(
-    'executes $kind through the canonical engine and persists terminal state',
+    'should execute $kind when the queued worker owns the claim',
     async (operation) => {
-      const home = await mkdtemp('/tmp/consuelo-native-operation-');
+      const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
       temporaryRoots.push(home);
       const { engine, calls } = fakeEngine();
       const store = createNativeLifecycleOperationStore(home);
@@ -470,14 +499,16 @@ describe('native lifecycle detached operations', () => {
         updatedAt: '2026-07-27T02:59:59.000Z',
       });
 
-      await executeNativeLifecycleOperation({
-        home,
-        operation,
-        engine,
-        store,
-        readRollbackVersion: () => '1.3.0',
-        now: () => new Date('2026-07-27T03:00:00.000Z'),
-      });
+      await expect(
+        executeNativeLifecycleOperation({
+          home,
+          operation,
+          engine,
+          store,
+          readRollbackVersion: () => '1.3.0',
+          now: () => new Date('2026-07-27T03:00:00.000Z'),
+        }),
+      ).resolves.toBe(true);
 
       expect(store.read()).toMatchObject({
         operationId: operation.operationId,
@@ -495,8 +526,8 @@ describe('native lifecycle detached operations', () => {
     },
   );
 
-  it('fails closed when the worker target changed and redacts terminal errors', async () => {
-    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+  it('should fail closed when the worker target changes before execution', async () => {
+    const home = await mkdtemp(join(tmpdir(), 'consuelo-native-operation-'));
     temporaryRoots.push(home);
     const { engine } = fakeEngine();
     const store = createNativeLifecycleOperationStore(home);

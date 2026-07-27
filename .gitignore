@@ -110,3 +110,6 @@ xfs-*/
 /.task/explore-state.json
 /.task/handoff.md
 /.task/twenty-server.log
+
+# Root scratch artifacts must never be committed.
+/.tmp-*

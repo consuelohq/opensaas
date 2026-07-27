@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/lib/native-lifecycle-endpoint.ts"
+  ],
+  "updatedAt": "2026-07-27T06:02:34.989Z"
+}

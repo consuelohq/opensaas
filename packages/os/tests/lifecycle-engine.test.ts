@@ -295,7 +295,7 @@ describe('unified lifecycle engine', () => {
       .toBe(`releases/${bundle100.manifest.bundleId}`);
   });
 
-  it('fails closed when a pinned update target no longer matches channel head', async () => {
+  it('should fail closed when a pinned update target no longer matches channel head', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
     let bundleFetches = 0;
