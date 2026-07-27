@@ -32,6 +32,113 @@ const FINAL_AUDIT_SUBBRIEFS = [
   '23g-repository-boundaries-operability-docs-audit.md',
   '23h-cross-wave-final-go-no-go.md',
 ];
+const FINAL_AUDIT_EXPECTED_PRIMARY_PROMPTS: Record<string, readonly string[]> =
+  {
+    '23a-core-runtime-lifecycle-recovery-audit.md': [
+      '01-distribution-test-harness.md',
+      '04-lifecycle-engine.md',
+      '05-retention-rollback-uninstall.md',
+      '06-managed-components.md',
+      '07-steering-runtime-context.md',
+      '24-distribution-integration.md',
+    ],
+    '23b-provider-control-plane-audit.md': [
+      '08-provider-core.md',
+      '09-railway-provider.md',
+      '10-vercel-provider.md',
+      '11-cloudflare-provider.md',
+      '12-provider-integration.md',
+    ],
+    '23c-web-auth-launcher-traces-security-audit.md': [
+      '13-web-auth-contract.md',
+      '14-universal-login.md',
+      '15-launcher-gtm-routing.md',
+      '16-traces-hono.md',
+      '17-web-security-e2e.md',
+    ],
+    '23d-native-platform-local-control-audit.md': [
+      '18-native-platform-spike.md',
+      '19-macos-app-service.md',
+      '20-linux-platform.md',
+      '21-windows-platform.md',
+      '22-cross-platform-release.md',
+    ],
+    '23e-distribution-release-ci-audit.md': [
+      '01-distribution-test-harness.md',
+      '02-runtime-bundle-builder.md',
+      '03-release-channels.md',
+      '22-cross-platform-release.md',
+      '24-distribution-integration.md',
+      '26-tool-package-layout.md',
+      '30-cli-product-split.md',
+    ],
+    '23f-multi-node-registry-routing-audit.md': [
+      '25-multi-node-registry-routing.md',
+      '07-steering-runtime-context.md',
+      '13-web-auth-contract.md',
+      '14-universal-login.md',
+      '17-web-security-e2e.md',
+      '19-macos-app-service.md',
+    ],
+    '23g-repository-boundaries-operability-docs-audit.md': [
+      '26-tool-package-layout.md',
+      '28-repository-product-boundary-audit.md',
+      '30-cli-product-split.md',
+    ],
+    '23h-cross-wave-final-go-no-go.md': [
+      '01-distribution-test-harness.md',
+      '02-runtime-bundle-builder.md',
+      '03-release-channels.md',
+      '04-lifecycle-engine.md',
+      '05-retention-rollback-uninstall.md',
+      '06-managed-components.md',
+      '07-steering-runtime-context.md',
+      '08-provider-core.md',
+      '09-railway-provider.md',
+      '10-vercel-provider.md',
+      '11-cloudflare-provider.md',
+      '12-provider-integration.md',
+      '13-web-auth-contract.md',
+      '14-universal-login.md',
+      '15-launcher-gtm-routing.md',
+      '16-traces-hono.md',
+      '17-web-security-e2e.md',
+      '18-native-platform-spike.md',
+      '19-macos-app-service.md',
+      '20-linux-platform.md',
+      '21-windows-platform.md',
+      '22-cross-platform-release.md',
+      '24-distribution-integration.md',
+      '25-multi-node-registry-routing.md',
+      '26-tool-package-layout.md',
+      '28-repository-product-boundary-audit.md',
+      '30-cli-product-split.md',
+    ],
+  };
+const REQUIRED_FINAL_AUDIT_IMPLEMENTATION_WORKERS = [
+  ...Array.from({ length: 22 }, (_, index) =>
+    String(index + 1).padStart(2, '0'),
+  ),
+  '24',
+  '25',
+  '26',
+  '28',
+  '30',
+];
+const FINAL_AUDIT_NON_IMPLEMENTATION_WORKERS = ['23', '27', '29'];
+
+const extractPrimaryPromptNames = (text: string): string[] => {
+  const section = text.match(
+    /## Original worker prompts and intent lineage\n([\s\S]*?)\n## Review-only GitHub comparison PR/,
+  )?.[1];
+  if (!section) return [];
+  return [...section.matchAll(/workers\/(\d{2}-[^`\n]+\.md)/g)].map(
+    (match) => match[1],
+  );
+};
+
+const sortedUnique = (values: readonly string[]): string[] =>
+  [...new Set(values)].sort();
 const FINAL_AUDIT_REPORT_TEMPLATES = [
   'README.md',
   'finding-ledger.md',
@@ -76,6 +183,7 @@ const structuralFailures: string[] = [];
 let totalLines = master.split('\n').length + readme.split('\n').length;
 
 const workerTexts: string[] = [];
+const observedFinalAuditImplementationWorkers = new Set<string>();
 
 for (const name of workers) {
   const text = await Bun.file(`${root}/${name}`).text();
@@ -183,6 +291,39 @@ for (const name of FINAL_AUDIT_SUBBRIEFS) {
       `${name}: missing original-intent lineage contract`,
     );
   }
+
+  const expectedPrimaryPrompts = sortedUnique(
+    FINAL_AUDIT_EXPECTED_PRIMARY_PROMPTS[name] ?? [],
+  );
+  const actualPrimaryPrompts = sortedUnique(extractPrimaryPromptNames(text));
+  const missingPrimaryPrompts = expectedPrimaryPrompts.filter(
+    (prompt) => !actualPrimaryPrompts.includes(prompt),
+  );
+  const extraPrimaryPrompts = actualPrimaryPrompts.filter(
+    (prompt) => !expectedPrimaryPrompts.includes(prompt),
+  );
+  if (missingPrimaryPrompts.length || extraPrimaryPrompts.length) {
+    structuralFailures.push(
+      `${name}: primary original-prompt partition mismatch (missing=${missingPrimaryPrompts.join(',') || 'none'}; extra=${extraPrimaryPrompts.join(',') || 'none'})`,
+    );
+  }
+  if (name !== '23h-cross-wave-final-go-no-go.md') {
+    for (const prompt of actualPrimaryPrompts) {
+      const worker = prompt.match(/^(\d{2})-/)?.[1];
+      if (worker) observedFinalAuditImplementationWorkers.add(worker);
+    }
+  }
+  for (const excludedWorker of FINAL_AUDIT_NON_IMPLEMENTATION_WORKERS) {
+    if (
+      actualPrimaryPrompts.some((prompt) =>
+        prompt.startsWith(`${excludedWorker}-`),
+      )
+    ) {
+      structuralFailures.push(
+        `${name}: non-implementation Worker ${excludedWorker} appears in the primary prompt partition`,
+      );
+    }
+  }
   if (!/inline (?:review )?comment/i.test(text)) {
     structuralFailures.push(`${name}: missing inline-comment contract`);
   }
@@ -191,6 +332,27 @@ for (const name of FINAL_AUDIT_SUBBRIEFS) {
   }
 
   workerTexts.push(text);
+}
+
+const observedImplementationWorkers = sortedUnique([
+  ...observedFinalAuditImplementationWorkers,
+]);
+const expectedImplementationWorkers = sortedUnique(
+  REQUIRED_FINAL_AUDIT_IMPLEMENTATION_WORKERS,
+);
+const missingImplementationWorkers = expectedImplementationWorkers.filter(
+  (worker) => !observedImplementationWorkers.includes(worker),
+);
+const unexpectedImplementationWorkers = observedImplementationWorkers.filter(
+  (worker) => !expectedImplementationWorkers.includes(worker),
+);
+if (
+  missingImplementationWorkers.length ||
+  unexpectedImplementationWorkers.length
+) {
+  structuralFailures.push(
+    `final-audit primary prompt union mismatch (missing=${missingImplementationWorkers.join(',') || 'none'}; extra=${unexpectedImplementationWorkers.join(',') || 'none'})`,
+  );
 }
 
 const corpus = [
