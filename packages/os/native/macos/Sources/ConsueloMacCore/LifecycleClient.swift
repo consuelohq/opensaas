@@ -36,13 +36,21 @@ public final class LifecycleClient: @unchecked Sendable {
         snapshot = initialSnapshot
     }
 
+    private func accepts(_ incoming: LifecycleSnapshot, over current: LifecycleSnapshot?) -> Bool {
+        guard let current else { return true }
+        if incoming.instanceId != current.instanceId {
+            return incoming.observedAt >= current.observedAt
+        }
+        return incoming.sequence >= current.sequence
+    }
+
     @discardableResult
     public func connect(_ listener: @escaping @Sendable (LifecycleSnapshot) -> Void) -> LifecycleSubscription {
         closeShell()
         let next = transport.subscribe { [weak self] incoming in
             guard let self else { return }
             let accepted = self.lock.withLock { () -> LifecycleSnapshot? in
-                if let current = self.snapshot, incoming.sequence < current.sequence { return nil }
+                guard self.accepts(incoming, over: self.snapshot) else { return nil }
                 self.snapshot = incoming
                 self.snapshotRevision &+= 1
                 return incoming
@@ -74,7 +82,7 @@ public final class LifecycleClient: @unchecked Sendable {
                 throw LifecycleClientError.unexpectedResponse("status.get")
             }
             return lock.withLock {
-                if let current = snapshot, incoming.sequence < current.sequence { return current }
+                if !accepts(incoming, over: snapshot) { return snapshot ?? incoming }
                 snapshot = incoming
                 snapshotRevision &+= 1
                 return incoming

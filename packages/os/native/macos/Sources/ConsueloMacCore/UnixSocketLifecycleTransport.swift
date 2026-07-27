@@ -80,8 +80,11 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
         current: LifecycleSnapshot?,
         incoming: LifecycleSnapshot
     ) -> LifecycleSnapshot {
-        guard let current, current.sequence > incoming.sequence else { return incoming }
-        return current
+        guard let current else { return incoming }
+        if current.instanceId != incoming.instanceId {
+            return incoming.observedAt >= current.observedAt ? incoming : current
+        }
+        return current.sequence > incoming.sequence ? current : incoming
     }
 
     public func subscribe(_ listener: @escaping @Sendable (LifecycleSnapshot) -> Void) -> LifecycleSubscription {

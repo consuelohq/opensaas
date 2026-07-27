@@ -34,6 +34,8 @@ const requiredFixtureFiles: Record<string, string> = {
   'bun.lock': 'fixture-lock\n',
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
+  'scripts/native-lifecycle-operation.ts':
+    'export const nativeLifecycleOperationFixture = true;\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
   'scripts/managed-components.ts':
     'export const managedComponentsCliFixture = true;\n',

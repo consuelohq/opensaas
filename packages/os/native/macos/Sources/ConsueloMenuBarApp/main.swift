@@ -57,7 +57,6 @@ private struct ConsueloMenu: View {
                     }
                 }
                 Button("Retry repair") { model.perform(.retryRepair) }
-                Button("Destructive repair…") { model.perform(.destructiveRepair) }
                 if snapshot.updates.rollbackVersion != nil {
                     Button("Rollback…") { model.perform(.rollback) }
                 }

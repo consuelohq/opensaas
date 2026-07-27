@@ -116,6 +116,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'package.json',
   'bun.lock',
   'scripts/os.ts',
+  'scripts/native-lifecycle-operation.ts',
   'scripts/server/main.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',

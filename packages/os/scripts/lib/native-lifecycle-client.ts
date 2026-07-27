@@ -48,6 +48,7 @@ export type WorkspaceNode = {
 
 export type LifecycleSnapshot = {
   schemaVersion: 1;
+  instanceId?: string;
   sequence: number;
   observedAt: string;
   install?: { state: LifecycleInstallState };
@@ -192,14 +193,21 @@ export const createNativeLifecycleClient = (input: {
     next: LifecycleSnapshot,
     options: { allowEqual?: boolean } = {},
   ): boolean => {
-    if (snapshot && next.sequence < snapshot.sequence) return false;
-    if (
-      snapshot &&
-      next.sequence === snapshot.sequence &&
-      !options.allowEqual &&
-      !hasLocalOfflineProjection
-    ) {
-      return false;
+    if (snapshot) {
+      const currentInstance = snapshot.instanceId ?? 'legacy';
+      const nextInstance = next.instanceId ?? 'legacy';
+      if (currentInstance !== nextInstance) {
+        if (next.observedAt < snapshot.observedAt) return false;
+      } else {
+        if (next.sequence < snapshot.sequence) return false;
+        if (
+          next.sequence === snapshot.sequence &&
+          !options.allowEqual &&
+          !hasLocalOfflineProjection
+        ) {
+          return false;
+        }
+      }
     }
     snapshot = { ...next, connection: { state: 'online' } };
     hasLocalOfflineProjection = false;

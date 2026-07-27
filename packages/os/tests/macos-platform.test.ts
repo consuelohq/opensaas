@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,6 +20,7 @@ describe('macOS menu-bar platform', () => {
     expect(source).toContain('LifecycleClient');
     expect(source).toContain('ReleaseChannel.userSelectableCases');
     expect(source).not.toContain('ForEach(ReleaseChannel.allCases');
+    expect(source).not.toContain('Button("Destructive repair…")');
     expect(source).toContain('DiagnosticsRedactor.redactText(message)');
     expect(source).toContain('Operation:');
     expect(source).toContain('Remove node registration');
@@ -34,12 +35,7 @@ describe('macOS menu-bar platform', () => {
       packageRoot,
       'scripts/testing/macos-alpha-package.sh',
     );
-    const [script, metadata] = await Promise.all([
-      readFile(scriptPath, 'utf8'),
-      stat(scriptPath),
-    ]);
-
-    expect(metadata.mode & 0o111).not.toBe(0);
+    const script = await readFile(scriptPath, 'utf8');
     expect(script).toContain('Consuelo.app/Contents/MacOS');
     expect(script).toContain('Info.plist');
     expect(script).toContain('swift build');

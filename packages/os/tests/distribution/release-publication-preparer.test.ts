@@ -43,6 +43,8 @@ function createRuntimeSource(root: string): string {
     'package.json': '{"name":"@consuelo/os-fixture","private":true}\n',
     'bun.lock': 'fixture-lock\n',
     'scripts/os.ts': 'export const osFixture = true;\n',
+    'scripts/native-lifecycle-operation.ts':
+      'export const nativeLifecycleOperationFixture = true;\n',
     'scripts/server/main.ts': 'export const serverFixture = true;\n',
     'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
     'scripts/managed-components.ts': 'export const managedComponentsCliFixture = true;\n',

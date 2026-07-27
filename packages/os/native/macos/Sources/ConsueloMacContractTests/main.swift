@@ -41,11 +41,13 @@ private struct ContractSuite {
         ],
         updates: UpdateSnapshot = .init(available: 0),
         operation: OperationSnapshot? = nil,
+        instanceId: String = "daemon-default",
         connection: ConnectionSnapshot = .init(state: .online),
         workspace: WorkspaceSnapshot? = nil
     ) -> LifecycleSnapshot {
         LifecycleSnapshot(
             schemaVersion: 1,
+            instanceId: instanceId,
             sequence: 7,
             observedAt: "2026-07-26T20:00:00.000Z",
             install: .init(state: installState),
@@ -81,6 +83,8 @@ private struct ContractSuite {
         try socketWritesDisableSigPipe()
         try socketIOUsesBoundedDeadlines()
         try snapshotCacheRetainsHighestObservedSequence()
+        try transportCacheAcceptsNewDaemonEpochAndRejectsLateOldInstance()
+        try daemonRestartAcceptsFreshLowSequenceAndRejectsLateOldInstance()
         try await overlappingRefreshesRetainTheNewestSnapshot()
         try await failedRefreshCannotOverwriteNewerSubscriptionSnapshot()
         try await rejectedLifecycleOperationsSurfaceAsErrors()
@@ -187,7 +191,9 @@ private struct ContractSuite {
 
     private func destructiveRepairAndUninstallRequireExplicitConfirmation() throws {
         let status = snapshot()
-        try expect(try LifecycleCommandMapper.plan(for: .destructiveRepair, snapshot: status).confirmation, .destructiveRepair, "destructive repair confirmation")
+        try expectThrows("unsupported destructive repair is not advertised") {
+            _ = try LifecycleCommandMapper.plan(for: .destructiveRepair, snapshot: status)
+        }
         try expect(try LifecycleCommandMapper.plan(for: .uninstall(removeNode: false, removeUserContent: false), snapshot: status).confirmation, .uninstall, "uninstall confirmation")
     }
 
@@ -442,6 +448,52 @@ private struct ContractSuite {
         try expect(received, -1, "stalled lifecycle read returns an error")
         try expectTrue(errno == EAGAIN || errno == EWOULDBLOCK, "stalled lifecycle read times out")
         try expectTrue(elapsed < 1, "lifecycle read timeout remains bounded")
+    }
+
+    private func transportCacheAcceptsNewDaemonEpochAndRejectsLateOldInstance() throws {
+        let old = snapshot(instanceId: "daemon-old")
+            .with(sequence: 100, version: "1.4.0", observedAt: "2026-07-27T03:00:00.000Z")
+        let restarted = snapshot(instanceId: "daemon-new")
+            .with(sequence: 1, version: "1.5.0", observedAt: "2026-07-27T03:01:00.000Z")
+        let lateOld = snapshot(instanceId: "daemon-old")
+            .with(sequence: 101, version: "1.4.1", observedAt: "2026-07-27T03:00:30.000Z")
+
+        let acceptedRestart = UnixSocketLifecycleTransport.retainNewestSnapshot(
+            current: old,
+            incoming: restarted
+        )
+        try expect(acceptedRestart.instanceId, "daemon-new", "transport cache accepts restarted daemon epoch")
+        try expect(acceptedRestart.sequence, 1, "transport cache accepts restarted daemon low sequence")
+
+        let retainedRestart = UnixSocketLifecycleTransport.retainNewestSnapshot(
+            current: acceptedRestart,
+            incoming: lateOld
+        )
+        try expect(retainedRestart.instanceId, "daemon-new", "transport cache rejects late old daemon epoch")
+        try expect(retainedRestart.runtime.version, "1.5.0", "late old daemon cannot regress cached payload")
+    }
+
+    private func daemonRestartAcceptsFreshLowSequenceAndRejectsLateOldInstance() throws {
+        let transport = RecordingLifecycleTransport(
+            snapshot: snapshot(instanceId: "daemon-old").with(sequence: 100, version: "1.4.0")
+        )
+        let client = LifecycleClient(
+            transport: transport,
+            initialSnapshot: snapshot(instanceId: "daemon-old").with(sequence: 100, version: "1.4.0")
+        )
+        _ = client.connect { _ in }
+
+        transport.emit(
+            snapshot(instanceId: "daemon-new")
+                .with(sequence: 1, version: "1.5.0", observedAt: "2026-07-27T03:01:00.000Z")
+        )
+        transport.emit(
+            snapshot(instanceId: "daemon-old")
+                .with(sequence: 101, version: "1.4.1", observedAt: "2026-07-27T03:00:30.000Z")
+        )
+
+        try expect(client.current()?.runtime.version, "1.5.0", "new daemon instance wins despite lower sequence")
+        try expect(client.current()?.sequence, 1, "new daemon sequence is retained")
     }
 
     private func snapshotCacheRetainsHighestObservedSequence() throws {
@@ -943,10 +995,15 @@ private final class RecordingLifecycleTransport: LifecycleTransport, @unchecked 
 }
 
 private extension LifecycleSnapshot {
-    func with(sequence: Int, version: String) -> LifecycleSnapshot {
+    func with(
+        sequence: Int,
+        version: String,
+        observedAt: String? = nil
+    ) -> LifecycleSnapshot {
         var copy = self
         copy.sequence = sequence
         copy.runtime.version = version
+        if let observedAt { copy.observedAt = observedAt }
         return copy
     }
 
