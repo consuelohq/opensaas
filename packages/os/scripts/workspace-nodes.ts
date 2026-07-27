@@ -5,6 +5,7 @@ import {
   parseWorkspaceNodeCommand,
   WORKSPACE_NODES_USAGE,
 } from './lib/workspace-node-client';
+import { resolveConsueloHome } from './lib/consuelo-home';
 
 function writeError(error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
@@ -29,6 +30,7 @@ async function main(): Promise<void> {
       process.env.CONSUELO_OS_AUTHORITY_ORIGIN?.trim() ||
       'https://os.consuelohq.com',
     accessToken,
+    home: resolveConsueloHome(),
   });
   const result = await client.execute(command);
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

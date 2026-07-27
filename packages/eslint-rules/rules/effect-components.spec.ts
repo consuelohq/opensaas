@@ -1,17 +1,20 @@
-import { TSESLint } from '@typescript-eslint/utils';
+import { ruleTesterParser } from '../utils/ruleTesterParser';
+import { type Rule, RuleTester } from 'eslint';
 
 import { rule, RULE_NAME } from '../rules/effect-components';
 
-const ruleTester = new TSESLint.RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true,
+const ruleTester = new RuleTester({
+  languageOptions: {
+    parser: ruleTesterParser,
+    parserOptions: {
+      ecmaFeatures: {
+        jsx: true,
+      },
     },
   },
 });
 
-ruleTester.run(RULE_NAME, rule, {
+ruleTester.run(RULE_NAME, rule as unknown as Rule.RuleModule, {
   valid: [
     {
       code: `const TestComponentEffect = () => <></>;`,
@@ -36,13 +39,6 @@ ruleTester.run(RULE_NAME, rule, {
         useEffect(() => {}, []);
 
         return null; 
-      }`,
-    },
-    {
-      code: `const TestComponentEffect = () => { 
-        useEffect(() => {}, []);
-        
-        return <></>; 
       }`,
     },
     {

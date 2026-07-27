@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -22,6 +23,11 @@ import {
   type LifecycleServiceController,
   type ReleaseSource,
 } from './lib/lifecycle';
+import {
+  loadGlobalYamlConfig,
+  loadNodeYamlConfig,
+  resolveConsueloHomeLayout,
+} from './lib/consuelo-home';
 import { createLinuxPlatformAdapter } from './lib/platforms/linux';
 import { createWindowsServiceController } from './lib/windows-platform';
 
@@ -32,6 +38,7 @@ export type LifecycleCliIo = {
 
 export type LifecycleCliDependencies = Partial<LifecycleCliIo> & {
   engine?: LifecycleEngine;
+  nodeStatus?: (input: { home?: string }) => Promise<LifecycleOperationResult>;
 };
 
 type ParsedLifecycleArgs = {
@@ -61,6 +68,7 @@ Usage:
   consuelo updates notifications on|off|snooze [--until <iso>] [--json]
   consuelo repair [--json] [--quiet]
   consuelo rollback [--dry-run] [--json] [--quiet]
+  consuelo node [--json] [--quiet]
   consuelo uninstall [--dry-run] [--remove-node] [--remove-user-content] [--json]
   consuelo dev reset --yes [--dry-run] [--json]
 
@@ -77,7 +85,7 @@ function nextValue(argv: string[], index: number, flag: string): string {
 function parseArgs(argv: string[]): ParsedLifecycleArgs {
   const positional: string[] = [];
   const parsed: ParsedLifecycleArgs = {
-    command: argv[0] ?? 'status',
+    command: argv[0] === '--help' || argv[0] === '-h' ? 'help' : (argv[0] ?? 'status'),
     positional,
     check: false,
     yes: false,
@@ -133,6 +141,7 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   };
   switch (parsed.command) {
     case 'status':
+    case 'node':
     case 'install':
     case 'restart':
     case 'update':
@@ -331,13 +340,41 @@ function notificationPreference(
   throw new Error('updates notifications requires on, off, or snooze');
 }
 
+async function readNodeStatus(input: { home?: string }): Promise<LifecycleOperationResult> {
+  const layout = resolveConsueloHomeLayout(input.home);
+  if (!existsSync(layout.globalConfigPath)) {
+    throw new Error(`Consuelo OS config is missing: ${layout.globalConfigPath}`);
+  }
+  if (!existsSync(layout.nodeConfigPath)) {
+    throw new Error(`Consuelo node config is missing: ${layout.nodeConfigPath}`);
+  }
+
+  const globalConfig = loadGlobalYamlConfig(layout.globalConfigPath);
+  const nodeConfig = loadNodeYamlConfig(layout.nodeConfigPath);
+  return {
+    operation: 'node',
+    changed: false,
+    detail: {
+      id: nodeConfig.node.id,
+      name: nodeConfig.node.name,
+      role: nodeConfig.node.role,
+      active: globalConfig.activeNode === nodeConfig.node.id,
+      capabilities: nodeConfig.capabilities,
+      workspaces: nodeConfig.workspaces.map(({ id, state }) => ({ id, state })),
+    },
+  };
+}
+
 async function executeCommand(
   parsed: ParsedLifecycleArgs,
   engine: LifecycleEngine,
+  nodeStatus: (input: { home?: string }) => Promise<LifecycleOperationResult>,
 ): Promise<LifecycleOperationResult> {
   switch (parsed.command) {
     case 'status':
       return engine.status();
+    case 'node':
+      return nodeStatus({ home: parsed.home });
     case 'install':
       return engine.install({ channel: parsed.channel });
     case 'restart':
@@ -413,9 +450,10 @@ export async function runLifecycleCli(
       json: parsed.json,
       progress: (event) => stderr(renderLifecycleProgress(event)),
     });
+  const nodeStatus = dependencies.nodeStatus ?? readNodeStatus;
 
   try {
-    const result = await executeCommand(parsed, engine);
+    const result = await executeCommand(parsed, engine, nodeStatus);
     if (parsed.json)
       stdout(
         `${JSON.stringify(lifecycleSuccessEnvelope(parsed.command, result))}\n`,

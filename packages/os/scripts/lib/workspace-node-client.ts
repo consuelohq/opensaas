@@ -1,3 +1,8 @@
+import {
+  parseWorkspaceNodeListSummary,
+  writeWorkspaceNodeSummaryCache,
+} from './workspace-node-summary';
+
 export type WorkspaceNodeCommand =
   | { action: 'list'; currentNodeId?: string }
   | { action: 'default'; nodeId: string }
@@ -121,6 +126,7 @@ function safeServerError(status: number, payload: unknown): Error {
 export function createWorkspaceNodeClient(input: {
   origin: string;
   accessToken: string;
+  home?: string;
   fetchImpl?: typeof fetch;
 }): WorkspaceNodeClient {
   const origin = normalizeOrigin(input.origin);
@@ -143,6 +149,11 @@ export function createWorkspaceNodeClient(input: {
       if (!response.ok) throw safeServerError(response.status, payload);
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
         throw new Error('workspace node authority returned an invalid JSON response');
+      }
+      if (command.action === 'list') {
+        const summary = parseWorkspaceNodeListSummary(payload);
+        if (input.home) writeWorkspaceNodeSummaryCache({ home: input.home, summary });
+        return summary;
       }
       return payload as Record<string, unknown>;
     },

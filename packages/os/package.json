@@ -1,6 +1,9 @@
 {
   "name": "@consuelo/os",
   "private": true,
+  "bin": {
+    "consuelo": "scripts/lifecycle.ts"
+  },
   "scripts": {
     "os": "bun ./scripts/os.ts",
     "get-steering": "bun ./scripts/os.ts get-steering",
@@ -113,7 +116,8 @@
     "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check",
     "lifecycle": "bun ./scripts/lifecycle.ts",
     "windows-platform": "bun ./scripts/windows-platform.ts",
-    "managed-components": "bun ./scripts/managed-components.ts"
+    "managed-components": "bun ./scripts/managed-components.ts",
+    "test:distribution:integration": "bun ./scripts/testing/distribution/integration-runner.ts"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

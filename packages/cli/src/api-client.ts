@@ -38,7 +38,7 @@ const resolveConfig = (): ApiClientConfig => {
     error('not configured');
     log('');
     log('  to authenticate with your consuelo account:');
-    log('    consuelo init --managed');
+    log('    consuelo-dialer init --managed');
     log('');
     log('  or set an API key:');
     log('    export CONSUELO_API_KEY=your-api-key');

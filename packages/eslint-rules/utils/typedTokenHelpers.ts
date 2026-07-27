@@ -81,7 +81,10 @@ export const typedTokenHelpers = {
           if (arg.type === TSESTree.AST_NODE_TYPES.CallExpression) {
             const callee = arg.callee;
             if (callee.type === TSESTree.AST_NODE_TYPES.Identifier) {
-              return callee.name.endsWith('PermissionGuard');
+              return (
+                callee.name.endsWith('PermissionGuard') ||
+                callee.name.endsWith('PermissionsGuard')
+              );
             }
           }
           // Identifier guards: CustomPermissionGuard, NoPermissionGuard, etc.

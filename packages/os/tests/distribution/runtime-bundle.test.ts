@@ -32,6 +32,7 @@ const fixtureRoots: string[] = [];
 const requiredFixtureFiles: Record<string, string> = {
   'package.json': '{"name":"@consuelo/os-fixture","private":true}\n',
   'bun.lock': 'fixture-lock\n',
+  'scripts/lifecycle.ts': '#!/usr/bin/env bun\nexport const lifecycleFixture = true;\n',
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
@@ -283,6 +284,15 @@ describe('runtime bundle contract', () => {
 
     await expect(buildRuntimeBundle(buildOptions(root))).rejects.toThrow(
       'required runtime input is missing: scripts/server/main.ts',
+    );
+  });
+
+  it('fails when the OS lifecycle CLI is missing from the runtime bundle source', async () => {
+    const root = createFixture();
+    rmSync(join(root, 'scripts/lifecycle.ts'));
+
+    await expect(buildRuntimeBundle(buildOptions(root))).rejects.toThrow(
+      'required runtime input is missing: scripts/lifecycle.ts',
     );
   });
 
@@ -718,6 +728,10 @@ describe('runtime bundle contract', () => {
     expect(first.manifest.files).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          path: 'scripts/lifecycle.ts',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
           path: 'scripts/managed-components.ts',
           role: 'runtime',
         }),
@@ -776,6 +790,13 @@ describe('runtime bundle contract', () => {
     ).toBe(false);
     expect(
       first.manifest.files.some((file) => file.path.startsWith('cloudflare/')),
+    ).toBe(false);
+    expect(
+      first.manifest.files.some((file) =>
+        /(?:^|\/)consuelo-dialer|(?:^|\/)packages\/cli\//.test(
+          file.path,
+        ),
+      ),
     ).toBe(false);
     expect(
       first.manifest.files.some(

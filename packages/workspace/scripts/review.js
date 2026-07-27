@@ -11,6 +11,10 @@ const path = require('path');
 const { getTrackedChanges } = require('./lib/git');
 const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
 const { computeVerificationState } = require('./lib/verification');
+const {
+  reviewTaskEntrypoint,
+  reviewTestPackages,
+} = require('./lib/review-test-selection');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 let outputCapture = null;
@@ -559,21 +563,9 @@ function runTypecheck(files) {
 function runTests(files) {
   const root = gitRoot();
 
-  // detect affected packages from changed files, or run all known test packages
-  let packages;
-  if (files.length > 0) {
-    packages = [...new Set(files.map((f) => {
-      const m = f.match(/^packages\/([^/]+)\//);
-      return m ? m[1] : null;
-    }).filter(Boolean))];
-  } else {
-    packages = ['api', 'dialer', 'twenty-server'];
-  }
-
-  // map to packages that have jest configs
-  const testablePackages = packages.filter((pkg) =>
-    fs.existsSync(path.join(root, 'packages', pkg, 'jest.config.mjs'))
-  );
+  const testablePackages = files.length > 0
+    ? reviewTestPackages(files, root, fs.existsSync)
+    : ['api', 'dialer', 'twenty-server'];
 
   const results = [];
 
@@ -906,7 +898,7 @@ async function main() {
     writeStderr(`→ review scoped to: ${taskRoot}`);
     const passthrough = process.argv.slice(2).filter((argument) => argument !== "--mine");
     try {
-      execFileSync(process.execPath, [__filename, ...passthrough], { cwd: taskRoot, stdio: "inherit" });
+      execFileSync(process.execPath, [reviewTaskEntrypoint(taskRoot), ...passthrough], { cwd: taskRoot, stdio: "inherit" });
     } catch (error) { process.exitCode = error.status || 1; }
     return;
   }

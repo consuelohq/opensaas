@@ -29,6 +29,20 @@ jobs:
         packages/twenty-shared/**
         packages/twenty-sdk/**
         !packages/twenty-sdk/package.json
+  classify-front-source-changes:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    outputs:
+      any_changed: ${{ steps.classify.outputs.source_changed }}
+      reason: ${{ steps.classify.outputs.reason }}
+    steps:
+      - name: Fetch base and head history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Classify frontend source and dependency changes
+        id: classify
+        run: node packages/workspace/scripts/ci/classify-front-source-change.cjs
   changed-files-check-e2e:
     uses: ./.github/workflows/changed-files.yaml
     with:
@@ -39,8 +53,8 @@ jobs:
         playwright.config.ts
         .github/workflows/ci-front.yaml
   front-sb-build:
-    needs: changed-files-check
-    if: needs.changed-files-check.outputs.any_changed == 'true'
+    needs: classify-front-source-changes
+    if: needs.classify-front-source-changes.outputs.any_changed == 'true'
     timeout-minutes: 30
     runs-on: ubuntu-latest-8-cores
     env:
@@ -139,16 +153,48 @@ jobs:
           npx nyc merge coverage-artifacts ${{ env.PATH_TO_COVERAGE }}/coverage-storybook.json
       - name: Checking coverage
         run: npx nx storybook:coverage twenty-front --checkCoverage=true --configuration=${{ matrix.storybook_scope }}
-  front-task:
+  front-lint:
     needs: changed-files-check
     if: needs.changed-files-check.outputs.any_changed == 'true'
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    env:
+      TASK_CACHE_KEY: front-task-lint
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+      - name: Fetch custom Github Actions and base branch history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Restore lint cache
+        id: restore-task-cache
+        uses: ./.github/actions/restore-cache
+        with:
+          key: ${{ env.TASK_CACHE_KEY }}
+      - name: Run changed-file lint task
+        uses: ./.github/actions/nx-affected
+        with:
+          tag: scope:frontend
+          tasks: lint:diff-with-main
+      - name: Save lint cache
+        uses: ./.github/actions/save-cache
+        with:
+          key: ${{ steps.restore-task-cache.outputs.cache-primary-key }}
+  front-task:
+    needs: classify-front-source-changes
+    if: needs.classify-front-source-changes.outputs.any_changed == 'true'
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
       TASK_CACHE_KEY: front-task-${{ matrix.task }}
     strategy:
       matrix:
-        task: [lint, typecheck, test]
+        task: [typecheck, test]
     steps:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
@@ -180,8 +226,8 @@ jobs:
         with:
           key: ${{ steps.restore-task-cache.outputs.cache-primary-key }}
   front-build:
-    needs: changed-files-check
-    if: needs.changed-files-check.outputs.any_changed == 'true'
+    needs: classify-front-source-changes
+    if: needs.classify-front-source-changes.outputs.any_changed == 'true'
     timeout-minutes: 30
     runs-on: ubuntu-latest-8-cores
     env:
@@ -322,6 +368,8 @@ jobs:
     needs:
       [
         changed-files-check,
+        classify-front-source-changes,
+        front-lint,
         front-task,
         front-build,
         merge-reports-and-check-coverage,

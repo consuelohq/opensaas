@@ -223,12 +223,61 @@
       "reason": "API changes must run API route and service specs."
     },
     {
+      "id": "eslint-config-contract",
+      "critical": true,
+      "source": [
+        "eslint.config.mjs",
+        "packages/eslint-rules/eslint.config.react.mjs",
+        "packages/twenty-front/eslint.config.mjs",
+        "packages/twenty-server/eslint.config.mjs",
+        "packages/twenty-shared/eslint.config.mjs",
+        "packages/twenty-ui/eslint.config.mjs"
+      ],
+      "tests": [
+        {
+          "name": "shared ESLint configuration contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/eslint-config-paths.test.ts"
+          ]
+        }
+      ],
+      "reason": "ESLint configuration changes must import cleanly without selecting unrelated application test suites."
+    },
+    {
+      "id": "dialer-cli-install-copy",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CLI product split contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/cli-product-split.test.ts"
+          ]
+        }
+      ],
+      "reason": "The navigation install command is a cross-product CLI ownership contract covered precisely by Worker 30, not by the full frontend suite."
+    },
+    {
       "id": "twenty-server-project",
       "critical": true,
       "source": [
         "packages/twenty-server/**",
         "packages/twenty-server/src/engine/**/*.resolver.ts",
         "packages/twenty-server/src/**/migrations/**"
+      ],
+      "exclude": [
+        "packages/twenty-server/eslint.config.*"
       ],
       "tests": [
         {
@@ -248,6 +297,9 @@
       "critical": false,
       "source": [
         "packages/twenty-front/**"
+      ],
+      "exclude": [
+        "packages/twenty-front/eslint.config.*"
       ],
       "tests": [
         {

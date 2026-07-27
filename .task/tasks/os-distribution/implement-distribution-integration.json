@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/implement-distribution-integration",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1663,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1663",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1663",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1663/implement-distribution-integration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1663",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1663/implement-distribution-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-distribution-integration",
+  "taskSession": "tsk_3b69c2d01019",
+  "tmuxSession": "opensaas-os-distribution-implement-distribution-integration-3b69c2d0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-distribution-integration/.task/os-distribution/implement-distribution-integration/session.json",
+  "createdAt": "2026-07-26T15:40:05.444Z"
+}

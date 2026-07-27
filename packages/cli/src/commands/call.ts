@@ -23,9 +23,9 @@ const auditLog = {
 export async function callCommand(number: string): Promise<void> {
   if (!number) {
     if (isJson()) {
-      json({ error: { code: 'VALIDATION_ERROR', message: 'provide a number: consuelo call <number>' } });
+      json({ error: { code: 'VALIDATION_ERROR', message: 'provide a number: consuelo-dialer call <number>' } });
     } else {
-      error('provide a number: consuelo call <number>');
+      error('provide a number: consuelo-dialer call <number>');
     }
     process.exit(1);
   }
@@ -44,17 +44,17 @@ export async function callCommand(number: string): Promise<void> {
   const config = loadConfig();
   if (!config.twilioAccountSid || !config.twilioAuthToken) {
     if (isJson()) {
-      json({ error: { code: 'VALIDATION_ERROR', message: 'not configured — run `consuelo init` to set your Twilio credentials' } });
+      json({ error: { code: 'VALIDATION_ERROR', message: 'not configured — run `consuelo-dialer init` to set your Twilio credentials' } });
     } else {
-      error('not configured — run `consuelo init` to set your Twilio credentials');
+      error('not configured — run `consuelo-dialer init` to set your Twilio credentials');
     }
     process.exit(1);
   }
   if (!config.twilioPhoneNumber) {
     if (isJson()) {
-      json({ error: { code: 'VALIDATION_ERROR', message: 'no phone number configured — run `consuelo init` to set your Twilio number' } });
+      json({ error: { code: 'VALIDATION_ERROR', message: 'no phone number configured — run `consuelo-dialer init` to set your Twilio number' } });
     } else {
-      error('no phone number configured — run `consuelo init` to set your Twilio number');
+      error('no phone number configured — run `consuelo-dialer init` to set your Twilio number');
     }
     process.exit(1);
   }

@@ -1,4 +1,4 @@
-import * as fs from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import type { Command } from 'commander';
 import {
   apiGet,
@@ -104,7 +104,7 @@ const contactsList = async (opts: {
     const { contacts } = res.data;
     if (!contacts.length) {
       log(
-        'no contacts yet — use `consuelo contacts create` or `consuelo contacts import`',
+        'no contacts yet — use `consuelo-dialer contacts create` or `consuelo-dialer contacts import`',
       );
       return;
     }
@@ -274,12 +274,12 @@ const contactsImport = async (
   opts: { dryRun?: boolean; map?: string },
 ): Promise<void> => {
   try {
-    if (!fs.existsSync(file)) {
+    if (!existsSync(file)) {
       error(`file not found: ${file}`);
       process.exit(1);
     }
 
-    let content = fs.readFileSync(file, 'utf-8');
+    let content = readFileSync(file, 'utf-8');
     if (!content.trim()) {
       error('file is empty');
       process.exit(1);

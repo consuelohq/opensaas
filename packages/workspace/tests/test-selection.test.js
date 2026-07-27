@@ -57,6 +57,48 @@ describe('test selection registry', () => {
     expect(data.zeroSuiteReason).toBeNull();
   });
 
+  it('selects the ESLint config contract without broad application tests for config-only changes', () => {
+    const result = run([
+      'check',
+      '--changed-file', 'packages/twenty-front/eslint.config.mjs',
+      '--changed-file', 'packages/twenty-server/eslint.config.mjs',
+      '--changed-file', 'packages/twenty-ui/eslint.config.mjs',
+      '--json',
+    ]);
+    const data = json(result);
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain('eslint-config-contract');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'shared ESLint configuration contract',
+    ]);
+    expect(data.matchedRules.map((rule) => rule.id)).not.toEqual(
+      expect.arrayContaining([
+        'twenty-front-project',
+        'twenty-server-project',
+        'auto:twenty-front:test',
+        'auto:twenty-server:test',
+        'auto:twenty-ui:test',
+      ]),
+    );
+  });
+
+  it('lets a precise exclusive rule own an exact cross-product consumer file', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/src/modules/navigation/constants/navigation-drawer-support-menu.constants.ts',
+      '--json',
+    ]);
+    const data = json(result);
+
+    expect(data.matchedRules.map((rule) => rule.id)).toEqual([
+      'dialer-cli-install-copy',
+    ]);
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Consuelo CLI product split contract',
+    ]);
+  });
+
   it('reports zero-suite warnings for unmapped code', () => {
     const result = run(['check', '--changed-file', 'packages/unknown/src/example.ts', '--json']);
     const data = json(result);
@@ -81,6 +123,30 @@ describe('test selection registry', () => {
 
     expect(data.level).toBe('pass');
     expect(data.zeroSuiteReason).toContain('changed files are docs');
+  });
+
+  it('ignores post-checkout workspace dirt when running in CI', () => {
+    const dirtyFile = path.join(
+      process.cwd(),
+      'packages',
+      'twenty-sdk',
+      `.test-selection-ci-dirt-${process.pid}-${Date.now()}.ts`,
+    );
+
+    fs.writeFileSync(dirtyFile, 'export const generatedDuringCi = true;\n');
+
+    try {
+      const localData = json(run(['check', '--base', 'HEAD', '--json'], { env: { CI: 'false' } }));
+      expect(localData.matchedRules.map((rule) => rule.id)).toContain('auto:twenty-sdk:test');
+
+      const ciData = json(run(['check', '--base', 'HEAD', '--json'], { env: { CI: 'true' } }));
+      expect(ciData.changedFiles).not.toContain(
+        path.relative(process.cwd(), dirtyFile).replaceAll('\\', '/'),
+      );
+      expect(ciData.matchedRules.map((rule) => rule.id)).not.toContain('auto:twenty-sdk:test');
+    } finally {
+      fs.rmSync(dirtyFile, { force: true });
+    }
   });
 
   it('fails timed out suite commands', () => {

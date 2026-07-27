@@ -1,12 +1,15 @@
-import { TSESLint } from '@typescript-eslint/utils';
+import { ruleTesterParser } from '../utils/ruleTesterParser';
+import { type Rule, RuleTester } from 'eslint';
 
 import { rule, RULE_NAME } from './rest-api-methods-should-be-guarded';
 
-const ruleTester = new TSESLint.RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
+const ruleTester = new RuleTester({
+  languageOptions: {
+    parser: ruleTesterParser,
+  },
 });
 
-ruleTester.run(RULE_NAME, rule, {
+ruleTester.run(RULE_NAME, rule as unknown as Rule.RuleModule, {
   valid: [
     {
       code: `
@@ -30,7 +33,7 @@ ruleTester.run(RULE_NAME, rule, {
       code: `
         class TestController {
           @Get()
-          @UseGuards(PublicEndpoint, NoPermissionGuard)
+          @UseGuards(PublicEndpointGuard, NoPermissionGuard)
           testMethod() {}
         }
       `,
@@ -39,7 +42,7 @@ ruleTester.run(RULE_NAME, rule, {
       code: `
         class TestController {
           @Get()
-          @UseGuards(CaptchaGuard, PublicEndpoint, NoPermissionGuard)
+          @UseGuards(CaptchaGuard, PublicEndpointGuard, NoPermissionGuard)
           testMethod() {}
         }
       `,
@@ -64,7 +67,7 @@ ruleTester.run(RULE_NAME, rule, {
     },
     {
       code: `
-        @UseGuards(PublicEndpoint, NoPermissionGuard)
+        @UseGuards(PublicEndpointGuard, NoPermissionGuard)
         class TestController {
           @Get()
           testMethod() {}

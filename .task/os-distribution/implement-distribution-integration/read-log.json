@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os-distribution/implement-distribution-integration/workpad.md",
+    "packages/os/scripts/testing/distribution/integration-runner.ts",
+    "packages/os/tests/distribution/lifecycle-contract.test.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-26T15:54:05.288Z"
+}

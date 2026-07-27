@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3b69c2d01019",
+  "tmuxSession": "opensaas-os-distribution-implement-distribution-integration-3b69c2d0",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/implement-distribution-integration",
+  "branch": "task/os-distribution/implement-distribution-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-distribution-integration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-distribution-integration",
+  "prNumber": 1663,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1663",
+  "createdAt": "2026-07-26T15:40:05.442Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-distribution-integration/.task/os-distribution/implement-distribution-integration/session.json"
+}

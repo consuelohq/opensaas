@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_398d7df29f8d",
+  "tmuxSession": "opensaas-os-distribution-align-distribution-rehearsal-with-mandatory-lane-398d7df2",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes",
+  "branch": "task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-align-distribution-rehearsal-with-mandatory-lanes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-align-distribution-rehearsal-with-mandatory-lanes",
+  "prNumber": 1665,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1665",
+  "createdAt": "2026-07-26T20:56:07.131Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-align-distribution-rehearsal-with-mandatory-lanes/.task/os-distribution/align-distribution-rehearsal-with-mandatory-lanes/session.json"
+}

@@ -1,4 +1,4 @@
-import * as fs from 'node:fs';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import type { Command } from 'commander';
 import ora from 'ora';
@@ -132,12 +132,12 @@ const filesGet = async (id: string): Promise<void> => {
 
 const filesUpload = async (filePath: string, opts: { collection?: string; tags?: string }): Promise<void> => {
   try {
-    if (!fs.existsSync(filePath)) {
+    if (!existsSync(filePath)) {
       error(`file not found: ${filePath}`);
       process.exit(1);
     }
 
-    const stat = fs.statSync(filePath);
+    const stat = statSync(filePath);
     const filename = basename(filePath);
     const contentType = inferMimeType(filename);
 
@@ -165,7 +165,7 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
     }
 
     // step 2: PUT to S3
-    const fileBuffer = fs.readFileSync(filePath);
+    const fileBuffer = readFileSync(filePath);
     const s3Res = await fetch(initRes.data.uploadUrl, {
       method: 'PUT',
       body: fileBuffer,
@@ -198,7 +198,7 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
       if (indexRes.ok) {
         log(`indexed into ${opts.collection} (${indexRes.data.chunks} chunks)`);
       } else {
-        error(`uploaded but indexing failed — run \`consuelo kb index ${initRes.data.fileId} --collection ${opts.collection}\` to retry`);
+        error(`uploaded but indexing failed — run \`consuelo-dialer kb index ${initRes.data.fileId} --collection ${opts.collection}\` to retry`);
       }
     }
   } catch (err: unknown) {
@@ -233,7 +233,7 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
     const outputPath = opts.output ?? filename;
 
     try {
-      fs.writeFileSync(outputPath, buffer);
+      writeFileSync(outputPath, buffer);
     } catch (err: unknown) {
       captureError(err, { command: 'files download' });
       const detail = err instanceof Error ? `: ${err.message}` : '';

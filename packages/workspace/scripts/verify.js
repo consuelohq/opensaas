@@ -9,6 +9,7 @@ const { resolveGitRoot } = require('./lib/paths');
 const { findTaskMeta } = require('./lib/task-meta');
 const {
   computeVerificationState,
+  summarizeTestSelectionFailures,
   writeVerifyStamp,
 } = require('./lib/verification');
 
@@ -330,6 +331,8 @@ function runTestSelection(repoRoot, base) {
     skipped: false,
     passed: result.status === 0 && data.passed === true,
     status: result.status,
+    signal: result.signal || null,
+    error: result.error ? { code: result.error.code, message: result.error.message } : null,
     data,
     stderr: result.stderr || '',
   };
@@ -400,6 +403,9 @@ function createBecause(result) {
     const matched = Array.isArray(selection.matchedRules) ? selection.matchedRules.map((rule) => rule.id).join(', ') : '';
     if (suiteCount > 0) {
       lines.push(`registry selected ${suiteCount} suite${suiteCount === 1 ? '' : 's'}${matched ? ` from ${matched}` : ''} and ${result.testSelection.passed ? 'passed' : 'failed'}`);
+      if (!result.testSelection.passed) {
+        lines.push(...summarizeTestSelectionFailures(result.testSelection));
+      }
     } else if (selection.zeroSuiteReason) {
       lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
     } else {
@@ -538,6 +544,8 @@ async function main() {
       skipped: testSelection.skipped,
       passed: testSelection.passed,
       status: testSelection.status,
+      signal: testSelection.signal,
+      error: testSelection.error,
       data: testSelection.data,
     },
     db: {
@@ -594,6 +602,8 @@ async function main() {
         skipped: result.testSelection.skipped,
         passed: result.testSelection.passed,
         status: result.testSelection.status,
+        signal: result.testSelection.signal,
+        error: result.testSelection.error,
         data: result.testSelection.data,
         stderr: compactText(result.testSelection.stderr).text,
         stderrChars: compactText(result.testSelection.stderr).chars,

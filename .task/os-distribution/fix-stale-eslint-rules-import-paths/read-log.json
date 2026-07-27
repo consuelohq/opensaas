@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".github/workflows/ci-shared.yaml",
+    ".task/os-distribution/fix-stale-eslint-rules-import-paths/workpad.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/ci/classify-front-source-change.cjs",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/eslint-config-paths.test.ts",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "updatedAt": "2026-07-25T19:24:27.407Z"
+}

@@ -179,10 +179,12 @@ const fix = ({
               sortedDeclText,
             ),
           ];
-        } catch (e) {
-          console.log(e);
+        } catch {
+          return [];
         }
       }
+
+      return [];
     }),
   ];
 };
@@ -238,7 +240,6 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
   meta: {
     docs: {
       description: 'Styles are sorted alphabetically.',
-      recommended: 'recommended',
     },
     messages: {
       sortCssPropertiesAlphabetically:
@@ -273,8 +274,8 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
                 }),
             });
           }
-        } catch (e) {
-          return true;
+        } catch {
+          return;
         }
       },
     };

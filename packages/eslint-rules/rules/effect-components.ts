@@ -107,7 +107,9 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
       ArrowFunctionExpression: checkFunctionExpressionEffectComponent,
 
       FunctionDeclaration: (node) =>
-        checkEffectComponent({ context, identifier: node.id, node }),
+        isIdentifier(node.id)
+          ? checkEffectComponent({ context, identifier: node.id, node })
+          : undefined,
 
       FunctionExpression: checkFunctionExpressionEffectComponent,
     };

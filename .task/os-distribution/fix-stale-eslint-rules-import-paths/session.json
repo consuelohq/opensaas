@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fd25ceecbf06",
+  "tmuxSession": "opensaas-os-distribution-fix-stale-eslint-rules-import-paths-fd25ceec",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+  "branch": "task/os-distribution/fix-stale-eslint-rules-import-paths",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths",
+  "prNumber": 1651,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1651",
+  "createdAt": "2026-07-25T01:14:52.829Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-stale-eslint-rules-import-paths/.task/os-distribution/fix-stale-eslint-rules-import-paths/session.json"
+}
