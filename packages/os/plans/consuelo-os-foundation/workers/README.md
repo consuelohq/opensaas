@@ -72,7 +72,17 @@ Wave 0 tasks may run concurrently because their implementation ownership is disj
 
 ### Final audit
 
-- `23-final-integration-audit.md` runs only after launch implementation prompts 01-26 and 30 are integrated and the Worker 27 review procedure has been applied to each PR. It verifies Worker 28's planning deliverable but does not require Worker 29 unless extraction is separately approved.
+- `23-final-integration-audit.md` orchestrates the final review only after launch implementation prompts 01-26 and 30 are integrated and the Worker 27 review procedure has been applied to each PR. It verifies Worker 28's planning deliverable and includes Worker 29 only when extraction was separately approved.
+- `23a-core-runtime-lifecycle-recovery-audit.md` reviews lifecycle, recovery, managed components, and steering.
+- `23b-provider-control-plane-audit.md` reviews Railway, Vercel, Cloudflare, approvals, and customer/operator separation.
+- `23c-web-auth-launcher-traces-security-audit.md` reviews universal login, workspace sessions, launcher, `/gtm`, traces, and web security.
+- `23d-native-platform-local-control-audit.md` reviews macOS, Linux, Windows, local IPC, services, and native packaging.
+- `23e-distribution-release-ci-audit.md` reviews runtime bundles, versions, publication, promotion, artifact integrity, and CI.
+- `23f-multi-node-registry-routing-audit.md` reviews node identity, signed presence, defaults, routing, offline state, and revocation.
+- `23g-repository-boundaries-operability-docs-audit.md` reviews source/package authority, CLI separation, runtime closure, legal scope, operability, and docs.
+- `23h-cross-wave-final-go-no-go.md` is a fresh independent synthesis after accepted repairs and issues the final `GO` or `NO-GO`.
+
+Worker 23 creates one review-only GitHub comparison PR spanning the verified pre-foundation baseline to the frozen final candidate. All domain and synthesis agents review the same PR, post every finding and disposition directly to GitHub, and never merge that review-only PR.
 
 ## Stream ownership
 
