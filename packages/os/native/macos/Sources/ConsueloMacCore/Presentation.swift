@@ -42,7 +42,9 @@ public struct MenuBarPresentation: Equatable, Sendable {
     public init(snapshot: LifecycleSnapshot) {
         lifecycleState = .derive(from: snapshot)
         if snapshot.connection.state == .offline {
-            connectionLabel = snapshot.connection.reason.map { "Offline — \($0)" } ?? "Offline"
+            connectionLabel = snapshot.connection.reason.map {
+                "Offline — \(DiagnosticsRedactor.redactText($0))"
+            } ?? "Offline"
         } else {
             connectionLabel = "Online"
         }

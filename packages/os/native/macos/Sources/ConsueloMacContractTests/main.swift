@@ -75,6 +75,7 @@ private struct ContractSuite {
         try multiNodePresentationExplainsDefaultOfflineStaleAndRevokedState()
         try diagnosticsRedactionRemovesRepresentativeCredentialsAndLocalPaths()
         try operationMessagesAreRedactedBeforeRendering()
+        try offlineReasonsAreRedactedBeforeRendering()
         try endpointValidationRejectsNonSocketFiles()
         try socketWritesDisableSigPipe()
         try socketIOUsesBoundedDeadlines()
@@ -356,6 +357,17 @@ private struct ContractSuite {
         try expectTrue(!rendered.contains("database-secret"), "operation password redaction")
         try expectTrue(!rendered.contains("/Users/ko"), "operation local path redaction")
         try expectTrue(rendered.contains("[REDACTED]"), "operation redaction marker")
+    }
+
+    private func offlineReasonsAreRedactedBeforeRendering() throws {
+        let reason = "Authorization: Bearer abc.def.ghi password=database-secret /Users/ko/Dev/opensaas"
+        let offline = snapshot(connection: .init(state: .offline, reason: reason))
+        let label = MenuBarPresentation(snapshot: offline).connectionLabel
+
+        try expectTrue(!label.contains("abc.def.ghi"), "offline bearer token redaction")
+        try expectTrue(!label.contains("database-secret"), "offline password redaction")
+        try expectTrue(!label.contains("/Users/ko"), "offline local path redaction")
+        try expectTrue(label.contains("[REDACTED]"), "offline redaction marker")
     }
 
     private func endpointValidationRejectsNonSocketFiles() throws {

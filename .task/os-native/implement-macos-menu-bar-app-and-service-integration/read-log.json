@@ -3,6 +3,7 @@
     "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift",
     "packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift",
     "packages/os/scripts/lib/distribution/runtime-bundle.ts",
@@ -12,5 +13,5 @@
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-27T01:00:57.045Z"
+  "updatedAt": "2026-07-27T01:06:10.880Z"
 }

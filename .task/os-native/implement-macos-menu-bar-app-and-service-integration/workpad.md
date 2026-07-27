@@ -52,8 +52,7 @@ started: 2026-07-26
 
 ## files changed
 
-- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
 
 
@@ -118,12 +117,6 @@ started: 2026-07-26
 
 ## workspace-owned: validation evidence
 
-  - Wait reason: allow the 15 pending PR checks, including `Consuelo OS / native macos`, to evaluate final commit `9dd726d`.
-  - Duration: bounded 30-second interval.
-  - Resume action: immediately run `github pr.checks` and `github pr.reviews` for PR #1666.
-  - Expected signal: zero failed and zero pending checks, with no new actionable review findings.
-  - Fallback: inspect any failed job/review evidence through Consuelo OS, fix only verified findings, and rerun validation.
-- Wait cycle 4 completed at 2026-07-27 00:45 UTC (`trc_5c547bf3ca4b`). The immediate combined check attempt used the wrong batch field (`calls` instead of `steps`) and was rejected before execution (`trc_019e9467aa1e`); recovery ran the two typed GitHub checks separately without delay.
 - Immediate CI verification found zero failures and six pending checks (`trc_35067e95c541`). Review verification surfaced two additional Codex findings from intermediate commit `579e8af` (`trc_ffc9b8ae9771`):
   1. P1 diagnostics redaction does not cover password-keyed fields — valid; add nested password-like field contracts before implementation.
   2. P2 lifecycle socket I/O has no bounded deadlines — valid; add socket-option and stalled-read timeout contracts before implementation.
@@ -145,10 +138,16 @@ started: 2026-07-26
 - GREEN passed the expanded Swift contract suite (`trc_0e5032cb43d2`) and the clean-source protocol/distribution suite completed 35 tests (`trc_fb36eead3878`). The independent macOS lane then passed contracts, menu-bar build, production tar packaging, extraction, `Info.plist` validation, arm64 executable-mode verification, and strict code-signature verification (`trc_ef098b1720c5`).
 - Generated Swift and alpha-package outputs were removed and the source-only worktree was verified clean before publication (`trc_eccda55776b6`).
 - The final Consuelo publish gate passed with zero blocking findings and a publish-valid verification stamp (`trc_63a5b6a6a33a`).
+- The first complete-comment enumeration attempt used the typed GitHub raw route with `--paginate --jq`, but the wrapper produced no payload (`trc_e79000345680`). The normalized review packet still exposed one unaddressed original Codex P2 finding, comment `3653869163`: offline `connection.reason` text was rendered without redaction. The finding is valid. TDD RED now requires bearer tokens, password values, and local paths in offline reasons to be sanitized before presentation.
+- RED failed on the offline bearer-token assertion as intended (`trc_296d348eb5ee`). Implementation now sanitizes `connection.reason` through `DiagnosticsRedactor.redactText` before constructing the menu-bar connection label.
+- GREEN passed the expanded Swift lifecycle contracts, menu-bar debug build, production archive, extraction, `Info.plist` validation, arm64 executable-mode verification, and strict code-signature verification (`trc_556c1f1198fb`).
+- Generated Swift and alpha-package outputs were removed, and the source-only worktree was verified clean (`trc_f533d5b91cc4`).
+- The final Consuelo publish gate passed with zero blocking findings and a publish-valid verification stamp (`trc_937ab3fa8136`).
 - 2026-07-27 00:44:06 `verify`: passed — OK
 - 2026-07-27 00:52:09 `verify`: passed — OK
 - 2026-07-27 00:58:53 `verify`: passed — OK
 - 2026-07-27 01:04:31 `verify`: passed — OK
+- 2026-07-27 01:09:02 `verify`: passed — OK
 
 ## key decisions
 
@@ -227,6 +226,7 @@ bun run task:finish
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
 - `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
@@ -256,15 +256,14 @@ bun run task:finish
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-27 01:01:09 apply-patch: `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
-- 2026-07-27 01:01:09 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 01:06:27 apply-patch: `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- 2026-07-27 01:06:27 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
 
-- 2026-07-27 01:01:46 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
-- 2026-07-27 01:01:46 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
-- 2026-07-27 01:01:46 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 01:07:02 apply-patch: `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
+- 2026-07-27 01:07:02 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
 
-- 2026-07-27 01:03:43 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 01:08:26 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
 
-- 2026-07-27 01:04:19 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 01:08:49 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
 
-- 2026-07-27 01:04:37 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 01:09:07 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`

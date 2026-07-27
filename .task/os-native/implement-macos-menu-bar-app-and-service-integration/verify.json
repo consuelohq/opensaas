@@ -5,7 +5,7 @@
   "branch": "task/os-native/implement-macos-menu-bar-app-and-service-integration",
   "base": "origin/task/os-native/implement-macos-menu-bar-app-and-service-integration",
   "headSha": "a27dcca1840068f5144d56bc7449ef4518e627df",
-  "changeHash": "c835d2383096a6d137e7ec81f289da36f5aa969b4ffc7782a4ea1b48cb51554b",
+  "changeHash": "d3e118d42580d67edfacc310ee0754d09e05aadacfb7278da83f6d9ccbe65db8",
   "changedFiles": [
     ".github/workflows/consuelo-os-distribution-environments.yaml",
     "packages/os/docs/macos-platform.md",
@@ -26,7 +26,7 @@
     "packages/os/tests/macos-platform.test.ts",
     "packages/os/tests/native-lifecycle-client.test.ts"
   ],
-  "verifiedAt": "2026-07-27T01:04:31.375Z",
+  "verifiedAt": "2026-07-27T01:09:02.131Z",
   "review": {
     "skipped": false,
     "passed": true,
