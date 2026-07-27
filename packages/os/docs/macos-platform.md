@@ -22,10 +22,13 @@ The `macos-26` arm64 CI lane runs the Swift contract executable, builds the menu
 
 ## Human checkpoint
 
-After CI or a local isolated package smoke produces the alpha artifact, a human may launch it without installing or changing the Consuelo service:
+A local isolated package smoke produces an unpacked app at `packages/os/.tmp-macos-alpha/Consuelo.app`. A downloaded CI artifact is the separate `Consuelo.app.tar.gz` archive and must be extracted first:
 
 ```bash
-open packages/os/.tmp-macos-alpha/Consuelo.app
+mkdir -p ./consuelo-alpha
+cd ./consuelo-alpha
+tar -xzf Consuelo.app.tar.gz
+open Consuelo.app
 ```
 
-Expected result: a Consuelo icon appears in the menu bar, status is read from the owner-local lifecycle endpoint, and quitting the menu app leaves the background service unchanged. Do not copy the app into a managed location or run lifecycle mutations on Ko's Mac Mini or MacBook Air during this worker task.
+Expected result: a Consuelo icon appears in the menu bar, status is read from the owner-local lifecycle endpoint, and quitting the menu app leaves the background service unchanged. Launch the artifact only in an approved test environment. Do not copy the app into a managed location or run lifecycle mutations on a production or personally managed machine during this checkpoint.

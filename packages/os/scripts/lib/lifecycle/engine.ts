@@ -360,7 +360,7 @@ export function createLifecycleEngine(
         const current = input.existingState ?? (yield* Effect.promise(() => inspectLifecycleInstallState(home)));
         const release = yield* fetchVerifiedRelease(input.channel, input.emit);
         if (input.expectedVersion && release.version !== input.expectedVersion) {
-          yield* Effect.fail(
+          return yield* Effect.fail(
             lifecycleError(
               'MANIFEST_INVALID',
               `resolved release version ${release.version} does not match expected ${input.expectedVersion}`,

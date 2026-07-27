@@ -399,7 +399,7 @@ describe('runtime bundle contract', () => {
     );
   });
 
-  it('excludes SwiftPM build products from default runtime discovery', async () => {
+  it('should exclude SwiftPM build products when default runtime files are discovered', async () => {
     const root = createFixture({
       'native/macos/Sources/ConsueloMenuBarApp/main.swift': 'import SwiftUI\n',
       'native/macos/.build/arm64-apple-macosx/release/ConsueloMenuBarApp':

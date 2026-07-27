@@ -23,6 +23,10 @@ import type {
   LifecycleRequest,
   LifecycleResponse,
 } from '../scripts/lib/native-lifecycle-client';
+import type {
+  NativeLifecycleOperationInput,
+  NativeLifecycleOperationState,
+} from '../scripts/lib/native-lifecycle-operation';
 
 const temporaryRoots: string[] = [];
 
@@ -112,7 +116,7 @@ const requestOverSocket = (
 };
 
 describe('native lifecycle endpoint', () => {
-  it('builds a safe monotonic snapshot from the canonical lifecycle engine and local identity', async () => {
+  it('should build a safe monotonic snapshot when canonical lifecycle status is requested', async () => {
     const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
     temporaryRoots.push(root);
     mkdirSync(join(root, 'node'), { recursive: true });
@@ -221,7 +225,7 @@ describe('native lifecycle endpoint', () => {
     );
   });
 
-  it('deduplicates in-flight release checks and prevents invalidated results from repopulating the cache', async () => {
+  it('should deduplicate release checks when inspection is in flight or invalidated', async () => {
     const { engine } = fakeEngine();
     let resolveFirst!: (value: LifecycleOperationResult) => void;
     const firstCheck = new Promise<LifecycleOperationResult>((resolve) => {
@@ -265,7 +269,7 @@ describe('native lifecycle endpoint', () => {
     expect(engine.update).toHaveBeenCalledTimes(2);
   });
 
-  it('invalidates cached release inspection after a successful channel change', async () => {
+  it('should invalidate cached release inspection when the channel changes successfully', async () => {
     const { engine } = fakeEngine();
     let releaseVersion = '1.5.0';
     let cached: { available: number; latestVersion: string } | undefined;
@@ -301,7 +305,7 @@ describe('native lifecycle endpoint', () => {
     });
   });
 
-  it('rejects secret-bearing fields recursively in workspace authority payloads', () => {
+  it('should reject secret-bearing fields when workspace authority nests them', () => {
     expect(() =>
       normalizeNativeLifecycleWorkspacePayload({
         workspaceId: 'workspace-one',
@@ -328,7 +332,38 @@ describe('native lifecycle endpoint', () => {
     ).toThrow('secret-bearing field');
   });
 
-  it('dispatches restart-affecting mutations outside the daemon and reports persisted state', async () => {
+  it('should omit lifecycle progress when lightweight mutations complete', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
+    temporaryRoots.push(root);
+    const { engine } = fakeEngine();
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      home: root,
+      channelSelectionAllowed: true,
+      setDefaultNode: async () => undefined,
+      exportDiagnostics: async () => join(root, 'support.jsonl'),
+    });
+
+    for (const request of [
+      {
+        kind: 'preferences.notifications.set',
+        notifications: { state: 'off' },
+      },
+      { kind: 'preferences.channel.set', channel: 'beta' },
+      { kind: 'workspace.default-node.set', nodeId: 'node-member' },
+      { kind: 'diagnostics.export' },
+    ] satisfies LifecycleRequest[]) {
+      await expect(controller.handle(request)).resolves.toMatchObject({
+        accepted: true,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await expect(controller.handle({ kind: 'status.get' })).resolves.not.toHaveProperty(
+        'operation',
+      );
+    }
+  });
+
+  it('should dispatch restart-affecting mutations outside the daemon when requested', async () => {
     const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
     temporaryRoots.push(root);
     const { engine, calls } = fakeEngine();
@@ -415,7 +450,7 @@ describe('native lifecycle endpoint', () => {
     });
   });
 
-  it('shows a newly launched detached operation over a completed local mutation', async () => {
+  it('should prefer a detached operation when a local mutation already completed', async () => {
     const { engine } = fakeEngine();
     let persisted: NativeLifecycleOperationState | undefined;
     const controller = createNativeLifecycleEndpointController({
@@ -453,7 +488,7 @@ describe('native lifecycle endpoint', () => {
     });
   });
 
-  it('rejects stale target versions, nightly menu mutations, and unavailable node authority', async () => {
+  it('should reject unsafe mutations when targets or authority are unavailable', async () => {
     const { engine } = fakeEngine();
     const controller = createNativeLifecycleEndpointController({
       engine,
@@ -487,8 +522,8 @@ describe('native lifecycle endpoint', () => {
     ).rejects.toThrow('workspace node authority is unavailable');
   });
 
-  it('starts the production endpoint with the canonical lifecycle engine in a disposable home', async () => {
-    const root = await mkdtemp('/tmp/cne-');
+  it('should start the production endpoint when a disposable home is provided', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cne-'));
     temporaryRoots.push(root);
     const endpoint = await startDefaultNativeLifecycleEndpoint({
       home: root,
@@ -512,8 +547,8 @@ describe('native lifecycle endpoint', () => {
     }
   });
 
-  it('bounds optional remote enrichment so local status remains responsive', async () => {
-    const root = await mkdtemp('/tmp/cne-latency-');
+  it('should bound optional enrichment when remote authority is slow', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cne-latency-'));
     temporaryRoots.push(root);
     const { engine } = fakeEngine();
     const delayed = <T>(value: T): Promise<T> =>
@@ -544,8 +579,8 @@ describe('native lifecycle endpoint', () => {
     expect(snapshot).not.toHaveProperty('workspace');
   });
 
-  it('redacts secrets and local user paths from framed rejection details', async () => {
-    const root = await mkdtemp('/tmp/cne-redaction-');
+  it('should redact secrets when framed requests are rejected', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'cne-redaction-'));
     temporaryRoots.push(root);
     const socketPath = join(root, 'run', 'lifecycle.sock');
     const { engine } = fakeEngine();
@@ -577,7 +612,7 @@ describe('native lifecycle endpoint', () => {
     }
   });
 
-  it('serves framed JSON on an owner-only Unix socket and rejects oversized frames', async () => {
+  it('should serve framed JSON when the Unix socket is owner-only', async () => {
     const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
     temporaryRoots.push(root);
     const socketPath = join(root, 'run', 'lifecycle.sock');
@@ -639,7 +674,7 @@ describe('native lifecycle endpoint', () => {
     expect(existsSync(socketPath)).toBe(false);
   });
 
-  it('refuses to replace a non-socket endpoint or a socket owned with broad permissions', async () => {
+  it('should refuse endpoint replacement when the path or permissions are unsafe', async () => {
     const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
     temporaryRoots.push(root);
     const socketPath = join(root, 'run', 'lifecycle.sock');

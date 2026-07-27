@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 const packageRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 
 describe('macOS menu-bar platform', () => {
-  it('uses SwiftUI MenuBarExtra as a thin lifecycle client', async () => {
+  it('should use SwiftUI MenuBarExtra when rendering the thin lifecycle client', async () => {
     const source = await readFile(
       resolve(
         packageRoot,
@@ -23,6 +24,8 @@ describe('macOS menu-bar platform', () => {
     expect(source).not.toContain('Button("Destructive repair…")');
     expect(source).toContain('DiagnosticsRedactor.redactText(message)');
     expect(source).toContain('Operation:');
+    expect(source.match(/Button\(\"Refresh\"\)/g)).toHaveLength(1);
+    expect(source).toContain('@Published private(set) var presentation');
     expect(source).toContain('Remove node registration');
     expect(source).toContain('Remove user content');
     expect(source).not.toContain('launchctl');
@@ -30,7 +33,7 @@ describe('macOS menu-bar platform', () => {
     expect(source).not.toContain('/bin/');
   });
 
-  it('packages an unsigned development app without installation or production signing', async () => {
+  it('should package an unsigned development app when running the alpha build lane', async () => {
     const scriptPath = resolve(
       packageRoot,
       'scripts/testing/macos-alpha-package.sh',
@@ -47,7 +50,7 @@ describe('macOS menu-bar platform', () => {
     expect(script).not.toContain('launchctl');
   });
 
-  it('documents the service boundary and human-only install checkpoint', async () => {
+  it('should document the service boundary when describing the human checkpoint', async () => {
     const docs = await readFile(
       resolve(packageRoot, 'docs/macos-platform.md'),
       'utf8',
@@ -57,9 +60,12 @@ describe('macOS menu-bar platform', () => {
     expect(docs).toContain('Closing the app');
     expect(docs).toContain('Human checkpoint');
     expect(docs).toContain('macos-26');
+    expect(docs).toContain('tar -xzf Consuelo.app.tar.gz');
+    expect(docs).toContain('approved test environment');
+    expect(docs).not.toContain("Ko's Mac");
   });
 
-  it('starts the owner-local lifecycle endpoint from the installed Bun daemon', async () => {
+  it('should start the owner-local lifecycle endpoint when the installed Bun daemon launches', async () => {
     const main = await readFile(
       resolve(packageRoot, 'scripts/server/main.ts'),
       'utf8',
@@ -70,12 +76,30 @@ describe('macOS menu-bar platform', () => {
     );
 
     expect(main).toContain('startDefaultNativeLifecycleEndpoint');
-    expect(main.indexOf('startDefaultNativeLifecycleEndpoint();')).toBeLessThan(
-      main.indexOf('Bun.serve({'),
-    );
+    expect(main).toContain('lifecycle endpoint unavailable');
+    expect(main).toContain("registerSignal('SIGINT'");
+    expect(main).toContain("registerSignal('SIGTERM'");
     expect(endpoint).toContain('createDefaultLifecycleEngine');
     expect(endpoint).toContain('createServer');
     expect(endpoint).toContain('0o600');
     expect(endpoint).toContain('NATIVE_LIFECYCLE_MAX_PAYLOAD_BYTES');
+
+    const transport = await readFile(
+      resolve(
+        packageRoot,
+        'native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift',
+      ),
+      'utf8',
+    );
+    expect(transport).toContain('O_NONBLOCK');
+    expect(transport).toContain('Darwin.poll');
+    expect(transport).toContain('SO_ERROR');
+  });
+
+  it('should exclude scratch dumps when repository artifacts are discovered', async () => {
+    const repositoryRoot = resolve(packageRoot, '../..');
+    const ignore = await readFile(resolve(repositoryRoot, '.gitignore'), 'utf8');
+    expect(ignore).toContain('/.tmp-*');
+    expect(existsSync(resolve(repositoryRoot, '.tmp-native-lock-failures.txt'))).toBe(false);
   });
 });

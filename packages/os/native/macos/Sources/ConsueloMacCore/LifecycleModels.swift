@@ -517,13 +517,24 @@ public enum LifecycleResponse: Equatable, Sendable {
 }
 
 extension LifecycleResponse: Codable {
+    private enum ResponseKey: String, CodingKey {
+        case schemaVersion
+        case accepted
+    }
+
     public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let snapshot = try? container.decode(LifecycleSnapshot.self) {
-            self = .snapshot(snapshot)
+        let keys = try decoder.container(keyedBy: ResponseKey.self)
+        if keys.contains(.schemaVersion) {
+            self = .snapshot(try LifecycleSnapshot(from: decoder))
             return
         }
-        self = .accepted(try container.decode(LifecycleOperationAccepted.self))
+        if keys.contains(.accepted) {
+            self = .accepted(try LifecycleOperationAccepted(from: decoder))
+            return
+        }
+        throw DecodingError.dataCorrupted(
+            .init(codingPath: decoder.codingPath, debugDescription: "Unknown lifecycle response envelope")
+        )
     }
 
     public func encode(to encoder: Encoder) throws {

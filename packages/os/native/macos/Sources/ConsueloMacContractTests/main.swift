@@ -239,6 +239,12 @@ private struct ContractSuite {
         } catch is DecodingError {
             // Expected: only the shared schema version is accepted.
         }
+        do {
+            _ = try JSONDecoder().decode(LifecycleResponse.self, from: data)
+            throw ContractFailure.failed("unsupported snapshot response schema version was accepted")
+        } catch is DecodingError {
+            // Expected: response envelope discrimination must preserve schema failures.
+        }
     }
 
     private func safeNodeDecoderRendersWorker25MetadataAndRejectsSecrets() throws {
@@ -272,9 +278,11 @@ private struct ContractSuite {
         try expect(workspace.nodes.first?.capabilities, ["local-runtime", "darwin"], "node capabilities")
         try expectTrue(workspace.nodes.first?.isDefault(in: workspace) == true, "default node marker")
 
-        let unsafe = Data(#"{"workspaceId":"workspace_one","workspaceHost":"one.consuelohq.com","nodes":[],"cloudflareApiToken":"secret"}"#.utf8)
-        try expectThrows("secret-bearing node response is rejected") {
-            _ = try SafeWorkspaceDecoder.decode(unsafe)
+        for forbiddenKey in ["cloudflareApiToken", "databasePassword", "providerKey"] {
+            let unsafe = Data("{\"workspaceId\":\"workspace_one\",\"workspaceHost\":\"one.consuelohq.com\",\"nodes\":[],\"\(forbiddenKey)\":\"secret\"}".utf8)
+            try expectThrows("secret-bearing node response is rejected for \(forbiddenKey)") {
+                _ = try SafeWorkspaceDecoder.decode(unsafe)
+            }
         }
     }
 
@@ -558,8 +566,7 @@ private struct ContractSuite {
         defer { failure.releaseDescription() }
         let newer = snapshot().with(sequence: 10, version: "1.6.0")
         let subscriptionUpdate = Task.detached {
-            // Simulate a heavily delayed executor. Completion signaling must not fail early.
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            await Task.yield()
             transport.emit(newer)
         }
         try await transport.waitUntilEmitCompleted()

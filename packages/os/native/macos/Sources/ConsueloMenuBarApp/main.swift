@@ -108,8 +108,6 @@ private struct ConsueloMenu: View {
                         model.perform(.uninstall(removeNode: true, removeUserContent: true))
                     }
                 }
-            } else {
-                Button("Refresh") { model.perform(.refresh) }
             }
 
             if let error = model.errorMessage {
@@ -146,6 +144,7 @@ private struct ConsueloMenu: View {
 @MainActor
 private final class MenuBarModel: ObservableObject {
     @Published private(set) var snapshot: LifecycleSnapshot?
+    @Published private(set) var presentation: MenuBarPresentation?
     @Published private(set) var errorMessage: String?
     @Published var isConfirmationPresented = false
 
@@ -164,10 +163,6 @@ private final class MenuBarModel: ObservableObject {
 
     deinit {
         client.closeShell()
-    }
-
-    var presentation: MenuBarPresentation? {
-        snapshot.map(MenuBarPresentation.init)
     }
 
     var statusTitle: String {
@@ -299,6 +294,7 @@ private final class MenuBarModel: ObservableObject {
 
     private func apply(_ incoming: LifecycleSnapshot) {
         snapshot = incoming
+        presentation = MenuBarPresentation(snapshot: incoming)
     }
 
     private func openLauncher() {

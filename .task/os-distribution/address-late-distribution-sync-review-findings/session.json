@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_16de777b9b3a",
+  "tmuxSession": "opensaas-os-distribution-address-late-distribution-sync-review-findings-16de777b",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/address-late-distribution-sync-review-findings",
+  "branch": "task/os-distribution/address-late-distribution-sync-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-address-late-distribution-sync-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-address-late-distribution-sync-review-findings",
+  "prNumber": 1671,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1671",
+  "createdAt": "2026-07-27T05:52:43.990Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-address-late-distribution-sync-review-findings/.task/os-distribution/address-late-distribution-sync-review-findings/session.json"
+}

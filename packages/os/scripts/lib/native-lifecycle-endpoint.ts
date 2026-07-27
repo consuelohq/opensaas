@@ -580,6 +580,19 @@ export const createNativeLifecycleEndpointController = (
     return { accepted: true, operationId: id };
   };
 
+  const runLightweightOperation = async (
+    execute: () => Promise<unknown>,
+  ): Promise<LifecycleResponse> => {
+    const id = nextOperationId();
+    try {
+      await execute();
+    } catch (error: unknown) {
+      if (error instanceof Error) throw error;
+      throw new Error(String(error));
+    }
+    return { accepted: true, operationId: id };
+  };
+
   const launchDetachedOperation = async (
     operation: NativeLifecycleOperationInput,
   ): Promise<LifecycleResponse> => {
@@ -735,7 +748,7 @@ export const createNativeLifecycleEndpointController = (
           case 'service.restart':
             return launchDetachedOperation({ kind: 'restart' });
           case 'preferences.notifications.set':
-            return runOperation('update', () =>
+            return runLightweightOperation(() =>
               input.engine.setUpdateNotifications(
                 notificationPreference(request.notifications),
               ),
@@ -750,7 +763,7 @@ export const createNativeLifecycleEndpointController = (
                 `release channel ${request.channel} is not user-selectable`,
               );
             }
-            return runOperation('update', () =>
+            return runLightweightOperation(() =>
               input.engine
                 .setChannel(request.channel as LifecycleReleaseChannel)
                 .then(() => input.invalidateReleaseInspection?.()),
@@ -759,11 +772,11 @@ export const createNativeLifecycleEndpointController = (
           case 'workspace.default-node.set':
             if (!input.setDefaultNode)
               throw new Error('workspace node authority is unavailable');
-            return runOperation('repair', () =>
+            return runLightweightOperation(() =>
               input.setDefaultNode!(request.nodeId),
             );
           case 'diagnostics.export':
-            return runOperation('repair', exportDiagnostics);
+            return runLightweightOperation(exportDiagnostics);
           case 'uninstall.execute':
             return launchDetachedOperation({
               kind: 'uninstall',

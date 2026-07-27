@@ -135,44 +135,56 @@ public enum LifecycleCommandError: Error, Equatable, CustomStringConvertible {
 
 public enum LifecycleCommandMapper {
     public static func plan(for action: MenuBarAction, snapshot: LifecycleSnapshot) throws -> CommandPlan {
-        if action == .refresh { return .init(request: .statusGet) }
-        if action == .openLauncher { return .init(request: nil) }
-        guard snapshot.connection.state == .online else { throw LifecycleCommandError.offline }
+        func requireOnline() throws {
+            guard snapshot.connection.state == .online else { throw LifecycleCommandError.offline }
+        }
 
         switch action {
-        case .refresh, .openLauncher:
+        case .refresh:
+            return .init(request: .statusGet)
+        case .openLauncher:
             return .init(request: nil)
         case .update:
+            try requireOnline()
             guard let target = snapshot.updates.latestVersion, snapshot.updates.available > 0 else {
                 throw LifecycleCommandError.updateUnavailable
             }
             return .init(request: .updateApply(targetVersion: target))
         case .retryRepair:
+            try requireOnline()
             return .init(request: .repairRun(destructive: false))
         case .destructiveRepair:
+            try requireOnline()
             throw LifecycleCommandError.destructiveRepairUnsupported
         case .rollback:
+            try requireOnline()
             guard let target = snapshot.updates.rollbackVersion else {
                 throw LifecycleCommandError.rollbackUnavailable
             }
             return .init(request: .updateRollback(targetVersion: target))
         case .restart:
+            try requireOnline()
             return .init(request: .serviceRestart)
         case let .setNotifications(preference):
+            try requireOnline()
             return .init(request: .preferencesNotificationsSet(preference))
         case let .setChannel(channel):
+            try requireOnline()
             guard snapshot.preferences.channelSelectionAllowed else {
                 throw LifecycleCommandError.channelSelectionDenied
             }
             return .init(request: .preferencesChannelSet(channel))
         case let .setDefaultNode(nodeId):
+            try requireOnline()
             guard snapshot.workspace?.nodes.contains(where: { $0.nodeId == nodeId && $0.state == .active }) == true else {
                 throw LifecycleCommandError.nodeUnavailable
             }
             return .init(request: .workspaceDefaultNodeSet(nodeId: nodeId))
         case .exportDiagnostics:
+            try requireOnline()
             return .init(request: .diagnosticsExport)
         case let .uninstall(removeNode, removeUserContent):
+            try requireOnline()
             return .init(
                 request: .uninstallExecute(removeNode: removeNode, removeUserContent: removeUserContent),
                 confirmation: .uninstall

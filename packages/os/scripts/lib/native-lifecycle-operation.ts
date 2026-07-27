@@ -86,12 +86,14 @@ const ACTIVE_PHASES = new Set<NativeLifecycleOperationState['phase']>([
   'running',
 ]);
 
-const safeMessage = (error: unknown): string => {
+export const safeNativeLifecycleOperationMessage = (error: unknown): string => {
   const message = error instanceof Error ? error.message : String(error);
   return String(redactLifecycleDetail(message))
     .replace(HOME_PATH, '/Users/[REDACTED]')
     .replace(/(token|secret|password|passphrase)=([^&\s]+)/gi, '$1=[REDACTED]');
 };
+
+const safeMessage = safeNativeLifecycleOperationMessage;
 
 const isOperationKind = (
   value: unknown,
@@ -182,14 +184,14 @@ export const createNativeLifecycleOperationStore = (
 
   const acquireLock = (): (() => void) => {
     ensureRunDirectory();
-    const deadline = Date.now() + 5_000;
-    while (Date.now() <= deadline) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
         const descriptor = openSync(lockPath, 'wx', 0o600);
         try {
           writeFileSync(
             descriptor,
-            `${JSON.stringify({ pid: process.pid, acquiredAt: new Date().toISOString() })}\n`,
+            `${JSON.stringify({ pid: process.pid, acquiredAt: new Date().toISOString() })}
+`,
           );
         } finally {
           closeSync(descriptor);
@@ -219,21 +221,18 @@ export const createNativeLifecycleOperationStore = (
           } else {
             stale = Date.now() - statSync(lockPath).mtimeMs > 30_000;
           }
-        } catch (lockError: unknown) {
-          void lockError;
+        } catch {
           try {
             stale = Date.now() - statSync(lockPath).mtimeMs > 30_000;
-          } catch (statError: unknown) {
-            void statError;
+          } catch {
             stale = true;
           }
         }
-        if (stale) {
+        if (stale && attempt === 0) {
           releaseLock();
           continue;
         }
-        const signal = new Int32Array(new SharedArrayBuffer(4));
-        Atomics.wait(signal, 0, 0, 10);
+        throw new Error('native lifecycle operation state lock is busy');
       }
     }
     throw new Error('native lifecycle operation state lock is busy');
@@ -459,7 +458,7 @@ export const executeNativeLifecycleOperation = async (input: {
   readRollbackVersion?: (home: string) => string | undefined;
   now?: () => Date;
   processId?: number;
-}): Promise<void> => {
+}): Promise<boolean> => {
   const now = input.now ?? (() => new Date());
   const processId = input.processId ?? process.pid;
   const store = input.store ?? createNativeLifecycleOperationStore(input.home);
@@ -481,7 +480,7 @@ export const executeNativeLifecycleOperation = async (input: {
     });
     return true;
   });
-  if (!claimed) return;
+  if (!claimed) return false;
 
   const engine =
     input.engine ??
@@ -545,6 +544,7 @@ export const executeNativeLifecycleOperation = async (input: {
         break;
     }
     write('succeeded');
+    return true;
   } catch (error: unknown) {
     const message = safeMessage(error);
     write('failed', message);
