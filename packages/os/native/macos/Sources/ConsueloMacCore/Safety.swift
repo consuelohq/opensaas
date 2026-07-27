@@ -67,6 +67,10 @@ public enum DiagnosticsRedactor {
         return try JSONSerialization.data(withJSONObject: redacted, options: [.prettyPrinted, .sortedKeys])
     }
 
+    public static func redactText(_ value: String) -> String {
+        redactString(value)
+    }
+
     private static func redact(_ value: Any, key: String? = nil) -> Any {
         if let key, isSensitiveField(key) {
             return "[REDACTED]"

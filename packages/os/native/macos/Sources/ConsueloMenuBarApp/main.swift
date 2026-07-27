@@ -32,7 +32,7 @@ private struct ConsueloMenu: View {
                 if let operation = snapshot.operation {
                     Text("Operation: \(operation.kind.rawValue) · \(operation.phase.rawValue)")
                     if let message = operation.message, !message.isEmpty {
-                        Text(message)
+                        Text(DiagnosticsRedactor.redactText(message))
                     }
                 }
 

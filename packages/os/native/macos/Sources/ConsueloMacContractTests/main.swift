@@ -73,6 +73,7 @@ private struct ContractSuite {
         try safeNodeDecoderRendersWorker25MetadataAndRejectsSecrets()
         try multiNodePresentationExplainsDefaultOfflineStaleAndRevokedState()
         try diagnosticsRedactionRemovesRepresentativeCredentialsAndLocalPaths()
+        try operationMessagesAreRedactedBeforeRendering()
         try endpointValidationRejectsNonSocketFiles()
         try socketWritesDisableSigPipe()
         try socketIOUsesBoundedDeadlines()
@@ -330,6 +331,16 @@ private struct ContractSuite {
         try expectThrows("password fields fail closed before workspace decoding") {
             try SafeWorkspaceDecoder.validateNoSensitiveFields(unsafeWorkspace)
         }
+    }
+
+    private func operationMessagesAreRedactedBeforeRendering() throws {
+        let message = "Provider failed: Authorization: Bearer abc.def.ghi password=database-secret /Users/ko/Dev/opensaas"
+        let rendered = DiagnosticsRedactor.redactText(message)
+
+        try expectTrue(!rendered.contains("abc.def.ghi"), "operation bearer token redaction")
+        try expectTrue(!rendered.contains("database-secret"), "operation password redaction")
+        try expectTrue(!rendered.contains("/Users/ko"), "operation local path redaction")
+        try expectTrue(rendered.contains("[REDACTED]"), "operation redaction marker")
     }
 
     private func endpointValidationRejectsNonSocketFiles() throws {

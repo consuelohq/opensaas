@@ -18,6 +18,7 @@ describe('macOS menu-bar platform', () => {
 
     expect(source).toContain('MenuBarExtra');
     expect(source).toContain('LifecycleClient');
+    expect(source).toContain('DiagnosticsRedactor.redactText(message)');
     expect(source).toContain('Operation:');
     expect(source).toContain('Remove node registration');
     expect(source).toContain('Remove user content');

@@ -2,11 +2,13 @@
   "files": [
     "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift",
+    "packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
     "packages/os/scripts/testing/macos-alpha-package.sh",
     "packages/os/tests/distribution/runtime-bundle.test.ts",
     "packages/os/tests/macos-platform.test.ts",
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-27T00:48:02.735Z"
+  "updatedAt": "2026-07-27T00:58:21.719Z"
 }

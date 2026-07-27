@@ -53,8 +53,11 @@ started: 2026-07-26
 ## files changed
 
 - `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
+- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- `packages/os/tests/macos-platform.test.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
 
 
 ## workspace-owned: files changed
@@ -118,12 +121,6 @@ started: 2026-07-26
 
 ## workspace-owned: validation evidence
 
-- Review RED reached the intended missing socket-safety symbol at `trc_45ccb6d9fce6`. Recovery implementation configures `SO_NOSIGPIPE` immediately after socket creation and archives the signed `.app` as `Consuelo.app.tar.gz` before CI upload.
-- Review GREEN: Swift lifecycle contracts, the menu-bar target build, four focused TypeScript workflow/platform tests, release packaging, archive extraction, `Info.plist` validation, arm64 Mach-O validation, and preserved executable mode all passed (`trc_476e695e9c35`).
-- Final review dispositions:
-  1. Direct execution of the mode-`100644` package script: valid; fixed by explicit Bash invocation in commit `579e8af8921d67ecf1fb064166787e0ac38e011b`.
-  2. Direct `.app` artifact upload loses executable mode: valid; fixed by producing and uploading `Consuelo.app.tar.gz`, with extraction-time executable-mode verification.
-  3. Lifecycle socket writes can receive `SIGPIPE`: valid; fixed by setting `SO_NOSIGPIPE` on every newly created descriptor before connect/write, with a behavioral `getsockopt` contract.
 - CodeRabbit completed the manually requested review with no new actionable findings (`trc_50049b9c4501`). Grok was intentionally skipped under Ko's explicit weekly rate-limit exception; Ko will run the independent review manually after this task reaches `stream/os-native`.
 - Generated Swift build/package artifacts were removed before final publication (`trc_7e2b822edc5c`).
 - Final source-only static gate passed: Prettier, scoped ESLint, and Bash syntax validation (`trc_819a1031ed67`). ESLint emitted only the repository's known optional `packages/twenty-eslint-rules` directory warning; no rule or test failure occurred.
@@ -146,8 +143,14 @@ started: 2026-07-26
 - The first complete gate ordered the clean-source runtime-bundle test after Swift compilation. Swift contracts, app build, and 33 focused TypeScript tests passed, but the runtime inventory correctly rejected SwiftPM's generated `native/macos/.build/debug` symlink (`trc_aab50139693f`). Recovery: remove generated output, run the clean-tree distribution inventory first, then run Swift/build/package validation separately; no product contract is weakened.
 - Recovery validation succeeded: the clean-tree protocol/distribution suite passed 34 tests (`trc_da4f12f35cef`). The independent Swift lane then passed the expanded lifecycle contracts, menu-bar app build, production packaging, tar extraction, `Info.plist` validation, arm64 Mach-O/executable-mode checks, and strict code-signature verification (`trc_85697910ce82`).
 - Generated Swift and alpha-package outputs were removed after validation (`trc_a674c7c03569`). Final publication is limited to `Safety.swift`, `UnixSocketLifecycleTransport.swift`, and the Swift contract runner; task metadata and this workpad remain auto-included by the typed task-push route.
+- Final review refresh after commit `129b3fe` surfaced two additional Codex P2 findings (`trc_83ef7ffc7d58`): arbitrary `operation.message` values were rendered without redaction, and default runtime-bundle discovery could descend into `native/macos/.build`. Both are valid. TDD RED contracts now require text sanitization at the SwiftUI render boundary and deterministic exclusion/classification of SwiftPM build output.
+- The RED run reproduced both findings (`trc_72fa234401f9`): Swift failed on the intentionally missing `DiagnosticsRedactor.redactText`, the menu source still rendered `Text(message)`, generated `.build` content classified as a platform adapter, the fixture fingerprint included it, and the real customer-closure test encountered machine-specific SwiftPM output. Implementation now exposes the existing string redactor for UI-bound messages, uses it at the operation render boundary, classifies explicit `native/macos/.build/**` paths as source-only, and skips `.build` directories during default recursive discovery.
+- GREEN passed the Swift operation-message redaction contract and all 22 focused macOS/runtime-bundle tests, including real customer-closure parity while an actual generated `.build` tree was present (`trc_c963cc62f26f`).
+- Final broader validation passed: the clean-tree protocol/distribution set completed 34 tests, and the independent macOS lane passed the expanded Swift contracts, debug app build, production archive, extraction, `Info.plist` validation, arm64 executable-mode verification, and strict code-signature verification (`trc_53055b28d13b`).
+- Generated validation output was removed (`trc_4b51370f34ef`). The first final static check found one formatting-only issue in the new runtime-bundle fixture (`trc_a62a0af22177`); Prettier corrected it (`trc_95898e7985c7`). The next scoped lint exposed five pre-existing named test helpers in the now-modified file (`trc_1be353248d63`); recovery converted those helpers mechanically to arrows without changing behavior (`trc_060bfcc341ae`). Final formatting, scoped lint, and 35 focused protocol/distribution tests all passed (`trc_982e5a656162`).
 - 2026-07-27 00:44:06 `verify`: passed — OK
 - 2026-07-27 00:52:09 `verify`: passed — OK
+- 2026-07-27 00:58:53 `verify`: passed — OK
 
 ## key decisions
 
@@ -226,6 +229,7 @@ bun run task:finish
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
+- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
 - `packages/os/package.json`
 - `packages/os/plans/consuelo-os-foundation/environment-registry.md`
 - `packages/os/plans/consuelo-os-foundation/plan.md`
@@ -252,12 +256,6 @@ bun run task:finish
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-27 00:48:12 apply-patch: `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- 2026-07-27 00:58:29 apply-patch: `packages/os/tests/distribution/runtime-bundle.test.ts`
 
-- 2026-07-27 00:48:16 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-27 00:49:24 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-27 00:51:21 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
-
-- 2026-07-27 00:51:58 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 00:58:41 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
