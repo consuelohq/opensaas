@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-distribution/sync-distribution-stream-with-promoted-main",
+  "events": [
+    {
+      "id": "ba8b7d78-342b-4886-93fe-543008789e6a",
+      "occurred_at": "2026-07-27T05:24:10.247Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-distribution/sync-distribution-stream-with-promoted-main/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/sync-distribution-stream-with-promoted-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/sync-distribution-stream-with-promoted-main"
+      }
+    },
+    {
+      "id": "3c9cf169-8cb7-4784-86f3-cc7bcd37d411",
+      "occurred_at": "2026-07-27T05:25:20.057Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/windows-platform.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/sync-distribution-stream-with-promoted-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/sync-distribution-stream-with-promoted-main"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-27T05:25:20.113Z"
+}

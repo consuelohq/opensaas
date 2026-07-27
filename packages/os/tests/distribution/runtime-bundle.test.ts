@@ -35,6 +35,8 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/lifecycle.ts': '#!/usr/bin/env bun\nexport const lifecycleFixture = true;\n',
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
+  'scripts/native-lifecycle-operation.ts':
+    'export const nativeLifecycleOperationFixture = true;\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
   'scripts/managed-components.ts':
     'export const managedComponentsCliFixture = true;\n',
@@ -54,19 +56,19 @@ const requiredFixtureFiles: Record<string, string> = {
   'skills/task/skill.json': '{"name":"task","entrypoint":"SKILL.md"}\n',
 };
 
-function writeFixtureFile(
+const writeFixtureFile = (
   root: string,
   relativePath: string,
   content: string,
   mode = 0o644,
-): void {
+): void => {
   const target = join(root, relativePath);
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, content);
   chmodSync(target, mode);
-}
+};
 
-function createFixture(extraFiles: Record<string, string> = {}): string {
+const createFixture = (extraFiles: Record<string, string> = {}): string => {
   const root = mkdtempSync(join(tmpdir(), 'consuelo-runtime-bundle-'));
   fixtureRoots.push(root);
   for (const [relativePath, content] of Object.entries({
@@ -76,12 +78,12 @@ function createFixture(extraFiles: Record<string, string> = {}): string {
     writeFixtureFile(root, relativePath, content);
   }
   return root;
-}
+};
 
-function buildOptions(
+const buildOptions = (
   sourceRoot: string,
   overrides: Partial<RuntimeBundleBuildOptions> = {},
-): RuntimeBundleBuildOptions {
+): RuntimeBundleBuildOptions => {
   return {
     architecture: 'arm64',
     minimumUpdaterVersion: '0.1.0',
@@ -91,9 +93,9 @@ function buildOptions(
     version: '1.2.3',
     ...overrides,
   };
-}
+};
 
-function canonicalizeBundleValue(value: unknown): unknown {
+const canonicalizeBundleValue = (value: unknown): unknown => {
   if (Array.isArray(value)) return value.map(canonicalizeBundleValue);
   if (value && typeof value === 'object') {
     const output: Record<string, unknown> = {};
@@ -104,12 +106,12 @@ function canonicalizeBundleValue(value: unknown): unknown {
     return output;
   }
   return value;
-}
+};
 
-function bundleIdForFixtureManifest(manifest: unknown): string {
+const bundleIdForFixtureManifest = (manifest: unknown): string => {
   const canonicalJson = JSON.stringify(canonicalizeBundleValue(manifest));
   return `sha256:${createHash('sha256').update(canonicalJson).digest('hex')}`;
-}
+};
 
 afterEach(() => {
   for (const root of fixtureRoots.splice(0)) {
@@ -370,6 +372,19 @@ describe('runtime bundle contract', () => {
         'native/windows-service/Consuelo.Windows.Service.csproj',
       ),
     ).toBe('platform-adapter');
+    expect(classifyRuntimeBundlePath('native/macos/Package.swift')).toBe(
+      'platform-adapter',
+    );
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/Sources/ConsueloMenuBarApp/main.swift',
+      ),
+    ).toBe('platform-adapter');
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/.build/arm64-apple-macosx/release/ConsueloMenuBarApp',
+      ),
+    ).toBe('source-only');
     await expect(
       buildRuntimeBundle(
         buildOptions(root, {
@@ -382,6 +397,24 @@ describe('runtime bundle contract', () => {
     ).rejects.toThrow(
       'operator-only content cannot enter a runtime bundle: scripts/seed-workspace-edge-route.ts',
     );
+  });
+
+  it('excludes SwiftPM build products from default runtime discovery', async () => {
+    const root = createFixture({
+      'native/macos/Sources/ConsueloMenuBarApp/main.swift': 'import SwiftUI\n',
+      'native/macos/.build/arm64-apple-macosx/release/ConsueloMenuBarApp':
+        'host-specific generated binary\n',
+    });
+
+    const result = await computeReleaseFingerprint({ sourceRoot: root });
+    const paths = result.files.map((file) => file.path);
+
+    expect(paths).toContain(
+      'native/macos/Sources/ConsueloMenuBarApp/main.swift',
+    );
+    expect(
+      paths.some((filePath) => filePath.startsWith('native/macos/.build/')),
+    ).toBe(false);
   });
 
   it('classifies all customer deployment adapters separately from operator infrastructure', () => {

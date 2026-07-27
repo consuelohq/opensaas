@@ -117,6 +117,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'bun.lock',
   'scripts/lifecycle.ts',
   'scripts/os.ts',
+  'scripts/native-lifecycle-operation.ts',
   'scripts/server/main.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
@@ -335,7 +336,13 @@ export function classifyRuntimeBundlePath(
   if (filePath.startsWith('steering/') || filePath.startsWith('streams/'))
     return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';
-  if (filePath.startsWith('native/windows-service/')) return 'platform-adapter';
+  if (filePath.startsWith('native/macos/.build/')) return 'source-only';
+  if (
+    filePath.startsWith('native/windows-service/') ||
+    filePath.startsWith('native/macos/')
+  ) {
+    return 'platform-adapter';
+  }
   if (PLATFORM_ADAPTER_FILES.has(filePath)) return 'platform-adapter';
   if (startsWithAny(filePath, CUSTOMER_PROVIDER_PREFIXES))
     return 'customer-provider';
@@ -387,7 +394,12 @@ function listFilesRecursively(root: string, relativeRoot: string): string[] {
 
   const files: string[] = [];
   for (const entry of readdirSync(absoluteRoot, { withFileTypes: true })) {
-    if (entry.name === 'node_modules' || entry.name === '.git') continue;
+    if (
+      entry.name === 'node_modules' ||
+      entry.name === '.git' ||
+      entry.name === '.build'
+    )
+      continue;
     const child = normalizeRelativePath(`${relativeRoot}/${entry.name}`);
     if (entry.isSymbolicLink()) {
       throw new Error(

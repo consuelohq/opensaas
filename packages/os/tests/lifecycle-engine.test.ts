@@ -45,6 +45,7 @@ const requiredRuntimePaths = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/lifecycle.ts',
+  'scripts/native-lifecycle-operation.ts',
   'scripts/server/main.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
@@ -292,6 +293,33 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(`releases/${bundle110.manifest.bundleId}`);
     expect(readlinkSync(join(tempHome, 'runtime', 'previous')))
       .toBe(`releases/${bundle100.manifest.bundleId}`);
+  });
+
+  it('fails closed when a pinned update target no longer matches channel head', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    let bundleFetches = 0;
+    const source: ReleaseSource = {
+      async fetchManifest() {
+        return signedManifest(bundle110);
+      },
+      async fetchBundle() {
+        bundleFetches += 1;
+        return bundle110.archiveBytes;
+      },
+    };
+    const update = createEngine({ source });
+
+    await expect(
+      update.update({
+        channel: 'dev',
+        yes: true,
+        expectedVersion: '1.0.1',
+      }),
+    ).rejects.toMatchObject({ code: 'MANIFEST_INVALID' });
+    expect(bundleFetches).toBe(0);
+    expect(update.serviceOperations).toEqual([]);
+    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
   });
 
   it('supports check-only updates without downloading, activating, or restarting', async () => {

@@ -270,12 +270,12 @@ export function createDefaultLifecycleServiceController(input: {
   return createReloadServiceController({ osRoot: input.osRoot, platform });
 }
 
-function createDefaultLifecycleEngine(input: {
+export const createDefaultLifecycleEngine = (input: {
   home?: string;
   quiet: boolean;
   json: boolean;
   progress: (event: LifecycleProgressEvent) => void;
-}): LifecycleEngine {
+}): LifecycleEngine => {
   const osRoot = resolve(import.meta.dirname, '..');
   const port = process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
   const releaseBaseUrl = process.env.CONSUELO_RELEASE_BASE_URL;
@@ -320,7 +320,7 @@ function createDefaultLifecycleEngine(input: {
       }
     },
   });
-}
+};
 
 function notificationPreference(
   parsed: ParsedLifecycleArgs,

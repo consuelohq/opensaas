@@ -43,6 +43,7 @@ const requiredRuntimePaths = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/lifecycle.ts',
+  'scripts/native-lifecycle-operation.ts',
   'scripts/server/main.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',

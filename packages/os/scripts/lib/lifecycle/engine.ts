@@ -349,6 +349,7 @@ export function createLifecycleEngine(
     operation: 'install' | 'update';
     channel: LifecycleReleaseChannel;
     check?: boolean;
+    expectedVersion?: string;
     existingState?: Awaited<ReturnType<typeof inspectLifecycleInstallState>>;
     emit: ReturnType<typeof emitter>;
     operationId?: string;
@@ -358,6 +359,15 @@ export function createLifecycleEngine(
     const program = Effect.gen(function* () {
         const current = input.existingState ?? (yield* Effect.promise(() => inspectLifecycleInstallState(home)));
         const release = yield* fetchVerifiedRelease(input.channel, input.emit);
+        if (input.expectedVersion && release.version !== input.expectedVersion) {
+          yield* Effect.fail(
+            lifecycleError(
+              'MANIFEST_INVALID',
+              `resolved release version ${release.version} does not match expected ${input.expectedVersion}`,
+              { phase: 'manifest-verify' },
+            ),
+          );
+        }
         const updateAvailable = current.currentBundleId !== release.bundleId;
 
         if (input.check) {
@@ -604,6 +614,7 @@ export function createLifecycleEngine(
           operation: 'update',
           channel: input.channel ?? preferences.channel,
           check: input.check,
+          expectedVersion: input.expectedVersion,
           existingState: state,
           emit,
         });

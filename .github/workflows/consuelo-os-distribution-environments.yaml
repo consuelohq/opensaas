@@ -82,6 +82,55 @@ jobs:
         working-directory: packages/os
         run: bun install --frozen-lockfile
 
+      - name: Run macOS menu-bar contracts
+        if: matrix.name == 'macos'
+        run: swift run --package-path packages/os/native/macos ConsueloMacContractTests
+
+      - name: Run native lifecycle TypeScript contracts
+        if: matrix.name == 'macos'
+        working-directory: packages/os
+        run: >-
+          bun x vitest run
+          tests/native-lifecycle-client.test.ts
+          tests/native-lifecycle-endpoint.test.ts
+          tests/native-lifecycle-operation.test.ts
+
+      - name: Package the macOS alpha app
+        if: matrix.name == 'macos'
+        run: bash packages/os/scripts/testing/macos-alpha-package.sh packages/os/.tmp-macos-alpha
+
+      - name: Record the macOS alpha app checksum
+        if: matrix.name == 'macos'
+        id: macos-alpha-checksum
+        shell: bash
+        run: >-
+          echo "digest=$(shasum -a 256 packages/os/.tmp-macos-alpha/Consuelo.app.tar.gz | awk '{print $1}')"
+          >> "$GITHUB_OUTPUT"
+
+      - name: Upload the macOS alpha app
+        if: matrix.name == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: consuelo-macos-alpha-${{ github.run_id }}
+          path: packages/os/.tmp-macos-alpha/Consuelo.app.tar.gz
+          if-no-files-found: error
+
+      - name: Download the uploaded macOS alpha app
+        if: matrix.name == 'macos'
+        uses: actions/download-artifact@v4
+        with:
+          name: consuelo-macos-alpha-${{ github.run_id }}
+          path: packages/os/.tmp-macos-alpha-verify
+
+      - name: Verify the uploaded macOS alpha app
+        if: matrix.name == 'macos'
+        shell: bash
+        env:
+          EXPECTED_DIGEST: ${{ steps.macos-alpha-checksum.outputs.digest }}
+        run: |
+          actual_digest="$(shasum -a 256 packages/os/.tmp-macos-alpha-verify/Consuelo.app.tar.gz | awk '{print $1}')"
+          test "$actual_digest" = "$EXPECTED_DIGEST"
+
       - name: Run Windows platform contracts
         if: matrix.name == 'windows'
         working-directory: packages/os

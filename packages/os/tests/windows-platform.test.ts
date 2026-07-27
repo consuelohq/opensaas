@@ -649,6 +649,26 @@ describe('Windows native service and workflow source contracts', () => {
     );
     expect(workflow).toContain("if: matrix.name == 'macos'");
     expect(workflow).toContain('bun run test:distribution:integration');
+    expect(workflow).toContain('Run macOS menu-bar contracts');
+    expect(workflow).toContain('Run native lifecycle TypeScript contracts');
+    expect(workflow).toContain('tests/native-lifecycle-client.test.ts');
+    expect(workflow).toContain('tests/native-lifecycle-endpoint.test.ts');
+    expect(workflow).toContain('tests/native-lifecycle-operation.test.ts');
+    expect(workflow).toContain('Package the macOS alpha app');
+    expect(workflow).toContain('Record the macOS alpha app checksum');
+    expect(workflow).toContain('id: macos-alpha-checksum');
+    expect(workflow).toContain('actions/download-artifact@v4');
+    expect(workflow).toContain('Verify the uploaded macOS alpha app');
+    expect(workflow).toContain('shasum -a 256');
+    for (const requiredPath of [
+      'packages/os/package.json',
+      'packages/os/cloudflare/**',
+      'packages/os/native/**',
+      'packages/os/scripts/**',
+      'packages/os/tests/**',
+    ]) {
+      expect(workflow).toContain(`- ${requiredPath}`);
+    }
     expect(workflow).toContain('packages/os/native/windows-service/bin');
     expect(workflow).toContain('packages/os/native/windows-service/obj');
   });
