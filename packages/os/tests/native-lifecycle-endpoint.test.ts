@@ -83,17 +83,6 @@ const fakeEngine = () => {
   return { engine, calls };
 };
 
-const waitFor = async (
-  predicate: () => boolean,
-  attempts = 100,
-): Promise<void> => {
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    if (predicate()) return;
-    await new Promise((resolve) => setTimeout(resolve, 5));
-  }
-  throw new Error('condition did not become true');
-};
-
 const requestOverSocket = (
   socketPath: string,
   request: LifecycleRequest,
@@ -230,10 +219,12 @@ describe('native lifecycle endpoint', () => {
     );
   });
 
-  it('delegates every mutation to existing authorities and reports asynchronous operation state', async () => {
+  it('dispatches restart-affecting mutations outside the daemon and reports persisted state', async () => {
     const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
     temporaryRoots.push(root);
     const { engine, calls } = fakeEngine();
+    const launched: NativeLifecycleOperationInput[] = [];
+    let persisted: NativeLifecycleOperationState | undefined;
     const defaultNodeCalls: string[] = [];
     const diagnosticsPath = join(
       root,
@@ -243,11 +234,24 @@ describe('native lifecycle endpoint', () => {
     const controller = createNativeLifecycleEndpointController({
       engine,
       home: root,
+      instanceId: 'daemon-a',
       inspectRelease: async () => ({
         available: 1,
         latestVersion: '1.5.0',
         rollbackVersion: '1.3.0',
       }),
+      launchOperation: async (operation) => {
+        launched.push(operation);
+        persisted = {
+          schemaVersion: 1,
+          operationId: `detached-${launched.length}`,
+          kind: operation.kind,
+          phase: 'running',
+          updatedAt: '2026-07-27T02:00:00.000Z',
+        };
+        return { accepted: true, operationId: persisted.operationId };
+      },
+      readOperationState: () => persisted,
       setDefaultNode: async (nodeId) => defaultNodeCalls.push(nodeId),
       exportDiagnostics: async () => diagnosticsPath,
       now: () => new Date('2026-07-27T02:00:00.000Z'),
@@ -260,7 +264,7 @@ describe('native lifecycle endpoint', () => {
     for (const request of [
       { kind: 'update.apply', targetVersion: '1.5.0' },
       { kind: 'update.rollback', targetVersion: '1.3.0' },
-      { kind: 'repair.run', destructive: true },
+      { kind: 'repair.run', destructive: false },
       { kind: 'service.restart' },
       {
         kind: 'preferences.notifications.set',
@@ -278,27 +282,27 @@ describe('native lifecycle endpoint', () => {
       await expect(controller.handle(request)).resolves.toMatchObject({
         accepted: true,
       });
-      await waitFor(
-        () =>
-          calls.length + defaultNodeCalls.length >=
-          (request.kind === 'diagnostics.export' ? 0 : 1),
-      );
     }
 
-    await waitFor(() => calls.includes('uninstall'));
-    expect(calls).toEqual([
-      'update',
-      'rollback',
-      'repair',
-      'restart',
-      'notifications:off',
-      'channel:beta',
-      'uninstall',
+    expect(launched).toEqual([
+      { kind: 'update', targetVersion: '1.5.0' },
+      { kind: 'rollback', targetVersion: '1.3.0' },
+      { kind: 'repair' },
+      { kind: 'restart' },
+      { kind: 'uninstall', removeNode: false, removeUserContent: false },
     ]);
+    expect(calls).toEqual(['notifications:off', 'channel:beta']);
     expect(defaultNodeCalls).toEqual(['node-member']);
-    const snapshot = await controller.handle({ kind: 'status.get' });
+    const restartedController = createNativeLifecycleEndpointController({
+      engine,
+      home: root,
+      instanceId: 'daemon-b',
+      readOperationState: () => persisted,
+    });
+    const snapshot = await restartedController.handle({ kind: 'status.get' });
     expect(snapshot).toMatchObject({
-      operation: { kind: 'uninstall', phase: 'succeeded' },
+      instanceId: 'daemon-b',
+      operation: { kind: 'uninstall', phase: 'running' },
     });
   });
 
@@ -325,6 +329,9 @@ describe('native lifecycle endpoint', () => {
         channel: 'nightly',
       }),
     ).rejects.toThrow('not user-selectable');
+    await expect(
+      controller.handle({ kind: 'repair.run', destructive: true }),
+    ).rejects.toThrow('destructive repair is not supported');
     await expect(
       controller.handle({
         kind: 'workspace.default-node.set',

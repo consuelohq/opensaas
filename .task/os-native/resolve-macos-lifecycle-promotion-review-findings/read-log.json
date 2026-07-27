@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os-native/resolve-macos-lifecycle-promotion-review-findings/workpad.md",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/lifecycle/errors.ts",
+    "packages/os/scripts/lib/native-lifecycle-operation.ts",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/tests/lifecycle-engine.test.ts"
+  ],
+  "updatedAt": "2026-07-27T03:21:13.435Z"
+}

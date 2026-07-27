@@ -27,6 +27,11 @@ import type {
   LifecycleReleaseChannel,
   LifecycleStatusResult,
 } from './lifecycle/types';
+import {
+  createDetachedNativeLifecycleOperationLauncher,
+  type NativeLifecycleOperationInput,
+  type NativeLifecycleOperationState,
+} from './native-lifecycle-operation';
 import type {
   ConnectorState,
   LifecycleRequest,
@@ -72,7 +77,12 @@ type NativeLifecycleEndpointControllerInput = {
   exportDiagnostics?: () => Promise<string | void>;
   now?: () => Date;
   operationId?: () => string;
+  instanceId?: string;
   enrichmentTimeoutMs?: number;
+  launchOperation?: (
+    operation: NativeLifecycleOperationInput,
+  ) => Promise<{ accepted: true; operationId: string }>;
+  readOperationState?: () => NativeLifecycleOperationState | undefined;
 };
 
 export type NativeLifecycleEndpointController = {
@@ -485,6 +495,7 @@ export const createNativeLifecycleEndpointController = (
 ): NativeLifecycleEndpointController => {
   const now = input.now ?? (() => new Date());
   const nextOperationId = input.operationId ?? operationId;
+  const instanceId = input.instanceId ?? crypto.randomUUID();
   const platform = input.platform ?? process.platform;
   const architecture = input.architecture ?? process.arch;
   const inspectRelease =
@@ -519,6 +530,15 @@ export const createNativeLifecycleEndpointController = (
       );
     });
     return { accepted: true, operationId: id };
+  };
+
+  const launchDetachedOperation = async (
+    operation: NativeLifecycleOperationInput,
+  ): Promise<LifecycleResponse> => {
+    if (!input.launchOperation) {
+      throw new Error('detached lifecycle operation authority is unavailable');
+    }
+    return input.launchOperation(operation);
   };
 
   const statusSnapshot = async (): Promise<LifecycleSnapshot> => {
@@ -556,8 +576,21 @@ export const createNativeLifecycleEndpointController = (
         architecture,
         observedAt,
       });
+    const persistedOperation = input.readOperationState?.();
+    const operation =
+      currentOperation ??
+      (persistedOperation
+        ? {
+            kind: persistedOperation.kind,
+            phase: persistedOperation.phase,
+            ...(persistedOperation.message
+              ? { message: persistedOperation.message }
+              : {}),
+          }
+        : undefined);
     return {
       schemaVersion: 1,
+      instanceId,
       sequence: ++sequence,
       observedAt,
       install: installState(status),
@@ -589,7 +622,7 @@ export const createNativeLifecycleEndpointController = (
           : {}),
       },
       release: release.summary ? { summary: release.summary } : {},
-      ...(currentOperation ? { operation: currentOperation } : {}),
+      ...(operation ? { operation } : {}),
       preferences: {
         channelSelectionAllowed: input.channelSelectionAllowed ?? false,
         notifications: snapshotNotificationPreference(
@@ -617,9 +650,10 @@ export const createNativeLifecycleEndpointController = (
                 'requested update target does not match the available release',
               );
             }
-            return runOperation('update', () =>
-              input.engine.update({ yes: true }),
-            );
+            return launchDetachedOperation({
+              kind: 'update',
+              targetVersion: request.targetVersion,
+            });
           }
           case 'update.rollback': {
             const release = await inspectRelease();
@@ -631,12 +665,20 @@ export const createNativeLifecycleEndpointController = (
                 'requested rollback target does not match the retained rollback release',
               );
             }
-            return runOperation('rollback', () => input.engine.rollback());
+            return launchDetachedOperation({
+              kind: 'rollback',
+              targetVersion: request.targetVersion,
+            });
           }
           case 'repair.run':
-            return runOperation('repair', () => input.engine.repair());
+            if (request.destructive) {
+              throw new Error(
+                'destructive repair is not supported by the lifecycle engine',
+              );
+            }
+            return launchDetachedOperation({ kind: 'repair' });
           case 'service.restart':
-            return runOperation('restart', () => input.engine.restart());
+            return launchDetachedOperation({ kind: 'restart' });
           case 'preferences.notifications.set':
             return runOperation('update', () =>
               input.engine.setUpdateNotifications(
@@ -668,12 +710,11 @@ export const createNativeLifecycleEndpointController = (
           case 'diagnostics.export':
             return runOperation('repair', exportDiagnostics);
           case 'uninstall.execute':
-            return runOperation('uninstall', () =>
-              input.engine.uninstall({
-                removeNode: request.removeNode,
-                removeUserContent: request.removeUserContent,
-              }),
-            );
+            return launchDetachedOperation({
+              kind: 'uninstall',
+              removeNode: request.removeNode,
+              removeUserContent: request.removeUserContent,
+            });
         }
       } catch (error: unknown) {
         throw new Error(safeMessage(error));
@@ -898,9 +939,15 @@ export const startDefaultNativeLifecycleEndpoint = async (
           }
         }
       : undefined;
+    const operationLauncher = createDetachedNativeLifecycleOperationLauncher({
+      home,
+      env,
+    });
     const controller = createNativeLifecycleEndpointController({
       engine,
       home,
+      launchOperation: operationLauncher.launch,
+      readOperationState: operationLauncher.read,
       channelSelectionAllowed: /^(1|true|yes)$/i.test(
         env.CONSUELO_CHANNEL_SELECTION_ALLOWED ?? '',
       ),

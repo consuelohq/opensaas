@@ -119,6 +119,7 @@ public enum LifecycleCommandError: Error, Equatable, CustomStringConvertible {
     case rollbackUnavailable
     case channelSelectionDenied
     case nodeUnavailable
+    case destructiveRepairUnsupported
 
     public var description: String {
         switch self {
@@ -127,6 +128,7 @@ public enum LifecycleCommandError: Error, Equatable, CustomStringConvertible {
         case .rollbackUnavailable: "No rollback target is available."
         case .channelSelectionDenied: "Channel selection is disabled by policy."
         case .nodeUnavailable: "The selected workspace node is unavailable."
+        case .destructiveRepairUnsupported: "Destructive repair is not supported by the lifecycle engine."
         }
     }
 }
@@ -148,7 +150,7 @@ public enum LifecycleCommandMapper {
         case .retryRepair:
             return .init(request: .repairRun(destructive: false))
         case .destructiveRepair:
-            return .init(request: .repairRun(destructive: true), confirmation: .destructiveRepair)
+            throw LifecycleCommandError.destructiveRepairUnsupported
         case .rollback:
             guard let target = snapshot.updates.rollbackVersion else {
                 throw LifecycleCommandError.rollbackUnavailable

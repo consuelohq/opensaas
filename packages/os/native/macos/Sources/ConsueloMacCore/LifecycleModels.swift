@@ -310,6 +310,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion
+        case instanceId
         case sequence
         case observedAt
         case install
@@ -325,6 +326,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
     }
 
     public var schemaVersion: Int
+    public var instanceId: String
     public var sequence: Int
     public var observedAt: String
     public var install: InstallSnapshot
@@ -340,6 +342,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
 
     public init(
         schemaVersion: Int,
+        instanceId: String = "legacy",
         sequence: Int,
         observedAt: String,
         install: InstallSnapshot,
@@ -354,6 +357,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
         connection: ConnectionSnapshot = .init(state: .online)
     ) {
         self.schemaVersion = schemaVersion
+        self.instanceId = instanceId
         self.sequence = sequence
         self.observedAt = observedAt
         self.install = install
@@ -378,6 +382,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
                 debugDescription: "Unsupported lifecycle schema version: \(schemaVersion)"
             )
         }
+        instanceId = try container.decodeIfPresent(String.self, forKey: .instanceId) ?? "legacy"
         sequence = try container.decode(Int.self, forKey: .sequence)
         observedAt = try container.decode(String.self, forKey: .observedAt)
         install = try container.decodeIfPresent(InstallSnapshot.self, forKey: .install) ?? .init(state: .installed)
@@ -396,6 +401,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(schemaVersion, forKey: .schemaVersion)
+        try container.encode(instanceId, forKey: .instanceId)
         try container.encode(sequence, forKey: .sequence)
         try container.encode(observedAt, forKey: .observedAt)
         try container.encode(install, forKey: .install)

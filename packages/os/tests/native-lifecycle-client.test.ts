@@ -216,6 +216,38 @@ describe('native lifecycle client', () => {
     expect(transport.requests).toEqual([]);
   });
 
+  test('accepts a lower sequence from a newer daemon instance and rejects a late old instance', () => {
+    const transport = createTransport();
+    const client = createNativeLifecycleClient({
+      initialSnapshot: {
+        ...healthySnapshot,
+        instanceId: 'daemon-old',
+        sequence: 100,
+        observedAt: '2026-07-27T03:00:00.000Z',
+      },
+      transport,
+    });
+    const observed: Array<[string | undefined, number]> = [];
+    client.connect((snapshot) =>
+      observed.push([snapshot.instanceId, snapshot.sequence]),
+    );
+
+    transport.emit({
+      ...healthySnapshot,
+      instanceId: 'daemon-new',
+      sequence: 1,
+      observedAt: '2026-07-27T03:01:00.000Z',
+    });
+    transport.emit({
+      ...healthySnapshot,
+      instanceId: 'daemon-old',
+      sequence: 101,
+      observedAt: '2026-07-27T03:00:30.000Z',
+    });
+
+    expect(observed).toEqual([['daemon-new', 1]]);
+  });
+
   test('accepts monotonic lifecycle events and ignores stale snapshots', () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({
