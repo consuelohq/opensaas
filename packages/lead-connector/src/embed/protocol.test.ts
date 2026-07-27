@@ -36,6 +36,15 @@ const createHost = () => {
 };
 
 describe('LeadConnector embed protocol', () => {
+  it('trusts the exact installed GoHighLevel shell origin without a wildcard', () => {
+    expect(LEAD_CONNECTOR_PARENT_ORIGINS).toContain(
+      'https://app.gohighlevel.com',
+    );
+    expect(LEAD_CONNECTOR_PARENT_ORIGINS).not.toContain(
+      'https://*.gohighlevel.com',
+    );
+  });
+
   it('requests encrypted platform user context from the exact trusted parent origin', () => {
     const fixture = createHost();
     const onMessage = mock(() => undefined);

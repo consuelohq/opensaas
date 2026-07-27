@@ -38,6 +38,11 @@ import { Effect, Layer } from 'effect';
 
 import type { DialerApplicationLayers } from '../application';
 import type { LeadConnectorApplicationLayer } from '../lead-connector-application';
+import {
+  buildProviderGroupOptions,
+  resolveProviderCallerId,
+  resolveTwilioProviderCredentials,
+} from './twilio-provider-mode';
 
 export type RailwayEnvironment = Record<string, string | undefined>;
 
@@ -305,10 +310,7 @@ const createDialerRuntime = (
   const parallelStore = new RedisParallelStore(redis);
   const liveDialer = new Dialer(
     {
-      credentials: {
-        accountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
-        authToken: required(environment, 'TWILIO_AUTH_TOKEN'),
-      },
+      credentials: resolveTwilioProviderCredentials(environment, 'live'),
       baseUrl: publicUrl,
       defaultNumber: environment.TWILIO_DEFAULT_NUMBER,
     },
@@ -322,10 +324,10 @@ const createDialerRuntime = (
     environment.TWILIO_TEST_ACCOUNT_SID && environment.TWILIO_TEST_AUTH_TOKEN
       ? new Dialer(
           {
-            credentials: {
-              accountSid: environment.TWILIO_TEST_ACCOUNT_SID,
-              authToken: environment.TWILIO_TEST_AUTH_TOKEN,
-            },
+            credentials: resolveTwilioProviderCredentials(
+              environment,
+              'twilio-test',
+            ),
             baseUrl: publicUrl,
           },
           parallelStore,
@@ -442,8 +444,12 @@ export const createRailwayDialerApplicationLayers = async (
                   (_, index) => `+141555501${String(index).padStart(2, '0')}`,
                 );
           }
-          if (input.callerIdNumber) {
-            const normalized = normalizePhone(input.callerIdNumber);
+          const requestedCallerId = resolveProviderCallerId(
+            input.callMode,
+            input.callerIdNumber,
+          );
+          if (requestedCallerId) {
+            const normalized = normalizePhone(requestedCallerId);
             if (input.enforceScenarioAllowlist && !safeFrom.has(normalized)) {
               return yield* Effect.fail(
                 new DialerRequestError({
@@ -454,15 +460,6 @@ export const createRailwayDialerApplicationLayers = async (
               );
             }
             return [normalized];
-          }
-          if (input.callMode === 'twilio-test') {
-            return yield* Effect.fail(
-              new DialerRequestError({
-                code: 'TEST_CALLER_ID_REQUIRED',
-                message: 'Provider test mode requires an explicit caller ID',
-                retryable: false,
-              }),
-            );
           }
           const numbers = yield* tryEffect('list-caller-ids', () =>
             runtime.liveDialer.listNumbers(),
@@ -520,20 +517,9 @@ export const createRailwayDialerApplicationLayers = async (
               acquired.push(callerId);
             }
             const result = yield* tryEffect('initiate-provider-calls', () =>
-              dialer.parallel.initiateGroup({
-                workspaceId: input.workspaceId,
-                customerNumbers: input.targets.map((target) => target.phone),
-                queueId: input.queueId,
-                contactIds: input.targets.map((target) => target.contactId),
-                userId: input.userId,
-                fromNumbers: input.callerIds,
-                statusCallbackUrl: `${runtime.publicUrl}/webhooks/twilio/status`,
-                customerTwimlUrl: `${runtime.publicUrl}/webhooks/twilio/customer-twiml`,
-                profile: {
-                  ...profileRegistry.balanced,
-                  fanout: input.targets.length,
-                },
-              }),
+              dialer.parallel.initiateGroup(
+                buildProviderGroupOptions(input, runtime.publicUrl),
+              ),
             );
             groupId = result.groupId;
             for (const call of result.calls) {

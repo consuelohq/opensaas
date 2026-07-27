@@ -3,6 +3,10 @@ import Redis from 'ioredis';
 
 import { createEffectDialerApplication } from '../src/application.js';
 import { createRailwayDialerApplicationLayers } from '../src/runtime/railway.js';
+import {
+  TWILIO_TEST_FROM_NUMBER,
+  describeProviderModeEvidence,
+} from '../src/runtime/twilio-provider-mode.js';
 
 const required = (name: string): string => {
   const value = process.env[name]?.trim();
@@ -58,7 +62,7 @@ try {
           requestedFanout: 1,
           targetPhone: firstNumber('CONSUELO_SCENARIO_SAFE_TO_NUMBERS'),
           contactId: 'provider-test-contact',
-          callerIdNumber: firstNumber('CONSUELO_SCENARIO_SAFE_FROM_NUMBERS'),
+          callerIdNumber: TWILIO_TEST_FROM_NUMBER,
           callMode: 'twilio-test',
         },
       }),
@@ -69,6 +73,7 @@ try {
       outcome: 'accepted',
       status: result.status,
       actualFanout: result.actualFanout,
+      ...describeProviderModeEvidence('twilio-test'),
     });
   } catch (error: unknown) {
     const record =
@@ -99,6 +104,7 @@ try {
       providerStatus:
         typeof cause.status === 'number' ? cause.status : undefined,
       message: redact(message),
+      ...describeProviderModeEvidence('twilio-test'),
     });
   }
 
