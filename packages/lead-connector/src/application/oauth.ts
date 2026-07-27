@@ -22,31 +22,6 @@ import {
 const base64Url = (bytes: Uint8Array): string =>
   Buffer.from(bytes).toString('base64url');
 
-const sha256 = (value: string) =>
-  Effect.tryPromise({
-    try: async () => {
-      try {
-        return new Uint8Array(
-          await crypto.subtle.digest(
-            'SHA-256',
-            new TextEncoder().encode(value),
-          ),
-        );
-      } catch (cause: unknown) {
-        throw new Error('Failed to create the OAuth PKCE challenge', {
-          cause,
-        });
-      }
-    },
-    catch: (cause) =>
-      new LeadConnectorStateError({
-        operation: 'create-pkce-challenge',
-        message: errorMessage(cause),
-        retryable: false,
-        cause,
-      }),
-  });
-
 export const beginLeadConnectorOAuth = (input: { workspaceId: string }) =>
   Effect.gen(function* () {
     const config = yield* LeadConnectorConfig;
@@ -55,15 +30,12 @@ export const beginLeadConnectorOAuth = (input: { workspaceId: string }) =>
     const stateStore = yield* LeadConnectorOAuthStateStore;
     const now = yield* clock.now;
     const state = base64Url(yield* random.randomBytes(32));
-    const codeVerifier = base64Url(yield* random.randomBytes(48));
-    const codeChallenge = base64Url(yield* sha256(codeVerifier));
     const expiresAt = new Date(
       now.getTime() + LEAD_CONNECTOR_OAUTH_STATE_TTL_SECONDS * 1000,
     ).toISOString();
     yield* stateStore.put({
       state,
       workspaceId: input.workspaceId,
-      codeVerifier,
       redirectUri: config.redirectUri,
       expiresAt,
     });
@@ -74,8 +46,6 @@ export const beginLeadConnectorOAuth = (input: { workspaceId: string }) =>
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', config.scopes.join(' '));
     url.searchParams.set('state', state);
-    url.searchParams.set('code_challenge', codeChallenge);
-    url.searchParams.set('code_challenge_method', 'S256');
 
     return { authorizationUrl: url.toString(), state };
   });
@@ -104,7 +74,6 @@ export const completeLeadConnectorOAuth = (input: {
     const token = yield* exchangeLeadConnectorToken({
       grantType: 'authorization_code',
       code: input.code,
-      codeVerifier: stored.codeVerifier,
       redirectUri: stored.redirectUri,
     });
     const owner = yield* installationStore.getByLocationId(token.locationId);

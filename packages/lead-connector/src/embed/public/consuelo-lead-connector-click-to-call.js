@@ -2,7 +2,21 @@
   'use strict';
 
   var config = window.ConsueloLeadConnectorConfig || {};
-  var embedOrigin = config.embedOrigin || 'https://calls.consuelohq.com';
+  var approvedEmbedOrigins = [
+    'https://calls.consuelohq.com',
+    'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
+  ];
+  var configuredEmbedOrigin = String(config.embedOrigin || '').replace(
+    /\/$/,
+    '',
+  );
+  if (
+    configuredEmbedOrigin &&
+    approvedEmbedOrigins.indexOf(configuredEmbedOrigin) === -1
+  ) {
+    configuredEmbedOrigin = '';
+  }
+  var activeEmbedOrigin = configuredEmbedOrigin || null;
   var bootstrapToken = config.bootstrapToken || '';
   var protocolVersion = 1;
   var processedAttribute = 'data-consuelo-lead-connector-call';
@@ -17,22 +31,40 @@
     return null;
   }
 
+  function frameOrigin(candidate) {
+    if (!candidate || !candidate.src) return null;
+    try {
+      return new URL(candidate.src, window.location.href).origin;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function approveFrame(candidate) {
+    var origin = frameOrigin(candidate);
+    if (!origin || approvedEmbedOrigins.indexOf(origin) === -1) return null;
+    if (configuredEmbedOrigin && origin !== configuredEmbedOrigin) return null;
+    activeEmbedOrigin = origin;
+    return candidate;
+  }
+
   function findFrame() {
-    var named = document.querySelector('iframe[name="consuelo-dialer"]');
+    var named = approveFrame(
+      document.querySelector('iframe[name="consuelo-dialer"]'),
+    );
     if (named) return named;
     var frames = document.querySelectorAll('iframe');
     for (var index = 0; index < frames.length; index += 1) {
-      if (frames[index].src && frames[index].src.indexOf(embedOrigin) === 0) {
-        return frames[index];
-      }
+      var approved = approveFrame(frames[index]);
+      if (approved) return approved;
     }
     return null;
   }
 
   function post(message) {
     frame = frame || findFrame();
-    if (!frame || !frame.contentWindow) return false;
-    frame.contentWindow.postMessage(message, embedOrigin);
+    if (!frame || !frame.contentWindow || !activeEmbedOrigin) return false;
+    frame.contentWindow.postMessage(message, activeEmbedOrigin);
     return true;
   }
 
@@ -45,10 +77,11 @@
     });
   }
 
+  var contactContainerSelector =
+    '[data-contact-id], [data-record-id], ' + '.contact-card, .contact-detail';
+
   function readContext(element, phone) {
-    var container = element.closest(
-      '[data-contact-id], [data-record-id], .contact-card, .contact-detail',
-    );
+    var container = element.closest(contactContainerSelector);
     var contactId =
       container &&
       (container.getAttribute('data-contact-id') ||
@@ -100,8 +133,12 @@
   }
 
   window.addEventListener('message', function handleEmbedMessage(event) {
+    frame = frame || findFrame();
     if (
-      event.origin !== embedOrigin ||
+      !frame ||
+      !frame.contentWindow ||
+      event.source !== frame.contentWindow ||
+      event.origin !== activeEmbedOrigin ||
       !event.data ||
       event.data.version !== protocolVersion
     )

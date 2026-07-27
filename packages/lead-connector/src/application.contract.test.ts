@@ -166,7 +166,7 @@ const connectedInstallation = (
 });
 
 describe('LeadConnector OAuth contracts', () => {
-  it('generates a PKCE authorization URL and stores single-use workspace state', async () => {
+  it('generates a provider-compatible state-bound authorization URL without unsupported PKCE fields', async () => {
     const harness = makeHarness();
     const result = await Effect.runPromise(
       beginLeadConnectorOAuth({ workspaceId: 'workspace-1' }).pipe(
@@ -179,8 +179,8 @@ describe('LeadConnector OAuth contracts', () => {
     expect(url.searchParams.get('client_id')).toBe(config.clientId);
     expect(url.searchParams.get('redirect_uri')).toBe(config.redirectUri);
     expect(url.searchParams.get('response_type')).toBe('code');
-    expect(url.searchParams.get('code_challenge_method')).toBe('S256');
-    expect(url.searchParams.get('code_challenge')).toBeTruthy();
+    expect(url.searchParams.has('code_challenge_method')).toBe(false);
+    expect(url.searchParams.has('code_challenge')).toBe(false);
     expect(url.searchParams.get('state')).toBe(result.state);
     expect(url.searchParams.get('scope')).toBe(config.scopes.join(' '));
     expect(url.toString()).not.toContain(config.clientSecret);
@@ -190,10 +190,9 @@ describe('LeadConnector OAuth contracts', () => {
       expect.objectContaining({
         workspaceId: 'workspace-1',
         redirectUri: config.redirectUri,
-        codeVerifier: expect.any(String),
       }),
     );
-    expect(stored?.codeVerifier.length).toBeGreaterThanOrEqual(43);
+    expect(stored).not.toHaveProperty('codeVerifier');
   });
 
   it('rejects missing, consumed, or expired state with a stable typed error', async () => {
@@ -263,6 +262,9 @@ describe('LeadConnector OAuth contracts', () => {
 
     const tokenRequest = harness.state.requests[0];
     expect(tokenRequest.headers.Version).toBe(LEAD_CONNECTOR_API_VERSION);
+    expect(tokenRequest.headers['Content-Type']).toBe(
+      'application/x-www-form-urlencoded',
+    );
     expect(tokenRequest.body).toEqual(
       expect.objectContaining({
         clientId: 'client-id',
@@ -270,10 +272,10 @@ describe('LeadConnector OAuth contracts', () => {
         grantType: 'authorization_code',
         code: 'code-1',
         redirectUri: config.redirectUri,
-        codeVerifier: expect.any(String),
         userType: 'Location',
       }),
     );
+    expect(tokenRequest.body).not.toHaveProperty('codeVerifier');
   });
 
   it('rejects a provider location already owned by another workspace', async () => {

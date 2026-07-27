@@ -12,7 +12,6 @@ export type LeadConnectorConfiguration = {
 export type LeadConnectorOAuthState = {
   state: string;
   workspaceId: string;
-  codeVerifier: string;
   redirectUri: string;
   expiresAt: string;
 };

@@ -38,6 +38,7 @@ describe('LeadConnector Cloudflare embed edge', () => {
       'utf8',
     );
     expect(config).toContain('"directory": "./dist/embed-app"');
+    expect(config).toContain('"run_worker_first": true');
     expect(config).not.toContain('"directory": "./dist/embed"');
   });
 
