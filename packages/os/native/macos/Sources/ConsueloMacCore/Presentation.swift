@@ -1,0 +1,180 @@
+import Foundation
+
+public enum MenuBarLifecycleState: String, Equatable, Sendable {
+    case notInstalled
+    case installing
+    case healthy
+    case degraded
+    case updateAvailable
+    case updating
+    case rollbackAvailable
+    case repairRequired
+
+    public static func derive(from snapshot: LifecycleSnapshot) -> MenuBarLifecycleState {
+        if snapshot.install.state == .notInstalled { return .notInstalled }
+        if snapshot.install.state == .installing { return .installing }
+        if snapshot.operation?.kind == .install && snapshot.operation?.phase == .running { return .installing }
+        if snapshot.operation?.kind == .update && snapshot.operation?.phase == .running { return .updating }
+        if snapshot.services.contains(where: { $0.state == .failed }) || snapshot.operation?.phase == .failed {
+            return .repairRequired
+        }
+        if snapshot.connection.state == .offline || snapshot.runtime.state == .offline {
+            return .degraded
+        }
+        if snapshot.connector.state == .degraded || snapshot.connector.state == .offline {
+            return .degraded
+        }
+        if snapshot.updates.available > 0 { return .updateAvailable }
+        if snapshot.updates.rollbackVersion != nil { return .rollbackAvailable }
+        if snapshot.runtime.state != .running || snapshot.services.contains(where: { $0.state != .healthy }) {
+            return .degraded
+        }
+        return .healthy
+    }
+}
+
+public struct MenuBarPresentation: Equatable, Sendable {
+    public var lifecycleState: MenuBarLifecycleState
+    public var connectionLabel: String
+    public var title: String
+    public var systemImage: String
+
+    public init(snapshot: LifecycleSnapshot) {
+        lifecycleState = .derive(from: snapshot)
+        if snapshot.connection.state == .offline {
+            connectionLabel = snapshot.connection.reason.map {
+                "Offline — \(DiagnosticsRedactor.redactText($0))"
+            } ?? "Offline"
+        } else {
+            connectionLabel = "Online"
+        }
+        switch lifecycleState {
+        case .notInstalled:
+            title = "Not installed"; systemImage = "circle.dashed"
+        case .installing:
+            title = "Installing"; systemImage = "arrow.down.circle"
+        case .healthy:
+            title = "Healthy"; systemImage = "checkmark.circle.fill"
+        case .degraded:
+            title = "Degraded"; systemImage = "exclamationmark.triangle.fill"
+        case .updateAvailable:
+            title = "Update available"; systemImage = "arrow.down.circle.fill"
+        case .updating:
+            title = "Updating"; systemImage = "arrow.triangle.2.circlepath"
+        case .rollbackAvailable:
+            title = "Rollback available"; systemImage = "arrow.uturn.backward.circle"
+        case .repairRequired:
+            title = "Repair required"; systemImage = "wrench.and.screwdriver.fill"
+        }
+    }
+}
+
+public struct WorkspaceNodePresentation: Equatable, Sendable {
+    public var title: String
+    public var subtitle: String
+    public var isDefault: Bool
+    public var isSelectable: Bool
+
+    public init(node: WorkspaceNodeSnapshot, workspace: WorkspaceSnapshot) {
+        title = node.displayName
+        subtitle = "\(node.role.rawValue.capitalized) · \(node.presence.rawValue) · \(node.capabilities.joined(separator: ", "))"
+        isDefault = node.isDefault(in: workspace)
+        isSelectable = node.state == .active
+    }
+}
+
+public enum MenuBarAction: Equatable, Sendable {
+    case refresh
+    case update
+    case retryRepair
+    case destructiveRepair
+    case rollback
+    case restart
+    case setNotifications(NotificationPreference)
+    case setChannel(ReleaseChannel)
+    case setDefaultNode(String)
+    case exportDiagnostics
+    case openLauncher
+    case uninstall(removeNode: Bool, removeUserContent: Bool)
+}
+
+public enum ConfirmationKind: Equatable, Sendable {
+    case destructiveRepair
+    case uninstall
+}
+
+public struct CommandPlan: Equatable, Sendable {
+    public var request: LifecycleRequest?
+    public var confirmation: ConfirmationKind?
+
+    public init(request: LifecycleRequest?, confirmation: ConfirmationKind? = nil) {
+        self.request = request
+        self.confirmation = confirmation
+    }
+}
+
+public enum LifecycleCommandError: Error, Equatable, CustomStringConvertible {
+    case offline
+    case updateUnavailable
+    case rollbackUnavailable
+    case channelSelectionDenied
+    case nodeUnavailable
+
+    public var description: String {
+        switch self {
+        case .offline: "Consuelo OS is offline. Mutating actions are disabled."
+        case .updateUnavailable: "No update target is available."
+        case .rollbackUnavailable: "No rollback target is available."
+        case .channelSelectionDenied: "Channel selection is disabled by policy."
+        case .nodeUnavailable: "The selected workspace node is unavailable."
+        }
+    }
+}
+
+public enum LifecycleCommandMapper {
+    public static func plan(for action: MenuBarAction, snapshot: LifecycleSnapshot) throws -> CommandPlan {
+        if action == .refresh { return .init(request: .statusGet) }
+        if action == .openLauncher { return .init(request: nil) }
+        guard snapshot.connection.state == .online else { throw LifecycleCommandError.offline }
+
+        switch action {
+        case .refresh, .openLauncher:
+            return .init(request: nil)
+        case .update:
+            guard let target = snapshot.updates.latestVersion, snapshot.updates.available > 0 else {
+                throw LifecycleCommandError.updateUnavailable
+            }
+            return .init(request: .updateApply(targetVersion: target))
+        case .retryRepair:
+            return .init(request: .repairRun(destructive: false))
+        case .destructiveRepair:
+            return .init(request: .repairRun(destructive: true), confirmation: .destructiveRepair)
+        case .rollback:
+            guard let target = snapshot.updates.rollbackVersion else {
+                throw LifecycleCommandError.rollbackUnavailable
+            }
+            return .init(request: .updateRollback(targetVersion: target))
+        case .restart:
+            return .init(request: .serviceRestart)
+        case let .setNotifications(preference):
+            return .init(request: .preferencesNotificationsSet(preference))
+        case let .setChannel(channel):
+            guard snapshot.preferences.channelSelectionAllowed else {
+                throw LifecycleCommandError.channelSelectionDenied
+            }
+            return .init(request: .preferencesChannelSet(channel))
+        case let .setDefaultNode(nodeId):
+            guard snapshot.workspace?.nodes.contains(where: { $0.nodeId == nodeId && $0.state == .active }) == true else {
+                throw LifecycleCommandError.nodeUnavailable
+            }
+            return .init(request: .workspaceDefaultNodeSet(nodeId: nodeId))
+        case .exportDiagnostics:
+            return .init(request: .diagnosticsExport)
+        case let .uninstall(removeNode, removeUserContent):
+            return .init(
+                request: .uninstallExecute(removeNode: removeNode, removeUserContent: removeUserContent),
+                confirmation: .uninstall
+            )
+        }
+    }
+}

@@ -1,13 +1,56 @@
-export const releaseChannels = ['stable', 'beta', 'canary', 'dev', 'nightly'] as const;
+export const releaseChannels = [
+  'stable',
+  'beta',
+  'canary',
+  'dev',
+  'nightly',
+] as const;
 export type ReleaseChannel = (typeof releaseChannels)[number];
-export type RuntimeState = 'starting' | 'running' | 'stopping' | 'stopped' | 'offline' | 'failed';
-export type ServiceState = 'healthy' | 'degraded' | 'stopped' | 'failed' | 'unknown';
+export type RuntimeState =
+  | 'starting'
+  | 'running'
+  | 'stopping'
+  | 'stopped'
+  | 'offline'
+  | 'failed';
+export type ServiceState =
+  | 'healthy'
+  | 'degraded'
+  | 'stopped'
+  | 'failed'
+  | 'unknown';
 export type ServiceManager = 'launchd' | 'windows-service-manager' | 'systemd';
+export type LifecycleInstallState =
+  | 'not-installed'
+  | 'installing'
+  | 'installed';
+export type ConnectorState = 'connected' | 'degraded' | 'offline' | 'unknown';
+export type NotificationPreference =
+  | { state: 'on' }
+  | { state: 'off' }
+  | { state: 'snoozed'; until: string };
+export type WorkspaceNode = {
+  workspaceId: string;
+  nodeId: string;
+  displayName: string;
+  role: 'home' | 'member';
+  platform: string;
+  architecture: string;
+  channel: string;
+  connectorId: string;
+  capabilities: string[];
+  createdAt: string;
+  lastSeenAt: string;
+  presence: 'online' | 'offline' | 'stale';
+  state: 'active' | 'revoked';
+  publicKeyThumbprint: string;
+};
 
 export type LifecycleSnapshot = {
   schemaVersion: 1;
   sequence: number;
   observedAt: string;
+  install?: { state: LifecycleInstallState };
   runtime: {
     version: string;
     channel: ReleaseChannel;
@@ -19,10 +62,34 @@ export type LifecycleSnapshot = {
     managedBy: ServiceManager;
     detail?: string;
   }>;
+  connector?: { state: ConnectorState; detail?: string };
   updates: {
     available: number;
     latestVersion?: string;
     rollbackVersion?: string;
+  };
+  release?: { summary?: string };
+  operation?: {
+    kind:
+      | 'install'
+      | 'update'
+      | 'repair'
+      | 'rollback'
+      | 'restart'
+      | 'uninstall';
+    phase: 'queued' | 'running' | 'succeeded' | 'failed';
+    message?: string;
+  };
+  preferences?: {
+    channelSelectionAllowed: boolean;
+    notifications: NotificationPreference;
+  };
+  workspace?: {
+    workspaceId: string;
+    workspaceHost: string;
+    currentNodeId?: string;
+    defaultNodeId?: string;
+    nodes: WorkspaceNode[];
   };
   connection?: {
     state: 'online' | 'offline';
@@ -33,7 +100,21 @@ export type LifecycleSnapshot = {
 export type LifecycleRequest =
   | { kind: 'status.get' }
   | { kind: 'update.apply'; targetVersion: string }
-  | { kind: 'update.rollback'; targetVersion: string };
+  | { kind: 'update.rollback'; targetVersion: string }
+  | { kind: 'repair.run'; destructive: boolean }
+  | { kind: 'service.restart' }
+  | {
+      kind: 'preferences.notifications.set';
+      notifications: NotificationPreference;
+    }
+  | { kind: 'preferences.channel.set'; channel: ReleaseChannel }
+  | { kind: 'workspace.default-node.set'; nodeId: string }
+  | { kind: 'diagnostics.export' }
+  | {
+      kind: 'uninstall.execute';
+      removeNode: boolean;
+      removeUserContent: boolean;
+    };
 
 export type LifecycleOperationAccepted = {
   accepted: true;
@@ -51,6 +132,18 @@ export type NativeLifecycleClient = {
   refresh(): Promise<LifecycleSnapshot>;
   applyUpdate(targetVersion: string): Promise<LifecycleOperationAccepted>;
   rollback(targetVersion: string): Promise<LifecycleOperationAccepted>;
+  repair(destructive: boolean): Promise<LifecycleOperationAccepted>;
+  restart(): Promise<LifecycleOperationAccepted>;
+  setNotifications(
+    preference: NotificationPreference,
+  ): Promise<LifecycleOperationAccepted>;
+  setChannel(channel: ReleaseChannel): Promise<LifecycleOperationAccepted>;
+  setDefaultNode(nodeId: string): Promise<LifecycleOperationAccepted>;
+  exportDiagnostics(): Promise<LifecycleOperationAccepted>;
+  uninstall(input: {
+    removeNode: boolean;
+    removeUserContent: boolean;
+  }): Promise<LifecycleOperationAccepted>;
   connect(listener: (snapshot: LifecycleSnapshot) => void): () => void;
   closeShell(): void;
   current(): LifecycleSnapshot | undefined;
@@ -59,24 +152,26 @@ export type NativeLifecycleClient = {
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-const isSnapshot = (response: LifecycleResponse): response is LifecycleSnapshot =>
-  'schemaVersion' in response;
+const isSnapshot = (
+  response: LifecycleResponse,
+): response is LifecycleSnapshot => 'schemaVersion' in response;
 
 const isAccepted = (
   response: LifecycleResponse,
 ): response is LifecycleOperationAccepted => 'accepted' in response;
 
-export function createNativeLifecycleClient(input: {
+export const createNativeLifecycleClient = (input: {
   transport: NativeLifecycleTransport;
   initialSnapshot?: LifecycleSnapshot;
-}): NativeLifecycleClient {
+}): NativeLifecycleClient => {
   let snapshot = input.initialSnapshot;
   let hasLocalOfflineProjection = false;
-  let subscription:
-    | { close: () => void; closed: boolean }
-    | undefined;
+  let subscription: { close: () => void; closed: boolean } | undefined;
 
-  const closeSubscription = (current: { close: () => void; closed: boolean }): void => {
+  const closeSubscription = (current: {
+    close: () => void;
+    closed: boolean;
+  }): void => {
     if (current.closed) return;
     current.closed = true;
     current.close();
@@ -102,7 +197,7 @@ export function createNativeLifecycleClient(input: {
   };
 
   const operation = async (
-    request: Extract<LifecycleRequest, { kind: 'update.apply' | 'update.rollback' }>,
+    request: Exclude<LifecycleRequest, { kind: 'status.get' }>,
   ): Promise<LifecycleOperationAccepted> => {
     const response = await input.transport.request(request);
     if (!isAccepted(response)) {
@@ -112,7 +207,7 @@ export function createNativeLifecycleClient(input: {
   };
 
   return {
-    async refresh() {
+    refresh: async () => {
       try {
         const response = await input.transport.request({ kind: 'status.get' });
         if (!isSnapshot(response)) {
@@ -131,13 +226,41 @@ export function createNativeLifecycleClient(input: {
         return snapshot;
       }
     },
-    applyUpdate(targetVersion) {
+    applyUpdate: (targetVersion) => {
       return operation({ kind: 'update.apply', targetVersion });
     },
-    rollback(targetVersion) {
+    rollback: (targetVersion) => {
       return operation({ kind: 'update.rollback', targetVersion });
     },
-    connect(listener) {
+    repair: (destructive) => {
+      return operation({ kind: 'repair.run', destructive });
+    },
+    restart: () => {
+      return operation({ kind: 'service.restart' });
+    },
+    setNotifications: (notifications) => {
+      return operation({
+        kind: 'preferences.notifications.set',
+        notifications,
+      });
+    },
+    setChannel: (channel) => {
+      return operation({ kind: 'preferences.channel.set', channel });
+    },
+    setDefaultNode: (nodeId) => {
+      return operation({ kind: 'workspace.default-node.set', nodeId });
+    },
+    exportDiagnostics: () => {
+      return operation({ kind: 'diagnostics.export' });
+    },
+    uninstall: ({ removeNode, removeUserContent }) => {
+      return operation({
+        kind: 'uninstall.execute',
+        removeNode,
+        removeUserContent,
+      });
+    },
+    connect: (listener) => {
       if (subscription) closeSubscription(subscription);
       const current = {
         close: input.transport.subscribe((next) => {
@@ -148,11 +271,11 @@ export function createNativeLifecycleClient(input: {
       subscription = current;
       return () => closeSubscription(current);
     },
-    closeShell() {
+    closeShell: () => {
       if (subscription) closeSubscription(subscription);
     },
-    current() {
+    current: () => {
       return snapshot;
     },
   };
-}
+};

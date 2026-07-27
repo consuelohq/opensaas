@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import {
   createNativeLifecycleClient,
   releaseChannels,
+  type NotificationPreference,
   type LifecycleSnapshot,
   type NativeLifecycleTransport,
 } from '../scripts/lib/native-lifecycle-client';
@@ -27,34 +28,36 @@ const healthySnapshot: LifecycleSnapshot = {
   },
 };
 
-function createTransport(): NativeLifecycleTransport & {
+const createTransport = (): NativeLifecycleTransport & {
   requests: unknown[];
   emit(snapshot: LifecycleSnapshot): void;
-} {
+} => {
   const requests: unknown[] = [];
   let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
   return {
     requests,
-    async request(request) {
+    request: async (request) => {
       requests.push(request);
       if (request.kind === 'status.get') return healthySnapshot;
       return { accepted: true, operationId: `op-${requests.length}` };
     },
-    subscribe(next) {
+    subscribe: (next) => {
       listener = next;
       return () => {
         listener = undefined;
       };
     },
-    emit(snapshot) {
+    emit: (snapshot) => {
       listener?.(snapshot);
     },
   };
-}
+};
 
 describe('native lifecycle client', () => {
   test('loads structured status and exposes version, channel, health, and update count', async () => {
-    const client = createNativeLifecycleClient({ transport: createTransport() });
+    const client = createNativeLifecycleClient({
+      transport: createTransport(),
+    });
 
     const snapshot = await client.refresh();
 
@@ -74,8 +77,12 @@ describe('native lifecycle client', () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({ transport });
 
-    await expect(client.applyUpdate('1.6.0')).resolves.toMatchObject({ accepted: true });
-    await expect(client.rollback('1.3.2')).resolves.toMatchObject({ accepted: true });
+    await expect(client.applyUpdate('1.6.0')).resolves.toMatchObject({
+      accepted: true,
+    });
+    await expect(client.rollback('1.3.2')).resolves.toMatchObject({
+      accepted: true,
+    });
 
     expect(transport.requests).toEqual([
       { kind: 'update.apply', targetVersion: '1.6.0' },
@@ -83,14 +90,91 @@ describe('native lifecycle client', () => {
     ]);
   });
 
+  test('sends every menu-bar mutation through the allowlisted lifecycle protocol', async () => {
+    const transport = createTransport();
+    const client = createNativeLifecycleClient({ transport });
+    const snoozed: NotificationPreference = {
+      state: 'snoozed',
+      until: '2026-07-27T20:00:00.000Z',
+    };
+
+    await client.repair(false);
+    await client.repair(true);
+    await client.restart();
+    await client.setNotifications(snoozed);
+    await client.setChannel('beta');
+    await client.setDefaultNode('node-member');
+    await client.exportDiagnostics();
+    await client.uninstall({ removeNode: false, removeUserContent: false });
+
+    expect(transport.requests).toEqual([
+      { kind: 'repair.run', destructive: false },
+      { kind: 'repair.run', destructive: true },
+      { kind: 'service.restart' },
+      { kind: 'preferences.notifications.set', notifications: snoozed },
+      { kind: 'preferences.channel.set', channel: 'beta' },
+      { kind: 'workspace.default-node.set', nodeId: 'node-member' },
+      { kind: 'diagnostics.export' },
+      {
+        kind: 'uninstall.execute',
+        removeNode: false,
+        removeUserContent: false,
+      },
+    ]);
+  });
+
+  test('carries optional presentation and safe workspace metadata without weakening old snapshots', () => {
+    const enriched: LifecycleSnapshot = {
+      ...healthySnapshot,
+      install: { state: 'installed' },
+      connector: { state: 'connected' },
+      release: { summary: 'Reliability fixes' },
+      preferences: {
+        channelSelectionAllowed: true,
+        notifications: { state: 'on' },
+      },
+      workspace: {
+        workspaceId: 'workspace_one',
+        workspaceHost: 'one.consuelohq.com',
+        currentNodeId: 'node-home',
+        defaultNodeId: 'node-home',
+        nodes: [
+          {
+            workspaceId: 'workspace_one',
+            nodeId: 'node-home',
+            displayName: 'Mac Mini',
+            role: 'home',
+            platform: 'darwin',
+            architecture: 'arm64',
+            channel: 'dev',
+            connectorId: 'connector_home',
+            capabilities: ['local-runtime', 'darwin'],
+            createdAt: '2026-07-20T12:00:00.000Z',
+            lastSeenAt: '2026-07-26T19:59:45.000Z',
+            presence: 'online',
+            state: 'active',
+            publicKeyThumbprint: 'thumbprint',
+          },
+        ],
+      },
+    };
+
+    expect(enriched.workspace?.nodes[0]).toMatchObject({
+      role: 'home',
+      presence: 'online',
+      capabilities: ['local-runtime', 'darwin'],
+    });
+    expect(healthySnapshot.install).toBeUndefined();
+  });
+
   test('preserves the last snapshot when the local service is offline', async () => {
     const client = createNativeLifecycleClient({
       initialSnapshot: healthySnapshot,
       transport: {
-        async request() {
+        request: async () => {
           throw new Error('named pipe unavailable');
         },
-        subscribe() {
+        subscribe: () => {
           return () => undefined;
         },
       },
@@ -129,26 +213,37 @@ describe('native lifecycle client', () => {
   });
 
   test('supports every existing distribution channel plus nightly', () => {
-    expect(releaseChannels).toEqual(['stable', 'beta', 'canary', 'dev', 'nightly']);
+    expect(releaseChannels).toEqual([
+      'stable',
+      'beta',
+      'canary',
+      'dev',
+      'nightly',
+    ]);
   });
 
   test('accepts an equal-sequence online event after a local offline projection', async () => {
     let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
-    const transport: NativeLifecycleTransport & { emit(snapshot: LifecycleSnapshot): void } = {
-      async request() {
+    const transport: NativeLifecycleTransport & {
+      emit(snapshot: LifecycleSnapshot): void;
+    } = {
+      request: async () => {
         throw new Error('socket unavailable');
       },
-      subscribe(next) {
+      subscribe: (next) => {
         listener = next;
         return () => {
           if (listener === next) listener = undefined;
         };
       },
-      emit(next) {
+      emit: (next) => {
         listener?.(next);
       },
     };
-    const client = createNativeLifecycleClient({ initialSnapshot: healthySnapshot, transport });
+    const client = createNativeLifecycleClient({
+      initialSnapshot: healthySnapshot,
+      transport,
+    });
     const observed: LifecycleSnapshot[] = [];
 
     await client.refresh();
@@ -166,26 +261,33 @@ describe('native lifecycle client', () => {
   test('a stale cleanup cannot unsubscribe a replacement connection', () => {
     const listeners = new Map<number, (snapshot: LifecycleSnapshot) => void>();
     let nextId = 0;
-    const transport: NativeLifecycleTransport & { emit(snapshot: LifecycleSnapshot): void } = {
-      async request() {
+    const transport: NativeLifecycleTransport & {
+      emit(snapshot: LifecycleSnapshot): void;
+    } = {
+      request: async () => {
         return healthySnapshot;
       },
-      subscribe(listener) {
+      subscribe: (listener) => {
         const id = ++nextId;
         listeners.set(id, listener);
         return () => {
           listeners.delete(id);
         };
       },
-      emit(snapshot) {
+      emit: (snapshot) => {
         for (const listener of listeners.values()) listener(snapshot);
       },
     };
-    const client = createNativeLifecycleClient({ initialSnapshot: healthySnapshot, transport });
+    const client = createNativeLifecycleClient({
+      initialSnapshot: healthySnapshot,
+      transport,
+    });
     const first: number[] = [];
     const second: number[] = [];
 
-    const cleanupFirst = client.connect((snapshot) => first.push(snapshot.sequence));
+    const cleanupFirst = client.connect((snapshot) =>
+      first.push(snapshot.sequence),
+    );
     client.connect((snapshot) => second.push(snapshot.sequence));
     cleanupFirst();
     transport.emit({ ...healthySnapshot, sequence: 8 });
@@ -194,12 +296,14 @@ describe('native lifecycle client', () => {
     expect(second).toEqual([8]);
   });
 
-
   test('restores a retained offline snapshot from an equal-sequence successful refresh', async () => {
     const retainedOfflineSnapshot: LifecycleSnapshot = {
       ...healthySnapshot,
       runtime: { ...healthySnapshot.runtime, state: 'offline' },
-      connection: { state: 'offline', reason: 'shell restarted while service was unavailable' },
+      connection: {
+        state: 'offline',
+        reason: 'shell restarted while service was unavailable',
+      },
     };
     const client = createNativeLifecycleClient({
       initialSnapshot: retainedOfflineSnapshot,
@@ -220,33 +324,55 @@ describe('native lifecycle client', () => {
   test('keeps a newer subscribed snapshot when an older refresh resolves later', async () => {
     let resolveStatus: ((snapshot: LifecycleSnapshot) => void) | undefined;
     let listener: ((snapshot: LifecycleSnapshot) => void) | undefined;
-    const transport: NativeLifecycleTransport & { emit(snapshot: LifecycleSnapshot): void } = {
-      request(request) {
+    const transport: NativeLifecycleTransport & {
+      emit(snapshot: LifecycleSnapshot): void;
+    } = {
+      request: (request) => {
         if (request.kind !== 'status.get') {
-          return Promise.resolve({ accepted: true, operationId: 'unexpected-operation' });
+          return Promise.resolve({
+            accepted: true,
+            operationId: 'unexpected-operation',
+          });
         }
         return new Promise<LifecycleSnapshot>((resolve) => {
           resolveStatus = resolve;
         });
       },
-      subscribe(next) {
+      subscribe: (next) => {
         listener = next;
         return () => {
           if (listener === next) listener = undefined;
         };
       },
-      emit(snapshot) {
+      emit: (snapshot) => {
         listener?.(snapshot);
       },
     };
-    const client = createNativeLifecycleClient({ initialSnapshot: healthySnapshot, transport });
+    const client = createNativeLifecycleClient({
+      initialSnapshot: healthySnapshot,
+      transport,
+    });
     client.connect(() => undefined);
 
     const refresh = client.refresh();
-    transport.emit({ ...healthySnapshot, sequence: 9, runtime: { ...healthySnapshot.runtime, version: '1.9.0' } });
-    resolveStatus?.({ ...healthySnapshot, sequence: 8, runtime: { ...healthySnapshot.runtime, version: '1.8.0' } });
+    transport.emit({
+      ...healthySnapshot,
+      sequence: 9,
+      runtime: { ...healthySnapshot.runtime, version: '1.9.0' },
+    });
+    resolveStatus?.({
+      ...healthySnapshot,
+      sequence: 8,
+      runtime: { ...healthySnapshot.runtime, version: '1.8.0' },
+    });
 
-    await expect(refresh).resolves.toMatchObject({ sequence: 9, runtime: { version: '1.9.0' } });
-    expect(client.current()).toMatchObject({ sequence: 9, runtime: { version: '1.9.0' } });
+    await expect(refresh).resolves.toMatchObject({
+      sequence: 9,
+      runtime: { version: '1.9.0' },
+    });
+    expect(client.current()).toMatchObject({
+      sequence: 9,
+      runtime: { version: '1.9.0' },
+    });
   });
 });

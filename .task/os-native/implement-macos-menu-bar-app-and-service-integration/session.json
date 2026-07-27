@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3be06270a4c2",
+  "tmuxSession": "opensaas-os-native-implement-macos-menu-bar-app-and-service-integra-3be06270",
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/implement-macos-menu-bar-app-and-service-integration",
+  "branch": "task/os-native/implement-macos-menu-bar-app-and-service-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-macos-menu-bar-app-and-service-integration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-macos-menu-bar-app-and-service-integration",
+  "prNumber": 1666,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1666",
+  "createdAt": "2026-07-26T23:29:15.332Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-macos-menu-bar-app-and-service-integration/.task/os-native/implement-macos-menu-bar-app-and-service-integration/session.json"
+}
