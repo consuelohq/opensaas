@@ -70,6 +70,7 @@ private struct ContractSuite {
         try lifecycleRequestJSONMatchesTheSharedTaggedUnion()
         try failedUpdatePreservesWorkingVersionAndSurfacesRecovery()
         try sourceManagedRuntimeStaysHealthyAndDisablesReleaseActions()
+        try menuActionPresentationRequiresConcreteUpdateTargets()
         try offlineRetainsReadableStateAndFailsMutationsClosed()
         try mapsMenuActionsOnlyToAllowlistedLifecycleRequests()
         try destructiveRepairAndUninstallRequireExplicitConfirmation()
@@ -159,6 +160,44 @@ private struct ContractSuite {
             .serviceRestart,
             "source-managed restart remains available"
         )
+    }
+
+    private func menuActionPresentationRequiresConcreteUpdateTargets() throws {
+        let incompleteUpdate = MenuBarActionPresentation(
+            snapshot: snapshot(updates: .init(available: 1))
+        )
+        try expect(
+            incompleteUpdate.updateTargetVersion,
+            nil,
+            "update action requires a concrete target version"
+        )
+
+        let releaseManaged = MenuBarActionPresentation(
+            snapshot: snapshot(
+                updates: .init(
+                    available: 1,
+                    latestVersion: "1.5.0",
+                    rollbackVersion: "1.3.0"
+                )
+            )
+        )
+        try expect(
+            releaseManaged.updateTargetVersion,
+            "1.5.0",
+            "release-managed update target"
+        )
+        try expect(releaseManaged.canRollback, true, "release-managed rollback availability")
+
+        let sourceManaged = MenuBarActionPresentation(
+            snapshot: snapshot(
+                updates: .init(available: 1, latestVersion: "1.5.0"),
+                actions: .sourceManaged
+            )
+        )
+        try expect(sourceManaged.updateTargetVersion, nil, "source update remains hidden")
+        try expect(sourceManaged.canRepair, false, "source repair remains hidden")
+        try expect(sourceManaged.canRestart, true, "source restart remains visible")
+        try expect(sourceManaged.canUninstall, false, "source uninstall remains hidden")
     }
 
     private func offlineRetainsReadableStateAndFailsMutationsClosed() throws {

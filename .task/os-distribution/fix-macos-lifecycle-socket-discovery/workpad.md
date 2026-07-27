@@ -44,7 +44,8 @@ started: 2026-07-27
 - Source-runtime projection and action gating are implemented.
 - Codex P2 review found that source mode could still display an unrelated activated release version; fixed test-first so source snapshots always use `sourceVersion`.
 - Focused TypeScript and Swift contracts, strict review, and full verify are green.
-- Ready to publish PR #1672 and request external review.
+- Codex P2 and both CodeRabbit findings are fixed.
+- Ready to publish the final corrective commit, disposition reviews, and complete CI.
 - Socket integration works after the human daemon restart checkpoint.
 - Ko's daemon is source-managed from `/Users/kokayi/Dev/opensaas`, while lifecycle inspection assumes configured nodes are signed-release installations.
 - `inspectLifecycleInstallState` reports `partial` because `runtime/current` is absent; endpoint projection maps `partial` to failed and exposes repair.
@@ -80,11 +81,17 @@ started: 2026-07-27
 - GREEN: full verify passed with `publishValid: true` across 8 changed product/test files.
 - RED correction: source status carrying stale release version `1.2.3` rendered that release instead of `source`.
 - GREEN correction: source snapshots now always prefer `sourceVersion`; 72 focused tests, typecheck, strict review, and full verify passed again.
+- CodeRabbit actionable RED: no concrete update target still rendered an Update button; Swift contract failed before `MenuBarActionPresentation` existed.
+- CodeRabbit nitpick accepted: removed fragile source-string action assertions and moved action visibility into behavioral Swift contracts.
+- GREEN: `MenuBarActionPresentation` requires a concrete update target and centralizes repair/rollback/restart/uninstall visibility.
+- GREEN: `ConsueloMacContractTests`, `ConsueloMenuBarApp` build, 72 focused TypeScript tests, package typecheck, strict review, and full verify all pass.
 - 2026-07-27 18:07:36 `review.run`: failed — COMMAND_FAILED
 - 2026-07-27 18:08:06 `review.run`: passed — OK
 - 2026-07-27 18:08:30 `verify`: passed — OK
 - 2026-07-27 18:15:02 `review.run`: passed — OK
 - 2026-07-27 18:15:10 `verify`: passed — OK
+- 2026-07-27 18:21:10 `review.run`: passed — OK
+- 2026-07-27 18:21:20 `verify`: passed — OK
 
 ## key decisions
 
@@ -116,8 +123,8 @@ started: 2026-07-27
 - [x] GREEN focused TypeScript and Swift evidence recorded
 - [x] strict review clean
 - [x] full verify clean
-- [ ] corrective source-version test and implementation pushed to PR #1672
-- [ ] CodeRabbit requested and findings dispositioned
+- [x] corrective source-version test and implementation pushed to PR #1672
+- [ ] CodeRabbit findings fixed locally; publish and post final dispositions
 - [ ] task merged into `stream/os-distribution`
 
 ## workspace-owned: files read

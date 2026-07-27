@@ -69,6 +69,26 @@ public struct MenuBarPresentation: Equatable, Sendable {
     }
 }
 
+public struct MenuBarActionPresentation: Equatable, Sendable {
+    public var updateTargetVersion: String?
+    public var canRepair: Bool
+    public var canRollback: Bool
+    public var canRestart: Bool
+    public var canUninstall: Bool
+
+    public init(snapshot: LifecycleSnapshot) {
+        updateTargetVersion =
+            snapshot.actions.update && snapshot.updates.available > 0
+                ? snapshot.updates.latestVersion
+                : nil
+        canRepair = snapshot.actions.repair
+        canRollback =
+            snapshot.actions.rollback && snapshot.updates.rollbackVersion != nil
+        canRestart = snapshot.actions.restart
+        canUninstall = snapshot.actions.uninstall
+    }
+}
+
 public struct WorkspaceNodePresentation: Equatable, Sendable {
     public var title: String
     public var subtitle: String

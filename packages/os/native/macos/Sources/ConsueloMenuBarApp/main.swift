@@ -24,6 +24,7 @@ private struct ConsueloMenu: View {
             Text(model.connectionLabel)
 
             if let snapshot = model.snapshot {
+                let actions = MenuBarActionPresentation(snapshot: snapshot)
                 Text("Version \(snapshot.runtime.version) · \(snapshot.runtime.channel.rawValue)")
                 if let summary = snapshot.release.summary, !summary.isEmpty {
                     Text(summary)
@@ -51,18 +52,18 @@ private struct ConsueloMenu: View {
                 )
 
                 Divider()
-                if snapshot.actions.update && snapshot.updates.available > 0 {
-                    Button("Update to \(snapshot.updates.latestVersion ?? "latest")") {
+                if let targetVersion = actions.updateTargetVersion {
+                    Button("Update to \(targetVersion)") {
                         model.perform(.update)
                     }
                 }
-                if snapshot.actions.repair {
+                if actions.canRepair {
                     Button("Retry repair") { model.perform(.retryRepair) }
                 }
-                if snapshot.actions.rollback && snapshot.updates.rollbackVersion != nil {
+                if actions.canRollback {
                     Button("Rollback…") { model.perform(.rollback) }
                 }
-                if snapshot.actions.restart {
+                if actions.canRestart {
                     Button("Restart services") { model.perform(.restart) }
                 }
 
@@ -101,7 +102,7 @@ private struct ConsueloMenu: View {
                 Divider()
                 Button("Open launcher") { model.perform(.openLauncher) }
                 Button("Export diagnostics") { model.perform(.exportDiagnostics) }
-                if snapshot.actions.uninstall {
+                if actions.canUninstall {
                     Menu("Uninstall") {
                         Button("Keep node and user content…", role: .destructive) {
                             model.perform(.uninstall(removeNode: false, removeUserContent: false))

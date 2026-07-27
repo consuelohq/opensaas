@@ -24,9 +24,6 @@ describe('macOS menu-bar platform', () => {
     expect(source).not.toContain('Button("Destructive repair…")');
     expect(source).toContain('DiagnosticsRedactor.redactText(message)');
     expect(source).toContain('Operation:');
-    expect(source).toContain('if snapshot.actions.repair');
-    expect(source).toContain('if snapshot.actions.restart');
-    expect(source).toContain('if snapshot.actions.uninstall');
     expect(source.match(/Button\(\"Refresh\"\)/g)).toHaveLength(1);
     expect(source).toContain('@Published private(set) var presentation');
     expect(source).toContain('Remove node registration');
