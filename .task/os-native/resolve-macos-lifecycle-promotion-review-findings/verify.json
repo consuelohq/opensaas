@@ -4,9 +4,10 @@
   "mode": "full",
   "branch": "task/os-native/resolve-macos-lifecycle-promotion-review-findings",
   "base": "origin/stream/os-native",
-  "headSha": "3a5f6d3cd2579aed8da6196acb91676a70753da5",
-  "changeHash": "6535c17cd50428b0896368c1c1571794738b79dc990b1da4000bcd3dc73b5413",
+  "headSha": "fa9b14aa52a5a8b28cf1b1762751a3b26712963f",
+  "changeHash": "fd6f1a1fd89e196e0bbfee9d67c24669a2d1457a3db21ce9d6d0be5660fcc213",
   "changedFiles": [
+    ".tmp-native-lock-failures.txt",
     "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
@@ -29,7 +30,7 @@
     "packages/os/tests/native-lifecycle-endpoint.test.ts",
     "packages/os/tests/native-lifecycle-operation.test.ts"
   ],
-  "verifiedAt": "2026-07-27T03:31:49.361Z",
+  "verifiedAt": "2026-07-27T03:46:11.121Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -50,6 +51,7 @@
         ".task/os-native/resolve-macos-lifecycle-promotion-review-findings/verify.json",
         ".task/os-native/resolve-macos-lifecycle-promotion-review-findings/workpad.md",
         ".task/tasks/os-native/resolve-macos-lifecycle-promotion-review-findings.json",
+        ".tmp-native-lock-failures.txt",
         "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
         "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift",
         "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",

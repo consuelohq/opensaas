@@ -354,6 +354,52 @@ describe('native lifecycle detached operations', () => {
     });
   });
 
+  it('prevents a delayed superseded worker from executing lifecycle authority', async () => {
+    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+    temporaryRoots.push(home);
+    const store = createNativeLifecycleOperationStore(home);
+    const oldOperation: NativeLifecycleOperation = {
+      operationId: 'old-suspended-worker',
+      kind: 'restart',
+    };
+    store.write({
+      schemaVersion: 1,
+      operationId: oldOperation.operationId,
+      kind: oldOperation.kind,
+      phase: 'queued',
+      updatedAt: '2026-07-27T03:00:00.000Z',
+    });
+    const replacement = createDetachedNativeLifecycleOperationLauncher({
+      home,
+      operationId: () => 'replacement-worker',
+      now: () => new Date('2026-07-27T03:00:31.000Z'),
+      queuedStaleMs: 30_000,
+      spawnProcess: () => ({
+        pid: 999,
+        unref: () => undefined,
+        once: (_event, _listener) => undefined,
+      }),
+    });
+    await replacement.launch({ kind: 'repair' });
+
+    const { engine, calls } = fakeEngine();
+    await executeNativeLifecycleOperation({
+      home,
+      operation: oldOperation,
+      engine,
+      store,
+      now: () => new Date('2026-07-27T03:00:32.000Z'),
+      processId: 1234,
+    });
+
+    expect(calls).toEqual([]);
+    expect(store.read()).toMatchObject({
+      operationId: 'replacement-worker',
+      kind: 'repair',
+      phase: 'queued',
+    });
+  });
+
   it.each<NativeLifecycleOperation>([
     {
       operationId: 'update-op',

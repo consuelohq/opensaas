@@ -32,7 +32,7 @@ started: 2026-07-27
 - TypeScript and Swift clients use a backward-compatible daemon `instanceId`, accepting a fresh low sequence after restart while rejecting a late snapshot from the old daemon.
 - Unsupported destructive repair is rejected by the endpoint, rejected by the Swift command mapper, and removed from the menu; ordinary retry remains canonical repair.
 - The detached worker is part of the required runtime-bundle closure and synthetic release fixtures.
-- Broad native/lifecycle/server/distribution contracts: 13 files, 155/155 tests passed.
+- Broad native/lifecycle/server/distribution contracts: 13 files, 156/156 tests passed.
 - Swift contract executable, debug menu build, unsigned production archive, plist validation, strict ad-hoc signature, arm64 binary, executable mode, and archive inspection passed.
 - TypeScript syntax/type checks, owned ESLint, diff checks, and strict repository review passed with zero findings and zero blockers.
 - No real-Mac app launch, install, update, restart, reset, repair, rollback, or uninstall was performed.
@@ -40,25 +40,9 @@ started: 2026-07-27
 ## files changed
 
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
-- `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
-- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- `packages/os/scripts/lib/lifecycle/engine.ts`
-- `packages/os/scripts/lib/lifecycle/types.ts`
-- `packages/os/scripts/lib/native-lifecycle-client.ts`
+- `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
 - `packages/os/scripts/lib/native-lifecycle-endpoint.ts`
-- `packages/os/tests/distribution/release-publication-preparer.test.ts`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
-- `packages/os/tests/lifecycle-engine.test.ts`
-- `packages/os/tests/lifecycle-retention-uninstall.test.ts`
-- `packages/os/tests/macos-platform.test.ts`
-- `packages/os/tests/native-lifecycle-client.test.ts`
 - `packages/os/tests/native-lifecycle-endpoint.test.ts`
-- `packages/os/scripts/lib/native-lifecycle-operation.ts`
-- `packages/os/scripts/native-lifecycle-operation.ts`
-- `packages/os/tests/native-lifecycle-operation.test.ts`
 
 ## workspace-owned: files changed
 
@@ -76,6 +60,9 @@ started: 2026-07-27
 - 2026-07-27 03:30:45 `review.run`: passed — OK
 - 2026-07-27 03:31:11 `verify`: passed — OK
 - 2026-07-27 03:31:49 `verify`: passed — OK
+- 2026-07-27 03:44:19 `review.run`: passed — OK
+- 2026-07-27 03:45:40 `review.run`: passed — OK
+- 2026-07-27 03:46:11 `verify`: passed — OK
 
 ## test-first contract
 
@@ -121,6 +108,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.tmp-native-lock-failures.txt`
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
@@ -151,7 +139,7 @@ bun run task:finish
 
 - TDD red reproduced daemon self-termination risk, restart sequence rejection, destructive-repair aliasing, missing worker closure, and update target race.
 - Focused TypeScript + Swift repair contracts passed.
-- Broad regression: 13 files, 155/155 tests passed.
+- Broad regression: 13 files, 156/156 tests passed.
 - TypeScript syntax/typecheck: passed.
 - Owned ESLint and diff checks: passed.
 - Swift contract/build/package/archive gate: passed.
@@ -162,3 +150,9 @@ bun run task:finish
 - Observed RED: the endpoint projected the prior local `update/succeeded` instead of detached `restart/running`; the Swift transport retained `daemon-old` sequence 100 over `daemon-new` sequence 1. The transport now compares instance/observedAt across daemon epochs, and detached launch invalidates prior local-operation generations while active persisted state receives defensive precedence.
 
 - PR #1669 review follow-up GREEN: endpoint precedence contract passed 9/9; Swift transport/client contracts passed; broad regression increased to 155/155; syntax/type checks and strict review remained clean with zero findings.
+
+- Fresh Codex review of `fa9b14aa` found a P1 delayed-worker race: a queued worker suspended past the 30-second replacement window could resume and execute after a replacement operation was accepted. Added a RED ownership contract requiring the superseded worker to exit without state mutation or lifecycle calls.
+
+- Observed RED: the superseded delayed worker invoked canonical restart and overwrote the replacement queue. The operation store now provides a bounded owner-only filesystem lock; launcher replacement, worker claim, failure callbacks, and terminal writes are serialized and conditional on matching `operationId`. A superseded worker exits before engine construction or lifecycle calls.
+
+- P1 ownership-race GREEN: owner-only lock serializes stale replacement and worker claim; every transition verifies matching `operationId`; superseded workers exit before lifecycle-engine construction. Broad regression is now 156/156, TypeScript checks and owned lint pass, Swift contract/build/package passes, and strict review remains clean.

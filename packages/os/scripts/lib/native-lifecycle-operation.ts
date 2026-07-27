@@ -1,9 +1,13 @@
 import {
   chmodSync,
+  closeSync,
   existsSync,
   mkdirSync,
+  openSync,
   readFileSync,
   renameSync,
+  statSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { spawn, type SpawnOptions } from 'node:child_process';
@@ -50,6 +54,7 @@ export type NativeLifecycleOperationStore = {
   path: string;
   read(): NativeLifecycleOperationState | undefined;
   write(state: NativeLifecycleOperationState): void;
+  withLock<T>(action: () => T): T;
 };
 
 type SpawnedProcess = {
@@ -153,6 +158,87 @@ export const createNativeLifecycleOperationStore = (
 ): NativeLifecycleOperationStore => {
   const runDirectory = join(home, 'run');
   const statePath = join(runDirectory, 'native-lifecycle-operation.json');
+  const lockPath = join(runDirectory, 'native-lifecycle-operation.lock');
+
+  const ensureRunDirectory = (): void => {
+    mkdirSync(runDirectory, { recursive: true, mode: 0o700 });
+    chmodSync(runDirectory, 0o700);
+  };
+
+  const releaseLock = (): void => {
+    try {
+      unlinkSync(lockPath);
+    } catch (error: unknown) {
+      if (
+        !error ||
+        typeof error !== 'object' ||
+        !('code' in error) ||
+        error.code !== 'ENOENT'
+      ) {
+        throw error;
+      }
+    }
+  };
+
+  const acquireLock = (): (() => void) => {
+    ensureRunDirectory();
+    const deadline = Date.now() + 5_000;
+    while (Date.now() <= deadline) {
+      try {
+        const descriptor = openSync(lockPath, 'wx', 0o600);
+        try {
+          writeFileSync(
+            descriptor,
+            `${JSON.stringify({ pid: process.pid, acquiredAt: new Date().toISOString() })}\n`,
+          );
+        } finally {
+          closeSync(descriptor);
+        }
+        chmodSync(lockPath, 0o600);
+        return releaseLock;
+      } catch (error: unknown) {
+        if (
+          !error ||
+          typeof error !== 'object' ||
+          !('code' in error) ||
+          error.code !== 'EEXIST'
+        ) {
+          throw error;
+        }
+        let stale = false;
+        try {
+          const lock = JSON.parse(readFileSync(lockPath, 'utf8')) as {
+            pid?: unknown;
+          };
+          if (
+            typeof lock.pid === 'number' &&
+            Number.isSafeInteger(lock.pid) &&
+            lock.pid > 0
+          ) {
+            stale = !defaultProcessAlive(lock.pid);
+          } else {
+            stale = Date.now() - statSync(lockPath).mtimeMs > 30_000;
+          }
+        } catch (lockError: unknown) {
+          void lockError;
+          try {
+            stale = Date.now() - statSync(lockPath).mtimeMs > 30_000;
+          } catch (statError: unknown) {
+            void statError;
+            stale = true;
+          }
+        }
+        if (stale) {
+          releaseLock();
+          continue;
+        }
+        const signal = new Int32Array(new SharedArrayBuffer(4));
+        Atomics.wait(signal, 0, 0, 10);
+      }
+    }
+    throw new Error('native lifecycle operation state lock is busy');
+  };
+
   return {
     path: statePath,
     read: () => {
@@ -160,8 +246,7 @@ export const createNativeLifecycleOperationStore = (
       return parseState(JSON.parse(readFileSync(statePath, 'utf8')));
     },
     write: (state) => {
-      mkdirSync(runDirectory, { recursive: true, mode: 0o700 });
-      chmodSync(runDirectory, 0o700);
+      ensureRunDirectory();
       const temporaryPath = `${statePath}.${process.pid}.${crypto.randomUUID()}.tmp`;
       writeFileSync(temporaryPath, `${JSON.stringify(state)}\n`, {
         encoding: 'utf8',
@@ -170,6 +255,14 @@ export const createNativeLifecycleOperationStore = (
       chmodSync(temporaryPath, 0o600);
       renameSync(temporaryPath, statePath);
       chmodSync(statePath, 0o600);
+    },
+    withLock: (action) => {
+      const release = acquireLock();
+      try {
+        return action();
+      } finally {
+        release();
+      }
     },
   };
 };
@@ -264,24 +357,26 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
   };
 
   return {
-    read: readCurrentOperation,
+    read: () => store.withLock(readCurrentOperation),
     launch: async (operationInput) => {
-      const existing = readCurrentOperation();
-      if (existing && ACTIVE_PHASES.has(existing.phase)) {
-        throw new Error(
-          `native lifecycle operation ${existing.operationId} is already active`,
-        );
-      }
       const operation: NativeLifecycleOperation = {
         ...operationInput,
         operationId: nextOperationId(),
       };
-      store.write({
-        schemaVersion: 1,
-        operationId: operation.operationId,
-        kind: operation.kind,
-        phase: 'queued',
-        updatedAt: now().toISOString(),
+      store.withLock(() => {
+        const existing = readCurrentOperation();
+        if (existing && ACTIVE_PHASES.has(existing.phase)) {
+          throw new Error(
+            `native lifecycle operation ${existing.operationId} is already active`,
+          );
+        }
+        store.write({
+          schemaVersion: 1,
+          operationId: operation.operationId,
+          kind: operation.kind,
+          phase: 'queued',
+          updatedAt: now().toISOString(),
+        });
       });
       try {
         const child = spawnProcess(
@@ -299,20 +394,22 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
           },
         );
         const recordLaunchFailure = (error: unknown): void => {
-          const current = store.read();
-          if (
-            current?.operationId !== operation.operationId ||
-            !ACTIVE_PHASES.has(current.phase)
-          ) {
-            return;
-          }
-          store.write({
-            schemaVersion: 1,
-            operationId: operation.operationId,
-            kind: operation.kind,
-            phase: 'failed',
-            updatedAt: now().toISOString(),
-            message: safeMessage(error),
+          store.withLock(() => {
+            const current = store.read();
+            if (
+              current?.operationId !== operation.operationId ||
+              !ACTIVE_PHASES.has(current.phase)
+            ) {
+              return;
+            }
+            store.write({
+              schemaVersion: 1,
+              operationId: operation.operationId,
+              kind: operation.kind,
+              phase: 'failed',
+              updatedAt: now().toISOString(),
+              message: safeMessage(error),
+            });
           });
         };
         child.once('error', recordLaunchFailure);
@@ -327,13 +424,18 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
         child.unref();
         return { accepted: true, operationId: operation.operationId };
       } catch (error: unknown) {
-        store.write({
-          schemaVersion: 1,
-          operationId: operation.operationId,
-          kind: operation.kind,
-          phase: 'failed',
-          updatedAt: now().toISOString(),
-          message: safeMessage(error),
+        store.withLock(() => {
+          const current = store.read();
+          if (current?.operationId === operation.operationId) {
+            store.write({
+              schemaVersion: 1,
+              operationId: operation.operationId,
+              kind: operation.kind,
+              phase: 'failed',
+              updatedAt: now().toISOString(),
+              message: safeMessage(error),
+            });
+          }
         });
         throw new Error(safeMessage(error));
       }
@@ -356,6 +458,26 @@ export const executeNativeLifecycleOperation = async (input: {
   const now = input.now ?? (() => new Date());
   const processId = input.processId ?? process.pid;
   const store = input.store ?? createNativeLifecycleOperationStore(input.home);
+  const claimed = store.withLock(() => {
+    const current = store.read();
+    if (
+      current?.operationId !== input.operation.operationId ||
+      current.phase !== 'queued'
+    ) {
+      return false;
+    }
+    store.write({
+      schemaVersion: 1,
+      operationId: input.operation.operationId,
+      kind: input.operation.kind,
+      phase: 'running',
+      updatedAt: now().toISOString(),
+      workerPid: processId,
+    });
+    return true;
+  });
+  if (!claimed) return;
+
   const engine =
     input.engine ??
     createDefaultLifecycleEngine({
@@ -368,24 +490,22 @@ export const executeNativeLifecycleOperation = async (input: {
     phase: NativeLifecycleOperationState['phase'],
     message?: string,
   ): void => {
-    if (
-      input.operation.kind === 'uninstall' &&
-      phase !== 'running' &&
-      !existsSync(input.home)
-    ) {
+    if (input.operation.kind === 'uninstall' && !existsSync(input.home)) {
       return;
     }
-    store.write({
-      schemaVersion: 1,
-      operationId: input.operation.operationId,
-      kind: input.operation.kind,
-      phase,
-      updatedAt: now().toISOString(),
-      ...(phase === 'running' ? { workerPid: processId } : {}),
-      ...(message ? { message } : {}),
+    store.withLock(() => {
+      const current = store.read();
+      if (current?.operationId !== input.operation.operationId) return;
+      store.write({
+        schemaVersion: 1,
+        operationId: input.operation.operationId,
+        kind: input.operation.kind,
+        phase,
+        updatedAt: now().toISOString(),
+        ...(message ? { message } : {}),
+      });
     });
   };
-  write('running');
   try {
     switch (input.operation.kind) {
       case 'update':
