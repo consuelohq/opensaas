@@ -301,6 +301,37 @@ describe('native lifecycle endpoint', () => {
     expect(launched).toEqual([{ kind: 'restart' }]);
   });
 
+  it('should hide and reject restart when no installation exists', async () => {
+    const { engine } = fakeEngine();
+    engine.status = vi.fn(async () => ({
+      operation: 'status',
+      changed: false,
+      installState: 'no-install',
+      preferences: { channel: 'stable', notifications: { mode: 'on' } },
+      detail: { reason: 'not installed' },
+    }));
+    const launched: NativeLifecycleOperationInput[] = [];
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      managementMode: 'source',
+      launchOperation: async (operation) => {
+        launched.push(operation);
+        return { accepted: true, operationId: `source-${operation.kind}` };
+      },
+    });
+
+    await expect(controller.handle({ kind: 'status.get' })).resolves.toMatchObject({
+      install: { state: 'not-installed' },
+      runtime: { state: 'stopped' },
+      services: [{ id: 'consuelo-os', state: 'stopped' }],
+      actions: { restart: false },
+    });
+    await expect(controller.handle({ kind: 'service.restart' })).rejects.toThrow(
+      'restart is unavailable when Consuelo OS is not installed',
+    );
+    expect(launched).toEqual([]);
+  });
+
   it('should keep a source-managed daemon healthy when an unrelated installed release is corrupt', async () => {
     const { engine } = fakeEngine();
     engine.status = vi.fn(async () => ({

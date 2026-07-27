@@ -706,6 +706,10 @@ export const createNativeLifecycleEndpointController = (
         ? undefined
         : candidateOperation;
     const projectedRuntimeState = runtimeState(status, managementMode);
+    const snapshotActions =
+      status.installState === 'no-install'
+        ? { ...actions, restart: false }
+        : actions;
     return {
       schemaVersion: 1,
       instanceId,
@@ -752,7 +756,7 @@ export const createNativeLifecycleEndpointController = (
       },
       ...(workspace ? { workspace } : {}),
       connection: { state: 'online' },
-      actions,
+      actions: snapshotActions,
     };
   };
 
@@ -761,6 +765,13 @@ export const createNativeLifecycleEndpointController = (
       throw new Error(
         'release lifecycle actions are not available for source-managed runtimes',
       );
+    }
+  };
+
+  const requireRestartableInstallation = async (): Promise<void> => {
+    const status = await input.engine.status();
+    if (status.installState === 'no-install') {
+      throw new Error('restart is unavailable when Consuelo OS is not installed');
     }
   };
 
@@ -811,6 +822,7 @@ export const createNativeLifecycleEndpointController = (
             }
             return launchDetachedOperation({ kind: 'repair' });
           case 'service.restart':
+            await requireRestartableInstallation();
             return launchDetachedOperation({ kind: 'restart' });
           case 'preferences.notifications.set':
             return runLightweightOperation(() =>

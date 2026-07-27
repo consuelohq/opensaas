@@ -44,7 +44,7 @@ started: 2026-07-27
 - Source-runtime projection and action gating are implemented.
 - Codex P2 review found that source mode could still display an unrelated activated release version; fixed test-first so source snapshots always use `sourceVersion`.
 - Focused TypeScript and Swift contracts, strict review, and full verify are green.
-- All three Codex P2 findings and both CodeRabbit findings are fixed.
+- All four Codex P2 findings and both CodeRabbit findings are fixed.
 - Ready to publish the final boundary correction, disposition both new Codex findings, and complete CI.
 - Socket integration works after the human daemon restart checkpoint.
 - Ko's daemon is source-managed from `/Users/kokayi/Dev/opensaas`, while lifecycle inspection assumes configured nodes are signed-release installations.
@@ -54,10 +54,8 @@ started: 2026-07-27
 
 ## files changed
 
-- `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
-- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
-- `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
-- `packages/os/tests/macos-platform.test.ts`
+- `packages/os/scripts/lib/native-lifecycle-endpoint.ts`
+- `packages/os/tests/native-lifecycle-endpoint.test.ts`
 
 
 ## workspace-owned: files changed
@@ -90,6 +88,8 @@ started: 2026-07-27
 - Codex P2 RED: staging/test-home/dev-slot entrypoints were misclassified as release-managed; source status with a corrupt unrelated release rendered failed.
 - Codex P2 GREEN: release mode is limited to `runtime/current` and `runtime/releases`; source runtime health ignores partial/corrupt installed-release state.
 - GREEN: 73 focused TypeScript tests, package typecheck, strict review, and full verify pass after the boundary corrections.
+- Codex P2 RED: `no-install` snapshots still advertised Restart and the backend accepted it.
+- Codex P2 GREEN: restart availability and authorization now require an installed state; 74 focused TypeScript tests, typecheck, strict review, and full verify pass.
 - 2026-07-27 18:07:36 `review.run`: failed — COMMAND_FAILED
 - 2026-07-27 18:08:06 `review.run`: passed — OK
 - 2026-07-27 18:08:30 `verify`: passed — OK
@@ -99,6 +99,8 @@ started: 2026-07-27
 - 2026-07-27 18:21:20 `verify`: passed — OK
 - 2026-07-27 18:24:44 `review.run`: passed — OK
 - 2026-07-27 18:24:54 `verify`: passed — OK
+- 2026-07-27 18:29:57 `review.run`: passed — OK
+- 2026-07-27 18:30:06 `verify`: passed — OK
 
 ## key decisions
 

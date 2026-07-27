@@ -5,7 +5,7 @@
   "branch": "task/os-distribution/fix-macos-lifecycle-socket-discovery",
   "base": "origin/stream/os-distribution",
   "headSha": "cbfb9daa5ba0f61f9cb4b92b2e42e7a5dc8ece31",
-  "changeHash": "3061f195f80156db9737674912337f117792f4150ae4c6c5a5089f4ae9e509ed",
+  "changeHash": "f39e11a66f7241821d41b627eebedcec1a5823b492f48eeb525d78326c68e333",
   "changedFiles": [
     "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
     "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
@@ -15,7 +15,7 @@
     "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
     "packages/os/tests/native-lifecycle-endpoint.test.ts"
   ],
-  "verifiedAt": "2026-07-27T18:24:54.303Z",
+  "verifiedAt": "2026-07-27T18:30:06.559Z",
   "review": {
     "skipped": false,
     "passed": true,
