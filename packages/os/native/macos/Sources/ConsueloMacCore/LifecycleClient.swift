@@ -76,11 +76,16 @@ public final class LifecycleClient: @unchecked Sendable {
                 return incoming
             }
         } catch {
-            if let retained = lock.withLock({ snapshot }) {
-                var offline = retained
-                offline.runtime.state = .offline
-                offline.connection = .init(state: .offline, reason: String(describing: error))
-                lock.withLock { snapshot = offline }
+            if let offline = lock.withLock({ () -> LifecycleSnapshot? in
+                guard var current = snapshot else { return nil }
+                current.runtime.state = .offline
+                current.connection = .init(
+                    state: .offline,
+                    reason: String(describing: error)
+                )
+                snapshot = current
+                return current
+            }) {
                 return offline
             }
             throw error

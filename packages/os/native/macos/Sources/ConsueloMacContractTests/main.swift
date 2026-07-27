@@ -82,6 +82,7 @@ private struct ContractSuite {
         try socketIOUsesBoundedDeadlines()
         try snapshotCacheRetainsHighestObservedSequence()
         try await overlappingRefreshesRetainTheNewestSnapshot()
+        try await failedRefreshCannotOverwriteNewerSubscriptionSnapshot()
         try await rejectedLifecycleOperationsSurfaceAsErrors()
         try await framedIPCRejectsSecretBearingLifecycleResponses()
         try await mockedFramedIPCReflectsAppUpdateThroughTypedStatus()
@@ -487,6 +488,30 @@ private struct ContractSuite {
         try expect(client.current()?.runtime.version, "1.6.0", "late stale refresh cannot regress client payload")
     }
 
+    private func failedRefreshCannotOverwriteNewerSubscriptionSnapshot() async throws {
+        let failure = BlockingDescriptionError()
+        let transport = FailingRefreshLifecycleTransport(error: failure)
+        let client = LifecycleClient(
+            transport: transport,
+            initialSnapshot: snapshot().with(sequence: 9, version: "1.5.0")
+        )
+        let subscription = client.connect { _ in }
+        defer { subscription.cancel() }
+
+        let refresh = Task { try await client.refresh() }
+        try await failure.waitUntilDescriptionRequested()
+        let newer = snapshot().with(sequence: 10, version: "1.6.0")
+        let subscriptionUpdate = Task.detached { transport.emit(newer) }
+        try await Task.sleep(nanoseconds: 20_000_000)
+        failure.releaseDescription()
+
+        _ = try await refresh.value
+        _ = await subscriptionUpdate.value
+        try expect(client.current()?.sequence, 10, "failed refresh cannot overwrite newer subscription sequence")
+        try expect(client.current()?.runtime.version, "1.6.0", "failed refresh cannot overwrite newer subscription payload")
+        try expect(client.current()?.connection.state, .online, "newer subscription remains online")
+    }
+
     private func rejectedLifecycleOperationsSurfaceAsErrors() async throws {
         let transport = RecordingLifecycleTransport(snapshot: snapshot(), acceptsMutations: false)
         let client = LifecycleClient(transport: transport)
@@ -750,6 +775,57 @@ private final class DeferredLifecycleTransport: LifecycleTransport, @unchecked S
             return pending[index]
         }
         continuation?.resume(returning: response)
+    }
+}
+
+private final class BlockingDescriptionError: Error, CustomStringConvertible, @unchecked Sendable {
+    private let stateLock = NSLock()
+    private var descriptionRequested = false
+    private let release = DispatchSemaphore(value: 0)
+
+    var description: String {
+        stateLock.withLock { descriptionRequested = true }
+        _ = release.wait(timeout: .now() + 5)
+        return "simulated refresh failure"
+    }
+
+    func waitUntilDescriptionRequested() async throws {
+        for _ in 0..<100 {
+            if stateLock.withLock({ descriptionRequested }) { return }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        throw ContractFailure.failed("timed out waiting for refresh error projection")
+    }
+
+    func releaseDescription() {
+        release.signal()
+    }
+}
+
+private final class FailingRefreshLifecycleTransport: LifecycleTransport, @unchecked Sendable {
+    private let error: BlockingDescriptionError
+    private let lock = NSLock()
+    private var listener: (@Sendable (LifecycleSnapshot) -> Void)?
+
+    init(error: BlockingDescriptionError) {
+        self.error = error
+    }
+
+    func request(_ request: LifecycleRequest) async throws -> LifecycleResponse {
+        throw error
+    }
+
+    func subscribe(_ listener: @escaping @Sendable (LifecycleSnapshot) -> Void) -> LifecycleSubscription {
+        lock.withLock { self.listener = listener }
+        return LifecycleSubscription { [weak self] in
+            guard let self else { return }
+            self.lock.withLock { self.listener = nil }
+        }
+    }
+
+    func emit(_ snapshot: LifecycleSnapshot) {
+        let callback = lock.withLock { listener }
+        callback?(snapshot)
     }
 }
 
