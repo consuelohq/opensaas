@@ -505,13 +505,18 @@ private struct ContractSuite {
 
         let refresh = Task { try await client.refresh() }
         try await failure.waitUntilDescriptionRequested()
+        defer { failure.releaseDescription() }
         let newer = snapshot().with(sequence: 10, version: "1.6.0")
         let subscriptionUpdate = Task.detached { transport.emit(newer) }
-        try await Task.sleep(nanoseconds: 20_000_000)
+        try await transport.waitUntilEmitCompleted()
+        try expect(client.current()?.sequence, 10, "subscription update completes before failed refresh resumes")
+        try expect(client.current()?.connection.state, .online, "subscription update is online before failed refresh resumes")
         failure.releaseDescription()
 
-        _ = try await refresh.value
+        let refreshSnapshot = try await refresh.value
         _ = await subscriptionUpdate.value
+        try expect(refreshSnapshot.sequence, 10, "failed refresh returns newer subscription sequence")
+        try expect(refreshSnapshot.connection.state, .online, "failed refresh preserves newer subscription state")
         try expect(client.current()?.sequence, 10, "failed refresh cannot overwrite newer subscription sequence")
         try expect(client.current()?.runtime.version, "1.6.0", "failed refresh cannot overwrite newer subscription payload")
         try expect(client.current()?.connection.state, .online, "newer subscription remains online")
@@ -811,6 +816,7 @@ private final class FailingRefreshLifecycleTransport: LifecycleTransport, @unche
     private let error: BlockingDescriptionError
     private let lock = NSLock()
     private var listener: (@Sendable (LifecycleSnapshot) -> Void)?
+    private var emitCompleted = false
 
     init(error: BlockingDescriptionError) {
         self.error = error
@@ -831,6 +837,15 @@ private final class FailingRefreshLifecycleTransport: LifecycleTransport, @unche
     func emit(_ snapshot: LifecycleSnapshot) {
         let callback = lock.withLock { listener }
         callback?(snapshot)
+        lock.withLock { emitCompleted = true }
+    }
+
+    func waitUntilEmitCompleted() async throws {
+        for _ in 0..<100 {
+            if lock.withLock({ emitCompleted }) { return }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        throw ContractFailure.failed("timed out waiting for subscription callback completion")
     }
 }
 

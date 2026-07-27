@@ -28,6 +28,7 @@ public final class LifecycleClient: @unchecked Sendable {
     private let transport: any LifecycleTransport
     private let lock = NSLock()
     private var snapshot: LifecycleSnapshot?
+    private var snapshotRevision: UInt64 = 0
     private var subscription: LifecycleSubscription?
 
     public init(transport: any LifecycleTransport, initialSnapshot: LifecycleSnapshot? = nil) {
@@ -43,6 +44,7 @@ public final class LifecycleClient: @unchecked Sendable {
             let accepted = self.lock.withLock { () -> LifecycleSnapshot? in
                 if let current = self.snapshot, incoming.sequence < current.sequence { return nil }
                 self.snapshot = incoming
+                self.snapshotRevision &+= 1
                 return incoming
             }
             if let accepted { listener(accepted) }
@@ -65,6 +67,7 @@ public final class LifecycleClient: @unchecked Sendable {
 
     @discardableResult
     public func refresh() async throws -> LifecycleSnapshot {
+        let revisionAtStart = lock.withLock { snapshotRevision }
         do {
             let response = try await transport.request(.statusGet)
             guard case let .snapshot(incoming) = response else {
@@ -73,17 +76,21 @@ public final class LifecycleClient: @unchecked Sendable {
             return lock.withLock {
                 if let current = snapshot, incoming.sequence < current.sequence { return current }
                 snapshot = incoming
+                snapshotRevision &+= 1
                 return incoming
             }
         } catch {
+            let reason = String(describing: error)
             if let offline = lock.withLock({ () -> LifecycleSnapshot? in
                 guard var current = snapshot else { return nil }
+                guard snapshotRevision == revisionAtStart else { return current }
                 current.runtime.state = .offline
                 current.connection = .init(
                     state: .offline,
-                    reason: String(describing: error)
+                    reason: reason
                 )
                 snapshot = current
+                snapshotRevision &+= 1
                 return current
             }) {
                 return offline
