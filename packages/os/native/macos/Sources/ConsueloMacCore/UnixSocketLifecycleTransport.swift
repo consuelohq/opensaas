@@ -11,6 +11,7 @@ public enum UnixSocketLifecycleError: Error, CustomStringConvertible, Equatable 
     case endpointNotSocket(String)
     case endpointOwnerMismatch(expected: UInt32, actual: UInt32)
     case endpointPermissionsTooBroad(UInt16)
+    case socketOptionFailed(Int32)
 
     public var description: String {
         switch self {
@@ -23,6 +24,7 @@ public enum UnixSocketLifecycleError: Error, CustomStringConvertible, Equatable 
         case let .endpointNotSocket(path): "The lifecycle endpoint is not an owner-local Unix socket: \(path)"
         case let .endpointOwnerMismatch(expected, actual): "The lifecycle socket owner does not match the current user (expected \(expected), received \(actual))."
         case let .endpointPermissionsTooBroad(mode): "The lifecycle socket grants group or world access (mode \(String(mode, radix: 8)))."
+        case let .socketOptionFailed(code): "Unable to configure lifecycle socket write safety (errno \(code))."
         }
     }
 }
@@ -99,6 +101,12 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
         try validateEndpoint(path)
         let descriptor = Darwin.socket(AF_UNIX, SOCK_STREAM, 0)
         guard descriptor >= 0 else { throw UnixSocketLifecycleError.openFailed(errno) }
+        do {
+            try configureNoSigPipe(descriptor)
+        } catch {
+            Darwin.close(descriptor)
+            throw error
+        }
 
         var address = sockaddr_un()
         let pathBytes = Array(path.utf8) + [0]
@@ -133,6 +141,20 @@ public final class UnixSocketLifecycleTransport: LifecycleTransport, @unchecked 
             throw UnixSocketLifecycleError.connectFailed(code)
         }
         return descriptor
+    }
+
+    public static func configureNoSigPipe(_ descriptor: Int32) throws {
+        var enabled: Int32 = 1
+        let result = Darwin.setsockopt(
+            descriptor,
+            SOL_SOCKET,
+            SO_NOSIGPIPE,
+            &enabled,
+            socklen_t(MemoryLayout<Int32>.size)
+        )
+        guard result == 0 else {
+            throw UnixSocketLifecycleError.socketOptionFailed(errno)
+        }
     }
 
     public static func validateEndpoint(_ path: String) throws {

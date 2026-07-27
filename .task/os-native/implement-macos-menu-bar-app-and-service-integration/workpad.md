@@ -54,6 +54,11 @@ started: 2026-07-26
 
 - `.github/workflows/consuelo-os-distribution-environments.yaml`
 - `packages/os/tests/distribution/workflow-contract.test.ts`
+- `packages/os/tests/macos-platform.test.ts`
+- `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
+- `packages/os/scripts/testing/macos-alpha-package.sh`
+- `packages/os/docs/macos-platform.md`
 
 
 ## workspace-owned: files changed
@@ -117,25 +122,6 @@ started: 2026-07-26
 
 ## workspace-owned: validation evidence
 
-- TDD RED: unresolved Worker 19 implementation symbols at `trc_250b63e8199a`.
-- Review RED: install-state progress exposed as healthy before the final presentation/safety fix at `trc_ca6f1206f873`.
-- Review-fix GREEN: full framed-response secret rejection, tagged-union JSON parity, stable presentation, explicit retention controls, app build, and macOS source contract at `trc_d6d65f1110b6`.
-- Final TypeScript/distribution gate: formatting, scoped lint, package typecheck, and 115 passing tests at `trc_6455424c27a1`.
-- Final Swift/release gate: contract runner, menu app build, isolated alpha bundle, valid plist, verified ad-hoc signature, executable arm64 Mach-O at `trc_ed74f2f793a6`.
-- Wait cycle started 2026-07-26 23:58 UTC.
-  - Wait reason: GitHub CI and the manually requested CodeRabbit review were still pending after commit `ddd8ea0`.
-  - Duration: 30 seconds.
-  - Resume action: immediately read PR #1666 checks and normalized reviews through the typed GitHub facade.
-  - Expected signal: the dedicated macOS check completes and/or CodeRabbit posts its structured review/findings.
-  - Fallback: if signals remain pending, record the observation and run another bounded wait cycle; if a check fails, inspect that check before any merge action.
-- Wait cycle 1 completed at 2026-07-26 23:59 UTC (`trc_5b6cdea2a94b`). Immediate verification found CodeRabbit processing the manually requested review and identified `Consuelo OS / native macos` as the single failed check while six checks remained pending (`trc_8c2ffebd0c3e`, `trc_3c003e13b511`).
-- The first failed-log retrieval was rejected because the enclosing matrix workflow was still running, so GitHub had not published logs (`trc_6088ed4b3d20`).
-- Wait cycle 2 started 2026-07-26 23:59 UTC.
-  - Wait reason: allow the distribution matrix run to finish so the failed macOS job log becomes available, while CodeRabbit continues processing.
-  - Duration: 30 seconds.
-  - Resume action: immediately retrieve the failed macOS job log, PR checks, and normalized reviews.
-  - Expected signal: completed workflow with an accessible macOS failed-step log and/or completed CodeRabbit findings.
-  - Fallback: if the workflow remains active, run one additional bounded wait; if the log is available, diagnose and repair before any merge action.
 - Wait cycle 2 completed at 2026-07-27 00:00 UTC (`trc_c8fe4cbd03fc`). The immediate parallel log request still raced the matrix completion and failed closed (`trc_e7a2048ff1ad`); structured run metadata then confirmed completion while CodeRabbit remained in progress (`trc_af6519ffa116`).
 - Completed CI evidence identified step 6, `Package the macOS alpha app`, as the failure (`trc_b01f2ce65476`). The job log showed the Swift contract runner passed, then direct script execution failed with `Permission denied` because the API-backed task publication did not preserve the local executable bit (`trc_edfb7208ca97`, focused extraction `trc_64343e2d0c9b`).
 - Recovery TDD RED: the workflow contract now requires an explicit Bash invocation and failed against the direct execution form (`trc_5cdbbdd55d33`). Recovery: invoke the portable script through `bash` in CI rather than depending on executable-mode transport.
@@ -143,6 +129,29 @@ started: 2026-07-26
 - The first recovery publication via `task.push --changed` failed closed because API publication of commit `ddd8ea0` had advanced the remote task branch while the local worktree ref remained at its pre-publication commit (`trc_afda038d6c73`). Tool discovery did not expose a separate task-sync command (`trc_d588cb2e0b68`, `trc_6da8f397fca2`, `trc_ad9f49615e27`).
 - Recovery diagnosis inspected the task-push implementation (`trc_1f974fba6477`, `trc_9a8cd02bd4f4`, `trc_747533f71de8`). Its contract deliberately applies the local/remote SHA guard only to `--changed`; explicit files are atomically committed against the live remote branch head and auto-include task metadata. Recovery: publish only the validated workflow and workflow-contract files through the typed explicit-file path, avoiding native Git and preserving remote commit ancestry.
 - The first explicit-file publication used relative paths, which the task-push process resolved from the main repository and correctly rejected as outside the selected task worktree (`trc_83d32cfd1a30`). Recovery: retry the same bounded publication using the exact task-worktree absolute paths; the failed call performed no remote mutation.
+- Explicit-file recovery publication succeeded as commit `579e8af8921d67ecf1fb064166787e0ac38e011b` (`trc_8775fce839af`), preserving ancestry from `ddd8ea0` and triggering fresh CI/CodeRabbit evaluation.
+- Wait cycle 3 started 2026-07-27 00:04 UTC.
+  - Wait reason: allow CI to evaluate recovery commit `579e8af` and CodeRabbit to finish the manually requested/incremental review.
+  - Duration: 30 seconds.
+  - Resume action: immediately inspect PR #1666 checks and normalized review findings.
+  - Expected signal: the `Consuelo OS / native macos` job passes and CodeRabbit returns either actionable findings or a completed no-findings summary.
+  - Fallback: diagnose any failed check through its logs; verify each review finding before disposition and publication.
+- Wait cycle 3 completed at 2026-07-27 00:04 UTC (`trc_0dd5f8daa1e2`). Immediate verification found no failed checks, 13 pending checks, and a completed CodeRabbit command with no new actionable findings (`trc_50049b9c4501`).
+- Independent Codex review produced three inline findings (`trc_5f3d734d4d54`):
+  1. P1 direct execution of a mode-`100644` package script — valid and already fixed by recovery commit `579e8af` through explicit Bash invocation.
+  2. P1 direct `.app` artifact upload loses executable permissions — valid; add a tar archive contract and upload the archive instead.
+  3. P2 socket writes can terminate the app through default `SIGPIPE` behavior — valid; configure and behaviorally verify `SO_NOSIGPIPE` before any lifecycle socket write.
+- TDD review RED added for archive upload/packaging and `SO_NOSIGPIPE` socket configuration before implementation.
+- Review RED reached the intended missing socket-safety symbol at `trc_45ccb6d9fce6`. Recovery implementation configures `SO_NOSIGPIPE` immediately after socket creation and archives the signed `.app` as `Consuelo.app.tar.gz` before CI upload.
+- Review GREEN: Swift lifecycle contracts, the menu-bar target build, four focused TypeScript workflow/platform tests, release packaging, archive extraction, `Info.plist` validation, arm64 Mach-O validation, and preserved executable mode all passed (`trc_476e695e9c35`).
+- Final review dispositions:
+  1. Direct execution of the mode-`100644` package script: valid; fixed by explicit Bash invocation in commit `579e8af8921d67ecf1fb064166787e0ac38e011b`.
+  2. Direct `.app` artifact upload loses executable mode: valid; fixed by producing and uploading `Consuelo.app.tar.gz`, with extraction-time executable-mode verification.
+  3. Lifecycle socket writes can receive `SIGPIPE`: valid; fixed by setting `SO_NOSIGPIPE` on every newly created descriptor before connect/write, with a behavioral `getsockopt` contract.
+- CodeRabbit completed the manually requested review with no new actionable findings (`trc_50049b9c4501`). Grok was intentionally skipped under Ko's explicit weekly rate-limit exception; Ko will run the independent review manually after this task reaches `stream/os-native`.
+- Generated Swift build/package artifacts were removed before final publication (`trc_7e2b822edc5c`).
+- Final source-only static gate passed: Prettier, scoped ESLint, and Bash syntax validation (`trc_819a1031ed67`). ESLint emitted only the repository's known optional `packages/twenty-eslint-rules` directory warning; no rule or test failure occurred.
+- 2026-07-27 00:44:06 `verify`: passed — OK
 
 ## key decisions
 
@@ -218,6 +227,7 @@ bun run task:finish
 - `packages/os/docs/linux-platform.md`
 - `packages/os/docs/windows-platform.md`
 - `packages/os/native/macos/Package.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
 - `packages/os/package.json`
 - `packages/os/plans/consuelo-os-foundation/environment-registry.md`
 - `packages/os/plans/consuelo-os-foundation/plan.md`
@@ -231,17 +241,19 @@ bun run task:finish
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
 - `packages/os/scripts/lib/native-lifecycle-client.ts`
+- `packages/os/scripts/testing/macos-alpha-package.sh`
 - `packages/os/skills/senior-engineer/SKILL.md`
 - `packages/os/skills/task/SKILL.md`
 - `packages/os/tests/distribution/lifecycle-contract.test.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/distribution/workflow-contract.test.ts`
 - `packages/os/tests/linux-platform.test.ts`
+- `packages/os/tests/macos-platform.test.ts`
 - `packages/os/tests/native-lifecycle-client.test.ts`
 - `packages/os/tests/windows-platform.test.ts`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-27 00:03:37 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 00:43:19 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
 
-- 2026-07-27 00:03:47 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`
+- 2026-07-27 00:43:38 apply-patch: `.task/os-native/implement-macos-menu-bar-app-and-service-integration/workpad.md`

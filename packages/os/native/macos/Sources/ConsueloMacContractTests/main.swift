@@ -74,6 +74,7 @@ private struct ContractSuite {
         try multiNodePresentationExplainsDefaultOfflineStaleAndRevokedState()
         try diagnosticsRedactionRemovesRepresentativeCredentialsAndLocalPaths()
         try endpointValidationRejectsNonSocketFiles()
+        try socketWritesDisableSigPipe()
         try await framedIPCRejectsSecretBearingLifecycleResponses()
         try await mockedFramedIPCReflectsAppUpdateThroughTypedStatus()
         try await closingShellOnlyCancelsSubscriptionAndNeverStopsService()
@@ -328,6 +329,23 @@ private struct ContractSuite {
         try expectThrows("regular files cannot impersonate the lifecycle socket") {
             try UnixSocketLifecycleTransport.validateEndpoint(path)
         }
+    }
+
+    private func socketWritesDisableSigPipe() throws {
+        let descriptor = Darwin.socket(AF_UNIX, SOCK_STREAM, 0)
+        guard descriptor >= 0 else {
+            throw ContractFailure.failed("test socket failed: errno \(errno)")
+        }
+        defer { Darwin.close(descriptor) }
+
+        try UnixSocketLifecycleTransport.configureNoSigPipe(descriptor)
+
+        var enabled: Int32 = 0
+        var length = socklen_t(MemoryLayout<Int32>.size)
+        guard Darwin.getsockopt(descriptor, SOL_SOCKET, SO_NOSIGPIPE, &enabled, &length) == 0 else {
+            throw ContractFailure.failed("SO_NOSIGPIPE inspection failed: errno \(errno)")
+        }
+        try expect(enabled, 1, "lifecycle socket suppresses SIGPIPE")
     }
 
     private func framedIPCRejectsSecretBearingLifecycleResponses() async throws {

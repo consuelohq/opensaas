@@ -18,7 +18,7 @@ Diagnostics export is lifecycle-engine owned. The native redactor removes repres
 
 ## Build and release boundary
 
-The `macos-26` arm64 CI lane runs the Swift contract executable, builds the menu target, creates `Consuelo.app`, applies only an ad-hoc development signature when `codesign` is available, and uploads the alpha artifact. Developer ID signing, hardened-runtime entitlements, notarization, stapling, update feeds, and promotion are downstream release gates and are intentionally absent here.
+The `macos-26` arm64 CI lane runs the Swift contract executable, builds the menu target, creates `Consuelo.app`, applies only an ad-hoc development signature when `codesign` is available, archives the bundle as `Consuelo.app.tar.gz` so Unix executable modes survive artifact transport, and uploads that alpha archive. Developer ID signing, hardened-runtime entitlements, notarization, stapling, update feeds, and promotion are downstream release gates and are intentionally absent here.
 
 ## Human checkpoint
 

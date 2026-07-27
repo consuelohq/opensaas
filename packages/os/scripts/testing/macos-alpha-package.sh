@@ -5,10 +5,12 @@ PACKAGE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SWIFT_PACKAGE="$PACKAGE_ROOT/native/macos"
 OUTPUT_DIR="${1:-$PACKAGE_ROOT/.tmp-macos-alpha}"
 APP_DIR="$OUTPUT_DIR/Consuelo.app"
+ARCHIVE_PATH="$OUTPUT_DIR/Consuelo.app.tar.gz"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$OUTPUT_DIR/Consuelo.app/Contents/MacOS"
 
 rm -rf "$APP_DIR"
+rm -f "$ARCHIVE_PATH"
 mkdir -p "$MACOS_DIR"
 
 swift build \
@@ -55,4 +57,6 @@ if command -v codesign >/dev/null 2>&1; then
   codesign --force --sign - --timestamp=none "$APP_DIR"
 fi
 
-printf '%s\n' "$APP_DIR"
+tar -czf "$ARCHIVE_PATH" -C "$OUTPUT_DIR" Consuelo.app
+
+printf '%s\n' "$ARCHIVE_PATH"

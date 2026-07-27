@@ -1,7 +1,10 @@
 {
   "files": [
+    "packages/os/scripts/testing/macos-alpha-package.sh",
     "packages/os/tests/distribution/runtime-bundle.test.ts",
-    "packages/workspace/scripts/task-push.js"
+    "packages/os/tests/macos-platform.test.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-27T00:03:24.605Z"
+  "updatedAt": "2026-07-27T00:42:21.447Z"
 }

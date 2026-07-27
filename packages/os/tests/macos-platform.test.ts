@@ -35,6 +35,8 @@ describe('macOS menu-bar platform', () => {
     expect(script).toContain('Consuelo.app/Contents/MacOS');
     expect(script).toContain('Info.plist');
     expect(script).toContain('swift build');
+    expect(script).toContain('Consuelo.app.tar.gz');
+    expect(script).toContain('tar -czf');
     expect(script).not.toContain('/Applications');
     expect(script).not.toContain('Developer ID Application');
     expect(script).not.toContain('notarytool');

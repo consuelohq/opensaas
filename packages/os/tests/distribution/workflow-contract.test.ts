@@ -69,6 +69,9 @@ describe('OS distribution environment workflow', () => {
           name: 'Upload the macOS alpha app',
           if: "matrix.name == 'macos'",
           uses: 'actions/upload-artifact@v4',
+          with: expect.objectContaining({
+            path: 'packages/os/.tmp-macos-alpha/Consuelo.app.tar.gz',
+          }),
         }),
       ]),
     );
