@@ -1,0 +1,114 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-distribution/fix-macos-lifecycle-socket-discovery",
+  "base": "origin/stream/os-distribution",
+  "headSha": "cbfb9daa5ba0f61f9cb4b92b2e42e7a5dc8ece31",
+  "changeHash": "cc60c1e0787d9df97e1f66797a154f89f91aa332f2c503bf37801b133707ce55",
+  "changedFiles": [
+    "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift",
+    "packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift",
+    "packages/os/scripts/lib/native-lifecycle-client.ts",
+    "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+    "packages/os/tests/macos-platform.test.ts",
+    "packages/os/tests/native-lifecycle-endpoint.test.ts"
+  ],
+  "verifiedAt": "2026-07-27T18:08:30.413Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-distribution/fix-macos-lifecycle-socket-discovery/current.json",
+        ".task/os-distribution/fix-macos-lifecycle-socket-discovery/evidence-log.json",
+        ".task/os-distribution/fix-macos-lifecycle-socket-discovery/read-log.json",
+        ".task/os-distribution/fix-macos-lifecycle-socket-discovery/session.json",
+        ".task/os-distribution/fix-macos-lifecycle-socket-discovery/workpad.md",
+        ".task/tasks/os-distribution/fix-macos-lifecycle-socket-discovery.json",
+        "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
+        "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+        "packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift",
+        "packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift",
+        "packages/os/scripts/lib/native-lifecycle-client.ts",
+        "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+        "packages/os/tests/macos-platform.test.ts",
+        "packages/os/tests/native-lifecycle-endpoint.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
+            "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+            "packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift",
+            "packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift",
+            "packages/os/scripts/lib/native-lifecycle-client.ts",
+            "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+            "packages/os/tests/macos-platform.test.ts",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5,
+          "outputTail": "aw-steering\n\n  $ bun run task:hook\n    bun ./scripts/task-hook.js\n\n  $ bun run operator\n    bun ./operator/operator.ts\n\n  $ bun run doctor:watch\n    bun ./scripts/doctor-watch.ts\n\n  $ bun run artifact:render\n    bun ./scripts/artifact-render.ts\n\n  $ bun run artifact:publish\n    bun ./scripts/artifacts.ts publish\n\n  $ bun run artifact:validate\n    bun ./scripts/artifact-validate.ts\n\n  $ bun run semantic:embeddings\n    bun ./scripts/semantic-embeddings.js\n\n  $ bun run cloudflare:workspace-edge:dev\n    wrangler dev --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:deploy:dry-run\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n\n  $ bun run cloudflare:workspace-edge:deploy\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:migrate\n    wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:seed\n    bun ./scripts/seed-workspace-edge-route.ts\n\n  $ bun run platform:managed-os-mcp-ingress:provision\n    bun ./scripts/provision-managed-os-mcp-ingress-policy.ts\n\n  $ bun run smoke:workspace-edge\n    bun ./scripts/smoke-workspace-edge.ts\n\n  $ bun run media\n    bun ./scripts/media.ts\n\n  $ bun run media:doctor\n    bun ./scripts/media.ts doctor --json\n\n  $ bun run media:install\n    bun ./scripts/media.ts install\n\n  $ bun run media:screenshot\n    bun ./scripts/media.ts screenshot render\n\n  $ bun run media:test\n    vitest run tests/media\n\n  $ bun run media:test:manifest\n    vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts\n\n  $ bun run media:test:deps\n    vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts\n\n  $ bun run media:test:contracts\n    vitest run tests/media/06-effect-architecture.test.ts tests/media/07-contracts-asset.test.ts tests/media/08-contracts-timeline.test.ts tests/media/09-contracts-render-result.test.ts tests/media/10-cli-json-envelope.test.ts\n\n  $ bun run media:test:core\n    vitest run tests/media/11-core-probe.test.ts tests/media/12-core-frames-extract.test.ts tests/media/13-core-timeline-validate.test.ts tests/media/14-core-compose.test.ts tests/media/15-core-qa.test.ts\n\n  $ bun run media:test:youtube\n    vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:audio\n    vitest run tests/media/20-audio-transcribe.test.ts\n\n  $ bun run media:test:vision\n    vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts\n\n  $ bun run media:test:render\n    vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts\n\n  $ bun run media:test:handoff\n    vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts\n\n  $ bun run media:test:ingest\n    vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:svg\n    vitest run tests/media/31-svg-convert.test.ts\n\n  $ bun run media:svg\n    python3 ./scripts/media-svg.py\n\n  $ bun run trace:watch\n    bun ./scripts/trace-watch.ts\n\n  $ bun run generate-tool-manifest:check\n    bun ./scripts/generate-tool-manifest.ts --check\n\n  $ bun run lifecycle\n    bun ./scripts/lifecycle.ts\n\n  $ bun run windows-platform\n    bun ./scripts/windows-platform.ts\n\n  $ bun run managed-components\n    bun ./scripts/managed-components.ts\n\n  $ bun run test:distribution:integration\n    bun ./scripts/testing/distribution/integration-runner.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -29,6 +29,13 @@ export type NotificationPreference =
   | { state: 'on' }
   | { state: 'off' }
   | { state: 'snoozed'; until: string };
+export type LifecycleActionAvailability = {
+  update: boolean;
+  repair: boolean;
+  rollback: boolean;
+  restart: boolean;
+  uninstall: boolean;
+};
 export type WorkspaceNode = {
   workspaceId: string;
   nodeId: string;
@@ -96,6 +103,7 @@ export type LifecycleSnapshot = {
     state: 'online' | 'offline';
     reason?: string;
   };
+  actions?: LifecycleActionAvailability;
 };
 
 export type LifecycleRequest =

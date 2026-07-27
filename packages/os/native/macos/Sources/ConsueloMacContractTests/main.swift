@@ -43,7 +43,8 @@ private struct ContractSuite {
         operation: OperationSnapshot? = nil,
         instanceId: String = "daemon-default",
         connection: ConnectionSnapshot = .init(state: .online),
-        workspace: WorkspaceSnapshot? = nil
+        workspace: WorkspaceSnapshot? = nil,
+        actions: LifecycleActionAvailability = .releaseManaged
     ) -> LifecycleSnapshot {
         LifecycleSnapshot(
             schemaVersion: 1,
@@ -59,7 +60,8 @@ private struct ContractSuite {
             operation: operation,
             preferences: .init(channelSelectionAllowed: true, notifications: .on),
             workspace: workspace,
-            connection: connection
+            connection: connection,
+            actions: actions
         )
     }
 
@@ -67,6 +69,7 @@ private struct ContractSuite {
         try derivesEveryStableMenuBarState()
         try lifecycleRequestJSONMatchesTheSharedTaggedUnion()
         try failedUpdatePreservesWorkingVersionAndSurfacesRecovery()
+        try sourceManagedRuntimeStaysHealthyAndDisablesReleaseActions()
         try offlineRetainsReadableStateAndFailsMutationsClosed()
         try mapsMenuActionsOnlyToAllowlistedLifecycleRequests()
         try destructiveRepairAndUninstallRequireExplicitConfirmation()
@@ -134,6 +137,28 @@ private struct ContractSuite {
         try expect(MenuBarLifecycleState.derive(from: failed), .repairRequired, "failed update recovery state")
         try expect(failed.runtime.version, "1.4.0", "previous working release remains visible")
         try expect(failed.operation?.message, "health gate failed", "failure reason remains available")
+    }
+
+    private func sourceManagedRuntimeStaysHealthyAndDisablesReleaseActions() throws {
+        let source = snapshot(actions: .sourceManaged)
+
+        try expect(MenuBarLifecycleState.derive(from: source), .healthy, "source-managed runtime state")
+        try expect(source.actions.repair, false, "source repair availability")
+        try expect(source.actions.uninstall, false, "source uninstall availability")
+        try expectThrows("source-managed repair is unavailable") {
+            _ = try LifecycleCommandMapper.plan(for: .retryRepair, snapshot: source)
+        }
+        try expectThrows("source-managed uninstall is unavailable") {
+            _ = try LifecycleCommandMapper.plan(
+                for: .uninstall(removeNode: false, removeUserContent: false),
+                snapshot: source
+            )
+        }
+        try expect(
+            try LifecycleCommandMapper.plan(for: .restart, snapshot: source).request,
+            .serviceRestart,
+            "source-managed restart remains available"
+        )
     }
 
     private func offlineRetainsReadableStateAndFailsMutationsClosed() throws {
@@ -226,6 +251,7 @@ private struct ContractSuite {
         try expect(decoded.connector.state, .unknown, "legacy connector default")
         try expect(decoded.preferences.channelSelectionAllowed, false, "legacy policy default")
         try expect(decoded.runtime.version, "1.3.0", "legacy runtime version")
+        try expect(decoded.actions, .releaseManaged, "legacy action availability default")
     }
 
     private func rejectsUnsupportedLifecycleSchemaVersions() throws {

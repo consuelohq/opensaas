@@ -1,0 +1,25 @@
+{
+  "files": [
+    ".task/os-distribution/fix-macos-lifecycle-socket-discovery/workpad.md",
+    "packages/os/docs/macos-platform.md",
+    "packages/os/native/macos/Package.swift",
+    "packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift",
+    "packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift",
+    "packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/lifecycle/paths.ts",
+    "packages/os/scripts/lib/lifecycle/state.ts",
+    "packages/os/scripts/lib/lifecycle/types.ts",
+    "packages/os/scripts/lib/native-lifecycle-client.ts",
+    "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+    "packages/os/scripts/server.ts",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/macos-platform.test.ts",
+    "packages/os/tests/native-lifecycle-endpoint.test.ts"
+  ],
+  "updatedAt": "2026-07-27T18:07:20.158Z"
+}

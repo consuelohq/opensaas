@@ -120,6 +120,7 @@ public enum LifecycleCommandError: Error, Equatable, CustomStringConvertible {
     case channelSelectionDenied
     case nodeUnavailable
     case destructiveRepairUnsupported
+    case actionUnavailable(String)
 
     public var description: String {
         switch self {
@@ -129,6 +130,7 @@ public enum LifecycleCommandError: Error, Equatable, CustomStringConvertible {
         case .channelSelectionDenied: "Channel selection is disabled by policy."
         case .nodeUnavailable: "The selected workspace node is unavailable."
         case .destructiveRepairUnsupported: "Destructive repair is not supported by the lifecycle engine."
+        case let .actionUnavailable(action): "\(action) is unavailable for this runtime."
         }
     }
 }
@@ -146,24 +148,28 @@ public enum LifecycleCommandMapper {
             return .init(request: nil)
         case .update:
             try requireOnline()
+            guard snapshot.actions.update else { throw LifecycleCommandError.actionUnavailable("Update") }
             guard let target = snapshot.updates.latestVersion, snapshot.updates.available > 0 else {
                 throw LifecycleCommandError.updateUnavailable
             }
             return .init(request: .updateApply(targetVersion: target))
         case .retryRepair:
             try requireOnline()
+            guard snapshot.actions.repair else { throw LifecycleCommandError.actionUnavailable("Repair") }
             return .init(request: .repairRun(destructive: false))
         case .destructiveRepair:
             try requireOnline()
             throw LifecycleCommandError.destructiveRepairUnsupported
         case .rollback:
             try requireOnline()
+            guard snapshot.actions.rollback else { throw LifecycleCommandError.actionUnavailable("Rollback") }
             guard let target = snapshot.updates.rollbackVersion else {
                 throw LifecycleCommandError.rollbackUnavailable
             }
             return .init(request: .updateRollback(targetVersion: target))
         case .restart:
             try requireOnline()
+            guard snapshot.actions.restart else { throw LifecycleCommandError.actionUnavailable("Restart") }
             return .init(request: .serviceRestart)
         case let .setNotifications(preference):
             try requireOnline()
@@ -185,6 +191,7 @@ public enum LifecycleCommandMapper {
             return .init(request: .diagnosticsExport)
         case let .uninstall(removeNode, removeUserContent):
             try requireOnline()
+            guard snapshot.actions.uninstall else { throw LifecycleCommandError.actionUnavailable("Uninstall") }
             return .init(
                 request: .uninstallExecute(removeNode: removeNode, removeUserContent: removeUserContent),
                 confirmation: .uninstall

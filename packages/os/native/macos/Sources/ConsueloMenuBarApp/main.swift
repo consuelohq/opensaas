@@ -51,16 +51,20 @@ private struct ConsueloMenu: View {
                 )
 
                 Divider()
-                if snapshot.updates.available > 0 {
+                if snapshot.actions.update && snapshot.updates.available > 0 {
                     Button("Update to \(snapshot.updates.latestVersion ?? "latest")") {
                         model.perform(.update)
                     }
                 }
-                Button("Retry repair") { model.perform(.retryRepair) }
-                if snapshot.updates.rollbackVersion != nil {
+                if snapshot.actions.repair {
+                    Button("Retry repair") { model.perform(.retryRepair) }
+                }
+                if snapshot.actions.rollback && snapshot.updates.rollbackVersion != nil {
                     Button("Rollback…") { model.perform(.rollback) }
                 }
-                Button("Restart services") { model.perform(.restart) }
+                if snapshot.actions.restart {
+                    Button("Restart services") { model.perform(.restart) }
+                }
 
                 if let workspace = snapshot.workspace {
                     Divider()
@@ -97,15 +101,17 @@ private struct ConsueloMenu: View {
                 Divider()
                 Button("Open launcher") { model.perform(.openLauncher) }
                 Button("Export diagnostics") { model.perform(.exportDiagnostics) }
-                Menu("Uninstall") {
-                    Button("Keep node and user content…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: false, removeUserContent: false))
-                    }
-                    Button("Remove node registration…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: true, removeUserContent: false))
-                    }
-                    Button("Remove user content…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: true, removeUserContent: true))
+                if snapshot.actions.uninstall {
+                    Menu("Uninstall") {
+                        Button("Keep node and user content…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: false, removeUserContent: false))
+                        }
+                        Button("Remove node registration…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: true, removeUserContent: false))
+                        }
+                        Button("Remove user content…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: true, removeUserContent: true))
+                        }
                     }
                 }
             }
