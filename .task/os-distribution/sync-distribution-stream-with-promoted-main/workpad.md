@@ -108,7 +108,9 @@ started: 2026-07-27
 
 ## workspace-owned: files read
 
+- `packages/os/scripts/lib/native-lifecycle-endpoint.ts`
 - `packages/os/scripts/lib/native-lifecycle-operation.ts`
+- `packages/os/tests/native-lifecycle-endpoint.test.ts`
 - `packages/os/tests/native-lifecycle-operation.test.ts`
 
 ## review finding verification and fixes
@@ -139,3 +141,8 @@ started: 2026-07-27
 - Focused regression rerun: 3 files and 41 tests passed, trace `trc_b1d6edf8766d`.
 - Final strict review: 0 owned, pre-existing, or blocking issues, trace `trc_2d00731733c8`.
 - Final full verify: passed and publish-valid, trace `trc_b7d18f4ff138`.
+- 2026-07-27 05:41:29 `review.run`: passed — OK
+- 2026-07-27 05:41:37 `verify`: passed — OK
+- Additional Codex finding verified: timed-out release checks could overlap. RED trace `trc_3e7c479c964d`; fixed with generation-safe single-flight inspection.
+- Single-flight GREEN: 3 files and 42 tests passed, trace `trc_b05657fae04d`.
+- Post-single-flight strict review clean, trace `trc_50574c2a633e`; full verify publish-valid, trace `trc_b0a4fbb02bef`.

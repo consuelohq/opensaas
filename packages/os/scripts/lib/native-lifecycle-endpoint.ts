@@ -399,43 +399,63 @@ type ReleaseInspector = (() => Promise<ReleaseInspection>) & {
   invalidate(): void;
 };
 
-const createDefaultReleaseInspector = (input: {
+export const createDefaultReleaseInspector = (input: {
   engine: LifecycleEngine;
   home?: string;
   now?: () => number;
   ttlMs?: number;
 }): ReleaseInspector => {
   let cached: { expiresAt: number; value: ReleaseInspection } | undefined;
+  let inFlight: Promise<ReleaseInspection> | undefined;
+  let generation = 0;
   const now = input.now ?? Date.now;
   const ttlMs = input.ttlMs ?? 60_000;
-  const inspect = async (): Promise<ReleaseInspection> => {
-    if (cached && cached.expiresAt > now()) return cached.value;
-    let rollbackVersion: string | undefined;
-    try {
-      rollbackVersion = readLifecycleReleaseReference(input.home, 'previous')
-        ?.manifest.version;
-    } catch {
-      rollbackVersion = undefined;
-    }
-    let value: ReleaseInspection = {
-      available: 0,
-      ...(rollbackVersion ? { rollbackVersion } : {}),
-    };
-    try {
-      const checked = await input.engine.update({ check: true });
-      value = {
-        available: checked.updateAvailable ? 1 : 0,
-        ...(checked.version ? { latestVersion: checked.version } : {}),
+  const inspect = (): Promise<ReleaseInspection> => {
+    if (cached && cached.expiresAt > now()) return Promise.resolve(cached.value);
+    if (inFlight) return inFlight;
+    const startedGeneration = generation;
+    const operation = (async (): Promise<ReleaseInspection> => {
+      let rollbackVersion: string | undefined;
+      try {
+        rollbackVersion = readLifecycleReleaseReference(input.home, 'previous')
+          ?.manifest.version;
+      } catch {
+        rollbackVersion = undefined;
+      }
+      let value: ReleaseInspection = {
+        available: 0,
         ...(rollbackVersion ? { rollbackVersion } : {}),
       };
-    } catch {
-      // Release inspection is optional status enrichment; lifecycle mutations still fail closed.
-    }
-    cached = { expiresAt: now() + ttlMs, value };
-    return value;
+      try {
+        const checked = await input.engine.update({ check: true });
+        value = {
+          available: checked.updateAvailable ? 1 : 0,
+          ...(checked.version ? { latestVersion: checked.version } : {}),
+          ...(rollbackVersion ? { rollbackVersion } : {}),
+        };
+      } catch {
+        // Release inspection is optional status enrichment; lifecycle mutations still fail closed.
+      }
+      if (generation === startedGeneration) {
+        cached = { expiresAt: now() + ttlMs, value };
+      }
+      return value;
+    })();
+    inFlight = operation;
+    operation.then(
+      () => {
+        if (inFlight === operation) inFlight = undefined;
+      },
+      () => {
+        if (inFlight === operation) inFlight = undefined;
+      },
+    );
+    return operation;
   };
   inspect.invalidate = () => {
+    generation += 1;
     cached = undefined;
+    inFlight = undefined;
   };
   return inspect;
 };

@@ -12,6 +12,7 @@ import type {
 } from '../scripts/lib/lifecycle';
 import {
   NATIVE_LIFECYCLE_MAX_PAYLOAD_BYTES,
+  createDefaultReleaseInspector,
   createNativeLifecycleEndpointController,
   encodeNativeLifecycleFrame,
   normalizeNativeLifecycleWorkspacePayload,
@@ -218,6 +219,50 @@ describe('native lifecycle endpoint', () => {
     expect(JSON.stringify(first)).not.toMatch(
       /token|secret|password|private.?key/i,
     );
+  });
+
+  it('deduplicates in-flight release checks and prevents invalidated results from repopulating the cache', async () => {
+    const { engine } = fakeEngine();
+    let resolveFirst!: (value: LifecycleOperationResult) => void;
+    const firstCheck = new Promise<LifecycleOperationResult>((resolve) => {
+      resolveFirst = resolve;
+    });
+    engine.update = vi
+      .fn()
+      .mockReturnValueOnce(firstCheck)
+      .mockResolvedValueOnce({
+        operation: 'update',
+        changed: false,
+        updateAvailable: true,
+        version: '2.0.0',
+      });
+    const inspect = createDefaultReleaseInspector({
+      engine,
+      now: () => 0,
+      ttlMs: 60_000,
+    });
+
+    const first = inspect();
+    const shared = inspect();
+    expect(engine.update).toHaveBeenCalledTimes(1);
+
+    inspect.invalidate();
+    const afterInvalidation = inspect();
+    expect(engine.update).toHaveBeenCalledTimes(2);
+
+    resolveFirst({
+      operation: 'update',
+      changed: false,
+      updateAvailable: true,
+      version: '1.5.0',
+    });
+    await expect(first).resolves.toMatchObject({ latestVersion: '1.5.0' });
+    await expect(shared).resolves.toMatchObject({ latestVersion: '1.5.0' });
+    await expect(afterInvalidation).resolves.toMatchObject({
+      latestVersion: '2.0.0',
+    });
+    await expect(inspect()).resolves.toMatchObject({ latestVersion: '2.0.0' });
+    expect(engine.update).toHaveBeenCalledTimes(2);
   });
 
   it('invalidates cached release inspection after a successful channel change', async () => {
