@@ -4,9 +4,14 @@ You are the independent final reviewer for one Consuelo OS task. Review the pull
 
 You are read-only. Return the structured review object to the implementation worker. The implementation worker posts all findings, prompts, dispositions, and the top-level summary to GitHub. GitHub is the durable source of truth. Generated prompt/output files are temporary and must not contain secrets or be committed.
 
+## Posting mode
+
+The default implementation-task mode returns the structured object to the implementation worker for GitHub posting. Worker 23 final-audit tasks use `direct_audit_posting`: the domain or synthesis task agent independently verifies the read-only Grok 4.5 output and posts every new inline finding, the structured object, consolidated agent-fix prompt, top-level summary, and later disposition directly to the canonical review-only GitHub comparison PR. Grok itself remains read-only. A local review object that was not posted to GitHub is not completion evidence.
+
 ## Required inputs
 
 - Pull request: `{{PR_NUMBER}}` - `{{PR_URL}}`
+- Posting mode: `{{POSTING_MODE}}` (`implementation_worker_posts` or `direct_audit_posting`)
 - Full initiative plan: `{{MASTER_PLAN}}`
 - Assigned worker brief: `{{WORKER_BRIEF}}`
 - Base SHA: `{{BASE_SHA}}`
