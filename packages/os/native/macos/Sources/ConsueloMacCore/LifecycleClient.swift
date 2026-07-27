@@ -106,7 +106,7 @@ public final class LifecycleClient: @unchecked Sendable {
             throw LifecycleClientError.unexpectedResponse(String(describing: request))
         }
         guard accepted.accepted else {
-            throw LifecycleClientError.operationRejected(accepted.operationId)
+            throw LifecycleClientError.operationRejected(accepted.error ?? accepted.operationId)
         }
         return accepted
     }

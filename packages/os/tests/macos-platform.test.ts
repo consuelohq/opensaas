@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,6 +18,8 @@ describe('macOS menu-bar platform', () => {
 
     expect(source).toContain('MenuBarExtra');
     expect(source).toContain('LifecycleClient');
+    expect(source).toContain('ReleaseChannel.userSelectableCases');
+    expect(source).not.toContain('ForEach(ReleaseChannel.allCases');
     expect(source).toContain('DiagnosticsRedactor.redactText(message)');
     expect(source).toContain('Operation:');
     expect(source).toContain('Remove node registration');
@@ -28,11 +30,16 @@ describe('macOS menu-bar platform', () => {
   });
 
   it('packages an unsigned development app without installation or production signing', async () => {
-    const script = await readFile(
-      resolve(packageRoot, 'scripts/testing/macos-alpha-package.sh'),
-      'utf8',
+    const scriptPath = resolve(
+      packageRoot,
+      'scripts/testing/macos-alpha-package.sh',
     );
+    const [script, metadata] = await Promise.all([
+      readFile(scriptPath, 'utf8'),
+      stat(scriptPath),
+    ]);
 
+    expect(metadata.mode & 0o111).not.toBe(0);
     expect(script).toContain('Consuelo.app/Contents/MacOS');
     expect(script).toContain('Info.plist');
     expect(script).toContain('swift build');
@@ -54,5 +61,25 @@ describe('macOS menu-bar platform', () => {
     expect(docs).toContain('Closing the app');
     expect(docs).toContain('Human checkpoint');
     expect(docs).toContain('macos-26');
+  });
+
+  it('starts the owner-local lifecycle endpoint from the installed Bun daemon', async () => {
+    const main = await readFile(
+      resolve(packageRoot, 'scripts/server/main.ts'),
+      'utf8',
+    );
+    const endpoint = await readFile(
+      resolve(packageRoot, 'scripts/lib/native-lifecycle-endpoint.ts'),
+      'utf8',
+    );
+
+    expect(main).toContain('startDefaultNativeLifecycleEndpoint');
+    expect(main.indexOf('startDefaultNativeLifecycleEndpoint();')).toBeLessThan(
+      main.indexOf('Bun.serve({'),
+    );
+    expect(endpoint).toContain('createDefaultLifecycleEngine');
+    expect(endpoint).toContain('createServer');
+    expect(endpoint).toContain('0o600');
+    expect(endpoint).toContain('NATIVE_LIFECYCLE_MAX_PAYLOAD_BYTES');
   });
 });
