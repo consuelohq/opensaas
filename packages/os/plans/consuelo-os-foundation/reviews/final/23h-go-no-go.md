@@ -11,6 +11,12 @@
 - Independence verification: `not recorded`
 - Synthesis brief: `packages/os/plans/consuelo-os-foundation/workers/23h-cross-wave-final-go-no-go.md`
 
+## Synthesis intent-lineage matrix
+
+| Original worker prompt        | Exact requirement/section | Implementation and repair PRs | Current implementation location | Automated evidence | Runtime/live evidence | Status | Remediation |
+| ----------------------------- | ------------------------- | ----------------------------- | ------------------------------- | ------------------ | --------------------- | ------ | ----------- |
+| No synthesis lineage recorded | -                         | -                             | -                               | -                  | -                     | -      | -           |
+
 ## Domain inputs
 
 | Domain | Report          | Candidate SHA reviewed | Status         | Unresolved or waived items | GitHub evidence |

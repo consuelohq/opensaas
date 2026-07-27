@@ -16,6 +16,13 @@
 | ---------------------- | ------------------------- | ----------------------------- | ------------------------------- | ------------------ | --------------------- | ------ | ----------- |
 | No lineage recorded    | -                         | -                             | -                               | -                  | -                     | -      | -           |
 
+## Required GitHub review outputs
+
+- Structured review object: `not recorded`
+- Top-level review summary: `not recorded`
+- Consolidated agent-fix prompt: `not recorded`
+- Current finding-disposition index: `not recorded`
+
 ## High-signal code-review findings
 
 | Finding ID           | Priority / severity | Category | Location | Risk | GitHub thread | Disposition |
