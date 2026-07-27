@@ -22,7 +22,7 @@ const workers = files.filter((name) => /^\d{2}-.*\.md$/.test(name));
 const expectedPrefixes = Array.from({ length: 30 }, (_, index) =>
   String(index + 1).padStart(2, '0'),
 );
-const finalAuditSubbriefs = [
+const FINAL_AUDIT_SUBBRIEFS = [
   '23a-core-runtime-lifecycle-recovery-audit.md',
   '23b-provider-control-plane-audit.md',
   '23c-web-auth-launcher-traces-security-audit.md',
@@ -32,7 +32,7 @@ const finalAuditSubbriefs = [
   '23g-repository-boundaries-operability-docs-audit.md',
   '23h-cross-wave-final-go-no-go.md',
 ];
-const finalAuditReportTemplates = [
+const FINAL_AUDIT_REPORT_TEMPLATES = [
   'README.md',
   'finding-ledger.md',
   '23a-report.md',
@@ -44,7 +44,7 @@ const finalAuditReportTemplates = [
   '23g-report.md',
   '23h-go-no-go.md',
 ];
-const finalAuditReportRoot = `${planRoot}/reviews/final`;
+const FINAL_AUDIT_REPORT_ROOT = `${planRoot}/reviews/final`;
 const references = [...readme.matchAll(/`((?:\d{2})-.*?\.md)`/g)].map(
   (match) => match[1],
 );
@@ -105,8 +105,8 @@ for (const name of workers) {
   workerTexts.push(text);
 }
 
-for (const name of finalAuditReportTemplates) {
-  const file = Bun.file(`${finalAuditReportRoot}/${name}`);
+for (const name of FINAL_AUDIT_REPORT_TEMPLATES) {
+  const file = Bun.file(`${FINAL_AUDIT_REPORT_ROOT}/${name}`);
   if (!(await file.exists())) {
     structuralFailures.push(
       `reviews/final/${name}: missing final-audit report template`,
@@ -128,9 +128,9 @@ for (const name of finalAuditReportTemplates) {
       `reviews/final/${name}: missing candidate SHA field`,
     );
   }
-  const reportMatch = name.match(/^(23[a-g])-report\.md$/);
+  const reportMatch = name.match(/^(23[a-h])-(?:report|go-no-go)\.md$/);
   if (reportMatch) {
-    const expectedBrief = finalAuditSubbriefs.find((brief) =>
+    const expectedBrief = FINAL_AUDIT_SUBBRIEFS.find((brief) =>
       brief.startsWith(`${reportMatch[1]}-`),
     );
     if (!expectedBrief || !text.includes(`workers/${expectedBrief}`)) {
@@ -141,7 +141,7 @@ for (const name of finalAuditReportTemplates) {
   }
 }
 
-for (const name of finalAuditSubbriefs) {
+for (const name of FINAL_AUDIT_SUBBRIEFS) {
   if (!files.includes(name)) {
     structuralFailures.push(`${name}: missing approved final-audit subbrief`);
     continue;

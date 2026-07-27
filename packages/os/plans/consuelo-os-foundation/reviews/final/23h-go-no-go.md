@@ -9,6 +9,7 @@
 - Ordinary promotion PR: `not recorded`
 - Reviewer task and session: `not recorded`
 - Independence verification: `not recorded`
+- Synthesis brief: `packages/os/plans/consuelo-os-foundation/workers/23h-cross-wave-final-go-no-go.md`
 
 ## Domain inputs
 
