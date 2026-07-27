@@ -19,7 +19,7 @@ import {
   resolveConsueloHomeLayout,
 } from './consuelo-home';
 import { redactLifecycleDetail } from './lifecycle/diagnostics';
-import { resolveLifecyclePaths } from './lifecycle/paths';
+import { isPathWithin, resolveLifecyclePaths } from './lifecycle/paths';
 import { readLifecycleReleaseReference } from './lifecycle/retention';
 import type {
   LifecycleEngine,
@@ -34,6 +34,7 @@ import {
 } from './native-lifecycle-operation';
 import type {
   ConnectorState,
+  LifecycleActionAvailability,
   LifecycleRequest,
   LifecycleResponse,
   LifecycleSnapshot,
@@ -63,10 +64,35 @@ type ConnectorInspection = {
 };
 
 type NativeOperationKind = NonNullable<LifecycleSnapshot['operation']>['kind'];
+export type NativeLifecycleManagementMode = 'release' | 'source';
+
+const RELEASE_MANAGED_ACTIONS: LifecycleActionAvailability = {
+  update: true,
+  repair: true,
+  rollback: true,
+  restart: true,
+  uninstall: true,
+};
+const SOURCE_MANAGED_ACTIONS: LifecycleActionAvailability = {
+  update: false,
+  repair: false,
+  rollback: false,
+  restart: true,
+  uninstall: false,
+};
+const RELEASE_ONLY_OPERATION_KINDS = new Set<NativeOperationKind>([
+  'install',
+  'update',
+  'repair',
+  'rollback',
+  'uninstall',
+]);
 
 type NativeLifecycleEndpointControllerInput = {
   engine: LifecycleEngine;
   home?: string;
+  managementMode?: NativeLifecycleManagementMode;
+  sourceVersion?: string;
   platform?: NodeJS.Platform;
   architecture?: string;
   channelSelectionAllowed?: boolean;
@@ -147,15 +173,21 @@ const managerForPlatform = (platform: NodeJS.Platform): ServiceManager => {
 
 const installState = (
   status: LifecycleStatusResult,
+  managementMode: NativeLifecycleManagementMode,
 ): LifecycleSnapshot['install'] => {
   if (status.installState === 'no-install') return { state: 'not-installed' };
+  if (managementMode === 'source' && status.installState === 'partial') {
+    return { state: 'installed' };
+  }
   return { state: 'installed' };
 };
 
 const runtimeState = (
   status: LifecycleStatusResult,
+  managementMode: NativeLifecycleManagementMode,
 ): LifecycleSnapshot['runtime']['state'] => {
   if (status.installState === 'no-install') return 'stopped';
+  if (managementMode === 'source') return 'running';
   if (status.installState === 'corrupt' || status.installState === 'partial')
     return 'failed';
   return 'running';
@@ -539,6 +571,12 @@ export const createNativeLifecycleEndpointController = (
   const instanceId = input.instanceId ?? crypto.randomUUID();
   const platform = input.platform ?? process.platform;
   const architecture = input.architecture ?? process.arch;
+  const managementMode = input.managementMode ?? 'release';
+  const actions =
+    managementMode === 'source'
+      ? SOURCE_MANAGED_ACTIONS
+      : RELEASE_MANAGED_ACTIONS;
+  const sourceVersion = input.sourceVersion?.trim() || 'source';
   const inspectRelease =
     input.inspectRelease ?? (async () => ({ available: 0 }));
   const inspectConnector =
@@ -609,11 +647,16 @@ export const createNativeLifecycleEndpointController = (
     const status = await input.engine.status();
     const observedAt = now().toISOString();
     const [release, connector, inspectedWorkspace] = await Promise.all([
-      withFallbackTimeout(
-        inspectRelease(),
-        { available: 0 },
-        enrichmentTimeoutMs,
-      ),
+      managementMode === 'source'
+        ? Promise.resolve({
+            available: 0,
+            summary: 'Source-managed development runtime',
+          })
+        : withFallbackTimeout(
+            inspectRelease(),
+            { available: 0 },
+            enrichmentTimeoutMs,
+          ),
       withFallbackTimeout(
         inspectConnector().catch((error: unknown) => ({
           state: 'unknown' as const,
@@ -653,27 +696,41 @@ export const createNativeLifecycleEndpointController = (
     const persistedIsActive =
       persistedOperation?.phase === 'queued' ||
       persistedOperation?.phase === 'running';
-    const operation = persistedIsActive
+    const candidateOperation = persistedIsActive
       ? persistedSnapshot
       : (currentOperation ?? persistedSnapshot);
+    const operation =
+      managementMode === 'source' &&
+      candidateOperation &&
+      RELEASE_ONLY_OPERATION_KINDS.has(candidateOperation.kind)
+        ? undefined
+        : candidateOperation;
+    const projectedRuntimeState = runtimeState(status, managementMode);
+    const snapshotActions =
+      status.installState === 'no-install'
+        ? { ...actions, restart: false }
+        : actions;
     return {
       schemaVersion: 1,
       instanceId,
       sequence: ++sequence,
       observedAt,
-      install: installState(status),
+      install: installState(status, managementMode),
       runtime: {
-        version: status.version ?? 'unknown',
+        version:
+          managementMode === 'source'
+            ? sourceVersion
+            : (status.version ?? 'unknown'),
         channel,
-        state: runtimeState(status),
+        state: projectedRuntimeState,
       },
       services: [
         {
           id: 'consuelo-os',
           state:
-            runtimeState(status) === 'running'
+            projectedRuntimeState === 'running'
               ? 'healthy'
-              : runtimeState(status) === 'failed'
+              : projectedRuntimeState === 'failed'
                 ? 'failed'
                 : 'stopped',
           managedBy: managerForPlatform(platform),
@@ -699,7 +756,23 @@ export const createNativeLifecycleEndpointController = (
       },
       ...(workspace ? { workspace } : {}),
       connection: { state: 'online' },
+      actions: snapshotActions,
     };
+  };
+
+  const requireReleaseManagement = (): void => {
+    if (managementMode === 'source') {
+      throw new Error(
+        'release lifecycle actions are not available for source-managed runtimes',
+      );
+    }
+  };
+
+  const requireRestartableInstallation = async (): Promise<void> => {
+    const status = await input.engine.status();
+    if (status.installState === 'no-install') {
+      throw new Error('restart is unavailable when Consuelo OS is not installed');
+    }
   };
 
   return {
@@ -709,6 +782,7 @@ export const createNativeLifecycleEndpointController = (
           case 'status.get':
             return statusSnapshot();
           case 'update.apply': {
+            requireReleaseManagement();
             const release = await inspectRelease();
             if (
               !release.latestVersion ||
@@ -724,6 +798,7 @@ export const createNativeLifecycleEndpointController = (
             });
           }
           case 'update.rollback': {
+            requireReleaseManagement();
             const release = await inspectRelease();
             if (
               !release.rollbackVersion ||
@@ -739,6 +814,7 @@ export const createNativeLifecycleEndpointController = (
             });
           }
           case 'repair.run':
+            requireReleaseManagement();
             if (request.destructive) {
               throw new Error(
                 'destructive repair is not supported by the lifecycle engine',
@@ -746,6 +822,7 @@ export const createNativeLifecycleEndpointController = (
             }
             return launchDetachedOperation({ kind: 'repair' });
           case 'service.restart':
+            await requireRestartableInstallation();
             return launchDetachedOperation({ kind: 'restart' });
           case 'preferences.notifications.set':
             return runLightweightOperation(() =>
@@ -778,6 +855,7 @@ export const createNativeLifecycleEndpointController = (
           case 'diagnostics.export':
             return runLightweightOperation(exportDiagnostics);
           case 'uninstall.execute':
+            requireReleaseManagement();
             return launchDetachedOperation({
               kind: 'uninstall',
               removeNode: request.removeNode,
@@ -939,10 +1017,28 @@ export const startNativeLifecycleEndpoint = async (input: {
   }
 };
 
+export const resolveNativeLifecycleManagementMode = (input: {
+  home: string;
+  entrypoint?: string;
+  env?: NodeJS.ProcessEnv;
+}): NativeLifecycleManagementMode => {
+  const override = input.env?.CONSUELO_OS_RUNTIME_MANAGEMENT?.trim();
+  if (override === 'source' || override === 'release') return override;
+  const entrypoint = input.entrypoint?.trim();
+  if (!entrypoint) return 'release';
+  const paths = resolveLifecyclePaths(input.home);
+  return isPathWithin(paths.currentLink, entrypoint) ||
+    isPathWithin(paths.releasesDir, entrypoint)
+    ? 'release'
+    : 'source';
+};
+
 export const startDefaultNativeLifecycleEndpoint = async (
   input: {
     home?: string;
     env?: NodeJS.ProcessEnv;
+    entrypoint?: string;
+    managementMode?: NativeLifecycleManagementMode;
   } = {},
 ): Promise<NativeLifecycleEndpoint> => {
   try {
@@ -950,6 +1046,13 @@ export const startDefaultNativeLifecycleEndpoint = async (
     const home = resolveConsueloHomeLayout(
       input.home ?? env.CONSUELO_HOME ?? env.WORKSPACE_DAEMON_CONSUELO_HOME,
     ).home;
+    const managementMode =
+      input.managementMode ??
+      resolveNativeLifecycleManagementMode({
+        home,
+        entrypoint: input.entrypoint ?? process.argv[1],
+        env,
+      });
     const engine = createDefaultLifecycleEngine({
       home,
       quiet: true,
@@ -1015,6 +1118,8 @@ export const startDefaultNativeLifecycleEndpoint = async (
     const controller = createNativeLifecycleEndpointController({
       engine,
       home,
+      managementMode,
+      sourceVersion: env.CONSUELO_OS_SOURCE_VERSION,
       launchOperation: operationLauncher.launch,
       readOperationState: operationLauncher.read,
       channelSelectionAllowed: /^(1|true|yes)$/i.test(

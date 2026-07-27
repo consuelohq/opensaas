@@ -202,6 +202,38 @@ public struct PreferenceSnapshot: Codable, Equatable, Sendable {
     }
 }
 
+public struct LifecycleActionAvailability: Codable, Equatable, Sendable {
+    public var update: Bool
+    public var repair: Bool
+    public var rollback: Bool
+    public var restart: Bool
+    public var uninstall: Bool
+
+    public init(update: Bool, repair: Bool, rollback: Bool, restart: Bool, uninstall: Bool) {
+        self.update = update
+        self.repair = repair
+        self.rollback = rollback
+        self.restart = restart
+        self.uninstall = uninstall
+    }
+
+    public static let releaseManaged = LifecycleActionAvailability(
+        update: true,
+        repair: true,
+        rollback: true,
+        restart: true,
+        uninstall: true
+    )
+
+    public static let sourceManaged = LifecycleActionAvailability(
+        update: false,
+        repair: false,
+        rollback: false,
+        restart: true,
+        uninstall: false
+    )
+}
+
 public struct ConnectionSnapshot: Codable, Equatable, Sendable {
     public var state: ConnectionState
     public var reason: String?
@@ -323,6 +355,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
         case preferences
         case workspace
         case connection
+        case actions
     }
 
     public var schemaVersion: Int
@@ -339,6 +372,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
     public var preferences: PreferenceSnapshot
     public var workspace: WorkspaceSnapshot?
     public var connection: ConnectionSnapshot
+    public var actions: LifecycleActionAvailability
 
     public init(
         schemaVersion: Int,
@@ -354,7 +388,8 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
         operation: OperationSnapshot? = nil,
         preferences: PreferenceSnapshot,
         workspace: WorkspaceSnapshot? = nil,
-        connection: ConnectionSnapshot = .init(state: .online)
+        connection: ConnectionSnapshot = .init(state: .online),
+        actions: LifecycleActionAvailability = .releaseManaged
     ) {
         self.schemaVersion = schemaVersion
         self.instanceId = instanceId
@@ -370,6 +405,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
         self.preferences = preferences
         self.workspace = workspace
         self.connection = connection
+        self.actions = actions
     }
 
     public init(from decoder: Decoder) throws {
@@ -396,6 +432,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
             ?? .init(channelSelectionAllowed: false, notifications: .on)
         workspace = try container.decodeIfPresent(WorkspaceSnapshot.self, forKey: .workspace)
         connection = try container.decodeIfPresent(ConnectionSnapshot.self, forKey: .connection) ?? .init(state: .online)
+        actions = try container.decodeIfPresent(LifecycleActionAvailability.self, forKey: .actions) ?? .releaseManaged
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -414,6 +451,7 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
         try container.encode(preferences, forKey: .preferences)
         try container.encodeIfPresent(workspace, forKey: .workspace)
         try container.encode(connection, forKey: .connection)
+        try container.encode(actions, forKey: .actions)
     }
 }
 

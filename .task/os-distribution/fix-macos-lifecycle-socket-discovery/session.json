@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_18f1bba16dd6",
+  "tmuxSession": "opensaas-os-distribution-fix-macos-lifecycle-socket-discovery-18f1bba1",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-macos-lifecycle-socket-discovery",
+  "branch": "task/os-distribution/fix-macos-lifecycle-socket-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-macos-lifecycle-socket-discovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-macos-lifecycle-socket-discovery",
+  "prNumber": 1672,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1672",
+  "createdAt": "2026-07-27T17:50:43.436Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-macos-lifecycle-socket-discovery/.task/os-distribution/fix-macos-lifecycle-socket-discovery/session.json"
+}

@@ -16,6 +16,7 @@ import {
   createNativeLifecycleEndpointController,
   encodeNativeLifecycleFrame,
   normalizeNativeLifecycleWorkspacePayload,
+  resolveNativeLifecycleManagementMode,
   startDefaultNativeLifecycleEndpoint,
   startNativeLifecycleEndpoint,
 } from '../scripts/lib/native-lifecycle-endpoint';
@@ -223,6 +224,176 @@ describe('native lifecycle endpoint', () => {
     expect(JSON.stringify(first)).not.toMatch(
       /token|secret|password|private.?key/i,
     );
+  });
+
+  it('should project a source-managed daemon as healthy and reject release-only actions', async () => {
+    const { engine } = fakeEngine();
+    engine.status = vi.fn(async () => ({
+      operation: 'status',
+      changed: false,
+      installState: 'partial',
+      version: '1.2.3',
+      preferences: { channel: 'stable', notifications: { mode: 'on' } },
+      detail: { reason: 'runtime/current is not activated' },
+    }));
+    const inspectRelease = vi.fn(async () => ({
+      available: 1,
+      latestVersion: '9.9.9',
+    }));
+    const launched: NativeLifecycleOperationInput[] = [];
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      managementMode: 'source',
+      sourceVersion: 'source',
+      inspectRelease,
+      readOperationState: () => ({
+        schemaVersion: 1,
+        operationId: 'failed-source-repair',
+        kind: 'repair',
+        phase: 'failed',
+        message: 'CONSUELO_RELEASE_BASE_URL is required',
+        updatedAt: '2026-07-27T17:55:00.000Z',
+      }),
+      launchOperation: async (operation) => {
+        launched.push(operation);
+        return { accepted: true, operationId: `source-${operation.kind}` };
+      },
+    });
+
+    await expect(controller.handle({ kind: 'status.get' })).resolves.toMatchObject({
+      install: { state: 'installed' },
+      runtime: { version: 'source', channel: 'stable', state: 'running' },
+      services: [{ id: 'consuelo-os', state: 'healthy' }],
+      updates: { available: 0 },
+      release: { summary: 'Source-managed development runtime' },
+      actions: {
+        update: false,
+        repair: false,
+        rollback: false,
+        restart: true,
+        uninstall: false,
+      },
+      connection: { state: 'online' },
+    });
+    const snapshot = await controller.handle({ kind: 'status.get' });
+    expect(snapshot).not.toHaveProperty('operation');
+    expect(inspectRelease).not.toHaveBeenCalled();
+
+    for (const request of [
+      { kind: 'update.apply', targetVersion: '9.9.9' },
+      { kind: 'update.rollback', targetVersion: '9.8.0' },
+      { kind: 'repair.run', destructive: false },
+      {
+        kind: 'uninstall.execute',
+        removeNode: false,
+        removeUserContent: false,
+      },
+    ] satisfies LifecycleRequest[]) {
+      await expect(controller.handle(request)).rejects.toThrow(
+        'not available for source-managed runtimes',
+      );
+    }
+
+    await expect(controller.handle({ kind: 'service.restart' })).resolves.toEqual({
+      accepted: true,
+      operationId: 'source-restart',
+    });
+    expect(launched).toEqual([{ kind: 'restart' }]);
+  });
+
+  it('should hide and reject restart when no installation exists', async () => {
+    const { engine } = fakeEngine();
+    engine.status = vi.fn(async () => ({
+      operation: 'status',
+      changed: false,
+      installState: 'no-install',
+      preferences: { channel: 'stable', notifications: { mode: 'on' } },
+      detail: { reason: 'not installed' },
+    }));
+    const launched: NativeLifecycleOperationInput[] = [];
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      managementMode: 'source',
+      launchOperation: async (operation) => {
+        launched.push(operation);
+        return { accepted: true, operationId: `source-${operation.kind}` };
+      },
+    });
+
+    await expect(controller.handle({ kind: 'status.get' })).resolves.toMatchObject({
+      install: { state: 'not-installed' },
+      runtime: { state: 'stopped' },
+      services: [{ id: 'consuelo-os', state: 'stopped' }],
+      actions: { restart: false },
+    });
+    await expect(controller.handle({ kind: 'service.restart' })).rejects.toThrow(
+      'restart is unavailable when Consuelo OS is not installed',
+    );
+    expect(launched).toEqual([]);
+  });
+
+  it('should keep a source-managed daemon healthy when an unrelated installed release is corrupt', async () => {
+    const { engine } = fakeEngine();
+    engine.status = vi.fn(async () => ({
+      operation: 'status',
+      changed: false,
+      installState: 'corrupt',
+      preferences: { channel: 'stable', notifications: { mode: 'on' } },
+      detail: { reason: 'runtime/current references a corrupt release' },
+    }));
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      managementMode: 'source',
+      sourceVersion: 'source',
+    });
+
+    await expect(controller.handle({ kind: 'status.get' })).resolves.toMatchObject({
+      install: { state: 'installed' },
+      runtime: { version: 'source', state: 'running' },
+      services: [{ id: 'consuelo-os', state: 'healthy' }],
+      actions: { repair: false, uninstall: false },
+    });
+  });
+
+  it('should distinguish source-managed and release-managed daemon entrypoints', () => {
+    const home = '/Users/operator/.consuelo';
+    expect(
+      resolveNativeLifecycleManagementMode({
+        home,
+        entrypoint: '/Users/operator/Dev/opensaas/packages/os/scripts/server/main.ts',
+        env: {},
+      }),
+    ).toBe('source');
+    expect(
+      resolveNativeLifecycleManagementMode({
+        home,
+        entrypoint: `${home}/runtime/releases/bundle-1/scripts/server/main.ts`,
+        env: {},
+      }),
+    ).toBe('release');
+    expect(
+      resolveNativeLifecycleManagementMode({
+        home,
+        entrypoint: `${home}/runtime/current/scripts/server/main.ts`,
+        env: {},
+      }),
+    ).toBe('release');
+    for (const directory of ['staging', 'test-homes', 'dev-slots']) {
+      expect(
+        resolveNativeLifecycleManagementMode({
+          home,
+          entrypoint: `${home}/runtime/${directory}/candidate/scripts/server/main.ts`,
+          env: {},
+        }),
+      ).toBe('source');
+    }
+    expect(
+      resolveNativeLifecycleManagementMode({
+        home,
+        entrypoint: '/tmp/otherwise-source.ts',
+        env: { CONSUELO_OS_RUNTIME_MANAGEMENT: 'release' },
+      }),
+    ).toBe('release');
   });
 
   it('should deduplicate release checks when inspection is in flight or invalidated', async () => {

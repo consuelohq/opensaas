@@ -24,6 +24,7 @@ private struct ConsueloMenu: View {
             Text(model.connectionLabel)
 
             if let snapshot = model.snapshot {
+                let actions = MenuBarActionPresentation(snapshot: snapshot)
                 Text("Version \(snapshot.runtime.version) · \(snapshot.runtime.channel.rawValue)")
                 if let summary = snapshot.release.summary, !summary.isEmpty {
                     Text(summary)
@@ -51,16 +52,20 @@ private struct ConsueloMenu: View {
                 )
 
                 Divider()
-                if snapshot.updates.available > 0 {
-                    Button("Update to \(snapshot.updates.latestVersion ?? "latest")") {
+                if let targetVersion = actions.updateTargetVersion {
+                    Button("Update to \(targetVersion)") {
                         model.perform(.update)
                     }
                 }
-                Button("Retry repair") { model.perform(.retryRepair) }
-                if snapshot.updates.rollbackVersion != nil {
+                if actions.canRepair {
+                    Button("Retry repair") { model.perform(.retryRepair) }
+                }
+                if actions.canRollback {
                     Button("Rollback…") { model.perform(.rollback) }
                 }
-                Button("Restart services") { model.perform(.restart) }
+                if actions.canRestart {
+                    Button("Restart services") { model.perform(.restart) }
+                }
 
                 if let workspace = snapshot.workspace {
                     Divider()
@@ -97,15 +102,17 @@ private struct ConsueloMenu: View {
                 Divider()
                 Button("Open launcher") { model.perform(.openLauncher) }
                 Button("Export diagnostics") { model.perform(.exportDiagnostics) }
-                Menu("Uninstall") {
-                    Button("Keep node and user content…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: false, removeUserContent: false))
-                    }
-                    Button("Remove node registration…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: true, removeUserContent: false))
-                    }
-                    Button("Remove user content…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: true, removeUserContent: true))
+                if actions.canUninstall {
+                    Menu("Uninstall") {
+                        Button("Keep node and user content…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: false, removeUserContent: false))
+                        }
+                        Button("Remove node registration…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: true, removeUserContent: false))
+                        }
+                        Button("Remove user content…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: true, removeUserContent: true))
+                        }
                     }
                 }
             }

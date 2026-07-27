@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-macos-lifecycle-socket-discovery",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1672,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1672",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1672",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1672/fix-macos-lifecycle-socket-discovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1672",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1672/fix-macos-lifecycle-socket-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-macos-lifecycle-socket-discovery",
+  "taskSession": "tsk_18f1bba16dd6",
+  "tmuxSession": "opensaas-os-distribution-fix-macos-lifecycle-socket-discovery-18f1bba1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-macos-lifecycle-socket-discovery/.task/os-distribution/fix-macos-lifecycle-socket-discovery/session.json",
+  "createdAt": "2026-07-27T17:50:43.437Z"
+}
