@@ -306,6 +306,44 @@ describe('native lifecycle endpoint', () => {
     });
   });
 
+  it('shows a newly launched detached operation over a completed local mutation', async () => {
+    const { engine } = fakeEngine();
+    let persisted: NativeLifecycleOperationState | undefined;
+    const controller = createNativeLifecycleEndpointController({
+      engine,
+      instanceId: 'daemon-operation-precedence',
+      launchOperation: async (operation) => {
+        persisted = {
+          schemaVersion: 1,
+          operationId: 'detached-restart',
+          kind: operation.kind,
+          phase: 'running',
+          updatedAt: '2026-07-27T03:20:00.000Z',
+        };
+        return { accepted: true, operationId: persisted.operationId };
+      },
+      readOperationState: () => persisted,
+    });
+
+    await controller.handle({
+      kind: 'preferences.notifications.set',
+      notifications: { state: 'off' },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await expect(
+      controller.handle({ kind: 'service.restart' }),
+    ).resolves.toEqual({
+      accepted: true,
+      operationId: 'detached-restart',
+    });
+
+    await expect(
+      controller.handle({ kind: 'status.get' }),
+    ).resolves.toMatchObject({
+      operation: { kind: 'restart', phase: 'running' },
+    });
+  });
+
   it('rejects stale target versions, nightly menu mutations, and unavailable node authority', async () => {
     const { engine } = fakeEngine();
     const controller = createNativeLifecycleEndpointController({

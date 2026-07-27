@@ -506,6 +506,7 @@ export const createNativeLifecycleEndpointController = (
     input.exportDiagnostics ?? createDefaultDiagnosticsExporter(input.home);
   const enrichmentTimeoutMs = Math.max(1, input.enrichmentTimeoutMs ?? 1_500);
   let sequence = 0;
+  let localOperationGeneration = 0;
   let currentOperation: LifecycleSnapshot['operation'];
 
   const runOperation = (
@@ -513,19 +514,25 @@ export const createNativeLifecycleEndpointController = (
     execute: () => Promise<unknown>,
   ): LifecycleResponse => {
     const id = nextOperationId();
+    const generation = ++localOperationGeneration;
     currentOperation = { kind, phase: 'queued' };
     queueMicrotask(() => {
+      if (generation !== localOperationGeneration) return;
       currentOperation = { kind, phase: 'running' };
       void execute().then(
         () => {
-          currentOperation = { kind, phase: 'succeeded' };
+          if (generation === localOperationGeneration) {
+            currentOperation = { kind, phase: 'succeeded' };
+          }
         },
         (error: unknown) => {
-          currentOperation = {
-            kind,
-            phase: 'failed',
-            message: safeMessage(error),
-          };
+          if (generation === localOperationGeneration) {
+            currentOperation = {
+              kind,
+              phase: 'failed',
+              message: safeMessage(error),
+            };
+          }
         },
       );
     });
@@ -538,7 +545,10 @@ export const createNativeLifecycleEndpointController = (
     if (!input.launchOperation) {
       throw new Error('detached lifecycle operation authority is unavailable');
     }
-    return input.launchOperation(operation);
+    const response = await input.launchOperation(operation);
+    localOperationGeneration += 1;
+    currentOperation = undefined;
+    return response;
   };
 
   const statusSnapshot = async (): Promise<LifecycleSnapshot> => {
@@ -577,17 +587,21 @@ export const createNativeLifecycleEndpointController = (
         observedAt,
       });
     const persistedOperation = input.readOperationState?.();
-    const operation =
-      currentOperation ??
-      (persistedOperation
-        ? {
-            kind: persistedOperation.kind,
-            phase: persistedOperation.phase,
-            ...(persistedOperation.message
-              ? { message: persistedOperation.message }
-              : {}),
-          }
-        : undefined);
+    const persistedSnapshot = persistedOperation
+      ? {
+          kind: persistedOperation.kind,
+          phase: persistedOperation.phase,
+          ...(persistedOperation.message
+            ? { message: persistedOperation.message }
+            : {}),
+        }
+      : undefined;
+    const persistedIsActive =
+      persistedOperation?.phase === 'queued' ||
+      persistedOperation?.phase === 'running';
+    const operation = persistedIsActive
+      ? persistedSnapshot
+      : (currentOperation ?? persistedSnapshot);
     return {
       schemaVersion: 1,
       instanceId,

@@ -32,23 +32,33 @@ started: 2026-07-27
 - TypeScript and Swift clients use a backward-compatible daemon `instanceId`, accepting a fresh low sequence after restart while rejecting a late snapshot from the old daemon.
 - Unsupported destructive repair is rejected by the endpoint, rejected by the Swift command mapper, and removed from the menu; ordinary retry remains canonical repair.
 - The detached worker is part of the required runtime-bundle closure and synthetic release fixtures.
-- Broad native/lifecycle/server/distribution contracts: 13 files, 154/154 tests passed.
+- Broad native/lifecycle/server/distribution contracts: 13 files, 155/155 tests passed.
 - Swift contract executable, debug menu build, unsigned production archive, plist validation, strict ad-hoc signature, arm64 binary, executable mode, and archive inspection passed.
 - TypeScript syntax/type checks, owned ESLint, diff checks, and strict repository review passed with zero findings and zero blockers.
 - No real-Mac app launch, install, update, restart, reset, repair, rollback, or uninstall was performed.
 
 ## files changed
 
-- `packages/os/scripts/lib/native-lifecycle-operation.ts` — detached launcher, owner-only operation store, crash recovery, canonical worker execution, parser, and pinned target enforcement.
-- `packages/os/scripts/native-lifecycle-operation.ts` — narrow Bun worker entrypoint.
-- `packages/os/scripts/lib/native-lifecycle-endpoint.ts` — detached dispatch, persisted state projection, daemon instance ID, and destructive-repair rejection.
-- `packages/os/scripts/lib/native-lifecycle-client.ts` — restart-aware snapshot freshness.
-- `packages/os/scripts/lib/lifecycle/types.ts` — optional pinned update version.
-- `packages/os/scripts/lib/lifecycle/engine.ts` — validates the expected version against the single verified manifest before download/activation.
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts` — includes the worker entrypoint in required runtime closure.
-- Swift lifecycle model/client/presentation/menu files — restart epoch support and removal of unsupported destructive repair.
-- Native lifecycle, lifecycle engine, macOS platform, retention, runtime-bundle, and release-publication tests — detached execution, crash recovery, pinned version, restart freshness, destructive-repair, and bundle-closure regressions.
-- Task metadata and durable workpad under `.task/os-native/resolve-macos-lifecycle-promotion-review-findings/`.
+- `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
+- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- `packages/os/scripts/lib/lifecycle/engine.ts`
+- `packages/os/scripts/lib/lifecycle/types.ts`
+- `packages/os/scripts/lib/native-lifecycle-client.ts`
+- `packages/os/scripts/lib/native-lifecycle-endpoint.ts`
+- `packages/os/tests/distribution/release-publication-preparer.test.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/os/tests/lifecycle-engine.test.ts`
+- `packages/os/tests/lifecycle-retention-uninstall.test.ts`
+- `packages/os/tests/macos-platform.test.ts`
+- `packages/os/tests/native-lifecycle-client.test.ts`
+- `packages/os/tests/native-lifecycle-endpoint.test.ts`
+- `packages/os/scripts/lib/native-lifecycle-operation.ts`
+- `packages/os/scripts/native-lifecycle-operation.ts`
+- `packages/os/tests/native-lifecycle-operation.test.ts`
 
 ## workspace-owned: files changed
 
@@ -63,6 +73,9 @@ started: 2026-07-27
 - 2026-07-27 03:20:37 `review.run`: passed — OK
 - 2026-07-27 03:22:34 `review.run`: passed — OK
 - 2026-07-27 03:23:03 `verify`: passed — OK
+- 2026-07-27 03:30:45 `review.run`: passed — OK
+- 2026-07-27 03:31:11 `verify`: passed — OK
+- 2026-07-27 03:31:49 `verify`: passed — OK
 
 ## test-first contract
 
@@ -112,6 +125,7 @@ bun run task:finish
 - `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift`
 - `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/lifecycle/engine.ts`
@@ -133,14 +147,18 @@ bun run task:finish
 - `packages/os/tests/native-lifecycle-endpoint.test.ts`
 - `packages/os/tests/native-lifecycle-operation.test.ts`
 
-- Whole-file formatting churn in five legacy files was removed. Only the expected-version engine hunks, three runtime-fixture entries, and the focused pinned-version regression were reapplied.
-
 ## final validation summary
 
 - TDD red reproduced daemon self-termination risk, restart sequence rejection, destructive-repair aliasing, missing worker closure, and update target race.
 - Focused TypeScript + Swift repair contracts passed.
-- Broad regression: 13 files, 154/154 tests passed.
+- Broad regression: 13 files, 155/155 tests passed.
 - TypeScript syntax/typecheck: passed.
 - Owned ESLint and diff checks: passed.
 - Swift contract/build/package/archive gate: passed.
 - Strict diff-scoped review: zero findings, zero blockers.
+
+- PR #1669 Codex review found two additional ordering gaps: the Swift transport cache still compared sequence across daemon instances, and a completed in-process operation could mask a later detached operation. RED contracts were added for both boundaries before implementation.
+
+- Observed RED: the endpoint projected the prior local `update/succeeded` instead of detached `restart/running`; the Swift transport retained `daemon-old` sequence 100 over `daemon-new` sequence 1. The transport now compares instance/observedAt across daemon epochs, and detached launch invalidates prior local-operation generations while active persisted state receives defensive precedence.
+
+- PR #1669 review follow-up GREEN: endpoint precedence contract passed 9/9; Swift transport/client contracts passed; broad regression increased to 155/155; syntax/type checks and strict review remained clean with zero findings.

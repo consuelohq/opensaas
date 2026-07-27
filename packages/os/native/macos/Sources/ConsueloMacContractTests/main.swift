@@ -83,6 +83,7 @@ private struct ContractSuite {
         try socketWritesDisableSigPipe()
         try socketIOUsesBoundedDeadlines()
         try snapshotCacheRetainsHighestObservedSequence()
+        try transportCacheAcceptsNewDaemonEpochAndRejectsLateOldInstance()
         try daemonRestartAcceptsFreshLowSequenceAndRejectsLateOldInstance()
         try await overlappingRefreshesRetainTheNewestSnapshot()
         try await failedRefreshCannotOverwriteNewerSubscriptionSnapshot()
@@ -447,6 +448,29 @@ private struct ContractSuite {
         try expect(received, -1, "stalled lifecycle read returns an error")
         try expectTrue(errno == EAGAIN || errno == EWOULDBLOCK, "stalled lifecycle read times out")
         try expectTrue(elapsed < 1, "lifecycle read timeout remains bounded")
+    }
+
+    private func transportCacheAcceptsNewDaemonEpochAndRejectsLateOldInstance() throws {
+        let old = snapshot(instanceId: "daemon-old")
+            .with(sequence: 100, version: "1.4.0", observedAt: "2026-07-27T03:00:00.000Z")
+        let restarted = snapshot(instanceId: "daemon-new")
+            .with(sequence: 1, version: "1.5.0", observedAt: "2026-07-27T03:01:00.000Z")
+        let lateOld = snapshot(instanceId: "daemon-old")
+            .with(sequence: 101, version: "1.4.1", observedAt: "2026-07-27T03:00:30.000Z")
+
+        let acceptedRestart = UnixSocketLifecycleTransport.retainNewestSnapshot(
+            current: old,
+            incoming: restarted
+        )
+        try expect(acceptedRestart.instanceId, "daemon-new", "transport cache accepts restarted daemon epoch")
+        try expect(acceptedRestart.sequence, 1, "transport cache accepts restarted daemon low sequence")
+
+        let retainedRestart = UnixSocketLifecycleTransport.retainNewestSnapshot(
+            current: acceptedRestart,
+            incoming: lateOld
+        )
+        try expect(retainedRestart.instanceId, "daemon-new", "transport cache rejects late old daemon epoch")
+        try expect(retainedRestart.runtime.version, "1.5.0", "late old daemon cannot regress cached payload")
     }
 
     private func daemonRestartAcceptsFreshLowSequenceAndRejectsLateOldInstance() throws {
