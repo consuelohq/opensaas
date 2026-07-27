@@ -121,7 +121,17 @@ export type LifecycleOperationAccepted = {
   operationId: string;
 };
 
-export type LifecycleResponse = LifecycleSnapshot | LifecycleOperationAccepted;
+export type LifecycleOperationRejected = {
+  accepted: false;
+  operationId: string;
+  error?: string;
+};
+
+export type LifecycleOperationResponse =
+  | LifecycleOperationAccepted
+  | LifecycleOperationRejected;
+
+export type LifecycleResponse = LifecycleSnapshot | LifecycleOperationResponse;
 
 export type NativeLifecycleTransport = {
   request(request: LifecycleRequest): Promise<LifecycleResponse>;
@@ -156,9 +166,9 @@ const isSnapshot = (
   response: LifecycleResponse,
 ): response is LifecycleSnapshot => 'schemaVersion' in response;
 
-const isAccepted = (
+const isOperationResponse = (
   response: LifecycleResponse,
-): response is LifecycleOperationAccepted => 'accepted' in response;
+): response is LifecycleOperationResponse => 'accepted' in response;
 
 export const createNativeLifecycleClient = (input: {
   transport: NativeLifecycleTransport;
@@ -200,8 +210,14 @@ export const createNativeLifecycleClient = (input: {
     request: Exclude<LifecycleRequest, { kind: 'status.get' }>,
   ): Promise<LifecycleOperationAccepted> => {
     const response = await input.transport.request(request);
-    if (!isAccepted(response)) {
+    if (!isOperationResponse(response)) {
       throw new Error(`unexpected lifecycle response for ${request.kind}`);
+    }
+    if (!response.accepted) {
+      throw new Error(
+        response.error ??
+          `lifecycle operation rejected: ${response.operationId}`,
+      );
     }
     return response;
   };

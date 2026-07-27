@@ -87,7 +87,7 @@ private struct ConsueloMenu: View {
                 }
                 if snapshot.preferences.channelSelectionAllowed {
                     Menu("Release channel") {
-                        ForEach(ReleaseChannel.allCases, id: \.self) { channel in
+                        ForEach(ReleaseChannel.userSelectableCases, id: \.self) { channel in
                             Button(channel.rawValue.capitalized) {
                                 model.perform(.setChannel(channel))
                             }

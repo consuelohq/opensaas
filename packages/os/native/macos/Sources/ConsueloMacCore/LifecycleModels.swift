@@ -6,6 +6,13 @@ public enum ReleaseChannel: String, Codable, CaseIterable, Equatable, Sendable {
     case canary
     case dev
     case nightly
+
+    public static let userSelectableCases: [ReleaseChannel] = [
+        .stable,
+        .beta,
+        .canary,
+        .dev,
+    ]
 }
 
 public enum LifecycleInstallState: String, Codable, Equatable, Sendable {
@@ -489,10 +496,12 @@ extension LifecycleRequest: Codable {
 public struct LifecycleOperationAccepted: Codable, Equatable, Sendable {
     public var accepted: Bool
     public var operationId: String
+    public var error: String?
 
-    public init(accepted: Bool, operationId: String) {
+    public init(accepted: Bool, operationId: String, error: String? = nil) {
         self.accepted = accepted
         self.operationId = operationId
+        self.error = error
     }
 }
 

@@ -90,6 +90,25 @@ describe('native lifecycle client', () => {
     ]);
   });
 
+  test('rejects typed lifecycle operation failures from the endpoint', async () => {
+    const transport: NativeLifecycleTransport = {
+      request: async (request) => {
+        if (request.kind === 'status.get') return healthySnapshot;
+        return {
+          accepted: false,
+          operationId: 'rejected-1',
+          error: 'target release is unavailable',
+        };
+      },
+      subscribe: () => () => undefined,
+    };
+    const client = createNativeLifecycleClient({ transport });
+
+    await expect(client.applyUpdate('9.9.9')).rejects.toThrow(
+      'target release is unavailable',
+    );
+  });
+
   test('sends every menu-bar mutation through the allowlisted lifecycle protocol', async () => {
     const transport = createTransport();
     const client = createNativeLifecycleClient({ transport });
