@@ -110,7 +110,7 @@ Review the final candidate at cross-domain seams rather than repeating the seven
 
 ## Required evidence
 
-Require a second frozen candidate SHA after all accepted repairs; fresh full CI and review evidence; clean-host install/update/rollback; release identity and byte parity; provider safe reads; universal login and workspace routing; multi-node behavior; native package/control evidence; runtime closure; docs/runbook evidence; and explicit unavailable real-Mac checkpoints. Reuse prior evidence only after verifying it applies to the final SHA.
+Require the latest numbered frozen candidate SHA for the current review round; fresh full CI and review evidence; clean-host install/update/rollback; release identity and byte parity; provider safe reads; universal login and workspace routing; multi-node behavior; native package/control evidence; runtime closure; docs/runbook evidence; and explicit unavailable real-Mac checkpoints. Reuse prior evidence only after verifying it applies to that exact latest numbered frozen candidate SHA.
 
 ## Adversarial review journeys
 
@@ -138,7 +138,7 @@ Write the durable final synthesis report to `packages/os/plans/consuelo-os-found
 - All seven domain reports are `DOMAIN CLEAR`, or every conditional item has a recorded Ko waiver that is compatible with launch.
 - Zero unresolved P0/P1 findings; zero unwaived P2 findings.
 - Every accepted repair has current-head tests, CI, review, and original-thread disposition.
-- Required cross-wave journeys pass on the second frozen candidate SHA.
+- Required cross-wave journeys pass on the exact latest numbered frozen candidate SHA, including round one when no repairs were required.
 - No evidence is borrowed from an obsolete SHA without revalidation.
 - The final GitHub review and report return exactly `GO` or `NO-GO`, followed by the Worker 23 `READY`, `CONDITIONAL`, or `NOT READY` classification and exact next action.
 

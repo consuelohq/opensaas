@@ -259,10 +259,18 @@ for (const name of FINAL_AUDIT_REPORT_TEMPLATES) {
       );
     }
   }
-  if (name === 'finding-ledger.md' && !/Validation evidence/i.test(text)) {
-    structuralFailures.push(
-      'reviews/final/finding-ledger.md: missing per-finding validation evidence field',
-    );
+  if (name === 'finding-ledger.md') {
+    for (const field of [
+      'Validation evidence',
+      'Synthesis verifier',
+      'Replacement rationale',
+    ]) {
+      if (!text.includes(field)) {
+        structuralFailures.push(
+          `reviews/final/finding-ledger.md: missing per-finding field ${field}`,
+        );
+      }
+    }
   }
   if (/^23[a-g]-report\.md$/.test(name)) {
     const requiredGitHubFields = [
@@ -286,6 +294,14 @@ for (const name of FINAL_AUDIT_REPORT_TEMPLATES) {
   ) {
     structuralFailures.push(
       'reviews/final/23h-go-no-go.md: missing synthesis intent-lineage matrix',
+    );
+  }
+  if (
+    name === '23h-go-no-go.md' &&
+    !text.includes('Final repaired candidate SHA')
+  ) {
+    structuralFailures.push(
+      'reviews/final/23h-go-no-go.md: missing final candidate SHA field',
     );
   }
 }
@@ -372,6 +388,15 @@ for (const name of FINAL_AUDIT_SUBBRIEFS) {
   ) {
     structuralFailures.push(
       `${name}: missing synthesis repair-verifier ownership contract`,
+    );
+  }
+  if (
+    name === '23h-cross-wave-final-go-no-go.md' &&
+    (!text.includes('latest numbered frozen candidate SHA') ||
+      text.includes('second frozen candidate SHA'))
+  ) {
+    structuralFailures.push(
+      `${name}: missing latest-numbered-candidate evidence contract`,
     );
   }
   if (!/inline (?:review )?comment/i.test(text)) {

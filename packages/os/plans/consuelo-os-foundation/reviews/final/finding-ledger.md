@@ -16,9 +16,9 @@
 
 ## Findings
 
-| Finding ID           | Domain | Priority / severity | Category | GitHub thread | Original worker prompt and requirement | Owner | Repair PR | Validation evidence | Candidate SHA verified | Disposition | Ko waiver |
-| -------------------- | ------ | ------------------- | -------- | ------------- | -------------------------------------- | ----- | --------- | ------------------- | ---------------------- | ----------- | --------- |
-| No findings recorded | -      | -                   | -        | -             | -                                      | -     | -         | -                   | -                      | -           | -         |
+| Finding ID           | Domain | Priority / severity | Category | GitHub thread | Original worker prompt and requirement | Owner | Synthesis verifier | Replacement rationale | Repair PR | Validation evidence | Candidate SHA verified | Disposition | Ko waiver |
+| -------------------- | ------ | ------------------- | -------- | ------------- | -------------------------------------- | ----- | ------------------ | --------------------- | --------- | ------------------- | ---------------------- | ----------- | --------- |
+| No findings recorded | -      | -                   | -        | -             | -                                      | -     | -                  | -                     | -         | -                   | -                      | -           | -         |
 
 ## Repair rounds
 
