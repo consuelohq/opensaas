@@ -24,6 +24,7 @@ uid_value="$(id -u "$daemon_user")"
 launch_domain="gui/$uid_value"
 launch_agent_dir="$daemon_home/Library/LaunchAgents"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
+caddy_label="${CADDY_DAEMON_LABEL:-com.consuelo.caddy}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
 cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
@@ -88,12 +89,19 @@ remove_agent() {
 
 collect_cloudflared_labels
 
-remove_agent "$watchdog_label"
-remove_agent "$portless_label"
-remove_agent "$workspace_label"
 for cloudflared_label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   remove_agent "$cloudflared_label"
 done
+remove_agent "$watchdog_label"
+remove_agent "$portless_label"
+if [ "$portless_label" != "com.consuelo.portless" ]; then
+  remove_agent "com.consuelo.portless"
+fi
+if [ "$portless_label" != "com.consuelo.portless.system" ]; then
+  remove_agent "com.consuelo.portless.system"
+fi
+remove_agent "$caddy_label"
+remove_agent "$workspace_label"
 
 if [ "$dry_run" -eq 1 ]; then
   log "dry run complete; no LaunchAgents changed"

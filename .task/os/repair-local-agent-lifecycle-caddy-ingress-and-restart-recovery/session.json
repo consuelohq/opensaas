@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_34b7e8953d3a",
+  "tmuxSession": "opensaas-os-repair-local-agent-lifecycle-caddy-ingress-and-r-34b7e895",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "branch": "task/os/repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "prNumber": 1710,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1710",
+  "createdAt": "2026-07-28T06:37:41.256Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery/.task/os/repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery/session.json"
+}

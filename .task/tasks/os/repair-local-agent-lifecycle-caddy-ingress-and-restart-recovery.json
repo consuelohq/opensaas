@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1710,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1710",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1710",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1710/repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1710",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1710/repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery",
+  "taskSession": "tsk_34b7e8953d3a",
+  "tmuxSession": "opensaas-os-repair-local-agent-lifecycle-caddy-ingress-and-r-34b7e895",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery/.task/os/repair-local-agent-lifecycle-caddy-ingress-and-restart-recovery/session.json",
+  "createdAt": "2026-07-28T06:37:41.256Z"
+}

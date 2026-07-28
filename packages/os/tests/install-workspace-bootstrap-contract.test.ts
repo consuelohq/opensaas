@@ -124,7 +124,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(JSON.stringify(auth)).not.toMatch(/local-consuelo-os|local\.consuelohq\.com/);
     expect(fs.existsSync(join(home, 'sites', 'index.html'))).toBe(true);
     expect(fs.existsSync(join(home, 'sites', 'pages', 'index.html'))).toBe(true);
-    expect(fs.existsSync(join(home, 'sites', 'office', 'data', 'artifacts.json'))).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'artifacts', 'data', 'catalog.json'))).toBe(true);
     expect(fs.existsSync(join(home, 'sites', 'traces', 'index.html'))).toBe(true);
     expect(fs.existsSync(join(home, 'sites', 'diffs', 'index.html'))).toBe(true);
   });
@@ -304,9 +304,14 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
     expect(installSource).toContain("message: 'enter workspace name'");
     expect(installSource).toContain('resolveWorkspaceIdentity');
-    expect(installSource.indexOf('attemptWorkspaceDeviceLogin({')).toBeLessThan(
-      installSource.indexOf("message: 'enter workspace name'"),
+    const deviceLoginCallIndex = installSource.indexOf(
+      'const deviceLogin = await attemptWorkspaceDeviceLogin({',
     );
+    const workspaceIdentityCallIndex = installSource.indexOf(
+      'const workspaceIdentity = await resolveWorkspaceIdentity({',
+    );
+    expect(deviceLoginCallIndex).toBeGreaterThan(-1);
+    expect(workspaceIdentityCallIndex).toBeGreaterThan(deviceLoginCallIndex);
     expect(installSource).not.toContain('spaces become hyphens');
     expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
     expect(installSource).not.toContain('workspace slug:');

@@ -66,18 +66,21 @@ consuelo_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$consuelo_user}}"
 consuelo_data_home="${CONSUELO_HOME:-$consuelo_home/.consuelo}"
 log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"
 workspace_label="$(sanitize_label 'com.consuelo.system' "${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}")"
+caddy_label="$(sanitize_label 'com.consuelo.caddy' "${CADDY_DAEMON_LABEL:-com.consuelo.caddy}")"
 portless_label="$(sanitize_label 'com.consuelo.portless.system' "${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}")"
 watchdog_label="$(sanitize_label 'com.consuelo.watchdog' "${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}")"
 workspace_path="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
+caddy_path="${CADDY_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 portless_path="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_path="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 bun_bin="$(xml_escape "${BUN_BIN:-}")"
+caddy_bin="$(xml_escape "${CADDY_BIN:-}")"
 portless_bin="$(xml_escape "${PORTLESS_BIN:-}")"
 portless_allow_path_lookup="${PORTLESS_ALLOW_PATH_LOOKUP:-0}"
 if [ -z "${PORTLESS_BIN:-}" ] && [ ! -f "$env_file" ]; then
   portless_allow_path_lookup="1"
 fi
-portless_enabled="${PORTLESS_ENABLED:-auto}"
+portless_enabled="${PORTLESS_ENABLED:-0}"
 portless_should_generate="0"
 case "$portless_enabled" in
   0|false|no)
@@ -143,6 +146,51 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
     <string>${workspace_path}</string>
     <key>BUN_BIN</key>
     <string>${bun_bin}</string>
+  </dict>
+</dict>
+</plist>
+PLIST
+
+cat > "$generated_dir/${caddy_label}.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${caddy_label}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>${root_dir}/scripts/start-caddy-daemon.sh</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>WorkingDirectory</key>
+  <string>${root_dir}</string>
+  <key>StandardOutPath</key>
+  <string>${log_dir}/caddy.log</string>
+  <key>StandardErrorPath</key>
+  <string>${log_dir}/caddy.log</string>
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>${consuelo_home}</string>
+    <key>USER</key>
+    <string>${consuelo_user}</string>
+    <key>CADDY_DAEMON_HOME</key>
+    <string>${consuelo_home}</string>
+    <key>CADDY_DAEMON_CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
+    <key>CADDY_DAEMON_USER</key>
+    <string>${consuelo_user}</string>
+    <key>CADDY_DAEMON_PATH</key>
+    <string>${caddy_path}</string>
+    <key>CADDY_BIN</key>
+    <string>${caddy_bin}</string>
   </dict>
 </dict>
 </plist>

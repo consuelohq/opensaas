@@ -192,6 +192,7 @@ const REQUIRED_GENERATED_SECURITY_FILES = [
 ] as const;
 const LEGACY_DEFAULT_PORT = 8960;
 const DEFAULT_PORT = 46321;
+const DEFAULT_INGRESS_PORT = 46320;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
@@ -700,6 +701,106 @@ function materializeChatGptMcpConnection(input: {
   }];
 }
 
+function materializeLocalAgentMcpCredentials(input: {
+  home: string;
+  config: ReturnType<typeof createGatewaySecurityConfig>;
+  agentNames: AgentName[];
+  port: number;
+}): ProvisionAction[] {
+  const targetPath = path.join(input.home, 'security', 'generated', 'local-agent-mcp.json');
+  const scopes = [...STANDARD_OS_MCP_SCOPES];
+  const existing = readJsonFile<JsonObject>(targetPath);
+  const existingAgents = isJsonObject(existing?.agents) ? existing.agents : {};
+  const localUrl = `http://127.0.0.1:${input.port}/mcp`;
+  const agents: Record<string, { tokenId: string; bearerToken: string }> = {};
+
+  for (const agentName of [...new Set(input.agentNames)]) {
+    const candidate = existingAgents[agentName];
+    if (
+      isJsonObject(candidate) &&
+      typeof candidate.tokenId === 'string' &&
+      typeof candidate.bearerToken === 'string'
+    ) {
+      const status = getAgentAppCredentialStatus({
+        config: input.config,
+        tokenId: candidate.tokenId,
+      });
+      if (
+        status?.status === 'active' &&
+        status.callerId === `local-agent:${agentName}` &&
+        status.appId === agentName
+      ) {
+        updateAgentAppTokenScopes({
+          config: input.config,
+          tokenId: candidate.tokenId,
+          scopes,
+        });
+        agents[agentName] = {
+          tokenId: candidate.tokenId,
+          bearerToken: candidate.bearerToken,
+        };
+        continue;
+      }
+    }
+
+    const token = issueAgentAppToken({
+      config: input.config,
+      callerId: `local-agent:${agentName}`,
+      appId: agentName,
+      subjectId: `local-agent:${agentName}`,
+      deviceId: `local-agent:${agentName}`,
+      connectorId: 'connector_local_agent_mcp',
+      connectionId: `connection_local_agent_${agentName}`,
+      scopes,
+      expiresInSeconds: 60 * 60 * 24 * 365,
+    });
+    if (!token.bearerToken) {
+      throw new Error(`Local agent MCP token was not issued for ${agentName}`);
+    }
+    agents[agentName] = {
+      tokenId: token.tokenId,
+      bearerToken: token.bearerToken,
+    };
+  }
+
+  const existingCreatedAt = typeof existing?.createdAt === 'string'
+    ? existing.createdAt
+    : nowIso();
+  const semanticDocument = {
+    version: 1,
+    kind: 'consuelo-local-agent-mcp-credentials',
+    localUrl,
+    agents,
+  };
+  const existingSemanticDocument = existing
+    ? {
+        version: existing.version,
+        kind: existing.kind,
+        localUrl: existing.localUrl,
+        agents: existing.agents,
+      }
+    : null;
+  const changed = JSON.stringify(existingSemanticDocument) !== JSON.stringify(semanticDocument);
+
+  if (changed) {
+    writeJsonFile(targetPath, {
+      ...semanticDocument,
+      createdAt: existingCreatedAt,
+      updatedAt: nowIso(),
+    }, false);
+  }
+  if (fs.existsSync(targetPath)) fs.chmodSync(targetPath, 0o600);
+
+  return [{
+    type: 'create_file',
+    path: targetPath,
+    status: existing ? changed ? 'updated' : 'preserved' : 'created',
+    message: changed
+      ? 'local agent MCP credentials configured'
+      : 'local agent MCP credentials preserved',
+  }];
+}
+
 function materializeWorkspaceConnectorBootstrap(input: {
   nodeHome: string;
   runtimeHome: string;
@@ -713,15 +814,21 @@ function materializeWorkspaceConnectorBootstrap(input: {
     return actions;
   }
 
+  const ingressPort = input.port;
+  const localServiceUrl = `http://127.0.0.1:${ingressPort}`;
+
   const plan = planWorkspaceConnectorTransport({
     home: input.nodeHome,
     connectorId: input.workspaceBootstrap.connectorId,
     workspaceHost: input.workspaceBootstrap.workspaceHost,
-    localPort: input.port,
+    localPort: ingressPort,
     transport: 'cloudflare-tunnel',
     cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
     cloudflaredBin: process.env.CLOUDFLARED_BIN ?? path.join(input.runtimeHome, 'bin', 'cloudflared'),
   });
+  if (plan.localServiceUrl !== localServiceUrl) {
+    throw new Error('Cloudflare connector must target the managed Caddy ingress.');
+  }
 
   if (plan.tokenPath) {
     actions.push({
@@ -1258,6 +1365,7 @@ export function provisionLocalOs(
   const dbPath = layout.nodeDbPath;
   const dryRun = Boolean(options.dryRun);
   const actions: ProvisionAction[] = [];
+  const requestedAgentNames = options.connectAgents ?? [];
 
   for (const dir of [
     home,
@@ -1429,6 +1537,7 @@ export function provisionLocalOs(
       workspaceSlug: workspaceIdentity.workspaceSlug,
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
+      ingressPort: DEFAULT_INGRESS_PORT,
     });
     actions.push(...materializeChatGptMcpConnection({
       home: layout.nodeDir,
@@ -1436,6 +1545,20 @@ export function provisionLocalOs(
       port: gatewayPort,
       dryRun,
     }));
+    const credentialAgentNames = [...new Set([
+      ...(config.agents ?? [])
+        .filter((agent) => agent.status === 'configured' || agent.status === 'verified')
+        .map((agent) => agent.name),
+      ...requestedAgentNames,
+    ])];
+    if (credentialAgentNames.length > 0) {
+      actions.push(...materializeLocalAgentMcpCredentials({
+        home: layout.nodeDir,
+        config: gatewayConfig,
+        agentNames: credentialAgentNames,
+        port: gatewayPort,
+      }));
+    }
     config.security = {
       auth: {
         kind: 'consuelo-generated',
@@ -1479,7 +1602,7 @@ export function provisionLocalOs(
       ...materializeWorkspaceConnectorBootstrap({
         nodeHome: layout.nodeDir,
         runtimeHome: home,
-        port: gatewayPort,
+        port: DEFAULT_INGRESS_PORT,
         dryRun,
         workspaceBootstrap,
       }),
@@ -1494,7 +1617,6 @@ export function provisionLocalOs(
   actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
   actions.push(...seedBundledTools(home, dryRun));
 
-  const requestedAgentNames = options.connectAgents ?? [];
   const agentConfiguration = requestedAgentNames.length > 0
     ? configureLocalAgents({
         home,

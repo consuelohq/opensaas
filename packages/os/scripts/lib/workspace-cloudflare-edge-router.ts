@@ -252,6 +252,32 @@ const createSafeErrorResponse = (input: {
     },
   );
 };
+
+const createMcpNodeUnavailableResponse = (): Response => Response.json(
+  {
+    jsonrpc: '2.0',
+    id: null,
+    error: {
+      code: -32001,
+      message: 'Consuelo is restarting. Retry shortly.',
+      data: {
+        code: 'CONSUELO_NODE_UNAVAILABLE',
+        retryable: true,
+        retry_after_seconds: 2,
+      },
+    },
+  },
+  {
+    status: 503,
+    headers: {
+      'cache-control': 'no-store',
+      'retry-after': '2',
+      'x-content-type-options': 'nosniff',
+      'x-consuelo-error-code': 'CONSUELO_NODE_UNAVAILABLE',
+    },
+  },
+);
+
 const buildUpstreamUrl = (input: {
   upstreamBaseUrl: string;
   inboundUrl: URL;
@@ -815,6 +841,10 @@ export const createWorkspaceCloudflareEdgeRouter = (
 
         return await fetchUpstream(proxyRequest);
       } catch (error: unknown) {
+        const requestUrl = new URL(request.url);
+        if (request.method === 'POST' && requestUrl.pathname === '/mcp') {
+          return createMcpNodeUnavailableResponse();
+        }
         return createSafeErrorResponse({
           status: 503,
           code: 'WORKSPACE_EDGE_ROUTER_ERROR',

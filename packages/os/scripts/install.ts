@@ -33,8 +33,6 @@ import {
   type OsMode,
   type WorkspaceBootstrap,
 } from './lib/install-state';
-import { verifyLocalAgents } from './lib/local-agent-connectivity';
-import { materializeSites } from './lib/sites';
 import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
@@ -67,6 +65,7 @@ type InstallOptions = {
   checkTty: boolean;
   installDaemons: boolean;
   skipDaemons: boolean;
+  skipAgents: boolean;
   home?: string;
   mode?: OsMode;
   workspaceName?: string;
@@ -295,6 +294,7 @@ function parseArgs(argv: string[]): InstallOptions {
     checkTty: false,
     installDaemons: false,
     skipDaemons: false,
+    skipAgents: false,
     artifactMode: 'local',
     selectedSkills: getDefaultSelectedSkillNames(),
     connectAgents: [],
@@ -317,6 +317,7 @@ function parseArgs(argv: string[]): InstallOptions {
     else if (arg === '--check-tty') options.checkTty = true;
     else if (arg === '--install-daemons') options.installDaemons = true;
     else if (arg === '--skip-daemons') options.skipDaemons = true;
+    else if (arg === '--skip-agents') options.skipAgents = true;
     else if (arg === '--home') {
       options.home = readValue('--home', index);
       index += 1;
@@ -364,6 +365,9 @@ function parseArgs(argv: string[]): InstallOptions {
           '  --workspace-name <name> workspace name',
           `  --connect-agent <id>  connect ${AGENT_NAME_LIST.join(', ')}`,
           '  --connect-agents      connect detected local agents',
+          '  --skip-agents         do not connect detected local agents',
+          '  --install-daemons     install managed background services',
+          '  --skip-daemons        do not install managed background services',
           '  --json                machine-readable output',
           '  --quiet               reduce human output',
           '  --check-tty          print safe terminal diagnostics',
@@ -374,6 +378,13 @@ function parseArgs(argv: string[]): InstallOptions {
     } else {
       throw new Error(`unknown option: ${arg}`);
     }
+  }
+
+  if (options.installDaemons && options.skipDaemons) {
+    throw new Error('--install-daemons and --skip-daemons cannot be used together');
+  }
+  if (options.skipAgents && options.connectAgents.length > 0) {
+    throw new Error('--skip-agents cannot be combined with --connect-agent or --connect-agents');
   }
 
   return options;
@@ -934,7 +945,21 @@ async function promptOptions(
   diagnostics: InstallDiagnostics,
 ): Promise<InstallOptions> {
   try {
-    if (options.yes || options.json) return options;
+    if (options.yes || options.json) {
+      const home = resolveOsHome(options.home);
+      const detectedAgents = detectAgents(home).filter(
+        (agent) => agent.detected && agent.support === 'native',
+      );
+      return {
+        ...options,
+        connectAgents: options.skipAgents
+          ? []
+          : options.connectAgents.length > 0
+            ? options.connectAgents
+            : detectedAgents.map((agent) => agent.name),
+        installDaemons: options.installDaemons || !options.skipDaemons,
+      };
+    }
     assertClackTtyReady(options);
 
     recordInstallerStep(diagnostics, 'workspace', 'start');
@@ -1010,8 +1035,8 @@ async function promptOptions(
     recordInstallerStep(diagnostics, 'agents', 'start');
     renderInstallerProgress('agents');
     const detectedAgents = detectAgents(home).filter((agent) => agent.detected && agent.support === 'native');
-    let connectAgents: AgentName[] = options.connectAgents;
-    if (detectedAgents.length > 0) {
+    let connectAgents: AgentName[] = options.skipAgents ? [] : options.connectAgents;
+    if (!options.skipAgents && detectedAgents.length > 0) {
       const selectedAgents = await multiselect({
         ...clackIo,
         message: formatLocalAgentsPromptMessage(detectedAgents.length),
@@ -1032,7 +1057,7 @@ async function promptOptions(
 
     recordInstallerStep(diagnostics, 'service', 'start');
     renderInstallerProgress('service');
-    let installDaemons = false;
+    let installDaemons = !options.skipDaemons;
     if (options.installDaemons) {
       installDaemons = true;
     } else if (options.skipDaemons) {
@@ -1099,7 +1124,7 @@ async function main(): Promise<void> {
               : 'installing local OS...',
           ).start();
     const workspaceBootstrap = maybeCreateWorkspaceBootstrap(options);
-    let result = provisionLocalOs({
+    const result = provisionLocalOs({
       home: options.home,
       mode: options.mode ?? 'local',
       port: resolveLocalOsPortOverride(),
@@ -1109,19 +1134,6 @@ async function main(): Promise<void> {
       artifactStorage: options.artifactMode,
       workspaceBootstrap,
     });
-    if (!options.dryRun && options.connectAgents.length > 0) {
-      const verification = await verifyLocalAgents({
-        home: result.home,
-        agentNames: options.connectAgents,
-      });
-      result = { ...result, agents: verification.agents };
-      materializeSites({ home: result.home, dbPath: result.dbPath, dryRun: false });
-      recordInstallerStep(diagnostics, 'agents', 'verified', {
-        selectedCount: options.connectAgents.length,
-        verifiedCount: verification.agents.filter((agent) => agent.status === 'verified').length,
-        failedCount: verification.agents.filter((agent) => agent.status === 'failed').length,
-      });
-    }
     const agentStatusSync = options.dryRun
       ? ({ status: 'skipped', reason: 'dry_run' } as const)
       : await syncVerifiedAgentsAfterInstall({
