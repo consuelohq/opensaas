@@ -43,8 +43,9 @@
     "packages/os/tests/lifecycle-retention-uninstall.test.ts",
     "packages/os/tests/native-lifecycle-operation.test.ts",
     "packages/workspace/scripts/github.js",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/scripts/verify.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-28T01:59:02.304Z"
+  "updatedAt": "2026-07-28T02:08:14.266Z"
 }

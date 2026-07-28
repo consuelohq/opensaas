@@ -46,16 +46,7 @@ started: 2026-07-28
 ## files changed
 
 - `packages/os/plans/consuelo-os-foundation/reviews/final/23a-report.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/23A-R01-001.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/23A-R01-002.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/23A-R01-003.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/23A-R01-004.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/structured-review.json`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/summary.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/agent-fix-prompt.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/evidence-limitations.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/final-status.md`
-- `.task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun/review-records/disposition-index.md`
+
 
 ## workspace-owned: files changed
 
@@ -130,6 +121,36 @@ started: 2026-07-28
 - Final status: https://github.com/consuelohq/opensaas/pull/1674#issuecomment-5098971539
 - Disposition index: https://github.com/consuelohq/opensaas/pull/1674#issuecomment-5098975213
 
+## Wait plan: task PR checks
+
+- Wait reason: PR #1688 checks were queued immediately after publishing verified head `822ecbfc3c2ac081b5a0eb21d771f5e5db75c97f`.
+- Duration: bounded polling, 20-second interval, maximum 12 attempts (4 minutes).
+- Resume action: inspect PR #1688 checks after each interval and stop immediately when no required check is pending.
+- Expected signal: zero failed required checks and zero pending required checks for the exact published head.
+- Fallback: if checks fail, inspect the failing check and determine whether it is owned by this review-only diff; if the time budget expires, record the timeout and do not merge blindly.
+
+### Wait cycle 1 result
+
+- Start time: `2026-07-28T02:00:44Z`.
+- Attempts: eight timed waits totaling 148 seconds, with immediate GitHub checks after each wake; overall observation window ended at `2026-07-28T02:04:54Z`.
+- Observed result: failures `0`; pending reduced from `12` to `2`. Remaining jobs were `Consuelo / OS contracts` and `Consuelo / verify`, both still `IN_PROGRESS` for head `822ecbfc3c2ac081b5a0eb21d771f5e5db75c97f`.
+- Decision: do not merge. Begin one additional bounded cycle because required checks are actively progressing and no owned failure exists.
+
+### Wait cycle 2 plan
+
+- Wait reason: allow the two active Consuelo checks to complete on the exact published task head.
+- Duration: bounded polling, 30-second interval, maximum 8 attempts (4 minutes).
+- Resume action: inspect only pending or failed PR #1688 checks after each wake.
+- Expected signal: both `Consuelo / OS contracts` and `Consuelo / verify` complete successfully, with no other required check pending.
+- Fallback: if either check fails, inspect its logs and stop merge; if the second budget expires, record `DOMAIN review complete / task merge pending CI` rather than bypassing protection.
+
+### Wait cycle 2 result
+
+- Start time: `2026-07-28T02:05:10Z`.
+- Attempts: three 30-second waits with immediate pending-or-failed check inspection after each wake.
+- Observed result: `Consuelo / OS contracts` completed first; `Consuelo / verify` completed by `2026-07-28T02:07:14Z`. Final pending-or-failed query returned no items (`trc_3bc3d14a4073`).
+- Decision: exact published head `822ecbfc3c2ac081b5a0eb21d771f5e5db75c97f` satisfied PR checks with zero failures. Synchronize this final workpad record, reverify the metadata-only delta, then merge PR #1688 into `stream/os-foundation-two` only.
+
 ---
 
 ## publish checklist
@@ -178,5 +199,6 @@ bun run task:finish
 - `packages/os/tests/lifecycle-retention-uninstall.test.ts`
 - `packages/os/tests/native-lifecycle-operation.test.ts`
 - `packages/workspace/scripts/github.js`
+- `packages/workspace/scripts/task-push.js`
 - `packages/workspace/scripts/verify.js`
 - `packages/workspace/senior-engineer.md`

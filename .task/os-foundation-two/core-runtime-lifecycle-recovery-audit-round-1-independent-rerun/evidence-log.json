@@ -929,8 +929,40 @@
         "source": "task:fs",
         "task_branch": "task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun"
       }
+    },
+    {
+      "id": "d242da73-cae8-4869-bade-21947f9f1454",
+      "occurred_at": "2026-07-28T02:08:01.489Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun"
+      }
+    },
+    {
+      "id": "51d4b578-180c-4b7d-8392-2bd61ebc8265",
+      "occurred_at": "2026-07-28T02:08:14.323Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/core-runtime-lifecycle-recovery-audit-round-1-independent-rerun"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-07-28T01:59:02.424Z"
+  "updated_at": "2026-07-28T02:08:14.381Z"
 }
