@@ -20,6 +20,8 @@ The build produces:
 - `main.js`
 - `main.css`
 - `consuelo-lead-connector-click-to-call.js`
+- `consuelo-lead-connector-click-to-call.css`
+- `consuelo-lead-connector-click-to-call.marketplace.html`
 
 The iframe host must grant microphone permission. The application also displays permission guidance before a live conversation.
 
@@ -72,7 +74,7 @@ Pause and resume control client-side queue progression. They do not overwrite ac
 
 ## Public click-to-call asset
 
-The standalone package publishes `consuelo-lead-connector-click-to-call.js`. The script uses an explicit iframe target origin and the same versioned protocol as the embedded application. The legacy Twenty compatibility asset remains untouched until parity is proven and the cutover branch can remove it without selecting unrelated frontend baselines.
+The standalone package publishes executable JavaScript and a separate stylesheet for ordinary script-tag integrations. HighLevel Marketplace streams its Custom JS field as HTML, so `build:embed` also emits `consuelo-lead-connector-click-to-call.marketplace.html` with the executable source inside an inline `<script>` element. Paste the generated HTML artifact into the Marketplace Custom JS field and the generated CSS artifact into its CSS field. The script uses an explicit iframe target origin and the same versioned protocol as the embedded application. The legacy Twenty compatibility asset remains untouched until parity is proven and the cutover branch can remove it without selecting unrelated frontend baselines.
 
 ## Validation
 

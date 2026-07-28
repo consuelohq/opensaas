@@ -1,4 +1,10 @@
-import { cpSync, mkdirSync, rmSync } from 'node:fs';
+import {
+  cpSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -31,4 +37,35 @@ cpSync(
     'consuelo-lead-connector-click-to-call.js',
   ),
   join(outputDirectory, 'consuelo-lead-connector-click-to-call.js'),
+);
+cpSync(
+  join(
+    packageRoot,
+    'src',
+    'embed',
+    'public',
+    'consuelo-lead-connector-click-to-call.css',
+  ),
+  join(outputDirectory, 'consuelo-lead-connector-click-to-call.css'),
+);
+
+const clickToCallSource = readFileSync(
+  join(
+    packageRoot,
+    'src',
+    'embed',
+    'public',
+    'consuelo-lead-connector-click-to-call.js',
+  ),
+  'utf8',
+).trim();
+if (clickToCallSource.toLowerCase().includes('</script>')) {
+  throw new Error('Click-to-call source cannot contain a closing script tag');
+}
+writeFileSync(
+  join(
+    outputDirectory,
+    'consuelo-lead-connector-click-to-call.marketplace.html',
+  ),
+  `<script>\n${clickToCallSource}\n</script>\n`,
 );

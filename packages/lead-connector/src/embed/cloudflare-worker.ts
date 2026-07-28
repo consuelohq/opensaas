@@ -16,10 +16,30 @@ const PROXY_PREFIXES = [
   '/health',
 ] as const;
 
+const APPLICATION_SHELL_PATHS = new Set([
+  '/',
+  '/admin',
+  '/admin/',
+  '/overlay',
+  '/overlay/',
+]);
+
 const shouldProxy = (pathname: string): boolean =>
   PROXY_PREFIXES.some((prefix) =>
     prefix.endsWith('/') ? pathname.startsWith(prefix) : pathname === prefix,
   );
+
+const assetRequest = (request: Request): Request => {
+  const source = new URL(request.url);
+  if (
+    ['GET', 'HEAD'].includes(request.method) &&
+    APPLICATION_SHELL_PATHS.has(source.pathname)
+  ) {
+    source.pathname = '/';
+    return new Request(source, request);
+  }
+  return request;
+};
 
 const originUrl = (request: Request, origin: string): URL => {
   const source = new URL(request.url);
@@ -65,7 +85,9 @@ export const createLeadConnectorEdgeWorker = (
       const proxied = new Request(target, request);
       return fetchOrigin(proxied);
     }
-    return environment.ASSETS.fetch(request).then(iframeSafeResponse);
+    return environment.ASSETS.fetch(assetRequest(request)).then(
+      iframeSafeResponse,
+    );
   },
 });
 

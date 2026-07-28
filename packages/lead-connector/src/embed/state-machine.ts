@@ -62,7 +62,9 @@ export type LeadConnectorEmbedState = {
   sessionToken: string | null;
   sessionExpiresAt: string | null;
   contacts: LeadConnectorContact[];
+  contactTotal: number;
   opportunities: LeadConnectorOpportunity[];
+  opportunityTotal: number;
   pipelines: LeadConnectorPipeline[];
   filters: EmbedFilters;
   selectedTargets: LeadConnectorClickToCallTarget[];
@@ -79,7 +81,9 @@ export type EmbedStateEvent =
   | {
       type: 'RESOURCES_LOADED';
       contacts: LeadConnectorContact[];
+      contactTotal: number;
       opportunities: LeadConnectorOpportunity[];
+      opportunityTotal: number;
       pipelines: LeadConnectorPipeline[];
     }
   | { type: 'FILTERS_CHANGED'; filters: Partial<EmbedFilters> }
@@ -100,7 +104,9 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   sessionToken: null,
   sessionExpiresAt: null,
   contacts: [],
+  contactTotal: 0,
   opportunities: [],
+  opportunityTotal: 0,
   pipelines: [],
   filters: { query: '', pipelineId: null, stageId: null },
   selectedTargets: [],
@@ -158,7 +164,9 @@ export const reduceEmbedState = (
       return {
         ...state,
         contacts: event.contacts,
+        contactTotal: event.contactTotal,
         opportunities: event.opportunities,
+        opportunityTotal: event.opportunityTotal,
         pipelines: event.pipelines,
       };
     case 'FILTERS_CHANGED':
