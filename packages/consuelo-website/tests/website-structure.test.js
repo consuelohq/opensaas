@@ -127,6 +127,10 @@ describe('Consuelo website structure', () => {
     expect(support).toContain('https://docs.consuelohq.com');
     expect(support).toContain('href="/contact"');
     expect(support).not.toContain('404');
+
+    const redirects = readSource('public/_redirects');
+    expect(redirects).toContain('/support /support/index.html 200');
+    expect(redirects).toContain('/support/ /support/index.html 200');
   });
 
   test('should expose the Hermes-style pricing route without wiring it into shared navigation', async () => {

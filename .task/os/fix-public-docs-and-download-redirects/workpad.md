@@ -42,12 +42,14 @@ started: 2026-07-28
 
 ## files changed
 
-- packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx
-- packages/documentation/src/lib/docs-navigation.ts
-- packages/documentation/src/lib/legacy-redirects.mjs
-- packages/documentation/tests/connect.test.ts
-- packages/consuelo-website/src/pages/support.astro
-- packages/consuelo-website/tests/website-structure.test.js
+- `packages/consuelo-website/tests/website-structure.test.js`
+- `packages/documentation/src/lib/docs-navigation.ts`
+- `packages/documentation/src/lib/legacy-redirects.mjs`
+- `packages/documentation/tests/connect.test.ts`
+- `packages/consuelo-website/public/_redirects`
+- `packages/consuelo-website/src/pages/support.astro`
+- `packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx`
+
 
 ## workspace-owned: files changed
 
@@ -60,7 +62,12 @@ started: 2026-07-28
 ## workspace-owned: validation evidence
 
 - 2026-07-28 03:48:13 `review.run`: passed — OK
-- 2026-07-28 03:48:31 `verify`: passed — OK
+- 2026-07-28 03:48:31 `verify`: passed — publish-valid
+- Docs Worker version `8f1ab616-307c-4bbc-9125-d0fde3b4e630` initially passed live verification, then concurrent version `476e49fd-8007-4761-a6b9-39c803fd5494` restored the stale route.
+- Website Pages deployment `7b5afe70…` is live: `/support` returns 308 to `/support/`, then HTTP 200 with the support page.
+- Production routing contract added for explicit `/support` and `/support/` Pages rewrites; red and green evidence captured.
+- 2026-07-28 03:57:55 `verify`: passed — OK
+- 2026-07-28 03:59:46 `verify`: passed — OK
 
 ## key decisions
 
@@ -86,6 +93,7 @@ started: 2026-07-28
 - The first green test command used the wrong Bun --cwd form and did not run tests; corrected to direct file argv.
 - The task-worktree documentation build failed because package and root node_modules are absolute symlinks into the canonical checkout; validated the same source through a fresh isolated temporary install.
 - Full website structure suite has one inherited failure in the design-operator contract; focused route tests and the production build pass.
+- Another agent deployed `consuelo-docs` at 03:52:18Z after this task's first deployment, restoring the stale 404. Recovery: promote this fix to `stream/os`, then redeploy the reviewed artifact so later stream deployments inherit the route.
 
 ---
 
@@ -105,7 +113,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/fix-public-docs-and-download-redirects/current.json`, `.task/os/fix-public-docs-and-download-redirects/evidence-log.json`, `.task/os/fix-public-docs-and-download-redirects/read-log.json`, `.task/os/fix-public-docs-and-download-redirects/session.json`, `.task/os/fix-public-docs-and-download-redirects/workpad.md`, `.task/tasks/os/fix-public-docs-and-download-redirects.json`, `packages/consuelo-website/src/pages/support.astro`, `packages/consuelo-website/tests/website-structure.test.js`, `packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx`, `packages/documentation/src/lib/docs-navigation.ts`, `packages/documentation/src/lib/legacy-redirects.mjs`, `packages/documentation/tests/connect.test.ts`
+- changed files: `.task/os/fix-public-docs-and-download-redirects/current.json`, `.task/os/fix-public-docs-and-download-redirects/evidence-log.json`, `.task/os/fix-public-docs-and-download-redirects/read-log.json`, `.task/os/fix-public-docs-and-download-redirects/session.json`, `.task/os/fix-public-docs-and-download-redirects/verify.json`, `.task/os/fix-public-docs-and-download-redirects/workpad.md`, `.task/tasks/os/fix-public-docs-and-download-redirects.json`, `packages/consuelo-website/public/_redirects`, `packages/consuelo-website/src/pages/support.astro`, `packages/consuelo-website/tests/website-structure.test.js`, `packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx`, `packages/documentation/src/lib/docs-navigation.ts`, `packages/documentation/src/lib/legacy-redirects.mjs`, `packages/documentation/tests/connect.test.ts`
 - matched rules: none
 - selected suites: none
 - run results: none
