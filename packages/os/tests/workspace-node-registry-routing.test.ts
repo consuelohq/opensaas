@@ -3,8 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { registerApprovedWorkspaceRoute } from '../cloudflare/os-device-authority/src/services/connectors';
 import { prepareGrantApproval } from '../cloudflare/os-device-authority/src/services/grants';
-import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
-import type { Grant, WorkspaceNode } from '../cloudflare/os-device-authority/src/types';
+import {
+  createMemoryDeviceGrantStore,
+  DurableStore,
+} from '../cloudflare/os-device-authority/src/stores';
+import type {
+  Grant,
+  StorageLike,
+  StorageTransactionLike,
+  WorkspaceNode,
+} from '../cloudflare/os-device-authority/src/types';
+import { WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS } from '../cloudflare/os-device-authority/src/services/nodes';
 import {
   createInMemoryWorkspaceRouteD1,
   createWorkspaceCloudflareD1RouteRegistry,
@@ -166,6 +175,41 @@ async function seedRoutes(db: ReturnType<typeof createInMemoryWorkspaceRouteD1>,
 }
 
 describe('workspace node identity', () => {
+  it('registers new nodes offline until a signed heartbeat arrives', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const deviceKey = generateWorkspaceDeviceKeyPair();
+    const grant: Grant = {
+      hash: 'new-node-grant',
+      userCode: 'NEWN-ODE1',
+      workspaceSlug,
+      workspaceHost,
+      status: 'pending',
+      expiresAt: baseNow + 300_000,
+      interval: 5,
+      devicePublicKeyJwk: deviceKey.publicKeyJwk,
+      deviceKeyAlgorithm: 'Ed25519',
+      devicePublicKeyThumbprint: await devicePublicKeyThumbprint(
+        deviceKey.publicKeyJwk,
+      ),
+      nodeId: 'node-new',
+      nodeName: 'New Mac',
+    };
+
+    await prepareGrantApproval({
+      store,
+      grant,
+      accountId,
+      authMethod: 'google',
+      nowMs: baseNow,
+    });
+
+    await expect(store.byWorkspaceNode(accountId, 'node-new')).resolves.toMatchObject({
+      connectorStatus: 'disconnected',
+    });
+    expect((await store.byWorkspaceNode(accountId, 'node-new'))?.lastSeenAt).toBeUndefined();
+    expect(grant.nodeLastSeenAt).toBeUndefined();
+  });
+
   it('rejects another public key attempting to reuse an existing node ID', async () => {
     const store = createMemoryDeviceGrantStore();
     const existingKey = generateWorkspaceDeviceKeyPair();
@@ -213,6 +257,173 @@ describe('workspace node identity', () => {
 });
 
 describe('workspace node management and presence', () => {
+  it('recovers and backfills legacy durable node records without registry indexes', async () => {
+    const keyPair = generateWorkspaceDeviceKeyPair();
+    const rawNode = node({
+      nodeId: 'node-legacy-unindexed',
+      displayName: 'Legacy Mac',
+      role: 'member',
+      connectorId: 'connector_legacy_unindexed',
+      publicKeyJwk: keyPair.publicKeyJwk,
+      publicKeyThumbprint: await devicePublicKeyThumbprint(keyPair.publicKeyJwk),
+    });
+    const createLegacyStore = () => {
+      const values = new Map<string, unknown>([
+        [`wn:${accountId}:${rawNode.nodeId}`, rawNode],
+      ]);
+      const storage: StorageLike = {
+        get: async <T>(key: string) => values.get(key) as T | undefined,
+        put: async (key: string, value: unknown) => { values.set(key, value); },
+        delete: async (key: string) => values.delete(key),
+        list: async <T>(options?: { prefix?: string }) => new Map(
+          [...values.entries()]
+            .filter(([key]) => !options?.prefix || key.startsWith(options.prefix))
+            .map(([key, value]) => [key, value as T]),
+        ),
+      };
+      return { store: new DurableStore(storage), values };
+    };
+
+    const identity = createLegacyStore();
+    await expect(identity.store.byWorkspaceNodeId(rawNode.nodeId)).resolves.toMatchObject({
+      nodeId: rawNode.nodeId,
+    });
+    expect(identity.values.get(`wni:${rawNode.nodeId}`)).toBe(accountId);
+    expect(identity.values.get(`wnl:${accountId}`)).toEqual([rawNode.nodeId]);
+    expect(identity.values.get(`wnh:${workspaceHost}`)).toEqual([rawNode.nodeId]);
+
+    const accountList = createLegacyStore();
+    await expect(accountList.store.listWorkspaceNodes(accountId)).resolves.toEqual([
+      expect.objectContaining({ nodeId: rawNode.nodeId }),
+    ]);
+    expect(accountList.values.get(`wni:${rawNode.nodeId}`)).toBe(accountId);
+
+    const hostList = createLegacyStore();
+    await expect(hostList.store.listWorkspaceNodesByHost(workspaceHost)).resolves.toEqual([
+      expect.objectContaining({ nodeId: rawNode.nodeId }),
+    ]);
+    expect(hostList.values.get(`wnh:${workspaceHost}`)).toEqual([rawNode.nodeId]);
+  });
+
+  it('keeps provisioned nodes offline until their first heartbeat', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({ ...member!, lastSeenAt: undefined });
+    await authorizeWorkspace(store, 'workspace-never-seen-token');
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+    });
+
+    const response = await handler(new Request(`${origin}/workspace/nodes`, {
+      headers: { authorization: 'Bearer workspace-never-seen-token' },
+    }));
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      presence: { online: 1, stale: 0, offline: 1 },
+      nodes: expect.arrayContaining([
+        expect.objectContaining({
+          nodeId: 'node-member',
+          presence: 'offline',
+          lastSeenAt: null,
+        }),
+      ]),
+    });
+  });
+
+  it('claims durable heartbeat nonces transactionally', async () => {
+    const values = new Map<string, unknown>();
+    let transactions = 0;
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => { values.set(key, value); },
+      delete: async (key: string) => { values.delete(key); },
+      transaction: async <T>(
+        callback: (transaction: StorageTransactionLike) => Promise<T>,
+      ) => {
+        transactions += 1;
+        return callback(storage);
+      },
+    };
+    const store = new DurableStore(storage);
+    const nowMs = baseNow;
+    expect(await store.claimWorkspaceNodeNonce(
+      'node-member',
+      'nonce-transactional',
+      nowMs + 300_000,
+      nowMs,
+    )).toBe(true);
+    expect(await store.claimWorkspaceNodeNonce(
+      'node-member',
+      'nonce-transactional',
+      nowMs + 300_000,
+      nowMs,
+    )).toBe(false);
+    expect(transactions).toBe(2);
+  });
+
+  it('retains accepted heartbeat nonces from receipt time', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    const { memberKey } = await seedWorkspace(backingStore);
+    let nonceClaim:
+      | { nodeId: string; nonce: string; expiresAt: number; nowMs: number }
+      | undefined;
+    const store = {
+      ...backingStore,
+      claimWorkspaceNodeNonce: async (
+        nodeId: string,
+        nonce: string,
+        expiresAt: number,
+        nowMs: number,
+      ) => {
+        nonceClaim = { nodeId, nonce, expiresAt, nowMs };
+        return backingStore.claimWorkspaceNodeNonce(
+          nodeId,
+          nonce,
+          expiresAt,
+          nowMs,
+        );
+      },
+    };
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+    });
+    const body = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: baseNow - WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS + 1,
+      nonce: 'heartbeat-receipt-retention',
+      connectorStatus: 'connected',
+      capabilities: ['mcp'],
+    });
+    const signature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: body,
+    });
+
+    const response = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-consuelo-node-signature': signature,
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(nonceClaim).toEqual({
+      nodeId: 'node-member',
+      nonce: 'heartbeat-receipt-retention',
+      expiresAt: baseNow + WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
+      nowMs: baseNow,
+    });
+  });
+
   it('lists only safe node metadata and supports rename, default selection, and revocation', async () => {
     let nowMs = baseNow;
     let upstreamCalls = 0;
@@ -553,6 +764,28 @@ describe('workspace node management and presence', () => {
       body: invalidBody,
     }));
     expect(invalidAgents.status).toBe(400);
+
+    const invalidStatusBody = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: nowMs,
+      nonce: 'heartbeat-nonce-invalid-status',
+      connectorStatus: 'unknown',
+      capabilities: ['mcp'],
+    });
+    const invalidStatusSignature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: invalidStatusBody,
+    });
+    const invalidStatus = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-consuelo-node-signature': invalidStatusSignature,
+      },
+      body: invalidStatusBody,
+    }));
+    expect(invalidStatus.status).toBe(400);
 
     const auth = { authorization: 'Bearer workspace-heartbeat-token' };
     nowMs = baseNow + heartbeatTtlMs + 1;

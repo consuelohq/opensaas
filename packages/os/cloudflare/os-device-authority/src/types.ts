@@ -325,6 +325,7 @@ export type StorageTransactionLike = {
   delete(key: string): Promise<boolean>;
 };
 export type StorageLike = StorageTransactionLike & {
+  list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
   transaction?<T>(
     closure: (transaction: StorageTransactionLike) => Promise<T>,
   ): Promise<T>;

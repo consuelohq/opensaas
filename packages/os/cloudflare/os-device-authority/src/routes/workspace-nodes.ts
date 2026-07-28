@@ -336,7 +336,11 @@ async function handleHeartbeat(
   const nodeId = typeof body.nodeId === 'string' ? body.nodeId.trim() : '';
   const timestamp = typeof body.timestamp === 'number' ? body.timestamp : Number.NaN;
   const nonce = typeof body.nonce === 'string' ? body.nonce.trim() : '';
-  const connectorStatus = body.connectorStatus === 'disconnected' ? 'disconnected' : 'connected';
+  const connectorStatus =
+    body.connectorStatus === 'connected' ||
+    body.connectorStatus === 'disconnected'
+      ? body.connectorStatus
+      : undefined;
   const capabilities = Array.isArray(body.capabilities)
     ? [...new Set(body.capabilities.filter((value): value is string => typeof value === 'string'))]
         .map((value) => value.trim())
@@ -355,13 +359,15 @@ async function handleHeartbeat(
       'Heartbeat agents must contain only known agent identifiers.',
     );
   }
+  const nowMs = runtime.now();
   if (
     !workspaceId ||
     !nodeId ||
+    !connectorStatus ||
     !Number.isFinite(timestamp) ||
     nonce.length < 8 ||
     nonce.length > 128 ||
-    Math.abs(runtime.now() - timestamp) > WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS
+    Math.abs(nowMs - timestamp) > WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS
   ) {
     return errorResponse(400, 'INVALID_HEARTBEAT', 'Heartbeat identity, timestamp, or nonce is invalid.');
   }
@@ -379,13 +385,12 @@ async function handleHeartbeat(
   const claimed = await runtime.store.claimWorkspaceNodeNonce(
     nodeId,
     nonce,
-    timestamp + WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
-    runtime.now(),
+    nowMs + WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
+    nowMs,
   );
   if (!claimed) {
     return errorResponse(409, 'HEARTBEAT_REPLAYED', 'The node heartbeat nonce was already used.');
   }
-  const nowMs = runtime.now();
   const updated: WorkspaceNode = {
     ...node,
     capabilities,

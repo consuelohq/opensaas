@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import type { LocalAgentDetection } from '../scripts/lib/local-agent-connectivity';
-import { verifiedHeartbeatAgentNames } from '../scripts/workspace-node-heartbeat';
+import {
+  resolveHeartbeatConnectorStatus,
+  verifiedHeartbeatAgentNames,
+} from '../scripts/workspace-node-heartbeat';
 
 function detection(name: LocalAgentDetection['name'], status: LocalAgentDetection['status']): LocalAgentDetection {
   return {
@@ -43,5 +46,34 @@ describe('workspace node heartbeat script', () => {
     expect(verifiedHeartbeatAgentNames(input)).toEqual(['codex', 'opencode']);
     expect(verifiedHeartbeatAgentNames(input)).toEqual(['gemini']);
     expect(invocation).toBe(2);
+  });
+
+  it('derives connector status from the assigned health endpoint on every run', async () => {
+    const config = {
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceId: 'workspace_123',
+      nodeId: 'node_home',
+      connectorStatus: 'connected' as const,
+      connectorHealthUrl: 'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/health',
+      capabilities: ['mcp'],
+      publicKeyJwk: '{}',
+      signingKeyJwk: '{}',
+    };
+
+    await expect(resolveHeartbeatConnectorStatus({
+      config,
+      fetchImpl: async () => new Response('ok', { status: 200 }),
+    })).resolves.toBe('connected');
+    await expect(resolveHeartbeatConnectorStatus({
+      config,
+      fetchImpl: async () => new Response('down', { status: 503 }),
+    })).resolves.toBe('disconnected');
+    await expect(resolveHeartbeatConnectorStatus({
+      config,
+      fetchImpl: async () => { throw new Error('network down'); },
+    })).resolves.toBe('disconnected');
+    await expect(resolveHeartbeatConnectorStatus({
+      config: { ...config, connectorHealthUrl: undefined },
+    })).resolves.toBe('connected');
   });
 });

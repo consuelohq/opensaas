@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createWorkspaceNodeClient,
+  formatWorkspaceNodeCommandResult,
   parseWorkspaceNodeCommand,
 } from '../scripts/lib/workspace-node-client';
 
@@ -119,5 +120,80 @@ describe('workspace node management CLI contract', () => {
     await expect(
       client.execute({ action: 'revoke', nodeId: 'node-member' }),
     ).rejects.not.toThrow('oauth-secret-token');
+  });
+
+  it('formats bounded node output without serializing arbitrary authority fields', () => {
+    const nodes = Array.from({ length: 80 }, (_, index) => ({
+      nodeId: `node-${index}`,
+      displayName: `Node ${index} ${'x'.repeat(300)}`,
+      role: index === 0 ? 'home' : 'member',
+      platform: 'darwin',
+      architecture: 'arm64',
+      channel: 'stable',
+      connectorId: `connector-${index}`,
+      capabilities: Array.from({ length: 60 }, (__, capability) => `capability-${capability}`),
+      agents: ['codex', 'claude', 'gemini', 'opencode', 'factory', 'cursor', 'pi', 'secret-agent'],
+      createdAt: '2026-07-28T00:00:00.000Z',
+      lastSeenAt: '2026-07-28T00:00:00.000Z',
+      presence: 'online',
+      state: 'active',
+      publicKeyThumbprint: `thumbprint-${index}`,
+      secret: `credential-${index}`,
+    }));
+    const formatted = formatWorkspaceNodeCommandResult(
+      { action: 'list', currentNodeId: 'node-0' },
+      {
+        workspaceId: 'workspace_cli',
+        workspaceHost: 'internal.consuelohq.com',
+        currentNodeId: 'node-0',
+        defaultNodeId: 'node-0',
+        nodeCount: 80,
+        presence: { online: 80, stale: 0, offline: 0 },
+        nodes,
+        secret: 'top-level-secret',
+      },
+    );
+    const output = JSON.parse(formatted) as {
+      nodes: Array<{ displayName: string; capabilities: string[]; agents: string[] }>;
+      truncated: boolean;
+    };
+
+    expect(output.nodes).toHaveLength(50);
+    expect(output.truncated).toBe(true);
+    expect(output.nodes[0]?.displayName.length).toBeLessThanOrEqual(120);
+    expect(output.nodes[0]?.capabilities).toHaveLength(8);
+    expect(output.nodes[0]?.agents).toHaveLength(7);
+    expect(formatted.length).toBeLessThan(30_000);
+    expect(formatted).not.toContain('top-level-secret');
+    expect(formatted).not.toContain('credential-');
+    expect(formatted).not.toContain('secret-agent');
+  });
+
+  it('formats mutation responses through the same safe node projection', () => {
+    const formatted = formatWorkspaceNodeCommandResult(
+      { action: 'rename', nodeId: 'node-member', displayName: 'Travel Mac' },
+      {
+        node: {
+          nodeId: 'node-member',
+          displayName: 'Travel Mac',
+          role: 'member',
+          capabilities: ['mcp'],
+          secret: 'credential-value',
+        },
+        secret: 'top-level-secret',
+      },
+    );
+
+    expect(JSON.parse(formatted)).toEqual({
+      node: {
+        nodeId: 'node-member',
+        displayName: 'Travel Mac',
+        role: 'member',
+        capabilities: ['mcp'],
+        agents: [],
+      },
+    });
+    expect(formatted).not.toContain('secret');
+    expect(formatted).not.toContain('credential-value');
   });
 });

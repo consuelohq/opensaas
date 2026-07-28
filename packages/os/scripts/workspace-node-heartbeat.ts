@@ -15,7 +15,10 @@ import {
 
 type WorkspaceNodeHeartbeatFileConfig = WorkspaceNodeHeartbeatConfig & {
   osHome?: string;
+  connectorHealthUrl?: string;
 };
+
+const CONNECTOR_HEALTH_TIMEOUT_MS = 5_000;
 
 function parseConfigPath(args: string[]): string {
   const index = args.indexOf('--config');
@@ -64,12 +67,56 @@ export function verifiedHeartbeatAgentNames(input: {
     .sort();
 }
 
+function normalizeConnectorHealthUrl(value: string): URL {
+  const url = new URL(value);
+  if (
+    url.protocol !== 'https:' ||
+    url.username ||
+    url.password ||
+    url.pathname !== '/health' ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error('workspace node heartbeat connector health URL is invalid');
+  }
+  return url;
+}
+
+export async function resolveHeartbeatConnectorStatus(input: {
+  config: WorkspaceNodeHeartbeatFileConfig;
+  fetchImpl?: typeof fetch;
+}): Promise<'connected' | 'disconnected'> {
+  const healthUrl = input.config.connectorHealthUrl?.trim();
+  if (!healthUrl) return input.config.connectorStatus;
+
+  let url: URL;
+  try {
+    url = normalizeConnectorHealthUrl(healthUrl);
+  } catch {
+    return 'disconnected';
+  }
+
+  try {
+    const response = await (input.fetchImpl ?? globalThis.fetch)(
+      new Request(url, {
+        method: 'GET',
+        headers: { accept: 'application/json' },
+        signal: AbortSignal.timeout(CONNECTOR_HEALTH_TIMEOUT_MS),
+      }),
+    );
+    return response.ok ? 'connected' : 'disconnected';
+  } catch {
+    return 'disconnected';
+  }
+}
+
 async function main(): Promise<void> {
   const configPath = parseConfigPath(process.argv.slice(2));
   const config = readConfig(configPath);
   const agents = verifiedHeartbeatAgentNames({ configPath, config });
+  const connectorStatus = await resolveHeartbeatConnectorStatus({ config });
   const client = createWorkspaceNodeHeartbeatClient({
-    config,
+    config: { ...config, connectorStatus },
     agents,
   });
   const result = await client.send();

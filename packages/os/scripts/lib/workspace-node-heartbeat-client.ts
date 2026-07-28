@@ -74,6 +74,14 @@ function normalizeConfig(
     .sort();
   JSON.parse(requiredString(config.publicKeyJwk, 'public key'));
   JSON.parse(requiredString(config.signingKeyJwk, 'signing key'));
+  if (
+    config.connectorStatus !== 'connected' &&
+    config.connectorStatus !== 'disconnected'
+  ) {
+    throw new Error(
+      'workspace node heartbeat connector status must be connected or disconnected',
+    );
+  }
   return {
     authorityOrigin: normalizeAuthorityOrigin(config.authorityOrigin),
     workspaceId: requiredString(config.workspaceId, 'workspace ID'),

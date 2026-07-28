@@ -117,7 +117,11 @@ export async function registerGrantNode(input: {
     input.grant.nodeName = nodeName;
     input.grant.nodeRole = role;
     input.grant.nodeStatus = existingNode ? 'reconnected' : 'created';
-    input.grant.nodeLastSeenAt = input.nowMs;
+    if (existingNode?.lastSeenAt !== undefined) {
+      input.grant.nodeLastSeenAt = existingNode.lastSeenAt;
+    } else {
+      delete input.grant.nodeLastSeenAt;
+    }
     await input.store.putWorkspaceNode({
       accountId: input.accountId,
       workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
@@ -134,14 +138,18 @@ export async function registerGrantNode(input: {
       connectorId: connectorIdFromNodeId(nodeId),
       capabilities:
         input.grant.nodeCapabilities ?? existingNode?.capabilities ?? [],
-      connectorStatus: 'connected',
+      connectorStatus:
+        existingNode?.connectorStatus ??
+        (existingNode?.lastSeenAt === undefined ? 'disconnected' : 'connected'),
       state: existingNode?.state ?? 'active',
       devicePublicKeyJwk:
         existingNode?.devicePublicKeyJwk ?? input.grant.devicePublicKeyJwk,
       devicePublicKeyThumbprint: input.grant.devicePublicKeyThumbprint,
       createdAt: existingNode?.createdAt ?? input.nowMs,
       updatedAt: input.nowMs,
-      lastSeenAt: input.nowMs,
+      ...(existingNode?.lastSeenAt !== undefined
+        ? { lastSeenAt: existingNode.lastSeenAt }
+        : {}),
     });
   } catch (error: unknown) {
     throw new Error(

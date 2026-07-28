@@ -25,8 +25,34 @@ const cloneWorkspaceNode = (node: WorkspaceNode): WorkspaceNode => ({
   ...(node.agents ? { agents: [...node.agents] } : {}),
 });
 
+const isWorkspaceNode = (value: unknown): value is WorkspaceNode =>
+  Boolean(value) &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  typeof (value as { accountId?: unknown }).accountId === 'string' &&
+  typeof (value as { nodeId?: unknown }).nodeId === 'string' &&
+  typeof (value as { workspaceHost?: unknown }).workspaceHost === 'string';
+
 export class DurableStore implements Store {
   constructor(private storage: StorageLike) {}
+
+  private async legacyWorkspaceNodes(prefix = 'wn:'): Promise<WorkspaceNode[]> {
+    if (!this.storage.list) return [];
+    const entries = await this.storage.list<unknown>({ prefix });
+    return [...entries.entries()]
+      .filter(([key, value]) => {
+        if (!isWorkspaceNode(value)) return false;
+        return key === `wn:${value.accountId}:${value.nodeId}`;
+      })
+      .map(([, value]) => cloneWorkspaceNode(value as WorkspaceNode));
+  }
+
+  private async backfillWorkspaceNodeIndexes(
+    nodes: WorkspaceNode[],
+  ): Promise<WorkspaceNode[]> {
+    for (const node of nodes) await this.putWorkspaceNode(node);
+    return nodes.map(cloneWorkspaceNode);
+  }
   async put(g: Grant) {
     try {
       await this.storage.put(`d:${g.hash}`, g);
@@ -369,15 +395,30 @@ export class DurableStore implements Store {
   async byWorkspaceNodeId(nodeId: string) {
     try {
       const accountId = await this.storage.get<string>(`wni:${nodeId}`);
-      return accountId ? await this.byWorkspaceNode(accountId, nodeId) : undefined;
+      const indexed = accountId
+        ? await this.byWorkspaceNode(accountId, nodeId)
+        : undefined;
+      if (indexed) return indexed;
+      const matches = (await this.legacyWorkspaceNodes())
+        .filter((node) => node.nodeId === nodeId);
+      if (matches.length === 0) return undefined;
+      if (matches.length > 1) {
+        throw new Error('workspace node ID is bound to multiple accounts');
+      }
+      await this.backfillWorkspaceNodeIndexes(matches);
+      return cloneWorkspaceNode(matches[0]);
     } catch {
       throw new Error('workspace node identity read failed');
     }
   }
   async listWorkspaceNodes(accountId: string) {
     try {
-      const nodeIds =
-        (await this.storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+      const indexedNodeIds = await this.storage.get<string[]>(`wnl:${accountId}`);
+      if (indexedNodeIds === undefined) {
+        const legacyNodes = await this.legacyWorkspaceNodes(`wn:${accountId}:`);
+        return this.backfillWorkspaceNodeIndexes(legacyNodes);
+      }
+      const nodeIds = indexedNodeIds;
       const nodes = await Promise.all(
         nodeIds.map((nodeId) => this.byWorkspaceNode(accountId, nodeId)),
       );
@@ -388,8 +429,13 @@ export class DurableStore implements Store {
   }
   async listWorkspaceNodesByHost(workspaceHost: string) {
     try {
-      const nodeIds =
-        (await this.storage.get<string[]>(`wnh:${workspaceHost}`)) ?? [];
+      const indexedNodeIds = await this.storage.get<string[]>(`wnh:${workspaceHost}`);
+      if (indexedNodeIds === undefined) {
+        const legacyNodes = (await this.legacyWorkspaceNodes())
+          .filter((node) => node.workspaceHost === workspaceHost);
+        return this.backfillWorkspaceNodeIndexes(legacyNodes);
+      }
+      const nodeIds = indexedNodeIds;
       const nodes = await Promise.all(
         nodeIds.map((nodeId) => this.byWorkspaceNodeId(nodeId)),
       );
@@ -407,12 +453,17 @@ export class DurableStore implements Store {
     expiresAt: number,
     nowMs: number,
   ) {
-    try {
+    const claim = async (storage: StorageLike): Promise<boolean> => {
       const key = `wnn:${nodeId}:${nonce}`;
-      const existing = await this.storage.get<number>(key);
+      const existing = await storage.get<number>(key);
       if (existing && existing > nowMs) return false;
-      await this.storage.put(key, expiresAt);
+      await storage.put(key, expiresAt);
       return true;
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => claim(transaction))
+        : await claim(this.storage);
     } catch {
       throw new Error('workspace node nonce write failed');
     }

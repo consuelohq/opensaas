@@ -592,7 +592,7 @@ describe('local OS install state', () => {
     expect(sitesIndex).toContain('Documentation');
     expect(sitesIndex).toContain('Decision loops');
     expect(sitesIndex).toContain('Connect to your cloud agents');
-    expect(sitesIndex).toContain('Connected to 0 local agents');
+    expect(sitesIndex).toContain('<p data-agent-count>Checking local agents…</p>');
     expect(sitesIndex).toContain('No local agents connected to workspace yet.');
     expect(sitesIndex).not.toContain('Consuelo OS Sites');
     expect(sitesIndex).not.toContain('GitHub Workflows');
