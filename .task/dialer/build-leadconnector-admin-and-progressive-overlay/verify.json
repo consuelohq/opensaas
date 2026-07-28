@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/build-leadconnector-admin-and-progressive-overlay",
+  "base": "origin/stream/dialer",
+  "headSha": "f444673be3210c12deee5e14ec2b0715bf71aa38",
+  "changeHash": "fc1152515e4b314d192d4431ce685b3d2f51552066878cc8c46d8ccd4ebe77a4",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/calls/api/integrations/oauth/callback.astro",
+    "packages/consuelo-website/tests/leadconnector-oauth-callback.test.mjs"
+  ],
+  "verifiedAt": "2026-07-28T05:31:15.013Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/build-leadconnector-admin-and-progressive-overlay/current.json",
+        ".task/dialer/build-leadconnector-admin-and-progressive-overlay/session.json",
+        ".task/dialer/build-leadconnector-admin-and-progressive-overlay/workpad.md",
+        ".task/tasks/dialer/build-leadconnector-admin-and-progressive-overlay.json",
+        "packages/consuelo-website/src/pages/calls/api/integrations/oauth/callback.astro",
+        "packages/consuelo-website/tests/leadconnector-oauth-callback.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

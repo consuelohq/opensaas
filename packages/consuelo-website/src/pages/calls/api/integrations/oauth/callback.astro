@@ -1,0 +1,32 @@
+---
+const callbackDescription = 'Completing the LeadConnector connection.';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"
+    />
+    <title>Completing connection</title>
+    <meta name="description" content={callbackDescription} />
+    <script is:inline>
+      const target = new URL(
+        'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev/v1/integrations/leadconnector/callback',
+      );
+      target.search = window.location.search;
+      window.location.replace(target.toString());
+    </script>
+  </head>
+  <body>
+    <main aria-live="polite">
+      <h1>Completing connection</h1>
+      <p>This page will continue automatically.</p>
+    </main>
+  </body>
+</html>

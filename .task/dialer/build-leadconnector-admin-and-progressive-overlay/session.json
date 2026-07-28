@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_aa0e812e7b84",
+  "tmuxSession": "opensaas-dialer-build-leadconnector-admin-and-progressive-overla-aa0e812e",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/build-leadconnector-admin-and-progressive-overlay",
+  "branch": "task/dialer/build-leadconnector-admin-and-progressive-overlay",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-leadconnector-admin-and-progressive-overlay",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-leadconnector-admin-and-progressive-overlay",
+  "prNumber": 1687,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1687",
+  "createdAt": "2026-07-28T05:20:24.310Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-leadconnector-admin-and-progressive-overlay/.task/dialer/build-leadconnector-admin-and-progressive-overlay/session.json"
+}
