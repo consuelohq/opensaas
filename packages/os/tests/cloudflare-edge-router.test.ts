@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -1057,11 +1058,12 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
       },
     };
     const r2Reads: string[] = [];
+    const snapshotHtml = '<!doctype html><title>edge launcher</title>';
     const siteR2: WorkspaceSitesEdgeR2Bucket = {
       async get(key) {
         r2Reads.push(key);
         if (key !== 'sites/workspace_123/launcher/version_1/index.html') return null;
-        return { text: async () => '<!doctype html><title>edge launcher</title>' };
+        return { text: async () => snapshotHtml };
       },
     };
     const registry: WorkspaceCloudflareEdgeRouteRegistry = {
@@ -1104,6 +1106,9 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(response.headers.get('cache-control')).toBe('no-store');
     expect(response.headers.get('x-consuelo-sites-cache')).toBe('miss');
     expect(response.headers.get('x-consuelo-edge-cache-authority')).toBe('sites-snapshot');
+    expect(response.headers.get('x-consuelo-site-content-hash')).toBe(
+      createHash('sha256').update(snapshotHtml).digest('hex'),
+    );
     expect(cachePuts).toEqual([]);
     expect(r2Reads).toEqual(['sites/workspace_123/launcher/version_1/index.html']);
     expect(upstreamRequests).toHaveLength(0);
