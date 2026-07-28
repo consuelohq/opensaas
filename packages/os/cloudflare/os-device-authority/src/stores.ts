@@ -347,6 +347,33 @@ export class DurableStore implements Store {
       throw new Error('workspace node write failed');
     }
   }
+  async delWorkspaceNode(accountId: string, nodeId: string) {
+    const remove = async (storage: StorageLike) => {
+      const boundAccountId = await storage.get<string>(`wni:${nodeId}`);
+      if (boundAccountId && boundAccountId !== accountId) {
+        throw new Error('workspace node ID is bound to another account');
+      }
+      const nodeIds =
+        (await storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+      await storage.delete(`wn:${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) {
+        await storage.delete(`wni:${nodeId}`);
+      }
+      await storage.put(
+        `wnl:${accountId}`,
+        nodeIds.filter((candidate) => candidate !== nodeId),
+      );
+    };
+    try {
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => remove(transaction));
+      } else {
+        await remove(this.storage);
+      }
+    } catch {
+      throw new Error('workspace node delete failed');
+    }
+  }
   async byWorkspaceNode(accountId: string, nodeId: string) {
     try {
       const node = await this.storage.get<WorkspaceNode>(
@@ -633,6 +660,17 @@ export function createMemoryDeviceGrantStore(): Store {
         `${node.accountId}:${node.nodeId}`,
         cloneWorkspaceNode(node),
       );
+      return Promise.resolve();
+    },
+    delWorkspaceNode(accountId, nodeId) {
+      const boundAccountId = workspaceNodeAccounts.get(nodeId);
+      if (boundAccountId && boundAccountId !== accountId) {
+        return Promise.reject(
+          new Error('workspace node ID is bound to another account'),
+        );
+      }
+      workspaceNodes.delete(`${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) workspaceNodeAccounts.delete(nodeId);
       return Promise.resolve();
     },
     byWorkspaceNode(accountId, nodeId) {

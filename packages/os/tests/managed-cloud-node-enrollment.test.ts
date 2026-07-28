@@ -1,4 +1,10 @@
-import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -6,6 +12,12 @@ import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
 type EnrollmentContract = {
+  loadOrCreateManagedCloudNodeDeviceKeyPair: (input: {
+    home: string;
+    nodeId: string;
+    generate?: () => typeof deviceKeyPair;
+  }) => typeof deviceKeyPair;
+  managedCloudNodeDeviceKeyPath: (home: string, nodeId: string) => string;
   runManagedCloudNodeEnrollment: (input: {
     home: string;
     onboarding: {
@@ -17,6 +29,10 @@ type EnrollmentContract = {
       authorityOrigin?: string;
     };
     dependencies: {
+      loadOrCreateDeviceKeyPair: (input: {
+        home: string;
+        nodeId: string;
+      }) => typeof deviceKeyPair;
       requestDeviceCode: (input: Record<string, unknown>) => Promise<unknown>;
       pollAccessToken: (input: Record<string, unknown>) => Promise<unknown>;
       provision: (input: Record<string, unknown>) => unknown;
@@ -78,7 +94,54 @@ const deviceKeyPair = {
     '{"kty":"OKP","crv":"Ed25519","x":"public","d":"private"}',
 };
 
+const replacementDeviceKeyPair = {
+  algorithm: 'Ed25519' as const,
+  publicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"replacement"}',
+  signingKeyJwk:
+    '{"kty":"OKP","crv":"Ed25519","x":"replacement","d":"private-replacement"}',
+};
+
 describe('managed cloud node enrollment', () => {
+  it('persists one owner-only node keypair and reuses it across enrollment retries', async () => {
+    const {
+      loadOrCreateManagedCloudNodeDeviceKeyPair,
+      managedCloudNodeDeviceKeyPath,
+    } = await loadContract();
+    const directory = mkdtempSync(join(tmpdir(), 'consuelo-managed-node-key-'));
+    temporaryDirectories.push(directory);
+    const home = join(directory, 'home');
+    let generated = 0;
+
+    const first = loadOrCreateManagedCloudNodeDeviceKeyPair({
+      home,
+      nodeId: onboarding.nodeId,
+      generate: () => {
+        generated += 1;
+        return deviceKeyPair;
+      },
+    });
+    const second = loadOrCreateManagedCloudNodeDeviceKeyPair({
+      home,
+      nodeId: onboarding.nodeId,
+      generate: () => {
+        generated += 1;
+        return replacementDeviceKeyPair;
+      },
+    });
+    const keyPath = managedCloudNodeDeviceKeyPath(home, onboarding.nodeId);
+
+    expect(first).toEqual(deviceKeyPair);
+    expect(second).toEqual(deviceKeyPair);
+    expect(generated).toBe(1);
+    expect(existsSync(keyPath)).toBe(true);
+    expect(statSync(keyPath).mode & 0o777).toBe(0o600);
+    expect(JSON.parse(readFileSync(keyPath, 'utf8'))).toMatchObject({
+      schemaVersion: 1,
+      nodeId: onboarding.nodeId,
+      deviceKeyPair,
+    });
+  });
+
   it('publishes a secret-free device code, polls approval, and provisions the approved bootstrap', async () => {
     const { runManagedCloudNodeEnrollment } = await loadContract();
     const requests: Record<string, unknown>[] = [];
@@ -92,6 +155,7 @@ describe('managed cloud node enrollment', () => {
       home: '/var/lib/consuelo',
       onboarding,
       dependencies: {
+        loadOrCreateDeviceKeyPair: () => deviceKeyPair,
         requestDeviceCode: async (input) => {
           requests.push(input);
           return {
@@ -147,6 +211,7 @@ describe('managed cloud node enrollment', () => {
         workspaceHost: 'kokayi.consuelohq.com',
         nodeId: 'ko-cloud-1',
         nodeName: "Ko's cloud node",
+        deviceKeyPair,
       }),
     ]);
     expect(polls).toHaveLength(2);
@@ -219,6 +284,7 @@ describe('managed cloud node enrollment', () => {
         home: '/var/lib/consuelo',
         onboarding,
         dependencies: {
+          loadOrCreateDeviceKeyPair: () => deviceKeyPair,
           requestDeviceCode: async () => ({
             status: 'started',
             deviceKeyPair,
@@ -264,6 +330,7 @@ describe('managed cloud node enrollment', () => {
         home: '/var/lib/consuelo',
         onboarding,
         dependencies: {
+          loadOrCreateDeviceKeyPair: () => deviceKeyPair,
           requestDeviceCode: async () => ({
             status: 'started',
             deviceKeyPair,

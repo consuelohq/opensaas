@@ -294,6 +294,7 @@ export type Store = {
   ): Promise<WorkspaceBrowserSession | undefined>;
   delWorkspaceBrowserSession(tokenHash: string): Promise<void>;
   putWorkspaceNode(node: WorkspaceNode): Promise<void>;
+  delWorkspaceNode(accountId: string, nodeId: string): Promise<void>;
   byWorkspaceNode(
     accountId: string,
     nodeId: string,

@@ -1281,6 +1281,10 @@ describe('os device authority worker', () => {
       expect(persisted, entryPoint).not.toHaveProperty('connectorToken');
       expect(persisted, entryPoint).not.toHaveProperty('cloudflareTunnelToken');
       expect(persisted, entryPoint).not.toHaveProperty('accessToken');
+      expect(
+        await store.listWorkspaceNodes('account_google_123'),
+        entryPoint,
+      ).toEqual([]);
       for (const credential of leakedCredentials) {
         expect(JSON.stringify(persisted), entryPoint).not.toContain(credential);
       }

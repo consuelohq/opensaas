@@ -241,6 +241,16 @@ export async function failGrantWorkspaceRouteSetup(input: {
   delete input.grant.cloudflareTunnelToken;
   delete input.grant.accessToken;
   try {
+    if (
+      input.grant.nodeStatus === 'created' &&
+      input.grant.accountId &&
+      input.grant.nodeId
+    ) {
+      await input.store.delWorkspaceNode(
+        input.grant.accountId,
+        input.grant.nodeId,
+      );
+    }
     await input.store.put(input.grant);
   } catch (error: unknown) {
     throw new Error(

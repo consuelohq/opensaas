@@ -4,13 +4,17 @@
   "mode": "full",
   "branch": "task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
   "base": "origin/task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
-  "headSha": "e6b87b661a5c998c28f315abe72432ba90df8937",
-  "changeHash": "64359113a476b8e8b39b926939e473519999c8ab28e3e8fa637d4052dbe678b0",
+  "headSha": "14e2b75158f6eab2af54cb3529658630b1901d56",
+  "changeHash": "01fffeef4385edc6d3561b02f158acb02fa54049ff4e52dc71c33901b4b25b18",
   "changedFiles": [
-    "packages/os/tests/os-device-authority-release-contract.test.ts",
-    "packages/workspace/scripts/os-release-device-auth.ts"
+    "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
+    "packages/os/tests/managed-cloud-node-enrollment.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
   ],
-  "verifiedAt": "2026-07-28T07:53:52.929Z",
+  "verifiedAt": "2026-07-28T18:26:51.390Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -27,8 +31,12 @@
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json",
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json",
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md",
-        "packages/os/tests/os-device-authority-release-contract.test.ts",
-        "packages/workspace/scripts/os-release-device-auth.ts"
+        "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
+        "packages/os/tests/managed-cloud-node-enrollment.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
       ],
       "matchedRules": [
         {
@@ -36,7 +44,12 @@
           "critical": false,
           "reason": "Auto-discovered package test script for packages/os.",
           "matchedFiles": [
-            "packages/os/tests/os-device-authority-release-contract.test.ts"
+            "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+            "packages/os/cloudflare/os-device-authority/src/stores.ts",
+            "packages/os/cloudflare/os-device-authority/src/types.ts",
+            "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
+            "packages/os/tests/managed-cloud-node-enrollment.test.ts",
+            "packages/os/tests/os-device-authority-worker.test.ts"
           ],
           "origin": "auto"
         }

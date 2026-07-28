@@ -1,6 +1,8 @@
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
+  readFileSync,
   renameSync,
   writeFileSync,
 } from 'node:fs';
@@ -12,6 +14,7 @@ import {
   type WorkspaceBootstrap,
 } from './install-state';
 import {
+  generateWorkspaceDeviceKeyPair,
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
   type DeviceAccessTokenPollResult,
@@ -67,6 +70,10 @@ export type ManagedCloudNodeEnrollmentStatus =
     };
 
 export type ManagedCloudNodeEnrollmentDependencies = {
+  loadOrCreateDeviceKeyPair: (input: {
+    home: string;
+    nodeId: string;
+  }) => WorkspaceDeviceKeyPair;
   requestDeviceCode: (input: {
     clientId: string;
     scope: string[];
@@ -75,6 +82,7 @@ export type ManagedCloudNodeEnrollmentDependencies = {
     workspaceHost: string;
     nodeId: string;
     nodeName: string;
+    deviceKeyPair: WorkspaceDeviceKeyPair;
   }) => Promise<DeviceCodeRequestResult>;
   pollAccessToken: (input: {
     clientId: string;
@@ -100,6 +108,122 @@ class ManagedCloudNodeEnrollmentError extends Error {
     this.code = code;
   }
 }
+
+type StoredManagedCloudNodeDeviceKeyPair = {
+  schemaVersion: 1;
+  nodeId: string;
+  deviceKeyPair: WorkspaceDeviceKeyPair;
+};
+
+const assertManagedCloudNodeDeviceKeyPair = (
+  value: unknown,
+  expectedNodeId: string,
+): WorkspaceDeviceKeyPair => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new ManagedCloudNodeEnrollmentError(
+      'DEVICE_KEY_INVALID',
+      'managed cloud node device key must be an object',
+    );
+  }
+  const record = value as Partial<StoredManagedCloudNodeDeviceKeyPair>;
+  const pair = record.deviceKeyPair;
+  if (
+    record.schemaVersion !== 1 ||
+    record.nodeId !== expectedNodeId ||
+    !pair ||
+    pair.algorithm !== 'Ed25519' ||
+    typeof pair.publicKeyJwk !== 'string' ||
+    typeof pair.signingKeyJwk !== 'string'
+  ) {
+    throw new ManagedCloudNodeEnrollmentError(
+      'DEVICE_KEY_INVALID',
+      'managed cloud node device key does not match the requested node',
+    );
+  }
+  try {
+    const publicKey = JSON.parse(pair.publicKeyJwk) as Record<string, unknown>;
+    const signingKey = JSON.parse(pair.signingKeyJwk) as Record<string, unknown>;
+    if (
+      publicKey.kty !== 'OKP' ||
+      publicKey.crv !== 'Ed25519' ||
+      signingKey.kty !== 'OKP' ||
+      signingKey.crv !== 'Ed25519' ||
+      typeof signingKey.d !== 'string'
+    ) {
+      throw new Error('invalid Ed25519 JWK');
+    }
+  } catch (error: unknown) {
+    throw new ManagedCloudNodeEnrollmentError(
+      'DEVICE_KEY_INVALID',
+      'managed cloud node device key contains invalid Ed25519 JWK material',
+      { cause: error },
+    );
+  }
+  return pair;
+};
+
+export const managedCloudNodeDeviceKeyPath = (
+  home: string,
+  nodeId: string,
+): string =>
+  join(
+    home,
+    'security',
+    'managed-cloud-node',
+    `node-${Buffer.from(nodeId, 'utf8').toString('base64url')}.json`,
+  );
+
+export const loadOrCreateManagedCloudNodeDeviceKeyPair = (input: {
+  home: string;
+  nodeId: string;
+  generate?: () => WorkspaceDeviceKeyPair;
+}): WorkspaceDeviceKeyPair => {
+  const path = managedCloudNodeDeviceKeyPath(input.home, input.nodeId);
+  if (existsSync(path)) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(readFileSync(path, 'utf8'));
+    } catch (error: unknown) {
+      throw new ManagedCloudNodeEnrollmentError(
+        'DEVICE_KEY_INVALID',
+        'managed cloud node device key could not be read',
+        { cause: error },
+      );
+    }
+    const pair = assertManagedCloudNodeDeviceKeyPair(parsed, input.nodeId);
+    chmodSync(path, 0o600);
+    return pair;
+  }
+
+  const pair = (input.generate ?? generateWorkspaceDeviceKeyPair)();
+  assertManagedCloudNodeDeviceKeyPair(
+    {
+      schemaVersion: 1,
+      nodeId: input.nodeId,
+      deviceKeyPair: pair,
+    },
+    input.nodeId,
+  );
+  mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
+  const temporaryPath = `${path}.tmp`;
+  writeFileSync(
+    temporaryPath,
+    `${JSON.stringify(
+      {
+        schemaVersion: 1,
+        nodeId: input.nodeId,
+        deviceKeyPair: pair,
+      } satisfies StoredManagedCloudNodeDeviceKeyPair,
+      null,
+      2,
+    )}\n`,
+    { mode: 0o600 },
+  );
+  chmodSync(temporaryPath, 0o600);
+  renameSync(temporaryPath, path);
+  chmodSync(path, 0o600);
+  return pair;
+};
 
 export const workspaceBootstrapFromApprovedDeviceGrant = (
   input: ApprovedDeviceGrant,
@@ -234,6 +358,7 @@ export const runManagedCloudNodeEnrollment = async (input: {
   connectorId: string;
 }> => {
   const dependencies: ManagedCloudNodeEnrollmentDependencies = {
+    loadOrCreateDeviceKeyPair: loadOrCreateManagedCloudNodeDeviceKeyPair,
     requestDeviceCode: requestWorkspaceDeviceCode,
     pollAccessToken: pollWorkspaceDeviceAccessToken,
     provision: provisionLocalOs,
@@ -243,6 +368,10 @@ export const runManagedCloudNodeEnrollment = async (input: {
     ...input.dependencies,
   };
   try {
+    const deviceKeyPair = dependencies.loadOrCreateDeviceKeyPair({
+      home: input.home,
+      nodeId: input.onboarding.nodeId,
+    });
     const requested = await dependencies.requestDeviceCode({
       clientId: MANAGED_CLOUD_NODE_DEVICE_CLIENT_ID,
       scope: [...MANAGED_CLOUD_NODE_DEVICE_SCOPE],
@@ -251,6 +380,7 @@ export const runManagedCloudNodeEnrollment = async (input: {
       workspaceHost: input.onboarding.workspaceHost,
       nodeId: input.onboarding.nodeId,
       nodeName: input.onboarding.nodeName,
+      deviceKeyPair,
     });
     if (requested.status !== 'started') {
       throw new ManagedCloudNodeEnrollmentError(
@@ -258,7 +388,7 @@ export const runManagedCloudNodeEnrollment = async (input: {
         requested.message,
       );
     }
-    const { session, deviceKeyPair } = requested;
+    const { session } = requested;
     dependencies.writeStatus({
       schemaVersion: 1,
       phase: 'awaiting_authorization',
