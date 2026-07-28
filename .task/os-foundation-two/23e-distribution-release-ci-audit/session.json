@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_49f5341977f4",
+  "tmuxSession": "opensaas-os-foundation-two-23e-distribution-release-ci-audit-49f53419",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/23e-distribution-release-ci-audit",
+  "branch": "task/os-foundation-two/23e-distribution-release-ci-audit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-23e-distribution-release-ci-audit",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-23e-distribution-release-ci-audit",
+  "prNumber": 1708,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1708",
+  "createdAt": "2026-07-28T05:20:02.306Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-23e-distribution-release-ci-audit/.task/os-foundation-two/23e-distribution-release-ci-audit/session.json"
+}

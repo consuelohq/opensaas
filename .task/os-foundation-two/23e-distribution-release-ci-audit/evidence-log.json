@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-foundation-two/23e-distribution-release-ci-audit",
+  "events": [
+    {
+      "id": "194a0812-ef38-40c2-9c47-f057cc632423",
+      "occurred_at": "2026-07-28T05:33:51.995Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/plans/consuelo-os-foundation/reviews/final/23e-report.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/23e-distribution-release-ci-audit",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/23e-distribution-release-ci-audit"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-28T05:33:52.062Z"
+}
