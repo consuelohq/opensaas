@@ -1,32 +1,9 @@
 # Worker 23g repository boundaries, operability, and documentation audit
 
-## Result
-
-DOMAIN BLOCKED
-
-Direct audit of immutable candidate ef2530b136ec2a170915b583abfb2341899bd6ab using authorized fallback PR #1674. Product code and the shared finding ledger were not modified.
-
-## Coordinates and unavailable evidence
-
-- PR #1674 is merged to main and has the exact candidate head.
-- Canonical review-only PR: unavailable; PR #1674 is a merged stream/planning PR.
-- Baseline SHA: unavailable in Worker 23 artifacts and not independently recorded.
-- Recovered task branch: task/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation.
-- Exact recovered taskSession: tsk_083b6b6e0036.
-- Worker 29: no explicit Ko approval found; not reviewed or treated as authorization.
-- os.get_steering transport returned HTTP 404 twice. The typed failure envelope was inspected and the configured legacy OS facade fallback was used for bootstrap and all repository work.
-
-Missing baseline and review-only comparison remain unavailable evidence. Ko explicitly authorized PR #1674/SHA ef2530b as candidate fallback.
-
-## Inputs read
-
-- master plan, environment registry, Worker 23 final audit, independent-review framework, and the 23g brief
-- original prompts 26-tool-package-layout.md, 28-repository-product-boundary-audit.md, and 30-cli-product-split.md
-- existing PR #1674 GitHub reviews, comments, checks, and threads
-
-## Complete intent-lineage table
-
-The following 45-row table was recorded before implementation judgment in the task workpad and is copied here.
+Candidate: ef2530b136ec2a170915b583abfb2341899bd6ab
+Authorized fallback: PR #1674
+Task session: tsk_083b6b6e0036
+Review-only PR: unavailable; baseline SHA unavailable.
 
 ## Intent-lineage matrix
 
@@ -78,102 +55,20 @@ The following 45-row table was recorded before implementation judgment in the ta
 | 30-cli-product-split.md | Tests: OS excludes dialer/Twenty/Twilio/coaching; dialer unchanged; no old refs; bundle split | 23G; secondary 23A/23E | PR 1647 | CLI/OS tests and runtime classifier | reviewed below |
 | 30-cli-product-split.md | Acceptance: consuelo unambiguously OS; dialer preserved; install/update excludes dialer; no CLI deletion | 23G; secondary 23A/23E | PR 1647 and PR 1674 | package manifests, binaries, lifecycle docs/tests | reviewed below |
 
-## Findings
+## Coordinate notes
 
-### 23G-001 — P1 — Mixed customer CLI violates consuelo / consuelo-dialer boundary
+The matrix was recorded before implementation judgment. PR #1674 is merged and is used only because Ko explicitly authorized it as the immutable fallback. No Worker 29 approval was found.
 
-Category: architecture, package boundary, operability. Blocks merge: yes.
 
-Evidence: packages/cli/package.json:2-4,8-10,17-30 exposes one consuelo binary with dialer, contacts, coaching, analytics, logger, and twenty-sdk dependencies. packages/cli/src/index.ts:35-126 calls the root a sales toolkit and registers Twenty, Twilio, sales, analytics, and OS. packages/cli/src/commands/call.ts:1-77 imports Dialer and executes Twilio calls. packages/cli/src/commands/os.ts:71-113 retains consuelo os install/doctor/start/status. packages/cli has no tests. Worker 30 split commits are not ancestors of the candidate.
+## workspace-owned: validation evidence
 
-Risk: OS lifecycle resolves the dialer/Twenty/coaching/GTM graph and the old nested OS surface remains.
+- 2026-07-28 06:38:35 `review.run`: passed — OK
+- 2026-07-28 06:39:42 `verify`: failed — COMMAND_FAILED
 
-Recommendation: port Worker 30 as a bounded split: consuelo is a thin OS lifecycle adapter; sales/GTM moves to consuelo-dialer; config and dependency graphs split; remove old consuelo os after cutover without deleting the sales product.
+## workspace-owned: test selection
 
-Validation: dependency closure, command-tree, no-old-reference, runtime-bundle, and disposable install/update tests.
-
-### 23G-002 — P1 — Public MIT CLI metadata lacks a demonstrated legal/provenance basis
-
-Category: licensing, provenance, package boundary. Blocks merge: yes.
-
-Evidence: package.json:3-4 is AGPL-3.0; LICENSE covers AGPL/GPL and commercial files. packages/cli/package.json:32-34 declares MIT and public publishConfig but packages/cli/LICENSE is absent. The dependency closure mixes internal, inherited Twenty-related, AGPL/commercial-root, and product packages. The plan requires provenance/legal review before MIT.
-
-Risk: public MIT distribution can misrepresent rights.
-
-Recommendation: do not publish as MIT until file/dependency provenance, notices, branding decision, and Ko/counsel approval exist; otherwise make private or correct metadata.
-
-### 23G-003 — P1 — Installer source is mutable and not reconciled to candidate or signed channel
-
-Category: release integrity, deployment, operability. Blocks merge: yes.
-
-Evidence: packages/os/README.md:134-157 documents curl install and source download. packages/os/scripts/bootstrap.sh:31-33 defaults REPO_ARCHIVE_URL to GitHub main.tar.gz. Local hashing is not signed channel or immutable candidate verification. release-channel concepts are not wired to the public bootstrap. PR #1674 has a deployment-failure comment; independent live source proof was unavailable.
-
-Risk: clean install can run mutable main or unknown deployed source, undermining rollback/reproduction.
-
-Recommendation: preserve curl UX, resolve signed channel metadata to immutable verified bundle, record source SHA/fingerprint, and reconcile deployed endpoint before release.
-
-### 23G-004 — P1 — Deleted packages/os/tooling still has active test consumers
-
-Category: repository boundary, test integrity. Blocks merge: yes.
-
-Evidence: packages/os/tooling is absent. packages/os/tests/browser-service.test.ts:46-55 reads packages/os/tooling/dev-tool-manifest.json and fails ENOENT at line 55. packages/os/tests/memory.test.ts:43-56 reads packages/os/tooling/script-parity-classifications.json. Internal fixture is packages/os/tests/audit/fixtures/script-parity-classifications.json. Tool-manifest tests pass 15; runtime-bundle tests pass 19; memory.test.ts was unavailable earlier because local Bun could not resolve bun:sqlite.
-
-Risk: test contract is not cut over and a focused suite fails against deleted authority.
-
-Recommendation: use canonical generated/internal fixture loaders and add stale-reference gate.
-
-### 23G-005 — P1 — Flattened ~/.consuelo contract is contradicted by executable fallbacks and docs
-
-Category: runtime boundary, operability, documentation. Blocks merge: yes.
-
-Evidence: plan and Worker 24 require ~/.consuelo with runtime/releases and runtime/current; ~/.consuelo/os is migration-only. bootstrap.sh:7-8 and consuelo-home.ts:8,139-145 implement flattened resolution; dry runs resolve ~/.consuelo. Contradictions remain in packages/os/.env.example:3, packages/os/README.md:41,53, runtime-surfaces.md:33, installer-runtime-release-checklist.md:56-70. Active fallbacks remain in capabilities.ts:66-69, manifest-overlay.ts:57-63, index/embedder.js:32, index/store.js:54, setup.sh:5.
-
-Risk: state can split between canonical and legacy homes while operators use contradictory docs.
-
-Recommendation: route active paths through canonical resolver; retain legacy only for explicit migration; update docs and add no-legacy fresh-install assertion.
-
-### 23G-006 — P2 — Package-manager and operator docs are not portable or consolidated
-
-Category: operability, documentation, release safety. Blocks merge: no; blocks clean release handoff.
-
-Evidence: root uses Yarn 4.9.2/Nx while OS uses Bun. packages/os/package.json:45-50 hardcodes Homebrew SQLite path; SCRIPTS.md:481 documents it. CLI bin expects yarn nx build. release-channels.md has rollback commands but README lacks one current update/rollback/uninstall lifecycle; packages/os/runbooks is empty; checklist has stale dated no-smoke/red-check evidence.
-
-Recommendation: publish supported host/package-manager matrix, make resolution architecture-aware, and consolidate one current operator runbook.
-
-## Adversarial journeys
-
-| Journey | Result |
-|---|---|
-| Retired-tooling imports | Fail: browser-service ENOENT; memory stale path blocked earlier by unavailable bun:sqlite |
-| Runtime closure | Pass: fingerprint sha256:0efc500afdcb12921e5ad80627a8b6a0ca088a1e78493cd3e54421a398523830, 401 files; generated full/core/workflows included; tooling, fixture, packages/cli absent |
-| CLI/package boundary | Fail: mixed consuelo and no dialer binary |
-| Clean install/update/rollback/uninstall | Only local dry runs passed; real clean-host lifecycle unavailable; mutable main source remains |
-| License/branding | Blocked: public MIT claim lacks provenance/counsel evidence |
-| Deployed-source reconciliation | Unavailable/failed: no independent live candidate proof |
-| Unauthorized extraction/mass renaming | None observed in candidate; no Worker 29 approval found |
-
-## Verification
-
-- generate-tool-manifest --check passed.
-- tool-manifest.test.ts passed 15 tests.
-- runtime-bundle.test.ts passed 19 tests.
-- Runtime fingerprint passed with 401 files and the fingerprint above.
-- Bootstrap and OS install dry runs passed and resolved ~/.consuelo.
-- browser-service.test.ts failed 1 of 16 tests with deleted tooling ENOENT.
-- memory.test.ts unavailable due local Bun bun:sqlite resolution.
-- consuelo bin --help failed because candidate distribution was not built.
-- review.run --base HEAD --no-tests completed with zero task-change findings and 23 pre-existing ESLint/typecheck findings; it emitted missing twenty-eslint-rules environment diagnostics.
-- verify --base HEAD --no-stamp failed: 3 suites selected, 2 passed, 1 failed; API suite reported 53 failed and 205 passed of 258 tests; DB guard passed with zero risks/findings; no publish-valid stamp.
-- Real clean-machine lifecycle and live Cloudflare/Railway source reconciliation were unavailable.
-
-## GitHub artifacts and dispositions
-
-Existing PR #1674 threads were reviewed first. No prior 23G findings were found. Existing 23A/23B coordinate blockers remain historical unavailable-evidence notes; Ko fallback resolves candidate only. No Worker 29 approval was found.
-
-Posted to PR #1674 through payload-safe typed GitHub raw comments: six 23G findings, structured review object, summary, consolidated agent-fix prompt, dispositions, and exact sign-off issues found. Inline diff comments were unavailable because PR #1674 is merged; each finding has precise top-level file/line references. Shared finding ledger was not edited.
-
-## Final disposition
-
-Canonical tool packages, generated manifests, workflow separation, and runtime closure pass. P1 blockers 23G-001 through 23G-005 prevent sign-off. Resolve the CLI split, provenance, signed source, stale consumers, and home-layout defects, then rerun clean-host and deployed-source journeys with a verified baseline/review-only comparison.
-
-DOMAIN BLOCKED
+- changed files: `.task/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation/current.json`, `.task/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation/session.json`, `.task/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation/workpad.md`, `.task/tasks/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation.json`, `packages/os/plans/consuelo-os-foundation/reviews/final/23g-report.md`
+- matched rules: `auto:@consuelo/os:package-test`
+- selected suites: `@consuelo/os package test`
+- run results: `@consuelo/os package test` passed
+- failed suites: none

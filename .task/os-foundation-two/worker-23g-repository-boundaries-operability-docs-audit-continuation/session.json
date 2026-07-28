@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_083b6b6e0036",
+  "tmuxSession": "opensaas-os-foundation-two-worker-23g-repository-boundaries-operability-doc-083b6b6e",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation",
+  "branch": "task/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-worker-23g-repository-boundaries-operability-docs-audit-continuation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-worker-23g-repository-boundaries-operability-docs-audit-continuation",
+  "prNumber": 1712,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1712",
+  "createdAt": "2026-07-28T06:32:36.070Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-worker-23g-repository-boundaries-operability-docs-audit-continuation/.task/os-foundation-two/worker-23g-repository-boundaries-operability-docs-audit-continuation/session.json"
+}
