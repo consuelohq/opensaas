@@ -1,6 +1,14 @@
 {
   "files": [
-    "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts"
+    ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md",
+    "packages/os/scripts/lib/lifecycle/retention.ts",
+    "packages/os/scripts/lib/lifecycle/runtime-release-path.ts",
+    "packages/os/scripts/lib/native-lifecycle-operation.ts",
+    "packages/os/scripts/native-lifecycle-operation.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+    "packages/os/tests/native-lifecycle-operation.test.ts",
+    "packages/os/tests/windows-platform.test.ts"
   ],
-  "updatedAt": "2026-07-28T07:00:18.405Z"
+  "updatedAt": "2026-07-28T07:22:50.874Z"
 }

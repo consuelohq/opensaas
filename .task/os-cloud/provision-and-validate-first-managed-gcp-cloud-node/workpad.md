@@ -45,6 +45,7 @@ started: 2026-07-28
 - Runtime-bundle closure regression: the customer archive must include `scripts/lib/distribution/runtime-bundle.ts` because lifecycle state and release activation import it at runtime. The focused test must fail while the whole distribution directory is classified source-only, then pass after the narrow runtime classification fix.
 - Clean customer onboarding regression: an extracted runtime archive must complete noninteractive cloud install, create normal OS configuration, and keep operator-only content absent.
 - Signed release URL regression: `createHttpReleaseSource` must preserve the signed manifest payload byte-for-byte through verification and resolve a relative `bundleUrl` only when issuing the bundle request.
+- Runtime release path regression: every platform must materialize digest-addressed releases under a PATH-safe `sha256-<digest>` directory while readers continue accepting legacy POSIX `sha256:<digest>` directories.
 
 ## current status
 
@@ -52,7 +53,7 @@ started: 2026-07-28
 - Branch 2 started from merged stream head as PR #1706.
 - Discovery completed across the managed-node foundation, GCP adapter, device-authority grants/nodes, heartbeat client, D1 route registry, edge router, installer bootstrap, and lifecycle endpoint.
 - Provider-neutral node planning, retained data-disk semantics, GCP disk/VM idempotency, headless lifecycle onboarding, device-code enrollment, Linux connector/heartbeat materialization, dual-service activation, and immutable cloudflared bootstrap are implemented test-first.
-- The complete affected contract set passes: 89 tests across 15 executed files; 10 install-contract tests are environment-gated and skipped by their existing test harness.
+- The complete affected contract set passes: 190 tests across 21 executed suites; 10 install-contract tests are environment-gated and skipped by their existing test harness.
 - Official cloudflared bootstrap is pinned to release `2026.7.3`, Linux amd64, SHA-256 `9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17` from Cloudflare's release API.
 - A dedicated private release bucket `consuelo-cloud-dev-igg2mr-os-releases-f401931d` exists in `us-east1`; anonymous reads return HTTP 403 and the managed-node service account has object-viewer access.
 - Private release delivery is implemented test-first: lifecycle can obtain cached short-lived bearer authorization from the GCE metadata service, and both initial bundle download and channel/bundle lifecycle requests use that identity. No access token is embedded in Git, metadata, logs, URLs, or the node config.
@@ -69,14 +70,17 @@ started: 2026-07-28
 - Clean customer onboarding is now green: the extracted archive completes noninteractive cloud installation, explicitly skips absent operator-only prompts, includes the exact required `assets/consuelo-mark.png`, creates normal OS state, and leaves `operator/` absent. All 22 full-source installer tests still materialize operator prompts for local source installs.
 - The third real bootstrap fetched the rotated release and exact trusted key successfully but failed signature verification. Direct verification on the VM passes; `createHttpReleaseSource` mutates the signed relative `bundleUrl` to an absolute URL before verification, invalidating the signed payload.
 - Signed manifest verification is now green: `fetchManifest` preserves the signed relative URL, while `fetchBundle` resolves it against the release base only when issuing the authenticated request.
+- The next live bootstrap reached native dependency materialization and failed because the release directory was named `sha256:<digest>`. POSIX accepts `:` in filenames, but `:` is the process PATH separator, so Bun split the release-local `node_modules/.bin` path and could not execute `node-gyp-build`.
+- Runtime release materialization is now PATH-safe on every platform: new releases use `sha256-<digest>`, rollback and retention readers continue accepting verified legacy POSIX `sha256:<digest>` directories, and 72 focused lifecycle/platform tests pass.
 - Remaining runtime work: publish a new signed immutable archive, rerun guest bootstrap, complete device authorization, prove connector/heartbeat/routing readiness, and execute the non-destructive lifecycle/recovery validation matrix.
 
 ## files changed
 
-- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-- `packages/os/scripts/lib/install-state.ts`
-- `packages/os/scripts/lib/lifecycle/release.ts`
-- `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/os/scripts/lib/lifecycle/retention.ts`
+- `packages/os/scripts/lib/lifecycle/runtime-release-path.ts`
+- `packages/os/tests/lifecycle-engine.test.ts`
+- `packages/os/tests/lifecycle-retention-uninstall.test.ts`
+- `packages/os/tests/windows-platform.test.ts`
 
 
 ## workspace-owned: files changed
@@ -99,6 +103,8 @@ started: 2026-07-28
 - 2026-07-28 06:51:07 `verify`: passed — OK
 - 2026-07-28 07:02:27 `review.run`: passed — OK
 - 2026-07-28 07:02:40 `verify`: passed — OK
+- 2026-07-28 07:24:18 `review.run`: passed — OK
+- 2026-07-28 07:24:31 `verify`: passed — OK
 
 ## key decisions
 
@@ -128,6 +134,7 @@ started: 2026-07-28
 - The first real VM bootstrap downloaded and digest-verified the signed runtime and cloudflared, then failed before lifecycle activation with `Cannot find module '../distribution/runtime-bundle'` from `scripts/lib/lifecycle/state.ts`. The bundle policy excluded a module used by the shipped lifecycle runtime; Branch 2 owns the executable-closure repair and artifact replacement.
 - After the executable-closure repair, the second real bootstrap reached lifecycle onboarding and failed because `provisionLocalOs` treated the intentionally excluded `operator/` directory as mandatory. The customer runtime must skip absent operator-only prompts while preserving normal full-source installs.
 - The clean-install regression then exposed one required customer asset: `scripts/lib/artifacts.ts` reads `assets/consuelo-mark.png` while materializing the canonical Artifacts site. Only that exact asset should enter discovery; unrelated screenshot fixtures remain excluded.
+- `native-lifecycle-operation.test.ts` has six stale, pre-existing execution tests that omit the queued-state authority precondition introduced by the current worker contract. Neither the test nor implementation is changed by Branch 2; it is documented and excluded from this task's affected gate rather than silently repaired out of scope.
 
 ## TDD evidence
 
@@ -147,7 +154,9 @@ started: 2026-07-28
 - Runtime executable-closure regression: the bundle suite was red on classification and real-archive inventory, then 19/19 passed after narrowly classifying `scripts/lib/distribution/runtime-bundle.ts` as runtime content. The real-archive test now extracts the customer bundle and starts the bundled lifecycle CLI.
 - Clean customer onboarding regression: red on the exact missing-operator guest failure, then red on the missing `assets/consuelo-mark.png` runtime dependency, then green after optional operator materialization and exact asset discovery/classification.
 - Signed release URL regression: red because `fetchManifest` rewrote `bundleUrl` before verification, then green after moving URL resolution to `fetchBundle`; the full affected set remains 89 passing tests with 10 existing environment-gated skips.
-- Current affected validation: 89 passing tests, 10 existing environment-gated skips, and no destructive-literal preflight findings.
+- Runtime release path regression: red because Darwin/Linux preserved `sha256:<digest>`, then green after universal PATH-safe directory encoding plus legacy-colon reader compatibility. Staging, activation, rollback, recovery, retention, uninstall, and cross-platform coverage pass with 72 focused tests.
+- Current affected validation: 190 passing tests across 21 executed suites, 10 existing environment-gated skips, and no destructive-literal preflight findings.
+- `native-lifecycle-operation.test.ts` remains excluded as unrelated pre-existing contract drift: six unmodified tests call `executeNativeLifecycleOperation` with an empty store, while the current worker correctly requires a matching queued operation before claiming authority. The other 7 tests in that suite pass.
 
 ## discovery
 
@@ -172,21 +181,31 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `packages/os/Dockerfile`
+- `packages/os/bun.lock`
 - `packages/os/docs/distribution/release-channels.md`
 - `packages/os/docs/linux-platform.md`
+- `packages/os/package-lock.json`
 - `packages/os/package.json`
+- `packages/os/plans/consuelo-os-foundation/workers/02-runtime-bundle-builder.md`
+- `packages/os/plans/consuelo-os-foundation/workers/24-distribution-integration.md`
 - `packages/os/scripts/build-runtime-bundle.ts`
 - `packages/os/scripts/install.ts`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
+- `packages/os/scripts/lib/index/chunker.js`
 - `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/lifecycle/engine.ts`
 - `packages/os/scripts/lib/lifecycle/release.ts`
+- `packages/os/scripts/lib/lifecycle/retention.ts`
+- `packages/os/scripts/lib/lifecycle/runtime-release-path.ts`
+- `packages/os/scripts/lib/lifecycle/runtime.ts`
 - `packages/os/scripts/lib/lifecycle/state.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
 - `packages/os/scripts/lib/managed-cloud-node-enrollment.ts`
 - `packages/os/scripts/lib/managed-cloud-node.ts`
 - `packages/os/scripts/lib/managed-component-install.ts`
+- `packages/os/scripts/lib/native-lifecycle-operation.ts`
 - `packages/os/scripts/lib/platform-managed-cloud-node.ts`
 - `packages/os/scripts/lib/platforms/linux.ts`
 - `packages/os/scripts/lib/workspace-connector-transport.ts`
@@ -194,6 +213,7 @@ bun run task:finish
 - `packages/os/scripts/lib/workspace-device-login-client.ts`
 - `packages/os/scripts/lifecycle.ts`
 - `packages/os/scripts/managed-cloud-node.ts`
+- `packages/os/scripts/native-lifecycle-operation.ts`
 - `packages/os/scripts/prepare-release-publication.ts`
 - `packages/os/scripts/testing/distribution/runtime-fixture-server.ts`
 - `packages/os/scripts/workspace-node-heartbeat.ts`
@@ -202,16 +222,19 @@ bun run task:finish
 - `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
 - `packages/os/tests/lifecycle-engine.test.ts`
 - `packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts`
+- `packages/os/tests/lifecycle-retention-uninstall.test.ts`
 - `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/managed-cloud-node-contract.test.ts`
 - `packages/os/tests/managed-cloud-node-enrollment.test.ts`
 - `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
+- `packages/os/tests/native-lifecycle-operation.test.ts`
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
+- `packages/os/tests/windows-platform.test.ts`
 - `packages/workspace/senior-engineer.md`
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`, `packages/os/scripts/lib/lifecycle/release.ts`, `packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts`
+- changed files: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`, `packages/os/scripts/lib/lifecycle/retention.ts`, `packages/os/scripts/lib/lifecycle/runtime-release-path.ts`, `packages/os/tests/lifecycle-engine.test.ts`, `packages/os/tests/lifecycle-retention-uninstall.test.ts`, `packages/os/tests/windows-platform.test.ts`
 - matched rules: `auto:@consuelo/os:package-test`
 - selected suites: `@consuelo/os package test`
 - run results: `@consuelo/os package test` passed
