@@ -531,7 +531,12 @@ function materializeOperator(home: string, dryRun: boolean): ProvisionAction[] {
   const targetPath = path.join(home, 'operator');
   const installedInPlace = samePath(BUNDLED_OPERATOR_ROOT, targetPath);
   if (!fs.existsSync(BUNDLED_OPERATOR_ROOT)) {
-    throw new Error(`${BUNDLED_OPERATOR_ROOT}: required operator directory is missing`);
+    return [{
+      type: 'seed_operator',
+      path: targetPath,
+      status: 'skipped',
+      message: 'operator-only prompts are not included in the customer runtime bundle',
+    }];
   }
 
   const targetExists = fs.existsSync(targetPath);

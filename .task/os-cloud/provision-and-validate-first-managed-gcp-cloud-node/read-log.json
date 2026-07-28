@@ -1,9 +1,11 @@
 {
   "files": [
     ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md",
+    "packages/os/scripts/lib/install-state.ts",
     "packages/os/scripts/lib/lifecycle/state.ts",
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
     "packages/os/tests/platform-managed-cloud-node.test.ts",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-28T05:59:08.569Z"
+  "updatedAt": "2026-07-28T06:47:48.594Z"
 }

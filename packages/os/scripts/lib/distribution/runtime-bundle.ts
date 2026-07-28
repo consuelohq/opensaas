@@ -135,6 +135,7 @@ const REQUIRED_RUNTIME_INPUTS = [
 const DEFAULT_DISCOVERY_PATHS = [
   'package.json',
   'bun.lock',
+  'assets/consuelo-mark.png',
   'scripts',
   'src',
   'tools',
@@ -326,6 +327,7 @@ export function classifyRuntimeBundlePath(
     return 'source-only';
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
+  if (filePath === 'assets/consuelo-mark.png') return 'runtime';
   if (filePath.startsWith('skills/')) return 'managed-skill';
   if (/^tools\/[^/]+\/[^/]+\.ts$/.test(filePath)) return 'managed-tool';
   if (

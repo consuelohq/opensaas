@@ -43,6 +43,7 @@ started: 2026-07-28
 - Real cloud mutations occur only after all focused tests are green and the exact zero-mutation plan has been reviewed.
 - Dangerous deletion/recovery behavior is validated through pure plans, fixtures, or dry-run APIs. No destructive user-data smoke test is permitted.
 - Runtime-bundle closure regression: the customer archive must include `scripts/lib/distribution/runtime-bundle.ts` because lifecycle state and release activation import it at runtime. The focused test must fail while the whole distribution directory is classified source-only, then pass after the narrow runtime classification fix.
+- Clean customer onboarding regression: an extracted runtime archive must complete noninteractive cloud install, create normal OS configuration, and keep operator-only content absent.
 
 ## current status
 
@@ -50,7 +51,7 @@ started: 2026-07-28
 - Branch 2 started from merged stream head as PR #1706.
 - Discovery completed across the managed-node foundation, GCP adapter, device-authority grants/nodes, heartbeat client, D1 route registry, edge router, installer bootstrap, and lifecycle endpoint.
 - Provider-neutral node planning, retained data-disk semantics, GCP disk/VM idempotency, headless lifecycle onboarding, device-code enrollment, Linux connector/heartbeat materialization, dual-service activation, and immutable cloudflared bootstrap are implemented test-first.
-- The complete affected contract set passes: 67 tests across 14 executed files; 10 install-contract tests are environment-gated and skipped by their existing test harness.
+- The complete affected contract set passes: 89 tests across 15 executed files; 10 install-contract tests are environment-gated and skipped by their existing test harness.
 - Official cloudflared bootstrap is pinned to release `2026.7.3`, Linux amd64, SHA-256 `9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17` from Cloudflare's release API.
 - A dedicated private release bucket `consuelo-cloud-dev-igg2mr-os-releases-f401931d` exists in `us-east1`; anonymous reads return HTTP 403 and the managed-node service account has object-viewer access.
 - Private release delivery is implemented test-first: lifecycle can obtain cached short-lived bearer authorization from the GCE metadata service, and both initial bundle download and channel/bundle lifecycle requests use that identity. No access token is embedded in Git, metadata, logs, URLs, or the node config.
@@ -62,11 +63,15 @@ started: 2026-07-28
 - Durable disk `consuelo-ko-cloud-1-data` is READY, attached read-write with auto-delete disabled, and protected by the daily 90-day and weekly 1-year snapshot schedules. A second node apply proved all 4 node operations `unchanged`.
 - IAP/OS Login access succeeds. The first guest bootstrap mounted the retained disk and verified both the signed runtime archive and cloudflared, then failed before activation because the archive excluded `scripts/lib/distribution/runtime-bundle.ts`.
 - The runtime-closure repair is green: all 19 bundle tests pass, and an extracted real customer archive successfully starts `scripts/lifecycle.ts status` on a clean temporary home.
+- After the executable-closure repair, the second real bootstrap reached lifecycle onboarding and failed because `provisionLocalOs` treated the intentionally excluded `operator/` directory as mandatory. Release policy requires operator-only content to remain outside customer bundles; clean customer installs must skip that optional materialization rather than fail.
+- After skipping absent operator-only prompts, the clean-archive regression advances to artifact-site generation and fails because the bundle omits the proven runtime dependency `assets/consuelo-mark.png`.
+- Clean customer onboarding is now green: the extracted archive completes noninteractive cloud installation, explicitly skips absent operator-only prompts, includes the exact required `assets/consuelo-mark.png`, creates normal OS state, and leaves `operator/` absent. All 22 full-source installer tests still materialize operator prompts for local source installs.
 - Remaining runtime work: publish a new signed immutable archive, rerun guest bootstrap, complete device authorization, prove connector/heartbeat/routing readiness, and execute the non-destructive lifecycle/recovery validation matrix.
 
 ## files changed
 
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+- `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/managed-cloud-node.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/managed-cloud-node-contract.test.ts`
@@ -89,6 +94,8 @@ started: 2026-07-28
 - 2026-07-28 05:19:59 `review.run`: passed — OK
 - 2026-07-28 05:36:24 `review.run`: passed — OK
 - 2026-07-28 06:01:15 `review.run`: passed — OK
+- 2026-07-28 06:50:49 `review.run`: passed — OK
+- 2026-07-28 06:51:07 `verify`: passed — OK
 
 ## key decisions
 
@@ -116,6 +123,8 @@ started: 2026-07-28
 - Existing install contract source assertions were stale after extracting the approved-grant mapper and after the site catalog moved to `sites/artifacts/data/catalog.json`; assertions were updated to current ownership and generated artifacts while behavior checks remained intact.
 - Google Cloud organization policy rejected `allUsers` object-viewer access on the task release bucket. No public grant was applied and no object was uploaded. Recovery is a private bucket plus managed-node service-account object viewer and GCE metadata bearer authentication.
 - The first real VM bootstrap downloaded and digest-verified the signed runtime and cloudflared, then failed before lifecycle activation with `Cannot find module '../distribution/runtime-bundle'` from `scripts/lib/lifecycle/state.ts`. The bundle policy excluded a module used by the shipped lifecycle runtime; Branch 2 owns the executable-closure repair and artifact replacement.
+- After the executable-closure repair, the second real bootstrap reached lifecycle onboarding and failed because `provisionLocalOs` treated the intentionally excluded `operator/` directory as mandatory. The customer runtime must skip absent operator-only prompts while preserving normal full-source installs.
+- The clean-install regression then exposed one required customer asset: `scripts/lib/artifacts.ts` reads `assets/consuelo-mark.png` while materializing the canonical Artifacts site. Only that exact asset should enter discovery; unrelated screenshot fixtures remain excluded.
 
 ## TDD evidence
 
@@ -133,7 +142,8 @@ started: 2026-07-28
 - Router/NAT foundation regression: domain/provider tests were red on missing egress resources, then passed with deterministic planning, exact describe-before-create argv, real 20-operation idempotency, and explicit NAT drift rejection.
 - IAP/OS Login service regression: the foundation contract was red while those APIs were absent, then passed after both services were added; real provider apply reports 22/22 resources unchanged.
 - Runtime executable-closure regression: the bundle suite was red on classification and real-archive inventory, then 19/19 passed after narrowly classifying `scripts/lib/distribution/runtime-bundle.ts` as runtime content. The real-archive test now extracts the customer bundle and starts the bundled lifecycle CLI.
-- Current affected validation: 67 passing tests, 10 existing environment-gated skips, and no destructive-literal preflight findings.
+- Clean customer onboarding regression: red on the exact missing-operator guest failure, then red on the missing `assets/consuelo-mark.png` runtime dependency, then green after optional operator materialization and exact asset discovery/classification.
+- Current affected validation: 89 passing tests, 10 existing environment-gated skips, and no destructive-literal preflight findings.
 
 ## discovery
 
@@ -192,4 +202,18 @@ bun run task:finish
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-28 05:59:54 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+- 2026-07-28 06:48:04 apply-patch: `packages/os/scripts/lib/distribution/runtime-bundle.ts`
+
+- 2026-07-28 06:48:56 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+
+- 2026-07-28 06:49:25 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+
+- 2026-07-28 06:50:21 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+
+## workspace-owned: test selection
+
+- changed files: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/current.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/session.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`, `.task/tasks/os-cloud/provision-and-validate-first-managed-gcp-cloud-node.json`, `packages/os/scripts/lib/distribution/runtime-bundle.ts`, `packages/os/scripts/lib/install-state.ts`, `packages/os/tests/distribution/runtime-bundle.test.ts`
+- matched rules: `auto:@consuelo/os:package-test`
+- selected suites: `@consuelo/os package test`
+- run results: `@consuelo/os package test` passed
+- failed suites: none

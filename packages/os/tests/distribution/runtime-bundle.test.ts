@@ -333,6 +333,9 @@ describe('runtime bundle contract', () => {
         'scripts/lib/distribution/runtime-bundle.ts',
       ),
     ).toBe('runtime');
+    expect(classifyRuntimeBundlePath('assets/consuelo-mark.png')).toBe(
+      'runtime',
+    );
     expect(
       classifyRuntimeBundlePath('manifests/schemas/tool-manifest.schema.json'),
     ).toBe('source-only');
@@ -739,6 +742,10 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'assets/consuelo-mark.png',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
           path: 'tools/deployment-provider/facade.ts',
           role: 'customer-provider',
         }),
@@ -822,6 +829,28 @@ describe('runtime bundle contract', () => {
       ok: true,
       result: { installState: 'no-install' },
     });
+    const installedHome = join(runtimeRoot, 'installed-home');
+    const cloudInstall = spawnSync(
+      'bun',
+      [
+        join(runtimeRoot, 'scripts/install.ts'),
+        '--yes',
+        '--quiet',
+        '--skip-daemons',
+        '--mode',
+        'cloud',
+        '--home',
+        installedHome,
+        '--workspace-url',
+        'fixture.consuelohq.com',
+        '--workspace-slug',
+        'fixture',
+      ],
+      { encoding: 'utf8' },
+    );
+    expect(cloudInstall.status, cloudInstall.stderr).toBe(0);
+    expect(existsSync(join(installedHome, 'config.json'))).toBe(true);
+    expect(existsSync(join(installedHome, 'operator'))).toBe(false);
     const bundledSteering = archive.entries.find(
       (entry) => entry.path === 'steering/system_prompt.md',
     );
