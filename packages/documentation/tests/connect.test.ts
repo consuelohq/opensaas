@@ -35,6 +35,7 @@ const connectPages = [
   ['connect/apps-and-services/snowflake.mdx', 'Snowflake'],
   ['connect/apps-and-services/supabase.mdx', 'Supabase'],
   ['connect/apps-and-services/gohighlevel.mdx', 'GoHighLevel'],
+  ['connect/apps-and-services/leadconnector-dialer.mdx', 'LeadConnector dialer'],
   ['connect/apps-and-services/salesforce.mdx', 'Salesforce'],
   ['connect/apps-and-services/hubspot.mdx', 'HubSpot'],
   ['connect/apps-and-services/stripe.mdx', 'Stripe'],
@@ -84,6 +85,7 @@ describe('Connect documentation contract', () => {
       "label: 'Supabase'",
       "label: 'Sales and CRM'",
       "label: 'GoHighLevel'",
+      "label: 'LeadConnector dialer'",
       "label: 'Salesforce'",
       "label: 'HubSpot'",
       "label: 'Payments and communication'",
@@ -107,7 +109,7 @@ describe('Connect documentation contract', () => {
     for (const [sourcePath] of connectPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toMatch(/verifiedAt: 2026-07-(13|14)/);
+      expect(source).toMatch(/verifiedAt: 2026-07-(13|14|28)/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');
@@ -269,5 +271,14 @@ describe('Connect documentation contract', () => {
     expect(redirects).toContain("'/user-guide/integrations/overview': '/connect/apps-and-services/'");
     expect(redirects).toContain("'/connect/connectors': '/connect/apps-and-services/'");
     expect(redirects).toContain("'/connect/connectors/google-drive': '/connect/apps-and-services/google-drive/'");
+    expect(redirects).toContain("'/user-guide/highlevel/embedded/getting-started':");
+    expect(redirects).toContain("'/connect/apps-and-services/leadconnector-dialer/'");
+
+    const guide = read('src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx');
+    expect(guide).toContain('LeadConnector');
+    expect(guide).toContain('/admin');
+    expect(guide).toContain('/overlay');
+    expect(guide).not.toContain('calls.consuelohq.com');
+    expect(guide).not.toMatch(/GoHighLevel|HighLevel|\bGHL\b/);
   });
 });

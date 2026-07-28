@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-public-docs-and-download-redirects",
+  "base": "origin/stream/os",
+  "headSha": "3a43f6b8b455bd44cc8d17dd2d634c51a81f12c3",
+  "changeHash": "4c16415314d2bbd1d23949eeaa4e7975c62b6e4faaff9c76c5a764698d076268",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/support.astro",
+    "packages/consuelo-website/tests/website-structure.test.js",
+    "packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/lib/legacy-redirects.mjs",
+    "packages/documentation/tests/connect.test.ts"
+  ],
+  "verifiedAt": "2026-07-28T03:48:31.240Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-public-docs-and-download-redirects/current.json",
+        ".task/os/fix-public-docs-and-download-redirects/evidence-log.json",
+        ".task/os/fix-public-docs-and-download-redirects/read-log.json",
+        ".task/os/fix-public-docs-and-download-redirects/session.json",
+        ".task/os/fix-public-docs-and-download-redirects/workpad.md",
+        ".task/tasks/os/fix-public-docs-and-download-redirects.json",
+        "packages/consuelo-website/src/pages/support.astro",
+        "packages/consuelo-website/tests/website-structure.test.js",
+        "packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/src/lib/legacy-redirects.mjs",
+        "packages/documentation/tests/connect.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

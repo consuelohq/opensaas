@@ -227,6 +227,8 @@ export const legacyRedirects = {
   '/user-guide/graphql-api/overview': '/developers/api/graphql',
   '/user-guide/guides-tutorials/overview': '/start/',
   '/user-guide/highlevel/overview': '/',
+  '/user-guide/highlevel/embedded/getting-started':
+    '/connect/apps-and-services/leadconnector-dialer/',
   '/user-guide/integrations/overview': '/connect/apps-and-services/',
   '/user-guide/permissions-access/capabilities/permissions': '/secure/access-and-permissions/',
   '/user-guide/permissions-access/capabilities/sso-configuration': '/secure/access-and-permissions/',
