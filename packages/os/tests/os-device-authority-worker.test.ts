@@ -1075,6 +1075,12 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements[0]).toContain('connector_macbook_air_test');
     expect(routeRegistry.statements[0]).toContain('/mcp');
     expect(routeRegistry.statements[0]).toContain('os-connector');
+    expect(routeRegistry.statements[0]).toContain('"pathPrefix":"/"');
+    expect(routeRegistry.statements[0]).toContain('sites/platform/launcher/sha256-test/index.html');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/configuration"');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/tools"');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/environments"');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/secrets"');
     expect(routeRegistry.statements[0]).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
   });

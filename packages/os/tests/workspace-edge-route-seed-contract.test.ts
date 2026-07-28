@@ -15,6 +15,7 @@ type WorkspaceEdgeRouteSeedInput = {
   appUpstreamUrl?: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
+  publishedSiteIds?: string[];
   connectorId?: string;
   tunnelOriginUrl?: string;
   localServiceUrl?: string;
@@ -64,7 +65,7 @@ async function loadWorkspaceEdgeRouteSeedScriptContract(): Promise<WorkspaceEdge
 }
 
 contractDescribe('workspace edge route seed contract', () => {
-  it('should default the migration host to internal.consuelohq.com and route Sites shells plus Trace gateway routes', async () => {
+  it('should default the migration host to internal.consuelohq.com without routing unpublished child Sites', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
     const record = seed.createWorkspaceEdgeRouteSeedRecord() as {
       workspaceId: string;
@@ -88,16 +89,6 @@ contractDescribe('workspace edge route seed contract', () => {
     });
     expect(record.routes.map((route) => route.pathPrefix)).toEqual([
       '/',
-      '/artifacts',
-      '/observability',
-      '/traces',
-      '/tracing',
-      '/diffs',
-      '/docs',
-      '/configuration',
-      '/tools',
-      '/environments',
-      '/secrets',
       '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
@@ -112,19 +103,9 @@ contractDescribe('workspace edge route seed contract', () => {
       '/office',
       '/design-wiki',
     ]);
-    expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
+    expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual([
       expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'workspace-session', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'private-preview' }) }),
-      expect.objectContaining({ pathPrefix: '/artifacts', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'artifacts', manifestKey: 'sites/workspace_internal/artifacts/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/observability', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/traces', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/tracing', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/diffs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'diffs', manifestKey: 'sites/workspace_internal/diffs/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/docs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'docs', manifestKey: 'sites/workspace_internal/docs/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/configuration', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'configuration', manifestKey: 'sites/workspace_internal/configuration/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/tools', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'tools', manifestKey: 'sites/workspace_internal/tools/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/environments', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'environments', manifestKey: 'sites/workspace_internal/environments/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/secrets', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'secrets', manifestKey: 'sites/workspace_internal/secrets/seeded-workspace-site-shell/index.html' }) }),
-    ]));
+    ]);
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/gateway/traces/events',
@@ -242,6 +223,89 @@ contractDescribe('workspace edge route seed contract', () => {
         target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
       }),
     ]));
+  });
+
+  it('should route only the Site snapshots explicitly proven published', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      siteSnapshotKey: 'sites/workspace_internal/launcher/sha256-release/index.html',
+      siteVersionId: 'sha256-release',
+      publishedSiteIds: [
+        'launcher',
+        'artifacts',
+        'traces',
+        'diffs',
+        'docs',
+        'configuration',
+        'tools',
+        'environments',
+        'secrets',
+      ],
+    }) as {
+      routes: Array<{
+        pathPrefix: string;
+        target: { kind: string; siteId?: string; manifestKey?: string };
+      }>;
+    };
+
+    const snapshotRoutes = record.routes.filter(
+      (route) => route.target.kind === 'site-snapshot',
+    );
+    expect(snapshotRoutes.map((route) => route.pathPrefix)).toEqual([
+      '/',
+      '/artifacts',
+      '/observability',
+      '/traces',
+      '/tracing',
+      '/diffs',
+      '/docs',
+      '/configuration',
+      '/tools',
+      '/environments',
+      '/secrets',
+    ]);
+    expect(snapshotRoutes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        pathPrefix: '/tools',
+        target: expect.objectContaining({
+          siteId: 'tools',
+          manifestKey: 'sites/workspace_internal/tools/sha256-release/index.html',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/environments',
+        target: expect.objectContaining({
+          siteId: 'environments',
+          manifestKey: 'sites/workspace_internal/environments/sha256-release/index.html',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/secrets',
+        target: expect.objectContaining({
+          siteId: 'secrets',
+          manifestKey: 'sites/workspace_internal/secrets/sha256-release/index.html',
+        }),
+      }),
+    ]));
+  });
+
+  it('should reject invalid publication sets before creating route records', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: [],
+    })).toThrow('workspace edge seed requires a published launcher snapshot');
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: ['tools'],
+    })).toThrow('workspace edge seed requires a published launcher snapshot');
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: ['launcher', 'not-a-site'],
+    })).toThrow('workspace edge seed received unknown Site snapshot: not-a-site');
   });
 
   it('should replace empty seed identity inputs with defaults before normalization', async () => {

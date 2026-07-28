@@ -120,6 +120,7 @@ type EdgeRouteSeedContract = {
     baseDomain?: string;
     connectorId?: string;
     tunnelOriginUrl?: string;
+    publishedSiteIds?: string[];
   }) => WorkspaceRouteRecord & { updatedAt: string };
 };
 
@@ -412,6 +413,17 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       baseDomain: 'consuelohq.com',
       connectorId: 'connector_internal',
       tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
+      publishedSiteIds: [
+        'launcher',
+        'artifacts',
+        'traces',
+        'diffs',
+        'docs',
+        'configuration',
+        'tools',
+        'environments',
+        'secrets',
+      ],
     });
 
     const traceRoute = record.routes.find((route) => route.pathPrefix === '/observability');
@@ -952,6 +964,12 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
       fetchImpl: async (url) => {
         verificationUrls.push(url);
+        if (url === expectedPlan.verifyUrl) {
+          return Response.json(
+            { error: 'workspace_session_required' },
+            { status: 401 },
+          );
+        }
         return new Response('<!doctype html><title>Trace shell</title><main>Hosted Trace Site shell</main>', {
           status: 200,
           headers: {

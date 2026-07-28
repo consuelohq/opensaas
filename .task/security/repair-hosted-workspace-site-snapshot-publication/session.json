@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4f0bb2f0a375",
+  "tmuxSession": "opensaas-security-repair-hosted-workspace-site-snapshot-publicatio-4f0bb2f0",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/repair-hosted-workspace-site-snapshot-publication",
+  "branch": "task/security/repair-hosted-workspace-site-snapshot-publication",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-hosted-workspace-site-snapshot-publication",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-hosted-workspace-site-snapshot-publication",
+  "prNumber": 1694,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1694",
+  "createdAt": "2026-07-28T03:18:45.566Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-hosted-workspace-site-snapshot-publication/.task/security/repair-hosted-workspace-site-snapshot-publication/session.json"
+}
