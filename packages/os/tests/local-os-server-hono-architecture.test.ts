@@ -107,7 +107,10 @@ describe('local OS Hono server architecture', () => {
     expect(existsSync(resolve(osRoot, 'scripts/start-brain.sh'))).toBe(false);
 
     expect(source('scripts/server.js')).toContain(
-      "path.join(WORKSPACE_DIR, 'scripts', 'server', 'main.ts')",
+      "path.join(WORKSPACE_DIR, 'scripts', 'lifecycle.ts')",
+    );
+    expect(source('scripts/server.js')).toContain(
+      "path.join(WORKSPACE_DIR, 'scripts', 'consuelo-reload.js')",
     );
     expect(source('scripts/consuelo-reload.js')).toContain(
       'packages/os/scripts/server/main.ts|scripts/server/main.ts',
@@ -132,6 +135,9 @@ describe('local OS Hono server architecture', () => {
       { method: 'GET', path: '/gateway/artifacts', trust: 'signed' },
       { method: 'GET', path: '/gateway/artifacts/:artifactId', trust: 'signed' },
       { method: 'GET', path: '/gateway/artifacts/:artifactId/versions', trust: 'signed' },
+      { method: 'GET', path: '/traces', trust: 'signed' },
+      { method: 'GET', path: '/traces/assets/trace.css', trust: 'signed' },
+      { method: 'GET', path: '/traces/assets/trace.js', trust: 'signed' },
       { method: 'GET', path: '/gateway/traces/recent', trust: 'signed' },
       { method: 'GET', path: '/gateway/traces/summary', trust: 'signed' },
       { method: 'GET', path: '/gateway/traces/aggregates', trust: 'signed' },
@@ -140,6 +146,9 @@ describe('local OS Hono server architecture', () => {
       { method: 'POST', path: '/gateway/configuration/overlay', trust: 'signed' },
       { method: 'GET', path: '/gateway/settings/snapshot', trust: 'signed' },
       { method: 'POST', path: '/gateway/settings/overlay', trust: 'signed' },
+      { method: 'GET', path: '/gateway/environments/snapshot', trust: 'signed' },
+      { method: 'POST', path: '/gateway/environments/upsert', trust: 'signed' },
+      { method: 'POST', path: '/gateway/environments/delete', trust: 'signed' },
       { method: 'ANY', path: '/mcp', trust: 'signed-or-oauth' },
       { method: 'GET', path: '/get_steering', trust: 'signed' },
       { method: 'POST', path: '/get_steering', trust: 'signed' },

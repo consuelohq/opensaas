@@ -27,11 +27,11 @@ The skill should report only:
 
 
 
-## Workspace snapshot contract
+## Historical app-data contract
 
-The first real app-data contract is `consuelo-workspace-snapshot`. It returns app-native object refs for workspace identity, people, companies, lists, calls, files, attachments, tasks, notes, workflows, workflow runs, dashboards, artifacts, and recent activity.
+An earlier workspace snapshot prototype returned app-native object refs for workspace identity, people, companies, lists, calls, files, attachments, tasks, notes, workflows, workflow runs, dashboards, artifacts, and recent activity.
 
-Files and Attachments are included in the first slice because they are already a top-level Consuelo app surface and because downstream reports/design work need app-visible source references. This contract is read-only and must handle missing capability, auth failure, schema gaps, and empty workspaces without crashing.
+Files and Attachments are included in the first slice because they are already a top-level Consuelo app surface and because downstream reports/design work need app-visible source references. That prototype was read-only and must handle missing capability, auth failure, schema gaps, and empty workspaces without crashing.
 
 
 ## Cloud artifact refs

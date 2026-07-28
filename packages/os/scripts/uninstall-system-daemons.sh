@@ -26,8 +26,10 @@ launch_agent_dir="$daemon_home/Library/LaunchAgents"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
+availability_label="${CONSUELO_AVAILABILITY_LABEL:-com.consuelo.availability}"
 cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
 cloudflared_labels=()
+heartbeat_labels=()
 
 log() {
   printf '[consuelo-os-launchagent-uninstall] %s
@@ -67,6 +69,34 @@ collect_cloudflared_labels() {
   fi
 }
 
+append_heartbeat_label() {
+  local label="$1"
+  local existing_label
+  [ -n "$label" ] || return 0
+  for existing_label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
+    if [ "$existing_label" = "$label" ]; then
+      return 0
+    fi
+  done
+  heartbeat_labels+=("$label")
+}
+
+collect_heartbeat_labels() {
+  local plist label
+  for plist in "$launch_agent_dir"/com.consuelo.os.node-heartbeat*.plist; do
+    [ -e "$plist" ] || continue
+    label="$(extract_plist_label "$plist")"
+    append_heartbeat_label "${label:-$(basename "$plist" .plist)}"
+  done
+  if [ -d "$cloudflared_generated_dir" ]; then
+    for plist in "$cloudflared_generated_dir"/com.consuelo.os.node-heartbeat*.plist; do
+      [ -e "$plist" ] || continue
+      label="$(extract_plist_label "$plist")"
+      append_heartbeat_label "${label:-$(basename "$plist" .plist)}"
+    done
+  fi
+}
+
 remove_agent() {
   local label="$1"
   local plist="$launch_agent_dir/${label}.plist"
@@ -87,12 +117,17 @@ remove_agent() {
 }
 
 collect_cloudflared_labels
+collect_heartbeat_labels
 
 remove_agent "$watchdog_label"
+remove_agent "$availability_label"
 remove_agent "$portless_label"
 remove_agent "$workspace_label"
 for cloudflared_label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   remove_agent "$cloudflared_label"
+done
+for heartbeat_label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
+  remove_agent "$heartbeat_label"
 done
 
 if [ "$dry_run" -eq 1 ]; then

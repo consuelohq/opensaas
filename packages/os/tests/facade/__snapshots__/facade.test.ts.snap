@@ -850,23 +850,6 @@ exports[`typed facade executor > returns a failure envelope for confirm 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for context 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
 exports[`typed facade executor > returns a failure envelope for decideNext 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -1690,41 +1673,24 @@ exports[`typed facade executor > returns a failure envelope for media.transcribe
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for memory 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for prReview 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for railway.logs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "COMMAND_FAILED",
-  "data": {
-    "value": "failed",
-  },
-  "durationMs": 0,
-  "exitCode": 2,
-  "message": "command failed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
-  "stderr": "boom",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a failure envelope for railway.redeploy 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -1911,7 +1877,7 @@ exports[`typed facade executor > returns a failure envelope for status 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for stream.cleanup 1`] = `
+exports[`typed facade executor > returns a failure envelope for stream.context 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -1928,7 +1894,7 @@ exports[`typed facade executor > returns a failure envelope for stream.cleanup 1
 }
 `;
 
-exports[`typed facade executor > returns a failure envelope for stream.context 1`] = `
+exports[`typed facade executor > returns a failure envelope for stream.create 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -2982,23 +2948,6 @@ exports[`typed facade executor > returns a success envelope for confirm 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for context 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
 exports[`typed facade executor > returns a success envelope for decideNext 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -3822,41 +3771,24 @@ exports[`typed facade executor > returns a success envelope for media.transcribe
 }
 `;
 
+exports[`typed facade executor > returns a success envelope for memory 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a success envelope for prReview 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for railway.logs 1`] = `
-{
-  "apiVersion": "1.0.0",
-  "code": "OK",
-  "data": {
-    "value": "ok",
-  },
-  "durationMs": 0,
-  "exitCode": 0,
-  "message": "command completed",
-  "now": "1970-01-01T00:00:01.000Z",
-  "ok": true,
-  "stderr": "",
-  "traceId": "trc_abc123def456",
-}
-`;
-
-exports[`typed facade executor > returns a success envelope for railway.redeploy 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -4043,7 +3975,7 @@ exports[`typed facade executor > returns a success envelope for status 1`] = `
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for stream.cleanup 1`] = `
+exports[`typed facade executor > returns a success envelope for stream.context 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -4060,7 +3992,7 @@ exports[`typed facade executor > returns a success envelope for stream.cleanup 1
 }
 `;
 
-exports[`typed facade executor > returns a success envelope for stream.context 1`] = `
+exports[`typed facade executor > returns a success envelope for stream.create 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",

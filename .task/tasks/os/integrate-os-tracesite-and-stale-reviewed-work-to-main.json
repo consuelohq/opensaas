@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1545,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1545",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1545",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1545/integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1545",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1545/integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-integrate-os-tracesite-and-stale-reviewed-work-to-main",
+  "taskSession": "tsk_4343c471b465",
+  "tmuxSession": "opensaas-os-integrate-os-tracesite-and-stale-reviewed-work-t-4343c471",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-integrate-os-tracesite-and-stale-reviewed-work-to-main/.task/os/integrate-os-tracesite-and-stale-reviewed-work-to-main/session.json",
+  "createdAt": "2026-07-21T10:30:32.864Z"
+}

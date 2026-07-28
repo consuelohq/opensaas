@@ -136,7 +136,10 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
     const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
     expect(tracesHtml).toContain('<h1>Traces</h1>');
-    expect(tracesHtml).toContain('/gateway/traces/recent');
+    expect(tracesHtml).toContain('Open authenticated traces');
+    expect(tracesHtml).toContain('href="/traces"');
+    expect(tracesHtml).not.toContain('/gateway/traces/recent');
+    expect(tracesHtml).not.toContain('data-trace-app');
     expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
@@ -232,6 +235,23 @@ describe('Sites CLI', () => {
     expect(html).not.toContain('const siteHotkeys = {');
     expect(html).not.toContain('Versioned local Sites pages with current pointers');
     expect(html).not.toContain('<div class="grid">');
+  });
+
+  it('materializes launcher links from the configured authenticated workspace host', () => {
+    writeFileSync(
+      join(tempHome, 'config.json'),
+      JSON.stringify({ workspace: { host: 'acme.consuelohq.com' } }, null, 2),
+    );
+
+    const refreshResult = runSitesCommand(['refresh', '--json']);
+    const html = readFileSync(refreshResult.indexPath, 'utf8');
+
+    for (const route of ['/gtm', '/artifacts', '/observability', '/diffs']) {
+      expect(html).toContain(`href="https://acme.consuelohq.com${route}"`);
+    }
+    expect(html).not.toContain('https://sites.consuelohq.com/');
+    expect(html).not.toContain('https://app.consuelohq.com/');
+    expect(html).not.toContain('https://internal.consuelohq.com/');
   });
 
   it('rewrites legacy ChatGPT MCP URLs before rendering the launcher', () => {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f12a69bd127e",
+  "tmuxSession": "opensaas-repository-architecture-repository-product-boundary-audit-f12a69bd",
+  "area": "repository-architecture",
+  "stream": "stream/repository-architecture",
+  "taskBranch": "task/repository-architecture/repository-product-boundary-audit",
+  "branch": "task/repository-architecture/repository-product-boundary-audit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-repository-architecture-repository-product-boundary-audit",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-repository-architecture-repository-product-boundary-audit",
+  "prNumber": 1562,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1562",
+  "createdAt": "2026-07-22T21:15:44.994Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-repository-architecture-repository-product-boundary-audit/.task/repository-architecture/repository-product-boundary-audit/session.json"
+}

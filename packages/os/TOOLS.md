@@ -1,6 +1,6 @@
 # Consuelo OS typed tools
 
-This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.
+This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/generated/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.
 
 The workspace app exposes two MCP entrypoints:
 
@@ -30,8 +30,8 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | artifacts | 21 |
 | codemode | 2 |
 | composed | 3 |
-| context | 1 |
 | decision engine | 6 |
+| deployment | 8 |
 | filesystem | 6 |
 | generation | 2 |
 | git | 1 |
@@ -40,13 +40,14 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | linear | 8 |
 | mac | 8 |
 | media | 25 |
+| memory | 1 |
 | review | 4 |
 | sentry | 7 |
 | stream | 4 |
 | subagent | 1 |
 | task lifecycle | 11 |
 | tooling | 1 |
-| utilities | 34 |
+| utilities | 32 |
 
 ## tools by category
 
@@ -1358,7 +1359,7 @@ run a small JavaScript program over workspace APIs for control flow, filtering, 
 await workspace.call({
   "tool": "code.run",
   "input": {
-    "code": "const traces = await workspace_call(\"context.trace\", { contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
+    "code": "const traces = await workspace_call(\"memory\", { operation: \"trace\", contains: \"python3\", limit: 40 });\nconst counts = new Map();\nfor (const row of traces.data?.rows ?? []) counts.set(row.tool, (counts.get(row.tool) ?? 0) + 1);\nreturn { totalMatches: traces.data?.count ?? 0, byTool: [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10) };",
     "maxOperations": 25,
     "maxResultChars": 20000
   }
@@ -1423,8 +1424,9 @@ await workspace.call({
   "input": {
     "steps": [
       {
-        "tool": "context.find",
+        "tool": "memory",
         "input": {
+          "operation": "find",
           "keyword": "workspace",
           "limit": 1
         }
@@ -1600,69 +1602,6 @@ await workspace.call({
 }
 ```
 
-## context
-
-### workspace.context
-
-search, read, save, list, and inspect project context and local workspace traces
-
-| Field | Value |
-| --- | --- |
-| Category | context |
-| Signature | `workspace.context({ operation: "search" &#124; "find" &#124; "get" &#124; "list" &#124; "save" &#124; "categories" &#124; "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" &#124; "ok" &#124; "error" &#124; "blocked" &#124; "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace context` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "context",
-  "input": {
-    "operation": "search",
-    "keyword": "workspace",
-    "limit": 3
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
 ## decision engine
 
 ### workspace.audit
@@ -1788,7 +1727,7 @@ run verification or targeted validation through confirm
 | Field | Value |
 | --- | --- |
 | Category | decision engine |
-| Signature | `workspace.confirm({ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.confirm({ verify?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace confirm` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
@@ -1974,6 +1913,498 @@ await workspace.call({
   "input": {
     "query": "workspace facade",
     "limit": 5
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## deployment
+
+### workspace.deployment.context
+
+inspect local Railway, Vercel, or Cloudflare authentication or linked project context without exposing credentials
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.context({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; action: "auth" &#124; "current"; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.context` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.context",
+  "input": {
+    "provider": "railway",
+    "action": "current"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.deployment.deploy
+
+deploy, redeploy, or promote through Railway, Vercel, or Cloudflare; requires explicit local approval before provider execution
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.deploy({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; action: "deploy" &#124; "redeploy" &#124; "promote"; target?: string; projectId?: string; serviceId?: string; source?: string; deploymentId?: string; environment?: string; wait?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.deploy` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 900000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.deploy",
+  "input": {
+    "provider": "railway",
+    "action": "redeploy",
+    "serviceId": "api",
+    "approved": true,
+    "approvalReason": "Approved deployment mutation"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.deployment.detect
+
+detect the Railway, Vercel, or Cloudflare CLI and report its supported version; returns provider-specific install guidance when missing
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.detect({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.detect` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.detect",
+  "input": {
+    "provider": "railway"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.deployment.environment
+
+list environment variable names or explicitly approved set/delete mutations for Railway, Vercel, or Cloudflare; secret values are never returned
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.environment({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; action: "list" &#124; "set" &#124; "delete"; name?: string; value?: string; scope?: string; projectId?: string; environment?: string; serviceId?: string; skipDeploys?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.environment` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.environment",
+  "input": {
+    "provider": "railway",
+    "action": "list",
+    "serviceId": "api"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.deployment.list
+
+list Railway, Vercel, or Cloudflare projects, services, deployments, or domains using the selected provider CLI
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.list({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; resource: "projects" &#124; "services" &#124; "deployments" &#124; "domains"; projectId?: string; environment?: string; serviceId?: string; cursor?: string; limit?: number; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.list` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.list",
+  "input": {
+    "provider": "railway",
+    "resource": "deployments",
+    "serviceId": "api"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.deployment.logs
+
+read bounded Railway, Vercel, or Cloudflare runtime or build logs without changing provider state
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.logs({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; deploymentId?: string; serviceId?: string; environment?: string; cursor?: string; limit?: number; since?: string; until?: string; filter?: string; kind?: "runtime" &#124; "build"; latest?: boolean; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.logs` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 180000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.logs",
+  "input": {
+    "provider": "railway",
+    "serviceId": "api",
+    "limit": 100
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.deployment.raw
+
+run an explicitly approved raw Railway, Vercel, or Cloudflare CLI argv without shell evaluation
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.raw({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; args: string[]; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.raw` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.raw",
+  "input": {
+    "provider": "railway",
+    "args": [
+      "status",
+      "--json"
+    ],
+    "approved": true,
+    "approvalReason": "Approved raw provider command"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.deployment.status
+
+inspect one Railway, Vercel, or Cloudflare deployment status by deployment id
+
+| Field | Value |
+| --- | --- |
+| Category | deployment |
+| Signature | `workspace.deployment.status({ provider: "railway" &#124; "vercel" &#124; "cloudflare"; deploymentId: string; serviceId?: string; environment?: string; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace deployment.status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "deployment.status",
+  "input": {
+    "provider": "railway",
+    "deploymentId": "deployment-id"
   }
 });
 ```
@@ -5207,6 +5638,69 @@ await workspace.call({
 }
 ```
 
+## memory
+
+### workspace.memory
+
+search, read, save, list, and inspect local project memory and workspace traces
+
+| Field | Value |
+| --- | --- |
+| Category | memory |
+| Signature | `workspace.memory({ operation: "search" &#124; "find" &#124; "get" &#124; "list" &#124; "save" &#124; "categories" &#124; "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" &#124; "ok" &#124; "error" &#124; "blocked" &#124; "timeout"; since?: string; until?: string; contains?: string; memoryTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace memory` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "memory",
+  "input": {
+    "operation": "search",
+    "keyword": "workspace",
+    "limit": 3
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## review
 
 ### workspace.aiReview
@@ -5870,25 +6364,25 @@ await workspace.call({
 
 ## stream
 
-### workspace.stream.cleanup
+### workspace.stream.context
 
-preview or remove safe local stream refs that are fully backed by origin
+show recent stream context
 
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.cleanup({ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace stream.cleanup` |
-| Capability | writes state · mutating · single-shot |
+| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace stream.context` |
+| Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 120000ms |
 
 #### Example call
 
 ```ts
 await workspace.call({
-  "tool": "stream.cleanup",
+  "tool": "stream.context",
   "input": {
-    "dryRun": true
+    "area": "workspace-agents"
   }
 });
 ```
@@ -5929,25 +6423,26 @@ await workspace.call({
 }
 ```
 
-### workspace.stream.context
+### workspace.stream.create
 
-show recent stream context
+create a durable stream branch with OS and Workspace instruction files
 
 | Field | Value |
 | --- | --- |
 | Category | stream |
-| Signature | `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace stream.context` |
-| Capability | read-only · non-mutating · safe to retry |
+| Signature | `workspace.stream.create({ area: string; sourceBranch?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace stream.create` |
+| Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
 
 #### Example call
 
 ```ts
 await workspace.call({
-  "tool": "stream.context",
+  "tool": "stream.create",
   "input": {
-    "area": "workspace-agents"
+    "area": "research",
+    "sourceBranch": "main"
   }
 });
 ```
@@ -6719,7 +7214,7 @@ Call this directly at the beginning of every scoped repo task, before tools.sear
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; workflow?: "task" &#124; "artifacts" &#124; "media"; description?: string; pr?: string &#124; number; github?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.start({ stream?: string; area?: string; title?: string; workflow?: "task" &#124; "artifacts" &#124; "media"; description?: string; pr?: string &#124; number; github?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os task.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
@@ -8462,134 +8957,14 @@ await workspace.call({
 }
 ```
 
-### workspace.railway.logs
-
-read Railway deploy/runtime logs through the workspace script
-
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.railway.logs({ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace railway.logs` |
-| Capability | read-only · non-mutating · safe to retry |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "railway.logs",
-  "input": {
-    "service": "opensaas",
-    "lines": 10
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-### workspace.railway.redeploy
-
-trigger a Railway redeploy
-
-| Field | Value |
-| --- | --- |
-| Category | utilities |
-| Signature | `workspace.railway.redeploy({ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace railway.redeploy` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 600000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "railway.redeploy",
-  "input": {
-    "service": "opensaas",
-    "dryRun": true
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
 ### workspace.research.ingest
 
-generate a local research packet and autosave its text bundle to context
+generate a local research packet and autosave its text bundle to memory
 
 | Field | Value |
 | --- | --- |
 | Category | utilities |
-| Signature | `workspace.research.ingest({ source: string; question?: string; mode?: "quick" &#124; "standard" &#124; "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" &#124; "transcript" &#124; "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.research.ingest({ source: string; question?: string; mode?: "quick" &#124; "standard" &#124; "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" &#124; "transcript" &#124; "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; memoryTitle?: string; memoryCategory?: string; noMemorySave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace research.ingest` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 600000ms |

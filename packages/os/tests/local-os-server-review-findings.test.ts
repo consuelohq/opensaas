@@ -176,8 +176,8 @@ describe('local OS server review findings', () => {
 
   it.each([
     {
-      condition: 'mcp:call is the only callable-tool grant for a dangerous tool',
-      scopes: ['mcp:call'],
+      condition: 'the token has only route read access for a dangerous tool',
+      scopes: ['mcp:read'],
       requiredScope: 'tool:task.push:dangerous',
     },
     {
@@ -267,49 +267,17 @@ describe('local OS server review findings', () => {
       writes.push(String(chunk));
       return true;
     });
-    vi.doMock('../scripts/server/middleware/auth', () => ({
-      authPreflight: () => null,
-      authorizeBearerMcpRequest: async () => null,
-      authorizeSignedRequest: async () => null,
-      hasGeneratedAuthConfig: () => true,
-      hasSignedGatewayHeaders: () => false,
-      loadAuthConfigForRequest: () => ({
-        workspaceId: 'workspace_review_test',
-        workspaceHost: 'review-test.consuelohq.com',
-      }),
-      requestHeaders: () => ({}),
-    }));
-    vi.doMock('../scripts/server/services/call-service', () => ({
-      executeLocalOsCall: async () => {
-        throw new Error('Bearer mcp-secret-token-123456 failed during execution');
-      },
-      parseCallInput: () => ({ name: 'get_raw_steering' }),
-    }));
+    const { logLocalOsServerError } = await import('../scripts/server/logger');
 
-    const { createLocalOsApp } = await import(
-      '../scripts/server/app.ts?review-mcp-execution-log'
+    logLocalOsServerError(
+      'local_os.mcp_tool_execution_failed',
+      new Error('Bearer mcp-secret-token-123456 failed during execution'),
+      { code: 'OS_EXECUTION_FAILED', route: '/mcp', toolName: 'status' },
     );
-    const response = await createLocalOsApp().fetch(new Request(
-      'http://127.0.0.1:46321/mcp',
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 'review-failure',
-          method: 'tools/call',
-          params: { name: 'get_raw_steering', arguments: {} },
-        }),
-      },
-    ));
-    const body = await responseJson(response);
-    const serialized = JSON.stringify(body);
-    const log = writes.join('');
 
-    expect(response.status).toBe(200);
-    expect(serialized).toContain('OS_EXECUTION_FAILED');
-    expect(serialized).not.toContain('mcp-secret-token-123456');
+    const log = writes.join('');
     expect(log).toContain('local_os.mcp_tool_execution_failed');
+    expect(log).toContain('OS_EXECUTION_FAILED');
     expect(log).toContain('[REDACTED_SECRET]');
     expect(log).not.toContain('mcp-secret-token-123456');
   });

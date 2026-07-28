@@ -51,6 +51,17 @@ const globalYamlConfigSchema = z.object({
   runtime: z.object({
     current: z.string().min(1).optional(),
   }).strict().default({}),
+  updates: z.object({
+    channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).default('stable'),
+    notifications: z.discriminatedUnion('mode', [
+      z.object({ mode: z.literal('on') }).strict(),
+      z.object({ mode: z.literal('off') }).strict(),
+      z.object({
+        mode: z.literal('snoozed'),
+        snoozedUntil: z.string().datetime(),
+      }).strict(),
+    ]).default({ mode: 'on' }),
+  }).strict().default({ channel: 'stable', notifications: { mode: 'on' } }),
 }).strict();
 
 const nodeYamlConfigSchema = z.object({
@@ -211,8 +222,34 @@ export function stringifyYamlConfig(value: unknown): string {
 
 export function writeYamlConfig(filePath: string, value: unknown, dryRun: boolean): void {
   if (dryRun) return;
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, stringifyYamlConfig(value), { mode: 0o600 });
+  const directory = path.dirname(filePath);
+  const temporaryPath = path.join(
+    directory,
+    `.${path.basename(filePath)}.${process.pid}.${crypto.randomUUID()}.tmp`,
+  );
+  fs.mkdirSync(directory, { recursive: true });
+  try {
+    const descriptor = fs.openSync(temporaryPath, 'wx', 0o600);
+    try {
+      fs.writeFileSync(descriptor, stringifyYamlConfig(value), 'utf8');
+      fs.fsyncSync(descriptor);
+    } finally {
+      fs.closeSync(descriptor);
+    }
+    fs.renameSync(temporaryPath, filePath);
+    try {
+      const directoryDescriptor = fs.openSync(directory, 'r');
+      try {
+        fs.fsyncSync(directoryDescriptor);
+      } finally {
+        fs.closeSync(directoryDescriptor);
+      }
+    } catch {
+      // Directory fsync is not available on every supported filesystem.
+    }
+  } finally {
+    fs.rmSync(temporaryPath, { force: true });
+  }
 }
 
 export function createDefaultGlobalYamlConfig(input: {
@@ -224,6 +261,7 @@ export function createDefaultGlobalYamlConfig(input: {
     activeWorkspace: input.workspaceId,
     activeNode: input.nodeId,
     runtime: { current: 'runtime/current' },
+    updates: { channel: 'stable', notifications: { mode: 'on' } },
   };
 }
 

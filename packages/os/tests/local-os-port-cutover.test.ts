@@ -252,8 +252,6 @@ describe('prelaunch local OS port cutover', () => {
       ['SCRIPTS.md', '127.0.0.1:46321'],
       ['docs/runtime-surfaces.md', 'default local port is `46321`'],
       ['docs/installer-runtime-release-checklist.md', '127.0.0.1:46321'],
-      ['../documentation/src/content/docs/os/getting-started/install.mdx', '127.0.0.1:46321/health'],
-      ['../documentation/src/content/docs/os/getting-started/connect-agents.mdx', '127.0.0.1:46321/mcp'],
     ];
 
     for (const [path, expected] of contracts) {

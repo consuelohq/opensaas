@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fd4a2542a629",
+  "tmuxSession": "opensaas-os-distribution-implement-retention-rollback-uninstall-and-dev-r-fd4a2542",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/implement-retention-rollback-uninstall-and-dev-reset",
+  "branch": "task/os-distribution/implement-retention-rollback-uninstall-and-dev-reset",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-retention-rollback-uninstall-and-dev-reset",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-retention-rollback-uninstall-and-dev-reset",
+  "prNumber": 1600,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1600",
+  "createdAt": "2026-07-23T20:35:59.035Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-retention-rollback-uninstall-and-dev-reset/.task/os-distribution/implement-retention-rollback-uninstall-and-dev-reset/session.json"
+}

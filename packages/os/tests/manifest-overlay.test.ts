@@ -13,36 +13,43 @@ import {
   patchManifestOverlay,
   readManifestOverlay,
 } from '../scripts/lib/manifest-overlay';
+import { listBundledSkills } from '../scripts/lib/skills';
+import { workflows } from '../workflows/workflows';
 
 describe('manifest overlay', () => {
-  it('filters disabled tools and skills without mutating the generated manifest file', () => {
+  it('filters disabled tools without mutating the generated manifest file', () => {
     const base = readFullToolManifest();
-    const skill = base.tools.find((entry) => entry.kind === 'os-skill');
     const tool = base.tools.find((entry) => entry.kind === 'facade-tool');
-    expect(skill).toBeTruthy();
     expect(tool).toBeTruthy();
 
     const overlay = {
       ...emptyManifestOverlay(),
-      disabledSkills: [skill!.name],
       disabledTools: [tool!.name],
       updatedAt: '2026-07-02T00:00:00.000Z',
     };
 
     const filtered = applyManifestOverlay(base, overlay);
-    expect(filtered.tools.some((entry) => entry.name === skill!.name)).toBe(false);
     expect(filtered.tools.some((entry) => entry.name === tool!.name)).toBe(false);
-    expect(readFullToolManifest().tools.some((entry) => entry.name === skill!.name)).toBe(true);
     expect(readFullToolManifest().tools.some((entry) => entry.name === tool!.name)).toBe(true);
   });
 
   it('writes and reads manifest.overlay.json from the OS home', () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-manifest-overlay-'));
     const tool = readFullToolManifest().tools.find((entry) => entry.kind === 'facade-tool');
+    const skill = listBundledSkills()[0];
+    const workflow = workflows[0];
     expect(tool).toBeTruthy();
+    expect(skill).toBeTruthy();
+    expect(workflow).toBeTruthy();
 
-    const overlay = patchManifestOverlay(home, { kind: 'tool', name: tool!.name, enabled: false });
-    expect(overlay.disabledTools).toEqual([tool!.name]);
+    patchManifestOverlay(home, { kind: 'tool', name: tool!.name, enabled: false });
+    patchManifestOverlay(home, { kind: 'skill', name: skill!.name, enabled: false });
+    const overlay = patchManifestOverlay(home, { kind: 'workflow', name: workflow!.id, enabled: false });
+    expect(overlay).toMatchObject({
+      disabledTools: [tool!.name],
+      disabledSkills: [skill!.name],
+      disabledWorkflows: [workflow!.id],
+    });
     expect(fs.existsSync(manifestOverlayPath(home))).toBe(true);
 
     const restored = patchManifestOverlay(home, { kind: 'tool', name: tool!.name, enabled: true });

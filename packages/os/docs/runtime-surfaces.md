@@ -11,7 +11,7 @@ OS portal entrypoints are the agent entrypoints:
 
 Business/revenue agents should start with `get_steering`.
 
-Build, design, deployment, and internal operator agents should start with `get_steering`, then call `get_raw_steering` when they need full raw operator context.
+Build, design, deployment, and internal operator agents should start with `get_steering`; the internal CLI command `get-raw-steering` remains separate from the public tool catalog.
 
 All operational work should run through `call` when it is a named skill/capability.
 
@@ -40,7 +40,6 @@ Skills are approved OS capabilities behind `call`.
 
 Examples:
 
-- `daily-revenue-brief`
 - `lead-prioritizer`
 - `build-landing-page`
 - `open-design-tool`
@@ -51,13 +50,13 @@ Examples:
 The canonical full manifest is:
 
 ```text
-packages/os/manifests/tool.manifest.json
+packages/os/manifests/generated/tool.manifest.json
 ```
 
 The generated core steering subset is:
 
 ```text
-packages/os/manifests/core.manifest.json
+packages/os/manifests/generated/core.manifest.json
 ```
 
 Each exposed skill declares permission metadata, approval rules, required env, and integration requirements for agent steering. Runtime behavior lives in the Bun script itself.
@@ -82,9 +81,9 @@ These scripts are not automatically customer-facing skills. Preserve them, class
 
 There are generated runtime manifests and preserved source inputs in this scaffold:
 
-- `manifests/tool.manifest.json`: canonical full OS tool manifest used as the execution/search source of truth.
-- `manifests/core.manifest.json`: generated default steering subset derived from the full manifest.
-- `tooling/tool-manifest.json` and `tooling/dev-tool-manifest.json`: preserved source inputs consumed by `manifests/manifest.config.json`.
+- `manifests/generated/tool.manifest.json`: canonical full OS tool manifest used as the execution/search source of truth.
+- `manifests/generated/core.manifest.json`: generated default steering subset derived from the full manifest.
+- `tools/<domain>/manifest.ts`: canonical package contributions consumed by `manifests/manifest.config.ts`.
 
 The principle is:
 

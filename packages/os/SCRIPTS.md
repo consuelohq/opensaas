@@ -48,7 +48,7 @@ Dry-run hands off to:
 bun --cwd packages/os ./scripts/install.ts --dry-run --yes --json
 ```
 
-Background services stay user-level only. Baseline labels are `com.consuelo.system` and `com.consuelo.watchdog`; `com.consuelo.portless.system` is generated only when portless is configured or discoverable. Plists go in `~/Library/LaunchAgents`; logs go under `~/Library/Logs/Consuelo`.
+Background services stay user-level only. Baseline labels are `com.consuelo.system` and `com.consuelo.watchdog`; `com.consuelo.portless.system` is generated only when portless is configured or discoverable. Host power policy is explicit: set `CONSUELO_AVAILABILITY_ENABLED=1` to install `com.consuelo.availability`, which runs Apple `/usr/bin/caffeinate -s` so the node remains awake only while connected to AC power and display sleep remains available. Plists go in `~/Library/LaunchAgents`; logs and watchdog runtime state live under `$CONSUELO_HOME/node`.
 
 After LaunchAgent cutover, the installer probes the same local port the daemon resolves from `WORKSPACE_DAEMON_PORT`, the OS `.env` values, and the `46321` default. `WORKSPACE_CUTOVER_LOCAL_HEALTH_URL` remains an explicit repair/testing override.
 
@@ -116,10 +116,10 @@ every change — even tiny ones — follows this flow. no exceptions.
  7. bun run task:pr                                      # merge task→stream, create stream→main PR
  8. bun run task:prs                                     # show both PR links (human review)
  9. bun run task:merge -- --pr <N> --wait                # merge + wait for deploy
-10. bun run railway:logs -- --status                     # check deploy health + logs
+10. call deployment.status or deployment.logs with an explicit provider and target
 11. bun run browser -- consuelo                          # verify UI in production
 12. bun run task:finish                                  # remove worktree, delete branch
-13. bun run tmp -- save handoffs "description"           # save context for next agent
+13. bun run tmp -- save handoffs "description"           # save memory for next agent
 ```
 the verify → push dependency:
 ```text
@@ -152,7 +152,7 @@ node --check <touched-js-file>
 git status --porcelain -uall -- . ':!node_modules'
 ```
 
-**railway logs are truth.** don't guess about production — run `bun run railway:logs -- --errors` or `--filter "keyword"`.
+**provider logs are truth.** don't guess about production — use `deployment.logs` with an explicit provider, service/project target, and bounded filter.
 
 **SCRIPTS.md is part of the fix.** if you add or change a script, update SCRIPTS.md in the same commit.
 
@@ -599,7 +599,8 @@ bun run task:start -- --area dialer --title "normalize phone numbers"
 bun run task:start -- --area os --title "start scoped work" --workflow task
 bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
-bun run task:start -- --area new-area --title "first task" --create-stream  # explicit new durable stream
+bun run stream:create -- --area new-area --source-branch main  # create the durable stream first
+bun run task:start -- --area new-area --title "first task" --start-from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
 ```
@@ -714,20 +715,20 @@ bun run stream:list                   # show all streams with status, divergence
 
 ---
 
-### stream:cleanup — preview or remove safe local stream refs
+### stream:create — create a durable stream
 
-previews redundant local `stream/*` refs by default. a branch is removable only when `origin/<branch>` exists, the local branch has zero unique commits, and no worktree has it checked out. remote streams and task branches are never deleted.
+creates `stream/<area>` atomically from the selected source branch, commits the matching OS and Workspace `AGENTS.md` instruction files, fetches origin, and creates the local tracking branch. existing streams are rejected rather than overwritten.
 
 ```bash
-bun run stream:cleanup                         # preview only
-bun run stream:cleanup -- --keep stream/tooling
-bun run stream:cleanup -- --apply              # remove only the reviewed safe local refs
-bun run stream:cleanup -- --json
+bun run stream:create -- --area research
+bun run stream:create -- --area research --source-branch main
+bun run stream:create -- --area research --json
 ```
 
-**stream:cleanup failure modes**
-- local-only, diverged, current, checked-out, or explicitly kept branches are reported as protected
-- an origin fetch failure stops cleanup before classification or mutation
+**stream:create failure modes**
+- an existing remote stream is rejected without mutation
+- a missing source branch is rejected before committing instruction files
+- remote commit/branch failures stop before the local tracking branch is created
 
 ---
 
@@ -821,24 +822,24 @@ bun run gh -- branches --task         # task/* branches only
 
 ---
 
-### context — search and save project memories
+### memory — search and save project memories
 
-search and save context from supabase memories. use this to find past decisions, architecture notes, and investigation results.
+search and save project memory in the local Consuelo SQLite database. use this to find past decisions, architecture notes, and investigation results.
 
 ```bash
-bun run context -- search dialer      # search memories by content
-bun run context -- search queue --category workpad  # filter by category
-bun run context -- find "queue handoff"  # search by title
-bun run context -- list workpad       # list recent workpad memories
-bun run context -- list --limit 5     # list recent memories
-bun run context -- save "dialer arch" ./notes.md  # save file as memory
-bun run context -- categories         # list available categories
+bun run memory -- search dialer      # search memories by content
+bun run memory -- search queue --category workpad  # filter by category
+bun run memory -- find "queue handoff"  # search by title
+bun run memory -- list workpad       # list recent workpad memories
+bun run memory -- list --limit 5     # list recent memories
+bun run memory -- save "dialer arch" ./notes.md  # save file as memory
+bun run memory -- categories         # list available categories
 ```
 
 **context failure modes**
 ```text
 bad: answering "what did we decide about X?" from memory alone
- → search first: bun run context -- search "X"
+ → search first: bun run memory -- search "X"
  (never answer architecture or decision questions without checking context first)
 ```
 
@@ -897,52 +898,22 @@ Use `browser.headed` whenever Ko must complete a human-only authentication step.
 
 ---
 
-### railway:logs — deploy observability
+### deployment provider tools — deploy observability and mutations
 
-USE THIS OFTEN. this is how you get truth about what's happening in production. don't guess — read the logs.
+Use the canonical provider-neutral surface. Always select `provider: railway|vercel|cloudflare`; never rely on a repository, project, service, zone, or account default.
 
-```bash
-bun run railway:logs                  # deploy logs + http traffic in one place
-bun run railway:logs -- --errors      # errors only — deploy errors + http 4xx/5xx
-bun run railway:logs -- --filter "voice"  # search across deploy, http, & network
-bun run railway:logs -- --filter "twilio OR queue"
-bun run railway:logs -- --filter "@level:error"
-bun run railway:logs -- --network     # network logs
-bun run railway:logs -- --lines 50    # control how many lines
-bun run railway:logs -- --build       # build logs — did docker build succeed?
-bun run railway:logs -- --raw         # no formatting, no noise filtering
-bun run railway:logs -- --json        # for piping to other tools
-bun run railway:logs -- --env TWILIO_ACCOUNT_SID  # check if env var is set
-bun run railway:logs -- --status      # quick health check — is service up? what commit?
-bun run railway:logs -- --service twenty-worker --errors  # different service
-bun run railway:redeploy -- --wait    # redeploy opensaas and wait for completion
-bun run railway:redeploy -- --service twenty-worker --wait  # redeploy worker and wait
-bun run railway:redeploy -- --all --wait  # redeploy opensaas + twenty-worker and wait
-```
-
-**railway failure modes**
 ```text
-bad: "i think the deploy is broken" (guessing without checking)
- → run: bun run railway:logs -- --errors
- (always check logs before claiming something is broken)
-
-bad: railway logs --service opensaas (raw CLI)
- → use: bun run railway:logs
- (the script adds noise filtering, formatting, and http log merging)
+deployment.detect       # CLI/version capability
+deployment.context      # auth or current linked context
+deployment.list         # projects, services, deployments, or domains
+deployment.status       # one deployment status
+deployment.logs         # bounded runtime/build logs
+deployment.deploy       # deploy, redeploy, or promote; explicit approval required
+deployment.environment  # list names or approved set/delete; values are never returned
+deployment.raw          # guarded escape hatch with explicit approval
 ```
 
----
-
-### railway:redeploy — trigger railway deploys
-
-redeploys Railway services and can wait for completion. use this after merges when production needs a fresh deploy.
-
-```bash
-bun run railway:redeploy -- --wait
-bun run railway:redeploy -- --service twenty-worker --wait
-bun run railway:redeploy -- --all --wait
-bun run railway:redeploy -- --json
-```
+Read operations do not require write approval. Deploy, redeploy, promote, environment set/delete, and raw argv require explicit approval. Use `tools.search` to discover the right operation, then call it with the exact provider and target. Consuelo operator deployment and Cloudflare provisioning are separate and are not exposed through this customer surface.
 
 ---
 
@@ -1002,7 +973,7 @@ runs a single manifest-backed workspace tool through the typed facade. stdout is
 
 ```bash
 bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
-bun run tool-runner -- context.categories '{}'
+bun run tool-runner -- memory '{"operation":"categories"}'
 bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 ```
 
@@ -1121,6 +1092,58 @@ bun run mac -- list /tmp --depth 1 --json
 bun run mac -- process list --json
 bun run mac -- port find --json
 ```
+
+---
+
+### lifecycle — unified Consuelo OS install and runtime lifecycle
+
+Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, rollback, retention, channel preferences, update-notification preferences, repair, and uninstall. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`. The previous accepted release is retained at `runtime/previous`; interrupted activation journals restore that known-good release before another mutating operation proceeds.
+
+`install` preserves the existing interactive onboarding flow. `update`, `restart`, `rollback`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, selected skills, or user-owned content. Successful activation retains only current, previous, explicitly pinned releases, and unresolved merge content bases. Staging, test-home, and dev-slot directories are bounded by count and age. Inconsistent references and symlinked release roots fail closed.
+
+Default `uninstall` removes only Consuelo-owned services, runtime files, generated security/service/tunnel state, and bounded caches. It preserves `consuelo.yaml`, node identity, workspace membership, visible workspace content, security overrides, and provider CLI credentials. `--remove-node` and `--remove-user-content` are explicit destructive opt-ins. Full reset is restricted to the `dev` or `nightly` channel and requires `dev reset --yes`. Use `--dry-run` before rollback, uninstall, or development reset. JSON output remains a stable envelope and progress events are emitted separately.
+
+```bash
+bun run lifecycle -- status
+bun run lifecycle -- status --json
+bun run lifecycle -- install --channel stable
+bun run lifecycle -- update --check
+bun run lifecycle -- update --yes --json
+bun run lifecycle -- restart
+bun run lifecycle -- rollback --dry-run --json
+bun run lifecycle -- rollback
+bun run lifecycle -- repair
+bun run lifecycle -- uninstall --dry-run --json
+bun run lifecycle -- uninstall
+bun run lifecycle -- uninstall --remove-node --remove-user-content
+bun run lifecycle -- dev reset --yes --dry-run --json
+bun run lifecycle -- channel show
+bun run lifecycle -- channel set beta
+bun run lifecycle -- updates notifications off
+bun run lifecycle -- updates notifications snooze --until 2026-08-01T12:00:00.000Z
+```
+
+Production install and update require `CONSUELO_RELEASE_BASE_URL` plus trusted Ed25519 public keys supplied through `CONSUELO_RELEASE_PUBLIC_KEYS_JSON` or `CONSUELO_RELEASE_KEY_ID` and `CONSUELO_RELEASE_PUBLIC_KEY`.
+
+---
+
+### managed-components — inspect and resolve deterministic component updates
+
+Reads the managed-component indexes, provenance, content bases, and stable `update-plan.json` under `$CONSUELO_HOME/components`. Automatic writes require an explicit visible user root and re-verify the current local hash immediately before an atomic replacement.
+
+```bash
+bun run managed-components -- inspect-plan --home "$CONSUELO_HOME" --json
+bun run managed-components -- refresh-plan --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --json
+bun run managed-components -- apply-safe --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --json
+bun run managed-components -- inspect-conflict --home "$CONSUELO_HOME" --component tool:example --json
+bun run managed-components -- accept-upstream --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --json
+bun run managed-components -- keep-local --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --json
+bun run managed-components -- apply-merge --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --input ./reviewed-tree.json --expected-local-hash sha256:... --expected-upstream-hash sha256:... --json
+bun run managed-components -- detach --home "$CONSUELO_HOME" --component tool:example --json
+bun run managed-components -- restore-default --home "$CONSUELO_HOME" --user-root "$HOME/Consuelo" --component tool:example --destination Tools/example-bundled-default --json
+```
+
+See `docs/managed-components.md` for the schema, action table, safety invariants, legacy migration boundary, and lifecycle-retention handoff.
 
 ---
 
@@ -1398,7 +1421,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && rg "TODO" packages/
 
 ## Linear facade
 
-Linear uses `packages/workspace/scripts/linear.js` as the source wrapper and typed facade entries in `tooling/tool-manifest.json`.
+Linear uses `packages/workspace/scripts/linear.js` as the source wrapper and typed facade entries in `packages/workspace/tooling/tool-manifest.json`.
 
 Required workflow for issue creation:
 
@@ -1441,7 +1464,7 @@ bun run install:local -- --dry-run --json
 bun run install:local -- --connect-agent codex
 ```
 
-The installer creates `~/.consuelo/os` by default, preserves existing files, writes `config.json` only when missing, initializes `consuelo.db`, creates the approved folders, and can record detected agent connections.
+The installer creates the approved `~/.consuelo` home shape by default, preserves existing files and identity, initializes managed databases and folders, and can record detected agent connections. New installs do not materialize the legacy `~/.consuelo/os` runtime path.
 
 ---
 
@@ -1460,7 +1483,7 @@ bun run doctor -- --json
 ```bash
 bun run install:system-daemons
 ```
-Install the local Mac launchd services for the OS Bun server and watchdog. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents` and does not require `sudo`. Consuelo OS runs this background service so agents and apps can reach it while the user works.
+Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. A workspace installation with registered node signing material also installs `com.consuelo.os.node-heartbeat.<node-id>`. That one-shot service re-inspects canonical local agent configuration on every 30-second run and includes only currently verified agent identifiers in the existing signed node heartbeat; paths, configuration contents, credentials, and signing material are never sent. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
 
 ### install:system-daemons:dry-run
 
@@ -1541,3 +1564,25 @@ bun ./scripts/os.ts configuration enable-workflow <name> --json
 ```
 
 The legacy `settings` command remains an alias during migration. Mutations are serialized per OS home, materialize the public Configuration shell plus a private local snapshot, and append a redacted `configuration.overlay.changed` event to `logs/control-plane-audit.jsonl`. Disabled workflows are rejected by workflow intent routing. The public Configuration HTML contains no workspace snapshot; private state loads through the authenticated Configuration gateway at `/gateway/configuration/*`.
+
+---
+
+## release channels -- immutable Consuelo OS runtime publication
+
+`release:channels` is the Bun-owned JSON CLI for automatic version allocation, immutable publication, signed channel inspection, protected promotion, and rollback. It supports `publish`, `promote`, `inspect`, and `rollback-channel`; mutating commands default to dry-run and require `--apply` for provider changes.
+
+```bash
+bun run --cwd packages/os release:channels -- publish --channel dev --plan-only --state ../../.release/release-state.json --fingerprint sha256:<digest> --source-commit <commit> --seed-version 1.0.0 --json
+bun run --cwd packages/os release:channels -- promote --from dev --to canary --bundle sha256:<release-set-id> --state ../../.release/release-state.json --dry-run --json
+bun run --cwd packages/os release:channels -- inspect --channel canary --state ../../.release/release-state.json --json
+bun run --cwd packages/os release:channels -- rollback-channel --channel canary --bundle sha256:<release-set-id> --state ../../.release/release-state.json --dry-run --json
+```
+
+Supporting scripts:
+
+- `runtime-bundle:fingerprint` computes the version-neutral customer-runtime closure before any release allocation.
+- `runtime-bundle:build` builds one deterministic platform archive with the already approved version.
+- `runtime-bundle:verify` verifies an archive and its embedded manifest.
+- `release:prepare` verifies the complete platform set, creates detached Ed25519 signatures, and emits the publication input.
+
+The protected environments are `consuelo-os-dev`, `consuelo-os-canary`, `consuelo-os-beta`, and `consuelo-os-stable`. See `docs/distribution/release-channels.md` for variables, secrets, first-release seeding, key rotation, concurrency, retry, and human device checkpoints.

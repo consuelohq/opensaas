@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os-web/fix-os-web-preserve-authority-metadata-routes-in-auth-matrix/workpad.md",
+    "packages/os/AGENTS.md",
+    "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+    "packages/os/cloudflare/os-device-authority/src/security/route-policies.ts",
+    "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+    "packages/os/tests/os-web-auth-contract.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-22T21:44:26.568Z"
+}
