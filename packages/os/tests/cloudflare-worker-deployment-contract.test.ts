@@ -13,6 +13,12 @@ const __dirname = path.dirname(__filename);
 const osPackageRoot = path.join(__dirname, '..');
 const workspaceEdgeRoot = path.join(osPackageRoot, 'cloudflare', 'workspace-edge');
 const wranglerPath = path.join(workspaceEdgeRoot, 'wrangler.toml');
+const deviceAuthorityWranglerPath = path.join(
+  osPackageRoot,
+  'cloudflare',
+  'os-device-authority',
+  'wrangler.toml',
+);
 const workerEntrypointPath = path.join(workspaceEdgeRoot, 'src', 'index.ts');
 const d1MigrationPath = path.join(
   workspaceEdgeRoot,
@@ -53,8 +59,25 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(wrangler).toMatch(/binding\s*=\s*["']SITES_SNAPSHOTS["']/);
     expect(wrangler).toMatch(/bucket_name\s*=\s*["']consuelo-sites-snapshots["']/);
     expect(wrangler).toMatch(/zone_name\s*=\s*["']consuelohq\.com["']/);
+    expect(wrangler).toMatch(
+      /\[secrets\][\s\S]*?required\s*=\s*\[[^\]]*["']WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET["'][^\]]*\]/,
+    );
     expect(wrangler).not.toMatch(/CONSUELO_EDGE_SIGNING_SECRET\s*=\s*["'][^"']+["']/);
+    expect(wrangler).not.toMatch(
+      /WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET\s*=\s*["'][^"']+["']/,
+    );
     expect(wrangler).not.toMatch(/api[_-]?token\s*=\s*["'][^"']+["']/i);
+  });
+
+  it('should require the same internal session-validation secret on device authority', () => {
+    const wrangler = readRequiredFile(deviceAuthorityWranglerPath);
+
+    expect(wrangler).toMatch(
+      /\[secrets\][\s\S]*?required\s*=\s*\[[^\]]*["']WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET["'][^\]]*\]/,
+    );
+    expect(wrangler).not.toMatch(
+      /WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET\s*=\s*["'][^"']+["']/,
+    );
   });
   it('should expose a Worker entrypoint that composes the router with D1, R2 snapshots, and edge signing', () => {
     const worker = readRequiredFile(workerEntrypointPath);
