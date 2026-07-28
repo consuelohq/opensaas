@@ -76,6 +76,25 @@ describe('LeadConnector embed view', () => {
     expect(html).not.toContain('data-form="disposition"');
   });
 
+  it('renders API-reported resource totals instead of capped loaded-array lengths', () => {
+    const state = reduceEmbedState(createInitialEmbedState(), {
+      type: 'RESOURCES_LOADED',
+      contacts: [],
+      contactTotal: 73,
+      opportunities: [],
+      opportunityTotal: 144,
+      pipelines: [],
+    });
+    const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
+
+    expect(html).toContain(
+      '<span>Contacts available</span><strong>73</strong>',
+    );
+    expect(html).toContain(
+      '<span>Opportunities available</span><strong>144</strong>',
+    );
+  });
+
   it('renders only target confirmation and next actions before a call starts', () => {
     const html = renderLeadConnectorEmbed(selectedState(), {
       surface: 'overlay',

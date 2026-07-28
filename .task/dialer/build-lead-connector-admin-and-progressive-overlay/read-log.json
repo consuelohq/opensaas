@@ -1,7 +1,9 @@
 {
   "files": [
-    ".task/dialer/build-lead-connector-admin-and-progressive-overlay/session.json",
-    ".task/dialer/build-lead-connector-admin-and-progressive-overlay/workpad.md"
+    "packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.css",
+    "packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.marketplace.html",
+    "packages/lead-connector/src/embed/cloudflare-worker.ts",
+    "packages/lead-connector/wrangler.jsonc"
   ],
-  "updatedAt": "2026-07-27T22:14:40.696Z"
+  "updatedAt": "2026-07-28T17:24:41.213Z"
 }

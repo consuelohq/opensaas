@@ -27,7 +27,9 @@ describe('LeadConnector embed state machine', () => {
     state = reduceEmbedState(state, {
       type: 'RESOURCES_LOADED',
       contacts: [],
+      contactTotal: 0,
       opportunities: [],
+      opportunityTotal: 0,
       pipelines: [],
     });
     state = selectEmbedTarget(state, target);

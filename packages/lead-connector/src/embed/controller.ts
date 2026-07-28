@@ -75,7 +75,9 @@ export const createLeadConnectorEmbedController = (input: {
           input.api.listPipelines(),
         ]).then(([contacts, opportunities, pipelines]) => ({
           contacts: contacts.contacts,
+          contactTotal: contacts.total,
           opportunities: opportunities.opportunities,
+          opportunityTotal: opportunities.total,
           pipelines,
         })),
       );
@@ -121,7 +123,9 @@ export const createLeadConnectorEmbedController = (input: {
           dispatch({
             type: 'RESOURCES_LOADED',
             contacts: contacts.contacts,
+            contactTotal: contacts.total,
             opportunities: state.opportunities,
+            opportunityTotal: state.opportunityTotal,
             pipelines: state.pipelines,
           });
         }
@@ -148,7 +152,9 @@ export const createLeadConnectorEmbedController = (input: {
           dispatch({
             type: 'RESOURCES_LOADED',
             contacts: state.contacts,
+            contactTotal: state.contactTotal,
             opportunities: opportunities.opportunities,
+            opportunityTotal: opportunities.total,
             pipelines: state.pipelines,
           });
         }

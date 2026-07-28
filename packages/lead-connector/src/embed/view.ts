@@ -62,8 +62,8 @@ const renderAdmin = (state: LeadConnectorEmbedState): string => {
       ${renderError(state)}
 
       <section class="metric-grid" aria-label="Overview">
-        <article class="metric"><span>Contacts available</span><strong>${state.contacts.length}</strong></article>
-        <article class="metric"><span>Opportunities available</span><strong>${state.opportunities.length}</strong></article>
+        <article class="metric"><span>Contacts available</span><strong>${state.contactTotal}</strong></article>
+        <article class="metric"><span>Opportunities available</span><strong>${state.opportunityTotal}</strong></article>
         <article class="metric"><span>Pipelines connected</span><strong>${state.pipelines.length}</strong></article>
         <article class="metric"><span>Session state</span><strong>${escapeHtml(phaseLabel(state.phase))}</strong></article>
       </section>

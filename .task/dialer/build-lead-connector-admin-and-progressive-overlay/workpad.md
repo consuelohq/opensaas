@@ -58,21 +58,29 @@ started: 2026-07-27
 
 ## files changed
 
-- Task workpad only.
+- `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css`
+- `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js`
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css`
+- `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js`
 
 ## workspace-owned: activity log
 
-- Task started from latest `stream/dialer` as PR #1682.
+- 2026-07-28 17:09:07 fs.write: `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css`
+- 2026-07-28 17:17:57 fs.write: `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js`
 - Initial nested batch reads failed because nested `fs.read` did not inherit `taskSession`; recovered with direct task-scoped reads and `code.call`.
+- Task started from latest `stream/dialer` as PR #1682.
 
 ## workspace-owned: validation evidence
 
 - 2026-07-27 22:59:41 `review.run`: passed — OK
 - 2026-07-27 22:59:58 `verify`: passed — OK
+- 2026-07-28 17:15:34 `review.run`: passed — OK
+- 2026-07-28 17:16:01 `verify`: passed — OK
+- 2026-07-28 17:51:16 `review.run`: passed — OK
+- 2026-07-28 17:51:28 `verify`: passed — OK
 
 ## key decisions
 
@@ -108,13 +116,24 @@ bun run task:finish
 
 ## workspace-owned: files read
 
-- none yet
-
-- Wait reason: allow the exact draft Custom JS PUT mutation to settle before persistence verification.
-  Duration: 3s.
-  Resume action: reopen Custom JS ID 01KYGP2NDCSJBA9C3T34PSWD9D and inspect only safe description/code markers.
-  Expected signal: saved description plus overlayPath/launcher/route-sync markers.
-  Fallback: inspect safe request/error metadata and retry with a smaller inline build if persistence is missing.
+- `packages/lead-connector/EMBED.md`
+- `packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.css`
+- `packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.marketplace.html`
+- `packages/lead-connector/package.json`
+- `packages/lead-connector/scripts/build-embed.ts`
+- `packages/lead-connector/src/embed/api-client.ts`
+- `packages/lead-connector/src/embed/architecture.contract.test.ts`
+- `packages/lead-connector/src/embed/cloudflare-worker.ts`
+- `packages/lead-connector/src/embed/controller.test.ts`
+- `packages/lead-connector/src/embed/controller.ts`
+- `packages/lead-connector/src/embed/main.ts`
+- `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js`
+- `packages/lead-connector/src/embed/state-machine.ts`
+- `packages/lead-connector/src/embed/view.test.ts`
+- `packages/lead-connector/src/embed/view.ts`
+- `packages/lead-connector/tsconfig.json`
+- `packages/lead-connector/wrangler.jsonc`
+- `packages/lead-connector/wrangler.toml`
 
 ## implementation result
 
@@ -154,4 +173,95 @@ bun run task:finish
 - [x] Worker deployed and public headers/routes verified.
 - [ ] Exact draft reinstalled into supplied sandbox after OAuth callback selection.
 - [ ] Sandbox Opportunities/Contacts launcher, popup, minimize, close, reload, and auth recovery verified after refresh.
+- [x] No carrier call placed.
+
+
+## review-finding repair contract — 2026-07-28
+
+- Behavior under test:
+  - The Marketplace Custom JS artifact is wrapped in an inline `<script>` element because HighLevel streams the field as HTML.
+  - The launcher is mounted on approved routes without creating/authenticating the iframe until the user opens the dialer.
+  - An active/busy iframe survives navigation away from Contacts or Opportunities until completion, preserving hang-up and disposition controls.
+  - Admin metrics display API-reported contact and opportunity totals rather than capped loaded-array lengths.
+- Existing local pattern: source-contract tests in `architecture.contract.test.ts` and render assertions in `view.test.ts`.
+- New or changed tests: wrapper boundary, lazy iframe creation, busy-route preservation/completion cleanup, and API-total metric rendering.
+- Focused red command: `bun test packages/lead-connector/src/embed/architecture.contract.test.ts packages/lead-connector/src/embed/view.test.ts`.
+- Expected red failures: raw unwrapped asset, eager iframe creation/removal on route change, and metrics using `.length`.
+- Runtime boundary evidence already established in the isolated sandbox: raw Custom JS remains inert; a wrapped probe executes naturally. No carrier call was placed.
+
+- 2026-07-28 17:06:19 apply-patch: `packages/lead-connector/src/embed/architecture.contract.test.ts`
+- 2026-07-28 17:06:19 apply-patch: `packages/lead-connector/src/embed/view.test.ts`
+- 2026-07-28 17:06:19 apply-patch: `packages/lead-connector/src/embed/controller.test.ts`
+- 2026-07-28 17:08:14 apply-patch: `packages/lead-connector/src/embed/state-machine.ts`
+- 2026-07-28 17:08:14 apply-patch: `packages/lead-connector/src/embed/controller.ts`
+- 2026-07-28 17:08:14 apply-patch: `packages/lead-connector/src/embed/view.ts`
+- 2026-07-28 17:08:14 apply-patch: `packages/lead-connector/src/embed/state-machine.test.ts`
+- 2026-07-28 17:09:07 write: `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css`
+
+- 2026-07-28 17:09:26 apply-patch: `packages/lead-connector/scripts/build-embed.ts`
+- 2026-07-28 17:09:26 apply-patch: `packages/lead-connector/EMBED.md`
+
+## workspace-owned: test selection
+
+- changed files: `.task/dialer/build-lead-connector-admin-and-progressive-overlay/current.json`, `.task/dialer/build-lead-connector-admin-and-progressive-overlay/evidence-log.json`, `.task/dialer/build-lead-connector-admin-and-progressive-overlay/read-log.json`, `.task/dialer/build-lead-connector-admin-and-progressive-overlay/session.json`, `.task/dialer/build-lead-connector-admin-and-progressive-overlay/verify.json`, `.task/dialer/build-lead-connector-admin-and-progressive-overlay/workpad.md`, `.task/tasks/dialer/build-lead-connector-admin-and-progressive-overlay.json`, `packages/lead-connector/EMBED.md`, `packages/lead-connector/scripts/build-embed.ts`, `packages/lead-connector/src/embed/architecture.contract.test.ts`, `packages/lead-connector/src/embed/cloudflare-worker.test.ts`, `packages/lead-connector/src/embed/cloudflare-worker.ts`, `packages/lead-connector/src/embed/controller.test.ts`, `packages/lead-connector/src/embed/controller.ts`, `packages/lead-connector/src/embed/main.ts`, `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css`, `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js`, `packages/lead-connector/src/embed/state-machine.test.ts`, `packages/lead-connector/src/embed/state-machine.ts`, `packages/lead-connector/src/embed/styles.css`, `packages/lead-connector/src/embed/surface.ts`, `packages/lead-connector/src/embed/view.test.ts`, `packages/lead-connector/src/embed/view.ts`
+- matched rules: `lead-connector-package`, `auto:@consuelo/lead-connector:package-test`
+- selected suites: `LeadConnector provider contracts`, `@consuelo/lead-connector package test`
+- run results: `LeadConnector provider contracts` passed, `@consuelo/lead-connector package test` passed
+- failed suites: none
+
+## final recovery and acceptance — 2026-07-28
+
+This section supersedes the earlier Marketplace installation blocker and incomplete acceptance checklist.
+
+### review findings repaired
+
+- Added API-reported contact and opportunity totals to embed state, controller events, searches, and admin metrics.
+- Split launcher styling into the Marketplace CSS field and kept the raw JavaScript executable for ordinary integrations.
+- Added a generated Marketplace HTML artifact that wraps the same raw JavaScript in an inline `<script>` element, matching HighLevel's HTML-stream loader.
+- Deferred creation of the `/overlay` iframe until the user opens the dialer.
+- Preserved one busy iframe across navigation away from Contacts or Opportunities, then removed it after completion when off-route.
+
+### test and build evidence
+
+- Expected red contracts failed before implementation for missing API totals, missing Marketplace wrapper generation, eager iframe creation, and route teardown during a busy session.
+- `bun test packages/lead-connector/src`: 64 passed, 0 failed, 406 expectations across 14 files.
+- `bun run --cwd packages/lead-connector build:embed`: passed.
+- Isolated TypeScript validation: passed using the existing cached `bun-types@1.3.14` and `@types/node@24.13.2`; no dependency, lockfile, or shared install mutation.
+- Wrangler 4.106.0 dry-run: passed; six static assets discovered.
+- Generated artifact identity: raw JavaScript copied exactly, CSS copied exactly, Marketplace wrapper exactly equals `<script>\n<raw.trim()>\n</script>\n`.
+- Final artifact SHA-256: raw `aadb148383b53cf751287ae3178c32c237fd0a93ad569c26422c7545a7fb7d33`; CSS `156aeb68b79fed9aa9552805e5fdbb7f06dbd197fece8607262e2015f964ccbb`; wrapper `7e454c674143e856ad26b5e774c78f3525d86ebe12b77a08e981ad2d3965d402`.
+
+### deployment and Marketplace evidence
+
+- Deployed Cloudflare Worker version `1c7805ba-0927-429a-a8db-56233f08ac60`.
+- Public `/`, `/admin`, and `/overlay`: HTTP 200, no redirect, no `X-Frame-Options`, and `Permissions-Policy: microphone=(self)`.
+- Public JavaScript and CSS assets: HTTP 200 with lazy-frame, busy-preservation, and launcher-style markers.
+- Cloudflare canonicalizes the Marketplace `.html` filename to its extensionless path; both requests resolve to the exact wrapped artifact.
+- The exact draft Click-to-Call module persisted the generated wrapper and stylesheet; HighLevel's terminal-newline trimming was the only byte-level normalization.
+- The redundant Overlay Host module remains an executable wrapped no-op so one module exclusively owns the launcher lifecycle.
+- HighLevel's stale `Update` action temporarily moved two draft records into live 2.1. The named sandbox live record was removed, then the true draft was installed from a clean `Install` state. Final counters returned to live 2.1 = 4 and draft = 2; no unrelated sub-account was selected.
+
+### isolated sandbox runtime evidence
+
+- Opportunities initial state: one launcher, one host, panel hidden, stylesheet present, and zero iframe.
+- Opening the launcher creates exactly one iframe at the approved Worker origin and `/overlay`, with microphone permission.
+- Minimize and close restore the launcher without duplicating the host or iframe.
+- Synthetic exact-origin `busy` message: iframe/panel remained available after a route transition to Dashboard.
+- Synthetic exact-origin `completed` message: off-route host and iframe were removed after wrap-up; returning to Opportunities recreated one launcher with zero iframe.
+- Contacts initial state: one launcher, one host, panel hidden, and zero iframe. No contact content or PII was read during validation.
+- Installed custom page: exactly one Worker iframe at `/admin` with microphone permission. Direct `/admin` shows the administration heading and no call-start, multiline, hang-up, or stop controls; deeper authenticated cards require the parent context handshake.
+- No carrier call was placed.
+
+### final acceptance state
+
+- [x] Admin route and progressive overlay route.
+- [x] Existing backend contracts reused.
+- [x] API totals displayed instead of loaded page lengths.
+- [x] Marketplace wrapper and separate CSS generated from one source of truth.
+- [x] Lazy iframe creation.
+- [x] Busy-session route preservation and completion cleanup.
+- [x] Exact draft installed into the supplied sandbox.
+- [x] Opportunities and Contacts launcher runtime verified.
+- [x] Admin custom page route verified.
+- [x] Worker deployed and public routes/assets verified.
 - [x] No carrier call placed.

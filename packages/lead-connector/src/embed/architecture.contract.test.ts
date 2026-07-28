@@ -87,8 +87,10 @@ describe('LeadConnector browser architecture and branding', () => {
     expect(asset).toContain(
       'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
     );
-    expect(asset).toContain('activeEmbedOrigin');
+    expect(asset).toContain('approvedOrigins');
+    expect(asset).toContain('postMessage(message, origin)');
     expect(asset).toContain('event.source !== frame.contentWindow');
+    expect(asset).toContain('event.origin !== origin');
     expect(asset).not.toContain("postMessage(message, '*')");
   });
 
@@ -99,11 +101,9 @@ describe('LeadConnector browser architecture and branding', () => {
     );
     expect(asset).toContain("var overlayPath = '/overlay'");
     expect(asset).toContain("var launcherId = 'consuelo-dialer-launcher'");
-    expect(asset).toContain(
-      "var overlayHostId = 'consuelo-dialer-overlay-host'",
-    );
-    expect(asset).toContain("frame.name = 'consuelo-dialer'");
-    expect(asset).toContain('function isApprovedCrmRoute');
+    expect(asset).toContain("var hostId = 'consuelo-dialer-overlay-host'");
+    expect(asset).toContain('name="consuelo-dialer"');
+    expect(asset).toContain('function routeAllowed');
     expect(asset).toContain("'/opportunities'");
     expect(asset).toContain("'/contacts'");
     expect(asset).toContain('function openOverlay');
@@ -111,6 +111,61 @@ describe('LeadConnector browser architecture and branding', () => {
     expect(asset).toContain('function closeOverlay');
     expect(asset).toContain('function syncRoute');
     expect(asset).not.toContain("postMessage(message, '*')");
+  });
+
+  it('publishes a separate wrapped Marketplace artifact while keeping the public script executable', () => {
+    const asset = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      'utf8',
+    );
+    const buildSource = readFileSync(
+      'packages/lead-connector/scripts/build-embed.ts',
+      'utf8',
+    );
+
+    expect(() => new Function(asset)).not.toThrow();
+    expect(asset).not.toContain('<script');
+    expect(buildSource).toContain(
+      'consuelo-lead-connector-click-to-call.marketplace.html',
+    );
+    expect(buildSource).toContain('<script>');
+    expect(buildSource).toContain('</script>');
+  });
+
+  it('creates the iframe on demand and preserves a busy session across route changes', () => {
+    const asset = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      'utf8',
+    );
+    const createHostStart = asset.indexOf('function createOverlayHost');
+    const ensureFrameStart = asset.indexOf('function ensureOverlayFrame');
+    const openOverlayStart = asset.indexOf('function openOverlay');
+    const targetContextStart = asset.indexOf('function targetContext');
+    const syncRouteStart = asset.indexOf('function syncRoute');
+    const messageHandlerStart = asset.indexOf("window.addEventListener('message'");
+
+    expect(createHostStart).toBeGreaterThan(-1);
+    expect(ensureFrameStart).toBeGreaterThan(createHostStart);
+    expect(openOverlayStart).toBeGreaterThan(ensureFrameStart);
+    expect(targetContextStart).toBeGreaterThan(openOverlayStart);
+    expect(syncRouteStart).toBeGreaterThan(-1);
+    expect(messageHandlerStart).toBeGreaterThan(syncRouteStart);
+
+    expect(asset.slice(createHostStart, ensureFrameStart)).not.toContain(
+      '<iframe',
+    );
+    expect(asset.slice(ensureFrameStart, openOverlayStart)).toContain(
+      '<iframe name="consuelo-dialer"',
+    );
+    expect(asset.slice(openOverlayStart, targetContextStart)).toContain(
+      'ensureOverlayFrame()',
+    );
+    expect(asset).toContain('var busy = false');
+    expect(asset.slice(syncRouteStart, messageHandlerStart)).toContain(
+      'if (busy && document.getElementById(hostId))',
+    );
+    expect(asset).toContain('busy = true');
+    expect(asset).toContain('busy = false');
   });
 
   it('keeps comma-separated selector literals safe for Marketplace editor persistence', () => {

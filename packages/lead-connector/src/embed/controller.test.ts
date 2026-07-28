@@ -23,7 +23,7 @@ const createApi = (): LeadConnectorEmbedApi => ({
         tags: [],
       },
     ],
-    total: 1,
+    total: 73,
     nextCursor: null,
   })),
   searchOpportunities: mock(async () => ({
@@ -38,7 +38,7 @@ const createApi = (): LeadConnectorEmbedApi => ({
         monetaryValue: 100,
       },
     ],
-    total: 1,
+    total: 144,
   })),
   listPipelines: mock(async () => [
     {
@@ -101,7 +101,9 @@ describe('LeadConnector embed controller', () => {
       phase: 'ready',
       sessionToken: 'embed-token',
       contacts: [{ id: 'contact-1' }],
+      contactTotal: 73,
       opportunities: [{ id: 'opportunity-1' }],
+      opportunityTotal: 144,
       pipelines: [{ id: 'pipeline-1' }],
     });
     const target = normalizeClickToCallTarget({
