@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7b817aff2663",
+  "tmuxSession": "opensaas-os-worker-23f-multi-node-registry-routing-audit-7b817aff",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/worker-23f-multi-node-registry-routing-audit",
+  "branch": "task/os/worker-23f-multi-node-registry-routing-audit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-worker-23f-multi-node-registry-routing-audit",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-worker-23f-multi-node-registry-routing-audit",
+  "prNumber": 1707,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1707",
+  "createdAt": "2026-07-28T04:58:22.821Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-worker-23f-multi-node-registry-routing-audit/.task/os/worker-23f-multi-node-registry-routing-audit/session.json"
+}
