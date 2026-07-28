@@ -1,4 +1,4 @@
-import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -508,6 +508,7 @@ const createSiteSnapshotResponse = (input: {
       'cache-control': siteSnapshotCacheControl(input.target.cachePolicy),
       'content-type': input.target.contentType ?? 'text/html; charset=utf-8',
       'x-consuelo-edge-cache-authority': SITE_SNAPSHOT_CACHE_AUTHORITY,
+      'x-consuelo-site-content-hash': createHash('sha256').update(input.html).digest('hex'),
       'x-consuelo-site-version': input.target.versionId,
     },
   });
