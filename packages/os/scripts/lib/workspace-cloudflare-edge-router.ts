@@ -118,6 +118,8 @@ const EDGE_SIGNATURE_TIMESTAMP_HEADER = 'x-consuelo-edge-timestamp';
 const EDGE_SIGNATURE_NONCE_HEADER = 'x-consuelo-edge-nonce';
 const EDGE_SIGNATURE_MAX_AGE_MS = 5 * 60 * 1000;
 const PLATFORM_SAFETY_MESSAGE = 'This workspace is protected by Consuelo platform safety.';
+const SITE_SNAPSHOT_UNAVAILABLE_MESSAGE =
+  'The workspace is connected, but this published page could not be loaded.';
 const PLATFORM_SAFETY_HELP_URL = 'https://os.consuelohq.com/help/workspace-access';
 
 const SAFE_ERROR_MESSAGES: Record<string, string> = {
@@ -130,7 +132,7 @@ const SAFE_ERROR_MESSAGES: Record<string, string> = {
     'The selected workspace node is currently unavailable.',
   WORKSPACE_EDGE_ROUTER_ERROR: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_EDGE_AUTH_REQUIRED: PLATFORM_SAFETY_MESSAGE,
-  WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE: PLATFORM_SAFETY_MESSAGE,
+  WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE: SITE_SNAPSHOT_UNAVAILABLE_MESSAGE,
 };
 
 const SITE_SNAPSHOT_CACHE_AUTHORITY = 'sites-snapshot';
@@ -178,13 +180,21 @@ const createPlatformSafetyHtml = (input: {
   const url = new URL(input.request.url);
   const visitorIp = input.request.headers.get('cf-connecting-ip')?.trim() || 'Unavailable';
   const now = new Date().toISOString();
+  const snapshotUnavailable = input.code === 'WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE';
+  const pageTitle = snapshotUnavailable
+    ? 'This workspace page is unavailable'
+    : 'This workspace is protected';
+  const eyebrow = snapshotUnavailable ? 'Service unavailable' : 'Platform safety';
+  const guidance = snapshotUnavailable
+    ? 'Try again shortly or contact the workspace owner with the request ID below.'
+    : 'This hostname is protected by Consuelo platform safety. If this is your workspace, sign in to Consuelo or contact the workspace owner with the request ID below.';
 
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>This workspace is protected</title>
+  <title>${escapeHtml(pageTitle)}</title>
   <style>
     :root { color-scheme: light dark; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #050505; color: #f4f4f1; }
@@ -203,10 +213,10 @@ const createPlatformSafetyHtml = (input: {
   <main>
     <section class="card">
       <div class="brand">consuelo.</div>
-      <p class="eyebrow">Platform safety</p>
-      <h1>This workspace is protected</h1>
+      <p class="eyebrow">${escapeHtml(eyebrow)}</p>
+      <h1>${escapeHtml(pageTitle)}</h1>
       <p>${escapeHtml(input.message)}</p>
-      <p>This hostname is protected by Consuelo platform safety. If this is your workspace, sign in to Consuelo or contact the workspace owner with the request ID below.</p>
+      <p>${escapeHtml(guidance)}</p>
       <dl>
         <dt>Error code</dt><dd>${escapeHtml(input.code)}</dd>
         <dt>Request ID</dt><dd>${escapeHtml(input.requestId)}</dd>

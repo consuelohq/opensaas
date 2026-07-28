@@ -1144,5 +1144,45 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(body).toContain('WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE');
     expect(body).not.toMatch(/manifestKey|bucket|sites\/workspace_123|secret/i);
   });
+
+  it('should describe missing snapshots as unavailable rather than requiring sign-in', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve() {
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: 'kokayi.consuelohq.com',
+            route: '/tools',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'tools',
+              versionId: 'version_1',
+              manifestKey: 'sites/workspace_123/tools/version_1/index.html',
+              cachePolicy: 'static-shell',
+            },
+          };
+        },
+      },
+      siteSnapshots: { r2: { get: async () => null } },
+    });
+
+    const response = await router.fetch(new Request(
+      'https://kokayi.consuelohq.com/tools',
+      { headers: { accept: 'text/html' } },
+    ));
+    const body = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(body).toContain('This workspace page is unavailable');
+    expect(body).toContain('could not be loaded');
+    expect(body).not.toContain('sign in to Consuelo');
+    expect(body).not.toMatch(/manifestKey|bucket|sites\/workspace_123|secret/i);
+  });
 });
 

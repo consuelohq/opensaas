@@ -136,6 +136,7 @@ export async function registerApprovedWorkspaceRoute(input: {
       baseDomain: baseDomainFromHost(workspace.workspaceHost),
       siteSnapshotKey: snapshot.key,
       siteVersionId: snapshot.versionId,
+      publishedSiteIds: [snapshot.siteId],
       connectorId: connector.connectorId,
       tunnelOriginUrl: connector.tunnelOriginUrl,
       localServiceUrl: connector.localServiceUrl,
