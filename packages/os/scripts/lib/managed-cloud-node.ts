@@ -124,6 +124,107 @@ export const MANAGED_NODE_DATA_RETENTION = {
   permanentDataDeletionRequiresExplicitAction: true,
 } as const;
 
+export const PERMANENT_DATA_DELETE_CONFIRMATION =
+  'DELETE_MANAGED_NODE_DATA_PERMANENTLY';
+
+export type ManagedCloudNodeReleaseBootstrap = {
+  channel: 'stable' | 'beta' | 'canary' | 'dev';
+  baseUrl: string;
+  bootstrapBundleUrl: string;
+  bootstrapBundleDigest: string;
+  bootstrapBundleId: string;
+  bootstrapBundleVersion: string;
+  cloudflaredBinaryUrl: string;
+  cloudflaredBinaryDigest: string;
+  cloudflaredVersion: string;
+  trustedPublicKeys: Record<string, string>;
+};
+
+export type ManagedCloudNodeDataDisk = {
+  name: string;
+  sizeGb: number;
+  type: string;
+  deviceName: string;
+  autoDelete: false;
+  snapshotPolicies: string[];
+};
+
+export type ManagedCloudNodeInstance = {
+  name: string;
+  machineType: string;
+  network: string;
+  subnet: string;
+  noExternalIp: true;
+  serviceAccountEmail: string;
+  scopes: string[];
+  tags: string[];
+  bootDisk: {
+    sizeGb: number;
+    type: string;
+    imageFamily: string;
+    imageProject: string;
+    autoDelete: true;
+  };
+  dataDisk: {
+    name: string;
+    deviceName: string;
+    autoDelete: false;
+  };
+  shielded: {
+    secureBoot: true;
+    vTPM: true;
+    integrityMonitoring: true;
+  };
+  metadata: Record<string, string>;
+};
+
+export type ManagedCloudNodePlan = {
+  provider: 'gcp';
+  projectId: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  nodeId: string;
+  nodeName: string;
+  region: string;
+  zone: string;
+  labels: Record<string, string>;
+  release: ManagedCloudNodeReleaseBootstrap;
+  dataDisk: ManagedCloudNodeDataDisk;
+  instance: ManagedCloudNodeInstance;
+  bootstrap: {
+    home: string;
+    mountPath: string;
+    statusPath: string;
+    enrollmentStatusPath: string;
+    startupScript: string;
+  };
+};
+
+export type ManagedCloudNodeClient = {
+  ensureDataDisk: (input: ManagedCloudNodeDataDisk & {
+    projectId: string;
+    zone: string;
+    labels: Record<string, string>;
+  }) => Promise<FoundationResourceStatus>;
+  ensureSnapshotPolicyAttachment: (input: {
+    projectId: string;
+    zone: string;
+    diskName: string;
+    policyName: string;
+  }) => Promise<FoundationResourceStatus>;
+  ensureInstance: (input: ManagedCloudNodeInstance & {
+    projectId: string;
+    zone: string;
+    labels: Record<string, string>;
+  }) => Promise<FoundationResourceStatus>;
+};
+
+export type ManagedCloudNodeOperation = {
+  resource: string;
+  status: 'planned' | FoundationResourceStatus;
+};
+
 const DEFAULT_SERVICES = [
   'billingbudgets.googleapis.com',
   'cloudbilling.googleapis.com',
@@ -145,6 +246,476 @@ const requireNonEmpty = (value: string, name: string): string => {
     );
   }
   return normalized;
+};
+
+const requireHttpsUrl = (value: string, name: string): string => {
+  const normalized = requireNonEmpty(value, name);
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch (error: unknown) {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_INPUT_INVALID',
+      `${name} must be an absolute HTTPS URL`,
+      { cause: error },
+    );
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_INPUT_INVALID',
+      `${name} must use HTTPS`,
+    );
+  }
+  return parsed.toString().replace(/\/$/, '');
+};
+
+const requireSha256 = (value: string, name: string): string => {
+  const normalized = requireNonEmpty(value, name).toLowerCase();
+  if (!/^sha256:[a-f0-9]{64}$/.test(normalized)) {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_INPUT_INVALID',
+      `${name} must use sha256:<64 lowercase hex>`,
+    );
+  }
+  return normalized;
+};
+
+const normalizeResourceLabel = (value: string, name: string): string => {
+  const normalized = requireNonEmpty(value, name)
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-')
+    .slice(0, 50)
+    .replace(/-+$/g, '');
+  if (!normalized) {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_INPUT_INVALID',
+      `${name} does not contain a resource-safe label`,
+    );
+  }
+  return normalized;
+};
+
+const shellSingleQuote = (value: string): string =>
+  `'${value.replaceAll("'", `'\"'\"'`)}'`;
+
+const renderManagedCloudNodeStartupScript = (input: {
+  projectId: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  nodeId: string;
+  nodeName: string;
+  release: ManagedCloudNodeReleaseBootstrap;
+  home: string;
+  statusPath: string;
+  enrollmentStatusPath: string;
+}): string => {
+  const releaseKeys = JSON.stringify(input.release.trustedPublicKeys);
+  const digest = input.release.bootstrapBundleDigest.slice('sha256:'.length);
+  const cloudflaredDigest = input.release.cloudflaredBinaryDigest.slice(
+    'sha256:'.length,
+  );
+  const bundleDirectory = input.release.bootstrapBundleId.replace(':', '-');
+  const onboarding = JSON.stringify({
+    schemaVersion: 1,
+    projectId: input.projectId,
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug,
+    workspaceHost: input.workspaceHost,
+    nodeId: input.nodeId,
+    nodeName: input.nodeName,
+    authorityOrigin: 'https://os.consuelohq.com',
+  });
+
+  return [
+    '#!/usr/bin/env bash',
+    'set -euo pipefail',
+    '',
+    `CONSUELO_HOME=${shellSingleQuote(input.home)}`,
+    `STATUS_PATH=${shellSingleQuote(input.statusPath)}`,
+    `ENROLLMENT_STATUS_PATH=${shellSingleQuote(input.enrollmentStatusPath)}`,
+    "DATA_DEVICE='/dev/disk/by-id/google-consuelo-data'",
+    "BOOTSTRAP_ROOT='/opt/consuelo/bootstrap'",
+    `BUNDLE_DIR="$BOOTSTRAP_ROOT/${bundleDirectory}"`,
+    'BUNDLE_ARCHIVE="$BOOTSTRAP_ROOT/runtime.tar.gz"',
+    'CLOUDFLARED_PATH="$CONSUELO_HOME/bin/cloudflared"',
+    '',
+    'write_status() {',
+    '  local phase="$1"',
+    '  local detail="${2:-}"',
+    '  install -d -m 0700 "$(dirname "$STATUS_PATH")"',
+    '  printf \'{"schemaVersion":1,"phase":"%s","detail":"%s"}\\n\' "$phase" "$detail" > "$STATUS_PATH"',
+    '  chmod 0600 "$STATUS_PATH"',
+    '}',
+    "trap 'write_status failed bootstrap-error' ERR",
+    'write_status preparing-disk',
+    '',
+    'for attempt in $(seq 1 60); do',
+    '  [ -e "$DATA_DEVICE" ] && break',
+    '  sleep 2',
+    'done',
+    '[ -e "$DATA_DEVICE" ]',
+    'if ! blkid "$DATA_DEVICE" >/dev/null 2>&1; then',
+    '  mkfs.ext4 -F -L consuelo-data "$DATA_DEVICE"',
+    'fi',
+    'install -d -m 0700 "$CONSUELO_HOME"',
+    'if ! mountpoint -q "$CONSUELO_HOME"; then',
+    '  DATA_UUID="$(blkid -s UUID -o value "$DATA_DEVICE")"',
+    '  grep -q "UUID=$DATA_UUID " /etc/fstab || printf \'UUID=%s %s ext4 defaults,nofail 0 2\\n\' "$DATA_UUID" "$CONSUELO_HOME" >> /etc/fstab',
+    '  mount "$CONSUELO_HOME"',
+    'fi',
+    '',
+    'id consuelo >/dev/null 2>&1 || useradd --create-home --shell /bin/bash consuelo',
+    'chown -R consuelo:consuelo "$CONSUELO_HOME"',
+    'loginctl enable-linger consuelo',
+    'CONSUELO_UID="$(id -u consuelo)"',
+    'systemctl start "user@${CONSUELO_UID}.service"',
+    '',
+    'write_status installing-dependencies',
+    'export DEBIAN_FRONTEND=noninteractive',
+    'apt-get update -y',
+    'apt-get install -y ca-certificates curl tar gzip unzip',
+    'if [ ! -x /home/consuelo/.bun/bin/bun ]; then',
+    '  runuser -u consuelo -- bash -lc "curl -fsSL https://bun.sh/install | bash"',
+    'fi',
+    '',
+    'write_status downloading-runtime',
+    'install -d -m 0755 "$BOOTSTRAP_ROOT" "$BUNDLE_DIR"',
+    `curl -fsSL ${shellSingleQuote(input.release.bootstrapBundleUrl)} -o "$BUNDLE_ARCHIVE"`,
+    `printf '%s  %s\\n' ${shellSingleQuote(digest)} "$BUNDLE_ARCHIVE" | sha256sum -c -`,
+    'tar -xzf "$BUNDLE_ARCHIVE" -C "$BUNDLE_DIR"',
+    '',
+    'write_status installing-cloudflared',
+    'install -d -m 0755 "$CONSUELO_HOME/bin"',
+    `curl -fsSL ${shellSingleQuote(input.release.cloudflaredBinaryUrl)} -o "$CLOUDFLARED_PATH"`,
+    `printf '%s  %s\\n' ${shellSingleQuote(cloudflaredDigest)} "$CLOUDFLARED_PATH" | sha256sum -c -`,
+    'chmod 0755 "$CLOUDFLARED_PATH"',
+    'chown consuelo:consuelo "$CLOUDFLARED_PATH"',
+    '',
+    'install -d -m 0700 "$CONSUELO_HOME/bootstrap"',
+    `printf '%s\\n' ${shellSingleQuote(onboarding)} > "$CONSUELO_HOME/bootstrap/onboarding.json"`,
+    'chmod 0600 "$CONSUELO_HOME/bootstrap/onboarding.json"',
+    'chown -R consuelo:consuelo "$CONSUELO_HOME"',
+    '',
+    'write_status activating-runtime',
+    'runuser -u consuelo -- env \\',
+    '  XDG_RUNTIME_DIR="/run/user/$CONSUELO_UID" \\',
+    '  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$CONSUELO_UID/bus" \\',
+    '  CONSUELO_HOME="$CONSUELO_HOME" \\',
+    `  CONSUELO_RELEASE_BASE_URL=${shellSingleQuote(input.release.baseUrl)} \\`,
+    `  CONSUELO_RELEASE_PUBLIC_KEYS_JSON=${shellSingleQuote(releaseKeys)} \\`,
+    '  CONSUELO_MANAGED_CLOUD_NODE_ONBOARDING_FILE="$CONSUELO_HOME/bootstrap/onboarding.json" \\',
+    `  /home/consuelo/.bun/bin/bun "$BUNDLE_DIR/scripts/lifecycle.ts" install --channel ${input.release.channel} --home "$CONSUELO_HOME" --json`,
+    '',
+    'write_status awaiting-enrollment',
+    'runuser -u consuelo -- env \\',
+    '  XDG_RUNTIME_DIR="/run/user/$CONSUELO_UID" \\',
+    '  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$CONSUELO_UID/bus" \\',
+    '  CONSUELO_HOME="$CONSUELO_HOME" \\',
+    '  nohup /home/consuelo/.bun/bin/bun "$CONSUELO_HOME/runtime/current/scripts/managed-cloud-node-enroll.ts" \\',
+    '    --home "$CONSUELO_HOME" \\',
+    '    --onboarding "$CONSUELO_HOME/bootstrap/onboarding.json" \\',
+    '    --status "$ENROLLMENT_STATUS_PATH" \\',
+    '    > "$CONSUELO_HOME/bootstrap/enrollment.log" 2>&1 &',
+    '',
+    'write_status runtime-active enrollment-pending',
+    '',
+  ].join('\n');
+};
+
+export const planManagedCloudNode = (input: {
+  projectId: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  nodeId: string;
+  nodeName: string;
+  region?: string;
+  zone?: string;
+  machineType?: string;
+  release: ManagedCloudNodeReleaseBootstrap;
+}): ManagedCloudNodePlan => {
+  const projectId = requireNonEmpty(input.projectId, 'projectId');
+  const workspaceId = requireNonEmpty(input.workspaceId, 'workspaceId');
+  const workspaceSlug = normalizeResourceLabel(
+    input.workspaceSlug,
+    'workspaceSlug',
+  );
+  const workspaceHost = requireNonEmpty(input.workspaceHost, 'workspaceHost');
+  const nodeId = normalizeResourceLabel(input.nodeId, 'nodeId');
+  const nodeName = requireNonEmpty(input.nodeName, 'nodeName');
+  const region = input.region?.trim() || 'us-east1';
+  const zone = input.zone?.trim() || `${region}-b`;
+  if (!zone.startsWith(`${region}-`)) {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_INPUT_INVALID',
+      `zone ${zone} is not in region ${region}`,
+    );
+  }
+  const release: ManagedCloudNodeReleaseBootstrap = {
+    channel: input.release.channel,
+    baseUrl: requireHttpsUrl(input.release.baseUrl, 'release.baseUrl'),
+    bootstrapBundleUrl: requireHttpsUrl(
+      input.release.bootstrapBundleUrl,
+      'release.bootstrapBundleUrl',
+    ),
+    bootstrapBundleDigest: requireSha256(
+      input.release.bootstrapBundleDigest,
+      'release.bootstrapBundleDigest',
+    ),
+    bootstrapBundleId: requireSha256(
+      input.release.bootstrapBundleId,
+      'release.bootstrapBundleId',
+    ),
+    bootstrapBundleVersion: requireNonEmpty(
+      input.release.bootstrapBundleVersion,
+      'release.bootstrapBundleVersion',
+    ),
+    cloudflaredBinaryUrl: requireHttpsUrl(
+      input.release.cloudflaredBinaryUrl,
+      'release.cloudflaredBinaryUrl',
+    ),
+    cloudflaredBinaryDigest: requireSha256(
+      input.release.cloudflaredBinaryDigest,
+      'release.cloudflaredBinaryDigest',
+    ),
+    cloudflaredVersion: requireNonEmpty(
+      input.release.cloudflaredVersion,
+      'release.cloudflaredVersion',
+    ),
+    trustedPublicKeys: Object.fromEntries(
+      Object.entries(input.release.trustedPublicKeys)
+        .map(([key, value]) => [key.trim(), value.trim()] as const)
+        .filter(([key, value]) => key && value),
+    ),
+  };
+  if (Object.keys(release.trustedPublicKeys).length === 0) {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_INPUT_INVALID',
+      'release.trustedPublicKeys must contain at least one key',
+    );
+  }
+
+  const instanceName = `consuelo-${nodeId}`.slice(0, 63).replace(/-+$/g, '');
+  const dataDiskName = `${instanceName}-data`
+    .slice(0, 63)
+    .replace(/-+$/g, '');
+  const labels = {
+    'consuelo-managed': 'true',
+    'consuelo-environment': 'development',
+    'consuelo-product': 'os-cloud',
+    'consuelo-node-id': nodeId,
+    'consuelo-workspace-id': normalizeResourceLabel(
+      workspaceId,
+      'workspaceId',
+    ),
+  };
+  const home = '/var/lib/consuelo';
+  const statusPath = `${home}/bootstrap/status.json`;
+  const enrollmentStatusPath = `${home}/bootstrap/enrollment-status.json`;
+  const dataDisk: ManagedCloudNodeDataDisk = {
+    name: dataDiskName,
+    sizeGb: 100,
+    type: 'pd-balanced',
+    deviceName: 'consuelo-data',
+    autoDelete: false,
+    snapshotPolicies: [
+      'consuelo-os-data-daily-90d',
+      'consuelo-os-data-weekly-1y',
+    ],
+  };
+  const instance: ManagedCloudNodeInstance = {
+    name: instanceName,
+    machineType: input.machineType?.trim() || 'e2-standard-2',
+    network: 'consuelo-os-cloud',
+    subnet: `consuelo-os-cloud-${region}`,
+    noExternalIp: true,
+    serviceAccountEmail: `consuelo-os-node@${projectId}.iam.gserviceaccount.com`,
+    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    tags: ['consuelo-os-cloud-admin', 'consuelo-os-cloud-node'],
+    bootDisk: {
+      sizeGb: 30,
+      type: 'pd-balanced',
+      imageFamily: 'debian-12',
+      imageProject: 'debian-cloud',
+      autoDelete: true,
+    },
+    dataDisk: {
+      name: dataDisk.name,
+      deviceName: dataDisk.deviceName,
+      autoDelete: false,
+    },
+    shielded: {
+      secureBoot: true,
+      vTPM: true,
+      integrityMonitoring: true,
+    },
+    metadata: {
+      'enable-oslogin': 'TRUE',
+      'block-project-ssh-keys': 'TRUE',
+      'serial-port-enable': 'TRUE',
+    },
+  };
+  const startupScript = renderManagedCloudNodeStartupScript({
+    projectId,
+    workspaceId,
+    workspaceSlug,
+    workspaceHost,
+    nodeId,
+    nodeName,
+    release,
+    home,
+    statusPath,
+    enrollmentStatusPath,
+  });
+
+  return {
+    provider: 'gcp',
+    projectId,
+    workspaceId,
+    workspaceSlug,
+    workspaceHost,
+    nodeId,
+    nodeName,
+    region,
+    zone,
+    labels,
+    release,
+    dataDisk,
+    instance: {
+      ...instance,
+      metadata: {
+        ...instance.metadata,
+        'startup-script': startupScript,
+      },
+    },
+    bootstrap: {
+      home,
+      mountPath: home,
+      statusPath,
+      enrollmentStatusPath,
+      startupScript,
+    },
+  };
+};
+
+const plannedManagedNodeOperations = (
+  plan: ManagedCloudNodePlan,
+): ManagedCloudNodeOperation[] => [
+  { resource: `data-disk:${plan.dataDisk.name}`, status: 'planned' },
+  ...plan.dataDisk.snapshotPolicies.map((policy) => ({
+    resource: `snapshot-policy-attachment:${plan.dataDisk.name}:${policy}`,
+    status: 'planned' as const,
+  })),
+  { resource: `instance:${plan.instance.name}`, status: 'planned' },
+];
+
+export const applyManagedCloudNode = async (input: {
+  client: ManagedCloudNodeClient;
+  plan: ManagedCloudNodePlan;
+  dryRun?: boolean;
+}): Promise<{
+  status: 'planned' | 'provisioned';
+  operations: ManagedCloudNodeOperation[];
+}> => {
+  if (input.dryRun) {
+    return {
+      status: 'planned',
+      operations: plannedManagedNodeOperations(input.plan),
+    };
+  }
+  const operations: ManagedCloudNodeOperation[] = [];
+  const record = async (
+    resource: string,
+    operation: () => Promise<FoundationResourceStatus>,
+  ): Promise<void> => {
+    try {
+      operations.push({ resource, status: await operation() });
+    } catch (error: unknown) {
+      throw new ManagedCloudNodeError(
+        'MANAGED_NODE_PROVISION_FAILED',
+        `managed cloud node provisioning failed at ${resource}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        { cause: error },
+      );
+    }
+  };
+
+  await record(`data-disk:${input.plan.dataDisk.name}`, () =>
+    input.client.ensureDataDisk({
+      ...input.plan.dataDisk,
+      projectId: input.plan.projectId,
+      zone: input.plan.zone,
+      labels: input.plan.labels,
+    }),
+  );
+  for (const policyName of input.plan.dataDisk.snapshotPolicies) {
+    await record(
+      `snapshot-policy-attachment:${input.plan.dataDisk.name}:${policyName}`,
+      () =>
+        input.client.ensureSnapshotPolicyAttachment({
+          projectId: input.plan.projectId,
+          zone: input.plan.zone,
+          diskName: input.plan.dataDisk.name,
+          policyName,
+        }),
+    );
+  }
+  await record(`instance:${input.plan.instance.name}`, () =>
+    input.client.ensureInstance({
+      ...input.plan.instance,
+      projectId: input.plan.projectId,
+      zone: input.plan.zone,
+      labels: input.plan.labels,
+    }),
+  );
+  return { status: 'provisioned', operations };
+};
+
+export const planManagedCloudNodeReplacement = (input: {
+  plan: ManagedCloudNodePlan;
+}): {
+  deleteInstance: true;
+  deleteBootDisk: true;
+  preserveDataDisk: true;
+  attachDataDisk: string;
+  recreateInstance: string;
+} => ({
+  deleteInstance: true,
+  deleteBootDisk: true,
+  preserveDataDisk: true,
+  attachDataDisk: input.plan.dataDisk.name,
+  recreateInstance: input.plan.instance.name,
+});
+
+export const planManagedCloudNodeDeletion = (input: {
+  plan: ManagedCloudNodePlan;
+  deleteData?: boolean;
+  confirmation?: string;
+}): {
+  deleteInstance: true;
+  deleteBootDisk: true;
+  deleteDataDisk: boolean;
+  dataDiskName: string;
+} => {
+  if (
+    input.deleteData &&
+    input.confirmation !== PERMANENT_DATA_DELETE_CONFIRMATION
+  ) {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_PERMANENT_DELETE_CONFIRMATION_REQUIRED',
+      'permanent data deletion requires explicit confirmation',
+    );
+  }
+  return {
+    deleteInstance: true,
+    deleteBootDisk: true,
+    deleteDataDisk: Boolean(input.deleteData),
+    dataDiskName: input.plan.dataDisk.name,
+  };
 };
 
 export const planManagedCloudNodeFoundation = (input: {

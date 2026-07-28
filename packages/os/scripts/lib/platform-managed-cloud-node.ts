@@ -1,11 +1,18 @@
 import {
+  applyManagedCloudNode,
   applyManagedCloudNodeFoundation,
+  planManagedCloudNode,
   planManagedCloudNodeFoundation,
+  type ManagedCloudNodeClient,
   type ManagedCloudNodeFoundationClient,
   type ManagedCloudNodeFoundationPlan,
   type ManagedCloudNodeFoundationOperation,
+  type ManagedCloudNodeOperation,
+  type ManagedCloudNodePlan,
+  type ManagedCloudNodeReleaseBootstrap,
 } from './managed-cloud-node';
 import {
+  createGcloudManagedCloudNodeClient,
   createGcloudManagedCloudNodeFoundationClient,
   createLocalGcloudCommandRunner,
 } from './gcloud-managed-cloud-node';
@@ -51,6 +58,68 @@ export const provisionManagedCloudNodeFoundation = async (
   } catch (error: unknown) {
     throw new Error(
       `managed cloud node platform provisioning failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
+    );
+  }
+  return {
+    ...result,
+    plan,
+  };
+};
+
+export type ProvisionManagedCloudNodeInput = {
+  projectId: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  nodeId: string;
+  nodeName: string;
+  region?: string;
+  zone?: string;
+  machineType?: string;
+  release: ManagedCloudNodeReleaseBootstrap;
+  dryRun?: boolean;
+  client?: ManagedCloudNodeClient;
+};
+
+export type ProvisionManagedCloudNodeResult = {
+  status: 'planned' | 'provisioned';
+  plan: ManagedCloudNodePlan;
+  operations: ManagedCloudNodeOperation[];
+};
+
+export const provisionManagedCloudNode = async (
+  input: ProvisionManagedCloudNodeInput,
+): Promise<ProvisionManagedCloudNodeResult> => {
+  const plan = planManagedCloudNode({
+    projectId: input.projectId,
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug,
+    workspaceHost: input.workspaceHost,
+    nodeId: input.nodeId,
+    nodeName: input.nodeName,
+    region: input.region,
+    zone: input.zone,
+    machineType: input.machineType,
+    release: input.release,
+  });
+  const client =
+    input.client ??
+    createGcloudManagedCloudNodeClient({
+      run: createLocalGcloudCommandRunner(),
+    });
+  let result: Awaited<ReturnType<typeof applyManagedCloudNode>>;
+  try {
+    result = await applyManagedCloudNode({
+      client,
+      plan,
+      dryRun: input.dryRun,
+    });
+  } catch (error: unknown) {
+    throw new Error(
+      `managed cloud node instance provisioning failed: ${
         error instanceof Error ? error.message : String(error)
       }`,
       { cause: error },

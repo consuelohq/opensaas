@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -32,6 +33,17 @@ export type LifecycleCliIo = {
 
 export type LifecycleCliDependencies = Partial<LifecycleCliIo> & {
   engine?: LifecycleEngine;
+};
+
+type ManagedCloudNodeOnboardingDescriptor = {
+  schemaVersion: 1;
+  projectId?: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  nodeId: string;
+  nodeName: string;
+  authorityOrigin?: string;
 };
 
 type ParsedLifecycleArgs = {
@@ -122,6 +134,123 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
   }
   return parsed;
 }
+
+const managedOnboardingString = (
+  record: Record<string, unknown>,
+  key: keyof ManagedCloudNodeOnboardingDescriptor,
+): string => {
+  const value = record[key];
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`managed cloud node onboarding requires ${key}`);
+  }
+  return value.trim();
+};
+
+const assertNoManagedOnboardingSecrets = (value: unknown): void => {
+  if (!value || typeof value !== 'object') return;
+  for (const [key, nested] of Object.entries(value)) {
+    if (
+      /(?:token|secret|private.?key|access.?key|refresh.?key|credential)/i.test(
+        key,
+      )
+    ) {
+      throw new Error(
+        `managed cloud node onboarding descriptor cannot contain secret field ${key}`,
+      );
+    }
+    assertNoManagedOnboardingSecrets(nested);
+  }
+};
+
+const readManagedCloudNodeOnboardingDescriptor = (
+  path: string,
+): ManagedCloudNodeOnboardingDescriptor => {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error: unknown) {
+    throw new Error(
+      `failed to read managed cloud node onboarding descriptor ${path}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
+    );
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('managed cloud node onboarding descriptor must be an object');
+  }
+  assertNoManagedOnboardingSecrets(parsed);
+  const record = parsed as Record<string, unknown>;
+  if (record.schemaVersion !== 1) {
+    throw new Error('managed cloud node onboarding schemaVersion must be 1');
+  }
+  const workspaceSlug = managedOnboardingString(record, 'workspaceSlug');
+  const workspaceHost = managedOnboardingString(record, 'workspaceHost');
+  const normalizedHost = workspaceHost.toLowerCase().replace(/^https?:\/\//, '');
+  if (
+    normalizedHost !== workspaceSlug.toLowerCase() &&
+    !normalizedHost.startsWith(`${workspaceSlug.toLowerCase()}.`)
+  ) {
+    throw new Error(
+      'managed cloud node workspaceHost must belong to workspaceSlug',
+    );
+  }
+  return {
+    schemaVersion: 1,
+    ...(typeof record.projectId === 'string' && record.projectId.trim()
+      ? { projectId: record.projectId.trim() }
+      : {}),
+    workspaceId: managedOnboardingString(record, 'workspaceId'),
+    workspaceSlug,
+    workspaceHost,
+    nodeId: managedOnboardingString(record, 'nodeId'),
+    nodeName: managedOnboardingString(record, 'nodeName'),
+    ...(typeof record.authorityOrigin === 'string' &&
+    record.authorityOrigin.trim()
+      ? { authorityOrigin: record.authorityOrigin.trim() }
+      : {}),
+  };
+};
+
+export const createLifecycleOnboardingCommand = (input: {
+  osRoot: string;
+  home?: string;
+  onboardingFile?: string;
+}): {
+  kind: 'interactive' | 'managed-cloud-node';
+  args: string[];
+} => {
+  const installer = resolve(input.osRoot, 'scripts', 'install.ts');
+  if (!input.onboardingFile) {
+    return {
+      kind: 'interactive',
+      args: [
+        installer,
+        '--skip-daemons',
+        ...(input.home ? ['--home', input.home] : []),
+      ],
+    };
+  }
+  const descriptor = readManagedCloudNodeOnboardingDescriptor(
+    input.onboardingFile,
+  );
+  return {
+    kind: 'managed-cloud-node',
+    args: [
+      installer,
+      '--yes',
+      '--quiet',
+      '--skip-daemons',
+      '--mode',
+      'cloud',
+      ...(input.home ? ['--home', input.home] : []),
+      '--workspace-url',
+      descriptor.workspaceHost,
+      '--workspace-slug',
+      descriptor.workspaceSlug,
+    ],
+  };
+};
 
 function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   const rejectPositionals = (): void => {
@@ -288,11 +417,13 @@ export const createDefaultLifecycleEngine = (input: {
     progress: input.quiet || input.json ? undefined : input.progress,
     onboarding: async () => {
       try {
-        const args = [
-          resolve(osRoot, 'scripts', 'install.ts'),
-          '--skip-daemons',
-        ];
-        if (input.home) args.push('--home', input.home);
+        const onboarding = createLifecycleOnboardingCommand({
+          osRoot,
+          home: input.home,
+          onboardingFile:
+            process.env.CONSUELO_MANAGED_CLOUD_NODE_ONBOARDING_FILE,
+        });
+        const args = onboarding.args;
         const child = Bun.spawn([process.execPath, ...args], {
           cwd: osRoot,
           env: process.env,
@@ -305,7 +436,7 @@ export const createDefaultLifecycleEngine = (input: {
           throw new Error(`installer exited with code ${exitCode}`);
       } catch (error: unknown) {
         throw new Error(
-          `interactive onboarding failed: ${error instanceof Error ? error.message : String(error)}`,
+          `lifecycle onboarding failed: ${error instanceof Error ? error.message : String(error)}`,
           { cause: error },
         );
       }

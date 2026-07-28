@@ -1,6 +1,12 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import type {
   FoundationResourceStatus,
+  ManagedCloudNodeClient,
   ManagedCloudNodeFoundationClient,
+  ManagedCloudNodeInstance,
 } from './managed-cloud-node';
 
 export type GcloudCommandResult = {
@@ -114,6 +120,110 @@ const recordStrings = (record: JsonRecord, key: string): string[] =>
         (value): value is string => typeof value === 'string',
       )
     : [];
+
+const recordEntries = (record: JsonRecord, key: string): JsonRecord[] =>
+  Array.isArray(record[key])
+    ? (record[key] as unknown[]).filter(isRecord)
+    : [];
+
+const labelsMatch = (
+  existing: unknown,
+  expected: Record<string, string>,
+): boolean => {
+  if (!isRecord(existing)) return false;
+  return Object.entries(expected).every(([key, value]) => existing[key] === value);
+};
+
+const metadataRecord = (resource: JsonRecord): Record<string, string> => {
+  const metadata = isRecord(resource.metadata) ? resource.metadata : {};
+  return Object.fromEntries(
+    recordEntries(metadata, 'items')
+      .map((item) => [recordString(item, 'key'), recordString(item, 'value')] as const)
+      .filter(([key]) => key),
+  );
+};
+
+const ensureDataDiskMatches = (
+  input: {
+    name: string;
+    zone: string;
+    sizeGb: number;
+    type: string;
+    labels: Record<string, string>;
+  },
+  resource: JsonRecord,
+): void => {
+  if (
+    recordString(resource, 'name') !== input.name ||
+    resourceTail(resource.zone) !== input.zone ||
+    recordNumber(resource, 'sizeGb') !== input.sizeGb ||
+    resourceTail(resource.type) !== input.type ||
+    !labelsMatch(resource.labels, input.labels)
+  ) {
+    failDrift(input.name, 'data disk does not match size, type, zone, or labels');
+  }
+};
+
+const ensureInstanceMatches = (
+  input: ManagedCloudNodeInstance & {
+    projectId: string;
+    zone: string;
+    labels: Record<string, string>;
+  },
+  resource: JsonRecord,
+): void => {
+  const interfaces = recordEntries(resource, 'networkInterfaces');
+  const networkInterface = interfaces[0] ?? {};
+  const serviceAccounts = recordEntries(resource, 'serviceAccounts');
+  const serviceAccount = serviceAccounts[0] ?? {};
+  const tags = isRecord(resource.tags) ? recordStrings(resource.tags, 'items') : [];
+  const disks = recordEntries(resource, 'disks');
+  const bootDisk = disks.find((disk) => recordBoolean(disk, 'boot') === true);
+  const attachedDataDisk = disks.find(
+    (disk) => recordString(disk, 'deviceName') === input.dataDisk.deviceName,
+  );
+  const shielded = isRecord(resource.shieldedInstanceConfig)
+    ? resource.shieldedInstanceConfig
+    : {};
+  const existingMetadata = metadataRecord(resource);
+  const metadataMatches = Object.entries(input.metadata).every(
+    ([key, value]) => existingMetadata[key] === value,
+  );
+  const accessConfigs = Array.isArray(networkInterface.accessConfigs)
+    ? networkInterface.accessConfigs
+    : [];
+
+  if (
+    recordString(resource, 'name') !== input.name ||
+    resourceTail(resource.zone) !== input.zone ||
+    resourceTail(resource.machineType) !== input.machineType ||
+    interfaces.length !== 1 ||
+    resourceTail(networkInterface.network) !== input.network ||
+    resourceTail(networkInterface.subnetwork) !== input.subnet ||
+    accessConfigs.length !== 0 ||
+    serviceAccounts.length !== 1 ||
+    recordString(serviceAccount, 'email') !== input.serviceAccountEmail ||
+    !sameStrings(recordStrings(serviceAccount, 'scopes'), input.scopes) ||
+    !sameStrings(tags, input.tags) ||
+    !labelsMatch(resource.labels, input.labels) ||
+    !bootDisk ||
+    recordBoolean(bootDisk, 'autoDelete') !== input.bootDisk.autoDelete ||
+    !attachedDataDisk ||
+    recordBoolean(attachedDataDisk, 'boot') !== false ||
+    recordBoolean(attachedDataDisk, 'autoDelete') !== false ||
+    resourceTail(attachedDataDisk.source) !== input.dataDisk.name ||
+    recordBoolean(shielded, 'enableSecureBoot') !== input.shielded.secureBoot ||
+    recordBoolean(shielded, 'enableVtpm') !== input.shielded.vTPM ||
+    recordBoolean(shielded, 'enableIntegrityMonitoring') !==
+      input.shielded.integrityMonitoring ||
+    !metadataMatches
+  ) {
+    failDrift(
+      input.name,
+      'instance differs in compute, network, identity, disks, Shielded VM, labels, or metadata',
+    );
+  }
+};
 
 const ensureNetworkMatches = (name: string, resource: JsonRecord): void => {
   const autoCreateSubnetworks = recordBoolean(resource, 'autoCreateSubnetworks');
@@ -642,6 +752,200 @@ export const createGcloudManagedCloudNodeFoundationClient = (input: {
       ]),
       '--quiet',
     ]);
+    return 'created';
+  },
+});
+
+export const createGcloudManagedCloudNodeClient = (input: {
+  run: GcloudCommandRunner;
+}): ManagedCloudNodeClient => ({
+  ensureDataDisk: async (disk) => {
+    const describeArgs = [
+      'compute',
+      'disks',
+      'describe',
+      disk.name,
+      '--project',
+      disk.projectId,
+      '--zone',
+      disk.zone,
+      '--format',
+      'json',
+    ];
+    let resource: JsonRecord | null;
+    try {
+      resource = await readJsonResource(input.run, describeArgs);
+    } catch (error: unknown) {
+      throw withContext(`failed to inspect data disk ${disk.name}`, error);
+    }
+    if (resource) {
+      ensureDataDiskMatches(disk, resource);
+      return 'unchanged';
+    }
+    try {
+      await runRequired(input.run, [
+        'compute',
+        'disks',
+        'create',
+        disk.name,
+        '--project',
+        disk.projectId,
+        '--zone',
+        disk.zone,
+        '--size',
+        `${disk.sizeGb}GB`,
+        '--type',
+        disk.type,
+        '--labels',
+        labelsArgument(disk.labels),
+        '--quiet',
+      ]);
+    } catch (error: unknown) {
+      throw withContext(`failed to create data disk ${disk.name}`, error);
+    }
+    return 'created';
+  },
+
+  ensureSnapshotPolicyAttachment: async (attachment) => {
+    const describeArgs = [
+      'compute',
+      'disks',
+      'describe',
+      attachment.diskName,
+      '--project',
+      attachment.projectId,
+      '--zone',
+      attachment.zone,
+      '--format',
+      'json',
+    ];
+    let resource: JsonRecord | null;
+    try {
+      resource = await readJsonResource(input.run, describeArgs);
+    } catch (error: unknown) {
+      throw withContext(
+        `failed to inspect snapshot policy attachment for ${attachment.diskName}`,
+        error,
+      );
+    }
+    if (
+      resource &&
+      recordStrings(resource, 'resourcePolicies').some(
+        (policy) => resourceTail(policy) === attachment.policyName,
+      )
+    ) {
+      return 'unchanged';
+    }
+    try {
+      await runRequired(input.run, [
+        'compute',
+        'disks',
+        'add-resource-policies',
+        attachment.diskName,
+        '--project',
+        attachment.projectId,
+        '--zone',
+        attachment.zone,
+        '--resource-policies',
+        attachment.policyName,
+        '--quiet',
+      ]);
+    } catch (error: unknown) {
+      throw withContext(
+        `failed to attach snapshot policy ${attachment.policyName} to ${attachment.diskName}`,
+        error,
+      );
+    }
+    return 'created';
+  },
+
+  ensureInstance: async (instance) => {
+    const describeArgs = [
+      'compute',
+      'instances',
+      'describe',
+      instance.name,
+      '--project',
+      instance.projectId,
+      '--zone',
+      instance.zone,
+      '--format',
+      'json',
+    ];
+    let resource: JsonRecord | null;
+    try {
+      resource = await readJsonResource(input.run, describeArgs);
+    } catch (error: unknown) {
+      throw withContext(`failed to inspect instance ${instance.name}`, error);
+    }
+    if (resource) {
+      ensureInstanceMatches(instance, resource);
+      return 'unchanged';
+    }
+
+    const metadata = Object.entries(instance.metadata)
+      .filter(([key]) => key !== 'startup-script')
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',');
+    const startupScript = instance.metadata['startup-script'];
+    if (!startupScript) {
+      throw new Error(`instance ${instance.name} requires startup-script metadata`);
+    }
+    const temporaryDirectory = mkdtempSync(
+      join(tmpdir(), 'consuelo-cloud-node-'),
+    );
+    const startupScriptPath = join(temporaryDirectory, 'startup.sh');
+    try {
+      writeFileSync(startupScriptPath, startupScript, { mode: 0o600 });
+      await runRequired(input.run, [
+        'compute',
+        'instances',
+        'create',
+        instance.name,
+        '--project',
+        instance.projectId,
+        '--zone',
+        instance.zone,
+        '--machine-type',
+        instance.machineType,
+        '--network',
+        instance.network,
+        '--subnet',
+        instance.subnet,
+        '--no-address',
+        '--service-account',
+        instance.serviceAccountEmail,
+        '--scopes',
+        instance.scopes.join(','),
+        '--tags',
+        sorted(instance.tags).join(','),
+        '--labels',
+        labelsArgument(instance.labels),
+        '--image-family',
+        instance.bootDisk.imageFamily,
+        '--image-project',
+        instance.bootDisk.imageProject,
+        '--boot-disk-size',
+        `${instance.bootDisk.sizeGb}GB`,
+        '--boot-disk-type',
+        instance.bootDisk.type,
+        '--boot-disk-auto-delete',
+        '--disk',
+        `name=${instance.dataDisk.name},device-name=${instance.dataDisk.deviceName},mode=rw,boot=no,auto-delete=no`,
+        '--shielded-secure-boot',
+        '--shielded-vtpm',
+        '--shielded-integrity-monitoring',
+        ...(metadata ? ['--metadata', metadata] : []),
+        '--metadata-from-file',
+        `startup-script=${startupScriptPath}`,
+        '--quiet',
+      ]);
+    } catch (error: unknown) {
+      throw withContext(`failed to create instance ${instance.name}`, error);
+    } finally {
+      rmSync(temporaryDirectory, { recursive: true, force: true });
+    }
     return 'created';
   },
 });

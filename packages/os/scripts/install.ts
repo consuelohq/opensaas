@@ -34,6 +34,7 @@ import {
   type WorkspaceBootstrap,
 } from './lib/install-state';
 import { verifyLocalAgents } from './lib/local-agent-connectivity';
+import { workspaceBootstrapFromApprovedDeviceGrant } from './lib/managed-cloud-node-enrollment';
 import { materializeSites } from './lib/sites';
 import {
   pollWorkspaceDeviceAccessToken,
@@ -481,46 +482,6 @@ export type ResolvedWorkspaceIdentity = {
   workspaceHost: string;
   workspaceBootstrap?: WorkspaceBootstrap;
 };
-
-function workspaceBootstrapFromApprovedDeviceGrant(
-  input: {
-    workspaceId: string;
-    workspaceSlug: string;
-    workspaceHost: string;
-    nodeId?: string;
-    nodeName?: string;
-    nodeRole?: 'home' | 'member';
-    nodeStatus?: 'created' | 'reconnected';
-    connectorId: string;
-    connectorBootstrapToken: string;
-    cloudflareTunnelToken?: string;
-  },
-  deviceKeyPair: WorkspaceDeviceKeyPair,
-): WorkspaceBootstrap {
-  const connectorTransport = input.cloudflareTunnelToken
-    ? 'cloudflare-tunnel'
-    : 'websocket-relay';
-
-  return {
-    workspaceId: input.workspaceId,
-    workspaceSlug: input.workspaceSlug,
-    workspaceHost: input.workspaceHost,
-    ...(input.nodeId ? { nodeId: input.nodeId } : {}),
-    ...(input.nodeName ? { nodeName: input.nodeName } : {}),
-    ...(input.nodeRole ? { nodeRole: input.nodeRole } : {}),
-    ...(input.nodeStatus ? { nodeStatus: input.nodeStatus } : {}),
-    nodePublicKeyJwk: deviceKeyPair.publicKeyJwk,
-    nodeSigningKeyJwk: deviceKeyPair.signingKeyJwk,
-    nodeCapabilities: ['mcp', 'tools'],
-    authorityOrigin: 'https://os.consuelohq.com',
-    connectorId: input.connectorId,
-    connectorTransport,
-    connectorBootstrapToken: input.connectorBootstrapToken,
-    ...(input.cloudflareTunnelToken
-      ? { cloudflareTunnelToken: input.cloudflareTunnelToken }
-      : {}),
-  };
-}
 
 export type VerifiedAgentStatusSyncResult =
   | { status: 'synced'; connectedAgentCount: number }
