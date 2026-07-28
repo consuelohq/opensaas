@@ -12,20 +12,24 @@ Worker 23 must not be performed by an agent that owned Worker 22, a launch imple
 
 Determine whether the complete approved Consuelo OS foundation is ready for final promotion. Do not infer completion from merged PRs, green CI, review bots, worker reports, or the number of completed waves. Establish original intent, inspect current code and runtime evidence, conduct normal high-signal GitHub code review, dispatch bounded repairs, and issue an evidence-backed launch decision.
 
-## Canonical review-only GitHub comparison PR
+## Canonical GitHub review surface and coordinate recovery
 
-Worker 23 must create one review-only GitHub comparison PR that exposes the complete foundation diff for inline review:
+Worker 23 should create a dedicated review-only GitHub comparison PR when practical, but the domain reviews must not be blocked merely because synthetic audit branches or that dedicated PR were not created. The mandatory invariant is an exact immutable candidate SHA plus an authoritative GitHub comparison surface that exposes the code being reviewed.
 
-1. Resolve the pre-foundation baseline SHA from the first foundation task metadata and independently confirm it from the earliest implementation PR merge base. If the sources disagree, stop and document the conflict.
-2. Resolve the ordinary all-stream promotion PR that targets `main` after Worker 22 has synchronized every required implementation stream and accepted repair. Freeze that PR's exact head SHA—not the Worker 22 task branch, the Worker 22 stream head, or any single implementation stream. Before freezing, publish an ancestry table proving that the candidate contains every required stream promotion and repair commit; stop if any required lineage is absent or the candidate is still moving.
-3. Create an immutable `audit/os-foundation-baseline` branch at the verified baseline SHA.
-4. Create or fast-forward `audit/os-foundation-final-candidate` to the frozen candidate SHA.
-5. Open `audit/os-foundation-final-candidate` into `audit/os-foundation-baseline` with title `[REVIEW ONLY] Consuelo OS foundation final audit`, labels `review-only` and `do-not-merge`, and a body containing both SHAs, the ordinary promotion PR, the original prompt inventory, and the audit sequence.
-6. Never merge this PR. It is the durable GitHub code-review surface. The ordinary candidate promotion PR remains the only promotion path.
-7. During a review round, do not move the candidate head. After any accepted domain or Worker 23h repair batch merges into the real candidate stream, increment the review-round number, freeze the ordinary all-stream promotion PR’s new head, repeat the ancestry proof, fast-forward the audit head, record the new SHA in the ledger, and rerun every affected reviewer. Repeat this cycle until Worker 23h returns `GO`, or explicitly restart the audit if candidate lineage or independence can no longer be preserved.
-8. Close the review-only PR only after Worker 23h posts its final decision. Retain GitHub comments and reports as the durable audit record.
+For the current completed foundation wave, the authorized recovery surface is ordinary promotion PR #1674 at exact immutable head `ef2530b136ec2a170915b583abfb2341899bd6ab`. Until Worker 23 records a newer numbered candidate after accepted repairs, review round 1 uses that SHA and PR #1674 as the authoritative GitHub review surface.
 
-All domain reviewers must leave inline review comments, structured review objects, consolidated agent-fix prompts, top-level summaries, and dispositions directly on this PR. If a finding cannot attach to a diff line, use a precise file-and-line top-level comment. GitHub is the source of truth; local review output is temporary evidence.
+Use this recovery order:
+
+1. Resolve the ordinary all-stream promotion PR and its exact head SHA. Verify that the SHA contains every required implementation-stream promotion and accepted repair. A merged or closed promotion PR is acceptable when its reviewed head is immutable and its diff remains available.
+2. Resolve the comparison baseline from the promotion PR base or merge base and record the exact baseline when GitHub or repository history exposes it.
+3. Preferred path: create `audit/os-foundation-baseline`, create or fast-forward `audit/os-foundation-final-candidate`, and open the labeled `[REVIEW ONLY] Consuelo OS foundation final audit` comparison PR. Never merge that review-only PR.
+4. Required fallback: when the synthetic audit branches or dedicated review-only PR are absent, use the ordinary promotion PR itself—including a merged immutable PR—as the authoritative GitHub review surface. Use its exact head as the candidate, its recorded base/merge base as the baseline, and its retained diff for inline review.
+5. If GitHub cannot attach a finding inline on the retained diff, post a precise top-level comment naming the exact candidate SHA, file, line or symbol, and concrete risk. The lack of a dedicated review-only PR is process debt, not a reason to skip code inspection.
+6. Block only when the exact candidate identity, required lineage, or any authoritative reviewable comparison cannot be recovered. Do not return `DOMAIN BLOCKED` solely because `audit/os-foundation-baseline`, `audit/os-foundation-final-candidate`, labels, or the dedicated review-only PR are missing.
+7. During a review round, keep the candidate SHA fixed. After accepted repairs merge, increment the review-round number, freeze the new exact candidate SHA, record its lineage, update or replace the authoritative GitHub review surface, and rerun every affected reviewer.
+8. Retain all GitHub comments, structured reviews, reports, and dispositions as the durable audit record.
+
+All domain reviewers must leave inline review comments when GitHub permits, plus structured review objects, consolidated agent-fix prompts, top-level summaries, and dispositions directly on the authoritative GitHub review surface. GitHub is the source of truth; local review output is temporary evidence.
 
 ## Original-intent inventory
 
@@ -62,7 +66,7 @@ The final synthesis is `23h-cross-wave-final-go-no-go.md`.
 
 ### Phase 1: freeze and inventory
 
-Record baseline SHA, candidate SHA, ordinary promotion PR, review-only PR, worker-prompt inventory, implementation/repair PR inventory, required environments, current CI, unavailable evidence, and reviewer independence.
+Record the exact candidate SHA, authoritative GitHub review surface, baseline or merge-base evidence, ordinary promotion PR, optional dedicated review-only PR, worker-prompt inventory, implementation/repair PR inventory, required environments, current CI, unavailable evidence, and reviewer independence. Missing synthetic audit branches are recorded as process debt and do not stop code review when the exact candidate and comparison are recoverable.
 
 ### Phase 2: parallel domain reviews
 
@@ -78,7 +82,7 @@ No unresolved P0 or P1 may proceed. Every P2 must be fixed or explicitly waived 
 
 ### Phase 4: repair verification and candidate refreezes
 
-After each accepted repair batch merges into the candidate stream, freeze the next numbered candidate SHA and update the review-only PR only between review rounds. The same assigned reviewers rerun every affected domain or synthesis audit directly, rerun current-head CI and all required platform/clean-host gates, and independently re-evaluate existing automated and human threads. Do not invoke a delegated reviewer. Every original finding thread receives a current disposition before the next round begins.
+After each accepted repair batch merges into the candidate stream, freeze the next numbered candidate SHA and update or replace the authoritative GitHub review surface only between review rounds. The same assigned reviewers rerun every affected domain or synthesis audit directly, rerun current-head CI and all required platform/clean-host gates, and independently re-evaluate existing automated and human threads. Do not invoke a delegated reviewer. Every original finding thread receives a current disposition before the next round begins.
 
 ### Phase 5: independent synthesis
 

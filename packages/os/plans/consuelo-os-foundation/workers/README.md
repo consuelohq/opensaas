@@ -83,7 +83,7 @@ Wave 0 tasks may run concurrently because their implementation ownership is disj
 - `23g-repository-boundaries-operability-docs-audit.md` reviews source/package authority, CLI separation, runtime closure, legal scope, operability, and docs.
 - `23h-cross-wave-final-go-no-go.md` is a fresh independent synthesis after accepted repairs and issues the final `GO` or `NO-GO`.
 
-Worker 23 creates one review-only GitHub comparison PR spanning the verified pre-foundation baseline to the frozen final candidate. All domain and synthesis agents review the same PR themselves, post every finding and disposition directly to GitHub, and never merge that review-only PR. Historical review instructions inside original worker prompts are intent evidence only and are not executed by the final-audit agents.
+Worker 23 prefers one dedicated review-only GitHub comparison PR spanning the verified pre-foundation baseline to the frozen final candidate. If that synthetic surface is absent, all domain and synthesis agents must still review the same exact immutable candidate on the ordinary promotion PR—including a merged PR—or an exact GitHub comparison. Missing audit plumbing is recorded as process debt, not used to skip code inspection. Historical review instructions inside original worker prompts are intent evidence only and are not executed by the final-audit agents.
 
 ## Stream ownership
 

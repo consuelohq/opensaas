@@ -249,6 +249,17 @@ if (finalAuditFrameworkFailures.length) {
     `independent-review-framework.md: missing required direct-review contract (${finalAuditFrameworkFailures.join('; ')})`,
   );
 }
+for (const required of [
+  'Authoritative GitHub review surface',
+  'Missing synthetic audit branches, labels, or a dedicated review-only PR are not sufficient reasons to skip code review',
+  'immutable ordinary promotion PR',
+]) {
+  if (!independentReviewFramework.includes(required)) {
+    structuralFailures.push(
+      `independent-review-framework.md: missing coordinate recovery contract ${required}`,
+    );
+  }
+}
 for (const pattern of FINAL_AUDIT_FORBIDDEN_DELEGATION_PATTERNS) {
   if (pattern.test(independentReviewFramework)) {
     structuralFailures.push(
@@ -258,11 +269,23 @@ for (const pattern of FINAL_AUDIT_FORBIDDEN_DELEGATION_PATTERNS) {
 }
 if (
   !finalAuditOrchestratorText.includes('increment the review-round number') ||
-  !finalAuditOrchestratorText.includes('repeat the ancestry proof')
+  !finalAuditOrchestratorText.includes('required lineage')
 ) {
   structuralFailures.push(
     '23-final-integration-audit.md: missing repeatable domain/synthesis repair-round contract',
   );
+}
+for (const required of [
+  'authorized recovery surface is ordinary promotion PR #1674',
+  'ef2530b136ec2a170915b583abfb2341899bd6ab',
+  'The lack of a dedicated review-only PR is process debt, not a reason to skip code inspection.',
+  'Do not return `DOMAIN BLOCKED` solely because',
+]) {
+  if (!finalAuditOrchestratorText.includes(required)) {
+    structuralFailures.push(
+      `23-final-integration-audit.md: missing candidate recovery contract ${required}`,
+    );
+  }
 }
 for (const pattern of FINAL_AUDIT_FORBIDDEN_DELEGATION_PATTERNS) {
   if (pattern.test(finalAuditOrchestratorText)) {
@@ -459,6 +482,23 @@ for (const name of FINAL_AUDIT_SUBBRIEFS) {
   }
   if (!/review-only GitHub comparison PR/i.test(text)) {
     structuralFailures.push(`${name}: missing review-only GitHub PR contract`);
+  }
+  if (!/authoritative GitHub review surface/i.test(text)) {
+    structuralFailures.push(
+      `${name}: missing authoritative review-surface contract`,
+    );
+  }
+  if (!text.includes('Do not stop solely because synthetic audit branches')) {
+    structuralFailures.push(`${name}: missing coordinate recovery fallback`);
+  }
+  if (
+    text.includes(
+      'Stop if any of those coordinates drift or cannot be independently verified.',
+    )
+  ) {
+    structuralFailures.push(
+      `${name}: retains hard-stop-only coordinate contract`,
+    );
   }
   if (!/original worker prompt/i.test(text)) {
     structuralFailures.push(
