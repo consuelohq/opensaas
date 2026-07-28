@@ -90,9 +90,14 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
         workspaceId: 'workspace_123',
         workspaceSlug: 'kokayi',
         workspaceHost: 'kokayi.consuelohq.com',
+        nodeId: 'node_member',
         connectorId: 'connector_123',
         connectorTransport: 'cloudflare-tunnel',
         cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+        nodePublicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"public-fixture"}',
+        nodeSigningKeyJwk:
+          '{"kty":"OKP","crv":"Ed25519","x":"public-fixture","d":"private-fixture"}',
+        nodeCapabilities: ['tools', 'mcp'],
       },
     });
 
@@ -168,9 +173,14 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
         workspaceId: 'workspace_123',
         workspaceSlug: 'kokayi',
         workspaceHost: 'kokayi.consuelohq.com',
+        nodeId: 'node_member',
         connectorId: 'connector_123',
         connectorTransport: 'cloudflare-tunnel',
         cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+        nodePublicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"public-fixture"}',
+        nodeSigningKeyJwk:
+          '{"kty":"OKP","crv":"Ed25519","x":"public-fixture","d":"private-fixture"}',
+        nodeCapabilities: ['tools', 'mcp'],
       },
     });
 
@@ -182,9 +192,42 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'com.consuelo.os.cloudflared.connector-123.plist',
     );
     const plist = fs.readFileSync(plistPath, 'utf8');
+    const heartbeatConfigPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    const heartbeatPlistPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'com.consuelo.os.node-heartbeat.node-member.plist',
+    );
+    const heartbeatConfig = readJson<Record<string, unknown>>(heartbeatConfigPath);
+    const heartbeatPlist = fs.readFileSync(heartbeatPlistPath, 'utf8');
 
     expect(plist).toContain('consuelo-os-workspace-bootstrap-launchd-&amp;-');
     expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
+    expect(heartbeatConfig).toMatchObject({
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceId: 'workspace_123',
+      nodeId: 'node_member',
+      connectorStatus: 'connected',
+      capabilities: ['mcp', 'tools'],
+    });
+    expect(heartbeatConfig).toHaveProperty('publicKeyJwk');
+    expect(heartbeatConfig).toHaveProperty('signingKeyJwk');
+    expect(fs.statSync(heartbeatConfigPath).mode & 0o777).toBe(0o600);
+    expect(heartbeatPlist).toContain('<key>StartInterval</key>');
+    expect(heartbeatPlist).toContain('<integer>30</integer>');
+    expect(heartbeatPlist).toContain('workspace-node-heartbeat.ts');
+    expect(heartbeatPlist).toContain(
+      heartbeatConfigPath.replaceAll('&', '&amp;'),
+    );
+    expect(heartbeatPlist).not.toContain('private-fixture');
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -196,6 +239,16 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
           type: 'create_file',
           path: expect.stringContaining('smoke-gateway-auth'),
           message: expect.stringMatching(/gateway auth smoke/i),
+        }),
+        expect.objectContaining({
+          type: 'create_file',
+          path: heartbeatConfigPath,
+          message: expect.stringMatching(/heartbeat config/i),
+        }),
+        expect.objectContaining({
+          type: 'create_file',
+          path: heartbeatPlistPath,
+          message: expect.stringMatching(/heartbeat launchd/i),
         }),
       ]),
     );
@@ -304,6 +357,10 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
     expect(installSource).toContain("message: 'enter workspace name'");
     expect(installSource).toContain('resolveWorkspaceIdentity');
+    expect(installSource).toContain('nodeSigningKeyJwk: deviceKeyPair.signingKeyJwk');
+    expect(installSource).toContain('nodePublicKeyJwk: deviceKeyPair.publicKeyJwk');
+    expect(installSource).toContain('selection.deviceKeyPair');
+    expect(installSource).toContain('liveDeviceCode.deviceKeyPair');
     expect(installSource.indexOf('attemptWorkspaceDeviceLogin({')).toBeLessThan(
       installSource.indexOf("message: 'enter workspace name'"),
     );

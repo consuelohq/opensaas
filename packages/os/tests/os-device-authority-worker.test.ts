@@ -594,7 +594,7 @@ describe('os device authority worker', () => {
       ...form({
         token: String(tokenJson.access_token),
         resource,
-        scope: 'tool:get_raw_steering:read',
+        scope: 'tool:status:read',
       }),
     }));
     await expect(introspection.json()).resolves.toMatchObject({
@@ -683,7 +683,7 @@ describe('os device authority worker', () => {
       ...form({
         token: String(tokenJson.access_token),
         resource: 'https://macbook-air-test.consuelohq.com/mcp',
-        scope: 'tool:get_raw_steering:read',
+        scope: 'tool:status:read',
       }),
     }));
     await expect(introspection.json()).resolves.toMatchObject({
@@ -751,8 +751,13 @@ describe('os device authority worker', () => {
       approvalAssertionSecret,
     });
 
-    const startNodeGrant = async (input: { nodeId?: string; nodeName?: string }) => {
-      const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const startNodeGrant = async (input: {
+      nodeId?: string;
+      nodeName?: string;
+      deviceKeyPair?: WorkspaceDeviceKeyPair;
+    }) => {
+      const deviceKeyPair =
+        input.deviceKeyPair ?? generateWorkspaceDeviceKeyPair();
       const formFields: Record<string, string> = {
         client_id: 'consuelo-os-installer',
         scope: 'workspace:read os:connector:register',
@@ -854,6 +859,7 @@ describe('os device authority worker', () => {
     const third = await startNodeGrant({
       nodeId: String(secondApproved.node_id),
       nodeName: 'MacBook Air',
+      deviceKeyPair: second.deviceKeyPair,
     });
     await expect((await approveWithAccount(String(third.codeJson.user_code))).json()).resolves.toMatchObject({
       status: 'approved',
@@ -1069,6 +1075,12 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements[0]).toContain('connector_macbook_air_test');
     expect(routeRegistry.statements[0]).toContain('/mcp');
     expect(routeRegistry.statements[0]).toContain('os-connector');
+    expect(routeRegistry.statements[0]).toContain('"pathPrefix":"/"');
+    expect(routeRegistry.statements[0]).toContain('sites/platform/launcher/sha256-test/index.html');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/configuration"');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/tools"');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/environments"');
+    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/secrets"');
     expect(routeRegistry.statements[0]).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
   });

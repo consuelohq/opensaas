@@ -17,7 +17,7 @@ const SERVER_PY = path.join(WORKSPACE_DIR, 'server.py');
 const LOG_FILE = '/tmp/workspace.log';
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
-const EXPECTED_SERVER_NAME = 'openworkspace';
+const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.system'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }

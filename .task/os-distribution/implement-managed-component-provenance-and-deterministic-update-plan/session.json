@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b38aac3ba6fd",
+  "tmuxSession": "opensaas-os-distribution-implement-managed-component-provenance-and-deter-b38aac3b",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan",
+  "branch": "task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-managed-component-provenance-and-deterministic-update-plan",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-managed-component-provenance-and-deterministic-update-plan",
+  "prNumber": 1601,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1601",
+  "createdAt": "2026-07-23T20:38:18.180Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-implement-managed-component-provenance-and-deterministic-update-plan/.task/os-distribution/implement-managed-component-provenance-and-deterministic-update-plan/session.json"
+}

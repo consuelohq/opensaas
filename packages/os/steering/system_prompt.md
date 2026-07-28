@@ -291,7 +291,8 @@ await workspace.call({
     maxOperations: 8,
     maxResultChars: 12000,
     code: `
-      const rows = await workspace_call("context.trace", {
+      const rows = await workspace_call("memory", {
+        operation: "trace",
         contains: "python3",
         limit: 40
       });
@@ -315,7 +316,7 @@ await workspace.call({
 
 Bad: using `batch` or repeated direct calls when the agent must inspect each result before deciding the next read.
 
-Bad: using `context.trace` with `raw: true` and a high limit, then sending every full row back through the model. Use `code.run` to filter/summarize first, or request one specific `traceId`.
+Bad: using `memory` with `operation: "trace"`, `raw: true` and a high limit, then sending every full row back through the model. Use `code.run` to filter/summarize first, or request one specific `traceId`.
 
 ## Workspace tool discovery with tools.search
 
@@ -505,7 +506,7 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | writing JSON/Markdown/source as inline command args | `tmp`, `contentFile`, `--input-file`, or `--stdin` | Structured payloads should travel as files. |
 | `kill`, `kill -9`, `pkill` | `mac.process` with explicit action/name/pid; no broad kills | Process cleanup needs scope and confirmation. |
 | `lsof`, `ps`, `netstat` for local diagnostics | `mac.port` / `mac.process` | Typed Mac tools return bounded output and avoid shell parsing. |
-| raw `railway logs` / Railway CLI | `railway.logs`, `railway.redeploy` | Production tooling should use the facade for status/log shape. |
+| raw provider deployment CLIs | `deployment.logs`, `deployment.status`, `deployment.deploy` with an explicit provider | Production tooling should use the canonical deployment facade for normalized status/log shape and approval enforcement. |
 | raw browser/Playwright CLI | `browser.*` tools | Browser tools preserve auth/session/screenshot semantics. |
 | raw Sentry API / curl for Sentry | `sentry.*` tools | Sentry wrappers protect secrets and normalize query shape. |
 | raw Linear API / CLI | `linear.*` tools | Linear writes are durable org changes and need typed defaults. |
@@ -539,7 +540,7 @@ Before running any legacy command example, translate it into the current typed w
 | `git status` | `status` or `task.current` |
 | `git restore`, `git merge`, `rm -rf .task/...` | typed recovery/stream/task tool; if missing, report tooling gap |
 | `bun run task:*` | `task.*` workspace tools |
-| `railway logs ...` | `railway.logs` |
+| provider deployment CLI logs | `deployment.logs` with an explicit provider |
 | browser CLI commands | `browser.*` workspace tools |
 | long scripts or chained checks | `code.run` over typed tools |
 
@@ -759,7 +760,7 @@ Recommended defaults:
 | Operation | Recommended timeout | Why |
 |---|---:|---|
 | `fs.read`, `fs.search`, `fs.list` | 120s | Usually fast; enough room for large files/searches. |
-| `status`, `stream.context`, `context.search`, `doctor` | 120s | p99 is under 10s, but keep room for server hiccups. |
+| `status`, `stream.context`, `memory`, `doctor` | 120s | p99 is under 10s, but keep room for server hiccups. |
 | `explore` | 180s | p95 is about 51s; semantic discovery can spike. |
 | `code.run` read/verify orchestration | 180s | p99 is about 20s; allow room for composed child calls. |
 | `code.run` edit orchestration | 300s | Edits may call multiple tools and validation smokes. |
@@ -940,7 +941,7 @@ the workspace app exposes exactly two MCP entrypoints:
 - `workspace.get_steering()`
 - `workspace.call({ tool, input, taskSession, timeout })`
 
-All workspace operations, including tools with names like `fs.read`, `code.call`, `mac.read`, or `railway.logs`, are invoked through `workspace.call`.
+All workspace operations, including tools with names like `fs.read`, `code.call`, `mac.read`, or `deployment.logs`, are invoked through `workspace.call`.
 
 `get_steering` is the single bootstrap call. After ONE successful call in a conversation, treat steering as loaded, do not call it again unless ko ask, and use `workspace.call` for workspace operations. If you are reading this, then the single bootstrap call was successful. Congratulations. 
 
@@ -986,7 +987,7 @@ If the tool surface appears to reload, disappear, or expose only `get_steering`,
 
 1. Check whether direct `workspace.call` is available.
 2. Run `workspace.call({ tool: "status", input: {}, timeout: 120 })`.
-3. Run `workspace.call({ tool: "context.trace", input: { status: "error", since: "2h", limit: 20 }, timeout: 120 })`.
+3. Run `workspace.call({ tool: "memory", input: { operation: "trace", status: "error", since: "2h", limit: 20 }, timeout: 120 })`.
 4. If `workspace.call` is unavailable, state that the ChatGPT tool surface is incomplete and stop with the exact blocker.
 5. If `workspace.call` works, continue the task. Do not treat the temporary tool-surface reload as a task blocker.
 
@@ -1348,9 +1349,9 @@ commits:
 
 ## 12. memory and learning
 
-await workspace.call({ tool: "context.search", input: { keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
 
-use context before guessing about past decisions.
+use memory before guessing about past decisions.
 
 search with one strong keyword, not a long sentence.
 
@@ -1376,7 +1377,7 @@ after finishing meaningful work, ask:
 
 * did i discover something future agents need?
 * does a nearby `AGENTS.md` need a short note?
-* should this be saved to context memory?
+* should this be saved to project memory?
 * should `SCRIPTS.md` be updated?
 
 ---
@@ -1542,12 +1543,12 @@ Exploration must answer these questions before implementation begins:
 5. What tests, snapshots, audits, or review gates prove the change?
 6. What uncertainty remains, and what needs Ko’s answer before coding?
 
-Use context search first, then code/file exploration. Good first-pass commands:
+Use memory search first, then code/file exploration. Good first-pass commands:
 
 ```ts
-await workspace.call({ tool: "context.search", input: { keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
-await workspace.call({ tool: "context.search", input: { keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
-await workspace.call({ tool: "context.search", input: { keyword: "workspace scripts docs", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "workspace scripts docs", limit: 5 }, timeout: 120 })
 await workspace.call({ tool: "explore", input: { query: "<feature or behavior> source owner implementation tests generated surfaces", limit: 8 }, timeout: 120 })
 ```
 

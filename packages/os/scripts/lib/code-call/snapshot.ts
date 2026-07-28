@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { lstatSync, readFileSync, readlinkSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 import { Effect } from 'effect';
@@ -13,13 +14,24 @@ export type Snapshot =
   | { kind: 'dir'; root: string; files: Map<string, string> }
   | { kind: 'none'; root: string };
 
-function parsePorcelain(stdout: string): Map<string, string> {
+function gitContentMarker(root: string, relativePath: string, status: string): string {
+  const absolutePath = path.join(root, relativePath);
+  const stat = lstatSync(absolutePath, { throwIfNoEntry: false });
+  if (!stat) return `${status}:missing`;
+  if (stat.isSymbolicLink()) return `${status}:symlink:${readlinkSync(absolutePath)}`;
+  if (!stat.isFile()) return `${status}:other:${stat.mode}:${stat.size}:${stat.mtimeMs}`;
+
+  const digest = createHash('sha256').update(readFileSync(absolutePath)).digest('hex');
+  return `${status}:file:${stat.mode}:${stat.size}:${digest}`;
+}
+
+function parsePorcelain(root: string, stdout: string): Map<string, string> {
   const files = new Map<string, string>();
   for (const line of stdout.split('\n')) {
     if (!line.trim()) continue;
     const rawPath = line.slice(3).replace(/^"|"$/g, '');
     const normalizedPath = rawPath.includes(' -> ') ? rawPath.split(' -> ').at(-1) || rawPath : rawPath;
-    files.set(normalizedPath, line.slice(0, 2));
+    files.set(normalizedPath, gitContentMarker(root, normalizedPath, line.slice(0, 2)));
   }
   return files;
 }
@@ -35,7 +47,7 @@ const captureGitSnapshotEffect = (cwd: string) => Effect.gen(function* () {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
       });
-      return { kind: 'git', root, files: parsePorcelain(stdout) } satisfies Snapshot;
+      return { kind: 'git', root, files: parsePorcelain(root, stdout) } satisfies Snapshot;
     },
     catch: () => ({ kind: 'none', root: cwd } satisfies Snapshot),
   });

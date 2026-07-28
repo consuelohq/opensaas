@@ -2,10 +2,10 @@
 import EditLink from 'virtual:starlight/components/EditLink';
 import LastUpdated from 'virtual:starlight/components/LastUpdated';
 import Pagination from 'virtual:starlight/components/Pagination';
-import { footerSections } from '../lib/docs-navigation';
+import SiteFooter from './SiteFooter.astro';
 ---
 
-<footer class="docs-footer">
+<footer class="docs-page-footer">
   <div class="docs-footer-meta">
     <EditLink />
     <LastUpdated />
@@ -13,28 +13,17 @@ import { footerSections } from '../lib/docs-navigation';
 
   <Pagination />
 
-  <nav class="docs-registry" aria-label="Documentation registry">
-    <div class="docs-registry-grid">
-      {footerSections.map((section) => (
-        <section class="docs-registry-column">
-          <h2><a href={section.href}>{section.label}</a></h2>
-          <ul>
-            {section.links.map((link) => (
-              <li><a href={link.href}>{link.label}</a></li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </div>
-  </nav>
+  <div class="docs-site-footer-home" data-docs-site-footer-home>
+    <SiteFooter />
+  </div>
 </footer>
 
 <style>
   @layer starlight.core {
-    .docs-footer {
+    .docs-page-footer {
       display: grid;
       gap: 1.75rem;
-      padding-bottom: clamp(4rem, 9vw, 7rem);
+      padding-bottom: clamp(2.5rem, 5vw, 4rem);
     }
 
     .docs-footer-meta {
@@ -52,68 +41,8 @@ import { footerSections } from '../lib/docs-navigation';
       margin-inline-start: auto;
     }
 
-    .docs-registry {
-      border-top: 1px solid var(--sl-color-hairline);
-      margin-top: clamp(2rem, 6vw, 4rem);
-      padding-top: clamp(2.5rem, 6vw, 4.5rem);
-    }
-
-    .docs-registry-grid {
-      display: grid;
-      gap: 2.5rem 1.5rem;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .docs-registry-column {
-      min-width: 0;
-    }
-
-    .docs-registry-column h2 {
-      font-size: var(--sl-text-sm);
-      font-weight: 600;
-      line-height: 1.35;
-      margin: 0 0 0.8rem;
-    }
-
-    .docs-registry-column h2 a {
-      color: var(--sl-color-white);
-      text-decoration: none;
-    }
-
-    .docs-registry-column ul {
-      display: grid;
-      gap: 0.45rem;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    .docs-registry-column li {
-      line-height: 1.35;
-      min-width: 0;
-    }
-
-    .docs-registry-column li a {
-      color: var(--sl-color-gray-3);
-      display: inline-block;
-      font-size: var(--sl-text-xs);
-      overflow-wrap: anywhere;
-      text-decoration: none;
-    }
-
-    .docs-registry-column a:hover,
-    .docs-registry-column a:focus-visible {
-      color: var(--sl-color-white);
-    }
-
-    .docs-registry-column a:focus:not(:focus-visible) {
-      outline: none;
-    }
-
-    @media (min-width: 50rem) {
-      .docs-registry-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
+    .docs-site-footer-home {
+      display: contents;
     }
   }
 </style>

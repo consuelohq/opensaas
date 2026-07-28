@@ -1,0 +1,19 @@
+{
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/implement-linux-platform-support",
+  "baseBranch": "stream/os-native",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1645,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1645",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1645",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1645/implement-linux-platform-support",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1645",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1645/implement-linux-platform-support",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-linux-platform-support",
+  "taskSession": "tsk_efb94b99d89e",
+  "tmuxSession": "opensaas-os-native-implement-linux-platform-support-efb94b99",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-linux-platform-support/.task/os-native/implement-linux-platform-support/session.json",
+  "createdAt": "2026-07-24T18:03:46.710Z"
+}

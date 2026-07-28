@@ -26,9 +26,16 @@ import {
   type LocalAgentDetection,
 } from './local-agent-connectivity';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
-import { createGatewaySecurityConfig, issueAgentAppToken } from './security-gateway';
+import { provisionManagedComponentIndexes } from './managed-component-install';
+import {
+  createGatewaySecurityConfig,
+  getAgentAppCredentialStatus,
+  issueAgentAppToken,
+  updateAgentAppTokenScopes,
+} from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
 import { validateBundledSkills } from './skills';
+import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 
 export type OsMode = 'local' | 'cloud';
@@ -58,6 +65,10 @@ export type WorkspaceBootstrap = {
   nodeName?: string;
   nodeRole?: 'home' | 'member';
   nodeStatus?: 'created' | 'reconnected';
+  nodePublicKeyJwk?: string;
+  nodeSigningKeyJwk?: string;
+  nodeCapabilities?: string[];
+  authorityOrigin?: string;
   connectorBootstrapToken?: string;
   cloudflareTunnelToken?: string;
 };
@@ -145,12 +156,13 @@ export type DoctorResult = {
 
 const REQUIRED_DIRS = [
   'agents',
+  'components',
   'skills',
   'tools',
   'scripts',
   'src',
-  'tooling',
   'manifests',
+  'workflows',
   'hooks',
   'artifacts',
   'pages',
@@ -163,7 +175,6 @@ const REQUIRED_DIRS = [
   'tmp',
   'runtime',
   'runtime/releases',
-  'runtime/current',
   'node',
   'node/keys',
   'node/security',
@@ -199,9 +210,10 @@ function resolveBundledOperatorRoot(): string {
 
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
 const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
+const BUNDLED_STREAMS_ROOT = path.join(PACKAGE_ROOT, 'streams');
 const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
-const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
-const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
+const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'generated', 'tool.manifest.json');
+const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'manifests', 'workflows', 'hooks'] as const;
 const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
@@ -430,6 +442,36 @@ function writeYamlConfigIfMissing(input: {
   if (!exists) writeYamlConfig(input.path, input.value, input.dryRun);
 }
 
+function seedBundledStreams(
+  home: string,
+  dryRun: boolean,
+): ProvisionAction[] {
+  const sourcePath = path.join(BUNDLED_STREAMS_ROOT, 'tools', 'AGENTS.md');
+  const targetPath = path.join(home, 'streams', 'tools', 'AGENTS.md');
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(
+      `${sourcePath}: required Tools stream instructions are missing`,
+    );
+  }
+
+  const targetExists = fs.existsSync(targetPath);
+  const actions: ProvisionAction[] = [
+    {
+      type: 'seed_stream',
+      path: targetPath,
+      status: targetExists ? 'preserved' : dryRun ? 'planned' : 'created',
+      message: targetExists
+        ? 'user stream instructions preserved'
+        : 'Tools stream instructions installed',
+    },
+  ];
+  if (!dryRun && !targetExists) {
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(sourcePath, targetPath);
+  }
+  return actions;
+}
+
 function samePath(left: string, right: string): boolean {
   return path.resolve(left) === path.resolve(right);
 }
@@ -544,131 +586,6 @@ export function createDefaultConfig(
 }
 
 
-type InstalledSitesPaths = {
-  sitesDir: string;
-  indexPath: string;
-  pagesDir: string;
-  pagesDataDir: string;
-  pagesRegistryPath: string;
-  pagesLeasesPath: string;
-  officeDir: string;
-  officeDataDir: string;
-  officeAssetsDir: string;
-  officeIndexPath: string;
-  officeDataPath: string;
-  tracesDir: string;
-  tracesIndexPath: string;
-  diffsDir: string;
-  diffsIndexPath: string;
-};
-
-type InstalledOfficeSiteData = {
-  version: 1;
-  generatedAt: string;
-  artifacts: unknown[];
-};
-
-function getInstalledSitesPaths(home: string): InstalledSitesPaths {
-  const sitesDir = path.join(home, 'sites');
-  const pagesDir = path.join(sitesDir, 'pages');
-  const pagesDataDir = path.join(sitesDir, '.data', 'pages');
-  const officeDir = path.join(sitesDir, 'office');
-  const officeDataDir = path.join(officeDir, 'data');
-  const officeAssetsDir = path.join(officeDir, 'assets');
-  const tracesDir = path.join(sitesDir, 'traces');
-  const diffsDir = path.join(sitesDir, 'diffs');
-
-  return {
-    sitesDir,
-    indexPath: path.join(sitesDir, 'index.html'),
-    pagesDir,
-    pagesDataDir,
-    pagesRegistryPath: path.join(pagesDataDir, 'registry.json'),
-    pagesLeasesPath: path.join(pagesDataDir, 'leases.json'),
-    officeDir,
-    officeDataDir,
-    officeAssetsDir,
-    officeIndexPath: path.join(officeDir, 'index.html'),
-    officeDataPath: path.join(officeDataDir, 'artifacts.json'),
-    tracesDir,
-    tracesIndexPath: path.join(tracesDir, 'index.html'),
-    diffsDir,
-    diffsIndexPath: path.join(diffsDir, 'index.html'),
-  };
-}
-
-function addProvisionDirectoryAction(
-  actions: ProvisionAction[],
-  dirPath: string,
-  dryRun: boolean,
-): void {
-  const exists = fs.existsSync(dirPath);
-  actions.push({
-    type: 'create_dir',
-    path: dirPath,
-    status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
-    message: exists ? 'sites directory exists' : 'sites directory configured',
-  });
-  if (!dryRun) fs.mkdirSync(dirPath, { recursive: true });
-}
-
-function addProvisionFileAction(
-  actions: ProvisionAction[],
-  filePath: string,
-  dryRun: boolean,
-  message: string,
-): void {
-  const exists = fs.existsSync(filePath);
-  actions.push({
-    type: 'create_file',
-    path: filePath,
-    status: exists ? 'preserved' : dryRun ? 'planned' : 'created',
-    message,
-  });
-}
-
-function buildInstalledSitesIndex(): string {
-  return [
-    '<!doctype html>',
-    '<html lang="en"><head><meta charset="utf-8"><title>Consuelo OS Sites</title></head>',
-    '<body><main><h1>Consuelo OS Sites</h1><nav>',
-    '<a href="/pages/">Pages</a><a href="/office/">Office</a>',
-    '<a href="/traces/">Traces</a><a href="/diffs/">Diffs</a>',
-    '</nav></main></body></html>',
-    '',
-  ].join('\n');
-}
-
-function buildInstalledPagesIndex(): string {
-  return [
-    '<!doctype html>',
-    '<html lang="en"><head><meta charset="utf-8"><title>Pages - Sites</title></head>',
-    '<body><main><h1>Pages</h1><p>No local Sites pages have been published yet.</p></main></body></html>',
-    '',
-  ].join('\n');
-}
-
-function buildInstalledOfficeIndex(data: InstalledOfficeSiteData): string {
-  return [
-    '<!doctype html>',
-    '<html lang="en"><head><meta charset="utf-8"><title>Office - Sites</title></head>',
-    `<body><main><h1>Office</h1><p>${data.artifacts.length} artifacts indexed.</p></main></body></html>`,
-    '',
-  ].join('\n');
-}
-
-function buildInstalledReservedSiteIndex(input: {
-  title: string;
-  description: string;
-}): string {
-  return [
-    '<!doctype html>',
-    `<html lang="en"><head><meta charset="utf-8"><title>${input.title} - Sites</title></head>`,
-    `<body><main><h1>${input.title}</h1><p>${input.description}</p></main></body></html>`,
-    '',
-  ].join('\n');
-}
-
 function materializeSites(input: {
   home: string;
   dbPath: string;
@@ -691,6 +608,7 @@ function renderCloudflaredLaunchdPlist(input: {
   programArguments: string[];
   keepAlive: boolean;
   runAtLoad: boolean;
+  startIntervalSeconds?: number;
   standardOutPath: string;
   standardErrorPath: string;
 }): string {
@@ -713,6 +631,12 @@ function renderCloudflaredLaunchdPlist(input: {
     `  <${input.keepAlive ? 'true' : 'false'}/>`,
     '  <key>RunAtLoad</key>',
     `  <${input.runAtLoad ? 'true' : 'false'}/>`,
+    ...(input.startIntervalSeconds
+      ? [
+          '  <key>StartInterval</key>',
+          `  <integer>${input.startIntervalSeconds}</integer>`,
+        ]
+      : []),
     '  <key>StandardOutPath</key>',
     `  <string>${escapeXml(input.standardOutPath)}</string>`,
     '  <key>StandardErrorPath</key>',
@@ -746,33 +670,43 @@ function materializeChatGptMcpConnection(input: {
   dryRun: boolean;
 }): ProvisionAction[] {
   const targetPath = path.join(input.home, 'security', 'generated', 'chatgpt-mcp.json');
-  const scopes = ['route:/mcp:read', 'tool:*:read'];
+  const scopes = [...STANDARD_OS_MCP_SCOPES];
   if (input.dryRun) {
     return [{ type: 'create_file', path: targetPath, status: 'planned', message: 'ChatGPT MCP connection planned' }];
   }
   const existing = readJsonFile<JsonObject>(targetPath);
   const localUrl = `http://127.0.0.1:${input.port}/mcp`;
-  if (
+  const hasExistingConnection =
     typeof existing?.bearerToken === 'string' &&
     typeof existing?.tokenId === 'string' &&
-    typeof existing?.url === 'string'
-  ) {
-    const existingScopes = Array.isArray(existing.scopes) ? existing.scopes : scopes;
-    if (
-      existing.url !== CHATGPT_MCP_URL ||
-      existing.localUrl !== localUrl ||
-      !Array.isArray(existing.scopes)
-    ) {
-      writeJsonFile(targetPath, {
-        ...existing,
-        url: CHATGPT_MCP_URL,
-        localUrl,
-        scopes: existingScopes,
-        updatedAt: nowIso(),
-      }, false);
-      return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection metadata updated' }];
+    typeof existing?.url === 'string';
+  if (hasExistingConnection) {
+    const credential = getAgentAppCredentialStatus({
+      config: input.config,
+      tokenId: existing.tokenId,
+    });
+    if (credential?.status === 'active') {
+      updateAgentAppTokenScopes({
+        config: input.config,
+        tokenId: existing.tokenId,
+        scopes,
+      });
+      if (
+        existing.url !== CHATGPT_MCP_URL ||
+        existing.localUrl !== localUrl ||
+        JSON.stringify(existing.scopes) !== JSON.stringify(scopes)
+      ) {
+        writeJsonFile(targetPath, {
+          ...existing,
+          url: CHATGPT_MCP_URL,
+          localUrl,
+          scopes,
+          updatedAt: nowIso(),
+        }, false);
+        return [{ type: 'create_file', path: targetPath, status: 'updated', message: 'ChatGPT MCP connection metadata updated' }];
+      }
+      return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
     }
-    return [{ type: 'create_file', path: targetPath, status: 'preserved', message: 'ChatGPT MCP connection exists' }];
   }
   const token = issueAgentAppToken({
     config: input.config,
@@ -799,7 +733,14 @@ function materializeChatGptMcpConnection(input: {
     scopes,
     createdAt: nowIso(),
   }, false);
-  return [{ type: 'create_file', path: targetPath, status: 'created', message: 'ChatGPT MCP connection written' }];
+  return [{
+    type: 'create_file',
+    path: targetPath,
+    status: hasExistingConnection ? 'updated' : 'created',
+    message: hasExistingConnection
+      ? 'ChatGPT MCP connection credential replaced'
+      : 'ChatGPT MCP connection written',
+  }];
 }
 
 function materializeWorkspaceConnectorBootstrap(input: {
@@ -890,6 +831,92 @@ function materializeWorkspaceConnectorBootstrap(input: {
       { mode: 0o755 },
     );
     fs.chmodSync(smokePath, 0o755);
+  }
+
+  if (
+    input.workspaceBootstrap.nodeId &&
+    input.workspaceBootstrap.nodePublicKeyJwk &&
+    input.workspaceBootstrap.nodeSigningKeyJwk
+  ) {
+    const heartbeatConfigPath = path.join(
+      input.nodeHome,
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    const safeNodeId = input.workspaceBootstrap.nodeId.replace(
+      /[^a-zA-Z0-9.-]+/g,
+      '-',
+    );
+    const heartbeatLabel = `com.consuelo.os.node-heartbeat.${safeNodeId}`;
+    const heartbeatPlistPath = path.join(
+      input.nodeHome,
+      'security',
+      'generated',
+      `${heartbeatLabel}.plist`,
+    );
+    const heartbeatScriptPath = path.join(
+      input.runtimeHome,
+      'scripts',
+      'workspace-node-heartbeat.ts',
+    );
+    const heartbeatLogPath = path.join(
+      input.nodeHome,
+      'logs',
+      'workspace-node-heartbeat.log',
+    );
+    writeJsonFile(
+      heartbeatConfigPath,
+      {
+        authorityOrigin:
+          input.workspaceBootstrap.authorityOrigin ??
+          'https://os.consuelohq.com',
+        workspaceId: input.workspaceBootstrap.workspaceId,
+        nodeId: input.workspaceBootstrap.nodeId,
+        connectorStatus: 'connected',
+        capabilities: [
+          ...(input.workspaceBootstrap.nodeCapabilities ?? ['mcp', 'tools']),
+        ].sort(),
+        publicKeyJwk: input.workspaceBootstrap.nodePublicKeyJwk,
+        signingKeyJwk: input.workspaceBootstrap.nodeSigningKeyJwk,
+      },
+      input.dryRun,
+    );
+    if (!input.dryRun) {
+      fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
+      fs.writeFileSync(
+        heartbeatPlistPath,
+        renderCloudflaredLaunchdPlist({
+          label: heartbeatLabel,
+          programArguments: [
+            process.execPath,
+            heartbeatScriptPath,
+            '--config',
+            heartbeatConfigPath,
+          ],
+          keepAlive: false,
+          runAtLoad: true,
+          startIntervalSeconds: 30,
+          standardOutPath: heartbeatLogPath,
+          standardErrorPath: heartbeatLogPath,
+        }),
+        { mode: 0o600 },
+      );
+    }
+    actions.push(
+      {
+        type: 'create_file',
+        path: heartbeatConfigPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'workspace node heartbeat config configured',
+      },
+      {
+        type: 'create_file',
+        path: heartbeatPlistPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'workspace node heartbeat launchd service configured',
+      },
+    );
   }
 
   return actions;
@@ -1028,9 +1055,11 @@ function writeInstalledSkillsRegistry(skillsRoot: string, dryRun: boolean): Prov
   }];
 }
 
-function migrateSelectedSkillNames(selectedSkills: readonly string[]): string[] {
-  const migrated = selectedSkills.map((skillName) => skillName === 'office' ? 'sites' : skillName);
-  return [...new Set(migrated)];
+function normalizeSelectedSkillNames(selectedSkills: readonly string[]): string[] {
+  const bundledSkillNames = new Set(
+    listSkillDirs(BUNDLED_SKILLS_ROOT).map((skillDir) => getSkillName(skillDir)),
+  );
+  return [...new Set(selectedSkills.filter((skillName) => bundledSkillNames.has(skillName)))];
 }
 
 function seedBundledSkills(
@@ -1376,6 +1405,7 @@ export function provisionLocalOs(
   actions.push(...materializeProductPackageRoot(home, dryRun));
   actions.push(...materializeOperator(home, dryRun));
   actions.push(...seedBundledSteering(home, dryRun));
+  actions.push(...seedBundledStreams(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {
@@ -1585,14 +1615,19 @@ export function provisionLocalOs(
       }),
     );
   }
-  config.selectedSkills = migrateSelectedSkillNames(
+  config.selectedSkills = normalizeSelectedSkillNames(
     options.selectedSkills ??
     config.selectedSkills ??
     getDefaultSelectedSkillNames(),
   );
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
-  actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
-  actions.push(...seedBundledTools(home, dryRun));
+  actions.push(...provisionManagedComponentIndexes({
+    home,
+    selectedSkills: config.selectedSkills,
+    dryRun,
+    generatedAt: nowIso(),
+    userRoot: path.join(os.homedir(), 'Consuelo'),
+  }));
 
   const requestedAgentNames = options.connectAgents ?? [];
   const agentConfiguration = requestedAgentNames.length > 0
@@ -1677,7 +1712,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
-        'manifests/workflow-bundles.json',
+        'workflows/generated/workflow-bundles.json',
       ],
     },
     {
@@ -1745,27 +1780,6 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         ? 'bundled skill metadata matches manifest'
         : `${skillIssues.length} bundled skill issue(s)`,
   });
-
-  try {
-    const { executeCall } = await import('../os');
-    const result = await executeCall({
-      name: 'daily-revenue-brief',
-      traceId: `trc_doctor_${Date.now().toString(36)}`,
-    });
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: result.ok && result.artifacts?.length ? 'connected' : 'unhealthy',
-      message: result.ok
-        ? 'skill created a local artifact'
-        : (result.error?.message ?? 'skill failed'),
-    });
-  } catch (error: unknown) {
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: 'unhealthy',
-      message: error instanceof Error ? error.message : 'skill failed',
-    });
-  }
 
   for (const agent of detectAgents(resolvedHome)) {
     checks.push({

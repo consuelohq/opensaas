@@ -25,7 +25,7 @@ describe('media.ingest source-capture contract', () => {
     });
     expect(JSON.stringify(plan)).toContain('assets/source.mp4');
     expect(JSON.stringify(plan)).toContain('source.info.json');
-    expect(JSON.stringify(plan)).not.toMatch(/packet\.md|context-bundle\.md|research:ingest|research\.ingest/);
+    expect(JSON.stringify(plan)).not.toMatch(/packet\.md|(?:context|memory)-bundle\.md|research:ingest|research\.ingest/);
   });
 
   it('should satisfy media contract when it maps a captured source media asset into media-specific manifest and asset contracts', async () => {
@@ -78,6 +78,6 @@ describe('media.ingest source-capture contract', () => {
       'media-asset.json',
       'ingest-manifest.json',
     ]);
-    expect(module.expectedMediaIngestLayout).not.toEqual(expect.arrayContaining(['packet.md', 'context-bundle.md']));
+    expect(module.expectedMediaIngestLayout).not.toEqual(expect.arrayContaining(['packet.md', 'context-bundle.md', 'memory-bundle.md']));
   });
 });

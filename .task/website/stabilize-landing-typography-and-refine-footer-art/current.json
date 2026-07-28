@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/stabilize-landing-typography-and-refine-footer-art",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 1523,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1523",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1523",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1523/stabilize-landing-typography-and-refine-footer-art",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1523",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1523/stabilize-landing-typography-and-refine-footer-art",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-stabilize-landing-typography-and-refine-footer-art",
+  "taskSession": "tsk_424e929b8ad2",
+  "tmuxSession": "opensaas-website-stabilize-landing-typography-and-refine-footer-a-424e929b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-stabilize-landing-typography-and-refine-footer-art/.task/website/stabilize-landing-typography-and-refine-footer-art/session.json",
+  "createdAt": "2026-07-16T03:33:19.245Z"
+}

@@ -111,6 +111,12 @@ class WorkspaceCallServerTest(unittest.TestCase):
         for key in ['now', 'ok', 'code', 'message', 'data', 'stderr', 'exitCode', 'durationMs', 'traceId', 'apiVersion']:
             self.assertIn(key, result)
 
+    def test_default_server_name_is_consuelo_os(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('MCP_SERVER_NAME', None)
+            module = load_server_module()
+        self.assertEqual(module.SERVER_NAME, 'consuelo-os')
+
     def test_traced_call_uses_langfuse_when_configured(self):
         observations = []
         propagated = []

@@ -124,12 +124,12 @@ test('home page header follows the Consuelo OS desktop and mobile contract', { t
 
     assert.deepEqual(
       desktopSlots.map((slot) => slot.text),
-      ['CONSUELO', 'DOCS', 'CONSUELO OS', 'PRICING', 'CLOUD'],
+      ['DOCS', 'CONSUELO OS', 'CLOUD'],
     );
     for (let index = 1; index < desktopSlots.length; index += 1) {
       assert.ok(desktopSlots[index - 1].center < desktopSlots[index].center);
     }
-    assert.ok(Math.abs(desktopSlots[2].center - 720) < 64);
+    assert.ok(Math.abs(desktopSlots[1].center - 720) < 64);
     assert.equal(
       await header.evaluate((element) => getComputedStyle(element).position),
       'absolute',
@@ -156,12 +156,14 @@ test('home page header follows the Consuelo OS desktop and mobile contract', { t
 
     assert.deepEqual(
       mobileSlots.map((slot) => slot.text),
-      ['CLOUD', 'CONSUELO OS', 'MENU'],
+      ['DOCS', 'CONSUELO OS', 'CLOUD'],
     );
     assert.ok(mobileSlots[0].center < mobileSlots[1].center);
     assert.ok(mobileSlots[1].center < mobileSlots[2].center);
     assert.ok(Math.abs(mobileSlots[1].center - 195) < 32);
 
+    assert.equal(await mobileHeader.locator('button').count(), 0);
+    assert.equal(await mobileHeader.locator('text=MENU').count(), 0);
     const typography = await mobileHeader.evaluate((element) => {
       const wordmark = element.querySelector('.os-header__mobile-wordmark');
       const label = element.querySelector(':scope > a');

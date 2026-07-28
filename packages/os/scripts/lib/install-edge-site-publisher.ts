@@ -3,13 +3,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createWorkspaceEdgeRouteSeedSql } from './workspace-edge-route-seed';
+import {
+  createWorkspaceEdgeRouteSeedSql,
+  type WorkspaceSiteSnapshotId,
+} from './workspace-edge-route-seed';
 
 // Internal Consuelo operator helper. Public install must consume scoped bootstrap
 // material from approval and leave Cloudflare R2/D1 mutations to the control plane.
 
 export type InstallEdgePublishStage = 'snapshot_plan' | 'r2_upload' | 'd1_upsert' | 'edge_verify';
-export type WorkspaceEdgePublishedSnapshot = { siteId: string; pathPrefix: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string; contentType: string };
+export type WorkspaceEdgePublishedSnapshot = { siteId: WorkspaceSiteSnapshotId; pathPrefix: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string; contentType: string };
 export type WorkspaceEdgePublishResult = { status: 'succeeded'; workspaceId: string; workspaceSlug: string; workspaceHost: string; siteId: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; verifiedUrls: string[]; snapshots: WorkspaceEdgePublishedSnapshot[]; logPath: string; httpStatus: number; cacheAuthority: string | null; sitesCache: string | null };
 export type WorkspaceEdgeSnapshotPlan = WorkspaceEdgePublishResult & { status: never; baseDomain: string; contentHash: string; contentType: string; routeSql: string };
 export type CommandRunner = (input: { argv: string[]; cwd?: string }) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
@@ -57,12 +60,15 @@ const writeLog = (file: string, entries: unknown[]) => { fs.mkdirSync(path.dirna
 
 const snapshotSites = [
   { siteId: 'launcher', pathPrefix: '/', relativePath: ['index.html'] },
-  { siteId: 'office', pathPrefix: '/office', relativePath: ['office', 'index.html'] },
+  { siteId: 'artifacts', pathPrefix: '/artifacts', relativePath: ['artifacts', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/observability', relativePath: ['traces', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/traces', relativePath: ['traces', 'index.html'] },
   { siteId: 'diffs', pathPrefix: '/diffs', relativePath: ['diffs', 'index.html'] },
   { siteId: 'docs', pathPrefix: '/docs', relativePath: ['docs', 'index.html'] },
-  { siteId: 'settings', pathPrefix: '/settings', relativePath: ['settings', 'index.html'] },
+  { siteId: 'configuration', pathPrefix: '/configuration', relativePath: ['configuration', 'index.html'] },
+  { siteId: 'tools', pathPrefix: '/tools', relativePath: ['tools', 'index.html'] },
+  { siteId: 'environments', pathPrefix: '/environments', relativePath: ['environments', 'index.html'] },
+  { siteId: 'secrets', pathPrefix: '/secrets', relativePath: ['secrets', 'index.html'] },
 ] as const;
 
 function readSnapshotHtml(snapshotPath: string, siteName: string): string {
@@ -101,6 +107,7 @@ export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceE
     baseDomain: baseDomain(workspaceHost),
     siteSnapshotKey: rootSnapshot.snapshotKey,
     siteVersionId: version,
+    publishedSiteIds: [...new Set(snapshots.map((snapshot) => snapshot.siteId))],
   });
   return {
     status: undefined as never,

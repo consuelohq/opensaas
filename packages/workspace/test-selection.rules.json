@@ -97,21 +97,21 @@
       "id": "trace-watch",
       "critical": true,
       "source": [
-        "scripts/operator/trace-watch.ts"
+        "packages/os/scripts/trace-watch.ts"
       ],
       "tests": [
         {
-          "name": "trace watch build",
+          "name": "OS trace watcher behavior",
           "command": [
             "bun",
-            "build",
-            "scripts/operator/trace-watch.ts",
-            "--target=bun",
-            "--outfile=/tmp/trace-watch-test-selection.js"
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-watch.test.ts"
           ]
         }
       ],
-      "reason": "Trace renderer changes must compile."
+      "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior."
     },
     {
       "id": "workspace-audit-docs",
@@ -135,6 +135,56 @@
         }
       ],
       "reason": "Workspace script/docs changes should keep audit behavior covered."
+    },
+    {
+      "id": "trace-site-pagination",
+      "critical": true,
+      "source": [
+        "packages/os/scripts/lib/trace-sites-gateway-*.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/scripts/server/services/trace-gateway.ts",
+        "packages/os/tests/trace-gateway-service.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/trace-site-inspector/**",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "trace gateway history endpoints",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ]
+        },
+        {
+          "name": "trace gateway DB resolution",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-gateway-service.test.ts"
+          ]
+        },
+        {
+          "name": "trace site inspector pagination",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/workspace",
+            "tests/trace-site-inspector.test.ts"
+          ]
+        }
+      ],
+      "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior."
     },
     {
       "id": "dialer-package",

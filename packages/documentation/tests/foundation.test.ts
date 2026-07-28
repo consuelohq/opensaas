@@ -187,20 +187,28 @@ describe('foundation source contract', () => {
     expect(component).not.toContain('Ask AI');
   });
 
-  test('renders direct global section links, generated footer registry, and intentional focus styles', () => {
+  test('renders a separate site footer and simplified sidebar hierarchy', () => {
     const sidebar = read('src/components/Sidebar.astro');
     const footer = read('src/components/Footer.astro');
+    const siteFooter = read('src/components/SiteFooter.astro');
     const card = read('src/components/mintlify/Card.astro');
     const css = read('src/styles/docs.css');
 
     expect(sidebar).toContain('global-section-link');
     expect(sidebar).toContain('globalSectionLinks');
-    expect(footer).toContain('footerSections');
-    expect(footer).toContain('docs-registry-grid');
+    expect(footer).toContain('SiteFooter');
+    expect(footer).toContain('data-docs-site-footer-home');
+    expect(siteFooter).toContain('footerSections');
+    expect(siteFooter).toContain('data-docs-site-footer');
+    expect(siteFooter).toContain('docs-registry-grid');
     expect(card).toContain('border: 2px solid var(--sl-color-text-accent)');
     expect(card).toContain(':focus:not(:focus-visible)');
     expect(css).toContain("#starlight__sidebar a:focus:not(:focus-visible)");
     expect(css).toContain("#starlight__sidebar a[aria-current='page']");
+    expect(css).toContain('#starlight__sidebar ul ul li');
+    expect(css).toContain('border-inline-start: 0');
+    expect(css).toContain('.page > .docs-site-footer');
+    expect(css).toContain('position: sticky');
   });
 
   test('uses a calm reading measure without changing the font family', () => {

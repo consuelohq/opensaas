@@ -11,6 +11,7 @@ import {
   pollWorkspaceDeviceAccessToken,
   requestWorkspaceDeviceCode,
   selectWorkspaceForDeviceLogin,
+  syncWorkspaceAgentStatus,
   type DeviceLoginFetch,
 } from '../scripts/lib/workspace-device-login-client';
 
@@ -262,5 +263,51 @@ describe('workspace device-login HTTP client', () => {
       intervalSeconds: 5,
       fetchImpl,
     })).resolves.toMatchObject({ status: 'unavailable' });
+  });
+
+  it('syncs only verified agent identifiers with the short-lived bootstrap credential', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl: DeviceLoginFetch = async (url, init) => {
+      calls.push({ url: String(url), init });
+      return jsonResponse({
+        ok: true,
+        connectedAgentCount: 2,
+        agents: [
+          { name: 'codex', label: 'Codex' },
+          { name: 'gemini', label: 'Gemini' },
+        ],
+      });
+    };
+
+    const result = await syncWorkspaceAgentStatus({
+      connectorBootstrapToken: 'cbt_status_sync_secret',
+      agentNames: ['gemini', 'codex', 'codex'],
+      fetchImpl,
+    });
+
+    expect(result).toMatchObject({ status: 'synced', connectedAgentCount: 2 });
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe('https://os.consuelohq.com/workspace/agents');
+    expect(calls[0].init?.method).toBe('POST');
+    expect(new Headers(calls[0].init?.headers).get('authorization')).toBe(
+      'Bearer cbt_status_sync_secret',
+    );
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({
+      agents: ['codex', 'gemini'],
+    });
+    expect(String(calls[0].init?.body)).not.toMatch(/configPath|homePath|token|secret/i);
+  });
+
+  it('returns unavailable when agent-status synchronization cannot reach the control plane', async () => {
+    await expect(syncWorkspaceAgentStatus({
+      connectorBootstrapToken: 'cbt_status_sync_secret',
+      agentNames: ['codex'],
+      fetchImpl: async () => {
+        throw new Error('network down');
+      },
+    })).resolves.toMatchObject({
+      status: 'unavailable',
+      message: 'network down',
+    });
   });
 });

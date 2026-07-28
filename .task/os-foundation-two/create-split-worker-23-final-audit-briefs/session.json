@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1763d68ddab5",
+  "tmuxSession": "opensaas-os-foundation-two-create-split-worker-23-final-audit-briefs-1763d68d",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/create-split-worker-23-final-audit-briefs",
+  "branch": "task/os-foundation-two/create-split-worker-23-final-audit-briefs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-create-split-worker-23-final-audit-briefs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-create-split-worker-23-final-audit-briefs",
+  "prNumber": 1673,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1673",
+  "createdAt": "2026-07-27T18:22:19.477Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-create-split-worker-23-final-audit-briefs/.task/os-foundation-two/create-split-worker-23-final-audit-briefs/session.json"
+}

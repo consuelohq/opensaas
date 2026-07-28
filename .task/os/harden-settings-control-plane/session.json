@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e8890ee890b3",
+  "tmuxSession": "opensaas-os-harden-settings-control-plane-e8890ee8",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/harden-settings-control-plane",
+  "branch": "task/os/harden-settings-control-plane",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-settings-control-plane",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-settings-control-plane",
+  "prNumber": 1528,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1528",
+  "createdAt": "2026-07-16T21:16:37.962Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-settings-control-plane/.task/os/harden-settings-control-plane/session.json"
+}

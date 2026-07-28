@@ -10,7 +10,7 @@ const rows = [
     id: "trace_001",
     cursor: "cur_001",
     idempotencyKey: "idem_001",
-    toolName: "workspace.context.search",
+    toolName: "workspace.memory",
     status: "ok",
     durationMs: 20,
     inputTokens: 100,
@@ -21,7 +21,7 @@ const rows = [
     id: "trace_002",
     cursor: "cur_002",
     idempotencyKey: "idem_002",
-    toolName: "workspace.context.search",
+    toolName: "workspace.memory",
     status: "failed",
     code: "COMMAND_FAILED",
     errorCause: "Context search failed.",
@@ -79,7 +79,7 @@ describe("Trace Sites reporting contract", () => {
       dataState: "fresh",
     });
     expect(report.report.tools).toEqual([
-      expect.objectContaining({ toolName: "workspace.context.search", calls: 2, failures: 1 }),
+      expect.objectContaining({ toolName: "workspace.memory", calls: 2, failures: 1 }),
       expect.objectContaining({ toolName: "workspace.task.start", calls: 1, failures: 0 }),
     ]);
     assertNoRuntimeLeak(report);

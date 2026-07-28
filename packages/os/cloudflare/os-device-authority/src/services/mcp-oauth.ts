@@ -441,7 +441,8 @@ async function exchangeMcpOAuthRefreshToken(input: {
   if (resource && resource !== stored.resource)
     return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
 
-  const requestedScopes = normalizeScopes(input.params.get('scope') ?? '');
+  const requestedScope = input.params.get('scope');
+  const requestedScopes = requestedScope ? normalizeScopes(requestedScope) : [];
   if (
     requestedScopes.length > 0 &&
     requestedScopes.some((scope) => !stored.scopes.includes(scope))

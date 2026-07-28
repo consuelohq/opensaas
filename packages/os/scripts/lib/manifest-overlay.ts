@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,6 +39,14 @@ type WorkflowBundlesFile = {
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const overlayFileName = 'manifest.overlay.json';
+
+export function generatedToolManifestPath(): string {
+  return path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json');
+}
+
+export function generatedWorkflowBundlesPath(): string {
+  return path.join(packageRoot, 'workflows', 'generated', 'workflow-bundles.json');
+}
 
 function expandHome(value: string): string {
   if (value === '~') return os.homedir();
@@ -79,14 +88,21 @@ function readJsonFile<TData>(filePath: string): TData | null {
 function writeJsonAtomic(filePath: string, value: unknown): void {
   const dir = path.dirname(filePath);
   fs.mkdirSync(dir, { recursive: true });
-  const tempPath = path.join(dir, `.${path.basename(filePath)}.tmp`);
-  fs.writeFileSync(tempPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
-  fs.renameSync(tempPath, filePath);
-  fs.chmodSync(filePath, 0o600);
+  const tempPath = path.join(
+    dir,
+    `.${path.basename(filePath)}.${process.pid}.${randomUUID()}.tmp`,
+  );
+  try {
+    fs.writeFileSync(tempPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
+    fs.renameSync(tempPath, filePath);
+    fs.chmodSync(filePath, 0o600);
+  } finally {
+    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+  }
 }
 
 function readPackageToolManifest(): CanonicalToolManifest {
-  const manifestPath = path.join(packageRoot, 'manifests', 'tool.manifest.json');
+  const manifestPath = generatedToolManifestPath();
   const parsed = readJsonFile<CanonicalToolManifest>(manifestPath);
   if (!parsed || !Array.isArray(parsed.tools)) {
     throw new Error(`${manifestPath}: expected generated OS tool manifest with tools array`);
@@ -95,11 +111,23 @@ function readPackageToolManifest(): CanonicalToolManifest {
 }
 
 function readWorkflowIds(): string[] {
-  const bundlesPath = path.join(packageRoot, 'manifests', 'workflow-bundles.json');
+  const bundlesPath = generatedWorkflowBundlesPath();
   const bundles = readJsonFile<WorkflowBundlesFile>(bundlesPath);
   return (bundles?.workflows ?? [])
     .map((workflow) => workflow.id)
     .filter((id): id is string => typeof id === 'string');
+}
+
+function readBundledSkillIds(): Set<string> {
+  const skillsRoot = path.join(packageRoot, 'skills');
+  if (!fs.existsSync(skillsRoot)) return new Set();
+
+  return new Set(
+    fs.readdirSync(skillsRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => readJsonFile<{ name?: unknown }>(path.join(skillsRoot, entry.name, 'skill.json'))?.name)
+      .filter((name): name is string => typeof name === 'string' && name.length > 0),
+  );
 }
 
 export function readManifestOverlay(home?: string): ManifestOverlay {
@@ -131,8 +159,8 @@ export function validateManifestOverlayPatch(patch: ManifestOverlayPatch): Manif
   }
 
   if (patch.kind === 'skill') {
-    const exists = manifest.tools.some((entry) => entry.kind === 'os-skill' && entry.name === name);
-    return exists ? null : { code: 'UNKNOWN_SKILL', message: `Skill is not present in the generated manifest: ${name}` };
+    const exists = readBundledSkillIds().has(name);
+    return exists ? null : { code: 'UNKNOWN_SKILL', message: `Skill is not present in the bundled skill catalog: ${name}` };
   }
 
   return workflowIds.has(name)

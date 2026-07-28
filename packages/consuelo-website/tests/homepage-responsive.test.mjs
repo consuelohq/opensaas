@@ -17,17 +17,30 @@ describe('Consuelo OS homepage presentation', () => {
     expect(hero.match(/<span data-hero-line>/g)).toHaveLength(3);
   });
 
-  test('should fit three authored hero lines with Pretext when the container changes', async () => {
+  test('should keep three authored hero lines stable without a post-paint fitter', async () => {
     const hero = await readSource('src/components/home/HomeHero.astro');
 
-    expect(hero).toContain("import { layout, prepare } from '@chenglou/pretext'");
-    expect(hero).toContain("const heroLines = Array.from");
-    expect(hero).toContain('new ResizeObserver');
-    expect(hero).toContain("document.fonts.ready");
-    expect(hero).toContain("heading.style.setProperty('--hero-title-size'");
+    expect(hero).not.toContain('@chenglou/pretext');
+    expect(hero).not.toContain('new ResizeObserver');
+    expect(hero).not.toContain('document.fonts.ready');
+    expect(hero).not.toContain("heading.style.setProperty('--hero-title-size'");
+    expect(hero).toContain('font-size: clamp(2.15rem, 9.25vw, 6.25rem);');
     expect(hero).toContain('.os-hero h1 > span {');
     expect(hero).toContain('display: block;');
     expect(hero).not.toContain('.os-hero h1 > span:nth-child(2)::after');
+  });
+
+  test('should preload the Latin variable fonts used by the landing page', async () => {
+    const layout = await readSource('src/layouts/MarketingLayout.astro');
+
+    expect(layout).toContain("bodoni-moda-latin-wght-normal.woff2?url");
+    expect(layout).toContain("inter-latin-wght-normal.woff2?url");
+    expect(layout.match(/rel="preload"/g)).toHaveLength(2);
+    expect(layout.match(/as="font"/g)).toHaveLength(2);
+    expect(layout.match(/type="font\/woff2"/g)).toHaveLength(2);
+    expect(layout.match(/font-display: block/g)).toHaveLength(2);
+    expect(layout).not.toContain("import '@fontsource-variable/bodoni-moda'");
+    expect(layout).not.toContain("import '@fontsource-variable/inter'");
   });
 
   test('should reveal a fixed full-viewport cloud footer behind the scrolling page', async () => {
@@ -46,9 +59,51 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain("window.addEventListener('scroll', scheduleReveal, { passive: true })");
     expect(footer).toContain('window.requestAnimationFrame(updateReveal)');
     expect(footer).toContain('data-cloud-title-line');
-    expect(footer).toContain('CONSUELO OS');
+    expect(footer).toContain('CONSUELO OS <span>V0.10.3</span>');
     expect(footer).toContain('MIT LICENSE');
     expect(footer).toContain('bottom: 0;');
+    expect(footer).toContain('window.innerHeight * 1.4');
+    expect(footer).toContain('Math.pow(progress, 1.15)');
+  });
+
+  test('should compose the cloud footer as an illustration-led poster', async () => {
+    const footer = await readSource('src/components/home/HomeCloudCta.astro');
+
+    expect(footer).not.toContain('@chenglou/pretext');
+    expect(footer).not.toContain("heading.style.setProperty('--cloud-title-size'");
+    expect(footer).toContain('font-size: clamp(2.8rem, 4.4vw, 4rem);');
+    expect(footer).toContain('font-size: clamp(3.05rem, 7.1vw, 3.85rem);');
+    expect(footer).toContain('font-size: clamp(3.1rem, 14.7vw, 3.8rem);');
+    expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
+    expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
+    expect(footer).toContain('/generated/holding-world-editorial.png');
+    expect(footer).not.toContain('filter: brightness(0) invert(1)');
+    expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
+    expect(footer).toContain('RUN THE HOME NODE FOR YOU');
+    expect(footer).toContain('--cloud-gutter: clamp(4.75rem, 8.5vw, 8rem);');
+    expect(footer).toContain('/generated/consuelo-footer-badge.png');
+    expect(footer).toContain('aspect-ratio: 121 / 173;');
+    expect(footer).toContain('justify-items: end;');
+    expect(footer).toContain('text-align: right;');
+    expect(footer).toContain('.cloud-cta__badge {\n      display: none;');
+  });
+
+  test('should generate footer binaries before dev and build without tracking them', async () => {
+    const [packageJson, gitignore, generator] = await Promise.all([
+      readSource('package.json'),
+      readSource('.gitignore'),
+      readSource('scripts/generate-footer-art.ts'),
+    ]);
+
+    expect(packageJson).toContain('"dev": "bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain('"start": "bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain(
+      '"build": "bun run generate:footer-art && astro check && astro build"',
+    );
+    expect(gitignore).toContain('public/generated/');
+    expect(generator).toContain("public/generated/holding-world-editorial.png");
+    expect(generator).toContain("public/generated/consuelo-footer-badge.png");
+    expect(generator).toContain('bodyUnderlayMask');
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {

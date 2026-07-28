@@ -6,21 +6,58 @@ export type LauncherLocalAgent = {
 
 export type LauncherOnboardingOptions = {
   mcpUrl: string;
+  workspaceHostname?: string | null;
   localAgents?: LauncherLocalAgent[];
 };
 
 const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
 
 const launcherLinks = {
-  sites: [
-    { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-    { label: 'Artifacts', href: 'https://sites.consuelohq.com/office' },
-    { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
-    { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
-  ],
   guides: [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }],
   writing: [{ label: 'Decision loops', href: '/writing/on-decision-loops' }],
 } as const;
+
+const WORKSPACE_HOSTNAME_PATTERN =
+  /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.consuelohq\.com$/;
+
+const RESERVED_WORKSPACE_HOSTNAMES = new Set([
+  'api.consuelohq.com',
+  'app.consuelohq.com',
+  'diffs.consuelohq.com',
+  'docs.consuelohq.com',
+  'install.consuelohq.com',
+  'linear.consuelohq.com',
+  'os.consuelohq.com',
+  'sites.consuelohq.com',
+  'www.consuelohq.com',
+]);
+
+function normalizeWorkspaceHostname(
+  value: string | null | undefined,
+): string | null {
+  const hostname = value?.trim().toLowerCase().replace(/\.$/, '') ?? '';
+  if (!hostname) return null;
+  if (
+    !WORKSPACE_HOSTNAME_PATTERN.test(hostname) ||
+    RESERVED_WORKSPACE_HOSTNAMES.has(hostname)
+  ) {
+    throw new Error(`Invalid workspace hostname: ${value ?? ''}`);
+  }
+  return hostname;
+}
+
+function workspaceHref(hostname: string | null, pathname: string): string {
+  return hostname ? `https://${hostname}${pathname}` : pathname;
+}
+
+function workspaceLauncherLinks(hostname: string | null) {
+  return [
+    { label: 'Go to market', href: workspaceHref(hostname, '/gtm') },
+    { label: 'Artifacts', href: workspaceHref(hostname, '/artifacts') },
+    { label: 'Observability', href: workspaceHref(hostname, '/observability') },
+    { label: 'Code review', href: workspaceHref(hostname, '/diffs') },
+  ];
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -33,11 +70,11 @@ function escapeHtml(value: string): string {
 
 function connectedAgentItems(localAgents: LauncherLocalAgent[]): string {
   const connectedAgents = localAgents.filter((agent) => agent.status === 'verified');
-  if (connectedAgents.length === 0) {
-    return '<p class="muted">No local agents connected to workspace yet.</p>';
-  }
-
-  return `<ul class="agent-list">${connectedAgents.map((agent) => `<li>${escapeHtml(agent.label)}</li>`).join('')}</ul>`;
+  const items = connectedAgents
+    .map((agent) => `<li>${escapeHtml(agent.label)}</li>`)
+    .join('');
+  const hidden = connectedAgents.length > 0 ? ' hidden' : '';
+  return `<ul class="agent-list" data-agent-list>${items}</ul><p class="muted" data-agent-fallback${hidden}>No local agents connected to workspace yet.</p>`;
 }
 
 function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string {
@@ -48,6 +85,7 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
 
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
   const localAgents = options.localAgents ?? [];
+  const workspaceHostname = normalizeWorkspaceHostname(options.workspaceHostname);
   const connectedLocalAgentCount = localAgents.filter((agent) => agent.status === 'verified').length;
   const localAgentNoun = connectedLocalAgentCount === 1 ? 'agent' : 'agents';
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
@@ -155,12 +193,8 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <p class="muted">ChatGPT is ready now.</p>
         </section>
         <section class="section">
-          <h2 class="section-title">Settings</h2>
-          ${navLinks([{ label: 'Configuration', href: '/settings' }])}
-        </section>
-        <section class="section">
           <h2 class="section-title">Sites</h2>
-          ${navLinks(launcherLinks.sites)}
+          ${navLinks(workspaceLauncherLinks(workspaceHostname))}
         </section>
         <section class="section">
           <h2 class="section-title">Guides and Tips</h2>
@@ -170,9 +204,17 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <h2 class="section-title">Writing</h2>
           ${navLinks(launcherLinks.writing)}
         </section>
+        <section class="section">
+          <h2 class="section-title">Configuration</h2>
+          ${navLinks([
+            { label: 'Tools', href: '/tools' },
+            { label: 'Environments', href: '/environments' },
+            { label: 'Secrets', href: '/secrets' },
+          ])}
+        </section>
       </div>
       <section class="status" aria-label="Local agents">
-        <p>Connected to ${connectedLocalAgentCount} local ${localAgentNoun}</p>
+        <p data-agent-count>Connected to ${connectedLocalAgentCount} local ${localAgentNoun}</p>
         ${connectedAgentItems(localAgents)}
       </section>
     </aside>
@@ -186,6 +228,40 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         document.querySelector('[data-copy-target="mcp-url"]')?.setAttribute('data-copy-status', 'failed');
       }
     });
+
+    const workspaceHost = window.location.hostname.toLowerCase();
+    if (/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.consuelohq\.com$/.test(workspaceHost)) {
+      const agentStatusUrl = new URL('https://os.consuelohq.com/workspace/agents');
+      agentStatusUrl.searchParams.set('workspace_host', workspaceHost);
+      fetch(agentStatusUrl.toString(), {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      })
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error('agent status unavailable')))
+        .then((payload) => {
+          if (!payload || !Array.isArray(payload.agents)) return;
+          const agents = payload.agents.filter((agent) =>
+            agent && typeof agent.name === 'string' && typeof agent.label === 'string',
+          );
+          const countElement = document.querySelector('[data-agent-count]');
+          const listElement = document.querySelector('[data-agent-list]');
+          const fallbackElement = document.querySelector('[data-agent-fallback]');
+          if (!(countElement instanceof HTMLElement) || !(listElement instanceof HTMLElement) || !(fallbackElement instanceof HTMLElement)) return;
+
+          const count = agents.length;
+          countElement.textContent = 'Connected to ' + count + ' local ' + (count === 1 ? 'agent' : 'agents');
+          const fragment = document.createDocumentFragment();
+          for (const agent of agents) {
+            const item = document.createElement('li');
+            item.textContent = agent.label;
+            fragment.append(item);
+          }
+          listElement.replaceChildren(fragment);
+          fallbackElement.hidden = count > 0;
+          fallbackElement.textContent = 'No local agents connected to workspace yet.';
+        })
+        .catch(() => undefined);
+    }
   </script>
 </body>
 </html>

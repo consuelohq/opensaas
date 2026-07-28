@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a9586916907c",
+  "tmuxSession": "opensaas-os-distribution-runtime-bundle-builder-a9586916",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/runtime-bundle-builder",
+  "branch": "task/os-distribution/runtime-bundle-builder",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-runtime-bundle-builder",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-runtime-bundle-builder",
+  "prNumber": 1556,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1556",
+  "createdAt": "2026-07-22T20:18:03.844Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-runtime-bundle-builder/.task/os-distribution/runtime-bundle-builder/session.json"
+}
