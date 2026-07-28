@@ -4,9 +4,9 @@ This directory is the repository summary layer for Worker 23. Each assigned work
 
 Audit sequence:
 
-1. Freeze the verified baseline SHA and final candidate SHA.
-2. Open the canonical review-only GitHub comparison PR.
-3. Run domain audits 23a through 23g against the same candidate SHA.
+1. Freeze the exact final candidate SHA and recover the baseline or merge-base evidence.
+2. Select the authoritative GitHub review surface: prefer the dedicated review-only comparison PR; otherwise use the immutable ordinary promotion PR or exact GitHub comparison.
+3. Run domain audits 23a through 23g against the same exact candidate SHA. Missing synthetic audit branches or the dedicated PR do not block code inspection.
 4. Record findings and repair ownership in `finding-ledger.md`.
 5. Freeze the repaired candidate SHA and rerun affected audits.
 6. Run the fresh 23h cross-wave audit and record `GO` or `NO-GO`.

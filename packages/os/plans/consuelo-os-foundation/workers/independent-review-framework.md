@@ -10,10 +10,10 @@ Existing CodeRabbit, human, or other automated comments may be read as evidence.
 
 ## Required inputs
 
-- Review-only GitHub comparison PR, number, and URL.
+- Authoritative GitHub review surface, number or comparison identifier, and URL. Prefer the dedicated review-only comparison PR; otherwise use the immutable ordinary promotion PR or an exact GitHub commit comparison.
 - Assigned domain or synthesis brief.
 - Full initiative plan and environment registry.
-- Exact baseline SHA and frozen candidate SHA for the current numbered review round.
+- Exact frozen candidate SHA for the current numbered review round and the best available exact baseline or merge-base evidence from the authoritative comparison.
 - Exact diff plus relevant surrounding code and tests.
 - Original worker prompts and the requirement-level intent-lineage matrix.
 - Implementation, promotion, audit, and repair PR history.
@@ -27,7 +27,7 @@ Read the plan, assigned brief, and original prompts before evaluating the implem
 
 Review as a normal high-signal Consuelo teammate, not as a checklist recitation. Inspect current code and behavior rather than relying on worker closeouts, merged PRs, test names, or prior approvals. Prefer one consolidated root-cause finding over multiple symptoms.
 
-Continue with available evidence when a nonessential source is unavailable and record the gap. Stop and return a blocked or conditional result when the missing evidence is necessary to establish correctness, security, isolation, release integrity, or destructive-operation safety.
+Continue with available evidence when a nonessential source is unavailable and record the gap. Missing synthetic audit branches, labels, or a dedicated review-only PR are not sufficient reasons to skip code review when an exact immutable candidate and authoritative comparison are recoverable. Stop and return a blocked or conditional result only when the missing evidence is necessary to establish correctness, security, isolation, release integrity, destructive-operation safety, or the identity of the code being reviewed.
 
 ## What to inspect
 
@@ -145,7 +145,7 @@ Use `confidence: medium` or `outcome: needs_context` when required evidence is u
 
 ## GitHub posting contract
 
-The assigned worker posts directly to the canonical review-only GitHub comparison PR:
+The assigned worker posts directly to the authoritative GitHub review surface. Use the dedicated review-only comparison PR when it exists; otherwise use the immutable ordinary promotion PR or exact GitHub comparison selected by Worker 23:
 
 1. One inline comment per new finding on the most precise current diff line.
 2. A precise file-and-line top-level comment when GitHub cannot attach inline.
@@ -197,7 +197,7 @@ The consolidated prompt must contain every unresolved finding, its current locat
 
 Before completing the assigned review, verify:
 
-- the reviewed SHA is the frozen SHA for the current numbered round;
+- the reviewed SHA is the exact immutable SHA for the current numbered round and the authoritative GitHub review surface is recorded;
 - every requirement row has one authoritative domain;
 - secondary seam findings were transferred and not independently dispositioned;
 - every finding has current evidence, location, severity, priority, recommendation, validation, inline comment, and fix prompt;
