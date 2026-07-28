@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d1c53934701e",
+  "tmuxSession": "opensaas-os-bootstrap-managed-gcp-cloud-node-foundation-d1c53934",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/bootstrap-managed-gcp-cloud-node-foundation",
+  "branch": "task/os/bootstrap-managed-gcp-cloud-node-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-managed-gcp-cloud-node-foundation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-managed-gcp-cloud-node-foundation",
+  "prNumber": 1693,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1693",
+  "createdAt": "2026-07-28T03:13:54.447Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-managed-gcp-cloud-node-foundation/.task/os/bootstrap-managed-gcp-cloud-node-foundation/session.json"
+}
