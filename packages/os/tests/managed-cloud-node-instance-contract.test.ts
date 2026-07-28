@@ -259,6 +259,11 @@ describe('managed cloud node instance contract', () => {
     expect(script).toContain('CONSUELO_RELEASE_PUBLIC_KEYS_JSON');
     expect(script).toContain('scripts/lifecycle.ts');
     expect(script).toContain('scripts/managed-cloud-node-enroll.ts');
+    expect(script).toContain(
+      'CONSUELO_USER_HOME="$(getent passwd consuelo | cut -d: -f6)"',
+    );
+    expect(script).toContain('BUN_BIN="$CONSUELO_USER_HOME/.bun/bin/bun"');
+    expect(script).not.toContain('/home/consuelo/');
     expect(script).toContain('/var/lib/consuelo/bootstrap/status.json');
     expect(script).not.toMatch(
       /access[_-]?token|refresh[_-]?token|private[_-]?key|client[_-]?secret|service[_-]?account[_-]?key/i,

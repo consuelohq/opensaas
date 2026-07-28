@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
   "base": "origin/stream/os-cloud",
-  "headSha": "97fc4191745cc09aeda571a11dc86ce8bc47e7f6",
-  "changeHash": "2d7b279b5aa45efefd3ef676b56e2b656c230c9aa6d90fdc6ce4b159242a46f2",
+  "headSha": "ea1c846ee028eae517c761218273a831f30e6b13",
+  "changeHash": "dd0310e3e91a2ae1617ccc87899b73591120fcc1a25bd8cd8aa0414cc36ac9ed",
   "changedFiles": [
     "packages/os/scripts/install.ts",
     "packages/os/scripts/lib/gcloud-managed-cloud-node.ts",
@@ -27,7 +27,7 @@
     "packages/os/tests/managed-cloud-node-linux-heartbeat.test.ts",
     "packages/os/tests/platform-managed-cloud-node-instance.test.ts"
   ],
-  "verifiedAt": "2026-07-28T05:01:23.808Z",
+  "verifiedAt": "2026-07-28T05:10:58.632Z",
   "review": {
     "skipped": false,
     "passed": true

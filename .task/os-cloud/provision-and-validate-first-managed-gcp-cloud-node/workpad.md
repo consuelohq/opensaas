@@ -54,10 +54,30 @@ started: 2026-07-28
 - Strict static review against `origin/stream/os-cloud` passes with zero findings.
 - Official cloudflared bootstrap is pinned to release `2026.7.3`, Linux amd64, SHA-256 `9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17` from Cloudflare's release API.
 - No VM, boot disk, durable data disk, release bucket, or release object has been created yet.
+- The first runtime-bundle build correctly failed the portability gate because the bootstrap hardcoded `/home/consuelo`. A focused red regression now requires passwd-derived `CONSUELO_USER_HOME` and `BUN_BIN`; the bootstrap no longer embeds a machine/user-specific home path.
 
 ## files changed
 
-- none yet
+- `packages/os/scripts/install.ts`
+- `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
+- `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/lib/managed-cloud-node.ts`
+- `packages/os/scripts/lib/platform-managed-cloud-node.ts`
+- `packages/os/scripts/lib/platforms/linux.ts`
+- `packages/os/scripts/lifecycle.ts`
+- `packages/os/scripts/managed-cloud-node.ts`
+- `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
+- `packages/os/scripts/lib/managed-cloud-node-enrollment.ts`
+- `packages/os/scripts/managed-cloud-node-enroll.ts`
+- `packages/os/tests/gcloud-managed-cloud-node-instance.test.ts`
+- `packages/os/tests/managed-cloud-node-enrollment-cli.test.ts`
+- `packages/os/tests/managed-cloud-node-enrollment.test.ts`
+- `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
+- `packages/os/tests/managed-cloud-node-lifecycle-onboarding.test.ts`
+- `packages/os/tests/managed-cloud-node-linux-connector.test.ts`
+- `packages/os/tests/managed-cloud-node-linux-heartbeat.test.ts`
+- `packages/os/tests/platform-managed-cloud-node-instance.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -71,6 +91,7 @@ started: 2026-07-28
 
 - 2026-07-28 04:59:00 `review.run`: passed — OK
 - 2026-07-28 05:01:03 `review.run`: passed — OK
+- 2026-07-28 05:08:04 `review.run`: passed — OK
 
 ## key decisions
 
@@ -108,6 +129,7 @@ started: 2026-07-28
 - `managed-cloud-node-linux-heartbeat.test.ts`: red because websocket-relay produced no heartbeat materialization, then passing with durable systemd service/timer.
 - `managed-cloud-node-linux-connector.test.ts`: red on missing Linux cloudflared service, then passing with token-file isolation.
 - Affected regression set: 55 passing tests across 13 files with destructive-literal preflight.
+- Runtime portability regression: bundle build failed on a machine-specific absolute path, `managed-cloud-node-instance-contract.test.ts` was extended red, and all 4 node-domain tests pass after deriving the Linux account home at runtime.
 
 ## discovery
 
@@ -134,6 +156,7 @@ bun run task:finish
 
 - `packages/os/docs/distribution/release-channels.md`
 - `packages/os/docs/linux-platform.md`
+- `packages/os/package.json`
 - `packages/os/scripts/build-runtime-bundle.ts`
 - `packages/os/scripts/install.ts`
 - `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
@@ -153,9 +176,13 @@ bun run task:finish
 - `packages/os/scripts/prepare-release-publication.ts`
 - `packages/os/scripts/testing/distribution/runtime-fixture-server.ts`
 - `packages/os/scripts/workspace-node-heartbeat.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
 - `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/managed-cloud-node-enrollment.test.ts`
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
 
-- 2026-07-28 05:00:28 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+- 2026-07-28 05:06:58 apply-patch: `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
+- 2026-07-28 05:07:24 apply-patch: `packages/os/scripts/lib/managed-cloud-node.ts`
+
+- 2026-07-28 05:07:47 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
