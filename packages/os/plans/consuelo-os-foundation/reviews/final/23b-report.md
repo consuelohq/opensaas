@@ -7,9 +7,9 @@
 - Exact candidate SHA: `ef2530b136ec2a170915b583abfb2341899bd6ab`
 - Review round: `1`
 - Domain brief: `packages/os/plans/consuelo-os-foundation/workers/23b-provider-control-plane-audit.md`
-- Reviewer task: `task/os-foundation-two/provider-control-plane-audit-round-1-independent-rerun`
-- Reviewer task PR: [#1689](https://github.com/consuelohq/opensaas/pull/1689)
-- Reviewer task session: `tsk_e6f2c0b05983`
+- Reviewer task: `task/os-foundation-two/consuelo-os-foundation-round-one-provider-control-plane-audit-rerun`
+- Reviewer task PR: [#1690](https://github.com/consuelohq/opensaas/pull/1690)
+- Reviewer task session: `tsk_dcc3ac8872ba`
 - Assigned audit stream: `stream/os-foundation-two`
 - Review-only comparison PR: not required for this round; PR #1674 and its exact immutable head are the authorized surface
 - Final domain status: `DOMAIN BLOCKED`
@@ -74,6 +74,19 @@ Counts: `P0 0 / P1 2 / P2 2 / P3 0`.
 Because the provider product files are outside PR #1674's retained audit-packet diff, GitHub could not attach new comments to their current product lines. Each finding was therefore posted top-level with the exact file, line range, symbol, and inline-placement explanation.
 
 ## Evidence executed
+
+### Continuation evidence for the fresh audit task
+
+The fresh task revalidated the exact frozen provider surface without changing product code:
+
+- Focused provider tests passed: `bun run test -- tools/deployment-provider/handler.test.ts tools/deployment-provider/facade.test.ts tools/deployment-provider/cloudflare.test.ts tools/railway/handler.test.ts`; trace `trc_06c67eada6c9`; 4 files and 78 tests passed.
+- Caller-controlled approval probe: `executeDeploymentFacade` accepted `approved: true`, returned a successful fake deployment result, and issued `deploy --target customer-production --json`; trace `trc_8a520b58dd3c`.
+- Cloudflare raw-boundary probe: `cloudflareDeploymentProviderAdapter.operations.raw.command({ args: ['d1', 'list'] })` accepted the account-wide namespace, and the service issued `d1 list` unchanged with supplied approval; trace `trc_8a520b58dd3c`.
+- The first direct probe failed before provider imports because the temporary Bun program resolved relative imports from `/tmp`; trace `trc_26ae609902df`. It was retried once with absolute task-worktree imports and succeeded. This is tooling recovery, not product evidence.
+- Strict task review passed with zero task-owned or blocking findings; trace `trc_847998a51c70`. It retained 23 unrelated Twenty SDK baseline findings and the known missing shared ESLint-rules modules.
+- Full verify trace `trc_c0b4461a0639` passed the database guard and selected `@consuelo/os` package test, but was not publish-valid because the baseline API `subscription`, `local-presence`, and `ghl` suites failed (53 failed / 205 passed tests). No task-owned or provider-related failure was reported.
+- Foundation plan/report validator passed with zero structural or forbidden-match failures; trace `trc_62e79c166e74`.
+- A bounded `verify --base HEAD` retry produced the same baseline result; trace `trc_3caeeab42a89`. The database guard and selected OS package test passed, while the 3 unrelated API suites and 23 pre-existing lint/typecheck findings prevented a publish-valid stamp.
 
 | Inspection or validation | Exact command, trace, or GitHub evidence | Result | Candidate applicability |
 | --- | --- | --- | --- |
