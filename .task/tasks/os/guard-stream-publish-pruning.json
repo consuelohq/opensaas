@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guard-stream-publish-pruning",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1043,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1043",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1043",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1043/guard-stream-publish-pruning",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1043",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1043/guard-stream-publish-pruning",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-stream-publish-pruning",
+  "taskSession": "tsk_be464196077b",
+  "tmuxSession": "opensaas-os-guard-stream-publish-pruning-be464196",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-stream-publish-pruning/.task/os/guard-stream-publish-pruning/session.json",
+  "createdAt": "2026-06-14T21:51:48.045Z"
+}

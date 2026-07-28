@@ -1,0 +1,153 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/guard-stream-publish-pruning",
+  "base": "origin/main",
+  "headSha": "f9ac77158dac5bc243dd4060735ab4ab799fe668",
+  "changeHash": "c3ff3b5e8c4f2ae8c77b36cd8c1b290fa7eba53de32fe7064f1d0722c5f781b3",
+  "changedFiles": [
+    "packages/os/scripts/lib/publish-scope.js",
+    "packages/os/scripts/stream-sync.js",
+    "packages/os/scripts/task-pr.js",
+    "packages/os/scripts/task-push.js",
+    "packages/os/scripts/task-start.js",
+    "packages/os/tests/publish-scope.test.ts",
+    "packages/workspace/scripts/lib/publish-scope.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/publish-scope.test.ts"
+  ],
+  "verifiedAt": "2026-06-14T22:01:37.439Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/guard-stream-publish-pruning/current.json",
+        ".task/os/guard-stream-publish-pruning/evidence-log.json",
+        ".task/os/guard-stream-publish-pruning/read-log.json",
+        ".task/os/guard-stream-publish-pruning/session.json",
+        ".task/os/guard-stream-publish-pruning/workpad.md",
+        ".task/tasks/os/guard-stream-publish-pruning.json",
+        "packages/os/scripts/lib/publish-scope.js",
+        "packages/os/scripts/stream-sync.js",
+        "packages/os/scripts/task-pr.js",
+        "packages/os/scripts/task-push.js",
+        "packages/os/scripts/task-start.js",
+        "packages/os/tests/publish-scope.test.ts",
+        "packages/workspace/scripts/lib/publish-scope.js",
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/scripts/task-pr.js",
+        "packages/workspace/scripts/task-push.js",
+        "packages/workspace/scripts/task-start.js",
+        "packages/workspace/tests/publish-scope.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-push.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-task-session",
+          "critical": true,
+          "reason": "Task routing and metadata changes must prove task-session behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-pr.js",
+            "packages/workspace/scripts/task-start.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 636,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guard-stream-publish-pruning\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 279\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:01:36\n\u001b[2m   Duration \u001b[22m 365ms\u001b[2m (transform 11ms, setup 0ms, import 18ms, tests 279ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 174,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [2.19ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.86ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.25ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.21ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.14ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.49ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.01ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.23ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.07ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.22ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [166.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

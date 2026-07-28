@@ -1,0 +1,13 @@
+{
+  "files": [
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/scripts/stream-sync.js",
+    "packages/os/scripts/task-pr.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/task-session.test.js"
+  ],
+  "updatedAt": "2026-06-14T22:00:16.967Z"
+}

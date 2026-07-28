@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const DEFAULT_REVIEW_BASE = 'main';
@@ -337,6 +338,33 @@ function updateTaskMetaIfPresent(taskMetaRecord, updates) {
     ...taskMetaRecord.data,
     ...updates,
   });
+}
+
+function parseStreamSyncOutput(output) {
+  try {
+    return JSON.parse(String(output || '').trim());
+  } catch {
+    return null;
+  }
+}
+
+function runStreamSyncBeforeReview(context) {
+  const result = spawnSync('bun', ['run', 'stream:sync', '--', '--area', context.area, '--json'], {
+    cwd: context.repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  const syncResult = parseStreamSyncOutput(result.stdout);
+  if (result.status !== 0 || !syncResult || syncResult.pushed !== true) {
+    throw new Error(
+      `stream sync failed before publishing ${context.streamBranch}:\n` +
+      [result.stdout, result.stderr].filter(Boolean).join('\n').trim(),
+    );
+  }
+
+  return result.stdout || '';
 }
 
 function getUpdateDetails({ pullRequest, title, body, base }) {
@@ -784,6 +812,8 @@ async function main() {
     taskPr: taskPrDetails.pullRequest,
     context,
   });
+
+  runStreamSyncBeforeReview(context);
 
   const reviewTitle =
     args.title ||

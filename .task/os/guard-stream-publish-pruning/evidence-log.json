@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/guard-stream-publish-pruning",
+  "events": [
+    {
+      "id": "83caea74-3aa1-47e9-ba0a-8f7069c1448a",
+      "occurred_at": "2026-06-14T21:52:02.155Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "7888033d-96ac-4816-9879-83ff0afc1452",
+      "occurred_at": "2026-06-14T21:52:08.551Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "148bdc5a-a169-4cb1-a21c-f8135ca1e8ab",
+      "occurred_at": "2026-06-14T21:52:39.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-session.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "6bf489b5-1e01-443f-8205-4dde54df26d6",
+      "occurred_at": "2026-06-14T21:56:14.696Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "2e307a72-e682-4bed-b24a-58da5ad54ed6",
+      "occurred_at": "2026-06-14T21:58:24.714Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "b9f4e9f5-f962-4b32-a32f-971d425b1289",
+      "occurred_at": "2026-06-14T21:58:24.812Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "2994192f-9dfd-4f4a-a053-6e674db18fc0",
+      "occurred_at": "2026-06-14T21:58:30.765Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "db815bc9-4772-4a18-8f3d-5a78a13a58c6",
+      "occurred_at": "2026-06-14T22:00:17.034Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    },
+    {
+      "id": "ff091630-af50-4b3a-a24c-715d8f21e50a",
+      "occurred_at": "2026-06-14T22:00:17.077Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/guard-stream-publish-pruning",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/guard-stream-publish-pruning"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-14T22:00:17.183Z"
+}

@@ -38,6 +38,7 @@ const { collectTaskMetaFiles, findTaskMeta, getTaskCurrentMetaPath, getTaskWorkp
 const { findActiveTaskResult } = require('./lib/task-selection');
 const { getVerifyStampMismatch } = require('./lib/verification');
 const { assertWorkpadReady, syncFilesChanged } = require('./lib/task-workpad');
+const { createPublishPlan } = require('./lib/publish-scope');
 
 const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--approved', '--ack-workpad-incomplete']);
 
@@ -396,6 +397,10 @@ function resolveFiles(args, repoRoot) {
   throw new Error('provide --changed, --files, or --files-json');
 }
 
+function buildTaskPushPublishPlan({ files, area, taskBranch }) {
+  return createPublishPlan(files, { area, taskBranch, mode: 'task' });
+}
+
 function printPlan(branch, files, useJson) {
   if (useJson) {
     return;
@@ -499,15 +504,29 @@ async function main() {
   const currentTaskBranch = taskMeta && taskMeta.data && taskMeta.data.taskBranch;
   const metaFiles = collectTaskMetaFiles(repoRoot, currentArea, currentTaskBranch, { includeVerify: args.verify });
   const seenPaths = new Set(userFiles.map((f) => f.path));
-  const files = [...userFiles];
+  const unfilteredFiles = [...userFiles];
   for (const mf of metaFiles) {
     if (!seenPaths.has(mf.path)) {
-      files.push(mf);
+      unfilteredFiles.push(mf);
+    }
+  }
+
+  const publishPlan = buildTaskPushPublishPlan({
+    files: unfilteredFiles,
+    area: currentArea,
+    taskBranch: currentTaskBranch,
+  });
+  const files = publishPlan.files;
+
+  if (publishPlan.pruned.length > 0) {
+    writeStderr(`soft-pruned ${publishPlan.pruned.length} out-of-area file(s) from github publish:`);
+    for (const file of publishPlan.pruned) {
+      writeStderr(`  - ${file.path} (${file.classification.reason})`);
     }
   }
 
   if (files.length === 0) {
-    throw new Error('no files to push');
+    throw new Error('no files to push after publish-scope pruning');
   }
 
   printPlan(branch, files, args.json);
@@ -625,6 +644,10 @@ async function main() {
     approved: Boolean(args.approved && verifyMismatch),
     approvalReason: args.approved && verifyMismatch ? args.reason : undefined,
     files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
+    prunedFiles: publishPlan.pruned.map((file) => ({
+      path: file.path,
+      reason: file.classification.reason,
+    })),
     hooks,
   };
 
@@ -636,7 +659,13 @@ async function main() {
   writeStdout(`pushed ${commit.sha.slice(0, 8)} to ${branch}`);
 }
 
-main().catch((error) => {
-  writeStderr(error instanceof Error ? error.message : 'unknown error');
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    writeStderr(error instanceof Error ? error.message : 'unknown error');
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  buildTaskPushPublishPlan,
+};
