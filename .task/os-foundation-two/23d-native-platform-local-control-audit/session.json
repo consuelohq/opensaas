@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_912e9fd38d30",
+  "tmuxSession": "opensaas-os-foundation-two-23d-native-platform-local-control-audit-912e9fd3",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/23d-native-platform-local-control-audit",
+  "branch": "task/os-foundation-two/23d-native-platform-local-control-audit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-23d-native-platform-local-control-audit",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-23d-native-platform-local-control-audit",
+  "prNumber": 1696,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1696",
+  "createdAt": "2026-07-28T03:26:17.264Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-23d-native-platform-local-control-audit/.task/os-foundation-two/23d-native-platform-local-control-audit/session.json"
+}
