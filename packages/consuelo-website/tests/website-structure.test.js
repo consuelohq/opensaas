@@ -88,6 +88,11 @@ describe('Consuelo website structure', () => {
         '../components/site/SiteFooter.astro',
         '../data/contact-content',
       ],
+      'src/pages/support.astro': [
+        '../layouts/MarketingLayout.astro',
+        '../components/site/SiteHeader.astro',
+        '../components/site/SiteFooter.astro',
+      ],
       'src/pages/mercury.astro': [
         '../layouts/MarketingLayout.astro',
         '../components/site/SiteHeader.astro',
@@ -112,6 +117,20 @@ describe('Consuelo website structure', () => {
       expect(source, route).not.toContain('LaunchHeader');
       expect(source, route).not.toContain('LaunchFooter');
     }
+  });
+
+  test('should publish a stable support route for Marketplace and download flows', () => {
+    expectFile('src/pages/support.astro');
+    const support = readSource('src/pages/support.astro');
+    expect(support).toContain('title="Support"');
+    expect(support).toContain('support@consuelohq.com');
+    expect(support).toContain('https://docs.consuelohq.com');
+    expect(support).toContain('href="/contact"');
+    expect(support).not.toContain('404');
+
+    const redirects = readSource('public/_redirects');
+    expect(redirects).toContain('/support /support/index.html 200');
+    expect(redirects).toContain('/support/ /support/index.html 200');
   });
 
   test('should expose the Hermes-style pricing route without wiring it into shared navigation', async () => {

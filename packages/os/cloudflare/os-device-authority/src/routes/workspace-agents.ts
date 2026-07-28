@@ -1,6 +1,10 @@
 import type { Hono } from 'hono';
 
 import { json } from '../http';
+import {
+  normalizeWorkspaceAgentNames,
+  publicWorkspaceAgentStatus,
+} from '../services/agents';
 import type {
   DeviceAuthorityRuntime,
   NodeBootstrapCredential,
@@ -8,20 +12,6 @@ import type {
   WorkspaceAgentStatus,
 } from '../types';
 import { hashHex } from '../utils';
-
-const AGENT_LABELS = {
-  claude: 'Claude',
-  codex: 'Codex',
-  cursor: 'Cursor',
-  factory: 'Factory',
-  gemini: 'Gemini',
-  opencode: 'OpenCode',
-  pi: 'Pi',
-} as const satisfies Record<WorkspaceAgentName, string>;
-
-const AGENT_NAMES = new Set<WorkspaceAgentName>(
-  Object.keys(AGENT_LABELS) as WorkspaceAgentName[],
-);
 
 const publicHeaders = {
   'access-control-allow-origin': '*',
@@ -56,34 +46,6 @@ function bearerToken(request: Request): string | undefined {
   return match?.[1];
 }
 
-function normalizeAgentNames(value: unknown): WorkspaceAgentName[] | undefined {
-  if (!Array.isArray(value) || value.length > AGENT_NAMES.size) return undefined;
-  const names: WorkspaceAgentName[] = [];
-  for (const candidate of value) {
-    if (typeof candidate !== 'string' || !AGENT_NAMES.has(candidate as WorkspaceAgentName)) {
-      return undefined;
-    }
-    names.push(candidate as WorkspaceAgentName);
-  }
-  return [...new Set(names)].sort();
-}
-
-function publicWorkspaceAgentStatus(
-  workspaceHost: string,
-  status: WorkspaceAgentStatus | undefined,
-): Record<string, unknown> {
-  const agentNames = status
-    ? [...new Set(Object.values(status.nodes).flatMap((node) => node.agents))].sort()
-    : [];
-  return {
-    ok: true,
-    workspaceHost,
-    connectedAgentCount: agentNames.length,
-    agents: agentNames.map((name) => ({ name, label: AGENT_LABELS[name] })),
-    updatedAt: status ? new Date(status.updatedAt).toISOString() : null,
-  };
-}
-
 async function authenticateNode(
   request: Request,
   runtime: DeviceAuthorityRuntime,
@@ -100,19 +62,41 @@ async function authenticateNode(
   return credential;
 }
 
-async function readAgentNames(request: Request): Promise<WorkspaceAgentName[] | undefined> {
+async function readAgentNames(
+  request: Request,
+): Promise<WorkspaceAgentName[] | undefined> {
   try {
-    if (!(request.headers.get('content-type') ?? '').toLowerCase().includes('application/json')) {
+    if (
+      !(request.headers.get('content-type') ?? '')
+        .toLowerCase()
+        .includes('application/json')
+    ) {
       return undefined;
     }
     const body = await request.json();
     if (!body || typeof body !== 'object' || Array.isArray(body)) return undefined;
     const record = body as Record<string, unknown>;
-    if (Object.keys(record).length !== 1 || !Object.hasOwn(record, 'agents')) return undefined;
-    return normalizeAgentNames(record.agents);
+    if (Object.keys(record).length !== 1 || !Object.hasOwn(record, 'agents')) {
+      return undefined;
+    }
+    return normalizeWorkspaceAgentNames(record.agents);
   } catch {
     return undefined;
   }
+}
+
+async function statusPayload(
+  runtime: DeviceAuthorityRuntime,
+  workspaceHost: string,
+  legacyStatus?: WorkspaceAgentStatus,
+): Promise<Record<string, unknown>> {
+  const nodes = await runtime.store.listWorkspaceNodesByHost(workspaceHost);
+  return publicWorkspaceAgentStatus({
+    workspaceHost,
+    nodes,
+    legacyStatus,
+    nowMs: runtime.now(),
+  });
 }
 
 async function handleWorkspaceAgentWrite(
@@ -152,6 +136,23 @@ async function handleWorkspaceAgentWrite(
       );
     }
 
+    const node = await runtime.store.byWorkspaceNodeId(credential.nodeId);
+    if (
+      node &&
+      (node.accountId !== credential.accountId ||
+        node.workspaceHost !== credential.workspaceHost ||
+        node.workspaceId !== credential.workspaceId)
+    ) {
+      return errorResponse(
+        'WORKSPACE_AGENT_STATUS_CONFLICT',
+        'The node credential does not match the registered workspace node.',
+        409,
+      );
+    }
+    if (node) {
+      await runtime.store.putWorkspaceNode({ ...node, agents });
+    }
+
     const updatedAt = runtime.now();
     const status: WorkspaceAgentStatus = {
       workspaceId: credential.workspaceId,
@@ -169,7 +170,7 @@ async function handleWorkspaceAgentWrite(
       updatedAt,
     };
     await runtime.store.putWorkspaceAgentStatus(status);
-    return json(publicWorkspaceAgentStatus(credential.workspaceHost, status));
+    return json(await statusPayload(runtime, credential.workspaceHost, status));
   } catch {
     return errorResponse(
       'WORKSPACE_AGENT_STATUS_WRITE_FAILED',
@@ -195,8 +196,8 @@ async function handleWorkspaceAgentRead(
         publicHeaders,
       );
     }
-    const status = await runtime.store.byWorkspaceAgentStatus(workspaceHost);
-    return json(publicWorkspaceAgentStatus(workspaceHost, status), {
+    const legacyStatus = await runtime.store.byWorkspaceAgentStatus(workspaceHost);
+    return json(await statusPayload(runtime, workspaceHost, legacyStatus), {
       headers: publicHeaders,
     });
   } catch {

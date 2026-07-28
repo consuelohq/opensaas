@@ -139,7 +139,9 @@ private struct ConsueloMenu: View {
         let role = node.role == .home ? "Home" : "Member"
         let marker = node.isDefault(in: workspace) ? " ✓" : ""
         let capabilities = node.capabilities.joined(separator: ", ")
-        return "\(node.displayName) · \(role) · \(node.presence.rawValue) · \(node.state.rawValue) · \(capabilities)\(marker)"
+        let agents = (node.agents ?? []).map { $0 == "opencode" ? "OpenCode" : $0.capitalized }
+        let agentSuffix = agents.isEmpty ? "" : " · \(agents.joined(separator: ", "))"
+        return "\(node.displayName) · \(role) · \(node.presence.rawValue) · \(node.state.rawValue) · \(capabilities)\(agentSuffix)\(marker)"
     }
 }
 

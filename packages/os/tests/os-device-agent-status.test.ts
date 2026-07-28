@@ -93,6 +93,7 @@ describe('OS device-authority workspace agent status', () => {
     expect(write.status).toBe(200);
     await expect(write.json()).resolves.toMatchObject({
       ok: true,
+      state: 'offline',
       connectedAgentCount: 2,
       agents: [
         { name: 'codex', label: 'Codex' },
@@ -117,7 +118,52 @@ describe('OS device-authority workspace agent status', () => {
         { name: 'opencode', label: 'OpenCode' },
       ],
     });
+    expect(body).toMatchObject({ state: 'offline' });
     expect(JSON.stringify(body)).not.toMatch(/account_internal|node-home|tokenHash|cbt_|configPath|homePath/i);
+  });
+
+  it('seeds the matching node agent set without fabricating heartbeat freshness', async () => {
+    const nowMs = Date.parse('2026-07-19T00:05:00.000Z');
+    const store = createMemoryDeviceGrantStore();
+    await store.putWorkspaceNode({
+      accountId: 'account_internal',
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      nodeId: 'node-home',
+      nodeName: 'Home Mac',
+      role: 'home',
+      connectorStatus: 'connected',
+      devicePublicKeyThumbprint: 'thumbprint-home',
+      createdAt: nowMs - 1_000,
+      updatedAt: nowMs - 1_000,
+      lastSeenAt: nowMs - 1_000,
+    });
+    await store.putNodeBootstrapCredential({
+      tokenHash: tokenHash(bootstrapToken),
+      accountId: 'account_internal',
+      workspaceId: 'workspace_internal',
+      workspaceHost: 'internal.consuelohq.com',
+      nodeId: 'node-home',
+      expiresAt: nowMs + 60_000,
+    });
+    const handler = createOsDeviceAuthorityHandler({ store, origin, now: () => nowMs });
+
+    const write = await handler(new Request(`${origin}/workspace/agents`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${bootstrapToken}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ agents: ['gemini', 'codex'] }),
+    }));
+
+    expect(write.status).toBe(200);
+    expect((await store.byWorkspaceNode('account_internal', 'node-home'))).toMatchObject({
+      agents: ['codex', 'gemini'],
+      lastSeenAt: nowMs - 1_000,
+    });
+    await expect(write.json()).resolves.toMatchObject({
+      state: 'online',
+      connectedAgentCount: 2,
+    });
   });
 
   it('replaces one node status, aggregates nodes, and fails closed for invalid writes', async () => {

@@ -258,6 +258,7 @@ private struct ContractSuite {
             "channel":"dev",
             "connectorId":"connector_home",
             "capabilities":["local-runtime","darwin"],
+            "agents":["codex","opencode"],
             "createdAt":"2026-07-20T12:00:00.000Z",
             "lastSeenAt":"2026-07-26T19:59:45.000Z",
             "presence":"online",
@@ -270,6 +271,7 @@ private struct ContractSuite {
         try expect(workspace.nodes.first?.role, .home, "node role")
         try expect(workspace.nodes.first?.presence, .online, "node presence")
         try expect(workspace.nodes.first?.capabilities, ["local-runtime", "darwin"], "node capabilities")
+        try expect(workspace.nodes.first?.agents, ["codex", "opencode"], "node agents")
         try expectTrue(workspace.nodes.first?.isDefault(in: workspace) == true, "default node marker")
 
         let unsafe = Data(#"{"workspaceId":"workspace_one","workspaceHost":"one.consuelohq.com","nodes":[],"cloudflareApiToken":"secret"}"#.utf8)
@@ -289,6 +291,7 @@ private struct ContractSuite {
             channel: "dev",
             connectorId: "connector_home",
             capabilities: ["local-runtime", "darwin"],
+            agents: ["codex", "opencode"],
             createdAt: "2026-07-20T12:00:00.000Z",
             lastSeenAt: "2026-07-26T19:59:45.000Z",
             presence: .online,
@@ -325,6 +328,7 @@ private struct ContractSuite {
         try expect(homePresentation.isSelectable, true, "active home selection")
         try expectTrue(homePresentation.subtitle.contains("online"), "online presence label")
         try expectTrue(homePresentation.subtitle.contains("local-runtime, darwin"), "capability summary")
+        try expectTrue(homePresentation.subtitle.contains("Codex, OpenCode"), "agent summary")
         try expect(memberPresentation.isDefault, false, "member default marker")
         try expect(memberPresentation.isSelectable, false, "revoked node cannot be selected")
         try expectTrue(memberPresentation.subtitle.contains("stale"), "stale presence label")

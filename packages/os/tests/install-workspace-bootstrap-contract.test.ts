@@ -213,9 +213,13 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
     expect(heartbeatConfig).toMatchObject({
       authorityOrigin: 'https://os.consuelohq.com',
+      osHome: home,
       workspaceId: 'workspace_123',
       nodeId: 'node_member',
       connectorStatus: 'connected',
+      connectorHealthUrl: expect.stringMatching(
+        /^https:\/\/c-[0-9a-f]{32}\.consuelohq\.com\/health$/,
+      ),
       capabilities: ['mcp', 'tools'],
     });
     expect(heartbeatConfig).toHaveProperty('publicKeyJwk');
@@ -223,11 +227,20 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(fs.statSync(heartbeatConfigPath).mode & 0o777).toBe(0o600);
     expect(heartbeatPlist).toContain('<key>StartInterval</key>');
     expect(heartbeatPlist).toContain('<integer>30</integer>');
-    expect(heartbeatPlist).toContain('workspace-node-heartbeat.ts');
+    expect(heartbeatPlist).toContain(
+      join(home, 'runtime', 'current', 'scripts', 'workspace-node-heartbeat.ts')
+        .replaceAll('&', '&amp;'),
+    );
+    expect(heartbeatPlist).not.toContain(
+      join(home, 'scripts', 'workspace-node-heartbeat.ts')
+        .replaceAll('&', '&amp;'),
+    );
     expect(heartbeatPlist).toContain(
       heartbeatConfigPath.replaceAll('&', '&amp;'),
     );
     expect(heartbeatPlist).not.toContain('private-fixture');
+    expect(JSON.stringify(heartbeatConfig)).toContain(home);
+    expect(JSON.stringify(heartbeatConfig)).not.toContain('configPath');
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

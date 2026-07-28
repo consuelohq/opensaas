@@ -19,6 +19,7 @@ import {
   resolveConsueloHomeLayout,
 } from './consuelo-home';
 import { redactLifecycleDetail } from './lifecycle/diagnostics';
+import { detectLocalAgents } from './local-agent-connectivity';
 import { resolveLifecyclePaths } from './lifecycle/paths';
 import { readLifecycleReleaseReference } from './lifecycle/retention';
 import type {
@@ -195,6 +196,10 @@ const localWorkspace = (input: {
       channel: input.channel,
       connectorId: 'local-runtime',
       capabilities: [...node.capabilities],
+      agents: detectLocalAgents({ home: layout.home })
+        .filter((agent) => agent.status === 'verified')
+        .map((agent) => agent.name)
+        .sort(),
       createdAt,
       lastSeenAt,
       presence: 'online',
@@ -275,6 +280,16 @@ const normalizeWorkspacePayload = (
         `workspace authority returned invalid node capabilities ${index}`,
       );
     }
+    if (
+      node.agents !== null &&
+      node.agents !== undefined &&
+      (!Array.isArray(node.agents) ||
+        !node.agents.every((value) => typeof value === 'string'))
+    ) {
+      throw new Error(
+        `workspace authority returned invalid node agents ${index}`,
+      );
+    }
     return {
       workspaceId: stringField(node.workspaceId, `node ${index} workspaceId`),
       nodeId: stringField(node.nodeId, `node ${index} nodeId`),
@@ -288,6 +303,9 @@ const normalizeWorkspacePayload = (
       channel: stringField(node.channel, `node ${index} channel`),
       connectorId: optionalString(node.connectorId) ?? 'unavailable',
       capabilities: [...node.capabilities] as string[],
+      ...(Array.isArray(node.agents)
+        ? { agents: [...node.agents] as string[] }
+        : {}),
       createdAt: stringField(node.createdAt, `node ${index} createdAt`),
       lastSeenAt: stringField(node.lastSeenAt, `node ${index} lastSeenAt`),
       presence,

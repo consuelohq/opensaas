@@ -1483,7 +1483,7 @@ bun run doctor -- --json
 ```bash
 bun run install:system-daemons
 ```
-Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
+Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. A workspace installation with registered node signing material also installs `com.consuelo.os.node-heartbeat.<node-id>`. That one-shot service re-inspects canonical local agent configuration on every 30-second run and includes only currently verified agent identifiers in the existing signed node heartbeat; paths, configuration contents, credentials, and signing material are never sent. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
 
 ### install:system-daemons:dry-run
 

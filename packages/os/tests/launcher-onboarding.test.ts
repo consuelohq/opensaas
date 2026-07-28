@@ -62,7 +62,8 @@ describe('launcher onboarding', () => {
     expect(configurationIndex).toBeGreaterThan(writingIndex);
     expect(html.indexOf('href="/tools"')).toBeLessThan(html.indexOf('href="/environments"'));
     expect(html.indexOf('href="/environments"')).toBeLessThan(html.indexOf('href="/secrets"'));
-    expect(html).toContain('Connected to 2 local agents');
+    expect(html).toContain('Checking local agents');
+    expect(html).not.toContain('Connected to 2 local agents');
     expect(html).toContain('data-agent-count');
     expect(html).toContain('data-agent-list');
     expect(html).toContain('https://os.consuelohq.com/workspace/agents');
@@ -70,8 +71,13 @@ describe('launcher onboarding', () => {
     expect(html).toContain('window.location.hostname');
     expect(html).toContain('.textContent =');
     expect(html).not.toContain('.innerHTML =');
-    expect(html).toContain('Codex');
-    expect(html).toContain('OpenCode');
+    expect(html).not.toContain('<li>Codex</li>');
+    expect(html).not.toContain('<li>OpenCode</li>');
+    expect(html).toContain("payload.state === 'online'");
+    expect(html).toContain("payload.state === 'stale'");
+    expect(html).toContain("payload.state === 'offline'");
+    expect(html).toContain("payload.state === 'never_reported'");
+    expect(html).toContain('Local agent status unavailable.');
     expect(html).not.toContain('<li>Cursor</li>');
     expect(html).not.toContain('[GTM]');
     expect(html).not.toContain('[Office]');
@@ -86,8 +92,9 @@ describe('launcher onboarding', () => {
       localAgents: [],
     });
 
-    expect(html).toContain('Connected to 0 local agents');
-    expect(html).toContain('No local agents connected to workspace yet.');
+    expect(html).toContain('Checking local agents');
+    expect(html).not.toContain('Connected to 0 local agents');
+    expect(html).toContain('<p class="muted" data-agent-fallback hidden></p>');
     expect(html).not.toContain('No local agents connected yet.');
     expect(html).toContain('data-agent-fallback');
   });

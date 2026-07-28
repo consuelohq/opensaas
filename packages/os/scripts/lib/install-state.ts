@@ -16,6 +16,7 @@ import {
   writeYamlConfig,
 } from './consuelo-home';
 import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
+import { createConnectorOriginHostname } from './connector-origin-hostname';
 import {
   configureLocalAgents,
   detectLocalAgents,
@@ -857,9 +858,20 @@ function materializeWorkspaceConnectorBootstrap(input: {
     );
     const heartbeatScriptPath = path.join(
       input.runtimeHome,
+      'runtime',
+      'current',
       'scripts',
       'workspace-node-heartbeat.ts',
     );
+    const connectorHealthUrl = new URL(
+      '/health',
+      `https://${createConnectorOriginHostname({
+        connectorId: input.workspaceBootstrap.connectorId,
+        baseDomain:
+          process.env.CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN ??
+          'consuelohq.com',
+      })}`,
+    ).toString();
     const heartbeatLogPath = path.join(
       input.nodeHome,
       'logs',
@@ -871,9 +883,11 @@ function materializeWorkspaceConnectorBootstrap(input: {
         authorityOrigin:
           input.workspaceBootstrap.authorityOrigin ??
           'https://os.consuelohq.com',
+        osHome: input.runtimeHome,
         workspaceId: input.workspaceBootstrap.workspaceId,
         nodeId: input.workspaceBootstrap.nodeId,
         connectorStatus: 'connected',
+        connectorHealthUrl,
         capabilities: [
           ...(input.workspaceBootstrap.nodeCapabilities ?? ['mcp', 'tools']),
         ].sort(),

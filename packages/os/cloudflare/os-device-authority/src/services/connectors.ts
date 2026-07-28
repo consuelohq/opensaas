@@ -147,10 +147,13 @@ export async function registerApprovedWorkspaceRoute(input: {
         target: {
           nodeId,
           connectorId: connector.connectorId,
-          connectorStatus: 'connected',
+          connectorStatus:
+            input.grant.nodeLastSeenAt === undefined
+              ? 'disconnected'
+              : 'connected',
           tunnelOriginUrl: connector.tunnelOriginUrl,
           state: 'active',
-          lastSeenAt: input.grant.nodeLastSeenAt ?? Date.now(),
+          lastSeenAt: input.grant.nodeLastSeenAt ?? 0,
           heartbeatTtlMs: 60_000,
         },
         makeDefault: input.grant.nodeRole === 'home',

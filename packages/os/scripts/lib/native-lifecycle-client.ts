@@ -39,6 +39,7 @@ export type WorkspaceNode = {
   channel: string;
   connectorId: string;
   capabilities: string[];
+  agents?: string[];
   createdAt: string;
   lastSeenAt: string;
   presence: 'online' | 'offline' | 'stale';

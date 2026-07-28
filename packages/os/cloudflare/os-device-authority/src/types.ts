@@ -67,6 +67,7 @@ export type WorkspaceNode = {
   channel?: string;
   connectorId?: string;
   capabilities?: string[];
+  agents?: WorkspaceAgentName[];
   connectorStatus?: 'connected' | 'disconnected';
   state?: 'active' | 'revoked';
   devicePublicKeyJwk?: string;
@@ -299,6 +300,7 @@ export type Store = {
   ): Promise<WorkspaceNode | undefined>;
   byWorkspaceNodeId(nodeId: string): Promise<WorkspaceNode | undefined>;
   listWorkspaceNodes(accountId: string): Promise<WorkspaceNode[]>;
+  listWorkspaceNodesByHost(workspaceHost: string): Promise<WorkspaceNode[]>;
   claimWorkspaceNodeNonce(
     nodeId: string,
     nonce: string,
@@ -323,6 +325,7 @@ export type StorageTransactionLike = {
   delete(key: string): Promise<boolean>;
 };
 export type StorageLike = StorageTransactionLike & {
+  list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
   transaction?<T>(
     closure: (transaction: StorageTransactionLike) => Promise<T>,
   ): Promise<T>;

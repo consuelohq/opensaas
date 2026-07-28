@@ -90,6 +90,7 @@ const connectItems: SidebarItem[] = [
         label: 'Sales and CRM',
         items: [
           { label: 'GoHighLevel', slug: 'connect/apps-and-services/gohighlevel' },
+          { label: 'LeadConnector dialer', slug: 'connect/apps-and-services/leadconnector-dialer' },
           { label: 'Salesforce', slug: 'connect/apps-and-services/salesforce' },
           { label: 'HubSpot', slug: 'connect/apps-and-services/hubspot' },
         ],

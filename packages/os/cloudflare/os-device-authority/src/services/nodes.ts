@@ -23,7 +23,8 @@ export function workspaceNodePresence(
   ttlMs = WORKSPACE_NODE_HEARTBEAT_TTL_MS,
 ): WorkspaceNodePresence {
   if ((node.state ?? 'active') === 'revoked') return 'offline';
-  const lastSeenAt = node.lastSeenAt ?? node.updatedAt;
+  const lastSeenAt = node.lastSeenAt;
+  if (lastSeenAt === undefined) return 'offline';
   const ageMs = Math.max(0, nowMs - lastSeenAt);
   if (ageMs <= ttlMs && (node.connectorStatus ?? 'connected') === 'connected') {
     return 'online';
@@ -48,8 +49,12 @@ export function safeWorkspaceNode(
     channel: node.channel ?? 'stable',
     connectorId: node.connectorId ?? null,
     capabilities: [...(node.capabilities ?? [])].sort(),
+    agents: node.agents === undefined ? null : [...node.agents],
     createdAt: new Date(node.createdAt).toISOString(),
-    lastSeenAt: new Date(node.lastSeenAt ?? node.updatedAt).toISOString(),
+    lastSeenAt:
+      node.lastSeenAt === undefined
+        ? null
+        : new Date(node.lastSeenAt).toISOString(),
     presence: workspaceNodePresence(node, nowMs),
     state: node.state ?? 'active',
     publicKeyThumbprint: node.devicePublicKeyThumbprint,
