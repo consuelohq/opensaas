@@ -1,0 +1,41 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/bootstrap-managed-gcp-cloud-node-foundation",
+  "base": "origin/stream/os-cloud",
+  "headSha": "374512b767762890e77d66cedfac39c60f652adf",
+  "changeHash": "36f789f6e7bd00df448ac22db305ae4491f18e8a9b290a085e2227b73fabd721",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/gcloud-managed-cloud-node.ts",
+    "packages/os/scripts/lib/managed-cloud-node.ts",
+    "packages/os/scripts/lib/platform-managed-cloud-node.ts",
+    "packages/os/scripts/managed-cloud-node.ts",
+    "packages/os/scripts/verify.js",
+    "packages/os/tests/gcloud-managed-cloud-node.test.ts",
+    "packages/os/tests/managed-cloud-node-contract.test.ts",
+    "packages/os/tests/platform-managed-cloud-node.test.ts",
+    "packages/os/tests/verification.test.js"
+  ],
+  "verifiedAt": "2026-07-28T04:12:16.877Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": [],
+    "warnOnly": false
+  },
+  "docs": {
+    "skipped": true,
+    "passed": true,
+    "files": [],
+    "commands": []
+  },
+  "commandVersion": 1
+}

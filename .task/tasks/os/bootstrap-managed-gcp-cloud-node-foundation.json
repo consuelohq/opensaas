@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os-cloud",
+  "taskBranch": "task/os/bootstrap-managed-gcp-cloud-node-foundation",
+  "baseBranch": "stream/os-cloud",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1693,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1693",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1693",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1693/bootstrap-managed-gcp-cloud-node-foundation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1693",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1693/bootstrap-managed-gcp-cloud-node-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-managed-gcp-cloud-node-foundation",
+  "taskSession": "tsk_d1c53934701e",
+  "tmuxSession": "opensaas-os-bootstrap-managed-gcp-cloud-node-foundation-d1c53934",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-managed-gcp-cloud-node-foundation/.task/os/bootstrap-managed-gcp-cloud-node-foundation/session.json",
+  "createdAt": "2026-07-28T03:13:54.449Z"
+}
