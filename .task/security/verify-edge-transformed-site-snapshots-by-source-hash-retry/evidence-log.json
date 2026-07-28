@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry",
+  "events": [
+    {
+      "id": "da43d945-d7e3-40a1-b087-b53312a627a1",
+      "occurred_at": "2026-07-28T03:43:56.186Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry"
+      }
+    },
+    {
+      "id": "4ab4c865-1b36-4d77-b210-67ad50299833",
+      "occurred_at": "2026-07-28T03:43:56.273Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/install-edge-site-publisher.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry"
+      }
+    },
+    {
+      "id": "30252e19-1e9b-40e3-815a-d9ce4de0399e",
+      "occurred_at": "2026-07-28T03:43:56.340Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-28T03:43:56.413Z"
+}
