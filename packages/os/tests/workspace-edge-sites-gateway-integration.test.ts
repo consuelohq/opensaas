@@ -120,6 +120,7 @@ type EdgeRouteSeedContract = {
     baseDomain?: string;
     connectorId?: string;
     tunnelOriginUrl?: string;
+    publishedSiteIds?: string[];
   }) => WorkspaceRouteRecord & { updatedAt: string };
 };
 
@@ -412,6 +413,17 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       baseDomain: 'consuelohq.com',
       connectorId: 'connector_internal',
       tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
+      publishedSiteIds: [
+        'launcher',
+        'artifacts',
+        'traces',
+        'diffs',
+        'docs',
+        'configuration',
+        'tools',
+        'environments',
+        'secrets',
+      ],
     });
 
     const traceRoute = record.routes.find((route) => route.pathPrefix === '/observability');

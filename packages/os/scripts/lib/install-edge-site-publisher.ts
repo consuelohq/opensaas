@@ -3,13 +3,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createWorkspaceEdgeRouteSeedSql } from './workspace-edge-route-seed';
+import {
+  createWorkspaceEdgeRouteSeedSql,
+  type WorkspaceSiteSnapshotId,
+} from './workspace-edge-route-seed';
 
 // Internal Consuelo operator helper. Public install must consume scoped bootstrap
 // material from approval and leave Cloudflare R2/D1 mutations to the control plane.
 
 export type InstallEdgePublishStage = 'snapshot_plan' | 'r2_upload' | 'd1_upsert' | 'edge_verify';
-export type WorkspaceEdgePublishedSnapshot = { siteId: string; pathPrefix: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string; contentType: string };
+export type WorkspaceEdgePublishedSnapshot = { siteId: WorkspaceSiteSnapshotId; pathPrefix: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string; contentType: string };
 export type WorkspaceEdgePublishResult = { status: 'succeeded'; workspaceId: string; workspaceSlug: string; workspaceHost: string; siteId: string; versionId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; verifiedUrls: string[]; snapshots: WorkspaceEdgePublishedSnapshot[]; logPath: string; httpStatus: number; cacheAuthority: string | null; sitesCache: string | null };
 export type WorkspaceEdgeSnapshotPlan = WorkspaceEdgePublishResult & { status: never; baseDomain: string; contentHash: string; contentType: string; routeSql: string };
 export type CommandRunner = (input: { argv: string[]; cwd?: string }) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
@@ -104,6 +107,7 @@ export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceE
     baseDomain: baseDomain(workspaceHost),
     siteSnapshotKey: rootSnapshot.snapshotKey,
     siteVersionId: version,
+    publishedSiteIds: [...new Set(snapshots.map((snapshot) => snapshot.siteId))],
   });
   return {
     status: undefined as never,

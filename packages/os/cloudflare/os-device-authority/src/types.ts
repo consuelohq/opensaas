@@ -1,4 +1,5 @@
 import type { WorkspaceRouteD1Database } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
+import type { WorkspaceSiteSnapshotId } from '../../../scripts/lib/workspace-edge-route-seed';
 
 export type GrantStatus = 'pending' | 'approved' | 'denied' | 'failed';
 export type GrantFailureCode = 'workspace_route_setup_failed';
@@ -219,7 +220,7 @@ export type WorkspaceRouteRegistryBinding = WorkspaceRouteD1Database;
 export type DefaultSiteSnapshot = {
   key: string;
   versionId: string;
-  siteId?: string;
+  siteId?: WorkspaceSiteSnapshotId;
   contentType?: string;
   cachePolicy?:
     | 'static-shell'
