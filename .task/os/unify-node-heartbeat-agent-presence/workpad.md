@@ -137,6 +137,8 @@ The current heartbeat omits agents, workspace nodes have no agent field or host 
 - 2026-07-28 07:03:26 `review.run`: passed — OK
 - 2026-07-28 07:05:23 `verify`: passed — OK
 - 2026-07-28 07:05:49 `verify`: passed — OK
+- 2026-07-28 07:11:03 `review.run`: passed — OK
+- 2026-07-28 07:11:30 `verify`: passed — OK
 
 ## key decisions
 
@@ -239,7 +241,3 @@ bun run task:finish
 - selected suites: `workspace verification stamp tests`, `workspace task session tests`, `workspace test selection tests`, `twenty-server affected test target`, `@consuelo/os package test`, `twenty-server test`
 - run results: `workspace verification stamp tests` passed, `workspace task session tests` passed, `workspace test selection tests` passed, `twenty-server affected test target` passed, `@consuelo/os package test` passed, `twenty-server test` passed
 - failed suites: none
-
-- 2026-07-28 07:10:07 apply-patch: `packages/documentation/tests/connect.test.ts`
-
-- 2026-07-28 07:10:27 apply-patch: `.task/os/unify-node-heartbeat-agent-presence/workpad.md`
