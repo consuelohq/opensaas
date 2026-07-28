@@ -252,6 +252,48 @@ const ensureSubnetMatches = (
   }
 };
 
+const ensureRouterMatches = (
+  input: {
+    name: string;
+    region: string;
+    network: string;
+    asn: number;
+  },
+  resource: JsonRecord,
+): void => {
+  const bgp = isRecord(resource.bgp) ? resource.bgp : {};
+  if (
+    recordString(resource, 'name') !== input.name ||
+    resourceTail(resource.region) !== input.region ||
+    resourceTail(resource.network) !== input.network ||
+    recordNumber(bgp, 'asn') !== input.asn
+  ) {
+    failDrift(input.name, 'router does not match region, network, or ASN');
+  }
+};
+
+const ensureNatMatches = (
+  input: {
+    name: string;
+    sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES';
+    autoAllocateExternalIps: true;
+    logging: { enabled: true; filter: 'ERRORS_ONLY' };
+  },
+  resource: JsonRecord,
+): void => {
+  const logConfig = isRecord(resource.logConfig) ? resource.logConfig : {};
+  if (
+    recordString(resource, 'name') !== input.name ||
+    recordString(resource, 'natIpAllocateOption') !== 'AUTO_ONLY' ||
+    recordString(resource, 'sourceSubnetworkIpRangesToNat') !==
+      input.sourceSubnetworkIpRangesToNat ||
+    recordBoolean(logConfig, 'enable') !== input.logging.enabled ||
+    recordString(logConfig, 'filter') !== input.logging.filter
+  ) {
+    failDrift(input.name, 'Cloud NAT does not match source ranges, allocation, or logging');
+  }
+};
+
 const firewallAllowed = (resource: JsonRecord): string[] => {
   if (!Array.isArray(resource.allowed)) return [];
   const values: string[] = [];
@@ -488,6 +530,103 @@ export const createGcloudManagedCloudNodeFoundationClient = (input: {
       '--enable-private-ip-google-access',
       '--quiet',
     ]);
+    return 'created';
+  },
+
+  ensureRouter: async (router) => {
+    const describeArgs = [
+      'compute',
+      'routers',
+      'describe',
+      router.name,
+      '--project',
+      router.projectId,
+      '--region',
+      router.region,
+      '--format',
+      'json',
+    ];
+    let resource: JsonRecord | null;
+    try {
+      resource = await readJsonResource(input.run, describeArgs);
+    } catch (error: unknown) {
+      throw withContext(`failed to inspect router ${router.name}`, error);
+    }
+    if (resource) {
+      ensureRouterMatches(router, resource);
+      return 'unchanged';
+    }
+    try {
+      await runRequired(input.run, [
+        'compute',
+        'routers',
+        'create',
+        router.name,
+        '--project',
+        router.projectId,
+        '--region',
+        router.region,
+        '--network',
+        router.network,
+        '--asn',
+        String(router.asn),
+        '--quiet',
+      ]);
+    } catch (error: unknown) {
+      throw withContext(`failed to create router ${router.name}`, error);
+    }
+    return 'created';
+  },
+
+  ensureNat: async (nat) => {
+    const describeArgs = [
+      'compute',
+      'routers',
+      'nats',
+      'describe',
+      nat.name,
+      '--project',
+      nat.projectId,
+      '--region',
+      nat.region,
+      '--router',
+      nat.router,
+      '--format',
+      'json',
+    ];
+    let resource: JsonRecord | null;
+    try {
+      resource = await readJsonResource(input.run, describeArgs);
+    } catch (error: unknown) {
+      throw withContext(`failed to inspect Cloud NAT ${nat.name}`, error);
+    }
+    if (resource) {
+      ensureNatMatches(nat, resource);
+      return 'unchanged';
+    }
+    try {
+      await runRequired(input.run, [
+        'compute',
+        'routers',
+        'nats',
+        'create',
+        nat.name,
+        '--project',
+        nat.projectId,
+        '--region',
+        nat.region,
+        '--router',
+        nat.router,
+        '--nat-all-subnet-ip-ranges',
+        '--auto-allocate-nat-external-ips',
+        '--enable-logging',
+        '--log-filter',
+        nat.logging.filter,
+        '--quiet',
+      ]);
+    } catch (error: unknown) {
+      throw withContext(`failed to create Cloud NAT ${nat.name}`, error);
+    }
     return 'created';
   },
 

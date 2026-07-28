@@ -30,6 +30,22 @@ type GcloudManagedCloudNodeContract = {
       region: string;
       cidr: string;
     }) => Promise<'created' | 'unchanged'>;
+    ensureRouter: (input: {
+      name: string;
+      projectId: string;
+      region: string;
+      network: string;
+      asn: number;
+    }) => Promise<'created' | 'unchanged'>;
+    ensureNat: (input: {
+      name: string;
+      projectId: string;
+      region: string;
+      router: string;
+      sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES';
+      autoAllocateExternalIps: true;
+      logging: { enabled: true; filter: 'ERRORS_ONLY' };
+    }) => Promise<'created' | 'unchanged'>;
     ensureFirewallRule: (input: {
       name: string;
       projectId: string;
@@ -132,6 +148,26 @@ describe('gcloud managed cloud node adapter', () => {
       }),
     ).resolves.toBe('created');
     await expect(
+      client.ensureRouter({
+        name: 'consuelo-os-cloud-us-east1-router',
+        projectId: 'consuelo-cloud-dev-igg2mr',
+        region: 'us-east1',
+        network: 'consuelo-os-cloud',
+        asn: 64514,
+      }),
+    ).resolves.toBe('created');
+    await expect(
+      client.ensureNat({
+        name: 'consuelo-os-cloud-us-east1-nat',
+        projectId: 'consuelo-cloud-dev-igg2mr',
+        region: 'us-east1',
+        router: 'consuelo-os-cloud-us-east1-router',
+        sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+        autoAllocateExternalIps: true,
+        logging: { enabled: true, filter: 'ERRORS_ONLY' },
+      }),
+    ).resolves.toBe('created');
+    await expect(
       client.ensureFirewallRule({
         name: 'consuelo-os-cloud-allow-iap-ssh',
         projectId: 'consuelo-cloud-dev-igg2mr',
@@ -218,6 +254,40 @@ describe('gcloud managed cloud node adapter', () => {
       '--range',
       '10.70.0.0/20',
       '--enable-private-ip-google-access',
+      '--quiet',
+    ]);
+    expect(calls).toContainEqual([
+      'compute',
+      'routers',
+      'create',
+      'consuelo-os-cloud-us-east1-router',
+      '--project',
+      'consuelo-cloud-dev-igg2mr',
+      '--region',
+      'us-east1',
+      '--network',
+      'consuelo-os-cloud',
+      '--asn',
+      '64514',
+      '--quiet',
+    ]);
+    expect(calls).toContainEqual([
+      'compute',
+      'routers',
+      'nats',
+      'create',
+      'consuelo-os-cloud-us-east1-nat',
+      '--project',
+      'consuelo-cloud-dev-igg2mr',
+      '--region',
+      'us-east1',
+      '--router',
+      'consuelo-os-cloud-us-east1-router',
+      '--nat-all-subnet-ip-ranges',
+      '--auto-allocate-nat-external-ips',
+      '--enable-logging',
+      '--log-filter',
+      'ERRORS_ONLY',
       '--quiet',
     ]);
     expect(calls).toContainEqual([
@@ -346,6 +416,28 @@ describe('gcloud managed cloud node adapter', () => {
           }),
         );
       }
+      if (command.includes('routers nats describe')) {
+        return ok(
+          JSON.stringify({
+            name: 'consuelo-os-cloud-us-east1-nat',
+            natIpAllocateOption: 'AUTO_ONLY',
+            sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+            logConfig: { enable: true, filter: 'ERRORS_ONLY' },
+          }),
+        );
+      }
+      if (command.includes('routers describe')) {
+        return ok(
+          JSON.stringify({
+            name: 'consuelo-os-cloud-us-east1-router',
+            network:
+              'https://www.googleapis.com/compute/v1/projects/fixture/global/networks/consuelo-os-cloud',
+            region:
+              'https://www.googleapis.com/compute/v1/projects/fixture/regions/us-east1',
+            bgp: { asn: 64514 },
+          }),
+        );
+      }
       if (command.includes('firewall-rules describe')) {
         return ok(
           JSON.stringify({
@@ -437,6 +529,26 @@ describe('gcloud managed cloud node adapter', () => {
       }),
     ).resolves.toBe('unchanged');
     await expect(
+      client.ensureRouter({
+        name: 'consuelo-os-cloud-us-east1-router',
+        projectId: 'consuelo-cloud-dev-igg2mr',
+        region: 'us-east1',
+        network: 'consuelo-os-cloud',
+        asn: 64514,
+      }),
+    ).resolves.toBe('unchanged');
+    await expect(
+      client.ensureNat({
+        name: 'consuelo-os-cloud-us-east1-nat',
+        projectId: 'consuelo-cloud-dev-igg2mr',
+        region: 'us-east1',
+        router: 'consuelo-os-cloud-us-east1-router',
+        sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+        autoAllocateExternalIps: true,
+        logging: { enabled: true, filter: 'ERRORS_ONLY' },
+      }),
+    ).resolves.toBe('unchanged');
+    await expect(
       client.ensureFirewallRule({
         name: 'consuelo-os-cloud-allow-iap-ssh',
         projectId: 'consuelo-cloud-dev-igg2mr',
@@ -520,6 +632,37 @@ describe('gcloud managed cloud node adapter', () => {
         projectId: 'consuelo-cloud-dev-igg2mr',
       }),
     ).rejects.toThrow(/PERMISSION_DENIED.*access denied/);
+
+    const natDriftClient = createGcloudManagedCloudNodeFoundationClient({
+      projectId: 'consuelo-cloud-dev-igg2mr',
+      billingAccountId: 'billing_fixture',
+      run: async (args) => {
+        if (args.join(' ').includes('routers nats describe')) {
+          return ok(
+            JSON.stringify({
+              name: 'consuelo-os-cloud-us-east1-nat',
+              natIpAllocateOption: 'MANUAL_ONLY',
+              sourceSubnetworkIpRangesToNat:
+                'LIST_OF_SUBNETWORKS',
+              logConfig: { enable: false, filter: 'ALL' },
+            }),
+          );
+        }
+        throw new Error(`unexpected command: ${args.join(' ')}`);
+      },
+    });
+    await expect(
+      natDriftClient.ensureNat({
+        name: 'consuelo-os-cloud-us-east1-nat',
+        projectId: 'consuelo-cloud-dev-igg2mr',
+        region: 'us-east1',
+        router: 'consuelo-os-cloud-us-east1-router',
+        sourceSubnetworkIpRangesToNat:
+          'ALL_SUBNETWORKS_ALL_IP_RANGES',
+        autoAllocateExternalIps: true,
+        logging: { enabled: true, filter: 'ERRORS_ONLY' },
+      }),
+    ).rejects.toThrow(/drift.*nat|nat.*drift/i);
   });
 
   it('retries a project IAM binding while a newly created service account propagates', async () => {

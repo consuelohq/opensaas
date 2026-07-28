@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
   "base": "origin/stream/os-cloud",
-  "headSha": "f401931d7b109234236fa7a8f90b87e1eea42a75",
-  "changeHash": "3601b5aa36628d5af84dd7d5e0ff36841240792644c5e3c0d3d947a512f8e8b8",
+  "headSha": "291b48d04ffcf05b195499c8b83c8c73e307846a",
+  "changeHash": "999f2d948b78d1fefcbb634380327f7e2571a85156969208e8bc43eee51107da",
   "changedFiles": [
     "packages/os/scripts/install.ts",
     "packages/os/scripts/lib/gcloud-managed-cloud-node.ts",
@@ -19,8 +19,10 @@
     "packages/os/scripts/managed-cloud-node-enroll.ts",
     "packages/os/scripts/managed-cloud-node.ts",
     "packages/os/tests/gcloud-managed-cloud-node-instance.test.ts",
+    "packages/os/tests/gcloud-managed-cloud-node.test.ts",
     "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
     "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts",
+    "packages/os/tests/managed-cloud-node-contract.test.ts",
     "packages/os/tests/managed-cloud-node-enrollment-cli.test.ts",
     "packages/os/tests/managed-cloud-node-enrollment.test.ts",
     "packages/os/tests/managed-cloud-node-instance-contract.test.ts",
@@ -29,7 +31,7 @@
     "packages/os/tests/managed-cloud-node-linux-heartbeat.test.ts",
     "packages/os/tests/platform-managed-cloud-node-instance.test.ts"
   ],
-  "verifiedAt": "2026-07-28T05:20:18.983Z",
+  "verifiedAt": "2026-07-28T05:36:41.553Z",
   "review": {
     "skipped": false,
     "passed": true

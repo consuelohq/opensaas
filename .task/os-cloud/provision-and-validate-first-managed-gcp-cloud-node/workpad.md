@@ -56,12 +56,17 @@ started: 2026-07-28
 - No VM, boot disk, durable data disk, or release object has been created yet.
 - A dedicated release bucket `consuelo-cloud-dev-igg2mr-os-releases-f401931d` was created in `us-east1`. Organization policy blocked public access, so the bucket remains private and empty.
 - Private release delivery is implemented test-first: lifecycle can obtain cached short-lived bearer authorization from the GCE metadata service, and both initial bundle download and channel/bundle lifecycle requests use that identity. No access token is embedded in Git, metadata, logs, URLs, or the node config.
+- The zero-mutation node plan exposed a missing egress prerequisite: Private Google Access reaches GCS but does not provide general outbound internet for Debian, Bun, or the pinned Cloudflare binary. Cloud Router `consuelo-os-cloud-us-east1-router` and Cloud NAT `consuelo-os-cloud-us-east1-nat` are now part of the idempotent foundation contract.
+- Real GCP foundation apply created exactly the router and NAT while the previous 18 operations remained unchanged; a second apply proved 20/20 operations `unchanged`.
 - The first runtime-bundle build correctly failed the portability gate because the bootstrap hardcoded `/home/consuelo`. A focused red regression now requires passwd-derived `CONSUELO_USER_HOME` and `BUN_BIN`; the bootstrap no longer embeds a machine/user-specific home path.
 
 ## files changed
 
+- `packages/os/scripts/lib/lifecycle/release.ts`
 - `packages/os/scripts/lib/managed-cloud-node.ts`
+- `packages/os/scripts/lifecycle.ts`
 - `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
+- `packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts`
 
 
 ## workspace-owned: files changed
@@ -78,6 +83,7 @@ started: 2026-07-28
 - 2026-07-28 05:01:03 `review.run`: passed — OK
 - 2026-07-28 05:08:04 `review.run`: passed — OK
 - 2026-07-28 05:19:59 `review.run`: passed — OK
+- 2026-07-28 05:36:24 `review.run`: passed — OK
 
 ## key decisions
 
@@ -118,6 +124,7 @@ started: 2026-07-28
 - Affected regression set: 55 passing tests across 13 files with destructive-literal preflight.
 - Runtime portability regression: bundle build failed on a machine-specific absolute path, `managed-cloud-node-instance-contract.test.ts` was extended red, and all 4 node-domain tests pass after deriving the Linux account home at runtime.
 - `lifecycle-gcp-metadata-release-source.test.ts`: red on missing metadata-token authentication and authenticated release requests, then 3 passing tests covering token caching, required headers, manifest/bundle authorization, and fail-closed responses.
+- Router/NAT foundation regression: domain/provider tests were red on missing egress resources, then passed with deterministic planning, exact describe-before-create argv, real 20-operation idempotency, and explicit NAT drift rejection.
 
 ## discovery
 
@@ -165,10 +172,18 @@ bun run task:finish
 - `packages/os/scripts/testing/distribution/runtime-fixture-server.ts`
 - `packages/os/scripts/workspace-node-heartbeat.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/os/tests/gcloud-managed-cloud-node.test.ts`
 - `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
 - `packages/os/tests/lifecycle-engine.test.ts`
 - `packages/os/tests/linux-platform.test.ts`
+- `packages/os/tests/managed-cloud-node-contract.test.ts`
 - `packages/os/tests/managed-cloud-node-enrollment.test.ts`
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
 
-- 2026-07-28 05:19:08 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+- 2026-07-28 05:26:58 apply-patch: `packages/os/tests/managed-cloud-node-contract.test.ts`
+- 2026-07-28 05:26:58 apply-patch: `packages/os/tests/gcloud-managed-cloud-node.test.ts`
+- 2026-07-28 05:31:38 apply-patch: `packages/os/scripts/lib/managed-cloud-node.ts`
+- 2026-07-28 05:31:38 apply-patch: `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
+- 2026-07-28 05:32:46 apply-patch: `packages/os/tests/gcloud-managed-cloud-node.test.ts`
+
+- 2026-07-28 05:35:41 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`

@@ -18,6 +18,22 @@ type ManagedCloudNodeFoundationClient = {
     region: string;
     cidr: string;
   }) => Promise<FoundationResourceStatus>;
+  ensureRouter: (input: {
+    name: string;
+    projectId: string;
+    region: string;
+    network: string;
+    asn: number;
+  }) => Promise<FoundationResourceStatus>;
+  ensureNat: (input: {
+    name: string;
+    projectId: string;
+    region: string;
+    router: string;
+    sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES';
+    autoAllocateExternalIps: true;
+    logging: { enabled: true; filter: 'ERRORS_ONLY' };
+  }) => Promise<FoundationResourceStatus>;
   ensureFirewallRule: (input: {
     name: string;
     projectId: string;
@@ -75,6 +91,14 @@ type ManagedCloudNodeContract = {
     services: string[];
     network: { name: string };
     subnet: { name: string; cidr: string };
+    router: { name: string; asn: number };
+    nat: {
+      name: string;
+      router: string;
+      sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES';
+      autoAllocateExternalIps: true;
+      logging: { enabled: true; filter: 'ERRORS_ONLY' };
+    };
     firewallRules: Array<{
       name: string;
       sourceRanges: string[];
@@ -131,6 +155,8 @@ const createFixtureClient = () => {
     ensureService: async (service) => call('ensureService', service),
     ensureNetwork: async (input) => call('ensureNetwork', input),
     ensureSubnet: async (input) => call('ensureSubnet', input),
+    ensureRouter: async (input) => call('ensureRouter', input),
+    ensureNat: async (input) => call('ensureNat', input),
     ensureFirewallRule: async (input) => call('ensureFirewallRule', input),
     ensureServiceAccount: async (input) => call('ensureServiceAccount', input),
     ensureProjectRoleBinding: async (input) =>
@@ -166,6 +192,14 @@ describe('managed cloud node foundation contract', () => {
       },
       network: { name: 'consuelo-os-cloud' },
       subnet: { name: 'consuelo-os-cloud-us-east1', cidr: '10.70.0.0/20' },
+      router: { name: 'consuelo-os-cloud-us-east1-router', asn: 64514 },
+      nat: {
+        name: 'consuelo-os-cloud-us-east1-nat',
+        router: 'consuelo-os-cloud-us-east1-router',
+        sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+        autoAllocateExternalIps: true,
+        logging: { enabled: true, filter: 'ERRORS_ONLY' },
+      },
       serviceAccount: {
         accountId: 'consuelo-os-node',
         roles: ['roles/logging.logWriter', 'roles/monitoring.metricWriter'],
@@ -255,6 +289,8 @@ describe('managed cloud node foundation contract', () => {
       ...plan.services.map(() => 'ensureService'),
       'ensureNetwork',
       'ensureSubnet',
+      'ensureRouter',
+      'ensureNat',
       'ensureFirewallRule',
       'ensureServiceAccount',
       ...plan.serviceAccount.roles.map(() => 'ensureProjectRoleBinding'),

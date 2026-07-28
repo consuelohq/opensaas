@@ -1,6 +1,6 @@
 {
   "files": [
-    ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md"
+    ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md",
+    "packages/os/tests/managed-cloud-node-contract.test.ts"
   ],
-  "updatedAt": "2026-07-28T05:18:46.191Z"
-}
+  "updatedAt": "2026-07-28T05:25:51.

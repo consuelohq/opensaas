@@ -34,6 +34,22 @@ export type ManagedCloudNodeFoundationClient = {
     region: string;
     cidr: string;
   }) => Promise<FoundationResourceStatus>;
+  ensureRouter: (input: {
+    name: string;
+    projectId: string;
+    region: string;
+    network: string;
+    asn: number;
+  }) => Promise<FoundationResourceStatus>;
+  ensureNat: (input: {
+    name: string;
+    projectId: string;
+    region: string;
+    router: string;
+    sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES';
+    autoAllocateExternalIps: true;
+    logging: { enabled: true; filter: 'ERRORS_ONLY' };
+  }) => Promise<FoundationResourceStatus>;
   ensureFirewallRule: (input: {
     name: string;
     projectId: string;
@@ -84,6 +100,14 @@ export type ManagedCloudNodeFoundationPlan = {
   services: string[];
   network: { name: string };
   subnet: { name: string; cidr: string };
+  router: { name: string; asn: number };
+  nat: {
+    name: string;
+    router: string;
+    sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES';
+    autoAllocateExternalIps: true;
+    logging: { enabled: true; filter: 'ERRORS_ONLY' };
+  };
   firewallRules: Array<{
     name: string;
     sourceRanges: string[];
@@ -765,6 +789,17 @@ export const planManagedCloudNodeFoundation = (input: {
       name: `consuelo-os-cloud-${region}`,
       cidr: '10.70.0.0/20',
     },
+    router: {
+      name: `consuelo-os-cloud-${region}-router`,
+      asn: 64_514,
+    },
+    nat: {
+      name: `consuelo-os-cloud-${region}-nat`,
+      router: `consuelo-os-cloud-${region}-router`,
+      sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+      autoAllocateExternalIps: true,
+      logging: { enabled: true, filter: 'ERRORS_ONLY' },
+    },
     firewallRules: [
       {
         name: 'consuelo-os-cloud-allow-iap-ssh',
@@ -812,6 +847,8 @@ const plannedOperations = (
   })),
   { resource: `network:${plan.network.name}`, status: 'planned' },
   { resource: `subnet:${plan.subnet.name}`, status: 'planned' },
+  { resource: `router:${plan.router.name}`, status: 'planned' },
+  { resource: `nat:${plan.nat.name}`, status: 'planned' },
   ...plan.firewallRules.map((rule) => ({
     resource: `firewall:${rule.name}`,
     status: 'planned' as const,
@@ -877,6 +914,27 @@ export const applyManagedCloudNodeFoundation = async (input: {
       network: input.plan.network.name,
       region: input.plan.region,
       cidr: input.plan.subnet.cidr,
+    }),
+  );
+  await record(`router:${input.plan.router.name}`, () =>
+    input.client.ensureRouter({
+      name: input.plan.router.name,
+      projectId: input.plan.projectId,
+      region: input.plan.region,
+      network: input.plan.network.name,
+      asn: input.plan.router.asn,
+    }),
+  );
+  await record(`nat:${input.plan.nat.name}`, () =>
+    input.client.ensureNat({
+      name: input.plan.nat.name,
+      projectId: input.plan.projectId,
+      region: input.plan.region,
+      router: input.plan.nat.router,
+      sourceSubnetworkIpRangesToNat:
+        input.plan.nat.sourceSubnetworkIpRangesToNat,
+      autoAllocateExternalIps: input.plan.nat.autoAllocateExternalIps,
+      logging: input.plan.nat.logging,
     }),
   );
   for (const rule of input.plan.firewallRules) {
