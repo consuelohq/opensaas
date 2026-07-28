@@ -1,6 +1,7 @@
 {
   "files": [
     ".task/os/unify-node-heartbeat-agent-presence/workpad.md",
+    "packages/documentation/tests/connect.test.ts",
     "packages/os/SCRIPTS.md",
     "packages/os/cloudflare/os-device-authority/src/services/agents.ts",
     "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
@@ -19,5 +20,5 @@
     "packages/os/tests/workspace-node-registry-routing.test.ts",
     "packages/os/tests/workspace-nodes-cli.test.ts"
   ],
-  "updatedAt": "2026-07-28T07:02:07.603Z"
+  "updatedAt": "2026-07-28T07:09:54.415Z"
 }

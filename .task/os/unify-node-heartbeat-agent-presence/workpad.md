@@ -99,6 +99,7 @@ The current heartbeat omits agents, workspace nodes have no agent field or host 
 - `packages/os/tests/workspace-node-registry-routing.test.ts`
 - `packages/os/tests/workspace-nodes-cli.test.ts`
 
+
 ## workspace-owned: files changed
 
 - `packages/os/native/macos/.build` (deleted)
@@ -168,7 +169,8 @@ The current heartbeat omits agents, workspace nodes have no agent field or host 
 - Ko approved the sole task-to-stream conflict resolution in `packages/documentation/tests/connect.test.ts`: preserve current `stream/os` LeadConnector coverage, preserve the task's newer Railway/Cloudflare/Vercel provider assertions, and use the flexible `verifiedAt: 2026-07-\d{2}` contract.
 - The resolved file was produced with a three-way merge from the task branch, its merge base, and current `origin/stream/os`; the only conflict was the verification-date assertion.
 - A combined validation call timed out during Swift compilation after 30 seconds. The Bun packet was rerun independently, Swift was rerun with an explicit five-minute command budget and isolated scratch path, and generated `.build` output was removed through `fs.trash`.
-- The Connect documentation test cannot be meaningfully executed in the task worktree because the approved assertions reference stream-only pages. The exact merged file was constructed from the task, merge base, and current stream; `task.pr` combined-state validation is the authoritative proof.
+- After merging current `origin/stream/os` into the task branch and applying Ko's approved single-line resolution, the full Connect documentation contract passed: 9 tests and 579 assertions.
+- The typed `task.call` recovery surface was unavailable because the fallback workspace package does not expose its backing `task:exec` script. The branch was synchronized and merged with guarded task-scoped Git argv calls after proving every pre-crash working file matched the remote task commit; no task code was discarded.
 
 ---
 
@@ -184,6 +186,7 @@ bun run task:finish
 
 - `AGENTS.md`
 - `CODING-STANDARDS.md`
+- `packages/documentation/tests/connect.test.ts`
 - `packages/os/AGENTS.md`
 - `packages/os/SCRIPTS.md`
 - `packages/os/cloudflare/os-device-authority/src/routes/workspace-agents.ts`
@@ -236,3 +239,7 @@ bun run task:finish
 - selected suites: `workspace verification stamp tests`, `workspace task session tests`, `workspace test selection tests`, `twenty-server affected test target`, `@consuelo/os package test`, `twenty-server test`
 - run results: `workspace verification stamp tests` passed, `workspace task session tests` passed, `workspace test selection tests` passed, `twenty-server affected test target` passed, `@consuelo/os package test` passed, `twenty-server test` passed
 - failed suites: none
+
+- 2026-07-28 07:10:07 apply-patch: `packages/documentation/tests/connect.test.ts`
+
+- 2026-07-28 07:10:27 apply-patch: `.task/os/unify-node-heartbeat-agent-presence/workpad.md`
