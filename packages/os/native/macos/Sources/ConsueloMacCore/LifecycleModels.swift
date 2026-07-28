@@ -238,6 +238,7 @@ public struct WorkspaceNodeSnapshot: Codable, Equatable, Sendable, Identifiable 
     public var channel: String
     public var connectorId: String
     public var capabilities: [String]
+    public var agents: [String]?
     public var createdAt: String
     public var lastSeenAt: String
     public var presence: WorkspaceNodePresence
@@ -256,6 +257,7 @@ public struct WorkspaceNodeSnapshot: Codable, Equatable, Sendable, Identifiable 
         channel: String,
         connectorId: String,
         capabilities: [String],
+        agents: [String]? = nil,
         createdAt: String,
         lastSeenAt: String,
         presence: WorkspaceNodePresence,
@@ -271,6 +273,7 @@ public struct WorkspaceNodeSnapshot: Codable, Equatable, Sendable, Identifiable 
         self.channel = channel
         self.connectorId = connectorId
         self.capabilities = capabilities
+        self.agents = agents
         self.createdAt = createdAt
         self.lastSeenAt = lastSeenAt
         self.presence = presence

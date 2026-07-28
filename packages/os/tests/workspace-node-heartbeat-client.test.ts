@@ -46,6 +46,7 @@ describe('workspace node heartbeat client', () => {
     };
     const client = createWorkspaceNodeHeartbeatClient({
       config,
+      agents: ['opencode', 'codex', 'codex'],
       now: () => nowMs,
       createNonce: () => `heartbeat-nonce-${++nonce}`,
       fetchImpl: async (request) => {
@@ -76,6 +77,7 @@ describe('workspace node heartbeat client', () => {
         nonce: `heartbeat-nonce-${index + 1}`,
         connectorStatus: 'connected',
         capabilities: ['mcp', 'tools'],
+        agents: ['codex', 'opencode'],
       });
       const signature = request.headers.get('x-consuelo-node-signature');
       expect(signature).toBeTruthy();
@@ -87,8 +89,27 @@ describe('workspace node heartbeat client', () => {
         }),
       ).resolves.toBe(true);
       expect(payload).not.toContain(deviceKeyPair.signingKeyJwk);
+      expect(payload).not.toMatch(/configPath|homePath|osHome|\/Users\//i);
     }
     expect(JSON.stringify(first)).not.toContain(deviceKeyPair.signingKeyJwk);
+  });
+
+  it('rejects unknown agent identifiers before signing or sending a heartbeat', () => {
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const config: WorkspaceNodeHeartbeatConfig = {
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceId: 'workspace_123',
+      nodeId: 'node_member',
+      connectorStatus: 'connected',
+      capabilities: ['mcp'],
+      publicKeyJwk: deviceKeyPair.publicKeyJwk,
+      signingKeyJwk: deviceKeyPair.signingKeyJwk,
+    };
+
+    expect(() => createWorkspaceNodeHeartbeatClient({
+      config,
+      agents: ['codex', 'unknown-agent'] as never,
+    })).toThrow(/known agent/i);
   });
 
   it('fails closed on non-JSON and non-success authority responses without echoing the key', async () => {

@@ -503,6 +503,7 @@ describe('workspace node management and presence', () => {
       nonce: 'heartbeat-nonce-0001',
       connectorStatus: 'connected',
       capabilities: ['mcp', 'tools'],
+      agents: ['opencode', 'codex', 'codex'],
     });
     const signature = createDevicePublicKeyProof({ deviceKeyPair: memberKey, payload: body });
     const heartbeatRequest = () => new Request(`${origin}/workspace/nodes/heartbeat`, {
@@ -513,8 +514,45 @@ describe('workspace node management and presence', () => {
 
     const heartbeat = await handler(heartbeatRequest());
     expect(heartbeat.status).toBe(200);
-    await expect(heartbeat.json()).resolves.toMatchObject({ nodeId: 'node-member', presence: 'online' });
+    await expect(heartbeat.json()).resolves.toMatchObject({
+      nodeId: 'node-member',
+      presence: 'online',
+      agents: ['codex', 'opencode'],
+    });
+    expect((await store.byWorkspaceNode(accountId, 'node-member'))?.agents).toEqual([
+      'codex',
+      'opencode',
+    ]);
     expect((await handler(heartbeatRequest())).status).toBe(409);
+
+    const onlineAgents = await handler(new Request(
+      `${origin}/workspace/agents?workspace_host=${workspaceHost}`,
+    ));
+    await expect(onlineAgents.json()).resolves.toMatchObject({
+      state: 'online',
+      connectedAgentCount: 2,
+      agents: [
+        { name: 'codex', label: 'Codex' },
+        { name: 'opencode', label: 'OpenCode' },
+      ],
+    });
+
+    const invalidBody = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: nowMs,
+      nonce: 'heartbeat-nonce-invalid-agent',
+      connectorStatus: 'connected',
+      capabilities: ['mcp'],
+      agents: ['unknown-agent'],
+    });
+    const invalidSignature = createDevicePublicKeyProof({ deviceKeyPair: memberKey, payload: invalidBody });
+    const invalidAgents = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-consuelo-node-signature': invalidSignature },
+      body: invalidBody,
+    }));
+    expect(invalidAgents.status).toBe(400);
 
     const auth = { authorization: 'Bearer workspace-heartbeat-token' };
     nowMs = baseNow + heartbeatTtlMs + 1;
@@ -522,10 +560,24 @@ describe('workspace node management and presence', () => {
     await expect(stale.json()).resolves.toMatchObject({
       presence: { online: 0, stale: 1, offline: 1 },
     });
+    const staleAgents = await handler(new Request(
+      `${origin}/workspace/agents?workspace_host=${workspaceHost}`,
+    ));
+    await expect(staleAgents.json()).resolves.toMatchObject({
+      state: 'stale',
+      connectedAgentCount: 2,
+    });
     nowMs = baseNow + heartbeatTtlMs * 3 + 1;
     const offline = await handler(new Request(`${origin}/workspace/nodes`, { headers: auth }));
     await expect(offline.json()).resolves.toMatchObject({
       presence: { online: 0, stale: 0, offline: 2 },
+    });
+    const offlineAgents = await handler(new Request(
+      `${origin}/workspace/agents?workspace_host=${workspaceHost}`,
+    ));
+    await expect(offlineAgents.json()).resolves.toMatchObject({
+      state: 'offline',
+      connectedAgentCount: 2,
     });
 
     const revoke = await handler(new Request(`${origin}/workspace/nodes/node-member/revoke`, {

@@ -77,7 +77,11 @@ public struct WorkspaceNodePresentation: Equatable, Sendable {
 
     public init(node: WorkspaceNodeSnapshot, workspace: WorkspaceSnapshot) {
         title = node.displayName
-        subtitle = "\(node.role.rawValue.capitalized) · \(node.presence.rawValue) · \(node.capabilities.joined(separator: ", "))"
+        let agentLabels = (node.agents ?? []).map { agent in
+            agent == "opencode" ? "OpenCode" : agent.capitalized
+        }
+        let agentSuffix = agentLabels.isEmpty ? "" : " · \(agentLabels.joined(separator: ", "))"
+        subtitle = "\(node.role.rawValue.capitalized) · \(node.presence.rawValue) · \(node.capabilities.joined(separator: ", "))\(agentSuffix)"
         isDefault = node.isDefault(in: workspace)
         isSelectable = node.state == .active
     }

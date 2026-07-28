@@ -48,6 +48,7 @@ export function safeWorkspaceNode(
     channel: node.channel ?? 'stable',
     connectorId: node.connectorId ?? null,
     capabilities: [...(node.capabilities ?? [])].sort(),
+    agents: node.agents === undefined ? null : [...node.agents],
     createdAt: new Date(node.createdAt).toISOString(),
     lastSeenAt: new Date(node.lastSeenAt ?? node.updatedAt).toISOString(),
     presence: workspaceNodePresence(node, nowMs),

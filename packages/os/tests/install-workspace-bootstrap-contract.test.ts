@@ -213,6 +213,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
     expect(heartbeatConfig).toMatchObject({
       authorityOrigin: 'https://os.consuelohq.com',
+      osHome: home,
       workspaceId: 'workspace_123',
       nodeId: 'node_member',
       connectorStatus: 'connected',
@@ -228,6 +229,8 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       heartbeatConfigPath.replaceAll('&', '&amp;'),
     );
     expect(heartbeatPlist).not.toContain('private-fixture');
+    expect(JSON.stringify(heartbeatConfig)).toContain(home);
+    expect(JSON.stringify(heartbeatConfig)).not.toContain('configPath');
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

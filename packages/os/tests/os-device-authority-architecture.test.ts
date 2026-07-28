@@ -330,6 +330,7 @@ describe('OS device authority architecture', () => {
       'wn:account:node',
       'wni:node',
       'wnl:account',
+      'wnh:workspace.consuelohq.com',
     ]);
   });
 

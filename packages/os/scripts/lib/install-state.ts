@@ -871,6 +871,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
         authorityOrigin:
           input.workspaceBootstrap.authorityOrigin ??
           'https://os.consuelohq.com',
+        osHome: input.runtimeHome,
         workspaceId: input.workspaceBootstrap.workspaceId,
         nodeId: input.workspaceBootstrap.nodeId,
         connectorStatus: 'connected',

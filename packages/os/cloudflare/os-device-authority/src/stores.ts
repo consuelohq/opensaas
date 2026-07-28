@@ -22,6 +22,7 @@ import { cleanCode } from './utils';
 const cloneWorkspaceNode = (node: WorkspaceNode): WorkspaceNode => ({
   ...node,
   ...(node.capabilities ? { capabilities: [...node.capabilities] } : {}),
+  ...(node.agents ? { agents: [...node.agents] } : {}),
 });
 
 export class DurableStore implements Store {
@@ -335,6 +336,8 @@ export class DurableStore implements Store {
       }
       const nodeIds =
         (await this.storage.get<string[]>(`wnl:${node.accountId}`)) ?? [];
+      const hostNodeIds =
+        (await this.storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [];
       await this.storage.put(
         `wn:${node.accountId}:${node.nodeId}`,
         cloneWorkspaceNode(node),
@@ -342,6 +345,12 @@ export class DurableStore implements Store {
       await this.storage.put(`wni:${node.nodeId}`, node.accountId);
       if (!nodeIds.includes(node.nodeId)) {
         await this.storage.put(`wnl:${node.accountId}`, [...nodeIds, node.nodeId]);
+      }
+      if (!hostNodeIds.includes(node.nodeId)) {
+        await this.storage.put(`wnh:${node.workspaceHost}`, [
+          ...hostNodeIds,
+          node.nodeId,
+        ]);
       }
     } catch {
       throw new Error('workspace node write failed');
@@ -375,6 +384,21 @@ export class DurableStore implements Store {
       return nodes.filter((node): node is WorkspaceNode => Boolean(node));
     } catch {
       throw new Error('workspace node list failed');
+    }
+  }
+  async listWorkspaceNodesByHost(workspaceHost: string) {
+    try {
+      const nodeIds =
+        (await this.storage.get<string[]>(`wnh:${workspaceHost}`)) ?? [];
+      const nodes = await Promise.all(
+        nodeIds.map((nodeId) => this.byWorkspaceNodeId(nodeId)),
+      );
+      return nodes.filter(
+        (node): node is WorkspaceNode =>
+          Boolean(node) && node?.workspaceHost === workspaceHost,
+      );
+    } catch {
+      throw new Error('workspace node host list failed');
     }
   }
   async claimWorkspaceNodeNonce(
@@ -650,6 +674,13 @@ export function createMemoryDeviceGrantStore(): Store {
       return Promise.resolve(
         [...workspaceNodes.values()]
           .filter((node) => node.accountId === accountId)
+          .map(cloneWorkspaceNode),
+      );
+    },
+    listWorkspaceNodesByHost(workspaceHost) {
+      return Promise.resolve(
+        [...workspaceNodes.values()]
+          .filter((node) => node.workspaceHost === workspaceHost)
           .map(cloneWorkspaceNode),
       );
     },

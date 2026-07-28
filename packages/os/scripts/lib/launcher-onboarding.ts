@@ -68,13 +68,8 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function connectedAgentItems(localAgents: LauncherLocalAgent[]): string {
-  const connectedAgents = localAgents.filter((agent) => agent.status === 'verified');
-  const items = connectedAgents
-    .map((agent) => `<li>${escapeHtml(agent.label)}</li>`)
-    .join('');
-  const hidden = connectedAgents.length > 0 ? ' hidden' : '';
-  return `<ul class="agent-list" data-agent-list>${items}</ul><p class="muted" data-agent-fallback${hidden}>No local agents connected to workspace yet.</p>`;
+function connectedAgentItems(): string {
+  return '<ul class="agent-list" data-agent-list></ul><p class="muted" data-agent-fallback hidden></p>';
 }
 
 function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string {
@@ -84,10 +79,7 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
 }
 
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
-  const localAgents = options.localAgents ?? [];
   const workspaceHostname = normalizeWorkspaceHostname(options.workspaceHostname);
-  const connectedLocalAgentCount = localAgents.filter((agent) => agent.status === 'verified').length;
-  const localAgentNoun = connectedLocalAgentCount === 1 ? 'agent' : 'agents';
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
 
   return `<!doctype html>
@@ -214,8 +206,8 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         </section>
       </div>
       <section class="status" aria-label="Local agents">
-        <p data-agent-count>Connected to ${connectedLocalAgentCount} local ${localAgentNoun}</p>
-        ${connectedAgentItems(localAgents)}
+        <p data-agent-count>Checking local agents…</p>
+        ${connectedAgentItems()}
       </section>
     </aside>
   </main>
@@ -239,17 +231,28 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
       })
         .then((response) => response.ok ? response.json() : Promise.reject(new Error('agent status unavailable')))
         .then((payload) => {
-          if (!payload || !Array.isArray(payload.agents)) return;
-          const agents = payload.agents.filter((agent) =>
-            agent && typeof agent.name === 'string' && typeof agent.label === 'string',
-          );
           const countElement = document.querySelector('[data-agent-count]');
           const listElement = document.querySelector('[data-agent-list]');
           const fallbackElement = document.querySelector('[data-agent-fallback]');
           if (!(countElement instanceof HTMLElement) || !(listElement instanceof HTMLElement) || !(fallbackElement instanceof HTMLElement)) return;
+          if (!payload || !Array.isArray(payload.agents)) throw new Error('invalid agent status');
+          if (!['online', 'stale', 'offline', 'never_reported'].includes(payload.state)) throw new Error('invalid agent state');
+          const agents = payload.agents.filter((agent) =>
+            agent && typeof agent.name === 'string' && typeof agent.label === 'string',
+          );
+          if (agents.length !== payload.agents.length) throw new Error('invalid agent list');
 
           const count = agents.length;
-          countElement.textContent = 'Connected to ' + count + ' local ' + (count === 1 ? 'agent' : 'agents');
+          if (payload.state === 'online') {
+            countElement.textContent = 'Connected to ' + count + ' local ' + (count === 1 ? 'agent' : 'agents');
+          } else if (payload.state === 'stale') {
+            countElement.textContent = count + ' configured local ' + (count === 1 ? 'agent' : 'agents') + ' · node status stale';
+          } else if (payload.state === 'offline') {
+            countElement.textContent = count + ' configured local ' + (count === 1 ? 'agent' : 'agents') + ' · node offline';
+          } else if (payload.state === 'never_reported') {
+            countElement.textContent = 'No node has reported local agents yet.';
+          }
+
           const fragment = document.createDocumentFragment();
           for (const agent of agents) {
             const item = document.createElement('li');
@@ -257,10 +260,20 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
             fragment.append(item);
           }
           listElement.replaceChildren(fragment);
-          fallbackElement.hidden = count > 0;
+          fallbackElement.hidden = !(payload.state === 'online' && count === 0);
           fallbackElement.textContent = 'No local agents connected to workspace yet.';
         })
-        .catch(() => undefined);
+        .catch(() => {
+          const countElement = document.querySelector('[data-agent-count]');
+          const listElement = document.querySelector('[data-agent-list]');
+          const fallbackElement = document.querySelector('[data-agent-fallback]');
+          if (countElement instanceof HTMLElement) countElement.textContent = 'Local agent status unavailable.';
+          if (listElement instanceof HTMLElement) listElement.replaceChildren();
+          if (fallbackElement instanceof HTMLElement) fallbackElement.hidden = true;
+        });
+    } else {
+      const countElement = document.querySelector('[data-agent-count]');
+      if (countElement instanceof HTMLElement) countElement.textContent = 'Local agent status unavailable.';
     }
   </script>
 </body>

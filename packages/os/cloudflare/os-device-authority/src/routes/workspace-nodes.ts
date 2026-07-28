@@ -5,6 +5,7 @@ import {
   updateWorkspaceNodeTargetInD1,
 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { json } from '../http';
+import { normalizeWorkspaceAgentNames } from '../services/agents';
 import {
   safeWorkspaceNode,
   WORKSPACE_NODE_HEARTBEAT_TTL_MS,
@@ -343,6 +344,17 @@ async function handleHeartbeat(
         .slice(0, 32)
         .sort()
     : [];
+  const hasAgents = Object.hasOwn(body, 'agents');
+  const agents = hasAgents
+    ? normalizeWorkspaceAgentNames(body.agents)
+    : undefined;
+  if (hasAgents && agents === undefined) {
+    return errorResponse(
+      400,
+      'INVALID_HEARTBEAT_AGENTS',
+      'Heartbeat agents must contain only known agent identifiers.',
+    );
+  }
   if (
     !workspaceId ||
     !nodeId ||
@@ -377,6 +389,7 @@ async function handleHeartbeat(
   const updated: WorkspaceNode = {
     ...node,
     capabilities,
+    ...(hasAgents ? { agents } : {}),
     connectorStatus,
     lastSeenAt: nowMs,
     updatedAt: nowMs,

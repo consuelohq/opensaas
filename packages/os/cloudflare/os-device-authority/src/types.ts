@@ -67,6 +67,7 @@ export type WorkspaceNode = {
   channel?: string;
   connectorId?: string;
   capabilities?: string[];
+  agents?: WorkspaceAgentName[];
   connectorStatus?: 'connected' | 'disconnected';
   state?: 'active' | 'revoked';
   devicePublicKeyJwk?: string;
@@ -299,6 +300,7 @@ export type Store = {
   ): Promise<WorkspaceNode | undefined>;
   byWorkspaceNodeId(nodeId: string): Promise<WorkspaceNode | undefined>;
   listWorkspaceNodes(accountId: string): Promise<WorkspaceNode[]>;
+  listWorkspaceNodesByHost(workspaceHost: string): Promise<WorkspaceNode[]>;
   claimWorkspaceNodeNonce(
     nodeId: string,
     nonce: string,

@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
+import type { AgentName } from './local-agent-connectivity';
+
 import {
   createDevicePublicKeyProof,
   type WorkspaceDeviceKeyPair,
@@ -25,6 +27,28 @@ export type WorkspaceNodeHeartbeatResult = {
 export type WorkspaceNodeHeartbeatClient = {
   send: () => Promise<WorkspaceNodeHeartbeatResult>;
 };
+
+const KNOWN_AGENT_NAMES = new Set<AgentName>([
+  'claude',
+  'codex',
+  'cursor',
+  'factory',
+  'gemini',
+  'opencode',
+  'pi',
+]);
+
+function normalizeAgentNames(value: readonly AgentName[] | undefined): AgentName[] | undefined {
+  if (value === undefined) return undefined;
+  const names: AgentName[] = [];
+  for (const candidate of value) {
+    if (!KNOWN_AGENT_NAMES.has(candidate)) {
+      throw new Error('workspace node heartbeat agents must contain only known agent identifiers');
+    }
+    names.push(candidate);
+  }
+  return [...new Set(names)].sort();
+}
 
 function requiredString(value: string, label: string): string {
   const normalized = value.trim();
@@ -81,11 +105,13 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
 
 export function createWorkspaceNodeHeartbeatClient(input: {
   config: WorkspaceNodeHeartbeatConfig;
+  agents?: readonly AgentName[];
   fetchImpl?: typeof fetch;
   now?: () => number;
   createNonce?: () => string;
 }): WorkspaceNodeHeartbeatClient {
   const config = normalizeConfig(input.config);
+  const agents = normalizeAgentNames(input.agents);
   const fetchImpl = input.fetchImpl ?? globalThis.fetch;
   const now = input.now ?? Date.now;
   const createNonce = input.createNonce ?? randomUUID;
@@ -104,6 +130,7 @@ export function createWorkspaceNodeHeartbeatClient(input: {
         nonce: requiredString(createNonce(), 'nonce'),
         connectorStatus: config.connectorStatus,
         capabilities: config.capabilities,
+        ...(agents === undefined ? {} : { agents }),
       });
       const signature = createDevicePublicKeyProof({ deviceKeyPair, payload });
       let response: Response;
