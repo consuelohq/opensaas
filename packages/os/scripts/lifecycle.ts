@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 
 import {
   createHttpHealthAcceptance,
+  createGcpMetadataReleaseAuthorization,
   createHttpReleaseSource,
   createBunRuntimeMaterializer,
   createLifecycleEngine,
@@ -402,7 +403,15 @@ export const createDefaultLifecycleEngine = (input: {
   return createLifecycleEngine({
     home: input.home,
     releaseSource: releaseBaseUrl
-      ? createHttpReleaseSource({ baseUrl: releaseBaseUrl })
+      ? createHttpReleaseSource({
+          baseUrl: releaseBaseUrl,
+          ...(process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH === '1'
+            ? {
+                authorizationProvider:
+                  createGcpMetadataReleaseAuthorization(),
+              }
+            : {}),
+        })
       : unavailableReleaseSource(),
     trustedReleaseKeys: trustedReleaseKeysFromEnvironment(),
     service: createDefaultLifecycleServiceController({

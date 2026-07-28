@@ -1,8 +1,6 @@
 {
   "files": [
-    "packages/os/package.json",
-    "packages/os/scripts/lib/lifecycle/release.ts",
-    "packages/os/tests/distribution/runtime-bundle.test.ts"
+    ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md"
   ],
-  "updatedAt": "2026-07-28T05:06:10.388Z"
+  "updatedAt": "2026-07-28T05:18:46.191Z"
 }

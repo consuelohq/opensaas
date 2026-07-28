@@ -53,30 +53,15 @@ started: 2026-07-28
 - The complete affected contract set passes: 55 tests across 13 files, including Branch 1 regressions and existing Linux/install contracts.
 - Strict static review against `origin/stream/os-cloud` passes with zero findings.
 - Official cloudflared bootstrap is pinned to release `2026.7.3`, Linux amd64, SHA-256 `9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17` from Cloudflare's release API.
-- No VM, boot disk, durable data disk, release bucket, or release object has been created yet.
+- No VM, boot disk, durable data disk, or release object has been created yet.
+- A dedicated release bucket `consuelo-cloud-dev-igg2mr-os-releases-f401931d` was created in `us-east1`. Organization policy blocked public access, so the bucket remains private and empty.
+- Private release delivery is implemented test-first: lifecycle can obtain cached short-lived bearer authorization from the GCE metadata service, and both initial bundle download and channel/bundle lifecycle requests use that identity. No access token is embedded in Git, metadata, logs, URLs, or the node config.
 - The first runtime-bundle build correctly failed the portability gate because the bootstrap hardcoded `/home/consuelo`. A focused red regression now requires passwd-derived `CONSUELO_USER_HOME` and `BUN_BIN`; the bootstrap no longer embeds a machine/user-specific home path.
 
 ## files changed
 
-- `packages/os/scripts/install.ts`
-- `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
-- `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/managed-cloud-node.ts`
-- `packages/os/scripts/lib/platform-managed-cloud-node.ts`
-- `packages/os/scripts/lib/platforms/linux.ts`
-- `packages/os/scripts/lifecycle.ts`
-- `packages/os/scripts/managed-cloud-node.ts`
-- `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
-- `packages/os/scripts/lib/managed-cloud-node-enrollment.ts`
-- `packages/os/scripts/managed-cloud-node-enroll.ts`
-- `packages/os/tests/gcloud-managed-cloud-node-instance.test.ts`
-- `packages/os/tests/managed-cloud-node-enrollment-cli.test.ts`
-- `packages/os/tests/managed-cloud-node-enrollment.test.ts`
 - `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
-- `packages/os/tests/managed-cloud-node-lifecycle-onboarding.test.ts`
-- `packages/os/tests/managed-cloud-node-linux-connector.test.ts`
-- `packages/os/tests/managed-cloud-node-linux-heartbeat.test.ts`
-- `packages/os/tests/platform-managed-cloud-node-instance.test.ts`
 
 
 ## workspace-owned: files changed
@@ -92,6 +77,7 @@ started: 2026-07-28
 - 2026-07-28 04:59:00 `review.run`: passed — OK
 - 2026-07-28 05:01:03 `review.run`: passed — OK
 - 2026-07-28 05:08:04 `review.run`: passed — OK
+- 2026-07-28 05:19:59 `review.run`: passed — OK
 
 ## key decisions
 
@@ -117,6 +103,7 @@ started: 2026-07-28
 - The public bootstrap is macOS-specific, so the cloud node uses the existing signed runtime-bundle lifecycle contract plus a validated noninteractive onboarding descriptor rather than wrapping the macOS installer.
 - The approved `websocket-relay` transport has no executable runtime client. Managed cloud enrollment therefore fails closed unless device authority returns the implemented Cloudflare Tunnel token, then activates both the durable cloudflared service and node-heartbeat timer before reporting enrolled.
 - Existing install contract source assertions were stale after extracting the approved-grant mapper and after the site catalog moved to `sites/artifacts/data/catalog.json`; assertions were updated to current ownership and generated artifacts while behavior checks remained intact.
+- Google Cloud organization policy rejected `allUsers` object-viewer access on the task release bucket. No public grant was applied and no object was uploaded. Recovery is a private bucket plus managed-node service-account object viewer and GCE metadata bearer authentication.
 
 ## TDD evidence
 
@@ -130,6 +117,7 @@ started: 2026-07-28
 - `managed-cloud-node-linux-connector.test.ts`: red on missing Linux cloudflared service, then passing with token-file isolation.
 - Affected regression set: 55 passing tests across 13 files with destructive-literal preflight.
 - Runtime portability regression: bundle build failed on a machine-specific absolute path, `managed-cloud-node-instance-contract.test.ts` was extended red, and all 4 node-domain tests pass after deriving the Linux account home at runtime.
+- `lifecycle-gcp-metadata-release-source.test.ts`: red on missing metadata-token authentication and authenticated release requests, then 3 passing tests covering token caching, required headers, manifest/bundle authorization, and fail-closed responses.
 
 ## discovery
 
@@ -178,11 +166,9 @@ bun run task:finish
 - `packages/os/scripts/workspace-node-heartbeat.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
+- `packages/os/tests/lifecycle-engine.test.ts`
 - `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/managed-cloud-node-enrollment.test.ts`
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
 
-- 2026-07-28 05:06:58 apply-patch: `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
-- 2026-07-28 05:07:24 apply-patch: `packages/os/scripts/lib/managed-cloud-node.ts`
-
-- 2026-07-28 05:07:47 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+- 2026-07-28 05:19:08 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`

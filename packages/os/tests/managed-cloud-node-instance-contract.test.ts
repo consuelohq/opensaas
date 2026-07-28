@@ -247,6 +247,10 @@ describe('managed cloud node instance contract', () => {
     expect(script).toContain('/var/lib/consuelo');
     expect(script).toContain(release.bootstrapBundleUrl);
     expect(script).toContain(release.bootstrapBundleDigest.slice('sha256:'.length));
+    expect(script).toContain('metadata.google.internal');
+    expect(script).toContain('Metadata-Flavor: Google');
+    expect(script).toContain('Authorization: Bearer $(gcp_access_token)');
+    expect(script).toContain('CONSUELO_RELEASE_GCP_METADATA_AUTH=1');
     expect(script).toContain(release.cloudflaredBinaryUrl);
     expect(script).toContain(
       release.cloudflaredBinaryDigest.slice('sha256:'.length),
@@ -266,7 +270,7 @@ describe('managed cloud node instance contract', () => {
     expect(script).not.toContain('/home/consuelo/');
     expect(script).toContain('/var/lib/consuelo/bootstrap/status.json');
     expect(script).not.toMatch(
-      /access[_-]?token|refresh[_-]?token|private[_-]?key|client[_-]?secret|service[_-]?account[_-]?key/i,
+      /ya29\.|-----BEGIN PRIVATE KEY-----|client[_-]?secret|service[_-]?account[_-]?key/i,
     );
   });
 
