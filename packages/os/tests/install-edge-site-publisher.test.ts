@@ -196,11 +196,13 @@ contractDescribe('install edge site publisher', () => {
           (candidate) => candidate.verifyUrl === url,
         );
         if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
-        return new Response(fs.readFileSync(snapshot.snapshotPath, 'utf8'), {
+        const sourceHtml = fs.readFileSync(snapshot.snapshotPath, 'utf8');
+        return new Response(`${sourceHtml}\n<script>downstream edge transform</script>`, {
           status: 200,
           headers: {
             'x-consuelo-edge-cache-authority': 'sites-snapshot',
             'x-consuelo-sites-cache': 'miss',
+            'x-consuelo-site-content-hash': snapshot.contentHash,
             'x-consuelo-site-version': expectedPlan.versionId,
           },
         });
@@ -305,6 +307,49 @@ contractDescribe('install edge site publisher', () => {
           );
         }
         return new Response('unreachable', { status: 500 });
+      },
+      now: '2026-06-14T00:00:00.000Z',
+    })).rejects.toMatchObject({
+      code: 'INSTALL_EDGE_PUBLISH_FAILED',
+      stage: 'edge_verify',
+      workspaceHost: 'internal.consuelohq.com',
+    });
+  });
+
+  it('fails when a public snapshot source hash does not match the uploaded bytes', async () => {
+    const publisher = await loadPublisher();
+    const home = makeHome();
+    const expectedPlan = publisher.createWorkspaceEdgeSnapshotPlan({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      now: '2026-06-14T00:00:00.000Z',
+    });
+
+    await expect(publisher.publishWorkspaceEdgeSnapshot({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
+      fetchImpl: async (url) => {
+        if (url === expectedPlan.verifyUrl) {
+          return Response.json({ error: 'workspace_session_required' }, { status: 401 });
+        }
+        const snapshot = expectedPlan.snapshots.find(
+          (candidate) => candidate.verifyUrl === url,
+        );
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
+        return new Response(fs.readFileSync(snapshot.snapshotPath, 'utf8'), {
+          status: 200,
+          headers: {
+            'x-consuelo-edge-cache-authority': 'sites-snapshot',
+            'x-consuelo-sites-cache': 'miss',
+            'x-consuelo-site-content-hash': 'incorrect-source-hash',
+            'x-consuelo-site-version': expectedPlan.versionId,
+          },
+        });
       },
       now: '2026-06-14T00:00:00.000Z',
     })).rejects.toMatchObject({

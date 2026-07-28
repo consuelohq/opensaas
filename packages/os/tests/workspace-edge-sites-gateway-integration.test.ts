@@ -167,7 +167,7 @@ type InstallPublisherContract = {
     workspaceSlug: string;
     workspaceHost: string;
     now?: string;
-  }) => { versionId: string; routeSql: string; verifyUrl: string; verifiedUrls: string[]; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string }> };
+  }) => { versionId: string; routeSql: string; verifyUrl: string; verifiedUrls: string[]; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string }> };
   publishWorkspaceEdgeSnapshot: (input: {
     home: string;
     workspaceId: string;
@@ -176,7 +176,7 @@ type InstallPublisherContract = {
     now?: string;
     commandRunner?: (command: { argv: string[]; cwd?: string }) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
     fetchImpl?: (url: string, init?: RequestInit) => Promise<Response>;
-  }) => Promise<{ status: 'succeeded'; verifyUrl: string; verifiedUrls: string[]; versionId: string; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string }> }>;
+  }) => Promise<{ status: 'succeeded'; verifyUrl: string; verifiedUrls: string[]; versionId: string; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string }> }>;
 };
 
 const forbiddenBrowserLeakPattern = /local trace db|local-trace-db|local agent|local-agent|cloud runner|cloud-runner|trace file|trace-store-file|raw internal service|raw-trace-service|implementation path|implementationPath|backend target|backendTarget|directBackendTarget|tunnelOriginUrl|upstreamUrl|sqlite|\.db/i;
@@ -970,11 +970,16 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
             { status: 401 },
           );
         }
+        const snapshot = expectedPlan.snapshots.find(
+          (candidate) => candidate.verifyUrl === url,
+        );
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
         return new Response('<!doctype html><title>Trace shell</title><main>Hosted Trace Site shell</main>', {
           status: 200,
           headers: {
             'x-consuelo-edge-cache-authority': 'sites-snapshot',
             'x-consuelo-sites-cache': 'miss',
+            'x-consuelo-site-content-hash': snapshot.contentHash,
             'x-consuelo-site-version': expectedPlan.versionId,
           },
         });

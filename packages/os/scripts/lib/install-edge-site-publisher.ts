@@ -202,6 +202,7 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
       const body = await response.text();
       cacheAuthority = response.headers.get('x-consuelo-edge-cache-authority');
       sitesCache = response.headers.get('x-consuelo-sites-cache');
+      const sourceContentHash = response.headers.get('x-consuelo-site-content-hash');
       const siteVersion = response.headers.get('x-consuelo-site-version');
       const bodyHash = hash(body);
       const privateLauncher = expectedSnapshot.siteId === 'launcher' && expectedSnapshot.pathPrefix === '/';
@@ -214,10 +215,10 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
         }
         continue;
       }
-      entries.push({ stage: 'edge_verify', url: verifyUrl, status: response.status, cacheAuthority, sitesCache, siteVersion, bodyHash });
-      if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== expectedSnapshot.versionId || bodyHash !== expectedSnapshot.contentHash) {
+      entries.push({ stage: 'edge_verify', url: verifyUrl, status: response.status, cacheAuthority, sitesCache, siteVersion, sourceContentHash, responseBodyHash: bodyHash });
+      if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== expectedSnapshot.versionId || sourceContentHash !== expectedSnapshot.contentHash) {
         writeLog(log, entries);
-        throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: expectedSnapshot.snapshotKey, logPath: log, message: `install edge publish verification failed for ${verifyUrl}`, diagnostics: { status: response.status, cacheAuthority, sitesCache, siteVersion } });
+        throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: expectedSnapshot.snapshotKey, logPath: log, message: `install edge publish verification failed for ${verifyUrl}`, diagnostics: { status: response.status, cacheAuthority, sitesCache, siteVersion, sourceContentHash } });
       }
     }
   } catch (error: unknown) {
