@@ -156,6 +156,10 @@ contractDescribe('install edge site publisher', () => {
     const publisher = await loadPublisher();
     const home = makeHome();
     const commands: EdgeCommand[] = [];
+    const verificationRequests: Array<{
+      url: string;
+      accept: string | null;
+    }> = [];
     const expectedPlan = publisher.createWorkspaceEdgeSnapshotPlan({
       home,
       workspaceId: 'workspace_internal',
@@ -173,14 +177,34 @@ contractDescribe('install edge site publisher', () => {
         commands.push({ ...command, stdout: 'ok', stderr: '' });
         return { exitCode: 0, stdout: 'ok', stderr: '' };
       },
-      fetchImpl: async () => new Response('<!doctype html><title>Internal workspace</title><main>Internal workspace ready</main>', {
-        status: 200,
-        headers: {
-          'x-consuelo-edge-cache-authority': 'sites-snapshot',
-          'x-consuelo-sites-cache': 'miss',
-          'x-consuelo-site-version': expectedPlan.versionId,
-        },
-      }),
+      fetchImpl: async (url, init) => {
+        const headers = new Headers(init?.headers);
+        verificationRequests.push({
+          url,
+          accept: headers.get('accept'),
+        });
+        if (url === expectedPlan.verifyUrl) {
+          return Response.json(
+            { error: 'workspace_session_required' },
+            {
+              status: 401,
+              headers: { 'cache-control': 'no-store' },
+            },
+          );
+        }
+        const snapshot = expectedPlan.snapshots.find(
+          (candidate) => candidate.verifyUrl === url,
+        );
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
+        return new Response(fs.readFileSync(snapshot.snapshotPath, 'utf8'), {
+          status: 200,
+          headers: {
+            'x-consuelo-edge-cache-authority': 'sites-snapshot',
+            'x-consuelo-sites-cache': 'miss',
+            'x-consuelo-site-version': expectedPlan.versionId,
+          },
+        });
+      },
       now: '2026-06-14T00:00:00.000Z',
     });
 
@@ -191,6 +215,13 @@ contractDescribe('install edge site publisher', () => {
     ]);
     expect(commands.slice(0, uniqueSnapshotKeys.length).map((command) => command.argv[4])).toEqual(uniqueSnapshotKeys.map((snapshotKey) => `consuelo-sites-snapshots/${snapshotKey}`));
     expect(commands[uniqueSnapshotKeys.length].argv).toContain('--file');
+    expect(verificationRequests[0]).toEqual({
+      url: 'https://internal.consuelohq.com/',
+      accept: 'application/json',
+    });
+    expect(verificationRequests.slice(1).every(
+      (request) => request.accept === 'application/json',
+    )).toBe(true);
     expect(result).toMatchObject({
       status: 'succeeded',
       workspaceId: 'workspace_internal',
@@ -215,6 +246,72 @@ contractDescribe('install edge site publisher', () => {
     });
     expect(fs.existsSync(result.logPath)).toBe(true);
     expect(fs.readFileSync(result.logPath, 'utf8')).not.toMatch(/token|secret|credential/i);
+  });
+
+  it('fails closed when the private launcher is publicly readable without a workspace session', async () => {
+    const publisher = await loadPublisher();
+    const home = makeHome();
+    const expectedPlan = publisher.createWorkspaceEdgeSnapshotPlan({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      now: '2026-06-14T00:00:00.000Z',
+    });
+
+    await expect(publisher.publishWorkspaceEdgeSnapshot({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
+      fetchImpl: async (url) => {
+        const snapshot = expectedPlan.snapshots.find(
+          (candidate) => candidate.verifyUrl === url,
+        );
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
+        return new Response(fs.readFileSync(snapshot.snapshotPath, 'utf8'), {
+          status: 200,
+          headers: {
+            'x-consuelo-edge-cache-authority': 'sites-snapshot',
+            'x-consuelo-sites-cache': 'miss',
+            'x-consuelo-site-version': expectedPlan.versionId,
+          },
+        });
+      },
+      now: '2026-06-14T00:00:00.000Z',
+    })).rejects.toMatchObject({
+      code: 'INSTALL_EDGE_PUBLISH_FAILED',
+      stage: 'edge_verify',
+      workspaceHost: 'internal.consuelohq.com',
+    });
+  });
+
+  it('rejects launcher authorization responses that do not match the exact public contract', async () => {
+    const publisher = await loadPublisher();
+    const home = makeHome();
+
+    await expect(publisher.publishWorkspaceEdgeSnapshot({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
+      fetchImpl: async (url) => {
+        if (url.endsWith('/')) {
+          return Response.json(
+            { error: 'workspace_session_required', redirect: '/login' },
+            { status: 401 },
+          );
+        }
+        return new Response('unreachable', { status: 500 });
+      },
+      now: '2026-06-14T00:00:00.000Z',
+    })).rejects.toMatchObject({
+      code: 'INSTALL_EDGE_PUBLISH_FAILED',
+      stage: 'edge_verify',
+      workspaceHost: 'internal.consuelohq.com',
+    });
   });
 
   it('fails loudly with a stage log when edge verification does not prove the site-snapshot route', async () => {
