@@ -143,10 +143,14 @@ export async function detectLinuxHost(input: {
 
 export function resolveLinuxPlatformPaths(home: string, environment: NodeJS.ProcessEnv = process.env): LinuxPlatformPaths {
   const resolvedHome = resolve(home);
-  const inferredUserHome = basename(resolvedHome) === '.consuelo'
-    ? dirname(resolvedHome)
-    : resolvedHome;
-  const configHome = resolve(environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'));
+  const inferredUserHome = environment.HOME
+    ? resolve(environment.HOME)
+    : basename(resolvedHome) === '.consuelo'
+      ? dirname(resolvedHome)
+      : resolvedHome;
+  const configHome = resolve(
+    environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'),
+  );
   const systemdUserDir = join(configHome, 'systemd', 'user');
   return {
     home: resolvedHome,

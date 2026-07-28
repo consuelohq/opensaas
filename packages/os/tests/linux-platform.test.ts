@@ -14,10 +14,12 @@ import {
 
 let home = '';
 let commands: LinuxCommand[] = [];
+let environment: NodeJS.ProcessEnv = {};
 
 beforeEach(() => {
   home = mkdtempSync(join(tmpdir(), 'consuelo-linux-platform-'));
   commands = [];
+  environment = { HOME: join(home, 'login-home') };
 });
 
 afterEach(() => {
@@ -58,19 +60,21 @@ describe('Linux platform adapter', () => {
     ]) {
       const adapter = createLinuxPlatformAdapter({
         home,
+        environment,
         host,
         run: runner(),
         bunExecutable: '/opt/consuelo/bin/bun',
       });
       await expect(adapter.install()).rejects.toThrow(/unsupported linux host/i);
       expect(commands).toEqual([]);
-      expect(existsSync(resolveLinuxPlatformPaths(home).unitPath)).toBe(false);
+      expect(existsSync(resolveLinuxPlatformPaths(home, environment).unitPath)).toBe(false);
     }
   });
 
   it('renders and installs a strict systemd user service using immutable runtime/current', async () => {
     const adapter = createLinuxPlatformAdapter({
       home,
+      environment,
       host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
       run: runner([
         { exitCode: 0 },
@@ -82,7 +86,7 @@ describe('Linux platform adapter', () => {
 
     await adapter.install();
 
-    const paths = resolveLinuxPlatformPaths(home);
+    const paths = resolveLinuxPlatformPaths(home, environment);
     expect(readFileSync(paths.unitPath, 'utf8')).toBe(renderSystemdUserUnit({
       home,
       bunExecutable: '/opt/consuelo/bin/bun',
@@ -100,6 +104,7 @@ describe('Linux platform adapter', () => {
   it('materializes and enables the systemd unit when lifecycle activation restarts a fresh install', async () => {
     const adapter = createLinuxPlatformAdapter({
       home,
+      environment,
       host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
       run: runner([
         { exitCode: 0 },
@@ -111,7 +116,38 @@ describe('Linux platform adapter', () => {
 
     await adapter.restart({ waitForCompletion: true });
 
-    expect(existsSync(resolveLinuxPlatformPaths(home).unitPath)).toBe(true);
+    expect(existsSync(resolveLinuxPlatformPaths(home, environment).unitPath)).toBe(true);
+    expect(commands.map(({ executable, args }) => [executable, args])).toEqual([
+      ['systemctl', ['--user', 'show-environment']],
+      ['systemctl', ['--user', 'daemon-reload']],
+      ['systemctl', ['--user', 'enable', '--now', 'consuelo-os.service']],
+    ]);
+  });
+
+  it('keeps systemd user configuration under the login home when the OS data home is custom', async () => {
+    const osHome = join(home, 'var-lib-consuelo');
+    const userHome = join(home, 'home-consuelo');
+    const customEnvironment = { HOME: userHome };
+    const paths = resolveLinuxPlatformPaths(osHome, customEnvironment);
+    expect(paths.systemdUserDir).toBe(
+      join(userHome, '.config', 'systemd', 'user'),
+    );
+
+    const adapter = createLinuxPlatformAdapter({
+      home: osHome,
+      host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
+      run: runner([
+        { exitCode: 0 },
+        { exitCode: 0 },
+        { exitCode: 0 },
+      ]),
+      bunExecutable: '/home/consuelo/.bun/bin/bun',
+      environment: customEnvironment,
+    });
+
+    await adapter.restart({ waitForCompletion: true });
+
+    expect(existsSync(paths.unitPath)).toBe(true);
     expect(commands.map(({ executable, args }) => [executable, args])).toEqual([
       ['systemctl', ['--user', 'show-environment']],
       ['systemctl', ['--user', 'daemon-reload']],
@@ -122,6 +158,7 @@ describe('Linux platform adapter', () => {
   it('uses a bounded session-process fallback when systemd user services are unavailable', async () => {
     const adapter = createLinuxPlatformAdapter({
       home,
+      environment,
       host: { platform: 'linux', architecture: 'arm64', libc: 'musl' },
       run: runner([{ exitCode: 1, stderr: 'Failed to connect to bus' }]),
       bunExecutable: '/custom/bun',
@@ -133,7 +170,7 @@ describe('Linux platform adapter', () => {
     });
 
     await expect(adapter.install()).resolves.toMatchObject({ manager: 'session-process' });
-    const paths = resolveLinuxPlatformPaths(home);
+    const paths = resolveLinuxPlatformPaths(home, environment);
     expect(JSON.parse(readFileSync(paths.sessionStatePath, 'utf8'))).toMatchObject({ pid: 4242 });
     expect(statSync(paths.sessionStatePath).mode & 0o777).toBe(0o600);
     await expect(adapter.status()).resolves.toMatchObject({
@@ -149,7 +186,7 @@ describe('Linux platform adapter', () => {
       host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
       run: runner([{ exitCode: 0 }]),
       bunExecutable: '/opt/bun',
-      environment: { DISPLAY: ':0' },
+      environment: { ...environment, DISPLAY: ':0' },
     });
     await expect(adapter.handoffAuth({
       verificationUrl: 'https://login.example/device',
@@ -171,7 +208,7 @@ describe('Linux platform adapter', () => {
       host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
       run: runner(),
       bunExecutable: '/opt/bun',
-      environment: {},
+      environment,
     });
     await expect(headless.handoffAuth({
       verificationUrl: 'https://login.example/device',
@@ -186,7 +223,7 @@ describe('Linux platform adapter', () => {
   });
 
   it('reports structured diagnostics and removes only Consuelo-owned service artifacts', async () => {
-    const paths = resolveLinuxPlatformPaths(home);
+    const paths = resolveLinuxPlatformPaths(home, environment);
     mkdirSync(paths.systemdUserDir, { recursive: true });
     mkdirSync(join(home, 'workspaces', 'user-workspace'), { recursive: true });
     writeFileSync(paths.unitPath, 'owned unit\n');
@@ -194,6 +231,7 @@ describe('Linux platform adapter', () => {
     writeFileSync(join(home, 'workspaces', 'user-workspace', 'note.md'), 'keep\n');
     const adapter = createLinuxPlatformAdapter({
       home,
+      environment,
       host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
       run: runner([
         { exitCode: 0 },
@@ -220,13 +258,14 @@ describe('Linux platform adapter', () => {
   });
 
   it('disables systemd and stops fallback state during mixed-manager uninstall', async () => {
-    const paths = resolveLinuxPlatformPaths(home);
+    const paths = resolveLinuxPlatformPaths(home, environment);
     mkdirSync(paths.systemdUserDir, { recursive: true });
     mkdirSync(paths.runsDir, { recursive: true });
     writeFileSync(paths.unitPath, 'owned unit\n');
     writeFileSync(paths.sessionStatePath, `${JSON.stringify({ pid: 4242 })}\n`);
     const adapter = createLinuxPlatformAdapter({
       home,
+      environment,
       host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
       run: runner([
         { exitCode: 0 },

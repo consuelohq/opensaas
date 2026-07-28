@@ -4,16 +4,13 @@
   "mode": "full",
   "branch": "task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
   "base": "origin/task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
-  "headSha": "261f0bc4303b9c7a9af09745eef60a93335828a9",
-  "changeHash": "689d7449c4a4fc407c14e642e8264f9963626a5bebbddcaa29d74af544ba48f8",
+  "headSha": "862f03372b81ed484036f50ea2fe1d90aa8edd26",
+  "changeHash": "ac635f626fc8ed4475232202fd5bed45b63ec7bc3fbad09fdab0443b67b624b2",
   "changedFiles": [
-    "packages/os/scripts/lib/lifecycle/retention.ts",
-    "packages/os/scripts/lib/lifecycle/runtime-release-path.ts",
-    "packages/os/tests/lifecycle-engine.test.ts",
-    "packages/os/tests/lifecycle-retention-uninstall.test.ts",
-    "packages/os/tests/windows-platform.test.ts"
+    "packages/os/scripts/lib/platforms/linux.ts",
+    "packages/os/tests/linux-platform.test.ts"
   ],
-  "verifiedAt": "2026-07-28T07:24:31.822Z",
+  "verifiedAt": "2026-07-28T07:32:27.021Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -30,11 +27,8 @@
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json",
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json",
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md",
-        "packages/os/scripts/lib/lifecycle/retention.ts",
-        "packages/os/scripts/lib/lifecycle/runtime-release-path.ts",
-        "packages/os/tests/lifecycle-engine.test.ts",
-        "packages/os/tests/lifecycle-retention-uninstall.test.ts",
-        "packages/os/tests/windows-platform.test.ts"
+        "packages/os/scripts/lib/platforms/linux.ts",
+        "packages/os/tests/linux-platform.test.ts"
       ],
       "matchedRules": [
         {
@@ -42,11 +36,8 @@
           "critical": false,
           "reason": "Auto-discovered package test script for packages/os.",
           "matchedFiles": [
-            "packages/os/scripts/lib/lifecycle/retention.ts",
-            "packages/os/scripts/lib/lifecycle/runtime-release-path.ts",
-            "packages/os/tests/lifecycle-engine.test.ts",
-            "packages/os/tests/lifecycle-retention-uninstall.test.ts",
-            "packages/os/tests/windows-platform.test.ts"
+            "packages/os/scripts/lib/platforms/linux.ts",
+            "packages/os/tests/linux-platform.test.ts"
           ],
           "origin": "auto"
         }
