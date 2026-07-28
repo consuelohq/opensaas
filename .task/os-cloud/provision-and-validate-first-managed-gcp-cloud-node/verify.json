@@ -4,14 +4,13 @@
   "mode": "full",
   "branch": "task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
   "base": "origin/task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node",
-  "headSha": "da9d8ffe9fc7751e51ff566f92ccddd6f73a6c74",
-  "changeHash": "ed0fe5e93002af30b513803876274c813ee9a9646c26ba01ddc1537e35f56451",
+  "headSha": "5f1e1088c8a66f099b6b39d9e8db56b32d4914a0",
+  "changeHash": "1e28d7f535596a5722f8999190e01522cde700ee5b645677bd8ed74a37836fae",
   "changedFiles": [
-    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
-    "packages/os/scripts/lib/install-state.ts",
-    "packages/os/tests/distribution/runtime-bundle.test.ts"
+    "packages/os/scripts/lib/lifecycle/release.ts",
+    "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts"
   ],
-  "verifiedAt": "2026-07-28T06:51:07.390Z",
+  "verifiedAt": "2026-07-28T07:02:40.288Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -25,14 +24,11 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
-        ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/current.json",
+        ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json",
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json",
-        ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/session.json",
         ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md",
-        ".task/tasks/os-cloud/provision-and-validate-first-managed-gcp-cloud-node.json",
-        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
-        "packages/os/scripts/lib/install-state.ts",
-        "packages/os/tests/distribution/runtime-bundle.test.ts"
+        "packages/os/scripts/lib/lifecycle/release.ts",
+        "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts"
       ],
       "matchedRules": [
         {
@@ -40,9 +36,8 @@
           "critical": false,
           "reason": "Auto-discovered package test script for packages/os.",
           "matchedFiles": [
-            "packages/os/scripts/lib/distribution/runtime-bundle.ts",
-            "packages/os/scripts/lib/install-state.ts",
-            "packages/os/tests/distribution/runtime-bundle.test.ts"
+            "packages/os/scripts/lib/lifecycle/release.ts",
+            "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts"
           ],
           "origin": "auto"
         }

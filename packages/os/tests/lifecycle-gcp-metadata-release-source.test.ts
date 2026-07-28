@@ -47,9 +47,10 @@ describe('GCP metadata-authenticated lifecycle release source', () => {
 
   it('adds bearer authorization to both manifest and bundle requests', async () => {
     const requests: Request[] = [];
+    const baseUrl =
+      'https://storage.googleapis.com/consuelo-cloud-dev-igg2mr-os-releases-f401931d';
     const source = createHttpReleaseSource({
-      baseUrl:
-        'https://storage.googleapis.com/consuelo-cloud-dev-igg2mr-os-releases-f401931d',
+      baseUrl,
       authorizationProvider: async () => 'Bearer metadata-access-token',
       fetchImpl: async (input, init) => {
         const request = new Request(input, init);
@@ -81,10 +82,12 @@ describe('GCP metadata-authenticated lifecycle release source', () => {
     });
 
     const manifest = await source.fetchManifest('dev');
+    expect(manifest.payload.bundleUrl).toBe('bundles/runtime.tar.gz');
     await expect(source.fetchBundle(manifest.payload.bundleUrl)).resolves.toEqual(
       new Uint8Array([1, 2, 3]),
     );
     expect(requests).toHaveLength(2);
+    expect(requests[1].url).toBe(`${baseUrl}/bundles/runtime.tar.gz`);
     expect(
       requests.every(
         (request) =>

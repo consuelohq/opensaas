@@ -44,6 +44,7 @@ started: 2026-07-28
 - Dangerous deletion/recovery behavior is validated through pure plans, fixtures, or dry-run APIs. No destructive user-data smoke test is permitted.
 - Runtime-bundle closure regression: the customer archive must include `scripts/lib/distribution/runtime-bundle.ts` because lifecycle state and release activation import it at runtime. The focused test must fail while the whole distribution directory is classified source-only, then pass after the narrow runtime classification fix.
 - Clean customer onboarding regression: an extracted runtime archive must complete noninteractive cloud install, create normal OS configuration, and keep operator-only content absent.
+- Signed release URL regression: `createHttpReleaseSource` must preserve the signed manifest payload byte-for-byte through verification and resolve a relative `bundleUrl` only when issuing the bundle request.
 
 ## current status
 
@@ -66,16 +67,16 @@ started: 2026-07-28
 - After the executable-closure repair, the second real bootstrap reached lifecycle onboarding and failed because `provisionLocalOs` treated the intentionally excluded `operator/` directory as mandatory. Release policy requires operator-only content to remain outside customer bundles; clean customer installs must skip that optional materialization rather than fail.
 - After skipping absent operator-only prompts, the clean-archive regression advances to artifact-site generation and fails because the bundle omits the proven runtime dependency `assets/consuelo-mark.png`.
 - Clean customer onboarding is now green: the extracted archive completes noninteractive cloud installation, explicitly skips absent operator-only prompts, includes the exact required `assets/consuelo-mark.png`, creates normal OS state, and leaves `operator/` absent. All 22 full-source installer tests still materialize operator prompts for local source installs.
+- The third real bootstrap fetched the rotated release and exact trusted key successfully but failed signature verification. Direct verification on the VM passes; `createHttpReleaseSource` mutates the signed relative `bundleUrl` to an absolute URL before verification, invalidating the signed payload.
+- Signed manifest verification is now green: `fetchManifest` preserves the signed relative URL, while `fetchBundle` resolves it against the release base only when issuing the authenticated request.
 - Remaining runtime work: publish a new signed immutable archive, rerun guest bootstrap, complete device authorization, prove connector/heartbeat/routing readiness, and execute the non-destructive lifecycle/recovery validation matrix.
 
 ## files changed
 
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/install-state.ts`
-- `packages/os/scripts/lib/managed-cloud-node.ts`
+- `packages/os/scripts/lib/lifecycle/release.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
-- `packages/os/tests/managed-cloud-node-contract.test.ts`
-- `packages/os/tests/platform-managed-cloud-node.test.ts`
 
 
 ## workspace-owned: files changed
@@ -96,6 +97,8 @@ started: 2026-07-28
 - 2026-07-28 06:01:15 `review.run`: passed — OK
 - 2026-07-28 06:50:49 `review.run`: passed — OK
 - 2026-07-28 06:51:07 `verify`: passed — OK
+- 2026-07-28 07:02:27 `review.run`: passed — OK
+- 2026-07-28 07:02:40 `verify`: passed — OK
 
 ## key decisions
 
@@ -143,6 +146,7 @@ started: 2026-07-28
 - IAP/OS Login service regression: the foundation contract was red while those APIs were absent, then passed after both services were added; real provider apply reports 22/22 resources unchanged.
 - Runtime executable-closure regression: the bundle suite was red on classification and real-archive inventory, then 19/19 passed after narrowly classifying `scripts/lib/distribution/runtime-bundle.ts` as runtime content. The real-archive test now extracts the customer bundle and starts the bundled lifecycle CLI.
 - Clean customer onboarding regression: red on the exact missing-operator guest failure, then red on the missing `assets/consuelo-mark.png` runtime dependency, then green after optional operator materialization and exact asset discovery/classification.
+- Signed release URL regression: red because `fetchManifest` rewrote `bundleUrl` before verification, then green after moving URL resolution to `fetchBundle`; the full affected set remains 89 passing tests with 10 existing environment-gated skips.
 - Current affected validation: 89 passing tests, 10 existing environment-gated skips, and no destructive-literal preflight findings.
 
 ## discovery
@@ -176,6 +180,7 @@ bun run task:finish
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
 - `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/lib/lifecycle/engine.ts`
 - `packages/os/scripts/lib/lifecycle/release.ts`
 - `packages/os/scripts/lib/lifecycle/state.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
@@ -196,23 +201,17 @@ bun run task:finish
 - `packages/os/tests/gcloud-managed-cloud-node.test.ts`
 - `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
 - `packages/os/tests/lifecycle-engine.test.ts`
+- `packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts`
 - `packages/os/tests/linux-platform.test.ts`
 - `packages/os/tests/managed-cloud-node-contract.test.ts`
 - `packages/os/tests/managed-cloud-node-enrollment.test.ts`
+- `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-07-28 06:48:04 apply-patch: `packages/os/scripts/lib/distribution/runtime-bundle.ts`
-
-- 2026-07-28 06:48:56 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
-
-- 2026-07-28 06:49:25 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
-
-- 2026-07-28 06:50:21 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
-
 ## workspace-owned: test selection
 
-- changed files: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/current.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/session.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`, `.task/tasks/os-cloud/provision-and-validate-first-managed-gcp-cloud-node.json`, `packages/os/scripts/lib/distribution/runtime-bundle.ts`, `packages/os/scripts/lib/install-state.ts`, `packages/os/tests/distribution/runtime-bundle.test.ts`
+- changed files: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`, `packages/os/scripts/lib/lifecycle/release.ts`, `packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts`
 - matched rules: `auto:@consuelo/os:package-test`
 - selected suites: `@consuelo/os package test`
 - run results: `@consuelo/os package test` passed

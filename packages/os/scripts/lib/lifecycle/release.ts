@@ -493,12 +493,6 @@ export function createHttpReleaseSource(input: {
           );
         }
         const manifest = (await response.json()) as SignedReleaseManifest;
-        if (manifest.payload?.bundleUrl) {
-          manifest.payload.bundleUrl = new URL(
-            manifest.payload.bundleUrl,
-            `${baseUrl}/`,
-          ).toString();
-        }
         return manifest;
       } catch (error: unknown) {
         throw new Error(
@@ -509,7 +503,9 @@ export function createHttpReleaseSource(input: {
     },
     async fetchBundle(url: string) {
       try {
-        const response = await fetchRelease(url);
+        const response = await fetchRelease(
+          new URL(url, `${baseUrl}/`).toString(),
+        );
         if (!response.ok) {
           throw new Error(
             `runtime bundle request failed with HTTP ${response.status}`,
