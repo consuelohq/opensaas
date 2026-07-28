@@ -48,6 +48,7 @@ started: 2026-07-28
 - Runtime release path regression: every platform must materialize digest-addressed releases under a PATH-safe `sha256-<digest>` directory while readers continue accepting legacy POSIX `sha256:<digest>` directories.
 - Linux custom-home service regression: `CONSUELO_HOME` may point at durable data outside the login home, but systemd user units must still materialize under `XDG_CONFIG_HOME` or `HOME/.config/systemd/user`.
 - Device grant workspace identity regression: approval must preserve the durable workspace UUID across node registration, connector provisioning, route registration, and the approved bootstrap response instead of reconstructing identity from the slug.
+- Device-authority release dry-run regression: the operator release command must materialize default snapshots with a valid non-reserved workspace hostname, plan every R2 object, and bundle the Worker without remote mutation.
 
 ## current status
 
@@ -55,7 +56,7 @@ started: 2026-07-28
 - Branch 2 started from merged stream head as PR #1706.
 - Discovery completed across the managed-node foundation, GCP adapter, device-authority grants/nodes, heartbeat client, D1 route registry, edge router, installer bootstrap, and lifecycle endpoint.
 - Provider-neutral node planning, retained data-disk semantics, GCP disk/VM idempotency, headless lifecycle onboarding, device-code enrollment, Linux connector/heartbeat materialization, dual-service activation, and immutable cloudflared bootstrap are implemented test-first.
-- The complete affected contract set passes: 263 tests across 26 executed suites; 10 install-contract tests are environment-gated and skipped by their existing test harness.
+- The complete affected contract set passes: 264 tests across 26 executed suites; 10 install-contract tests are environment-gated and skipped by their existing test harness.
 - Official cloudflared bootstrap is pinned to release `2026.7.3`, Linux amd64, SHA-256 `9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17` from Cloudflare's release API.
 - A dedicated private release bucket `consuelo-cloud-dev-igg2mr-os-releases-f401931d` exists in `us-east1`; anonymous reads return HTTP 403 and the managed-node service account has object-viewer access.
 - Private release delivery is implemented test-first: lifecycle can obtain cached short-lived bearer authorization from the GCE metadata service, and both initial bundle download and channel/bundle lifecycle requests use that identity. No access token is embedded in Git, metadata, logs, URLs, or the node config.
@@ -78,6 +79,8 @@ started: 2026-07-28
 - Linux custom-home service resolution is now green: systemd user configuration follows `XDG_CONFIG_HOME` or `HOME/.config`, while runtime and durable data remain under `CONSUELO_HOME`. All 9 Linux adapter tests pass.
 - The first approved live grant reached the node but failed closed with `DEVICE_GRANT_IDENTITY_MISMATCH`: onboarding carried workspace UUID `1a99791c-b697-4877-8640-90e31d2b29ff`, while the authority rebuilt `workspace_id` as `workspace_kokayi` from the slug and used that derived ID for node and route setup.
 - Durable workspace identity is now preserved end to end: the UUID-backed account workspace flows through the approved grant, registered node, connector provisioning, D1 route seed, bootstrap credential, and device token response. The focused regression and all 79 authority/routing tests pass.
+- The canonical device-authority dry-run passed remote secret readiness, then failed before mutation because its default snapshot host was the reserved global hostname `sites.consuelohq.com` instead of the `workspace_testing` workspace hostname.
+- The release dry-run is now green: the script materializes snapshots with `testing.consuelohq.com`, plans all five R2 objects, verifies the live Worker secret, and compiles the exact Wrangler bundle without remote mutation.
 - Remaining runtime work: deploy the corrected device-authority Worker, restart enrollment to issue a fresh device code, complete authorization, prove connector/heartbeat/routing readiness, and execute the non-destructive lifecycle/recovery validation matrix.
 
 ## files changed
@@ -116,6 +119,8 @@ started: 2026-07-28
 - 2026-07-28 07:32:27 `verify`: passed — OK
 - 2026-07-28 07:47:42 `review.run`: passed — OK
 - 2026-07-28 07:47:53 `verify`: passed — OK
+- 2026-07-28 07:53:38 `review.run`: passed — OK
+- 2026-07-28 07:53:52 `verify`: passed — OK
 
 ## key decisions
 
@@ -168,7 +173,8 @@ started: 2026-07-28
 - Runtime release path regression: red because Darwin/Linux preserved `sha256:<digest>`, then green after universal PATH-safe directory encoding plus legacy-colon reader compatibility. Staging, activation, rollback, recovery, retention, uninstall, and cross-platform coverage pass with 72 focused tests.
 - Linux custom-home service regression: red because a custom OS data home also became the systemd user configuration home, then green after resolving user configuration from `XDG_CONFIG_HOME` or `HOME`.
 - Device grant workspace identity regression: red with `workspace_testing` in place of the seeded durable UUID, then green after preserving the ID through grant, node, connector, route, credential, and response boundaries.
-- Current affected validation: 263 passing tests across 26 executed suites, 10 existing environment-gated skips, and no destructive-literal preflight findings.
+- Device-authority release dry-run regression: red on reserved `sites.consuelohq.com`, then green after aligning the default host with `workspace_testing`; the real release dry-run plans five snapshots and Wrangler exits successfully without mutation.
+- Current affected validation: 264 passing tests across 26 executed suites, 10 existing environment-gated skips, and no destructive-literal preflight findings.
 - `native-lifecycle-operation.test.ts` remains excluded as unrelated pre-existing contract drift: six unmodified tests call `executeNativeLifecycleOperation` with an empty store, while the current worker correctly requires a matching queued operation before claiming authority. The other 7 tests in that suite pass.
 
 ## discovery
@@ -194,6 +200,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-production-release.yaml`
 - `packages/os/Dockerfile`
 - `packages/os/bun.lock`
 - `packages/os/cloudflare/os-device-authority/src/routes/device.ts`
@@ -205,6 +212,7 @@ bun run task:finish
 - `packages/os/cloudflare/os-device-authority/src/stores.ts`
 - `packages/os/cloudflare/os-device-authority/src/types.ts`
 - `packages/os/cloudflare/os-device-authority/src/utils.ts`
+- `packages/os/cloudflare/os-device-authority/wrangler.toml`
 - `packages/os/docs/distribution/release-channels.md`
 - `packages/os/docs/linux-platform.md`
 - `packages/os/package-lock.json`
@@ -213,10 +221,12 @@ bun run task:finish
 - `packages/os/plans/consuelo-os-foundation/workers/24-distribution-integration.md`
 - `packages/os/scripts/build-runtime-bundle.ts`
 - `packages/os/scripts/install.ts`
+- `packages/os/scripts/lib/device-authority-release-readiness.ts`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
 - `packages/os/scripts/lib/index/chunker.js`
 - `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/lib/launcher-onboarding.ts`
 - `packages/os/scripts/lib/lifecycle/engine.ts`
 - `packages/os/scripts/lib/lifecycle/release.ts`
 - `packages/os/scripts/lib/lifecycle/retention.ts`
@@ -231,6 +241,7 @@ bun run task:finish
 - `packages/os/scripts/lib/native-lifecycle-operation.ts`
 - `packages/os/scripts/lib/platform-managed-cloud-node.ts`
 - `packages/os/scripts/lib/platforms/linux.ts`
+- `packages/os/scripts/lib/sites.ts`
 - `packages/os/scripts/lib/workspace-connector-transport.ts`
 - `packages/os/scripts/lib/workspace-device-authorization.ts`
 - `packages/os/scripts/lib/workspace-device-login-client.ts`
@@ -252,14 +263,18 @@ bun run task:finish
 - `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
 - `packages/os/tests/native-lifecycle-operation.test.ts`
 - `packages/os/tests/os-device-authority-connector-provisioning.test.ts`
+- `packages/os/tests/os-device-authority-release-contract.test.ts`
 - `packages/os/tests/os-device-authority-worker.test.ts`
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
 - `packages/os/tests/windows-platform.test.ts`
+- `packages/workspace/SCRIPTS.md`
+- `packages/workspace/package.json`
+- `packages/workspace/scripts/os-release-device-auth.ts`
 - `packages/workspace/senior-engineer.md`
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`, `packages/os/cloudflare/os-device-authority/src/routes/device.ts`, `packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts`, `packages/os/cloudflare/os-device-authority/src/services/connectors.ts`, `packages/os/cloudflare/os-device-authority/src/services/grants.ts`, `packages/os/cloudflare/os-device-authority/src/types.ts`, `packages/os/tests/os-device-authority-worker.test.ts`
+- changed files: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/evidence-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/read-log.json`, `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`, `packages/os/tests/os-device-authority-release-contract.test.ts`, `packages/workspace/scripts/os-release-device-auth.ts`
 - matched rules: `auto:@consuelo/os:package-test`
 - selected suites: `@consuelo/os package test`
 - run results: `@consuelo/os package test` passed
