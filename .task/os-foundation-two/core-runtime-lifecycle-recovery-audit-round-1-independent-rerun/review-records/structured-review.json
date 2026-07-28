@@ -1,0 +1,172 @@
+{
+  "schema_version": "1.0",
+  "review_type": "consuelo_assigned_worker_high_signal_review",
+  "review_round": 1,
+  "reviewer": "23A",
+  "pr": {
+    "number": 1674,
+    "title": "Stream/os-foundation-two",
+    "url": "https://github.com/consuelohq/opensaas/pull/1674",
+    "base_sha": "702053057d19c066607d4508b49d42b183d17b32",
+    "candidate_sha": "ef2530b136ec2a170915b583abfb2341899bd6ab"
+  },
+  "outcome": "issues_found",
+  "confidence": "medium",
+  "context_checked": [
+    {
+      "source": "diff",
+      "status": "checked",
+      "summary": "Reviewed the complete 63-file retained PR #1674 comparison and used exact-SHA product retrieval because the retained diff is audit-record oriented."
+    },
+    {
+      "source": "original_intent",
+      "status": "checked",
+      "summary": "Read Workers 01, 04, 05, 06, 07, and 24 plus the master plan and Worker 23a acceptance gates."
+    },
+    {
+      "source": "implementation_history",
+      "status": "checked",
+      "summary": "Verified implementation and repair lineage including PRs #1544, #1578, #1584, #1600, #1601, #1605, #1640, and #1663."
+    },
+    {
+      "source": "tests_ci",
+      "status": "checked",
+      "summary": "Focused domain tests and typecheck passed; distribution retained seven TODOs; the broad suite and two PR checks were not green and were independently classified."
+    },
+    {
+      "source": "runtime_evidence",
+      "status": "unavailable",
+      "summary": "No destructive Ko-machine journey was authorized, and the candidate omitted Worker 24's exact-candidate integration lane."
+    },
+    {
+      "source": "existing_reviews",
+      "status": "checked",
+      "summary": "Reviewed current human and automated comments; the prior Worker 23a coordinate-only blocker is obsolete and no overlapping product finding exists."
+    },
+    {
+      "source": "repo_patterns",
+      "status": "checked",
+      "summary": "Compared lifecycle, managed-component, steering, diagnostics, native operation, and distribution patterns with surrounding tests and repair history."
+    }
+  ],
+  "findings": [
+    {
+      "id": "23A-R01-001",
+      "status": "open",
+      "authoritative_domain": "23A",
+      "secondary_seam_reviewers": [],
+      "severity": "high",
+      "priority": "P1",
+      "category": "architecture",
+      "title": "Worker 07 steering behavior was not promoted into the final candidate",
+      "location": {
+        "file": "packages/os/scripts/lib/install-state.ts",
+        "start_line": 223,
+        "end_line": 223,
+        "primary_line": 223,
+        "symbol": "DEFAULT_STEERING_FILES"
+      },
+      "risk": "Agents bootstrap from incomplete and unsafe machine-local steering while the completed Worker 07 implementation is absent from the final candidate.",
+      "why_it_matters": "Launch behavior omits installed capability and update context and retains the obsolete decision.md surface.",
+      "evidence": "Candidate installs decision.md and getSteering lacks Worker 07 sections; PR #1640 implemented them but its merge commit diverges from the candidate.",
+      "recommendation": "Promote or narrowly reapply PR #1640, remove decision.md, and emit deterministic redacted portable context.",
+      "validation": [
+        "Fresh install does not create decision.md.",
+        "Steering includes installed skills and safe node, workspace, channel, and update context.",
+        "Negative tests exclude absolute paths, secrets, cookies, and private URLs."
+      ],
+      "inline_comment": "Inline unavailable on the retained diff; post the complete 23A-R01-001 file and line comment at PR level.",
+      "agent_fix_prompt": "Verify and narrowly promote PR #1640 behavior, add negative safety tests, run focused install and steering suites, and report the exact repaired candidate.",
+      "blocks_merge": true
+    },
+    {
+      "id": "23A-R01-002",
+      "status": "open",
+      "authoritative_domain": "23A",
+      "secondary_seam_reviewers": [],
+      "severity": "high",
+      "priority": "P1",
+      "category": "tests",
+      "title": "The final candidate dropped the executable distribution-integration lane",
+      "location": {
+        "file": "packages/os/tests/distribution/lifecycle-contract.test.ts",
+        "start_line": 6,
+        "end_line": 12,
+        "primary_line": 6,
+        "symbol": "Consuelo OS distribution lifecycle contracts"
+      },
+      "risk": "Required clean-host and adversarial lifecycle journeys do not execute for the final candidate.",
+      "why_it_matters": "The candidate can appear green without proving install, update, interruption, artifact rejection, conflict, promotion, or redaction behavior.",
+      "evidence": "All seven contracts are TODO; PR #1663 added executable integration but its merge commit diverges from the candidate.",
+      "recommendation": "Promote or narrowly reapply PR #1663 and run the registered exact-candidate platform matrix.",
+      "validation": [
+        "No Worker 23a lifecycle TODO remains.",
+        "All seven journeys execute against fixture or clean-host artifacts.",
+        "Platform evidence records exact candidate SHA and artifact identity."
+      ],
+      "inline_comment": "Inline unavailable on the retained diff; post the complete 23A-R01-002 file and line comment at PR level.",
+      "agent_fix_prompt": "Verify and narrowly promote PR #1663 integration behavior, run focused and platform lanes, and report exact-SHA artifacts.",
+      "blocks_merge": true
+    },
+    {
+      "id": "23A-R01-003",
+      "status": "open",
+      "authoritative_domain": "23A",
+      "secondary_seam_reviewers": [],
+      "severity": "high",
+      "priority": "P1",
+      "category": "reliability",
+      "title": "Crash recovery can restore links without restoring the running service",
+      "location": {
+        "file": "packages/os/scripts/lib/lifecycle/retention.ts",
+        "start_line": 229,
+        "end_line": 270,
+        "primary_line": 229,
+        "symbol": "recoverInterruptedLifecycleActivation"
+      },
+      "risk": "A crash after service relaunch can leave runtime/current on the previous release while the live service keeps running the failed candidate.",
+      "why_it_matters": "This creates the lifecycle split brain the recovery contract is meant to prevent and can mislead status and subsequent check-only operations.",
+      "evidence": "Recovery changes links and clears the journal without service relaunch or health acceptance; status bypasses recovery; current tests cover only link restoration.",
+      "recommendation": "Make recovery service-aware and health-gated under the lock, and make status reconcile or report pending recovery.",
+      "validation": [
+        "Crash after service relaunch and before health is reproduced.",
+        "Next operation relaunches and accepts the restored release.",
+        "Status and check-only update cannot leave or hide a mismatched live process."
+      ],
+      "inline_comment": "Inline unavailable on the retained diff; post the complete 23A-R01-003 file and line comment at PR level.",
+      "agent_fix_prompt": "Add the crash-boundary regression, implement service-aware journal recovery, run lifecycle, service, retention, and distribution suites, and report the exact repaired candidate.",
+      "blocks_merge": true
+    },
+    {
+      "id": "23A-R01-004",
+      "status": "open",
+      "authoritative_domain": "23A",
+      "secondary_seam_reviewers": [],
+      "severity": "medium",
+      "priority": "P2",
+      "category": "observability",
+      "title": "Lifecycle diagnostics grow without a bound and are read in full",
+      "location": {
+        "file": "packages/os/scripts/lib/lifecycle/diagnostics.ts",
+        "start_line": 37,
+        "end_line": 52,
+        "primary_line": 51,
+        "symbol": "createLifecycleProgressEmitter"
+      },
+      "risk": "Repeated lifecycle events can consume disk indefinitely and make diagnostic export synchronously load an arbitrarily large file.",
+      "why_it_matters": "Long-lived nodes degrade during incident recovery and the explicit bounded-diagnostics acceptance gate is unmet.",
+      "evidence": "The emitter only appends one JSONL file and the endpoint reads the entire file; no bound or rotation exists.",
+      "recommendation": "Add deterministic size-capped rotation and bounded-tail export while preserving redaction, permissions, and containment.",
+      "validation": [
+        "High-volume events keep disk usage within the configured bound.",
+        "Export returns newest redacted events without unbounded reads.",
+        "Rotation is symlink-safe and remains inside the managed log directory."
+      ],
+      "inline_comment": "Inline unavailable on the retained diff; post the complete 23A-R01-004 file and line comment at PR level.",
+      "agent_fix_prompt": "Implement bounded rotation and tail export with high-volume and symlink tests, run diagnostics and native endpoint suites, and report the exact repaired candidate.",
+      "blocks_merge": false
+    }
+  ],
+  "top_level_pr_comment": "Worker 23A found three High and P1 launch blockers and one Medium and P2 operability defect in exact candidate ef2530b136ec2a170915b583abfb2341899bd6ab. Final status: DOMAIN CONDITIONAL.\n\n☑️ issues found",
+  "agent_fix_prompt": "Verify and repair only still-valid 23A-R01-001 through 23A-R01-004 findings, preserve scope, run exact-candidate focused and platform evidence, and update every original PR #1674 thread with repair PR, SHA, commands, and disposition."
+}

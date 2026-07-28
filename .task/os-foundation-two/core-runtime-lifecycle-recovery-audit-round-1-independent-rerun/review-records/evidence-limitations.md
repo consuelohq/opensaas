@@ -1,0 +1,10 @@
+## Worker 23A unavailable evidence and tooling record
+
+- PR #1674 has two non-green checks: `Workers Builds: opensaas` failed and the `congratulate` CI Utils job was cancelled. Neither check exercises the Worker 23a runtime domain, so they do not terminate the code review, but the promotion surface is not wholly green.
+- No destructive real-machine install, update, rollback, uninstall, or power-cycle journey was run on Ko's Mac Mini or MacBook Air. The reviewer did not alter lifecycle state on either machine.
+- The final candidate omitted Worker 24's executable integration lane, so exact-candidate clean-host and registered platform evidence is unavailable until that lineage is promoted and rerun.
+- The full OS test command failed across 19 files. Isolated diagnosis found candidate-relevant evidence drift: detached-operation tests do not seed the now-required queued state; onboarding tests assert obsolete exact strings despite equivalent source behavior; the script-parity inventory omits current lifecycle and platform scripts; and a generated manifest expected by `code-call.test.ts` is absent. These failures reduce broad-suite credibility but do not replace the four code findings.
+- Initial unscoped reads, nested batch session propagation, one regex or glob query, one stale test filename, and two GitHub query or ancestry inputs failed. Each was retried through the documented OS-supported route; no native Git, legacy connector, alternate computer, or delegated reviewer was used.
+- One review-record write was denied before dispatch by the OS dangerous-material scanner because the prose resembled a system power-state command. No file changed; the same review content was written with service-lifecycle terminology through the supported route.
+
+Required next evidence: promote the missing Worker 07 and 24 lineage, repair the valid code findings, run exact-candidate focused and platform suites, and have Ko execute only the explicit real-machine checkpoints defined by the environment registry when the repaired candidate reaches that gate.
