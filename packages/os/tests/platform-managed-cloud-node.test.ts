@@ -10,6 +10,8 @@ type FoundationClient = {
   ensureService: (service: string) => Promise<FoundationStatus>;
   ensureNetwork: (input: unknown) => Promise<FoundationStatus>;
   ensureSubnet: (input: unknown) => Promise<FoundationStatus>;
+  ensureRouter: (input: unknown) => Promise<FoundationStatus>;
+  ensureNat: (input: unknown) => Promise<FoundationStatus>;
   ensureFirewallRule: (input: unknown) => Promise<FoundationStatus>;
   ensureServiceAccount: (input: unknown) => Promise<FoundationStatus>;
   ensureProjectRoleBinding: (input: unknown) => Promise<FoundationStatus>;
@@ -54,6 +56,8 @@ const createFixtureClient = (): {
       ensureService: async () => record('service'),
       ensureNetwork: async () => record('network'),
       ensureSubnet: async () => record('subnet'),
+      ensureRouter: async () => record('router'),
+      ensureNat: async () => record('nat'),
       ensureFirewallRule: async () => record('firewall'),
       ensureServiceAccount: async () => record('service-account'),
       ensureProjectRoleBinding: async () => record('iam'),
@@ -91,6 +95,8 @@ describe('platform managed cloud node boundary', () => {
         'service',
         'network',
         'subnet',
+        'router',
+        'nat',
         'firewall',
         'service-account',
         'iam',

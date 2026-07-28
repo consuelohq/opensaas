@@ -309,6 +309,9 @@ export function classifyRuntimeBundlePath(
     return 'test-only';
   }
   if (CUSTOMER_PROVIDER_FILES.has(filePath)) return 'customer-provider';
+  if (filePath === 'scripts/lib/distribution/runtime-bundle.ts') {
+    return 'runtime';
+  }
   if (
     filePath.startsWith('scripts/lib/distribution/') ||
     filePath === 'manifests/manifest.config.ts' ||

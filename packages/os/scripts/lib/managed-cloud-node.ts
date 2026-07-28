@@ -256,8 +256,10 @@ const DEFAULT_SERVICES = [
   'compute.googleapis.com',
   'iam.googleapis.com',
   'iamcredentials.googleapis.com',
+  'iap.googleapis.com',
   'logging.googleapis.com',
   'monitoring.googleapis.com',
+  'oslogin.googleapis.com',
   'serviceusage.googleapis.com',
 ] as const;
 

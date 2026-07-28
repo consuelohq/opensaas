@@ -214,9 +214,11 @@ describe('managed cloud node foundation contract', () => {
         'compute.googleapis.com',
         'iam.googleapis.com',
         'iamcredentials.googleapis.com',
+        'iap.googleapis.com',
         'billingbudgets.googleapis.com',
         'logging.googleapis.com',
         'monitoring.googleapis.com',
+        'oslogin.googleapis.com',
       ]),
     );
     expect(first.firewallRules).toEqual([

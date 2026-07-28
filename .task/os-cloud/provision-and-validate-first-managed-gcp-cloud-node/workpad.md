@@ -8,13 +8,13 @@ started: 2026-07-28
 
 ## acceptance criteria
 
-- [ ] Extend the provider-neutral managed-node contract with a deterministic zonal node plan and lifecycle operations.
-- [ ] Model the VM and boot disk as replaceable while the separately named data disk is retained by default and has auto-delete disabled.
-- [ ] Implement idempotent GCP ensure operations for the data disk, snapshot-policy attachment, VM, boot configuration, Shielded VM settings, no-public-IP networking, and instance service account.
-- [ ] Generate deterministic bootstrap metadata that mounts the durable disk, installs/starts Consuelo OS, and exposes no long-lived cloud credential.
-- [ ] Use the existing device-authority workspace-node enrollment, heartbeat, D1 route target, and explicit routing contracts; do not create a parallel node registry.
-- [ ] Add product/operator `plan` and `apply` surfaces through the same application boundary the eventual one-click UI will call.
-- [ ] Provision Ko's first GCP-backed Consuelo OS node only after focused red/green tests and a zero-mutation plan review.
+- [x] Extend the provider-neutral managed-node contract with a deterministic zonal node plan and lifecycle operations.
+- [x] Model the VM and boot disk as replaceable while the separately named data disk is retained by default and has auto-delete disabled.
+- [x] Implement idempotent GCP ensure operations for the data disk, snapshot-policy attachment, VM, boot configuration, Shielded VM settings, no-public-IP networking, and instance service account.
+- [x] Generate deterministic bootstrap metadata that mounts the durable disk, installs/starts Consuelo OS, and exposes no long-lived cloud credential.
+- [x] Use the existing device-authority workspace-node enrollment, heartbeat, D1 route target, and explicit routing contracts; do not create a parallel node registry.
+- [x] Add product/operator `plan` and `apply` surfaces through the same application boundary the eventual one-click UI will call.
+- [x] Provision Ko's first GCP-backed Consuelo OS node only after focused red/green tests and a zero-mutation plan review.
 - [ ] Validate boot health, enrollment readiness, explicit routing readiness, reboot, stop/start, VM replacement with data-disk reattachment, snapshot creation, restore planning, route revocation, and node revocation.
 - [ ] Prove ordinary node deletion preserves the durable data disk. Permanent data deletion must remain separately named, explicitly approved, and unexecuted in destructive smoke tests.
 
@@ -42,31 +42,35 @@ started: 2026-07-28
 - Lifecycle/recovery red tests: stop/start/reboot, VM replacement, snapshot creation, restore-to-new-disk, route revocation, and node revocation are expressed as deterministic operations before real provider execution.
 - Real cloud mutations occur only after all focused tests are green and the exact zero-mutation plan has been reviewed.
 - Dangerous deletion/recovery behavior is validated through pure plans, fixtures, or dry-run APIs. No destructive user-data smoke test is permitted.
+- Runtime-bundle closure regression: the customer archive must include `scripts/lib/distribution/runtime-bundle.ts` because lifecycle state and release activation import it at runtime. The focused test must fail while the whole distribution directory is classified source-only, then pass after the narrow runtime classification fix.
 
 ## current status
 
 - Branch 1 merged into `stream/os-cloud` as PR #1693 with 43 passing CI checks.
 - Branch 2 started from merged stream head as PR #1706.
 - Discovery completed across the managed-node foundation, GCP adapter, device-authority grants/nodes, heartbeat client, D1 route registry, edge router, installer bootstrap, and lifecycle endpoint.
-- No Branch 2 production file has been edited and no VM, boot disk, or durable data disk has been created.
 - Provider-neutral node planning, retained data-disk semantics, GCP disk/VM idempotency, headless lifecycle onboarding, device-code enrollment, Linux connector/heartbeat materialization, dual-service activation, and immutable cloudflared bootstrap are implemented test-first.
-- The complete affected contract set passes: 55 tests across 13 files, including Branch 1 regressions and existing Linux/install contracts.
-- Strict static review against `origin/stream/os-cloud` passes with zero findings.
+- The complete affected contract set passes: 67 tests across 14 executed files; 10 install-contract tests are environment-gated and skipped by their existing test harness.
 - Official cloudflared bootstrap is pinned to release `2026.7.3`, Linux amd64, SHA-256 `9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17` from Cloudflare's release API.
-- No VM, boot disk, durable data disk, or release object has been created yet.
-- A dedicated release bucket `consuelo-cloud-dev-igg2mr-os-releases-f401931d` was created in `us-east1`. Organization policy blocked public access, so the bucket remains private and empty.
+- A dedicated private release bucket `consuelo-cloud-dev-igg2mr-os-releases-f401931d` exists in `us-east1`; anonymous reads return HTTP 403 and the managed-node service account has object-viewer access.
 - Private release delivery is implemented test-first: lifecycle can obtain cached short-lived bearer authorization from the GCE metadata service, and both initial bundle download and channel/bundle lifecycle requests use that identity. No access token is embedded in Git, metadata, logs, URLs, or the node config.
 - The zero-mutation node plan exposed a missing egress prerequisite: Private Google Access reaches GCS but does not provide general outbound internet for Debian, Bun, or the pinned Cloudflare binary. Cloud Router `consuelo-os-cloud-us-east1-router` and Cloud NAT `consuelo-os-cloud-us-east1-nat` are now part of the idempotent foundation contract.
 - Real GCP foundation apply created exactly the router and NAT while the previous 18 operations remained unchanged; a second apply proved 20/20 operations `unchanged`.
+- The foundation now explicitly includes IAP and OS Login APIs. A real apply against billing account `011207-DC066E-D19981` proved 22/22 operations `unchanged`.
 - The first runtime-bundle build correctly failed the portability gate because the bootstrap hardcoded `/home/consuelo`. A focused red regression now requires passwd-derived `CONSUELO_USER_HOME` and `BUN_BIN`; the bootstrap no longer embeds a machine/user-specific home path.
+- VM `consuelo-ko-cloud-1` is RUNNING in `us-east1-b` with no external IP, Shielded VM enabled, and service account `consuelo-os-node@consuelo-cloud-dev-igg2mr.iam.gserviceaccount.com`.
+- Durable disk `consuelo-ko-cloud-1-data` is READY, attached read-write with auto-delete disabled, and protected by the daily 90-day and weekly 1-year snapshot schedules. A second node apply proved all 4 node operations `unchanged`.
+- IAP/OS Login access succeeds. The first guest bootstrap mounted the retained disk and verified both the signed runtime archive and cloudflared, then failed before activation because the archive excluded `scripts/lib/distribution/runtime-bundle.ts`.
+- The runtime-closure repair is green: all 19 bundle tests pass, and an extracted real customer archive successfully starts `scripts/lifecycle.ts status` on a clean temporary home.
+- Remaining runtime work: publish a new signed immutable archive, rerun guest bootstrap, complete device authorization, prove connector/heartbeat/routing readiness, and execute the non-destructive lifecycle/recovery validation matrix.
 
 ## files changed
 
-- `packages/os/scripts/lib/lifecycle/release.ts`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/managed-cloud-node.ts`
-- `packages/os/scripts/lifecycle.ts`
-- `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
-- `packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
+- `packages/os/tests/managed-cloud-node-contract.test.ts`
+- `packages/os/tests/platform-managed-cloud-node.test.ts`
 
 
 ## workspace-owned: files changed
@@ -84,6 +88,7 @@ started: 2026-07-28
 - 2026-07-28 05:08:04 `review.run`: passed — OK
 - 2026-07-28 05:19:59 `review.run`: passed — OK
 - 2026-07-28 05:36:24 `review.run`: passed — OK
+- 2026-07-28 06:01:15 `review.run`: passed — OK
 
 ## key decisions
 
@@ -110,6 +115,7 @@ started: 2026-07-28
 - The approved `websocket-relay` transport has no executable runtime client. Managed cloud enrollment therefore fails closed unless device authority returns the implemented Cloudflare Tunnel token, then activates both the durable cloudflared service and node-heartbeat timer before reporting enrolled.
 - Existing install contract source assertions were stale after extracting the approved-grant mapper and after the site catalog moved to `sites/artifacts/data/catalog.json`; assertions were updated to current ownership and generated artifacts while behavior checks remained intact.
 - Google Cloud organization policy rejected `allUsers` object-viewer access on the task release bucket. No public grant was applied and no object was uploaded. Recovery is a private bucket plus managed-node service-account object viewer and GCE metadata bearer authentication.
+- The first real VM bootstrap downloaded and digest-verified the signed runtime and cloudflared, then failed before lifecycle activation with `Cannot find module '../distribution/runtime-bundle'` from `scripts/lib/lifecycle/state.ts`. The bundle policy excluded a module used by the shipped lifecycle runtime; Branch 2 owns the executable-closure repair and artifact replacement.
 
 ## TDD evidence
 
@@ -125,6 +131,9 @@ started: 2026-07-28
 - Runtime portability regression: bundle build failed on a machine-specific absolute path, `managed-cloud-node-instance-contract.test.ts` was extended red, and all 4 node-domain tests pass after deriving the Linux account home at runtime.
 - `lifecycle-gcp-metadata-release-source.test.ts`: red on missing metadata-token authentication and authenticated release requests, then 3 passing tests covering token caching, required headers, manifest/bundle authorization, and fail-closed responses.
 - Router/NAT foundation regression: domain/provider tests were red on missing egress resources, then passed with deterministic planning, exact describe-before-create argv, real 20-operation idempotency, and explicit NAT drift rejection.
+- IAP/OS Login service regression: the foundation contract was red while those APIs were absent, then passed after both services were added; real provider apply reports 22/22 resources unchanged.
+- Runtime executable-closure regression: the bundle suite was red on classification and real-archive inventory, then 19/19 passed after narrowly classifying `scripts/lib/distribution/runtime-bundle.ts` as runtime content. The real-archive test now extracts the customer bundle and starts the bundled lifecycle CLI.
+- Current affected validation: 67 passing tests, 10 existing environment-gated skips, and no destructive-literal preflight findings.
 
 ## discovery
 
@@ -154,9 +163,11 @@ bun run task:finish
 - `packages/os/package.json`
 - `packages/os/scripts/build-runtime-bundle.ts`
 - `packages/os/scripts/install.ts`
+- `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
 - `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/lifecycle/release.ts`
+- `packages/os/scripts/lib/lifecycle/state.ts`
 - `packages/os/scripts/lib/lifecycle/types.ts`
 - `packages/os/scripts/lib/managed-cloud-node-enrollment.ts`
 - `packages/os/scripts/lib/managed-cloud-node.ts`
@@ -179,11 +190,6 @@ bun run task:finish
 - `packages/os/tests/managed-cloud-node-contract.test.ts`
 - `packages/os/tests/managed-cloud-node-enrollment.test.ts`
 - `packages/os/tests/platform-managed-cloud-node.test.ts`
+- `packages/workspace/senior-engineer.md`
 
-- 2026-07-28 05:26:58 apply-patch: `packages/os/tests/managed-cloud-node-contract.test.ts`
-- 2026-07-28 05:26:58 apply-patch: `packages/os/tests/gcloud-managed-cloud-node.test.ts`
-- 2026-07-28 05:31:38 apply-patch: `packages/os/scripts/lib/managed-cloud-node.ts`
-- 2026-07-28 05:31:38 apply-patch: `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
-- 2026-07-28 05:32:46 apply-patch: `packages/os/tests/gcloud-managed-cloud-node.test.ts`
-
-- 2026-07-28 05:35:41 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
+- 2026-07-28 05:59:54 apply-patch: `.task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md`
