@@ -1,18 +1,28 @@
 {
   "files": [
     ".task/os-cloud/provision-and-validate-first-managed-gcp-cloud-node/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/cloudflare/os-device-authority/src/utils.ts",
     "packages/os/scripts/lib/lifecycle/retention.ts",
     "packages/os/scripts/lib/lifecycle/runtime-release-path.ts",
     "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
     "packages/os/scripts/lib/native-lifecycle-operation.ts",
     "packages/os/scripts/lib/platforms/linux.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
     "packages/os/scripts/lifecycle.ts",
     "packages/os/scripts/native-lifecycle-operation.ts",
     "packages/os/tests/lifecycle-engine.test.ts",
     "packages/os/tests/lifecycle-retention-uninstall.test.ts",
     "packages/os/tests/linux-platform.test.ts",
+    "packages/os/tests/managed-cloud-node-enrollment.test.ts",
     "packages/os/tests/native-lifecycle-operation.test.ts",
-    "packages/os/tests/windows-platform.test.ts"
+    "packages/os/tests/os-device-authority-connector-provisioning.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/os/tests/windows-platform.test.ts",
+    "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-07-28T07:31:48.406Z"
+  "updatedAt": "2026-07-28T07:44:07.441Z"
 }

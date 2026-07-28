@@ -15,6 +15,7 @@ export type StrongerAuthMethod =
 export type Grant = {
   hash: string;
   userCode: string;
+  workspaceId?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
   status: GrantStatus;

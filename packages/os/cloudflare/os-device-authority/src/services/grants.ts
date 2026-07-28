@@ -18,6 +18,7 @@ import {
 } from '../utils';
 
 export function grantWorkspace(grant: Grant): {
+  workspaceId: string;
   workspaceSlug: string;
   workspaceHost: string;
 } {
@@ -25,6 +26,8 @@ export function grantWorkspace(grant: Grant): {
     throw new Error('workspace is required before bootstrap can be issued');
   }
   return {
+    workspaceId:
+      grant.workspaceId ?? workspaceIdFromSlug(grant.workspaceSlug),
     workspaceSlug: grant.workspaceSlug,
     workspaceHost: grant.workspaceHost,
   };
@@ -32,10 +35,16 @@ export function grantWorkspace(grant: Grant): {
 
 export function assignGrantWorkspace(input: {
   grant: Grant;
+  workspaceId?: string;
   workspaceSlug: string;
   workspaceHost: string;
 }): void {
-  input.grant.workspaceSlug = slug(input.workspaceSlug);
+  const workspaceSlug = slug(input.workspaceSlug);
+  input.grant.workspaceId =
+    input.workspaceId ??
+    input.grant.workspaceId ??
+    workspaceIdFromSlug(workspaceSlug);
+  input.grant.workspaceSlug = workspaceSlug;
   input.grant.workspaceHost = host(input.workspaceHost);
 }
 
@@ -50,7 +59,7 @@ export async function rememberAccountWorkspace(input: {
     const existing = await input.store.byAccountWorkspace(input.accountId);
     await input.store.putAccountWorkspace({
       accountId: input.accountId,
-      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceId: workspace.workspaceId,
       workspaceSlug: workspace.workspaceSlug,
       workspaceHost: workspace.workspaceHost,
       homeNodeId: existing?.homeNodeId ?? input.grant.nodeId,
@@ -60,7 +69,7 @@ export async function rememberAccountWorkspace(input: {
     });
     await input.store.putWorkspaceMembership({
       accountId: input.accountId,
-      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceId: workspace.workspaceId,
       workspaceSlug: workspace.workspaceSlug,
       workspaceHost: workspace.workspaceHost,
       status: 'active',
@@ -120,7 +129,7 @@ export async function registerGrantNode(input: {
     input.grant.nodeLastSeenAt = input.nowMs;
     await input.store.putWorkspaceNode({
       accountId: input.accountId,
-      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceId: workspace.workspaceId,
       workspaceSlug: workspace.workspaceSlug,
       workspaceHost: workspace.workspaceHost,
       nodeId,
@@ -205,7 +214,7 @@ export async function commitGrantApproval(input: {
     await input.store.putNodeBootstrapCredential({
       tokenHash: await hashHex(connectorToken),
       accountId: input.accountId,
-      workspaceId: workspaceIdFromSlug(workspace.workspaceSlug),
+      workspaceId: workspace.workspaceId,
       workspaceHost: workspace.workspaceHost,
       nodeId,
       expiresAt: connectorExpiresAt,
@@ -247,7 +256,7 @@ export function approvedJson(g: Grant): Record<string, unknown> {
   return {
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
-    workspace_id: workspaceIdFromSlug(workspace.workspaceSlug),
+    workspace_id: workspace.workspaceId,
     workspace_slug: workspace.workspaceSlug,
     workspace_host: workspace.workspaceHost,
     node_id: nodeId,
