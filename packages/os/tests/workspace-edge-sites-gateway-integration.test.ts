@@ -964,6 +964,12 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
       fetchImpl: async (url) => {
         verificationUrls.push(url);
+        if (url === expectedPlan.verifyUrl) {
+          return Response.json(
+            { error: 'workspace_session_required' },
+            { status: 401 },
+          );
+        }
         return new Response('<!doctype html><title>Trace shell</title><main>Hosted Trace Site shell</main>', {
           status: 200,
           headers: {

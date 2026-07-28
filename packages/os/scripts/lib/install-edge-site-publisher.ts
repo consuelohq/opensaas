@@ -156,6 +156,23 @@ const defaultFetch = async (url: string, init?: RequestInit) => {
   return await fetch(url, { ...init, signal: init?.signal ?? AbortSignal.timeout(fetchTimeoutMs) });
 };
 
+const isWorkspaceSessionRequired = (response: Response, body: string): boolean => {
+  if (response.status !== 401) return false;
+  if (!(response.headers.get('content-type') ?? '').toLowerCase().includes('application/json')) return false;
+  try {
+    const parsed = JSON.parse(body) as unknown;
+    return Boolean(
+      parsed
+      && typeof parsed === 'object'
+      && !Array.isArray(parsed)
+      && Object.keys(parsed).length === 1
+      && (parsed as Record<string, unknown>).error === 'workspace_session_required',
+    );
+  } catch {
+    return false;
+  }
+};
+
 export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise<WorkspaceEdgePublishResult> {
   const log = logPath(input.home, input.now);
   const entries: unknown[] = [];
@@ -181,12 +198,22 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
     for (const verifyUrl of plan.verifiedUrls) {
       const expectedSnapshot = snapshotsByUrl.get(verifyUrl);
       if (!expectedSnapshot) throw new Error(`missing snapshot plan for ${verifyUrl}`);
-      response = await (input.fetchImpl ?? defaultFetch)(verifyUrl, { headers: { 'cache-control': 'no-cache', 'user-agent': 'Consuelo-OS-Install' } });
+      response = await (input.fetchImpl ?? defaultFetch)(verifyUrl, { headers: { accept: 'application/json', 'cache-control': 'no-cache', 'user-agent': 'Consuelo-OS-Install' } });
       const body = await response.text();
       cacheAuthority = response.headers.get('x-consuelo-edge-cache-authority');
       sitesCache = response.headers.get('x-consuelo-sites-cache');
       const siteVersion = response.headers.get('x-consuelo-site-version');
       const bodyHash = hash(body);
+      const privateLauncher = expectedSnapshot.siteId === 'launcher' && expectedSnapshot.pathPrefix === '/';
+      if (privateLauncher) {
+        const workspaceSessionRequired = isWorkspaceSessionRequired(response, body);
+        entries.push({ stage: 'edge_verify', url: verifyUrl, status: response.status, access: workspaceSessionRequired ? 'workspace-session-required' : 'unexpected-launcher-access' });
+        if (!workspaceSessionRequired) {
+          writeLog(log, entries);
+          throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: expectedSnapshot.snapshotKey, logPath: log, message: `install edge publish verification failed for ${verifyUrl}`, diagnostics: { status: response.status, contentType: response.headers.get('content-type') } });
+        }
+        continue;
+      }
       entries.push({ stage: 'edge_verify', url: verifyUrl, status: response.status, cacheAuthority, sitesCache, siteVersion, bodyHash });
       if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== expectedSnapshot.versionId || bodyHash !== expectedSnapshot.contentHash) {
         writeLog(log, entries);
