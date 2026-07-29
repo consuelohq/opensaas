@@ -165,20 +165,12 @@ export type DoctorResult = {
 const REQUIRED_DIRS = [
   'agents',
   'components',
-  'skills',
-  'tools',
-  'scripts',
-  'src',
-  'manifests',
-  'workflows',
-  'hooks',
   'artifacts',
   'pages',
   'sites',
   'logs',
   'runs',
   'cache',
-  'steering',
   'bin',
   'tmp',
   'runtime',
@@ -209,27 +201,13 @@ const DEFAULT_INGRESS_PORT = 46320;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
-const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
-
-function resolveBundledOperatorRoot(): string {
-  const packageOperatorRoot = path.join(PACKAGE_ROOT, 'operator');
-  if (fs.existsSync(packageOperatorRoot)) return packageOperatorRoot;
-  return path.join(REPO_ROOT, 'operator');
-}
-
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
-const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
-const BUNDLED_STREAMS_ROOT = path.join(PACKAGE_ROOT, 'streams');
-const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
 const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'generated', 'tool.manifest.json');
-const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'manifests', 'workflows', 'hooks'] as const;
-const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
 const TOOL_METADATA_FILE = '.consuelo-tool.json';
 const TOOL_REGISTRY_FILE = 'tools.json';
 const TOOL_DEFINITION_FILE = 'tool.json';
-const DEFAULT_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
 
 const COMPACT_SKILL_FIELDS = [
   'name',
@@ -451,137 +429,6 @@ function writeYamlConfigIfMissing(input: {
   if (!exists) writeYamlConfig(input.path, input.value, input.dryRun);
 }
 
-function seedBundledStreams(
-  home: string,
-  dryRun: boolean,
-): ProvisionAction[] {
-  const sourcePath = path.join(BUNDLED_STREAMS_ROOT, 'tools', 'AGENTS.md');
-  const targetPath = path.join(home, 'streams', 'tools', 'AGENTS.md');
-  if (!fs.existsSync(sourcePath)) {
-    throw new Error(
-      `${sourcePath}: required Tools stream instructions are missing`,
-    );
-  }
-
-  const targetExists = fs.existsSync(targetPath);
-  const actions: ProvisionAction[] = [
-    {
-      type: 'seed_stream',
-      path: targetPath,
-      status: targetExists ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: targetExists
-        ? 'user stream instructions preserved'
-        : 'Tools stream instructions installed',
-    },
-  ];
-  if (!dryRun && !targetExists) {
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-    fs.copyFileSync(sourcePath, targetPath);
-  }
-  return actions;
-}
-
-function samePath(left: string, right: string): boolean {
-  return path.resolve(left) === path.resolve(right);
-}
-
-function materializeProductPackageRoot(home: string, dryRun: boolean): ProvisionAction[] {
-  const actions: ProvisionAction[] = [];
-  const installedInPlace = samePath(PACKAGE_ROOT, home);
-
-  for (const dir of PRODUCT_PACKAGE_DIRS) {
-    const sourcePath = path.join(PACKAGE_ROOT, dir);
-    const targetPath = path.join(home, dir);
-    if (!fs.existsSync(sourcePath)) {
-      throw new Error(`${sourcePath}: required OS package directory is missing`);
-    }
-
-    const targetExists = fs.existsSync(targetPath);
-    actions.push({
-      type: 'create_dir',
-      path: targetPath,
-      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: installedInPlace ? 'package directory already at OS root' : 'package directory materialized',
-    });
-
-    if (dryRun || installedInPlace) continue;
-    fs.rmSync(targetPath, { recursive: true, force: true });
-    fs.cpSync(sourcePath, targetPath, { recursive: true, force: true });
-  }
-
-  for (const file of PRODUCT_PACKAGE_FILES) {
-    const sourcePath = path.join(PACKAGE_ROOT, file);
-    const targetPath = path.join(home, file);
-    if (!fs.existsSync(sourcePath)) {
-      throw new Error(`${sourcePath}: required OS package file is missing`);
-    }
-
-    const targetExists = fs.existsSync(targetPath);
-    actions.push({
-      type: 'create_file',
-      path: targetPath,
-      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: installedInPlace ? 'package file already at OS root' : 'package file materialized',
-    });
-
-    if (dryRun || installedInPlace) continue;
-    fs.copyFileSync(sourcePath, targetPath);
-  }
-
-  return actions;
-}
-
-function materializeOperator(home: string, dryRun: boolean): ProvisionAction[] {
-  const targetPath = path.join(home, 'operator');
-  const installedInPlace = samePath(BUNDLED_OPERATOR_ROOT, targetPath);
-  if (!fs.existsSync(BUNDLED_OPERATOR_ROOT)) {
-    return [{
-      type: 'seed_operator',
-      path: targetPath,
-      status: 'skipped',
-      message: 'operator-only prompts are not included in the customer runtime bundle',
-    }];
-  }
-
-  const targetExists = fs.existsSync(targetPath);
-  const actions: ProvisionAction[] = [{
-    type: 'seed_operator',
-    path: targetPath,
-    status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-    message: installedInPlace ? 'operator directory already at OS root' : 'operator prompts materialized',
-  }];
-
-  if (!dryRun && !installedInPlace && !targetExists) {
-    fs.cpSync(BUNDLED_OPERATOR_ROOT, targetPath, { recursive: true, force: true });
-  }
-
-  return actions;
-}
-
-function seedBundledSteering(home: string, dryRun: boolean): ProvisionAction[] {
-  const targetRoot = path.join(home, 'steering');
-  const installedInPlace = samePath(BUNDLED_STEERING_ROOT, targetRoot);
-  const actions: ProvisionAction[] = [];
-
-  for (const fileName of DEFAULT_STEERING_FILES) {
-    const sourcePath = path.join(BUNDLED_STEERING_ROOT, fileName);
-    const targetPath = path.join(targetRoot, fileName);
-    if (!fs.existsSync(sourcePath)) throw new Error(`${sourcePath}: required steering file is missing`);
-    const targetExists = fs.existsSync(targetPath);
-    actions.push({
-      type: 'seed_steering',
-      path: targetPath,
-      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: targetExists || installedInPlace ? 'local steering file preserved' : 'default steering file installed',
-    });
-    if (dryRun || targetExists || installedInPlace) continue;
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-    fs.copyFileSync(sourcePath, targetPath);
-  }
-
-  return actions;
-}
-
 export function createDefaultConfig(
   home: string,
   mode: OsMode,
@@ -607,6 +454,128 @@ function materializeSites(input: {
 }): { actions: ProvisionAction[] } {
   const result = materializeRuntimeSites(input);
   return { actions: result.actions };
+}
+
+const VISIBLE_USER_DIRS = [
+  'Artifacts',
+  'Projects',
+  'Sites',
+  'Skills',
+  'Tools',
+  'Steering',
+] as const;
+
+function materializeVisibleUserRoot(input: {
+  userRoot: string;
+  dryRun: boolean;
+}): ProvisionAction[] {
+  const actions: ProvisionAction[] = [];
+  for (const directory of VISIBLE_USER_DIRS) {
+    const targetPath = path.join(input.userRoot, directory);
+    const exists = fs.existsSync(targetPath);
+    actions.push({
+      type: 'create_dir',
+      path: targetPath,
+      status: exists ? 'preserved' : input.dryRun ? 'planned' : 'created',
+      message: exists
+        ? 'visible user-owned directory preserved'
+        : 'visible user-owned directory created',
+    });
+    if (!input.dryRun) fs.mkdirSync(targetPath, { recursive: true });
+  }
+
+  const catalogPath = path.join(input.userRoot, 'Tools', 'BUILT_INS.md');
+  const toolManifest = readBundledToolManifest();
+  const catalog = [
+    '# OS built-in tools',
+    '',
+    'Built-in tools execute from the active immutable OS runtime. Add custom tools beside this catalog; updates never replace them.',
+    '',
+    ...toolManifest.tools
+      .slice()
+      .sort((left, right) => left.name.localeCompare(right.name))
+      .map((tool) => `- \`${tool.name}\`${tool.description ? ` — ${tool.description}` : ''}`),
+    '',
+  ].join('\n');
+  const existingCatalog = fs.existsSync(catalogPath)
+    ? fs.readFileSync(catalogPath, 'utf8')
+    : null;
+  actions.push({
+    type: 'create_file',
+    path: catalogPath,
+    status: existingCatalog === catalog
+      ? 'preserved'
+      : input.dryRun
+        ? 'planned'
+        : existingCatalog === null
+          ? 'created'
+          : 'updated',
+    message: 'immutable runtime tool catalog written to visible Tools',
+  });
+  if (!input.dryRun && existingCatalog !== catalog) {
+    fs.writeFileSync(catalogPath, catalog, { mode: 0o600 });
+  }
+  return actions;
+}
+
+function materializeLifecycleCommand(
+  home: string,
+  dryRun: boolean,
+): ProvisionAction[] {
+  const commandPath = path.join(home, 'bin', 'consuelo');
+  const source = [
+    '#!/usr/bin/env bash',
+    'set -euo pipefail',
+    'OS_HOME="${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"',
+    'BUN_EXECUTABLE="${BUN_BIN:-}"',
+    'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    'if [ -f "$OS_HOME/.env" ]; then',
+    '  while IFS= read -r line || [ -n "$line" ]; do',
+    '    case "$line" in',
+    '      BUN_BIN=*) [ -n "$BUN_EXECUTABLE" ] || BUN_EXECUTABLE="${line#BUN_BIN=}" ;;',
+    '      CONSUELO_OS_PACKAGE_ROOT=*) [ -n "$PACKAGE_ROOT" ] || PACKAGE_ROOT="${line#CONSUELO_OS_PACKAGE_ROOT=}" ;;',
+    '    esac',
+    '  done < "$OS_HOME/.env"',
+    'fi',
+    'LIFECYCLE_SCRIPT="$OS_HOME/runtime/current/scripts/lifecycle.ts"',
+    'if [ ! -f "$LIFECYCLE_SCRIPT" ] && [ -n "$PACKAGE_ROOT" ]; then',
+    '  LIFECYCLE_SCRIPT="$PACKAGE_ROOT/scripts/lifecycle.ts"',
+    'fi',
+    'if [ ! -f "$LIFECYCLE_SCRIPT" ]; then',
+    '  echo "OS lifecycle runtime is not installed. Run: curl -fsSL https://install.consuelohq.com/os | bash" >&2',
+    '  exit 1',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ]; then',
+    '  BUN_EXECUTABLE="$(command -v bun || true)"',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ] || [ ! -x "$BUN_EXECUTABLE" ]; then',
+    '  echo "OS lifecycle runtime cannot find the Bun executable. Re-run the installer to repair it." >&2',
+    '  exit 1',
+    'fi',
+    'exec "$BUN_EXECUTABLE" "$LIFECYCLE_SCRIPT" --home "$OS_HOME" "$@"',
+    '',
+  ].join('\n');
+  const existing = fs.existsSync(commandPath)
+    ? fs.readFileSync(commandPath, 'utf8')
+    : null;
+  const status = existing === source
+    ? 'preserved'
+    : dryRun
+      ? 'planned'
+      : existing === null
+        ? 'created'
+        : 'updated';
+  if (!dryRun && existing !== source) {
+    fs.mkdirSync(path.dirname(commandPath), { recursive: true });
+    fs.writeFileSync(commandPath, source, { mode: 0o755 });
+    fs.chmodSync(commandPath, 0o755);
+  }
+  return [{
+    type: 'create_file',
+    path: commandPath,
+    status,
+    message: 'OS lifecycle command installed',
+  }];
 }
 
 const escapeXml = (value: string): string =>
@@ -1584,6 +1553,7 @@ export function provisionLocalOs(
   const dryRun = Boolean(options.dryRun);
   const actions: ProvisionAction[] = [];
   const requestedAgentNames = options.connectAgents ?? [];
+  const userRoot = path.join(userHome, 'Consuelo');
 
   for (const dir of [
     home,
@@ -1599,10 +1569,8 @@ export function provisionLocalOs(
     if (!dryRun) fs.mkdirSync(dir, { recursive: true });
   }
 
-  actions.push(...materializeProductPackageRoot(home, dryRun));
-  actions.push(...materializeOperator(home, dryRun));
-  actions.push(...seedBundledSteering(home, dryRun));
-  actions.push(...seedBundledStreams(home, dryRun));
+  actions.push(...materializeVisibleUserRoot({ userRoot, dryRun }));
+  actions.push(...materializeLifecycleCommand(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {
@@ -1840,7 +1808,7 @@ export function provisionLocalOs(
     selectedSkills: config.selectedSkills,
     dryRun,
     generatedAt: nowIso(),
-    userRoot: path.join(userHome, 'Consuelo'),
+    userRoot,
   }));
 
   const agentConfiguration = requestedAgentNames.length > 0
@@ -1938,9 +1906,16 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
       ],
     },
   ] as const;
+  const activeRuntimeRoot = fs.existsSync(
+    path.join(resolvedHome, 'runtime', 'current', 'scripts', 'os.ts'),
+  )
+    ? path.join(resolvedHome, 'runtime', 'current')
+    : PACKAGE_ROOT;
 
   for (const group of runtimeModuleGroups) {
-    const missing = group.files.filter((file) => !fs.existsSync(path.join(resolvedHome, file)));
+    const missing = group.files.filter(
+      (file) => !fs.existsSync(path.join(activeRuntimeRoot, file)),
+    );
     checks.push({
       name: group.name,
       status: missing.length === 0 ? 'connected' : 'unhealthy',
@@ -2039,6 +2014,3 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     ok: basicChecksHealthy && isCapabilitySetHealthy(capabilities),
   };
 }
-
-
-

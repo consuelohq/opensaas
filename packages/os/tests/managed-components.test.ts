@@ -530,6 +530,122 @@ describe('managed metadata migration and ownership', () => {
 });
 
 describe('managed component provisioning integration', () => {
+  it('should remove a clean visible skill and preserve a modified skill when it is deselected', () => {
+    const firstActions = provisionManagedComponentIndexes({
+      home,
+      selectedSkills: ['task'],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:00:00.000Z',
+      userRoot,
+    });
+    const skillPath = join(userRoot, 'Skills', 'task');
+    const skillInstructionsPath = join(skillPath, 'SKILL.md');
+    expect(existsSync(skillInstructionsPath)).toBe(true);
+    expect(firstActions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        type: 'seed_skill',
+        path: skillPath,
+        status: 'created',
+      }),
+    ]));
+
+    const repeatedActions = provisionManagedComponentIndexes({
+      home,
+      selectedSkills: ['task'],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:01:00.000Z',
+      userRoot,
+    });
+    expect(repeatedActions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        type: 'seed_skill',
+        path: skillPath,
+        status: 'preserved',
+      }),
+    ]));
+
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: [],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:02:00.000Z',
+      userRoot,
+    });
+    expect(existsSync(skillPath)).toBe(false);
+    expect(
+      readManagedComponentState(home).provenance.some(
+        (record) => record.kind === 'skill' && record.id === 'task',
+      ),
+    ).toBe(false);
+
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: ['task'],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:03:00.000Z',
+      userRoot,
+    });
+    writeFileSync(
+      skillInstructionsPath,
+      `${readFileSync(skillInstructionsPath, 'utf8')}\nUser customization.\n`,
+    );
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: [],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:04:00.000Z',
+      userRoot,
+    });
+    expect(existsSync(skillInstructionsPath)).toBe(true);
+    expect(
+      readManagedComponentState(home).plan.items.find(
+        (item) => item.key === key('skill', 'task'),
+      ),
+    ).toMatchObject({
+      action: 'remove-upstream',
+      requiresReview: true,
+    });
+  });
+
+  it('should re-plan a selected skill when its visible directory was removed', () => {
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: ['task'],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:00:00.000Z',
+      userRoot,
+    });
+    const skillPath = join(userRoot, 'Skills', 'task');
+    rmSync(skillPath, { recursive: true, force: true });
+
+    expect(() => provisionManagedComponentIndexes({
+      home,
+      selectedSkills: ['task'],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:01:00.000Z',
+      userRoot,
+    })).not.toThrow();
+    expect(existsSync(join(skillPath, 'SKILL.md'))).toBe(true);
+
+    rmSync(skillPath, { recursive: true, force: true });
+    writeFileSync(skillPath, 'user-owned replacement\n');
+    const actions = provisionManagedComponentIndexes({
+      home,
+      selectedSkills: ['task'],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:02:00.000Z',
+      userRoot,
+    });
+    expect(readFileSync(skillPath, 'utf8')).toBe('user-owned replacement\n');
+    expect(actions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        type: 'seed_skill',
+        path: skillPath,
+        status: 'preserved',
+      }),
+    ]));
+  });
+
   it('loads a configured visible local tree when rebuilding the production update plan', () => {
     provisionManagedComponentIndexes({
       home,

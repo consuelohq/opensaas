@@ -96,13 +96,15 @@ function canonicalize(value: unknown): unknown {
   return value;
 }
 
-export function canonicalReleaseManifestPayload(
-  payload: ReleaseManifestPayload,
-): string {
+export function canonicalReleaseManifestPayload(payload: unknown): string {
   return JSON.stringify(canonicalize(payload));
 }
 
-function assertReleaseManifestPayload(payload: ReleaseManifestPayload): void {
+function resolveReleaseManifestPayload(
+  manifest: SignedReleaseManifest,
+  target: { platform?: string; architecture?: string },
+): ReleaseManifestPayload {
+  const payload = manifest.payload;
   if (payload.schemaVersion !== 1) {
     throw lifecycleError(
       'MANIFEST_INVALID',
@@ -115,13 +117,18 @@ function assertReleaseManifestPayload(payload: ReleaseManifestPayload): void {
       `unsupported release channel: ${String(payload.channel)}`,
     );
   }
+  if (payload.kind !== 'consuelo-os-channel-manifest') {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      `unsupported release manifest kind: ${String(payload.kind)}`,
+    );
+  }
   for (const [name, value] of Object.entries({
     version: payload.version,
     bundleId: payload.bundleId,
-    bundleDigest: payload.bundleDigest,
-    bundleUrl: payload.bundleUrl,
     releaseFingerprint: payload.releaseFingerprint,
-    publishedAt: payload.publishedAt,
+    promotedAt: payload.promotedAt,
+    sourceCommit: payload.sourceCommit,
   })) {
     if (typeof value !== 'string' || value.trim().length === 0) {
       throw lifecycleError(
@@ -130,36 +137,121 @@ function assertReleaseManifestPayload(payload: ReleaseManifestPayload): void {
       );
     }
   }
-  if (!payload.bundleDigest.startsWith('sha256:')) {
+  if (!Number.isFinite(Date.parse(payload.promotedAt))) {
     throw lifecycleError(
       'MANIFEST_INVALID',
-      'release manifest bundleDigest must use sha256',
+      'release manifest promotedAt must be an ISO timestamp',
     );
   }
-  if (!Number.isFinite(Date.parse(payload.publishedAt))) {
+  if (!Array.isArray(payload.platforms)) {
     throw lifecycleError(
       'MANIFEST_INVALID',
-      'release manifest publishedAt must be an ISO timestamp',
+      'release manifest platforms must be an array',
     );
   }
+  const platformFields = [
+    'platform',
+    'architecture',
+    'bundleId',
+    'archiveDigest',
+    'cloudflareObjectKey',
+  ] as const;
+  for (const [index, candidate] of payload.platforms.entries()) {
+    const candidateValue = candidate as unknown;
+    if (
+      typeof candidateValue !== 'object' ||
+      candidateValue === null ||
+      Array.isArray(candidateValue)
+    ) {
+      throw lifecycleError(
+        'MANIFEST_INVALID',
+        `release manifest platform ${index} must be an object`,
+      );
+    }
+    const candidateRecord = candidateValue as Record<string, unknown>;
+    for (const field of platformFields) {
+      if (
+        typeof candidateRecord[field] !== 'string' ||
+        candidateRecord[field].trim().length === 0
+      ) {
+        throw lifecycleError(
+          'MANIFEST_INVALID',
+          `release manifest platform ${index} ${field} is required`,
+        );
+      }
+    }
+  }
+  const platform = target.platform ?? process.platform;
+  const architecture = target.architecture ?? process.arch;
+  const selected = payload.platforms.find(
+    (candidate) =>
+      candidate.platform === platform &&
+      candidate.architecture === architecture,
+  );
+  if (!selected) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      `release manifest does not publish ${platform}-${architecture}`,
+    );
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(selected.bundleId)) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      'release manifest bundleId must use sha256',
+    );
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(selected.archiveDigest)) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      'release manifest archiveDigest must use sha256',
+    );
+  }
+  const releaseObjectPattern = new RegExp(
+    `^bundles/${selected.bundleId}/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$`,
+  );
+  if (!releaseObjectPattern.test(selected.cloudflareObjectKey)) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      'release manifest cloudflareObjectKey must match the immutable release object shape',
+    );
+  }
+  return {
+    channel: payload.channel,
+    version: payload.version,
+    bundleId: selected.bundleId,
+    bundleDigest: selected.archiveDigest,
+    bundleUrl: selected.cloudflareObjectKey,
+    releaseFingerprint: payload.releaseFingerprint,
+    publishedAt: payload.promotedAt,
+    sourceCommit: payload.sourceCommit,
+  };
 }
 
 export function verifySignedReleaseManifest(
   manifest: SignedReleaseManifest,
   trustedKeys: Record<string, string>,
+  target: { platform?: string; architecture?: string } = {},
 ): ReleaseManifestPayload {
-  assertReleaseManifestPayload(manifest.payload);
-  if (manifest.signature?.algorithm !== 'ed25519') {
-    throw lifecycleError(
-      'MANIFEST_SIGNATURE_INVALID',
-      'release manifest must use ed25519',
-    );
-  }
-  const publicKey = trustedKeys[manifest.signature.keyId];
-  if (!publicKey) {
+  if (!manifest.signature?.keyId || !trustedKeys[manifest.signature.keyId]) {
     throw lifecycleError(
       'MANIFEST_SIGNATURE_INVALID',
       `release manifest signing key is not trusted: ${manifest.signature.keyId}`,
+    );
+  }
+  if (manifest.signature.algorithm !== 'ed25519') {
+    throw lifecycleError(
+      'MANIFEST_SIGNATURE_INVALID',
+      `unsupported release manifest signature algorithm: ${String(manifest.signature.algorithm)}`,
+    );
+  }
+  let publicKey: ReturnType<typeof createPublicKey>;
+  try {
+    publicKey = createPublicKey(trustedKeys[manifest.signature.keyId]);
+  } catch (error: unknown) {
+    throw lifecycleError(
+      'MANIFEST_SIGNATURE_INVALID',
+      `trusted release key ${manifest.signature.keyId} is not usable`,
+      { cause: error },
     );
   }
   let accepted = false;
@@ -167,17 +259,11 @@ export function verifySignedReleaseManifest(
     accepted = verify(
       null,
       Buffer.from(canonicalReleaseManifestPayload(manifest.payload)),
-      createPublicKey(publicKey),
-      Buffer.from(manifest.signature.value, 'base64url'),
+      publicKey,
+      Buffer.from(manifest.signature.signature, 'base64url'),
     );
-  } catch (error: unknown) {
-    throw lifecycleError(
-      'MANIFEST_SIGNATURE_INVALID',
-      'release manifest signature could not be verified',
-      {
-        cause: error,
-      },
-    );
+  } catch {
+    accepted = false;
   }
   if (!accepted) {
     throw lifecycleError(
@@ -185,7 +271,7 @@ export function verifySignedReleaseManifest(
       'release manifest signature is invalid',
     );
   }
-  return manifest.payload;
+  return resolveReleaseManifestPayload(manifest, target);
 }
 
 export function sha256Digest(bytes: Uint8Array): string {

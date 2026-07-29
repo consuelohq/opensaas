@@ -53,7 +53,9 @@ import type {
 export type LifecycleEngineDependencies = {
   home?: string;
   releaseSource: ReleaseSource;
-  trustedReleaseKeys: Record<string, string>;
+  trustedReleaseKeys:
+    | Record<string, string>
+    | (() => Record<string, string>);
   service: LifecycleServiceController;
   health: LifecycleHealthAcceptance;
   migration?: LifecycleMigrationRunner;
@@ -128,8 +130,13 @@ export function createLifecycleEngine(
       });
       emit('manifest-verify', { channel, keyId: signed.signature?.keyId });
       const verified = yield* Effect.try({
-        try: () =>
-          verifySignedReleaseManifest(signed, dependencies.trustedReleaseKeys),
+        try: () => {
+          const trustedReleaseKeys =
+            typeof dependencies.trustedReleaseKeys === 'function'
+              ? dependencies.trustedReleaseKeys()
+              : dependencies.trustedReleaseKeys;
+          return verifySignedReleaseManifest(signed, trustedReleaseKeys);
+        },
         catch: (error) =>
           asLifecycleError(
             error,

@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -57,8 +58,9 @@ function readIfExists(filePath: string): string {
 const PRIMARY_STEERING_FILES = ['system_prompt.md'] as const;
 const EXCLUDED_STEERING_FILES = new Set(['steering.md', 'decision.md']);
 
-function localSteeringDir(home: string): string {
-  return path.join(home, 'steering');
+function visibleSteeringDir(): string {
+  const userHome = process.env.CONSUELO_USER_HOME?.trim() || os.homedir();
+  return path.join(userHome, 'Consuelo', 'Steering');
 }
 
 function isSupportedSteeringMarkdown(fileName: string): boolean {
@@ -506,7 +508,13 @@ export function getSteering(): string {
     '```',
   ];
 
-  for (const file of readSteeringMarkdownFiles(localSteeringDir(runtimePaths.home))) {
+  for (const file of readSteeringMarkdownFiles(
+    path.join(getPackageRoot(), 'steering'),
+  )) {
+    sections.push('', `# bundled ${file.name}`, '', file.content);
+  }
+
+  for (const file of readSteeringMarkdownFiles(visibleSteeringDir())) {
     sections.push('', `# ${file.name}`, '', file.content);
   }
 
@@ -666,7 +674,8 @@ You already received full OS steering very recently in this pre-task bootstrap c
 Do not call get_steering again unless you are intentionally refreshing bootstrap context.
 
 Read only the specific file you need:
-- $CONSUELO_HOME/steering/system_prompt.md
+- the immutable runtime steering/system_prompt.md
+- ~/Consuelo/Steering/*.md
 - packages/os/manifests/generated/core.manifest.json
 
 Useful alternatives:

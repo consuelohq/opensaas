@@ -45,7 +45,9 @@ function createMockDiagnostics() {
 describe('Consuelo OS hosted onboarding flow', () => {
   test('skills are a real prompt with explicit multiselect instructions', () => {
     expect(install).toContain('selectedSkills');
-    expect(install).toContain("message: 'select skills to enable — Use Space to select skills, press Enter to continue'");
+    expect(install).toContain(
+      "'select skills to enable — Use Space to select skills, press Enter to continue'",
+    );
     expect(install).toContain('createInstallerProgressSteps');
     expect(install).toContain("'service'");
     expect(install).toContain("'health'");
@@ -448,8 +450,12 @@ describe('Consuelo OS hosted onboarding flow', () => {
   });
 
   test('should default daemon logs to writable OS home log directory when generating launch agents', () => {
-    expect(daemonInstall).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
-    expect(daemonGenerator).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
+    expect(daemonInstall).toContain(
+      'log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"',
+    );
+    expect(daemonGenerator).toContain(
+      'log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"',
+    );
     expect(daemonInstall).not.toContain('$daemon_home/Library/Logs/Consuelo');
     expect(bootstrap).not.toContain('$daemon_home/Library/Logs/Consuelo');
   });
