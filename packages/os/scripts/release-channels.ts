@@ -308,6 +308,7 @@ function publishCommand(
     ...publication,
     expectedRevision,
   }, {
+    immutableTags: repeatedFlag(parsed, 'immutable-tag'),
     now: nowFromArguments(parsed),
     signer,
   });
