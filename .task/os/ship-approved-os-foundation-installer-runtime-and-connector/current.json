@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-approved-os-foundation-installer-runtime-and-connector",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1743,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1743",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1743",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1743/ship-approved-os-foundation-installer-runtime-and-connector",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1743",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1743/ship-approved-os-foundation-installer-runtime-and-connector",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-approved-os-foundation-installer-runtime-and-connector",
+  "taskSession": "tsk_10154d39d600",
+  "tmuxSession": "opensaas-os-ship-approved-os-foundation-installer-runtime-an-10154d39",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-approved-os-foundation-installer-runtime-and-connector/.task/os/ship-approved-os-foundation-installer-runtime-and-connector/session.json",
+  "createdAt": "2026-07-29T20:10:47.994Z"
+}

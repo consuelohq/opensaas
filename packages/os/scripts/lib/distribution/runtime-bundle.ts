@@ -126,7 +126,6 @@ const REQUIRED_RUNTIME_INPUTS = [
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
-  'steering/decision.md',
   'streams/tools/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
@@ -313,6 +312,7 @@ export function classifyRuntimeBundlePath(
     return 'test-only';
   }
   if (CUSTOMER_PROVIDER_FILES.has(filePath)) return 'customer-provider';
+  if (filePath === 'steering/decision.md') return 'source-only';
   if (filePath === 'scripts/lib/distribution/runtime-bundle.ts') {
     return 'runtime';
   }

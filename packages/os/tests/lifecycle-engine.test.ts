@@ -19,12 +19,12 @@ import { mkdtempSync } from 'node:fs';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buildRuntimeBundle } from '../scripts/lib/distribution/runtime-bundle';
+import { canonicalReleaseJson } from '../scripts/lib/distribution/release-channels';
 import { runtimeReleaseDirectoryName } from '../scripts/lib/lifecycle/runtime-release-path';
 import { provisionLocalOs } from '../scripts/lib/install-state';
 import { writeYamlConfig } from '../scripts/lib/consuelo-home';
 import {
   acquireLifecycleLock,
-  canonicalReleaseManifestPayload,
   createBunRuntimeMaterializer,
   createHttpHealthAcceptance,
   createLifecycleProgressEmitter,
@@ -56,7 +56,6 @@ const requiredRuntimePaths = [
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
-  'steering/decision.md',
   'streams/tools/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
@@ -143,23 +142,45 @@ function signedManifest(
   bundle: Awaited<ReturnType<typeof buildRuntimeBundle>>,
   overrides: Partial<ReleaseManifestPayload> = {},
 ): SignedReleaseManifest {
-  const payload: ReleaseManifestPayload = {
-    schemaVersion: 1,
+  const resolved: ReleaseManifestPayload = {
     channel: 'dev',
     version: bundle.manifest.version,
     bundleId: bundle.manifest.bundleId,
     bundleDigest: bundle.archiveDigest,
-    bundleUrl: `memory://${bundle.manifest.bundleId}`,
+    bundleUrl: `bundles/${bundle.manifest.bundleId}/runtime.tar.gz`,
     releaseFingerprint: bundle.manifest.releaseFingerprint,
     publishedAt: '2026-07-23T00:00:00.000Z',
+    sourceCommit: bundle.manifest.sourceCommit,
     ...overrides,
+  };
+  const payload = {
+    bundleId: resolved.bundleId,
+    channel: resolved.channel === 'nightly' ? 'dev' as const : resolved.channel,
+    evidence: [{ kind: 'test', reference: 'lifecycle-engine' }],
+    kind: 'consuelo-os-channel-manifest' as const,
+    platforms: [{
+      architecture: process.arch,
+      archiveDigest: resolved.bundleDigest,
+      bundleId: resolved.bundleId,
+      cloudflareObjectKey: resolved.bundleUrl,
+      githubAssetName: `consuelo-os-runtime-${resolved.version}.tar.gz`,
+      platform: process.platform,
+    }],
+    promotedAt: resolved.publishedAt,
+    releaseFingerprint: resolved.releaseFingerprint,
+    revision: 1,
+    schemaVersion: 1,
+    sourceChannel: null,
+    sourceCommit: resolved.sourceCommit,
+    version: resolved.version,
   };
   return {
     payload,
     signature: {
       algorithm: 'ed25519',
       keyId: releaseKeyId,
-      value: sign(null, Buffer.from(canonicalReleaseManifestPayload(payload)), privateKey).toString('base64url'),
+      signature: sign(null, Buffer.from(canonicalReleaseJson(payload)), privateKey).toString('base64url'),
+      signedAt: '2026-07-23T00:00:01.000Z',
     },
   };
 }
@@ -425,7 +446,7 @@ describe('unified lifecycle engine', () => {
   it('fails closed on a manifest signature mismatch', async () => {
     writeInstalledIdentity();
     const manifest = signedManifest(bundle100);
-    manifest.signature.value = `${manifest.signature.value.slice(0, -2)}aa`;
+    manifest.signature.signature = `${manifest.signature.signature.slice(0, -2)}aa`;
     const engine = createEngine({ source: sourceFor(bundle100, manifest) });
 
     await expect(engine.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'MANIFEST_SIGNATURE_INVALID' });
@@ -435,7 +456,9 @@ describe('unified lifecycle engine', () => {
   it('fails closed on an archive digest mismatch and leaves current untouched', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
-    const manifest = signedManifest(bundle110, { bundleDigest: 'sha256:deadbeef' });
+    const manifest = signedManifest(bundle110, {
+      bundleDigest: `sha256:${'0'.repeat(64)}`,
+    });
     const update = createEngine({ source: sourceFor(bundle110, manifest) });
 
     await expect(update.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'BUNDLE_DIGEST_MISMATCH' });
@@ -646,7 +669,10 @@ describe('lifecycle transaction hardening regressions', () => {
       service: { async preflight() {}, async restart() {} },
       health: { async accept() { return true; } },
       onboarding: async () => {
-        provisionLocalOs({ home: tempHome });
+        provisionLocalOs({
+          home: tempHome,
+          userHome: join(tempHome, 'user-home'),
+        });
       },
     });
 
@@ -950,4 +976,3 @@ describe('lifecycle transaction hardening regressions', () => {
   });
 
 });
-

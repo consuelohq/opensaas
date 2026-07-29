@@ -75,6 +75,7 @@ export type ManagedComponentSource = {
   id: string;
   kind: ManagedComponentKind;
   sourcePath: string;
+  localPath?: string;
   content: ComponentTree;
 };
 
@@ -466,16 +467,36 @@ export function buildManagedComponentUpdateState(
     if (!record) {
       if (upstream) {
         const upstreamRef = putContent(content, upstream.content);
+        const localRef = local ? putContent(content, local.content) : undefined;
+        const matchesUpstream = localRef === upstreamRef;
         items.push(basePlanItem({
           id: upstream.id,
           kind: upstream.kind,
           ownership: 'bundled-managed',
-          action: 'install',
+          action: local
+            ? matchesUpstream
+              ? 'no-change'
+              : 'conflict'
+            : 'install',
           sourceBundle: input.sourceBundle,
           sourcePath: upstream.sourcePath,
+          localPath: local?.localPath ?? upstream.localPath,
+          ...(matchesUpstream
+            ? {
+                baseHash: upstreamRef,
+                baseContentRef: upstreamRef,
+              }
+            : {}),
+          ...(localRef
+            ? {
+                localHash: localRef,
+                localContentRef: localRef,
+              }
+            : {}),
           upstreamHash: upstreamRef,
           upstreamContentRef: upstreamRef,
-          resolutionState: 'clean',
+          requiresReview: Boolean(local && !matchesUpstream),
+          resolutionState: local && !matchesUpstream ? 'conflict' : 'clean',
         }));
       } else if (local) {
         const localRef = putContent(content, local.content);
@@ -502,7 +523,7 @@ export function buildManagedComponentUpdateState(
         action: 'detach',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream?.sourcePath ?? record.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream?.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: local ? putContent(content, local.content) : record.localHash,
@@ -524,7 +545,7 @@ export function buildManagedComponentUpdateState(
         action: 'preserve-custom',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream?.sourcePath ?? record.sourcePath,
-        localPath: custom?.localPath ?? local?.localPath ?? record.localPath,
+        localPath: custom?.localPath ?? local?.localPath ?? record.localPath ?? upstream?.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -571,7 +592,7 @@ export function buildManagedComponentUpdateState(
         action: localModified ? 'preserve-custom' : 'no-change',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -591,7 +612,7 @@ export function buildManagedComponentUpdateState(
         action: 'update-clean',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -613,7 +634,7 @@ export function buildManagedComponentUpdateState(
         action: 'merge-clean',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -632,7 +653,7 @@ export function buildManagedComponentUpdateState(
         action: 'conflict',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -847,14 +868,35 @@ function readFilesystemTree(root: string, relativePath: string): ComponentTree {
 export function snapshotManagedComponentLocalOverrides(
   userRoot: string,
   provenance: ManagedComponentProvenance[],
+  upstream: ManagedComponentSource[] = [],
 ): ManagedComponentLocal[] {
-  return provenance
-    .filter((record) => record.ownership !== 'custom' && Boolean(record.localPath))
-    .map((record) => ({
+  const candidates = new Map<string, {
+    id: string;
+    kind: ManagedComponentKind;
+    localPath: string;
+  }>();
+  for (const record of provenance) {
+    if (record.ownership === 'custom' || !record.localPath) continue;
+    candidates.set(componentKey(record.kind, record.id), {
       id: record.id,
       kind: record.kind,
-      localPath: record.localPath!,
-      content: readFilesystemTree(userRoot, record.localPath!),
+      localPath: record.localPath,
+    });
+  }
+  for (const source of upstream) {
+    if (!source.localPath) continue;
+    const target = resolveInside(userRoot, source.localPath);
+    if (!pathExists(target)) continue;
+    candidates.set(componentKey(source.kind, source.id), {
+      id: source.id,
+      kind: source.kind,
+      localPath: source.localPath,
+    });
+  }
+  return [...candidates.values()]
+    .map((candidate) => ({
+      ...candidate,
+      content: readFilesystemTree(userRoot, candidate.localPath),
     }))
     .sort(compareKeys);
 }
@@ -867,6 +909,9 @@ function upstreamSourcesFromState(state: ManagedComponentState): ManagedComponen
       id: item.id,
       kind: item.kind,
       sourcePath: item.sourcePath ?? provenanceByKey.get(item.key)?.sourcePath ?? '',
+      ...(item.localPath ?? provenanceByKey.get(item.key)?.localPath
+        ? { localPath: item.localPath ?? provenanceByKey.get(item.key)?.localPath }
+        : {}),
       content: requireContent(state.content, item.upstreamContentRef, `upstream for ${item.key}`),
     }))
     .sort(compareKeys);
@@ -1052,6 +1097,14 @@ export function applySafeManagedComponentItems(input: { home: string; userRoot: 
 
     const upstreamRef = item.upstreamContentRef ?? item.upstreamHash;
     if (!upstreamRef) throw new Error(`upstream content reference is missing: ${item.key}`);
+    if (item.action === 'install' && item.localPath) {
+      writeTree(
+        input.userRoot,
+        item.localPath,
+        requireContent(state.content, upstreamRef, 'upstream'),
+        true,
+      );
+    }
     if (item.action === 'update-clean' && item.localPath) {
       assertCurrentLocalMatches(input.userRoot, item);
       writeTree(input.userRoot, item.localPath, requireContent(state.content, upstreamRef, 'upstream'));

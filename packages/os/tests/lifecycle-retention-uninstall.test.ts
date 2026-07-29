@@ -18,12 +18,12 @@ import { join, resolve } from 'node:path';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildRuntimeBundle } from '../scripts/lib/distribution/runtime-bundle';
+import { canonicalReleaseJson } from '../scripts/lib/distribution/release-channels';
 import {
   runtimeBundleIdFromDirectoryName,
   runtimeReleaseDirectoryName,
 } from '../scripts/lib/lifecycle/runtime-release-path';
 import {
-  canonicalReleaseManifestPayload,
   createLifecycleEngine,
   createReloadServiceController,
   materializeRuntimeBundleDownload,
@@ -56,7 +56,6 @@ const requiredRuntimePaths = [
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
-  'steering/decision.md',
   'streams/tools/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
@@ -114,23 +113,45 @@ afterEach(() => {
 });
 
 function signedManifest(bundle: BuiltBundle): SignedReleaseManifest {
-  const payload: ReleaseManifestPayload = {
-    schemaVersion: 1,
+  const resolved: ReleaseManifestPayload = {
     channel: 'dev',
     version: bundle.manifest.version,
     bundleId: bundle.manifest.bundleId,
     bundleDigest: bundle.archiveDigest,
-    bundleUrl: `memory://${bundle.manifest.bundleId}`,
+    bundleUrl: `bundles/${bundle.manifest.bundleId}/runtime.tar.gz`,
     releaseFingerprint: bundle.manifest.releaseFingerprint,
     publishedAt: '2026-07-23T00:00:00.000Z',
+    sourceCommit: bundle.manifest.sourceCommit,
+  };
+  const payload = {
+    bundleId: resolved.bundleId,
+    channel: 'dev' as const,
+    evidence: [{ kind: 'test', reference: 'lifecycle-retention' }],
+    kind: 'consuelo-os-channel-manifest' as const,
+    platforms: [{
+      architecture: bundle.manifest.architecture,
+      archiveDigest: resolved.bundleDigest,
+      bundleId: resolved.bundleId,
+      cloudflareObjectKey: resolved.bundleUrl,
+      githubAssetName: `consuelo-os-runtime-${resolved.version}.tar.gz`,
+      platform: bundle.manifest.platform,
+    }],
+    promotedAt: resolved.publishedAt,
+    releaseFingerprint: resolved.releaseFingerprint,
+    revision: 1,
+    schemaVersion: 1,
+    sourceChannel: null,
+    sourceCommit: resolved.sourceCommit,
+    version: resolved.version,
   };
   return {
     payload,
     signature: {
       algorithm: 'ed25519',
       keyId: releaseKeyId,
-      value: sign(null, Buffer.from(canonicalReleaseManifestPayload(payload)), privateKey)
+      signature: sign(null, Buffer.from(canonicalReleaseJson(payload)), privateKey)
         .toString('base64url'),
+      signedAt: '2026-07-23T00:00:01.000Z',
     },
   };
 }

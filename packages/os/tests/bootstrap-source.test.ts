@@ -96,15 +96,14 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('wrangler');
   });
 
-  it('refreshes hosted source by default with an explicit reuse escape hatch', () => {
+  it('resolves the signed stable channel on every hosted install', () => {
     const bootstrap = readBootstrap();
 
-    expect(bootstrap).toContain('REFRESH_SOURCE=1');
+    expect(bootstrap).toContain('RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"');
     expect(bootstrap).toContain('--refresh-source');
     expect(bootstrap).toContain('--use-existing-source');
-    expect(bootstrap).toContain('SOURCE_STATUS="refreshed"');
-    expect(bootstrap).toContain('SOURCE_STATUS="reused"');
-    expect(bootstrap).not.toContain('pass --refresh-source to refresh it');
+    expect(bootstrap).toContain('SOURCE_STATUS="verified"');
+    expect(bootstrap).not.toContain('REPO_ARCHIVE_URL');
   });
 
   it('asks for local or cloud before dependency setup', () => {
@@ -158,7 +157,7 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('handle_cloud_mode');
 
     expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
-      bootstrap.indexOf('resolve_source'),
+      bootstrap.indexOf('install_verified_runtime'),
     );
     expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
       bootstrap.indexOf('ensure_dependencies'),
@@ -277,57 +276,20 @@ describe('bootstrap source refresh controls', () => {
     expect(redacted).toContain('/home/[user]/.consuelo');
   }
 
-  it('should promote hosted source into the persistent runtime before daemon installation', () => {
+  it('should install the immutable stable runtime instead of promoting repository source', () => {
     const bootstrap = readBootstrap();
-    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-runtime-'));
-    const osHome = join(home, '.consuelo');
-    const sourceDir = join(home, 'consuelo-os-source');
-    const runtimeHome = join(osHome, 'runtime', 'current');
-    const releaseId = `sha256-${'a'.repeat(64)}`;
-    const installScript = join(
-      sourceDir,
-      'packages',
-      'os',
-      'scripts',
-      'install.ts',
+    expect(bootstrap).toContain(
+      'RELEASE_BASE_URL="${CONSUELO_RELEASE_BASE_URL:-https://install.consuelohq.com/os/releases}"',
     );
-
-    mkdirSync(join(sourceDir, 'packages', 'os', 'scripts'), {
-      recursive: true,
-    });
-    writeFileSync(installScript, 'export {};\n');
-    writeFileSync(join(sourceDir, '.consuelo-release-id'), `${releaseId}\n`);
-
-    const script = [
-      extractShellFunction(bootstrap, 'runtime_release_id'),
-      extractShellFunction(bootstrap, 'promote_hosted_runtime'),
-      'promote_hosted_runtime',
-    ].join('\n');
-    const result = spawnSync('/bin/bash', ['-c', script], {
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        OS_HOME: osHome,
-        RUNTIME_HOME: runtimeHome,
-        RUNTIME_RELEASES_DIR: join(osHome, 'runtime', 'releases'),
-        REPO_DIR: sourceDir,
-        SOURCE_STATUS: 'downloaded',
-        DRY_RUN: '0',
-      },
-    });
-
-    expect(result.status, result.stderr).toBe(0);
-    expect(existsSync(sourceDir)).toBe(false);
-    expect(lstatSync(runtimeHome).isSymbolicLink()).toBe(true);
-    expect(
-      readFileSync(
-        join(runtimeHome, 'packages', 'os', 'scripts', 'install.ts'),
-        'utf8',
-      ),
-    ).toBe('export {};\n');
+    expect(bootstrap).toContain('/channels/${channel}.json');
+    expect(bootstrap).toContain('verify_runtime_release');
+    expect(bootstrap).toContain('install_verified_runtime');
+    expect(bootstrap).not.toContain('main.tar.gz');
+    expect(bootstrap).not.toContain('download_source_archive');
+    expect(bootstrap).not.toContain('promote_hosted_runtime');
   });
 
-  it('should activate persistent hosted source and flattened daemon state before installing services', () => {
+  it('should activate the verified runtime before onboarding and daemon installation', () => {
     const bootstrap = readBootstrap();
     const main = extractShellFunction(bootstrap, 'main');
     const daemonInstall = extractShellFunction(
@@ -335,11 +297,11 @@ describe('bootstrap source refresh controls', () => {
       'install_daemons_quiet',
     );
 
-    expect(main).toContain('promote_hosted_runtime');
-    expect(main.indexOf('promote_hosted_runtime')).toBeGreaterThan(
+    expect(main).toContain('install_verified_runtime');
+    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
       main.indexOf('run_onboarding'),
     );
-    expect(main.indexOf('promote_hosted_runtime')).toBeLessThan(
+    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
       main.indexOf('maybe_install_daemons'),
     );
     expect(daemonInstall).toContain('CONSUELO_HOME="$OS_HOME"');

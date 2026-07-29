@@ -22,7 +22,6 @@ import {
   type LifecycleProgressEvent,
   type LifecycleReleaseChannel,
   type LifecycleServiceController,
-  type ReleaseSource,
 } from './lib/lifecycle';
 import { createLinuxPlatformAdapter } from './lib/platforms/linux';
 import { createWindowsServiceController } from './lib/windows-platform';
@@ -79,6 +78,7 @@ Usage:
 
 Channels: stable, beta, canary, dev, nightly
 `;
+const DEFAULT_RELEASE_BASE_URL = 'https://install.consuelohq.com/os/releases';
 
 function nextValue(argv: string[], index: number, flag: string): string {
   const value = argv[index + 1];
@@ -319,19 +319,7 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   }
 }
 
-function unavailableReleaseSource(): ReleaseSource {
-  const missing = async (): Promise<never> => {
-    throw new Error(
-      'CONSUELO_RELEASE_BASE_URL is required for install and update',
-    );
-  };
-  return {
-    fetchManifest: missing,
-    fetchBundle: missing,
-  };
-}
-
-function trustedReleaseKeysFromEnvironment(): Record<string, string> {
+function trustedReleaseKeysFromEnvironment(home?: string): Record<string, string> {
   const encoded = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
   if (encoded) {
     const parsed = JSON.parse(encoded) as unknown;
@@ -353,7 +341,29 @@ function trustedReleaseKeysFromEnvironment(): Record<string, string> {
   }
   const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
   const publicKey = process.env.CONSUELO_RELEASE_PUBLIC_KEY;
-  return keyId && publicKey ? { [keyId]: publicKey } : {};
+  if (keyId && publicKey) return { [keyId]: publicKey };
+  const trustedKeysPath = resolve(
+    resolveLifecyclePaths(home).home,
+    'runtime',
+    'trusted-release-keys.json',
+  );
+  try {
+    const parsed = JSON.parse(readFileSync(trustedKeysPath, 'utf8')) as unknown;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('trusted release key file must be a JSON object');
+    }
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).map(([key, value]) => {
+        if (typeof value !== 'string' || !value.trim()) {
+          throw new Error(`release public key ${key} must be a non-empty PEM string`);
+        }
+        return [key, value];
+      }),
+    );
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return {};
+    throw error;
+  }
 }
 
 export function createDefaultLifecycleServiceController(input: {
@@ -395,21 +405,20 @@ export const createDefaultLifecycleEngine = (input: {
 }): LifecycleEngine => {
   const osRoot = resolve(import.meta.dirname, '..');
   const port = process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
-  const releaseBaseUrl = process.env.CONSUELO_RELEASE_BASE_URL;
+  const releaseBaseUrl =
+    process.env.CONSUELO_RELEASE_BASE_URL ?? DEFAULT_RELEASE_BASE_URL;
   return createLifecycleEngine({
     home: input.home,
-    releaseSource: releaseBaseUrl
-      ? createHttpReleaseSource({
-          baseUrl: releaseBaseUrl,
-          ...(process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH === '1'
-            ? {
-                authorizationProvider:
-                  createGcpMetadataReleaseAuthorization(),
-              }
-            : {}),
-        })
-      : unavailableReleaseSource(),
-    trustedReleaseKeys: trustedReleaseKeysFromEnvironment(),
+    releaseSource: createHttpReleaseSource({
+      baseUrl: releaseBaseUrl,
+      ...(process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH === '1'
+        ? {
+            authorizationProvider:
+              createGcpMetadataReleaseAuthorization(),
+          }
+        : {}),
+    }),
+    trustedReleaseKeys: trustedReleaseKeysFromEnvironment(input.home),
     service: createDefaultLifecycleServiceController({
       home: input.home,
       osRoot,

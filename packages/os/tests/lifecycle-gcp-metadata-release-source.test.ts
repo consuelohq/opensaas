@@ -59,19 +59,32 @@ describe('GCP metadata-authenticated lifecycle release source', () => {
           return new Response(
             JSON.stringify({
               payload: {
-                schemaVersion: 1,
-                channel: 'dev',
-                version: '1.0.0-dev.fixture',
                 bundleId: `sha256:${'1'.repeat(64)}`,
-                bundleDigest: `sha256:${'2'.repeat(64)}`,
-                bundleUrl: 'bundles/runtime.tar.gz',
+                channel: 'dev',
+                evidence: [{ kind: 'test', reference: 'metadata-source' }],
+                kind: 'consuelo-os-channel-manifest',
+                platforms: [{
+                  architecture: 'arm64',
+                  archiveDigest: `sha256:${'2'.repeat(64)}`,
+                  bundleId: `sha256:${'4'.repeat(64)}`,
+                  cloudflareObjectKey:
+                    `bundles/sha256:${'4'.repeat(64)}/runtime.tar.gz`,
+                  githubAssetName: 'runtime.tar.gz',
+                  platform: 'darwin',
+                }],
+                promotedAt: '2026-07-28T05:00:00.000Z',
                 releaseFingerprint: `sha256:${'3'.repeat(64)}`,
-                publishedAt: '2026-07-28T05:00:00.000Z',
+                revision: 1,
+                schemaVersion: 1,
+                sourceChannel: null,
+                sourceCommit: 'a'.repeat(40),
+                version: '1.0.0-dev.fixture',
               },
               signature: {
                 algorithm: 'ed25519',
                 keyId: 'fixture',
-                value: 'fixture',
+                signature: 'fixture',
+                signedAt: '2026-07-28T05:00:01.000Z',
               },
             }),
             { status: 200 },
@@ -82,12 +95,16 @@ describe('GCP metadata-authenticated lifecycle release source', () => {
     });
 
     const manifest = await source.fetchManifest('dev');
-    expect(manifest.payload.bundleUrl).toBe('bundles/runtime.tar.gz');
-    await expect(source.fetchBundle(manifest.payload.bundleUrl)).resolves.toEqual(
+    expect(manifest.payload.platforms[0].cloudflareObjectKey).toBe(
+      `bundles/sha256:${'4'.repeat(64)}/runtime.tar.gz`,
+    );
+    await expect(source.fetchBundle(manifest.payload.platforms[0].cloudflareObjectKey)).resolves.toEqual(
       new Uint8Array([1, 2, 3]),
     );
     expect(requests).toHaveLength(2);
-    expect(requests[1].url).toBe(`${baseUrl}/bundles/runtime.tar.gz`);
+    expect(requests[1].url).toBe(
+      `${baseUrl}/bundles/sha256:${'4'.repeat(64)}/runtime.tar.gz`,
+    );
     expect(
       requests.every(
         (request) =>

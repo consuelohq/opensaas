@@ -322,7 +322,13 @@ export function provisionManagedComponentIndexes(input: {
     const id = bundledSkillId(skillDir);
     const content = treeFromDirectory(skillDir);
     const sourcePath = packageRelative(skillDir);
-    upstream.push({ id, kind: 'skill', sourcePath, content });
+    upstream.push({
+      id,
+      kind: 'skill',
+      sourcePath,
+      ...(selected.has(id) ? { localPath: path.posix.join('Skills', id) } : {}),
+      content,
+    });
     if (selected.has(id)) {
       skillEntries.push({
         id,
@@ -331,6 +337,12 @@ export function provisionManagedComponentIndexes(input: {
         sourcePath,
         contentHash: hashComponentTree(content),
         ...compactSkill(readJsonObject(path.join(skillDir, 'skill.json'))),
+      });
+      actions.push({
+        type: 'seed_skill',
+        path: path.join(input.userRoot ?? path.join(os.homedir(), 'Consuelo'), 'Skills', id),
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'selected managed skill materialized in visible Skills',
       });
     }
   }
@@ -410,7 +422,7 @@ export function provisionManagedComponentIndexes(input: {
     provenance: previous.provenance,
     retainedContent: previous.content,
     upstream,
-    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, previous.provenance),
+    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, previous.provenance, upstream),
     custom: legacy.custom,
   });
   writeManagedComponentState(input.home, state);
@@ -425,7 +437,7 @@ export function provisionManagedComponentIndexes(input: {
     provenance: applied.provenance,
     retainedContent: applied.content,
     upstream,
-    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, applied.provenance),
+    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, applied.provenance, upstream),
     custom: legacy.custom,
   });
   writeManagedComponentState(input.home, state);

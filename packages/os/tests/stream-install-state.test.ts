@@ -52,30 +52,27 @@ function provision(): {
   );
 }
 
-describe('installed stream instructions', () => {
-  it('seeds only the Tools stream instructions', () => {
+describe('installed visible user tree', () => {
+  it('does not seed a hidden mutable stream mirror', () => {
     const result = provision();
     const toolsPath = join(tempHome, 'streams', 'tools', 'AGENTS.md');
 
-    expect(existsSync(toolsPath)).toBe(true);
-    expect(readFileSync(toolsPath, 'utf8')).toContain(
-      '# Tools stream instructions',
-    );
-    expect(existsSync(join(tempHome, 'streams', 'docs'))).toBe(false);
-    expect(existsSync(join(tempHome, 'streams', 'general'))).toBe(false);
-    expect(existsSync(join(tempHome, 'streams', 'media'))).toBe(false);
-    expect(result.actions).toContainEqual(
-      expect.objectContaining({
-        type: 'seed_stream',
-        path: toolsPath,
-        status: 'created',
-      }),
+    expect(existsSync(toolsPath)).toBe(false);
+    expect(existsSync(join(tempHome, 'streams'))).toBe(false);
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Steering'))).toBe(true);
+    expect(result.actions.some((action) => action.type === 'seed_stream')).toBe(
+      false,
     );
   });
 
-  it('preserves user-authored Tools instructions on upgrade', () => {
+  it('preserves user-authored visible Steering content on upgrade', () => {
     provision();
-    const toolsPath = join(tempHome, 'streams', 'tools', 'AGENTS.md');
+    const toolsPath = join(
+      tempUserHome,
+      'Consuelo',
+      'Steering',
+      'AGENTS.md',
+    );
     writeFileSync(
       toolsPath,
       '# My exact tools instructions\n\nDo not replace this.\n',
@@ -86,12 +83,12 @@ describe('installed stream instructions', () => {
     expect(readFileSync(toolsPath, 'utf8')).toBe(
       '# My exact tools instructions\n\nDo not replace this.\n',
     );
-    expect(result.actions).toContainEqual(
-      expect.objectContaining({
-        type: 'seed_stream',
-        path: toolsPath,
-        status: 'preserved',
-      }),
-    );
+    expect(
+      result.actions.some(
+        (action) =>
+          action.path === join(tempUserHome, 'Consuelo', 'Steering') &&
+          action.status === 'preserved',
+      ),
+    ).toBe(true);
   });
 });

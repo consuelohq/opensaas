@@ -50,7 +50,6 @@ const requiredFixtureFiles: Record<string, string> = {
     '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
   'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
   'steering/system_prompt.md': '# Fixture system prompt\n',
-  'steering/decision.md': '# Fixture decision process\n',
   'streams/tools/AGENTS.md': '# Fixture tools stream\n',
   'skills/task/SKILL.md': '# Fixture task skill\n',
   'skills/task/skill.json': '{"name":"task","entrypoint":"SKILL.md"}\n',
@@ -948,7 +947,13 @@ describe('runtime bundle contract', () => {
         '--workspace-slug',
         'fixture',
       ],
-      { encoding: 'utf8' },
+      {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          HOME: join(runtimeRoot, 'user-home'),
+        },
+      },
     );
     expect(cloudInstall.status, cloudInstall.stderr).toBe(0);
     expect(existsSync(join(installedHome, 'config.json'))).toBe(true);

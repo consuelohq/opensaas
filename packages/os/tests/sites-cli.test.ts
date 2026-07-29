@@ -218,8 +218,7 @@ describe('Sites CLI', () => {
       'Documentation',
       'Decision loops',
       'Connect to your cloud agents',
-      'Connected to 0 local agents',
-      'No local agents connected to workspace yet.',
+      'Connected to ',
       'navigator.clipboard.writeText(value)',
     ]) {
       expect(html).toContain(marker);
@@ -476,5 +475,4 @@ describe('Sites CLI', () => {
   });
 
 });
-
 

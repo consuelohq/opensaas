@@ -23,12 +23,14 @@ const daemonProcesses: ChildProcess[] = [];
 beforeEach(() => {
   osHome = mkdtempSync(join(tmpdir(), 'consuelo-agent-os-'));
   userHome = mkdtempSync(join(tmpdir(), 'consuelo-agent-user-'));
+  process.env.CONSUELO_OS_PACKAGE_ROOT = process.cwd();
 });
 
 afterEach(() => {
   for (const daemon of daemonProcesses.splice(0)) daemon.kill('SIGTERM');
   rmSync(osHome, { recursive: true, force: true });
   rmSync(userHome, { recursive: true, force: true });
+  delete process.env.CONSUELO_OS_PACKAGE_ROOT;
 });
 
 function writeJson(path: string, value: unknown): void {
@@ -205,7 +207,7 @@ describe('local agent connectivity', () => {
 
     const codexConfig = readFileSync(configPaths.codex, 'utf8');
     expect(codexConfig).toContain('model = "gpt-5"');
-    expect(codexConfig).toContain('[mcp_servers."consuelo"]');
+    expect(codexConfig).toContain('[mcp_servers."os"]');
     expect(codexConfig).toContain(`command = ${JSON.stringify(commandPath)}`);
     expect(codexConfig.match(/BEGIN CONSUELO MCP/g)).toHaveLength(1);
 
@@ -213,7 +215,7 @@ describe('local agent connectivity', () => {
     expect(cursor.theme).toBe('dark');
     expect(cursor.mcpServers).toMatchObject({
       existing: { command: 'existing' },
-      consuelo: {
+      os: {
         type: 'stdio',
         command: commandPath,
         args: [],
@@ -225,7 +227,7 @@ describe('local agent connectivity', () => {
     expect(claude.hasCompletedOnboarding).toBe(true);
     expect(claude.mcpServers).toMatchObject({
       existing: { command: 'existing' },
-      consuelo: {
+      os: {
         command: commandPath,
         args: [],
         env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: 'claude' },
@@ -236,7 +238,7 @@ describe('local agent connectivity', () => {
     expect(opencode.theme).toBe('system');
     expect(opencode.mcp).toMatchObject({
       existing: { type: 'local', command: ['existing'] },
-      consuelo: {
+      os: {
         type: 'local',
         command: [commandPath],
         cwd: osHome,
@@ -249,7 +251,7 @@ describe('local agent connectivity', () => {
       const config = readJson(configPaths[name]);
       expect(config.mcpServers).toMatchObject({
         existing: { command: 'existing' },
-        consuelo: {
+        os: {
           command: commandPath,
           args: [],
           env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: name },

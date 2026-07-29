@@ -73,7 +73,8 @@ describe('installer local agent connectivity', () => {
     const openCodeConfig = JSON.parse(
       readFileSync(join(userHome, '.config', 'opencode', 'opencode.json'), 'utf8'),
     ) as { mcp: Record<string, { command: string[] }> };
-    expect(openCodeConfig.mcp.consuelo.command).toEqual([commandPath]);
+    expect(openCodeConfig.mcp.os.command).toEqual([commandPath]);
+    expect(openCodeConfig.mcp.consuelo).toBeUndefined();
     expect(openCodeConfig.mcp['consuelo-os']).toBeUndefined();
 
     const launcher = readFileSync(join(osHome, 'sites', 'index.html'), 'utf8');

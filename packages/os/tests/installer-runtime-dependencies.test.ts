@@ -266,11 +266,12 @@ describe('public installer runtime dependencies', () => {
       expect(bootstrap).toContain(flag);
     }
     expect(bootstrap).toContain(
-      'curl_retry "$REPO_ARCHIVE_URL" -o "$archive_file"',
+      'const manifestUrl = `${baseUrl.replace(/\\/$/, "")}/channels/${channel}.json`',
     );
-    expect(bootstrap).toContain('checksum_text="$(curl_retry "$sha_url")"');
+    expect(bootstrap).toContain('selected.cloudflareObjectKey');
+    expect(bootstrap).toContain('const bundleResponse = await fetch(bundleUrl)');
     expect(bootstrap).toContain('curl_retry "$url" -o "$tmp_file"');
-    expect(bootstrap).toContain('curl_retry "$url" -o "$archive_file"');
+    expect(bootstrap).not.toContain('REPO_ARCHIVE_URL');
   });
 
   it('should parse SHA-256 metadata deterministically when checksum files use supported shapes', () => {
@@ -425,17 +426,18 @@ describe('public installer runtime dependencies', () => {
     );
 
     expect(result.status, result.stderr).toBe(0);
+    const runtimeDir = join(home, '.consuelo', 'os', 'runtime', 'current');
     expect(result.stderr).toContain(
-      `dry-run: would download Consuelo OS source from https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz to ${sourceDir}`,
+      'dry-run: would verify and install stable runtime from https://install.consuelohq.com/os/releases',
     );
     expect(result.stderr).toContain(
-      `dry-run: would install Consuelo OS runtime dependencies with: bun --cwd ${sourceDir}/packages/os install`,
+      `dry-run: would install Consuelo OS runtime dependencies with: bun --cwd ${runtimeDir} install`,
     );
     expect(result.stderr).toContain(
-      `dry-run: would run: bun --cwd ${sourceDir}/packages/os ./scripts/install.ts --dry-run --yes --json`,
+      `dry-run: would run: bun --cwd ${runtimeDir} ./scripts/install.ts --dry-run --yes --json`,
     );
     expect(result.stderr).toContain(
-      `dry-run: would run: bash ${sourceDir}/packages/os/scripts/install-system-daemons.sh --dry-run --quiet`,
+      `dry-run: would run: bash ${runtimeDir}/scripts/install-system-daemons.sh --dry-run --quiet`,
     );
     expect(result.stderr).not.toContain('ENOENT');
     expect(existsSync(sourceDir)).toBe(false);
@@ -448,7 +450,7 @@ describe('public installer runtime dependencies', () => {
     expect(summary.daemonStatus).toBe('would_run');
   });
 
-  it('should reject an incomplete existing hosted source during dry-run reuse', () => {
+  it('should ignore legacy hosted source mirrors during signed-release dry-runs', () => {
     const home = createTempHome(
       'consuelo-os-installer-runtime-incomplete-hosted-source-',
     );
@@ -488,11 +490,11 @@ describe('public installer runtime dependencies', () => {
       },
     );
 
-    expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('reused Consuelo OS source is missing');
+    expect(result.status, result.stderr).toBe(0);
     expect(result.stderr).toContain(
-      join('source', 'packages', 'os', 'scripts', 'install-system-daemons.sh'),
+      'dry-run: would verify and install stable runtime from https://install.consuelohq.com/os/releases',
     );
+    expect(result.stderr).not.toContain('reused Consuelo OS source');
   });
 
   it('should reject an incomplete local source when the daemon installer is missing', () => {

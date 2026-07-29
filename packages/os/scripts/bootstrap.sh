@@ -4,6 +4,7 @@ set -euo pipefail
 PROGRAM="Consuelo OS bootstrap"
 HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
 HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
+BOOTSTRAP_FILE_SOURCE="${BASH_SOURCE[0]:-}"
 DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"
 LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"
 resolve_os_home() {
@@ -28,9 +29,10 @@ resolve_runtime_home() {
 RUNTIME_HOME="$(resolve_runtime_home)"
 RUNTIME_RELEASES_DIR="${CONSUELO_RUNTIME_RELEASES_DIR:-$OS_HOME/runtime/releases}"
 RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
-DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
-SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
-REPO_ARCHIVE_URL="${CONSUELO_OS_REPO_ARCHIVE_URL:-https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz}"
+RELEASE_BASE_URL="${CONSUELO_RELEASE_BASE_URL:-https://install.consuelohq.com/os/releases}"
+RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"
+RELEASE_PUBLIC_KEYS_BASE64="${CONSUELO_RELEASE_PUBLIC_KEYS_BASE64:-__CONSUELO_RELEASE_PUBLIC_KEYS_BASE64__}"
+TRUSTED_RELEASE_KEYS_PATH="$OS_HOME/runtime/trusted-release-keys.json"
 ALLOW_GLOBAL_RUNTIME_LOOKUP="${CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP:-1}"
 CLOUDFLARED_REQUIRED="${CONSUELO_OS_REQUIRE_CLOUDFLARED:-1}"
 CLOUDFLARED_VERSION="${CONSUELO_CLOUDFLARED_VERSION:-2026.6.1}"
@@ -59,7 +61,6 @@ NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
 JSON=0
-REFRESH_SOURCE=1
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
 DEV_DIAGNOSTICS="${CONSUELO_OS_DEV_DIAGNOSTICS:-0}"
 DEV_REPORT_ROOT="${CONSUELO_OS_DEV_REPORTS_DIR:-$HOME/.consuelo-dev-reports}"
@@ -108,16 +109,17 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
-  --refresh-source  refresh an existing hosted source checkout/archive before onboarding; default for hosted installs
-  --use-existing-source reuse an existing hosted source checkout when present
+  --refresh-source  compatibility alias; hosted installs always resolve the current signed channel
+  --use-existing-source compatibility alias for repo-local development only
   --mode <mode>      local or cloud
   --json            print a machine-readable summary at the end
   --debug           print detailed daemon diagnostics
   --help, -h        show this help
 
 Environment overrides:
-  CONSUELO_OS_SOURCE_DIR       temporary checkout/download directory for hosted installs
-  CONSUELO_OS_REPO_ARCHIVE_URL source archive URL; defaults to the main branch archive
+  CONSUELO_RELEASE_BASE_URL    signed runtime release origin
+  CONSUELO_RELEASE_CHANNEL     release channel; defaults to stable
+  CONSUELO_RELEASE_PUBLIC_KEYS_BASE64 trusted Ed25519 release-key JSON
   CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/bin
   CONSUELO_OS_DEV_DIAGNOSTICS  set to 1 to write temporary development install diagnostics
   PORTLESS_BIN                 absolute portless binary path to reuse
@@ -288,8 +290,7 @@ parse_args() {
       --no-install-bun) NO_INSTALL_BUN=1 ;;
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
-      --refresh-source) REFRESH_SOURCE=1 ;;
-      --use-existing-source) REFRESH_SOURCE=0 ;;
+      --refresh-source|--use-existing-source) ;;
       --mode)
         shift
         if [ "$#" -eq 0 ]; then
@@ -1047,6 +1048,8 @@ persist_runtime_paths() {
 }
 
 current_repo_dir() {
+  [ -n "$BOOTSTRAP_FILE_SOURCE" ] && [ -f "$BOOTSTRAP_FILE_SOURCE" ] ||
+    return 1
   if [ -f "packages/os/scripts/install.ts" ]; then
     pwd
     return 0
@@ -1057,171 +1060,186 @@ current_repo_dir() {
   fi
   return 1
 }
-download_source_archive() {
-  local tmp_dir archive_file parent_dir staged_dir source_sha
-  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
-  archive_file="$tmp_dir/source.tar.gz"
-  staged_dir="$tmp_dir/source"
-  parent_dir="$(dirname "$SOURCE_DIR")"
-
-  mkdir -p "$parent_dir" "$staged_dir"
-
-  if ! curl_retry "$REPO_ARCHIVE_URL" -o "$archive_file"; then
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-  source_sha="$(shasum -a 256 "$archive_file")"
-  source_sha="${source_sha%% *}"
-
-  if ! tar -xzf "$archive_file" -C "$staged_dir" --strip-components=1; then
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-
-  if [ ! -f "$staged_dir/packages/os/scripts/install.ts" ]; then
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-  printf 'sha256-%s\n' "$source_sha" > "$staged_dir/.consuelo-release-id"
-
-  rm -rf "$SOURCE_DIR"
-  mv "$staged_dir" "$SOURCE_DIR"
-  rm -rf "$tmp_dir"
-}
-
-download_source() {
-  if [ "$DRY_RUN" -eq 1 ]; then
-    REPO_DIR="$SOURCE_DIR"
-    if [ -e "$SOURCE_DIR" ] && [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-      fail "$SOURCE_DIR exists but does not contain packages/os/scripts/install.ts. Move it or set CONSUELO_OS_SOURCE_DIR to another temporary path."
-    fi
-    if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-      if [ "$REFRESH_SOURCE" -eq 1 ]; then
-        SOURCE_STATUS="would_refresh"
-        log "dry-run: would refresh Consuelo OS source from $REPO_ARCHIVE_URL at $SOURCE_DIR"
-      else
-        SOURCE_STATUS="reused"
-        log "Using existing Consuelo OS source: $REPO_DIR"
-      fi
-    else
-      SOURCE_STATUS="would_download"
-      log "dry-run: would download Consuelo OS source from $REPO_ARCHIVE_URL to $SOURCE_DIR"
-    fi
+os_package_dir() {
+  if [ -f "$REPO_DIR/scripts/install.ts" ]; then
+    printf '%s\n' "$REPO_DIR"
     return 0
   fi
-
-  require_command tar "Consuelo OS needs tar to unpack the source archive. tar is expected on supported macOS installs."
-  require_command mktemp "Consuelo OS needs mktemp to stage the source archive safely. mktemp is expected on supported macOS installs."
-  require_command shasum "Consuelo OS needs shasum to identify downloaded runtime releases. shasum is expected on supported macOS installs."
-
-  if [ -e "$SOURCE_DIR" ] && [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    fail "$SOURCE_DIR exists but does not contain packages/os/scripts/install.ts. Move it or set CONSUELO_OS_SOURCE_DIR to another temporary path."
-  fi
-
-  if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    if [ "$REFRESH_SOURCE" -eq 1 ]; then
-      run_with_loading_dots "Refreshing Consuelo OS source" download_source_archive
-      if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-        fail "refreshed source did not contain packages/os/scripts/install.ts"
-      fi
-      REPO_DIR="$SOURCE_DIR"
-      SOURCE_STATUS="refreshed"
-      return 0
-    fi
-
-    REPO_DIR="$SOURCE_DIR"
-    SOURCE_STATUS="reused"
-    log "Using existing Consuelo OS source: $REPO_DIR"
+  if [ -f "$REPO_DIR/packages/os/scripts/install.ts" ]; then
+    printf '%s\n' "$REPO_DIR/packages/os"
     return 0
   fi
-
-  run_with_loading_dots "Downloading Consuelo OS source" download_source_archive
-
-  if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    fail "downloaded source did not contain packages/os/scripts/install.ts"
-  fi
-
-  REPO_DIR="$SOURCE_DIR"
-  SOURCE_STATUS="downloaded"
+  return 1
 }
 
-resolve_source() {
+verify_runtime_release() {
+  local stage_dir="$1"
+  local verifier="$stage_dir/verify-release.ts"
+  cat > "$verifier" <<'BUN'
+import { createHash, createPublicKey, verify } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
+const fail = (message: string): never => {
+  throw new Error(message);
+};
+const canonicalize = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.keys(record).sort().flatMap((key) =>
+        record[key] === undefined ? [] : [[key, canonicalize(record[key])]],
+      ),
+    );
+  }
+  return value;
+};
+const baseUrl = process.env.CONSUELO_RELEASE_BASE_URL ?? fail("release base URL is required");
+const channel = process.env.CONSUELO_RELEASE_CHANNEL ?? "stable";
+const keysEncoded = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_BASE64 ??
+  fail("trusted release keys are required");
+if (keysEncoded.startsWith("__CONSUELO_")) fail("hosted installer is missing trusted release keys");
+const keysJson = Buffer.from(keysEncoded, "base64").toString("utf8");
+const trustedKeys = JSON.parse(keysJson) as Record<string, string>;
+const manifestUrl = `${baseUrl.replace(/\/$/, "")}/channels/${channel}.json`;
+const manifestResponse = await fetch(manifestUrl);
+if (!manifestResponse.ok) fail(`release manifest request failed with HTTP ${manifestResponse.status}`);
+const manifest = await manifestResponse.json() as any;
+if (
+  manifest?.payload?.kind !== "consuelo-os-channel-manifest" ||
+  manifest.payload.schemaVersion !== 1 ||
+  manifest.payload.channel !== channel ||
+  manifest?.signature?.algorithm !== "ed25519"
+) fail("release manifest contract is invalid");
+const publicKey = trustedKeys[manifest.signature.keyId] ??
+  fail(`release signing key is not trusted: ${String(manifest.signature.keyId)}`);
+const accepted = verify(
+  null,
+  Buffer.from(JSON.stringify(canonicalize(manifest.payload))),
+  createPublicKey(publicKey),
+  Buffer.from(manifest.signature.signature, "base64url"),
+);
+if (!accepted) fail("release manifest signature is invalid");
+const platform = process.platform;
+const architecture = process.arch;
+const selected = manifest.payload.platforms?.find(
+  (candidate: any) =>
+    candidate.platform === platform && candidate.architecture === architecture,
+) ?? fail(`release does not publish ${platform}-${architecture}`);
+if (!/^sha256:[a-f0-9]{64}$/.test(selected.bundleId)) fail("runtime bundle ID is invalid");
+if (!/^sha256:[a-f0-9]{64}$/.test(selected.archiveDigest)) fail("runtime archive digest is invalid");
+const expectedBundlePrefix = `bundles/${selected.bundleId}/`;
+if (
+  typeof selected.cloudflareObjectKey !== "string" ||
+  !selected.cloudflareObjectKey.startsWith(expectedBundlePrefix) ||
+  selected.cloudflareObjectKey.includes("..") ||
+  /^[a-z][a-z0-9+.-]*:/i.test(selected.cloudflareObjectKey)
+) fail("runtime release object key is invalid");
+const bundleUrl = new URL(
+  selected.cloudflareObjectKey,
+  `${baseUrl.replace(/\/$/, "")}/`,
+);
+const bundleResponse = await fetch(bundleUrl);
+if (!bundleResponse.ok) fail(`runtime bundle request failed with HTTP ${bundleResponse.status}`);
+const bytes = new Uint8Array(await bundleResponse.arrayBuffer());
+const digest = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+if (digest !== selected.archiveDigest) fail("runtime bundle digest does not match signed release manifest");
+const output = process.env.CONSUELO_RELEASE_STAGE_DIR ?? fail("release stage directory is required");
+await mkdir(output, { recursive: true });
+await writeFile(join(output, "runtime.tar.gz"), bytes, { mode: 0o600 });
+await writeFile(join(output, "bundle-id"), `${selected.bundleId}\n`, { mode: 0o600 });
+await writeFile(join(output, "trusted-release-keys.json"), `${JSON.stringify(trustedKeys, null, 2)}\n`, { mode: 0o600 });
+BUN
+  CONSUELO_RELEASE_BASE_URL="$RELEASE_BASE_URL" \
+    CONSUELO_RELEASE_CHANNEL="$RELEASE_CHANNEL" \
+    CONSUELO_RELEASE_PUBLIC_KEYS_BASE64="$RELEASE_PUBLIC_KEYS_BASE64" \
+    CONSUELO_RELEASE_STAGE_DIR="$stage_dir" \
+    "$BUN_BIN" "$verifier"
+}
+
+install_verified_runtime() {
   local local_repo
   if local_repo="$(current_repo_dir 2>/dev/null)"; then
     REPO_DIR="$local_repo"
     SOURCE_STATUS="local"
-    if [ "$REFRESH_SOURCE" -eq 1 ]; then
-      log "Using local Consuelo OS source: $REPO_DIR (--refresh-source applies only to hosted source checkouts)"
-    else
-      log "Using local Consuelo OS source: $REPO_DIR"
-    fi
+    log "Using local Consuelo OS source: $REPO_DIR"
+    return 0
+  fi
+  if [ "$DRY_RUN" -eq 1 ]; then
+    REPO_DIR="$RUNTIME_HOME"
+    SOURCE_STATUS="would_download"
+    log "dry-run: would verify and install $RELEASE_CHANNEL runtime from $RELEASE_BASE_URL"
     return 0
   fi
 
-  download_source
-}
-runtime_release_id() {
-  local marker="$REPO_DIR/.consuelo-release-id"
-  local value=""
-
-  if [ -f "$marker" ]; then
-    IFS= read -r value < "$marker" || true
+  require_command tar "Consuelo OS needs tar to unpack the verified runtime bundle."
+  require_command mktemp "Consuelo OS needs mktemp to stage the verified runtime bundle safely."
+  local stage_dir bundle_id release_name release_dir extracted_dir temporary_link
+  stage_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-runtime.XXXXXX")"
+  extracted_dir="$stage_dir/runtime"
+  if ! verify_runtime_release "$stage_dir"; then
+    rm -rf "$stage_dir"
+    fail "signed Consuelo OS runtime verification failed"
   fi
-  if [ -z "$value" ]; then
-    value="$(shasum -a 256 "$REPO_DIR/packages/os/scripts/bootstrap.sh")"
-    value="source-${value%% *}"
+  IFS= read -r bundle_id < "$stage_dir/bundle-id"
+  release_name="${bundle_id/:/-}"
+  release_dir="$RUNTIME_RELEASES_DIR/$release_name"
+  mkdir -p "$extracted_dir"
+  if ! tar -xzf "$stage_dir/runtime.tar.gz" -C "$extracted_dir"; then
+    rm -rf "$stage_dir"
+    fail "verified Consuelo OS runtime could not be unpacked"
   fi
-  case "$value" in
-    *[!A-Za-z0-9._-]*|'') return 1 ;;
-  esac
-  printf '%s\n' "$value"
-}
-
-promote_hosted_runtime() {
-  case "$SOURCE_STATUS" in
-    local|would_download|would_refresh) return 0 ;;
-  esac
-  [ "$DRY_RUN" -eq 0 ] || return 0
-
-  local release_id release_dir temporary_link
-  release_id="$(runtime_release_id)" || fail "downloaded Consuelo OS source had an invalid release identity"
-  release_dir="$RUNTIME_RELEASES_DIR/$release_id"
-  temporary_link="${RUNTIME_HOME}.new.$$"
+  if [ ! -f "$extracted_dir/scripts/install.ts" ] ||
+    [ ! -f "$extracted_dir/runtime-bundle.manifest.json" ]; then
+    rm -rf "$stage_dir"
+    fail "verified Consuelo OS runtime is missing required entrypoints"
+  fi
 
   mkdir -p "$RUNTIME_RELEASES_DIR" "$(dirname "$RUNTIME_HOME")"
-  if [ -e "$release_dir" ]; then
-    if [ ! -f "$release_dir/packages/os/scripts/install.ts" ] || [ ! -d "$release_dir/packages/os/node_modules/@clack/prompts" ]; then
-      rm -rf "$release_dir"
-      mv "$REPO_DIR" "$release_dir"
-    elif [ "$REPO_DIR" != "$release_dir" ]; then
-      rm -rf "$REPO_DIR"
-    fi
-  else
-    mv "$REPO_DIR" "$release_dir"
+  if [ ! -d "$release_dir" ]; then
+    mv "$extracted_dir" "$release_dir"
   fi
-
+  mkdir -p "$(dirname "$TRUSTED_RELEASE_KEYS_PATH")"
+  mv "$stage_dir/trusted-release-keys.json" "$TRUSTED_RELEASE_KEYS_PATH"
+  chmod 600 "$TRUSTED_RELEASE_KEYS_PATH"
+  temporary_link="${RUNTIME_HOME}.new.$$"
   rm -f "$temporary_link"
   ln -s "$release_dir" "$temporary_link"
   if [ -L "$RUNTIME_HOME" ] || [ -f "$RUNTIME_HOME" ]; then
     rm -f "$RUNTIME_HOME"
   elif [ -d "$RUNTIME_HOME" ]; then
-    rmdir "$RUNTIME_HOME" || fail "$RUNTIME_HOME contains unmanaged files and cannot be activated safely"
+    rmdir "$RUNTIME_HOME" ||
+      fail "$RUNTIME_HOME contains unmanaged files and cannot be activated safely"
   elif [ -e "$RUNTIME_HOME" ]; then
     fail "$RUNTIME_HOME cannot be replaced safely"
   fi
   mv "$temporary_link" "$RUNTIME_HOME"
+  rm -rf "$stage_dir"
   REPO_DIR="$RUNTIME_HOME"
+  SOURCE_STATUS="verified"
 }
 
 install_runtime_dependencies() {
   local os_dir="$1"
   log "Installing Consuelo OS runtime dependencies..."
-  (cd "$os_dir" && "$BUN_BIN" install)
+  (
+    cd "$os_dir"
+    BUN_INSTALL_CACHE_DIR="$OS_HOME/runtime/cache/bun" \
+      "$BUN_BIN" install --frozen-lockfile --production
+  )
   log "Installing Consuelo OS runtime dependencies... done"
 }
 
 ensure_dependencies() {
-  local os_dir="$REPO_DIR/packages/os"
+  local os_dir
+  os_dir="$(os_package_dir)" || {
+    if [ "$DRY_RUN" -eq 1 ]; then
+      os_dir="$RUNTIME_HOME"
+    else
+      fail "Consuelo OS runtime package root is missing"
+    fi
+  }
   if [ -d "$os_dir/node_modules/@clack/prompts" ] || [ -d "$REPO_DIR/node_modules/@clack/prompts" ]; then
     DEPENDENCY_STATUS="present"
     return 0
@@ -1314,7 +1332,14 @@ validate_onboarding_json() {
 }
 
 run_onboarding() { # run_onboarding_json
-  local os_dir="$REPO_DIR/packages/os"
+  local os_dir
+  os_dir="$(os_package_dir)" || {
+    if [ "$DRY_RUN" -eq 1 ]; then
+      os_dir="$REPO_DIR"
+    else
+      fail "Consuelo OS runtime package root is missing"
+    fi
+  }
   local os_home="$OS_HOME"
 
 
@@ -1394,7 +1419,8 @@ open_workspace_launcher() {
 }
 
 run_daemon_dry_run() {
-  local os_dir="$REPO_DIR/packages/os"
+  local os_dir
+  os_dir="$(os_package_dir)" || os_dir="$REPO_DIR"
   if [ ! -f "$os_dir/scripts/install-system-daemons.sh" ]; then
     case "$SOURCE_STATUS" in
       would_download|would_refresh)
@@ -1417,7 +1443,8 @@ run_daemon_dry_run() {
 }
 
 install_daemons_quiet() {
-  local os_dir="$REPO_DIR/packages/os"
+  local os_dir
+  os_dir="$(os_package_dir)" || fail "Consuelo OS runtime package root is missing"
   (
     cd "$os_dir"
     CONSUELO_HOME="$OS_HOME" \
@@ -1462,7 +1489,8 @@ maybe_install_daemons() {
   fi
 
   if [ "$DEBUG" = "1" ]; then
-    local os_dir="$REPO_DIR/packages/os"
+    local os_dir
+    os_dir="$(os_package_dir)" || fail "Consuelo OS runtime package root is missing"
     CONSUELO_OS_DEBUG=1 \
       CONSUELO_HOME="$OS_HOME" \
       CONSUELO_DAEMON_HOME="$HOME" \
@@ -1499,10 +1527,9 @@ main() {
   ensure_caddy
   ensure_cloudflared
   persist_runtime_paths
-  resolve_source
+  install_verified_runtime
   ensure_dependencies
   run_onboarding
-  promote_hosted_runtime
   maybe_install_daemons
   print_success_summary
   open_workspace_launcher
