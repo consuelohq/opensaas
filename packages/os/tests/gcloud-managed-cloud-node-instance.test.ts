@@ -24,7 +24,10 @@ type GcloudManagedNodeContract = {
       autoDelete: false;
       snapshotPolicies: string[];
       labels: Record<string, string>;
-    }) => Promise<'created' | 'unchanged'>;
+    }) => Promise<{
+      status: 'created' | 'unchanged';
+      formatAllowed: boolean;
+    }>;
     ensureSnapshotPolicyAttachment: (input: {
       projectId: string;
       zone: string;
@@ -157,7 +160,10 @@ describe('gcloud managed cloud node instance adapter', () => {
       },
     });
 
-    await expect(client.ensureDataDisk(dataDisk)).resolves.toBe('created');
+    await expect(client.ensureDataDisk(dataDisk)).resolves.toEqual({
+      status: 'created',
+      formatAllowed: true,
+    });
     await expect(
       client.ensureSnapshotPolicyAttachment({
         projectId: dataDisk.projectId,
@@ -209,6 +215,30 @@ describe('gcloud managed cloud node instance adapter', () => {
       'consuelo-os-data-daily-90d',
       '--quiet',
     ]);
+  });
+
+  it('allows formatting an exact managed disk that has never been attached or sourced', async () => {
+    const { createGcloudManagedCloudNodeClient } = await loadContract();
+    const client = createGcloudManagedCloudNodeClient({
+      run: async (args) => {
+        if (args.join(' ').includes('compute disks describe')) {
+          return ok(JSON.stringify({
+            name: dataDisk.name,
+            sizeGb: String(dataDisk.sizeGb),
+            type: `projects/fixture/zones/${dataDisk.zone}/diskTypes/${dataDisk.type}`,
+            zone: `projects/fixture/zones/${dataDisk.zone}`,
+            labels,
+            users: [],
+          }));
+        }
+        throw new Error(`unexpected mutation: ${args.join(' ')}`);
+      },
+    });
+
+    await expect(client.ensureDataDisk(dataDisk)).resolves.toEqual({
+      status: 'unchanged',
+      formatAllowed: true,
+    });
   });
 
   it('creates a no-public-IP Shielded VM with retained data disk and startup file', async () => {
@@ -293,6 +323,7 @@ describe('gcloud managed cloud node instance adapter', () => {
               type: `projects/fixture/zones/${dataDisk.zone}/diskTypes/${dataDisk.type}`,
               zone: `projects/fixture/zones/${dataDisk.zone}`,
               labels,
+              lastAttachTimestamp: '2026-07-23T00:00:00.000Z',
               resourcePolicies: [
                 'projects/fixture/regions/us-east1/resourcePolicies/consuelo-os-data-daily-90d',
               ],
@@ -363,7 +394,10 @@ describe('gcloud managed cloud node instance adapter', () => {
       },
     });
 
-    await expect(client.ensureDataDisk(dataDisk)).resolves.toBe('unchanged');
+    await expect(client.ensureDataDisk(dataDisk)).resolves.toEqual({
+      status: 'unchanged',
+      formatAllowed: false,
+    });
     await expect(
       client.ensureSnapshotPolicyAttachment({
         projectId: dataDisk.projectId,

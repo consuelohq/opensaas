@@ -146,9 +146,11 @@ function deploymentIdentity(
   environment: string,
 ): ReleaseDeploymentIdentity {
   const release = sourceRelease(mutation, bundleId);
-  const manifest = Object.values(mutation.state.channels).find(
-    (candidate) => candidate?.payload.bundleId === bundleId,
-  );
+  const manifest = Object.entries(mutation.state.channels).find(
+    ([channel, candidate]) =>
+      environment === `consuelo-os-${channel}` &&
+      candidate?.payload.bundleId === bundleId,
+  )?.[1];
   if (!manifest) {
     throw new Error(
       'release provider cannot resolve signed manifest for ' + bundleId,

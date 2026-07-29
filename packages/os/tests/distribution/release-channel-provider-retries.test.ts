@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  canonicalReleaseJson,
   createEmptyReleaseState,
   planDevPublication,
   type ReleaseMutationResult,
@@ -265,6 +266,47 @@ afterEach(() => {
 });
 
 describe('release provider retry safety', () => {
+  it('binds deployment identity to the manifest for its environment', async () => {
+    const mutation = promotionMutation();
+    const canary = mutation.state.channels.canary!;
+    mutation.state.channels.dev = {
+      payload: {
+        ...structuredClone(canary.payload),
+        channel: 'dev',
+        promotedAt: '2026-07-22T00:00:00.000Z',
+        revision: 1,
+        sourceChannel: null,
+      },
+      signature: {
+        ...structuredClone(canary.signature),
+        signature: 'older-dev-signature',
+        signedAt: '2026-07-22T00:00:00.000Z',
+      },
+    };
+    const remoteState = createEmptyReleaseState();
+    remoteState.revision = 1;
+    const fake = backend({ remoteState });
+    let deploymentIdentity:
+      | Parameters<ReleaseProviderBackend['createDeployment']>[0]
+      | undefined;
+    fake.deploymentExists = async (identity) => {
+      deploymentIdentity = identity;
+      return true;
+    };
+
+    await executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake });
+
+    const expectedManifestDigest = `sha256:${createHash('sha256')
+      .update(canonicalReleaseJson(canary))
+      .digest('hex')}`;
+    expect(deploymentIdentity?.environment).toBe('consuelo-os-canary');
+    expect(deploymentIdentity?.manifestDigest).toBe(expectedManifestDigest);
+  });
+
   it('skips exact immutable provider objects and commits state last', async () => {
     const mutation = publicationMutation();
     const archive = mutation.artifacts![PLATFORM_BUNDLE_ID].archivePath;
