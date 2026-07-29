@@ -17,7 +17,7 @@ import type { RuntimeBundleManifest } from '../distribution/runtime-bundle';
 import { lifecycleError } from './errors';
 import { isPathWithin, resolveLifecyclePaths } from './paths';
 import { createRuntimeDirectoryLink } from './runtime-links';
-import { runtimeReleaseDirectoryName } from './runtime-release-path';
+import { runtimeBundleIdFromDirectoryName } from './runtime-release-path';
 import { verifyInstalledRuntimeRelease } from './state';
 
 type ActivationJournal = {
@@ -32,6 +32,17 @@ type RetentionState = {
   pinnedBundleIds: string[];
   unresolvedContentBaseBundleIds: string[];
 };
+
+function releaseDirectoryMatchesBundleId(
+  directoryName: string,
+  bundleId: string,
+): boolean {
+  try {
+    return runtimeBundleIdFromDirectoryName(directoryName) === bundleId;
+  } catch {
+    return false;
+  }
+}
 
 export type LifecycleReleaseReference = {
   path: string;
@@ -96,9 +107,7 @@ function assertManagedReleasePath(
     );
   }
   const manifest = verifyInstalledRuntimeRelease(resolvedPath);
-  if (
-    runtimeReleaseDirectoryName(manifest.bundleId) !== basename(resolvedPath)
-  ) {
+  if (!releaseDirectoryMatchesBundleId(basename(resolvedPath), manifest.bundleId)) {
     throw lifecycleError(
       'RETENTION_FAILED',
       'runtime release directory does not match its verified bundle identity',
@@ -367,7 +376,7 @@ function listStrictVerifiedReleases(
       );
     }
     const manifest = verifyInstalledRuntimeRelease(releasePath);
-    if (runtimeReleaseDirectoryName(manifest.bundleId) !== entry.name) {
+    if (!releaseDirectoryMatchesBundleId(entry.name, manifest.bundleId)) {
       throw lifecycleError(
         'RETENTION_FAILED',
         `runtime release identity mismatch: ${entry.name}`,

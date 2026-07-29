@@ -108,12 +108,10 @@ describe('OS device authority release contract', () => {
     });
   });
 
-  it('should declare the required server-side Cloudflare secret when Worker config loads', () => {
+  it('should not use unsupported Wrangler secret declaration sections', () => {
     const config = readWorkerConfig();
 
-    expect(config.secrets).toEqual({
-      required: ['CLOUDFLARE_API_TOKEN'],
-    });
+    expect(config).not.toHaveProperty('secrets');
     expect(JSON.stringify(config)).not.toMatch(/CLOUDFLARE_API_TOKEN\s*[:=]\s*[^\]"}]+/);
   });
 
@@ -125,11 +123,13 @@ describe('OS device authority release contract', () => {
 
     expect(REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS).toEqual([
       'CLOUDFLARE_API_TOKEN',
+      'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET',
     ]);
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
       { name: 'GOOGLE_OAUTH_CLIENT_ID', type: 'secret_text' },
       { name: 'GOOGLE_OAUTH_CLIENT_SECRET', type: 'secret_text' },
       { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
     ])).not.toThrow();
   });
 
@@ -194,6 +194,63 @@ describe('OS device authority release contract', () => {
     expect(errors.join('\n')).not.toMatch(/\n\s*at\s|Bun v\d|\.ts:\d+:\d+/);
     expect(commands.some((command) => command.args[0] === 'deploy')).toBe(false);
     expect(commands.some((command) => command.args[0] === 'r2')).toBe(false);
+  });
+
+  it('should materialize and bundle a valid default workspace during dry-run without remote uploads', async () => {
+    const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
+    const commands: ReleaseCommand[] = [];
+    const output: string[] = [];
+    const errors: string[] = [];
+
+    const exitCode = await runDeviceAuthorityReleaseCli(['--dry-run'], {
+      commandRunner(command) {
+        commands.push(command);
+        if (
+          command.command === 'wrangler' &&
+          command.args.join(' ') ===
+            'secret list --name consuelo-os-device-authority --format json'
+        ) {
+          return {
+            status: 0,
+            stdout: JSON.stringify([
+              { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+              { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+            ]),
+            stderr: '',
+          };
+        }
+        if (
+          command.command === 'wrangler' &&
+          command.args[0] === 'deploy' &&
+          command.args.includes('--dry-run')
+        ) {
+          return { status: 0, stdout: '', stderr: '' };
+        }
+        throw new Error(
+          `unexpected release mutation: ${command.command} ${command.args.join(' ')}`,
+        );
+      },
+      writeOut(message = '') {
+        output.push(message);
+      },
+      writeErr(message = '') {
+        errors.push(message);
+      },
+    });
+
+    expect(exitCode).toBe(0);
+    expect(errors).toEqual([]);
+    expect(output.filter((line) => line.startsWith('plannedSnapshot='))).toHaveLength(5);
+    expect(output).toContainEqual(
+      expect.stringMatching(
+        /^defaultSiteSnapshotKey=sites\/workspace_testing\/launcher\/sha256-[a-f0-9]{16}\/index\.html$/,
+      ),
+    );
+    expect(commands.some((command) => command.args[0] === 'r2')).toBe(false);
+    expect(commands.at(-1)).toMatchObject({
+      command: 'wrangler',
+      args: expect.arrayContaining(['deploy', '--dry-run']),
+    });
   });
 
   it('should reject release health when connector provisioning is unavailable', async () => {

@@ -1095,6 +1095,33 @@ bun run mac -- port find --json
 
 ---
 
+### cloud:node — managed cloud-node operator provisioning
+
+Runs the provider-neutral managed cloud-node application service through the GCP adapter. The command has two explicit modes:
+
+- `plan` returns the complete intended foundation without provider mutations.
+- `apply` idempotently ensures the same foundation and fails closed when an existing resource drifts from the approved contract.
+
+```bash
+bun --cwd packages/os run cloud:node -- plan \
+  --project <project-id> \
+  --billing-account <billing-account-id> \
+  --json
+
+bun --cwd packages/os run cloud:node -- apply \
+  --project <project-id> \
+  --billing-account <billing-account-id> \
+  --region us-east1 \
+  --budget-usd 100 \
+  --json
+```
+
+The foundation includes required Google APIs, a custom VPC and subnet, IAP-only SSH ingress, the node service account and minimum logging/monitoring roles, daily and weekly snapshot schedules, and a project-scoped monthly budget. It does not provision a VM or data disk; node creation and recovery use the same application boundary in the next lifecycle stage.
+
+Cloud-admin authority remains separate from public install. Do not call this command from `install.ts`. Use `plan` before every operator `apply`, and treat duplicate names or resource drift as incidents to resolve rather than creating replacement resources.
+
+---
+
 ### lifecycle — unified Consuelo OS install and runtime lifecycle
 
 Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, rollback, retention, channel preferences, update-notification preferences, repair, and uninstall. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`. The previous accepted release is retained at `runtime/previous`; interrupted activation journals restore that known-good release before another mutating operation proceeds.

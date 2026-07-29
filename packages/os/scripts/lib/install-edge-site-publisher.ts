@@ -108,6 +108,9 @@ export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceE
     siteSnapshotKey: rootSnapshot.snapshotKey,
     siteVersionId: version,
     publishedSiteIds: [...new Set(snapshots.map((snapshot) => snapshot.siteId))],
+    siteContentHashes: Object.fromEntries(
+      snapshots.map((snapshot) => [snapshot.siteId, snapshot.contentHash]),
+    ),
   });
   return {
     status: undefined as never,

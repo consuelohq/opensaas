@@ -6,6 +6,7 @@ import {
   readFileSync,
   readlinkSync,
   readdirSync,
+  renameSync,
   rmSync,
   symlinkSync,
   unlinkSync,
@@ -18,6 +19,7 @@ import { mkdtempSync } from 'node:fs';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { buildRuntimeBundle } from '../scripts/lib/distribution/runtime-bundle';
+import { runtimeReleaseDirectoryName } from '../scripts/lib/lifecycle/runtime-release-path';
 import { provisionLocalOs } from '../scripts/lib/install-state';
 import { writeYamlConfig } from '../scripts/lib/consuelo-home';
 import {
@@ -68,6 +70,24 @@ let bundle100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle110: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle190: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle1100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
+
+function runtimeReleaseDirectoryFor(
+  bundle: Awaited<ReturnType<typeof buildRuntimeBundle>>,
+): string {
+  return runtimeReleaseDirectoryName(bundle.manifest.bundleId, 'darwin');
+}
+
+function runtimeReleaseTargetFor(
+  bundle: Awaited<ReturnType<typeof buildRuntimeBundle>>,
+): string {
+  return `releases/${runtimeReleaseDirectoryFor(bundle)}`;
+}
+
+function runtimeReleasePathFor(
+  bundle: Awaited<ReturnType<typeof buildRuntimeBundle>>,
+): string {
+  return join(tempHome, 'runtime', 'releases', runtimeReleaseDirectoryFor(bundle));
+}
 
 beforeAll(async () => {
   const pair = generateKeyPairSync('ed25519');
@@ -255,8 +275,8 @@ describe('unified lifecycle engine', () => {
     expect(engine.onboardingCalls).toBe(1);
     expect(result.operation).toBe('install');
     expect(result.changed).toBe(true);
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
-    expect(existsSync(join(tempHome, 'runtime', 'releases', bundle100.manifest.bundleId, 'scripts', 'os.ts'))).toBe(true);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
+    expect(existsSync(join(runtimeReleasePathFor(bundle100), 'scripts', 'os.ts'))).toBe(true);
     expect(events.map((event) => event.phase)).toEqual([
       'inspect',
       'lock',
@@ -289,9 +309,38 @@ describe('unified lifecycle engine', () => {
     expect(result.version).toBe('1.1.0');
     expect(readFileSync(join(tempHome, 'user-note.txt'), 'utf8')).toBe(noteBefore);
     expect(readFileSync(join(tempHome, 'node', 'node.yaml'), 'utf8')).toBe(nodeBefore);
-    expect(currentTarget()).toBe(`releases/${bundle110.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(readlinkSync(join(tempHome, 'runtime', 'previous')))
-      .toBe(`releases/${bundle100.manifest.bundleId}`);
+      .toBe(runtimeReleaseTargetFor(bundle100));
+  });
+
+  it('updates from a verified legacy POSIX colon-named release without changing bundle identity', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const canonicalReleasePath = runtimeReleasePathFor(bundle100);
+    const legacyReleasePath = join(
+      tempHome,
+      'runtime',
+      'releases',
+      bundle100.manifest.bundleId,
+    );
+    renameSync(canonicalReleasePath, legacyReleasePath);
+    unlinkSync(join(tempHome, 'runtime', 'current'));
+    symlinkSync(
+      `releases/${bundle100.manifest.bundleId}`,
+      join(tempHome, 'runtime', 'current'),
+    );
+
+    const update = createEngine({ bundle: bundle110 });
+    await expect(update.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: true,
+      version: '1.1.0',
+    });
+
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(readlinkSync(join(tempHome, 'runtime', 'previous'))).toBe(
+      `releases/${bundle100.manifest.bundleId}`,
+    );
   });
 
   it('fails closed when a pinned update target no longer matches channel head', async () => {
@@ -318,7 +367,7 @@ describe('unified lifecycle engine', () => {
     ).rejects.toMatchObject({ code: 'MANIFEST_INVALID' });
     expect(bundleFetches).toBe(0);
     expect(update.serviceOperations).toEqual([]);
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
   it('supports check-only updates without downloading, activating, or restarting', async () => {
@@ -343,7 +392,7 @@ describe('unified lifecycle engine', () => {
     });
     expect(bundleFetches).toBe(0);
     expect(check.serviceOperations).toEqual([]);
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
   it('rejects a concurrent update lock without touching current', async () => {
@@ -353,7 +402,7 @@ describe('unified lifecycle engine', () => {
     const update = createEngine({ bundle: bundle110, now: () => new Date('2026-07-23T00:00:10.000Z') });
 
     await expect(update.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'LOCK_HELD' });
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
     await release();
   });
 
@@ -390,7 +439,7 @@ describe('unified lifecycle engine', () => {
     const update = createEngine({ source: sourceFor(bundle110, manifest) });
 
     await expect(update.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'BUNDLE_DIGEST_MISMATCH' });
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
   it('leaves current untouched and no staged archive when download is interrupted', async () => {
@@ -409,7 +458,7 @@ describe('unified lifecycle engine', () => {
     await expect(update.update({ channel: 'dev' })).rejects.toMatchObject({
       code: 'BUNDLE_DOWNLOAD_FAILED',
     });
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
     expect(readdirSync(join(tempHome, 'runtime', 'staging'))).toEqual([]);
   });
 
@@ -441,7 +490,7 @@ describe('unified lifecycle engine', () => {
     const update = createEngine({ bundle: bundle110, stagingFailure: new Error('disk full') });
 
     await expect(update.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'STAGING_FAILED' });
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
   it('restarts only the service adapter and never invokes onboarding', async () => {
@@ -492,19 +541,14 @@ describe('unified lifecycle engine', () => {
     await repair.repair();
 
     expect(readFileSync(join(tempHome, 'user-note.txt'), 'utf8')).toBe('custom user content\n');
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
     expect(repair.onboardingCalls).toBe(0);
   });
 
   it('replaces a corrupt same-id retained release from the verified staged download', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
-    const releasePath = join(
-      tempHome,
-      'runtime',
-      'releases',
-      bundle100.manifest.bundleId,
-    );
+    const releasePath = runtimeReleasePathFor(bundle100);
     writeFileSync(join(releasePath, 'scripts', 'os.ts'), 'corrupt runtime bytes\n');
     expect((await inspectLifecycleInstallState(tempHome)).kind).toBe('corrupt');
 
@@ -512,7 +556,7 @@ describe('unified lifecycle engine', () => {
     await repair.repair();
 
     expect((await inspectLifecycleInstallState(tempHome)).kind).toBe('valid');
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
   it('repairs to the highest retained semantic version instead of lexical order', async () => {
@@ -527,7 +571,7 @@ describe('unified lifecycle engine', () => {
     const result = await repair.repair();
 
     expect(result.version).toBe('1.10.0');
-    expect(currentTarget()).toBe(`releases/${bundle1100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle1100));
   });
 
   it('detects no-install, legacy, partial, corrupt, and valid states', async () => {
@@ -607,7 +651,7 @@ describe('lifecycle transaction hardening regressions', () => {
     });
 
     await expect(engine.install({ channel: 'dev' })).resolves.toMatchObject({ changed: true });
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
   it('acquires the lifecycle lock before running first-install onboarding', async () => {
@@ -701,7 +745,7 @@ describe('lifecycle transaction hardening regressions', () => {
   it('rejects a retained release whose embedded manifest omits deleted payload files', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
-    const releasePath = join(tempHome, 'runtime', 'releases', bundle100.manifest.bundleId);
+    const releasePath = runtimeReleasePathFor(bundle100);
     const manifestPath = join(releasePath, 'runtime-bundle.manifest.json');
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as typeof bundle100.manifest;
     const removed = manifest.files[0];
@@ -718,7 +762,7 @@ describe('lifecycle transaction hardening regressions', () => {
     const update = createEngine({ bundle: bundle110, health: [false, true] });
 
     await expect(update.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'HEALTH_REJECTED' });
-    expect(currentTarget()).toBe(`releases/${bundle100.manifest.bundleId}`);
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
   it('materializes runtime dependencies before activation', async () => {
@@ -739,7 +783,7 @@ describe('lifecycle transaction hardening regressions', () => {
     const engine = createLifecycleEngine(dependencies);
 
     await engine.install({ channel: 'dev' });
-    expect(materializedReleasePath).toBe(join(tempHome, 'runtime', 'releases', bundle100.manifest.bundleId));
+    expect(materializedReleasePath).toBe(runtimeReleasePathFor(bundle100));
     expect(materializedReleasePath).not.toBe('');
   });
 
@@ -880,7 +924,7 @@ describe('lifecycle transaction hardening regressions', () => {
       detail: { repaired: ['dependencies', 'migrations', 'service'] },
     });
     expect(materialized).toEqual([
-      join(tempHome, 'runtime', 'releases', bundle100.manifest.bundleId),
+      runtimeReleasePathFor(bundle100),
     ]);
     expect(repair.serviceOperations).toEqual(['preflight', 'restart', 'health']);
   });

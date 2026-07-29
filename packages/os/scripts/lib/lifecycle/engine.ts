@@ -386,6 +386,33 @@ export function createLifecycleEngine(
         }
 
         if (!updateAvailable && current.kind === 'valid') {
+          if (input.operation === 'install') {
+            yield* tryPromise({
+              try: () => dependencies.service.preflight(),
+              code: 'SERVICE_PREFLIGHT_FAILED',
+              message: 'Consuelo service preflight failed',
+              phase: 'service-preflight',
+            });
+            input.emit('service-restart', { reconcile: true });
+            yield* tryPromise({
+              try: () =>
+                dependencies.service.restart({
+                  operationId,
+                  expectedBundleId: release.bundleId,
+                  waitForCompletion: true,
+                }),
+              code: 'SERVICE_RESTART_FAILED',
+              message: 'failed to reconcile Consuelo services',
+              phase: 'service-restart',
+            });
+            yield* Effect.promise(() =>
+              acceptHealth(
+                input.emit,
+                { operationId, nextReleasePath: current.currentReleasePath },
+                { bundleId: release.bundleId, version: release.version },
+              ),
+            );
+          }
           input.emit('complete', {
             changed: false,
             updateAvailable: false,

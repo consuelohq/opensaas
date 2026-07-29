@@ -22,7 +22,7 @@ const DEFAULT_VERIFY_ATTEMPTS = 12;
 const DEFAULT_VERIFY_DELAY_MS = 5_000;
 const SNAPSHOT_BUCKET = 'consuelo-sites-snapshots';
 const DEFAULT_SNAPSHOT_WORKSPACE_ID = 'workspace_testing';
-const DEFAULT_SNAPSHOT_HOST = 'sites.consuelohq.com';
+const DEFAULT_SNAPSHOT_HOST = 'testing.consuelohq.com';
 const SNAPSHOT_CONTENT_TYPE = 'text/html; charset=utf-8';
 
 type Options = {

@@ -1,21 +1,18 @@
 export function runtimeReleaseDirectoryName(
   bundleId: string,
-  platform: NodeJS.Platform = process.platform,
+  _platform: NodeJS.Platform = process.platform,
 ): string {
   if (!/^sha256:[a-f0-9]{64}$/.test(bundleId)) {
     throw new Error(`invalid runtime bundle id: ${bundleId}`);
   }
-  return platform === 'win32' ? bundleId.replace(':', '-') : bundleId;
+  return bundleId.replace(':', '-');
 }
 
 export function runtimeBundleIdFromDirectoryName(
   directoryName: string,
-  platform: NodeJS.Platform = process.platform,
+  _platform: NodeJS.Platform = process.platform,
 ): string {
-  const bundleId =
-    platform === 'win32'
-      ? directoryName.replace(/^sha256-/, 'sha256:')
-      : directoryName;
+  const bundleId = directoryName.replace(/^sha256-/, 'sha256:');
   if (!/^sha256:[a-f0-9]{64}$/.test(bundleId)) {
     throw new Error(`invalid runtime release directory: ${directoryName}`);
   }

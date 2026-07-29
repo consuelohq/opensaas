@@ -17,9 +17,6 @@ OS_DEVICE_AUTH_BASE_DOMAIN = "consuelohq.com"
 OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME = "workspace-edge.consuelohq.com"
 OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL = "http://127.0.0.1:46321"
 
-[secrets]
-required = ["CLOUDFLARE_API_TOKEN", "WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET"]
-
 [[d1_databases]]
 binding = "WORKSPACE_ROUTE_REGISTRY"
 database_name = "consuelo-workspace-route-registry"

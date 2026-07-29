@@ -59,9 +59,7 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(wrangler).toMatch(/binding\s*=\s*["']SITES_SNAPSHOTS["']/);
     expect(wrangler).toMatch(/bucket_name\s*=\s*["']consuelo-sites-snapshots["']/);
     expect(wrangler).toMatch(/zone_name\s*=\s*["']consuelohq\.com["']/);
-    expect(wrangler).toMatch(
-      /\[secrets\][\s\S]*?required\s*=\s*\[[^\]]*["']WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET["'][^\]]*\]/,
-    );
+    expect(wrangler).not.toMatch(/\[secrets\]/);
     expect(wrangler).not.toMatch(/CONSUELO_EDGE_SIGNING_SECRET\s*=\s*["'][^"']+["']/);
     expect(wrangler).not.toMatch(
       /WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET\s*=\s*["'][^"']+["']/,
@@ -69,12 +67,10 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
     expect(wrangler).not.toMatch(/api[_-]?token\s*=\s*["'][^"']+["']/i);
   });
 
-  it('should require the same internal session-validation secret on device authority', () => {
+  it('should keep Worker secrets out of unsupported Wrangler config sections', () => {
     const wrangler = readRequiredFile(deviceAuthorityWranglerPath);
 
-    expect(wrangler).toMatch(
-      /\[secrets\][\s\S]*?required\s*=\s*\[[^\]]*["']WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET["'][^\]]*\]/,
-    );
+    expect(wrangler).not.toMatch(/\[secrets\]/);
     expect(wrangler).not.toMatch(
       /WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET\s*=\s*["'][^"']+["']/,
     );
@@ -116,7 +112,8 @@ contractDescribe('workspace Cloudflare Worker deployment contract', () => {
 
     expect(requireScript(scripts, 'cloudflare:workspace-edge:dev')).toMatch(/wrangler\s+dev/);
     expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy:dry-run')).toMatch(/wrangler\s+deploy.*--dry-run/);
-    expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy')).toMatch(/wrangler\s+deploy/);
+    expect(requireScript(scripts, 'cloudflare:workspace-edge:deploy')).toMatch(/deploy-cloudflare-worker\.ts\s+workspace-edge/);
+    expect(requireScript(scripts, 'cloudflare:device-authority:deploy')).toMatch(/deploy-cloudflare-worker\.ts\s+os-device-authority/);
     expect(requireScript(scripts, 'cloudflare:workspace-edge:migrate')).toMatch(/wrangler\s+d1\s+migrations\s+apply/);
     expect(requireScript(scripts, 'cloudflare:workspace-edge:seed')).toMatch(/scripts\/seed-workspace-edge-route\.ts/);
     expect(requireScript(scripts, 'smoke:workspace-edge')).toMatch(/scripts\/smoke-workspace-edge\.ts/);

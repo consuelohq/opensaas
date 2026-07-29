@@ -25,7 +25,6 @@ import {
   baseDomainFromHost,
   connectorIdFromNodeId,
   host,
-  workspaceIdFromSlug,
 } from '../utils';
 import { grantWorkspace } from './grants';
 
@@ -118,7 +117,7 @@ export async function registerApprovedWorkspaceRoute(input: {
       throw new Error('workspace connector provisioning is not configured');
     }
     const workspace = grantWorkspace(input.grant);
-    const workspaceId = workspaceIdFromSlug(workspace.workspaceSlug);
+    const workspaceId = workspace.workspaceId;
     const nodeId = input.grant.nodeId ?? workspace.workspaceSlug;
     const connectorId = connectorIdFromNodeId(nodeId);
     const connector = await input.workspaceConnectorProvisioner({

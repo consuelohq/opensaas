@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -18,6 +18,7 @@ export type WorkspaceCloudflareEdgeRouteTarget =
       versionId: string;
       manifestKey: string;
       htmlKey?: string;
+      contentHash?: string;
       contentType?: string;
       cachePolicy:
         | 'static-shell'
@@ -274,6 +275,32 @@ const createSafeErrorResponse = (input: {
     },
   );
 };
+
+const createMcpNodeUnavailableResponse = (): Response => Response.json(
+  {
+    jsonrpc: '2.0',
+    id: null,
+    error: {
+      code: -32001,
+      message: 'Consuelo is restarting. Retry shortly.',
+      data: {
+        code: 'CONSUELO_NODE_UNAVAILABLE',
+        retryable: true,
+        retry_after_seconds: 2,
+      },
+    },
+  },
+  {
+    status: 503,
+    headers: {
+      'cache-control': 'no-store',
+      'retry-after': '2',
+      'x-content-type-options': 'nosniff',
+      'x-consuelo-error-code': 'CONSUELO_NODE_UNAVAILABLE',
+    },
+  },
+);
+
 const buildUpstreamUrl = (input: {
   upstreamBaseUrl: string;
   inboundUrl: URL;
@@ -501,17 +528,18 @@ const readSiteSnapshotHtml = async (input: {
 const createSiteSnapshotResponse = (input: {
   html: string;
   target: Extract<WorkspaceCloudflareEdgeRouteTarget, { kind: 'site-snapshot' }>;
-}): Response =>
-  new Response(input.html, {
-    status: 200,
-    headers: {
-      'cache-control': siteSnapshotCacheControl(input.target.cachePolicy),
-      'content-type': input.target.contentType ?? 'text/html; charset=utf-8',
-      'x-consuelo-edge-cache-authority': SITE_SNAPSHOT_CACHE_AUTHORITY,
-      'x-consuelo-site-content-hash': createHash('sha256').update(input.html).digest('hex'),
-      'x-consuelo-site-version': input.target.versionId,
-    },
+}): Response => {
+  const headers = new Headers({
+    'cache-control': siteSnapshotCacheControl(input.target.cachePolicy),
+    'content-type': input.target.contentType ?? 'text/html; charset=utf-8',
+    'x-consuelo-edge-cache-authority': SITE_SNAPSHOT_CACHE_AUTHORITY,
+    'x-consuelo-site-version': input.target.versionId,
   });
+  if (input.target.contentHash) {
+    headers.set('x-consuelo-site-content-hash', input.target.contentHash);
+  }
+  return new Response(input.html, { status: 200, headers });
+};
 
 const createConsueloGatewayServiceResponse = (input: {
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
@@ -897,6 +925,10 @@ export const createWorkspaceCloudflareEdgeRouter = (
 
         return await fetchUpstream(proxyRequest);
       } catch (error: unknown) {
+        const requestUrl = new URL(request.url);
+        if (request.method === 'POST' && requestUrl.pathname === '/mcp') {
+          return createMcpNodeUnavailableResponse();
+        }
         return createSafeErrorResponse({
           status: 503,
           code: 'WORKSPACE_EDGE_ROUTER_ERROR',

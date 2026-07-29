@@ -33,6 +33,13 @@ const isWorkspaceNode = (value: unknown): value is WorkspaceNode =>
   typeof (value as { nodeId?: unknown }).nodeId === 'string' &&
   typeof (value as { workspaceHost?: unknown }).workspaceHost === 'string';
 
+export const WORKSPACE_NODE_NONCE_LIMIT = 256;
+
+type WorkspaceNodeNonceClaim = {
+  nonce: string;
+  expiresAt: number;
+};
+
 export class DurableStore implements Store {
   constructor(private storage: StorageLike) {}
 
@@ -382,6 +389,81 @@ export class DurableStore implements Store {
       throw new Error('workspace node write failed');
     }
   }
+  async delWorkspaceNode(accountId: string, nodeId: string) {
+    const remove = async (storage: StorageLike) => {
+      const boundAccountId = await storage.get<string>(`wni:${nodeId}`);
+      if (boundAccountId && boundAccountId !== accountId) {
+        throw new Error('workspace node ID is bound to another account');
+      }
+      const nodeIds =
+        (await storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+      await storage.delete(`wn:${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) {
+        await storage.delete(`wni:${nodeId}`);
+      }
+      await storage.put(
+        `wnl:${accountId}`,
+        nodeIds.filter((candidate) => candidate !== nodeId),
+      );
+    };
+    try {
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => remove(transaction));
+      } else {
+        await remove(this.storage);
+      }
+    } catch {
+      throw new Error('workspace node delete failed');
+    }
+  }
+  async delWorkspaceNodeIfMatch(input: {
+    accountId: string;
+    nodeId: string;
+    updatedAt: number;
+    devicePublicKeyThumbprint: string;
+  }): Promise<boolean> {
+    try {
+      let deleted = false;
+      const remove = async (storage: StorageLike) => {
+        try {
+          const node = await storage.get<WorkspaceNode>(
+          `wn:${input.accountId}:${input.nodeId}`,
+        );
+        if (
+          !node ||
+          node.updatedAt !== input.updatedAt ||
+          node.devicePublicKeyThumbprint !== input.devicePublicKeyThumbprint
+        ) return;
+        const nodeIds =
+          (await storage.get<string[]>(`wnl:${input.accountId}`)) ?? [];
+        const hostNodeIds =
+          (await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [];
+        await storage.delete(`wn:${input.accountId}:${input.nodeId}`);
+        await storage.delete(`wni:${input.nodeId}`);
+        await storage.put(
+          `wnl:${input.accountId}`,
+          nodeIds.filter((candidate) => candidate !== input.nodeId),
+        );
+        await storage.put(
+          `wnh:${node.workspaceHost}`,
+          hostNodeIds.filter((candidate) => candidate !== input.nodeId),
+        );
+          deleted = true;
+        } catch {
+          throw new Error('workspace node conditional delete failed');
+        }
+      };
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => remove(transaction));
+      } else {
+        await remove(this.storage);
+      }
+      return deleted;
+    } catch {
+      throw new Error('workspace node conditional delete failed');
+    }
+  }
+
   async byWorkspaceNode(accountId: string, nodeId: string) {
     try {
       const node = await this.storage.get<WorkspaceNode>(
@@ -457,7 +539,20 @@ export class DurableStore implements Store {
       const key = `wnn:${nodeId}:${nonce}`;
       const existing = await storage.get<number>(key);
       if (existing && existing > nowMs) return false;
+      const indexKey = `wnnl:${nodeId}`;
+      const indexed =
+        (await storage.get<WorkspaceNodeNonceClaim[]>(indexKey)) ?? [];
+      const active: WorkspaceNodeNonceClaim[] = [];
+      for (const entry of indexed) {
+        if (entry.expiresAt <= nowMs) {
+          await storage.delete(`wnn:${nodeId}:${entry.nonce}`);
+        } else if (entry.nonce !== nonce) {
+          active.push(entry);
+        }
+      }
+      if (active.length >= WORKSPACE_NODE_NONCE_LIMIT) return false;
       await storage.put(key, expiresAt);
+      await storage.put(indexKey, [...active, { nonce, expiresAt }]);
       return true;
     };
     try {
@@ -710,6 +805,32 @@ export function createMemoryDeviceGrantStore(): Store {
       );
       return Promise.resolve();
     },
+    delWorkspaceNode(accountId, nodeId) {
+      const boundAccountId = workspaceNodeAccounts.get(nodeId);
+      if (boundAccountId && boundAccountId !== accountId) {
+        return Promise.reject(
+          new Error('workspace node ID is bound to another account'),
+        );
+      }
+      workspaceNodes.delete(`${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) workspaceNodeAccounts.delete(nodeId);
+      return Promise.resolve();
+    },
+    delWorkspaceNodeIfMatch(input) {
+      const key = `${input.accountId}:${input.nodeId}`;
+      const node = workspaceNodes.get(key);
+      if (
+        !node ||
+        node.updatedAt !== input.updatedAt ||
+        node.devicePublicKeyThumbprint !== input.devicePublicKeyThumbprint
+      ) return Promise.resolve(false);
+      workspaceNodes.delete(key);
+      if (workspaceNodeAccounts.get(input.nodeId) === input.accountId) {
+        workspaceNodeAccounts.delete(input.nodeId);
+      }
+      return Promise.resolve(true);
+    },
+
     byWorkspaceNode(accountId, nodeId) {
       const node = workspaceNodes.get(`${accountId}:${nodeId}`);
       return Promise.resolve(node ? cloneWorkspaceNode(node) : undefined);
@@ -739,6 +860,15 @@ export function createMemoryDeviceGrantStore(): Store {
       const key = `${nodeId}:${nonce}`;
       const existing = workspaceNodeNonces.get(key);
       if (existing && existing > nowMs) return Promise.resolve(false);
+      for (const [storedKey, storedExpiry] of workspaceNodeNonces) {
+        if (storedExpiry <= nowMs) workspaceNodeNonces.delete(storedKey);
+      }
+      const nodePrefix = `${nodeId}:`;
+      const activeClaims = [...workspaceNodeNonces.keys()]
+        .filter((storedKey) => storedKey.startsWith(nodePrefix)).length;
+      if (activeClaims >= WORKSPACE_NODE_NONCE_LIMIT) {
+        return Promise.resolve(false);
+      }
       workspaceNodeNonces.set(key, expiresAt);
       return Promise.resolve(true);
     },

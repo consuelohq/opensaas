@@ -150,6 +150,9 @@ contractDescribe('install edge site publisher', () => {
     expect(first.routeSql).toContain('\"pathPrefix\":\"/secrets\"');
     expect(first.routeSql).toContain('\"location\":\"/configuration\"');
     expect(first.routeSql).toMatch(/static-shell/);
+    for (const snapshot of first.snapshots) {
+      expect(first.routeSql).toContain(snapshot.contentHash);
+    }
   });
 
   it('uploads R2, upserts D1, warms the edge route, and returns install-safe metadata', async () => {

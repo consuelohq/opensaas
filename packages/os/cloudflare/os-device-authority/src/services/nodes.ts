@@ -23,10 +23,11 @@ export function workspaceNodePresence(
   ttlMs = WORKSPACE_NODE_HEARTBEAT_TTL_MS,
 ): WorkspaceNodePresence {
   if ((node.state ?? 'active') === 'revoked') return 'offline';
+  if (node.connectorStatus === 'disconnected') return 'offline';
   const lastSeenAt = node.lastSeenAt;
   if (lastSeenAt === undefined) return 'offline';
   const ageMs = Math.max(0, nowMs - lastSeenAt);
-  if (ageMs <= ttlMs && (node.connectorStatus ?? 'connected') === 'connected') {
+  if (ageMs <= ttlMs) {
     return 'online';
   }
   if (ageMs <= ttlMs * WORKSPACE_NODE_HEARTBEAT_STALE_MULTIPLIER) {

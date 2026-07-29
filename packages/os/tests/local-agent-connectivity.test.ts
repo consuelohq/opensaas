@@ -1,5 +1,6 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -16,6 +17,7 @@ import {
 
 let osHome: string;
 let userHome: string;
+const daemonProcesses: ChildProcess[] = [];
 
 beforeEach(() => {
   osHome = mkdtempSync(join(tmpdir(), 'consuelo-agent-os-'));
@@ -23,6 +25,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  for (const daemon of daemonProcesses.splice(0)) daemon.kill('SIGTERM');
   rmSync(osHome, { recursive: true, force: true });
   rmSync(userHome, { recursive: true, force: true });
 });
@@ -34,6 +37,63 @@ function writeJson(path: string, value: unknown): void {
 
 function readJson(path: string): Record<string, unknown> {
   return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
+}
+
+async function getFreeTcpPort(): Promise<number> {
+  const server = createServer();
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('failed to reserve a test port');
+  const port = address.port;
+  await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  return port;
+}
+
+async function provisionAgentAndStartDaemon(agentName: AgentName): Promise<void> {
+  const port = await getFreeTcpPort();
+  execFileSync('bun', ['-e', `
+    const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+    provisionLocalOs({
+      home: process.env.CONSUELO_HOME,
+      mode: 'local',
+      port: Number(process.env.CONSUELO_TEST_PORT),
+      connectAgents: [process.env.CONSUELO_TEST_AGENT],
+    });
+  `], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      CONSUELO_HOME: osHome,
+      CONSUELO_TEST_AGENT: agentName,
+      CONSUELO_TEST_PORT: String(port),
+      HOME: userHome,
+    },
+    encoding: 'utf8',
+  });
+  const daemon = spawn('bun', ['scripts/server/main.ts'], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      CONSUELO_HOME: osHome,
+      CONSUELO_OS_PORT: String(port),
+      HOME: userHome,
+    },
+    stdio: 'ignore',
+  });
+  daemonProcesses.push(daemon);
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/health`);
+      if (response.ok) return;
+    } catch {
+      // The daemon is still starting.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error('Consuelo test daemon did not become healthy');
 }
 
 const supportedAgents: AgentName[] = [
@@ -100,19 +160,19 @@ describe('local agent connectivity', () => {
 
     const codexConfig = readFileSync(configPaths.codex, 'utf8');
     expect(codexConfig).toContain('model = "gpt-5"');
-    expect(codexConfig).toContain('[mcp_servers."consuelo-os"]');
+    expect(codexConfig).toContain('[mcp_servers."consuelo"]');
     expect(codexConfig).toContain(`command = ${JSON.stringify(commandPath)}`);
-    expect(codexConfig.match(/BEGIN CONSUELO OS MCP/g)).toHaveLength(1);
+    expect(codexConfig.match(/BEGIN CONSUELO MCP/g)).toHaveLength(1);
 
     const cursor = readJson(configPaths.cursor);
     expect(cursor.theme).toBe('dark');
     expect(cursor.mcpServers).toMatchObject({
       existing: { command: 'existing' },
-      'consuelo-os': {
+      consuelo: {
         type: 'stdio',
         command: commandPath,
         args: [],
-        env: { CONSUELO_HOME: osHome },
+        env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: 'cursor' },
       },
     });
 
@@ -120,10 +180,10 @@ describe('local agent connectivity', () => {
     expect(claude.hasCompletedOnboarding).toBe(true);
     expect(claude.mcpServers).toMatchObject({
       existing: { command: 'existing' },
-      'consuelo-os': {
+      consuelo: {
         command: commandPath,
         args: [],
-        env: { CONSUELO_HOME: osHome },
+        env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: 'claude' },
       },
     });
 
@@ -131,12 +191,12 @@ describe('local agent connectivity', () => {
     expect(opencode.theme).toBe('system');
     expect(opencode.mcp).toMatchObject({
       existing: { type: 'local', command: ['existing'] },
-      'consuelo-os': {
+      consuelo: {
         type: 'local',
         command: [commandPath],
         cwd: osHome,
         enabled: true,
-        environment: { CONSUELO_HOME: osHome },
+        environment: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: 'opencode' },
       },
     });
 
@@ -144,10 +204,10 @@ describe('local agent connectivity', () => {
       const config = readJson(configPaths[name]);
       expect(config.mcpServers).toMatchObject({
         existing: { command: 'existing' },
-        'consuelo-os': {
+        consuelo: {
           command: commandPath,
           args: [],
-          env: { CONSUELO_HOME: osHome },
+          env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: name },
         },
       });
     }
@@ -232,17 +292,8 @@ describe('local agent connectivity', () => {
   });
 
   it('persists verified only after the installed stdio command completes an MCP handshake', async () => {
-    execFileSync('bun', ['-e', `
-      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
-      provisionLocalOs({ home: process.env.CONSUELO_HOME, mode: 'local' });
-    `], {
-      cwd: process.cwd(),
-      env: { ...process.env, CONSUELO_HOME: osHome, HOME: userHome },
-      encoding: 'utf8',
-    });
     mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
-
-    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+    await provisionAgentAndStartDaemon('opencode');
     const before = detectLocalAgents({ home: osHome, userHome }).find((agent) => agent.name === 'opencode');
     expect(before).toMatchObject({ status: 'configured' });
 
@@ -281,7 +332,11 @@ describe('local agent connectivity', () => {
       process.stdout.write(JSON.stringify({
         health: getCapabilityHealth(home),
         launcher: fs.readFileSync(path.join(home, 'sites', 'index.html'), 'utf8'),
-        settings: fs.readFileSync(path.join(home, 'sites', 'settings', 'index.html'), 'utf8'),
+        configuration: fs.readFileSync(path.join(home, 'sites', 'configuration', 'index.html'), 'utf8'),
+        configurationSnapshot: JSON.parse(fs.readFileSync(
+          path.join(home, 'sites', '.data', 'configuration', 'snapshot.json'),
+          'utf8',
+        )),
         legacyDbExists: fs.existsSync(path.join(home, 'consuelo.db')),
       }));
     `], {
@@ -291,7 +346,10 @@ describe('local agent connectivity', () => {
     })) as {
       health: Array<{ id: string; status: string; details?: unknown }>;
       launcher: string;
-      settings: string;
+      configuration: string;
+      configurationSnapshot: {
+        localAgents: Array<{ name: string; status: string }>;
+      };
       legacyDbExists: boolean;
     };
 
@@ -300,25 +358,62 @@ describe('local agent connectivity', () => {
       status: 'connected',
       details: ['opencode'],
     });
-    expect(integration.launcher).toContain('Connected to 1 local agent');
-    expect(integration.launcher).toContain('OpenCode');
-    expect(integration.settings).toContain('status-connected">verified</span>');
-    expect(integration.settings).toContain('OpenCode MCP connection is verified.');
+    expect(integration.launcher).toContain("agentStatusUrl.searchParams.set('workspace_host'");
+    expect(integration.launcher).toContain("countElement.textContent = 'Connected to ' + count");
+    expect(integration.launcher).toContain('item.textContent = agent.label');
+    expect(integration.configuration).toContain('<title>Configuration');
+    expect(integration.configurationSnapshot.localAgents).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'opencode', status: 'verified' })]),
+    );
     expect(integration.legacyDbExists).toBe(false);
   });
 
-  it('requires re-verification after a selected client is reconfigured', async () => {
-    execFileSync('bun', ['-e', `
-      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
-      provisionLocalOs({ home: process.env.CONSUELO_HOME, mode: 'local' });
-    `], {
-      cwd: process.cwd(),
-      env: { ...process.env, CONSUELO_HOME: osHome, HOME: userHome },
-      encoding: 'utf8',
-    });
+  it('persists verification outcomes independently for each configured agent', async () => {
     mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    mkdirSync(join(userHome, '.cursor'), { recursive: true });
+    await provisionAgentAndStartDaemon('opencode');
+    configureLocalAgents({ home: osHome, userHome, agentNames: ['cursor'] });
 
-    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+    const credentialPath = join(
+      osHome,
+      'node',
+      'security',
+      'generated',
+      'local-agent-mcp.json',
+    );
+    const credentials = readJson(credentialPath);
+    const agents = credentials.agents as Record<string, unknown>;
+    agents.cursor = {
+      tokenId: 'invalid-cursor-token',
+      bearerToken: 'invalid-cursor-secret',
+    };
+    writeJson(credentialPath, credentials);
+
+    const verification = await verifyLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['cursor', 'opencode'],
+      timeoutMs: 10_000,
+    });
+
+    expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
+      status: 'verified',
+    });
+    expect(verification.agents.find((agent) => agent.name === 'cursor')).toMatchObject({
+      status: 'failed',
+      error: expect.objectContaining({ code: 'MCP_HANDSHAKE_FAILED' }),
+    });
+
+    const persisted = readJson(join(osHome, 'config.json'));
+    expect(persisted.agents).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'opencode', status: 'verified' }),
+      expect.objectContaining({ name: 'cursor', status: 'failed' }),
+    ]));
+  });
+
+  it('requires re-verification after a selected client is reconfigured', async () => {
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    await provisionAgentAndStartDaemon('opencode');
     await verifyLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
     expect(detectLocalAgents({ home: osHome, userHome }).find((agent) => agent.name === 'opencode')).toMatchObject({
       status: 'verified',

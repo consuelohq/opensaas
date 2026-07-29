@@ -110,16 +110,40 @@ export async function resolveHeartbeatConnectorStatus(input: {
   }
 }
 
+export async function sendWorkspaceNodeHeartbeatFromConfig(
+  configPath: string,
+  input: {
+    fetchImpl?: typeof fetch;
+    detectAgents?: (input: { home: string }) => LocalAgentDetection[];
+  } = {},
+) {
+  try {
+    const config = readConfig(configPath);
+    const agents = verifiedHeartbeatAgentNames({
+      configPath,
+      config,
+      detectAgents: input.detectAgents,
+    });
+    const connectorStatus = await resolveHeartbeatConnectorStatus({
+      config,
+      fetchImpl: input.fetchImpl,
+    });
+    const client = createWorkspaceNodeHeartbeatClient({
+      config: { ...config, connectorStatus },
+      agents,
+      fetchImpl: input.fetchImpl,
+    });
+    return await client.send();
+  } catch (error: unknown) {
+    if (error instanceof Error) throw error;
+    throw new Error('workspace node heartbeat failed');
+  }
+}
+
 async function main(): Promise<void> {
-  const configPath = parseConfigPath(process.argv.slice(2));
-  const config = readConfig(configPath);
-  const agents = verifiedHeartbeatAgentNames({ configPath, config });
-  const connectorStatus = await resolveHeartbeatConnectorStatus({ config });
-  const client = createWorkspaceNodeHeartbeatClient({
-    config: { ...config, connectorStatus },
-    agents,
-  });
-  const result = await client.send();
+  const result = await sendWorkspaceNodeHeartbeatFromConfig(
+    parseConfigPath(process.argv.slice(2)),
+  );
   process.stdout.write(
     `${JSON.stringify({ nodeId: result.nodeId, presence: result.presence })}\n`,
   );

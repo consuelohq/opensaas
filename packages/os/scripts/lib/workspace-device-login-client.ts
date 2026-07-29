@@ -40,6 +40,7 @@ export type DeviceAccessTokenPollResult =
 export type RequestWorkspaceDeviceCodeInput = {
   clientId: string;
   scope: string[];
+  workspaceId?: string;
   workspaceName?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
@@ -226,6 +227,7 @@ export async function requestWorkspaceDeviceCode(
     device_public_key_jwk: deviceKeyPair.publicKeyJwk,
     device_key_algorithm: deviceKeyPair.algorithm,
   });
+  if (input.workspaceId) body.set('workspace_id', input.workspaceId);
   if (input.workspaceName) body.set('workspace_name', input.workspaceName);
   if (input.workspaceSlug) body.set('workspace_slug', input.workspaceSlug);
   if (input.workspaceHost) body.set('workspace_host', input.workspaceHost);

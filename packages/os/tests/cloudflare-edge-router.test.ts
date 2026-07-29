@@ -22,6 +22,7 @@ type WorkspaceCloudflareEdgeRouteTarget =
       versionId: string;
       manifestKey: string;
       htmlKey?: string;
+      contentHash?: string;
       contentType?: string;
       cachePolicy: 'static-shell' | 'versioned-asset' | 'mutable-artifact' | 'private-preview';
     };
@@ -756,6 +757,64 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(await upstreamRequests[0].text()).toBe('{"tool":"list"}');
   });
 
+  it('should return retryable JSON-RPC when the local MCP node is restarting', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve() {
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: 'kokayi.consuelohq.com',
+            route: '/mcp',
+            surface: 'os',
+            auth: 'required',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'os-connector',
+              connectorId: 'connector_123',
+              connectorStatus: 'connected',
+              tunnelOriginUrl: 'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
+            },
+          };
+        },
+      },
+      internalSigningSecret: 'edge-test-secret',
+      fetchUpstream: async () => {
+        throw new Error('origin restart');
+      },
+    });
+
+    const response = await router.fetch(new Request('https://kokayi.consuelohq.com/mcp', {
+      body: JSON.stringify({ jsonrpc: '2.0', id: 7, method: 'tools/list' }),
+      headers: { 'content-type': 'application/json' },
+      method: 'POST',
+    }));
+    const body = await response.json() as {
+      jsonrpc: string;
+      id: null;
+      error: { code: number; data: { code: string; retryable: boolean } };
+    };
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get('retry-after')).toBe('2');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(body).toEqual({
+      jsonrpc: '2.0',
+      id: null,
+      error: {
+        code: -32001,
+        message: 'Consuelo is restarting. Retry shortly.',
+        data: {
+          code: 'CONSUELO_NODE_UNAVAILABLE',
+          retryable: true,
+          retry_after_seconds: 2,
+        },
+      },
+    });
+  });
+
   it('should fail closed when an OS connector route is offline', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
@@ -1081,6 +1140,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
             siteId: 'launcher',
             versionId: 'version_1',
             manifestKey: 'sites/workspace_123/launcher/version_1/index.html',
+            contentHash: createHash('sha256').update(snapshotHtml).digest('hex'),
             contentType: 'text/html; charset=utf-8',
             cachePolicy: 'static-shell',
           },
