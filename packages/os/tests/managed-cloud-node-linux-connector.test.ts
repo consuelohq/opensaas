@@ -22,9 +22,11 @@ describe('managed cloud node Linux connector materialization', () => {
   it('materializes a durable cloudflared user service without embedding the token', async () => {
     const { provisionLocalOs } = await loadContract();
     const home = fs.mkdtempSync(join(os.tmpdir(), 'consuelo-cloud-connector-'));
+    const userHome = fs.mkdtempSync(join(os.tmpdir(), 'consuelo-cloud-user-'));
 
     const result = provisionLocalOs({
       home,
+      userHome,
       mode: 'cloud',
       platform: 'linux',
       workspaceBootstrap: {
@@ -50,7 +52,7 @@ describe('managed cloud node Linux connector materialization', () => {
     const generatedDir = join(home, 'node', 'security', 'generated');
     const tokenPath = join(generatedDir, 'cloudflared-tunnel.token');
     const servicePath = join(
-      home,
+      userHome,
       '.config',
       'systemd',
       'user',

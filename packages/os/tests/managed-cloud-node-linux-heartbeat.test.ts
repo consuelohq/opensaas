@@ -22,9 +22,11 @@ describe('managed cloud node Linux heartbeat materialization', () => {
   it('materializes a websocket-relay heartbeat config and durable systemd timer', async () => {
     const { provisionLocalOs } = await loadContract();
     const home = fs.mkdtempSync(join(os.tmpdir(), 'consuelo-cloud-heartbeat-'));
+    const userHome = fs.mkdtempSync(join(os.tmpdir(), 'consuelo-cloud-user-'));
 
     const result = provisionLocalOs({
       home,
+      userHome,
       mode: 'cloud',
       platform: 'linux',
       workspaceBootstrap: {
@@ -53,7 +55,7 @@ describe('managed cloud node Linux heartbeat materialization', () => {
       'generated',
       'workspace-node-heartbeat.json',
     );
-    const systemdDir = join(home, '.config', 'systemd', 'user');
+    const systemdDir = join(userHome, '.config', 'systemd', 'user');
     const servicePath = join(systemdDir, 'consuelo-node-heartbeat.service');
     const timerPath = join(systemdDir, 'consuelo-node-heartbeat.timer');
     const heartbeatConfig = JSON.parse(

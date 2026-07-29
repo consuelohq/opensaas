@@ -157,6 +157,9 @@ describe('local agent connectivity', () => {
     );
     expect(existsSync(commandPath)).toBe(true);
     expect(statSync(commandPath).mode & 0o111).not.toBe(0);
+    const commandSource = readFileSync(commandPath, 'utf8');
+    expect(commandSource).toContain('$OS_HOME/runtime/current/scripts/mcp-stdio.ts');
+    expect(commandSource).not.toContain('$OS_HOME/runtime/current/packages/os/scripts/mcp-stdio.ts');
 
     const codexConfig = readFileSync(configPaths.codex, 'utf8');
     expect(codexConfig).toContain('model = "gpt-5"');
