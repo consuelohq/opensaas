@@ -637,7 +637,11 @@ function assertBundles(input: DevPublicationInput): void {
   }
 }
 
-function assertPublicationConsensus(state: ReleaseState, input: DevPublicationInput): void {
+function assertPublicationConsensus(
+  state: ReleaseState,
+  input: DevPublicationInput,
+  immutableTags: string[],
+): void {
   parseSemver(input.approvedVersion, 'approved release version');
   assertSha256(input.bundleId, 'release-set bundle ID');
   assertSha256(input.releaseFingerprint, 'release fingerprint');
@@ -673,7 +677,10 @@ function assertPublicationConsensus(state: ReleaseState, input: DevPublicationIn
     throw new Error('source and release fingerprint already allocated a different version');
   }
 
-  const currentTags = Object.keys(state.tags);
+  const currentTags = [...new Set([
+    ...Object.keys(state.tags),
+    ...immutableTags,
+  ])];
   const expectedVersion = calculateNextReleaseVersion({
     immutableTags: currentTags,
     intent: input.releaseIntent,
@@ -702,6 +709,7 @@ export function publishDevRelease(
   state: ReleaseState,
   input: DevPublicationInput,
   options: {
+    immutableTags?: string[];
     now: string;
     signer: ChannelSigner;
   },
@@ -735,7 +743,7 @@ export function publishDevRelease(
       throw new Error('channel schema version changes require an explicit format migration decision');
     }
   }
-  assertPublicationConsensus(state, input);
+  assertPublicationConsensus(state, input, options.immutableTags ?? []);
 
   const next = cloneState(state);
   next.revision += 1;

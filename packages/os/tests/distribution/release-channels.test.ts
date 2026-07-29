@@ -126,6 +126,7 @@ function publish(
     sourceCommit?: string;
     now?: string;
     bundles?: PlatformBundlePublication[];
+    immutableTags?: string[];
   } = {},
 ) {
   const version = options.version ?? '1.2.3';
@@ -160,6 +161,7 @@ function publish(
     sourceCommit,
   } as const;
   const result = publishDevRelease(state, input, {
+    immutableTags: options.immutableTags ?? [],
     now: options.now ?? NOW,
     signer: channelSigner,
   });
@@ -230,6 +232,27 @@ describe('Consuelo OS release channels', () => {
     expect(retry.changed).toBe(false);
     expect(retry.idempotent).toBe(true);
     expect(retry.state).toEqual(first.state);
+  });
+
+  it('should honor remote immutable tags when provider writes outpace release state', () => {
+    const state = publish(createEmptyReleaseState(), { version: '0.1.7' }).state;
+    const next = {
+      releaseFingerprint: `sha256:${'7'.repeat(64)}`,
+      sourceCommit: 'partial-provider-recovery-commit',
+      version: '0.1.9',
+    };
+
+    expect(() => publish(state, next)).toThrow('approved release version must be 0.1.8');
+    expect(() => publish(state, {
+      ...next,
+      immutableTags: ['consuelo-os-v0.1.8', 'consuelo-os-v0.1.9'],
+    })).toThrow('approved release version must be 0.1.10');
+    const result = publish(state, {
+      ...next,
+      immutableTags: ['consuelo-os-v0.1.8'],
+    });
+
+    expect(result.state.tags['consuelo-os-v0.1.9']).toBe(result.input.bundleId);
   });
 
   it('keeps ephemeral archive paths out of durable release state', () => {
