@@ -84,6 +84,7 @@ export type ManagedComponentLocal = {
   kind: ManagedComponentKind;
   localPath: string;
   content: ComponentTree;
+  obstruction?: 'file' | 'symlink' | 'other';
 };
 
 export type ManagedComponentPlanItem = {
@@ -515,6 +516,33 @@ export function buildManagedComponentUpdateState(
       continue;
     }
 
+    if (local?.obstruction && record.ownership === 'bundled-managed') {
+      const localRef = putContent(content, local.content);
+      const upstreamRef = upstream
+        ? putContent(content, upstream.content)
+        : undefined;
+      items.push(basePlanItem({
+        id: record.id,
+        kind: record.kind,
+        ownership: 'bundled-managed',
+        action: upstream ? 'conflict' : 'remove-upstream',
+        sourceBundle: input.sourceBundle,
+        sourcePath: upstream?.sourcePath ?? record.sourcePath,
+        localPath: local.localPath,
+        baseHash: record.baseHash,
+        baseContentRef: record.baseContentRef,
+        localHash: localRef,
+        localContentRef: localRef,
+        upstreamHash: upstreamRef,
+        upstreamContentRef: upstreamRef,
+        requiresReview: true,
+        resolutionState: upstream
+          ? 'conflict'
+          : 'upstream-removed-local-preserved',
+      }));
+      continue;
+    }
+
     if (record.ownership === 'detached') {
       items.push(basePlanItem({
         id: record.id,
@@ -874,43 +902,50 @@ export function snapshotManagedComponentLocalOverrides(
     id: string;
     kind: ManagedComponentKind;
     localPath: string;
+    obstruction?: ManagedComponentLocal['obstruction'];
   }>();
+  const addCandidate = (
+    id: string,
+    kind: ManagedComponentKind,
+    localPath: string,
+  ): void => {
+    const target = resolveInside(userRoot, localPath);
+    if (!pathExists(target)) return;
+    const stats = lstatSync(target);
+    const obstruction = stats.isSymbolicLink()
+      ? 'symlink' as const
+      : stats.isDirectory()
+        ? undefined
+        : stats.isFile()
+          ? 'file' as const
+          : 'other' as const;
+    candidates.set(componentKey(kind, id), {
+      id,
+      kind,
+      localPath,
+      ...(obstruction ? { obstruction } : {}),
+    });
+  };
   for (const record of provenance) {
     if (record.ownership === 'custom' || !record.localPath) continue;
-    const target = resolveInside(userRoot, record.localPath);
-    if (
-      !pathExists(target) ||
-      lstatSync(target).isSymbolicLink() ||
-      !lstatSync(target).isDirectory()
-    ) {
-      continue;
-    }
-    candidates.set(componentKey(record.kind, record.id), {
-      id: record.id,
-      kind: record.kind,
-      localPath: record.localPath,
-    });
+    addCandidate(record.id, record.kind, record.localPath);
   }
   for (const source of upstream) {
     if (!source.localPath) continue;
-    const target = resolveInside(userRoot, source.localPath);
-    if (
-      !pathExists(target) ||
-      lstatSync(target).isSymbolicLink() ||
-      !lstatSync(target).isDirectory()
-    ) {
-      continue;
-    }
-    candidates.set(componentKey(source.kind, source.id), {
-      id: source.id,
-      kind: source.kind,
-      localPath: source.localPath,
-    });
+    addCandidate(source.id, source.kind, source.localPath);
   }
   return [...candidates.values()]
     .map((candidate) => ({
       ...candidate,
-      content: readFilesystemTree(userRoot, candidate.localPath),
+      content: candidate.obstruction
+        ? {
+            'local-entry.json': `${JSON.stringify({
+              schemaVersion: 1,
+              kind: 'consuelo-managed-component-local-obstruction',
+              obstruction: candidate.obstruction,
+            }, null, 2)}\n`,
+          }
+        : readFilesystemTree(userRoot, candidate.localPath),
     }))
     .sort(compareKeys);
 }

@@ -537,9 +537,11 @@ function materializeLifecycleCommand(
     '    esac',
     '  done < "$OS_HOME/.env"',
     'fi',
-    'LIFECYCLE_SCRIPT="$OS_HOME/runtime/current/scripts/lifecycle.ts"',
-    'if [ ! -f "$LIFECYCLE_SCRIPT" ] && [ -n "$PACKAGE_ROOT" ]; then',
+    'LIFECYCLE_SCRIPT=""',
+    'if [ -n "$PACKAGE_ROOT" ] && [ -f "$PACKAGE_ROOT/scripts/lifecycle.ts" ]; then',
     '  LIFECYCLE_SCRIPT="$PACKAGE_ROOT/scripts/lifecycle.ts"',
+    'elif [ -f "$OS_HOME/runtime/current/scripts/lifecycle.ts" ]; then',
+    '  LIFECYCLE_SCRIPT="$OS_HOME/runtime/current/scripts/lifecycle.ts"',
     'fi',
     'if [ ! -f "$LIFECYCLE_SCRIPT" ]; then',
     '  echo "OS lifecycle runtime is not installed. Run: curl -fsSL https://install.consuelohq.com/os | bash" >&2',
@@ -552,7 +554,12 @@ function materializeLifecycleCommand(
     '  echo "OS lifecycle runtime cannot find the Bun executable. Re-run the installer to repair it." >&2',
     '  exit 1',
     'fi',
-    'exec "$BUN_EXECUTABLE" "$LIFECYCLE_SCRIPT" --home "$OS_HOME" "$@"',
+    'if [ "$#" -eq 0 ]; then',
+    '  set -- status',
+    'fi',
+    'COMMAND="$1"',
+    'shift',
+    'exec "$BUN_EXECUTABLE" "$LIFECYCLE_SCRIPT" "$COMMAND" --home "$OS_HOME" "$@"',
     '',
   ].join('\n');
   const existing = fs.existsSync(commandPath)
@@ -1387,9 +1394,10 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
   const description = entry.description ?? 'Consuelo OS tool.';
   const quotedName = shellSingleQuote(toolName);
   const jsonName = shellSingleQuote(JSON.stringify(toolName));
+  const runnerScript = entry.kind === 'facade-tool' ? 'tool-runner.ts' : 'os.ts';
   const runner = entry.kind === 'facade-tool'
-    ? `exec bun ./scripts/tool-runner.ts ${quotedName} "$INPUT"`
-    : `exec bun ./scripts/os.ts call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
+    ? `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/tool-runner.ts" ${quotedName} "$INPUT"`
+    : `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/os.ts" call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
 
   return [
     '#!/usr/bin/env bash',
@@ -1397,8 +1405,31 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
     `TOOL_NAME=${quotedName}`,
     `TOOL_DESCRIPTION=${shellSingleQuote(description)}`,
     'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
-    'if [ ! -f "$OS_HOME/package.json" ] || [ ! -f "$OS_HOME/scripts/tool-runner.ts" ]; then',
-    '  printf "%s\\n" "error: Consuelo OS package root not found. Set CONSUELO_OS_HOME." >&2',
+    'BUN_EXECUTABLE="${BUN_BIN:-}"',
+    'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    'if [ -f "$OS_HOME/.env" ]; then',
+    '  while IFS= read -r line || [ -n "$line" ]; do',
+    '    case "$line" in',
+    '      BUN_BIN=*) [ -n "$BUN_EXECUTABLE" ] || BUN_EXECUTABLE="${line#BUN_BIN=}" ;;',
+    '      CONSUELO_OS_PACKAGE_ROOT=*) [ -n "$PACKAGE_ROOT" ] || PACKAGE_ROOT="${line#CONSUELO_OS_PACKAGE_ROOT=}" ;;',
+    '    esac',
+    '  done < "$OS_HOME/.env"',
+    'fi',
+    `if [ -n "$PACKAGE_ROOT" ] && [ -f "$PACKAGE_ROOT/scripts/${runnerScript}" ]; then`,
+    '  :',
+    `elif [ -f "$OS_HOME/runtime/current/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME/runtime/current"',
+    `elif [ -f "$OS_HOME/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME"',
+    'else',
+    '  printf "%s\\n" "error: Consuelo OS immutable runtime is not installed." >&2',
+    '  exit 1',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ]; then',
+    '  BUN_EXECUTABLE="$(command -v bun || true)"',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ] || [ ! -x "$BUN_EXECUTABLE" ]; then',
+    '  printf "%s\\n" "error: Consuelo OS cannot find the Bun executable. Re-run the installer." >&2',
     '  exit 1',
     'fi',
     'if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then',
@@ -1412,7 +1443,7 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
     'else',
     "  INPUT='{}'",
     'fi',
-    'cd "$OS_HOME"',
+    'cd "$PACKAGE_ROOT"',
     runner,
     '',
   ].join('\n');

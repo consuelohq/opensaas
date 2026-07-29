@@ -453,6 +453,13 @@ describe('local OS install state', () => {
     expect(lifecycleInvocation).toContain('--home');
     expect(lifecycleInvocation).toContain(tempHome);
     expect(lifecycleInvocation).toContain('status');
+    expect(lifecycleInvocation.trim().split('\n')).toEqual([
+      join(fakePackageRoot, 'scripts', 'lifecycle.ts'),
+      'status',
+      '--home',
+      tempHome,
+      '--json',
+    ]);
     expect(lifecycleInvocation).toContain('--json');
     expect(existsSync(join(tempHome, 'operator'))).toBe(false);
     const workspaceYaml = readFileSync(join(tempHome, 'workspaces', 'local-consuelo-os', 'shared', 'workspace.yaml'), 'utf8');
@@ -524,8 +531,13 @@ describe('local OS install state', () => {
     expect(statusWrapper).toContain('scripts/tool-runner.ts');
     expect(statusWrapper).toContain('status');
     expect(statusWrapper).toContain('OS_HOME=');
-    expect(statusWrapper).toContain('cd "$OS_HOME"');
-    expect(statusWrapper).toContain('./scripts/tool-runner.ts');
+    expect(statusWrapper).toContain('cd "$PACKAGE_ROOT"');
+    expect(statusWrapper).toContain(
+      '$OS_HOME/runtime/current/scripts/tool-runner.ts',
+    );
+    expect(statusWrapper).toContain(
+      'exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/tool-runner.ts"',
+    );
     expect(statusWrapper).toContain('if [ "$#" -gt 0 ]; then');
     expect(statusWrapper).toContain("INPUT='{}'");
     expect(statusWrapper).not.toContain('INPUT="${1:-{}}"');

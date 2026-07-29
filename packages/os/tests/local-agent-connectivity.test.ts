@@ -501,4 +501,43 @@ describe('local agent connectivity', () => {
       ),
     ).toMatchObject({ status: 'configured' });
   });
+
+  it('should launch MCP with the persisted package root and Bun executable', () => {
+    const packageRoot = join(osHome, 'package-root-fixture');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    const bunExecutable = join(osHome, 'managed-bun');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    writeFileSync(packageServerPath, '// MCP fixture\n');
+    writeFileSync(
+      bunExecutable,
+      '#!/bin/bash\nprintf \'%s\\n\' "$@"\n',
+      { mode: 0o755 },
+    );
+    writeFileSync(
+      join(osHome, '.env'),
+      [
+        `BUN_BIN=${bunExecutable}`,
+        `CONSUELO_OS_PACKAGE_ROOT=${packageRoot}`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+    delete process.env.CONSUELO_OS_PACKAGE_ROOT;
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    configureLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['opencode'],
+    });
+
+    const output = execFileSync(localAgentMcpCommandPath(osHome), {
+      encoding: 'utf8',
+      env: {
+        CONSUELO_HOME: osHome,
+        HOME: userHome,
+        PATH: '/usr/bin:/bin',
+      },
+    });
+    expect(output.trim().split('\n')).toEqual([packageServerPath]);
+  });
 });

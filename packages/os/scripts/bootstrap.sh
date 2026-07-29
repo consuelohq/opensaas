@@ -34,12 +34,14 @@ BAKED_RELEASE_PUBLIC_KEYS_BASE64="__CONSUELO_RELEASE_PUBLIC_KEYS_BASE64__"
 if [ "${CONSUELO_OS_DEV:-0}" = "1" ]; then
   RELEASE_BASE_URL="${CONSUELO_RELEASE_BASE_URL:-$HOSTED_RELEASE_BASE_URL}"
   RELEASE_PUBLIC_KEYS_BASE64="${CONSUELO_RELEASE_PUBLIC_KEYS_BASE64:-$BAKED_RELEASE_PUBLIC_KEYS_BASE64}"
+  RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"
 else
   RELEASE_BASE_URL="$HOSTED_RELEASE_BASE_URL"
   RELEASE_PUBLIC_KEYS_BASE64="$BAKED_RELEASE_PUBLIC_KEYS_BASE64"
+  RELEASE_CHANNEL="stable"
 fi
-RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"
 TRUSTED_RELEASE_KEYS_PATH="$OS_HOME/runtime/trusted-release-keys.json"
+RELEASE_CHANNEL_STATE_PATH="$OS_HOME/runtime/channels/$RELEASE_CHANNEL.json"
 ALLOW_GLOBAL_RUNTIME_LOOKUP="${CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP:-1}"
 CLOUDFLARED_REQUIRED="${CONSUELO_OS_REQUIRE_CLOUDFLARED:-1}"
 CLOUDFLARED_VERSION="${CONSUELO_CLOUDFLARED_VERSION:-2026.6.1}"
@@ -91,6 +93,7 @@ CLOUDFLARED_STATUS="pending"
 CADDY_STATUS="pending"
 SOURCE_STATUS="pending"
 PENDING_RUNTIME_RELEASE_DIR=""
+PENDING_CHANNEL_STATE_PATH=""
 RUNTIME_STAGE_DIR=""
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
@@ -100,6 +103,9 @@ OS_MODE=""
 cleanup_runtime_stage() {
   if [ -n "$RUNTIME_STAGE_DIR" ] && [ -d "$RUNTIME_STAGE_DIR" ]; then
     rm -rf "$RUNTIME_STAGE_DIR"
+  fi
+  if [ -n "$PENDING_CHANNEL_STATE_PATH" ]; then
+    rm -f "$PENDING_CHANNEL_STATE_PATH"
   fi
 }
 trap cleanup_runtime_stage EXIT
@@ -1099,7 +1105,7 @@ verify_runtime_release() {
   local verifier="$stage_dir/verify-release.ts"
   cat > "$verifier" <<'BUN'
 import { createHash, createPublicKey, verify } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const fail = (message: string): never => {
@@ -1119,6 +1125,11 @@ const canonicalize = (value: unknown): unknown => {
 };
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+const digestPattern = /^sha256:[a-f0-9]{64}$/;
+const isIsoTimestamp = (value: unknown): value is string =>
+  typeof value === "string" &&
+  Number.isFinite(Date.parse(value)) &&
+  new Date(value).toISOString() === value;
 const readBoundedResponse = async (
   response: Response,
   maximumBytes: number,
@@ -1186,6 +1197,13 @@ if (
   payload.kind !== "consuelo-os-channel-manifest" ||
   payload.schemaVersion !== 1 ||
   payload.channel !== channel ||
+  !Number.isSafeInteger(payload.revision) ||
+  Number(payload.revision) <= 0 ||
+  !isIsoTimestamp(payload.promotedAt) ||
+  typeof payload.bundleId !== "string" ||
+  !digestPattern.test(payload.bundleId) ||
+  typeof payload.releaseFingerprint !== "string" ||
+  !digestPattern.test(payload.releaseFingerprint) ||
   signature.algorithm !== "ed25519" ||
   typeof signature.keyId !== "string" ||
   typeof signature.signature !== "string" ||
@@ -1200,6 +1218,55 @@ const accepted = verify(
   Buffer.from(signature.signature, "base64url"),
 );
 if (!accepted) fail("release manifest signature is invalid");
+const statePath = process.env.CONSUELO_RELEASE_STATE_PATH;
+let activeChannelState: Record<string, unknown> | undefined;
+if (statePath) {
+  let activeState: unknown;
+  try {
+    const stateStats = await lstat(statePath);
+    if (stateStats.isSymbolicLink() || !stateStats.isFile()) {
+      fail(`activated ${channel} release state must be a regular file`);
+    }
+    activeState = JSON.parse(await readFile(statePath, "utf8")) as unknown;
+  } catch (error: unknown) {
+    if (
+      !isRecord(error) ||
+      typeof error.code !== "string" ||
+      error.code !== "ENOENT"
+    ) {
+      throw error;
+    }
+  }
+  if (activeState !== undefined) {
+    if (
+      !isRecord(activeState) ||
+      activeState.kind !== "consuelo-os-bootstrap-channel-state" ||
+      activeState.schemaVersion !== 1 ||
+      activeState.channel !== channel ||
+      !Number.isSafeInteger(activeState.revision) ||
+      Number(activeState.revision) <= 0 ||
+      !isIsoTimestamp(activeState.promotedAt) ||
+      typeof activeState.releaseFingerprint !== "string" ||
+      !digestPattern.test(activeState.releaseFingerprint) ||
+      typeof activeState.bundleId !== "string" ||
+      !digestPattern.test(activeState.bundleId) ||
+      typeof activeState.platformBundleId !== "string" ||
+      !digestPattern.test(activeState.platformBundleId)
+    ) fail(`activated ${channel} release state is invalid`);
+    if (
+      Number(payload.revision) < Number(activeState.revision) ||
+      Date.parse(payload.promotedAt) < Date.parse(activeState.promotedAt)
+    ) fail(`signed release manifest is older than the activated ${channel} release`);
+    if (
+      payload.revision === activeState.revision &&
+      (
+        payload.releaseFingerprint !== activeState.releaseFingerprint ||
+        payload.bundleId !== activeState.bundleId
+      )
+    ) fail(`signed release manifest conflicts with activated ${channel} revision ${payload.revision}`);
+    activeChannelState = activeState;
+  }
+}
 const platform = process.platform;
 const architecture = process.arch;
 const selected = payload.platforms.find(
@@ -1208,8 +1275,19 @@ const selected = payload.platforms.find(
     candidate.platform === platform &&
     candidate.architecture === architecture,
 ) ?? fail(`release does not publish ${platform}-${architecture}`);
-if (!/^sha256:[a-f0-9]{64}$/.test(selected.bundleId)) fail("runtime bundle ID is invalid");
-if (!/^sha256:[a-f0-9]{64}$/.test(selected.archiveDigest)) fail("runtime archive digest is invalid");
+if (
+  typeof selected.bundleId !== "string" ||
+  !digestPattern.test(selected.bundleId)
+) fail("runtime bundle ID is invalid");
+if (
+  typeof selected.archiveDigest !== "string" ||
+  !digestPattern.test(selected.archiveDigest)
+) fail("runtime archive digest is invalid");
+if (
+  activeChannelState &&
+  payload.revision === activeChannelState.revision &&
+  selected.bundleId !== activeChannelState.platformBundleId
+) fail(`signed release manifest changes the activated ${channel} platform bundle at revision ${payload.revision}`);
 const releaseObjectPattern = new RegExp(
   `^bundles/${selected.bundleId}/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$`,
 );
@@ -1237,11 +1315,22 @@ await mkdir(output, { recursive: true });
 await writeFile(join(output, "runtime.tar.gz"), bytes, { mode: 0o600 });
 await writeFile(join(output, "bundle-id"), `${selected.bundleId}\n`, { mode: 0o600 });
 await writeFile(join(output, "trusted-release-keys.json"), `${JSON.stringify(trustedKeys, null, 2)}\n`, { mode: 0o600 });
+await writeFile(join(output, "channel-state.json"), `${JSON.stringify({
+  schemaVersion: 1,
+  kind: "consuelo-os-bootstrap-channel-state",
+  channel,
+  revision: payload.revision,
+  promotedAt: payload.promotedAt,
+  releaseFingerprint: payload.releaseFingerprint,
+  bundleId: payload.bundleId,
+  platformBundleId: selected.bundleId,
+}, null, 2)}\n`, { mode: 0o600 });
 BUN
   CONSUELO_RELEASE_BASE_URL="$RELEASE_BASE_URL" \
     CONSUELO_RELEASE_CHANNEL="$RELEASE_CHANNEL" \
     CONSUELO_RELEASE_PUBLIC_KEYS_BASE64="$RELEASE_PUBLIC_KEYS_BASE64" \
     CONSUELO_RELEASE_STAGE_DIR="$stage_dir" \
+    CONSUELO_RELEASE_STATE_PATH="$RELEASE_CHANNEL_STATE_PATH" \
     "$BUN_BIN" "$verifier"
 }
 
@@ -1262,7 +1351,7 @@ install_verified_runtime() {
 
   require_command tar "Consuelo OS needs tar to unpack the verified runtime bundle."
   require_command mktemp "Consuelo OS needs mktemp to stage the verified runtime bundle safely."
-  local stage_dir bundle_id release_name release_dir extracted_dir
+  local stage_dir bundle_id release_name release_dir extracted_dir pending_channel_state
   stage_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-runtime.XXXXXX")"
   RUNTIME_STAGE_DIR="$stage_dir"
   extracted_dir="$stage_dir/runtime"
@@ -1317,6 +1406,11 @@ install_verified_runtime() {
   mkdir -p "$(dirname "$TRUSTED_RELEASE_KEYS_PATH")"
   mv "$stage_dir/trusted-release-keys.json" "$TRUSTED_RELEASE_KEYS_PATH"
   chmod 600 "$TRUSTED_RELEASE_KEYS_PATH"
+  pending_channel_state="$OS_HOME/runtime/.channel-state.${RELEASE_CHANNEL}.$$.new"
+  rm -f "$pending_channel_state"
+  mv "$stage_dir/channel-state.json" "$pending_channel_state"
+  chmod 600 "$pending_channel_state"
+  PENDING_CHANNEL_STATE_PATH="$pending_channel_state"
   rm -rf "$stage_dir"
   RUNTIME_STAGE_DIR=""
   PENDING_RUNTIME_RELEASE_DIR="$release_dir"
@@ -1332,7 +1426,7 @@ activate_verified_runtime() {
     [ -d "$PENDING_RUNTIME_RELEASE_DIR" ] ||
     fail "verified Consuelo OS runtime is not staged for activation"
 
-  local temporary_link
+  local temporary_link channel_state_directory
   temporary_link="${RUNTIME_HOME}.new.$$"
   rm -f "$temporary_link"
   ln -s "$PENDING_RUNTIME_RELEASE_DIR" "$temporary_link"
@@ -1344,8 +1438,21 @@ activate_verified_runtime() {
   fi
   mv -f -h "$temporary_link" "$RUNTIME_HOME" ||
     fail "verified Consuelo OS runtime could not be activated"
+  [ -n "$PENDING_CHANNEL_STATE_PATH" ] &&
+    [ -f "$PENDING_CHANNEL_STATE_PATH" ] ||
+    fail "verified Consuelo OS channel state is not staged for activation"
+  channel_state_directory="$(dirname "$RELEASE_CHANNEL_STATE_PATH")"
+  mkdir -p "$channel_state_directory"
+  if [ -L "$RELEASE_CHANNEL_STATE_PATH" ] ||
+    { [ -e "$RELEASE_CHANNEL_STATE_PATH" ] && [ ! -f "$RELEASE_CHANNEL_STATE_PATH" ]; }; then
+    fail "activated release channel state is not a regular file: $RELEASE_CHANNEL_STATE_PATH"
+  fi
+  mv -f "$PENDING_CHANNEL_STATE_PATH" "$RELEASE_CHANNEL_STATE_PATH" ||
+    fail "verified Consuelo OS channel state could not be activated"
+  chmod 600 "$RELEASE_CHANNEL_STATE_PATH"
   REPO_DIR="$RUNTIME_HOME"
   PENDING_RUNTIME_RELEASE_DIR=""
+  PENDING_CHANNEL_STATE_PATH=""
 }
 
 install_runtime_dependencies() {
