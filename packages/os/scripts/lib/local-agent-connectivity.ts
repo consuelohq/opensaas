@@ -195,7 +195,7 @@ function localAgentMcpCommandSource(): string {
     '#!/usr/bin/env bash',
     'set -euo pipefail',
     'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
-    'HOSTED_SCRIPT="$OS_HOME/runtime/current/packages/os/scripts/mcp-stdio.ts"',
+    'HOSTED_SCRIPT="$OS_HOME/runtime/current/scripts/mcp-stdio.ts"',
     'SOURCE_SCRIPT="$OS_HOME/scripts/mcp-stdio.ts"',
     'if [ -f "$HOSTED_SCRIPT" ]; then',
     '  MCP_SCRIPT="$HOSTED_SCRIPT"',

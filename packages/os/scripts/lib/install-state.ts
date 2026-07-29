@@ -115,6 +115,7 @@ export type OsConfig = {
 
 export type ProvisionOptions = {
   home?: string;
+  userHome?: string;
   mode?: OsMode;
   port?: number;
   dryRun?: boolean;
@@ -858,6 +859,7 @@ function materializeLocalAgentMcpCredentials(input: {
 function materializeWorkspaceConnectorBootstrap(input: {
   nodeHome: string;
   runtimeHome: string;
+  userHome: string;
   port: number;
   dryRun: boolean;
   platform: NodeJS.Platform | string;
@@ -902,7 +904,8 @@ function materializeWorkspaceConnectorBootstrap(input: {
 
     if (plan.launchd && input.platform === 'linux') {
       const unit = renderWorkspaceCloudflaredSystemdUnit({
-        home: input.runtimeHome,
+        runtimeHome: input.runtimeHome,
+        userHome: input.userHome,
         connectorId: input.workspaceBootstrap.connectorId,
         programArguments: plan.launchd.programArguments,
       });
@@ -1035,7 +1038,8 @@ function materializeWorkspaceConnectorBootstrap(input: {
     });
     if (input.platform === 'linux') {
       const units = renderWorkspaceNodeHeartbeatSystemdUnits({
-        home: input.runtimeHome,
+        runtimeHome: input.runtimeHome,
+        userHome: input.userHome,
         bunExecutable: process.execPath,
         heartbeatScriptPath,
         heartbeatConfigPath,
@@ -1104,8 +1108,11 @@ export function loadOsConfig(home?: string): OsConfig | null {
   return readJsonFile<OsConfig>(path.join(resolvedHome, 'config.json'));
 }
 
-export function detectAgents(home?: string): AgentDetection[] {
-  return detectLocalAgents({ home: resolveOsHome(home), userHome: os.homedir() });
+export function detectAgents(
+  home?: string,
+  userHome: string = os.homedir(),
+): AgentDetection[] {
+  return detectLocalAgents({ home: resolveOsHome(home), userHome });
 }
 
 function isJsonObject(value: unknown): value is JsonObject {
@@ -1559,6 +1566,7 @@ export function provisionLocalOs(
   options: ProvisionOptions = {},
 ): ProvisionResult {
   const home = resolveOsHome(options.home);
+  const userHome = path.resolve(options.userHome ?? os.homedir());
   const layout = resolveConsueloHomeLayout(home);
   const configPath = path.join(home, 'config.json');
   const dbPath = layout.nodeDbPath;
@@ -1802,6 +1810,7 @@ export function provisionLocalOs(
       ...materializeWorkspaceConnectorBootstrap({
         nodeHome: layout.nodeDir,
         runtimeHome: home,
+        userHome,
         port: DEFAULT_INGRESS_PORT,
         dryRun,
         platform: options.platform ?? process.platform,
@@ -1820,19 +1829,19 @@ export function provisionLocalOs(
     selectedSkills: config.selectedSkills,
     dryRun,
     generatedAt: nowIso(),
-    userRoot: path.join(os.homedir(), 'Consuelo'),
+    userRoot: path.join(userHome, 'Consuelo'),
   }));
 
   const agentConfiguration = requestedAgentNames.length > 0
     ? configureLocalAgents({
         home,
-        userHome: os.homedir(),
+        userHome,
         agentNames: requestedAgentNames,
         dryRun,
         persist: false,
       })
     : (() => {
-        const agents = detectAgents(home);
+        const agents = detectAgents(home, userHome);
         return {
           agents,
           records: toLocalAgentConfigRecords(agents),
@@ -1854,7 +1863,7 @@ export function provisionLocalOs(
     configPath,
     dbPath,
     actions,
-    agents: dryRun ? agentConfiguration.agents : detectAgents(home),
+    agents: dryRun ? agentConfiguration.agents : detectAgents(home, userHome),
   };
 }
 

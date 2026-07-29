@@ -192,7 +192,8 @@ export function renderSystemdUserUnit(input: { home: string; bunExecutable: stri
 }
 
 export function renderWorkspaceNodeHeartbeatSystemdUnits(input: {
-  home: string;
+  runtimeHome: string;
+  userHome: string;
   bunExecutable: string;
   heartbeatScriptPath: string;
   heartbeatConfigPath: string;
@@ -205,9 +206,9 @@ export function renderWorkspaceNodeHeartbeatSystemdUnits(input: {
   service: string;
   timer: string;
 } {
-  const paths = resolveLinuxPlatformPaths(input.home, {
+  const paths = resolveLinuxPlatformPaths(input.userHome, {
     ...process.env,
-    XDG_CONFIG_HOME: join(resolve(input.home), '.config'),
+    HOME: resolve(input.userHome),
   });
   const serviceName = 'consuelo-node-heartbeat.service' as const;
   const timerName = 'consuelo-node-heartbeat.timer' as const;
@@ -225,7 +226,7 @@ export function renderWorkspaceNodeHeartbeatSystemdUnits(input: {
       '',
       '[Service]',
       'Type=oneshot',
-      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.home))}"`,
+      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.runtimeHome))}"`,
       `ExecStart="${systemdEscape(resolve(input.bunExecutable))}" "${systemdEscape(resolve(input.heartbeatScriptPath))}" "--config" "${systemdEscape(resolve(input.heartbeatConfigPath))}"`,
       'UMask=0077',
       'NoNewPrivileges=true',
@@ -260,7 +261,8 @@ const systemdUnitSegment = (value: string): string => {
 };
 
 export function renderWorkspaceCloudflaredSystemdUnit(input: {
-  home: string;
+  runtimeHome: string;
+  userHome: string;
   connectorId: string;
   programArguments: string[];
 }): {
@@ -272,9 +274,9 @@ export function renderWorkspaceCloudflaredSystemdUnit(input: {
   if (input.programArguments.length === 0) {
     throw new Error('cloudflared systemd service requires program arguments');
   }
-  const paths = resolveLinuxPlatformPaths(input.home, {
+  const paths = resolveLinuxPlatformPaths(input.userHome, {
     ...process.env,
-    XDG_CONFIG_HOME: join(resolve(input.home), '.config'),
+    HOME: resolve(input.userHome),
   });
   const unitName = `consuelo-cloudflared-${systemdUnitSegment(
     input.connectorId,
@@ -294,7 +296,7 @@ export function renderWorkspaceCloudflaredSystemdUnit(input: {
       '',
       '[Service]',
       'Type=simple',
-      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.home))}"`,
+      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.runtimeHome))}"`,
       `ExecStart=${execStart}`,
       'Restart=always',
       'RestartSec=5',

@@ -25,11 +25,12 @@ describe('Consuelo finish-line lifecycle contract', () => {
   it('resolves the installed MCP bridge through the active hosted runtime', () => {
     const connectivity = read('scripts/lib/local-agent-connectivity.ts');
 
-    expect(connectivity).toContain('runtime/current/packages/os/scripts/mcp-stdio.ts');
+    expect(connectivity).toContain('runtime/current/scripts/mcp-stdio.ts');
     expect(connectivity).toContain('scripts/mcp-stdio.ts');
-    expect(connectivity.indexOf('runtime/current/packages/os/scripts/mcp-stdio.ts')).toBeLessThan(
-      connectivity.indexOf('scripts/mcp-stdio.ts', connectivity.indexOf('runtime/current/packages/os/scripts/mcp-stdio.ts') + 1),
+    expect(connectivity.indexOf('runtime/current/scripts/mcp-stdio.ts')).toBeLessThan(
+      connectivity.indexOf('scripts/mcp-stdio.ts', connectivity.indexOf('runtime/current/scripts/mcp-stdio.ts') + 1),
     );
+    expect(connectivity).not.toContain('runtime/current/packages/os/scripts/mcp-stdio.ts');
     expect(connectivity).not.toContain('exec bun ./scripts/mcp-stdio.ts');
   });
 
@@ -60,7 +61,7 @@ describe('Consuelo finish-line lifecycle contract', () => {
 
     expect(state).toContain('const DEFAULT_INGRESS_PORT = 46320');
     expect(state).toContain('local-agent-mcp.json');
-    expect(state).toContain('const localServiceUrl = `http://127.0.0.1:${ingressPort}`');
+    expect(state).toContain('const localServiceUrl = `http://127.0.0.1:${input.port}`');
     expect(gateway).toContain('bind 127.0.0.1');
     expect(gateway).toContain('auto_https off');
     expect(gateway).toContain('reverse_proxy ${input.upstream.host}:${input.upstream.port}');
