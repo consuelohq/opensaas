@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -153,5 +153,18 @@ describe('managed cloud review regressions', () => {
         '--quiet',
       ]),
     ).toMatchObject({ command: 'node-plan', quiet: true });
+  });
+
+  it('documents executable node plan and apply command continuations', () => {
+    const scripts = readFileSync(join(process.cwd(), 'SCRIPTS.md'), 'utf8');
+    const commandLines = scripts.split('\n').filter((line) =>
+      line.includes('cloud:node -- node-plan') ||
+      line.includes('cloud:node -- node-apply') ||
+      line.trim().startsWith('--config <managed-node-config.json>'),
+    );
+
+    expect(commandLines).toHaveLength(4);
+    expect(commandLines.every((line) => line.endsWith('\\'))).toBe(true);
+    expect(commandLines.some((line) => line.endsWith('\\\\'))).toBe(false);
   });
 });

@@ -126,17 +126,20 @@ describe('local agent connectivity', () => {
     expect(complete.remainder.length).toBe(0);
   });
 
-  it('uses the supplied user home when provisioning detects local agents', () => {
+  it('should detect local agents when provisioning uses the supplied user home', () => {
+    // Arrange
     const codexHome = join(userHome, '.codex');
     mkdirSync(codexHome, { recursive: true });
     writeFileSync(join(codexHome, 'config.toml'), 'model = "gpt-5"\n');
 
+    // Act
     const result = provisionLocalOs({
       home: osHome,
       userHome,
       mode: 'local',
     });
 
+    // Assert
     expect(result.agents).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

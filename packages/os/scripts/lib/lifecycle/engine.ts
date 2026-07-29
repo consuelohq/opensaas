@@ -678,7 +678,13 @@ export function createLifecycleEngine(
               lockHeld: true,
             });
           },
-          catch: (error) => error,
+          catch: (error) =>
+            asLifecycleError(
+              error,
+              'INSTALL_STATE_INVALID',
+              'first-install onboarding failed',
+              'onboarding',
+            ),
         }),
       );
     },

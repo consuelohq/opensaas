@@ -1142,12 +1142,12 @@ bun --cwd packages/os run cloud:node -- apply \
 After the foundation is approved, plan and apply an individual retained-disk VM from the same operator boundary:
 
 ```bash
-bun --cwd packages/os run cloud:node -- node-plan \\
-  --config <managed-node-config.json> \\
+bun --cwd packages/os run cloud:node -- node-plan \
+  --config <managed-node-config.json> \
   --json
 
-bun --cwd packages/os run cloud:node -- node-apply \\
-  --config <managed-node-config.json> \\
+bun --cwd packages/os run cloud:node -- node-apply \
+  --config <managed-node-config.json> \
   --json
 ```
 

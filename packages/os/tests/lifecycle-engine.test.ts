@@ -654,6 +654,26 @@ describe('lifecycle transaction hardening regressions', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
+  it('should return a typed install-state error when post-onboarding inspection fails', async () => {
+    const engine = createLifecycleEngine({
+      home: tempHome,
+      releaseSource: sourceFor(bundle100),
+      trustedReleaseKeys: { [releaseKeyId]: publicKeyPem },
+      service: { async preflight() {}, async restart() {} },
+      health: { async accept() { return true; } },
+      onboarding: async () => {
+        rmSync(tempHome, { recursive: true, force: true });
+        writeFileSync(tempHome, 'not a Consuelo home directory');
+      },
+    });
+
+    await expect(engine.install({ channel: 'dev' })).rejects.toMatchObject({
+      _tag: 'LifecycleError',
+      code: 'INSTALL_STATE_INVALID',
+      phase: 'onboarding',
+    });
+  });
+
   it('acquires the lifecycle lock before running first-install onboarding', async () => {
     const release = await acquireLifecycleLock({
       home: tempHome,
