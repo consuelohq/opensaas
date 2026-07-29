@@ -413,7 +413,7 @@ describe('runtime bundle contract', () => {
     ).toBe(false);
   });
 
-  it('should preserve the planned release fingerprint when building the Windows service host', async () => {
+  it('should keep the fingerprint when Windows builds the host', async () => {
     const root = createFixture({
       'native/windows-service/Program.cs': 'public static class Program {}\n',
       'native/windows-service/Consuelo.Windows.Service.csproj':
@@ -457,9 +457,7 @@ describe('runtime bundle contract', () => {
     expect(paths).not.toContain(
       'native/windows-service/bin/Release/Consuelo.Windows.Service.pdb',
     );
-    expect(built.manifest.releaseFingerprint).toBe(
-      planned.releaseFingerprint,
-    );
+    expect(built.manifest.releaseFingerprint).toBe(planned.releaseFingerprint);
     expect(() => verifyRuntimeBundleArchive(built.archiveBytes)).not.toThrow();
 
     writeFixtureFile(
@@ -476,7 +474,9 @@ describe('runtime bundle contract', () => {
     );
     expect(rebuilt.manifest.bundleId).not.toBe(built.manifest.bundleId);
     expect(rebuilt.archiveDigest).not.toBe(built.archiveDigest);
-    expect(() => verifyRuntimeBundleArchive(rebuilt.archiveBytes)).not.toThrow();
+    expect(() =>
+      verifyRuntimeBundleArchive(rebuilt.archiveBytes),
+    ).not.toThrow();
   });
 
   it('classifies all customer deployment adapters separately from operator infrastructure', () => {
