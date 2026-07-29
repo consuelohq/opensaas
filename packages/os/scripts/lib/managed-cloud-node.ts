@@ -21,6 +21,11 @@ export type ManagedNodeHosting = {
 
 export type FoundationResourceStatus = 'created' | 'unchanged';
 
+export type ManagedCloudNodeDataDiskStatus = {
+  status: FoundationResourceStatus;
+  formatAllowed: boolean;
+};
+
 export type ManagedCloudNodeFoundationClient = {
   ensureService: (service: string) => Promise<FoundationResourceStatus>;
   ensureNetwork: (input: {
@@ -243,7 +248,7 @@ export type ManagedCloudNodeClient = {
       zone: string;
       labels: Record<string, string>;
     },
-  ) => Promise<FoundationResourceStatus>;
+  ) => Promise<ManagedCloudNodeDataDiskStatus>;
   ensureSnapshotPolicyAttachment: (input: {
     projectId: string;
     zone: string;
@@ -843,16 +848,28 @@ export const applyManagedCloudNode = async (input: {
     }
   };
 
-  const dataDiskStatus = await record(
-    `data-disk:${input.plan.dataDisk.name}`,
-    () =>
-      input.client.ensureDataDisk({
-        ...input.plan.dataDisk,
-        projectId: input.plan.projectId,
-        zone: input.plan.zone,
-        labels: input.plan.labels,
-      }),
-  );
+  const dataDiskResource = `data-disk:${input.plan.dataDisk.name}`;
+  let dataDiskStatus: ManagedCloudNodeDataDiskStatus;
+  try {
+    dataDiskStatus = await input.client.ensureDataDisk({
+      ...input.plan.dataDisk,
+      projectId: input.plan.projectId,
+      zone: input.plan.zone,
+      labels: input.plan.labels,
+    });
+    operations.push({
+      resource: dataDiskResource,
+      status: dataDiskStatus.status,
+    });
+  } catch (error: unknown) {
+    throw new ManagedCloudNodeError(
+      'MANAGED_NODE_PROVISION_FAILED',
+      `managed cloud node provisioning failed at ${dataDiskResource}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      { cause: error },
+    );
+  }
   for (const policyName of input.plan.dataDisk.snapshotPolicies) {
     await record(
       `snapshot-policy-attachment:${input.plan.dataDisk.name}:${policyName}`,
@@ -882,7 +899,7 @@ export const applyManagedCloudNode = async (input: {
             'startup-script': startupScript.replace(
               "ALLOW_DATA_DISK_FORMAT='false'",
               `ALLOW_DATA_DISK_FORMAT='${
-                dataDiskStatus === 'created' ? 'true' : 'false'
+                dataDiskStatus.formatAllowed ? 'true' : 'false'
               }'`,
             ),
           }

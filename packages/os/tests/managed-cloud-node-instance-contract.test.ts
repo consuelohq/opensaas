@@ -4,10 +4,14 @@ import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 type ResourceStatus = 'created' | 'unchanged';
+type DataDiskStatus = {
+  status: ResourceStatus;
+  formatAllowed: boolean;
+};
 
 type ManagedCloudNodeClient = {
   ensureReleaseBucketAccess: (input: unknown) => Promise<ResourceStatus>;
-  ensureDataDisk: (input: unknown) => Promise<ResourceStatus>;
+  ensureDataDisk: (input: unknown) => Promise<DataDiskStatus>;
   ensureSnapshotPolicyAttachment: (input: unknown) => Promise<ResourceStatus>;
   ensureInstance: (input: unknown) => Promise<ResourceStatus>;
 };
@@ -296,7 +300,7 @@ describe('managed cloud node instance contract', () => {
       },
       ensureDataDisk: async () => {
         calls.push('data-disk');
-        return 'created';
+        return { status: 'created', formatAllowed: true };
       },
       ensureSnapshotPolicyAttachment: async () => {
         calls.push('snapshot-policy');
@@ -324,6 +328,31 @@ describe('managed cloud node instance contract', () => {
     expect(
       applied.operations.every((operation) => operation.status === 'created'),
     ).toBe(true);
+  });
+
+  it('keeps formatting authorized when a managed disk exists but has never been attached', async () => {
+    const { applyManagedCloudNode, planManagedCloudNode } =
+      await loadContract();
+    const plan = planManagedCloudNode(input);
+    let startupScript = '';
+    const client: ManagedCloudNodeClient = {
+      ensureReleaseBucketAccess: async () => 'unchanged',
+      ensureDataDisk: async () => ({
+        status: 'unchanged',
+        formatAllowed: true,
+      }),
+      ensureSnapshotPolicyAttachment: async () => 'unchanged',
+      ensureInstance: async (instance) => {
+        startupScript = (
+          instance as { metadata: Record<string, string> }
+        ).metadata['startup-script'];
+        return 'created';
+      },
+    };
+
+    await applyManagedCloudNode({ client, plan });
+
+    expect(startupScript).toContain("ALLOW_DATA_DISK_FORMAT='true'");
   });
 
   it('preserves data for ordinary deletion and VM replacement', async () => {

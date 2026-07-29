@@ -5,10 +5,14 @@ import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 type ResourceStatus = 'created' | 'unchanged';
+type DataDiskStatus = {
+  status: ResourceStatus;
+  formatAllowed: boolean;
+};
 
 type NodeClient = {
   ensureReleaseBucketAccess: (input: unknown) => Promise<ResourceStatus>;
-  ensureDataDisk: (input: unknown) => Promise<ResourceStatus>;
+  ensureDataDisk: (input: unknown) => Promise<DataDiskStatus>;
   ensureSnapshotPolicyAttachment: (input: unknown) => Promise<ResourceStatus>;
   ensureInstance: (input: unknown) => Promise<ResourceStatus>;
 };
@@ -133,7 +137,7 @@ describe('platform managed cloud node instance boundary', () => {
       },
       ensureDataDisk: async () => {
         calls.push('data-disk');
-        return 'created';
+        return { status: 'created', formatAllowed: true };
       },
       ensureSnapshotPolicyAttachment: async () => {
         calls.push('snapshot-policy');

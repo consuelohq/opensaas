@@ -1021,6 +1021,36 @@ describe('workspace node management and presence', () => {
     );
     expect(overflow.status).toBe(400);
 
+    const normalizedCapabilitiesBody = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: nowMs,
+      nonce: 'heartbeat-nonce-normalized-capabilities',
+      connectorStatus: 'connected',
+      capabilities: Array.from(
+        { length: 33 },
+        (_, index) => `${' '.repeat(index)}mcp`,
+      ),
+    });
+    const normalizedCapabilitiesSignature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: normalizedCapabilitiesBody,
+    });
+    const normalizedCapabilities = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': normalizedCapabilitiesSignature,
+        },
+        body: normalizedCapabilitiesBody,
+      }),
+    );
+    expect(normalizedCapabilities.status).toBe(200);
+    expect(
+      (await store.byWorkspaceNode(accountId, 'node-member'))?.capabilities,
+    ).toEqual(['mcp']);
+
     const disconnectedBody = JSON.stringify({
       workspaceId,
       nodeId: 'node-member',

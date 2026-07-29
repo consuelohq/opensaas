@@ -173,6 +173,14 @@ const ensureDataDiskMatches = (
   }
 };
 
+const managedDataDiskFormatAllowed = (resource: JsonRecord): boolean =>
+  recordStrings(resource, 'users').length === 0 &&
+  !recordString(resource, 'lastAttachTimestamp') &&
+  !recordString(resource, 'sourceDisk') &&
+  !recordString(resource, 'sourceImage') &&
+  !recordString(resource, 'sourceSnapshot') &&
+  !recordString(resource, 'sourceStorageObject');
+
 const canonicalManagedNodeStartupScript = (value: string): string =>
   value.replace(
     /ALLOW_DATA_DISK_FORMAT='(?:true|false)'/,
@@ -1017,7 +1025,10 @@ export const createGcloudManagedCloudNodeClient = (input: {
     }
     if (resource) {
       ensureDataDiskMatches(disk, resource);
-      return 'unchanged';
+      return {
+        status: 'unchanged',
+        formatAllowed: managedDataDiskFormatAllowed(resource),
+      };
     }
     try {
       await runRequired(input.run, [
@@ -1040,7 +1051,7 @@ export const createGcloudManagedCloudNodeClient = (input: {
     } catch (error: unknown) {
       throw withContext(`failed to create data disk ${disk.name}`, error);
     }
-    return 'created';
+    return { status: 'created', formatAllowed: true };
   },
 
   ensureSnapshotPolicyAttachment: async (attachment) => {

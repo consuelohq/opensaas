@@ -342,10 +342,14 @@ async function handleHeartbeat(
       ? body.connectorStatus
       : undefined;
   const capabilities = Array.isArray(body.capabilities)
-    ? [...new Set(body.capabilities.filter((value): value is string => typeof value === 'string'))]
-        .map((value) => value.trim())
-        .filter(Boolean)
-        .sort()
+    ? [
+        ...new Set(
+          body.capabilities
+            .filter((value): value is string => typeof value === 'string')
+            .map((value) => value.trim())
+            .filter(Boolean),
+        ),
+      ].sort()
     : [];
   if (capabilities.length > 32) {
     return errorResponse(
