@@ -64,6 +64,7 @@ function parseBootstrapSummary(stdout: string) {
     sourceStatus: string;
     dependencyStatus: string;
     onboardingStatus: string;
+    daemonStatus: string;
     dependencies: {
       runtime: Record<string, { status: string; path: string | null }>;
       operator: Record<string, { classification: string }>;
@@ -406,7 +407,7 @@ describe('public installer runtime dependencies', () => {
         '--json',
         '--mode',
         'local',
-        '--skip-daemons',
+        '--install-daemons',
       ],
       {
         cwd: workingDir,
@@ -423,7 +424,7 @@ describe('public installer runtime dependencies', () => {
       },
     );
 
-    expect(result.status).toBe(0);
+    expect(result.status, result.stderr).toBe(0);
     expect(result.stderr).toContain(
       `dry-run: would download Consuelo OS source from https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz to ${sourceDir}`,
     );
@@ -433,6 +434,9 @@ describe('public installer runtime dependencies', () => {
     expect(result.stderr).toContain(
       `dry-run: would run: bun --cwd ${sourceDir}/packages/os ./scripts/install.ts --dry-run --yes --json`,
     );
+    expect(result.stderr).toContain(
+      `dry-run: would run: bash ${sourceDir}/packages/os/scripts/install-system-daemons.sh --dry-run --quiet`,
+    );
     expect(result.stderr).not.toContain('ENOENT');
     expect(existsSync(sourceDir)).toBe(false);
     expect(existsSync(bunCaptureFile)).toBe(false);
@@ -441,6 +445,7 @@ describe('public installer runtime dependencies', () => {
     expect(summary.sourceStatus).toBe('would_download');
     expect(summary.dependencyStatus).toBe('would_install');
     expect(summary.onboardingStatus).toBe('would_run');
+    expect(summary.daemonStatus).toBe('would_run');
   });
 
   it('should enable Portless only when the optional enhancement is explicitly selected', () => {
