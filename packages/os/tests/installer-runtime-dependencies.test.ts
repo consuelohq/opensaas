@@ -154,6 +154,31 @@ function resolveCutoverLocalHealthUrl(
   });
 }
 
+function resolvePersistedBunBin(
+  envFile: string,
+  stateEnvFile: string,
+): SpawnSyncReturns<string> {
+  const installer = readDaemonInstaller();
+  const script = [
+    extractShellFunction(installer, 'load_env_file'),
+    extractShellFunction(installer, 'resolve_bun_bin'),
+    'env_file="$ENV_FILE"',
+    'state_env_file="$STATE_ENV_FILE"',
+    'resolve_bun_bin',
+  ].join('\n');
+  const env = installerEnv({
+    ENV_FILE: envFile,
+    STATE_ENV_FILE: stateEnvFile,
+    PATH: SYSTEM_PATH,
+  });
+  delete env.BUN_BIN;
+
+  return spawnSync('/bin/bash', ['-c', script], {
+    encoding: 'utf8',
+    env,
+  });
+}
+
 function writeCloudflaredPlist(filePath: string, label: string): void {
   writeFileSync(
     filePath,
@@ -184,6 +209,20 @@ afterEach(() => {
 });
 
 describe('public installer runtime dependencies', () => {
+  it('should resolve Bun from flattened install state in a clean shell', () => {
+    const home = createTempHome('consuelo-os-installer-runtime-bun-state-');
+    const runtimeEnv = join(home, 'runtime.env');
+    const stateEnv = join(home, 'state.env');
+    const persistedBun = join(home, 'managed', 'bun');
+    writeFileSync(runtimeEnv, 'CONSUELO_OS_PORT=46321\n');
+    writeFileSync(stateEnv, `BUN_BIN=${persistedBun}\n`);
+
+    const result = resolvePersistedBunBin(runtimeEnv, stateEnv);
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout.trim()).toBe(persistedBun);
+  });
+
   it('should probe the configured daemon port during cutover', () => {
     const home = createTempHome('consuelo-os-installer-runtime-cutover-port-');
     const envFile = join(home, '.env');

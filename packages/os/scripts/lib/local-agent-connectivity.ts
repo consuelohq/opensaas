@@ -1011,35 +1011,23 @@ class ProbeFailure extends Error {
   }
 }
 
-export function parseMcpContentLengthFrames(buffer: Buffer): {
+export function parseMcpJsonLines(buffer: Buffer): {
   messages: JsonObject[];
   remainder: Buffer;
 } {
   const messages: JsonObject[] = [];
-  let remainder = buffer;
-  while (remainder.length > 0) {
-    const headerEndCrlf = remainder.indexOf(Buffer.from('\r\n\r\n'));
-    const headerEndLf = headerEndCrlf < 0 ? remainder.indexOf(Buffer.from('\n\n')) : -1;
-    const effectiveHeaderEnd = headerEndCrlf >= 0 ? headerEndCrlf : headerEndLf;
-    const separatorLength = headerEndCrlf >= 0 ? 4 : 2;
-    if (effectiveHeaderEnd < 0) break;
-    const header = remainder.subarray(0, effectiveHeaderEnd).toString('ascii');
-    const lengthMatch = header.match(/content-length:\s*(\d+)/i);
-    if (!lengthMatch) throw new Error('MCP response is missing Content-Length.');
-    const bodyLength = Number.parseInt(lengthMatch[1] ?? '', 10);
-    const bodyStart = effectiveHeaderEnd + separatorLength;
-    const bodyEnd = bodyStart + bodyLength;
-    if (remainder.length < bodyEnd) break;
-    const body = remainder.subarray(bodyStart, bodyEnd).toString('utf8');
-    const parsed = JSON.parse(body) as unknown;
+  let offset = 0;
+  while (offset < buffer.length) {
+    const newline = buffer.indexOf(0x0a, offset);
+    if (newline < 0) break;
+    const line = buffer.subarray(offset, newline).toString('utf8').trim();
+    offset = newline + 1;
+    if (!line) continue;
+    const parsed = JSON.parse(line) as unknown;
     if (!isJsonObject(parsed)) throw new Error('MCP response must be a JSON object.');
     messages.push(parsed);
-    remainder = remainder.subarray(bodyEnd);
-    while (remainder.length > 0 && /\s/.test(String.fromCharCode(remainder[0] ?? 0))) {
-      remainder = remainder.subarray(1);
-    }
   }
-  return { messages, remainder };
+  return { messages, remainder: buffer.subarray(offset) };
 }
 
 function probeMcpCommand(input: {
@@ -1107,7 +1095,7 @@ function probeMcpCommand(input: {
     child.stdout.on('data', (chunk: Buffer) => {
       stdout = Buffer.concat([stdout, chunk]);
       try {
-        const parsed = parseMcpContentLengthFrames(stdout);
+        const parsed = parseMcpJsonLines(stdout);
         stdout = parsed.remainder;
         for (const message of parsed.messages) {
           if (isJsonObject(message.error)) {

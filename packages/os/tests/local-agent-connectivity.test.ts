@@ -11,7 +11,7 @@ import {
   configureLocalAgents,
   detectLocalAgents,
   localAgentMcpCommandPath,
-  parseMcpContentLengthFrames,
+  parseMcpJsonLines,
   verifyLocalAgents,
   type AgentName,
 } from '../scripts/lib/local-agent-connectivity';
@@ -107,16 +107,16 @@ const supportedAgents: AgentName[] = [
 ];
 
 describe('local agent connectivity', () => {
-  it('parses Content-Length frames by UTF-8 byte length across partial chunks', () => {
+  it('should parse newline-delimited MCP responses across partial UTF-8 chunks', () => {
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, result: { label: 'Consuelo ✓' } });
-    const frame = Buffer.from(`Content-Length: ${Buffer.byteLength(body)}\r\n\r\n${body}`, 'utf8');
+    const frame = Buffer.from(`\n\n${body}\n`, 'utf8');
     const splitAt = frame.length - 3;
 
-    const partial = parseMcpContentLengthFrames(frame.subarray(0, splitAt));
+    const partial = parseMcpJsonLines(frame.subarray(0, splitAt));
     expect(partial.messages).toEqual([]);
-    expect(partial.remainder.equals(frame.subarray(0, splitAt))).toBe(true);
+    expect(partial.remainder.equals(frame.subarray(2, splitAt))).toBe(true);
 
-    const complete = parseMcpContentLengthFrames(Buffer.concat([
+    const complete = parseMcpJsonLines(Buffer.concat([
       partial.remainder,
       frame.subarray(splitAt),
     ]));
@@ -124,6 +124,22 @@ describe('local agent connectivity', () => {
       { jsonrpc: '2.0', id: 1, result: { label: 'Consuelo ✓' } },
     ]);
     expect(complete.remainder.length).toBe(0);
+  });
+
+  it('should emit JSON lines and skip blank request lines without recursion', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'scripts', 'mcp-stdio.ts'),
+      'utf8',
+    );
+    const writeStart = source.indexOf('function writeMessage');
+    const writeEnd = source.indexOf('\n}\n\nasync function main', writeStart);
+    const writeMessage = source.slice(writeStart, writeEnd);
+
+    expect(writeMessage).toContain('process.stdout.write(`${body}\\n`);');
+    expect(writeMessage).not.toContain('Content-Length');
+    expect(source).not.toContain(
+      'line.length > 0 ? line : takeMessage()',
+    );
   });
 
   it('should detect local agents when provisioning uses the supplied user home', () => {
