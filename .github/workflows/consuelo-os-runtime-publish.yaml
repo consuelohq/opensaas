@@ -27,9 +27,33 @@ jobs:
     permissions:
       contents: read
 
+  windows-service-host:
+    name: Build deterministic Windows service host
+    needs: distribution-gate
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - name: Build deterministic Windows service host
+        shell: pwsh
+        run: |
+          msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj /p:Configuration=Release /p:Platform=x64 /m
+          $serviceHost = 'packages/os/native/windows-service/bin/Release/Consuelo.Windows.Service.exe'
+          if (-not (Test-Path -LiteralPath $serviceHost -PathType Leaf)) {
+            throw "Windows service build did not produce $serviceHost"
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-service-host
+          path: packages/os/native/windows-service/bin/Release/Consuelo.Windows.Service.exe
+          if-no-files-found: error
+          retention-days: 7
+
   plan:
     name: Plan dev publication
-    needs: distribution-gate
+    needs:
+      - distribution-gate
+      - windows-service-host
     runs-on: ubuntu-latest
     environment: consuelo / production
     outputs:
@@ -42,6 +66,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-service-host
+          path: packages/os/native/windows-service/bin/Release
       - name: Install dependencies
         working-directory: packages/os
         run: bun install --frozen-lockfile
@@ -121,7 +149,9 @@ jobs:
 
   build:
     name: Build ${{ matrix.platform }}-${{ matrix.architecture }}
-    needs: plan
+    needs:
+      - plan
+      - windows-service-host
     if: needs.plan.outputs.changed == 'true'
     strategy:
       fail-fast: false
@@ -140,17 +170,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - uses: microsoft/setup-msbuild@v2
-        if: matrix.platform == 'windows'
-      - name: Build Windows service host
-        if: matrix.platform == 'windows'
-        shell: pwsh
-        run: |
-          msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj /p:Configuration=Release /p:Platform=x64 /m
-          $serviceHost = 'packages/os/native/windows-service/bin/Release/Consuelo.Windows.Service.exe'
-          if (-not (Test-Path -LiteralPath $serviceHost -PathType Leaf)) {
-            throw "Windows service build did not produce $serviceHost"
-          }
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-service-host
+          path: packages/os/native/windows-service/bin/Release
       - name: Install dependencies
         working-directory: packages/os
         shell: bash

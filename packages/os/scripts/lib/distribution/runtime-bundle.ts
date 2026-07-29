@@ -604,15 +604,13 @@ function collectRuntimeFiles(
 function releaseFingerprintForFiles(files: RuntimeBundleFile[]): string {
   return sha256(
     canonicalJson({
-      files: files
-        .filter(({ path }) => path !== WINDOWS_SERVICE_HOST_PATH)
-        .map(({ digest, mode, path, role, size }) => ({
-          digest,
-          mode,
-          path,
-          role,
-          size,
-        })),
+      files: files.map(({ digest, mode, path, role, size }) => ({
+        digest,
+        mode,
+        path,
+        role,
+        size,
+      })),
       policyVersion: RUNTIME_BUNDLE_POLICY_VERSION,
       schemaVersion: RUNTIME_BUNDLE_SCHEMA_VERSION,
     }),
