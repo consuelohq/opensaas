@@ -413,7 +413,7 @@ describe('runtime bundle contract', () => {
     ).toBe(false);
   });
 
-  it('excludes generated Windows service build products from default runtime discovery', async () => {
+  it('should exclude Windows service intermediates when discovering the default runtime bundle', async () => {
     const root = createFixture({
       'native/windows-service/Program.cs': 'public static class Program {}\n',
       'native/windows-service/Consuelo.Windows.Service.csproj':
@@ -437,11 +437,12 @@ describe('runtime bundle contract', () => {
     expect(paths).toContain(
       'native/windows-service/Consuelo.Windows.Service.csproj',
     );
+    expect(paths).toContain(
+      'native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe',
+    );
     expect(
-      paths.some(
-        (filePath) =>
-          filePath.startsWith('native/windows-service/obj/') ||
-          filePath.startsWith('native/windows-service/bin/'),
+      paths.some((filePath) =>
+        filePath.startsWith('native/windows-service/obj/'),
       ),
     ).toBe(false);
   });
