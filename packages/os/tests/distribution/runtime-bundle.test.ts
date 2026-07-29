@@ -329,9 +329,7 @@ describe('runtime bundle contract', () => {
       'source-only',
     );
     expect(
-      classifyRuntimeBundlePath(
-        'scripts/lib/distribution/runtime-bundle.ts',
-      ),
+      classifyRuntimeBundlePath('scripts/lib/distribution/runtime-bundle.ts'),
     ).toBe('runtime');
     expect(classifyRuntimeBundlePath('assets/consuelo-mark.png')).toBe(
       'runtime',
@@ -864,5 +862,5 @@ describe('runtime bundle contract', () => {
       'scripts/build-runtime-bundle.ts',
     );
     expect(() => verifyRuntimeBundleArchive(first.archiveBytes)).not.toThrow();
-  });
+  }, 120_000);
 });

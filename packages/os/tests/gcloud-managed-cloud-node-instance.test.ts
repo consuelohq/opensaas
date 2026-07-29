@@ -13,9 +13,7 @@ type CommandResult = {
 type CommandRunner = (args: string[]) => Promise<CommandResult>;
 
 type GcloudManagedNodeContract = {
-  createGcloudManagedCloudNodeClient: (input: {
-    run: CommandRunner;
-  }) => {
+  createGcloudManagedCloudNodeClient: (input: { run: CommandRunner }) => {
     ensureDataDisk: (input: {
       projectId: string;
       zone: string;
@@ -141,7 +139,8 @@ const instance = {
     'enable-oslogin': 'TRUE',
     'block-project-ssh-keys': 'TRUE',
     'serial-port-enable': 'TRUE',
-    'startup-script': '#!/usr/bin/env bash\necho ready\n',
+    'startup-script':
+      "#!/usr/bin/env bash\nALLOW_DATA_DISK_FORMAT='true'\necho ready\n",
   },
   labels,
 };
@@ -281,7 +280,7 @@ describe('gcloud managed cloud node instance adapter', () => {
     expect(create?.some((arg) => arg.startsWith('startup-script='))).toBe(true);
   });
 
-  it('returns unchanged for exact disk, policy, and instance state', async () => {
+  it('returns unchanged for exact state and a consumed one-time disk-format flag', async () => {
     const { createGcloudManagedCloudNodeClient } = await loadContract();
     const client = createGcloudManagedCloudNodeClient({
       run: async (args) => {
@@ -344,10 +343,18 @@ describe('gcloud managed cloud node instance adapter', () => {
                 enableIntegrityMonitoring: true,
               },
               metadata: {
-                items: Object.entries(instance.metadata).map(([key, value]) => ({
-                  key,
-                  value,
-                })),
+                items: Object.entries(instance.metadata).map(
+                  ([key, value]) => ({
+                    key,
+                    value:
+                      key === 'startup-script'
+                        ? value.replace(
+                            "ALLOW_DATA_DISK_FORMAT='true'",
+                            "ALLOW_DATA_DISK_FORMAT='false'",
+                          )
+                        : value,
+                  }),
+                ),
               },
             }),
           );

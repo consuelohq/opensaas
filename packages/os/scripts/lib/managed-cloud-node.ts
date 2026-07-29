@@ -68,11 +68,13 @@ export type ManagedCloudNodeFoundationClient = {
     projectId: string;
     role: string;
   }) => Promise<FoundationResourceStatus>;
-  ensureSnapshotPolicy: (input: ManagedCloudNodeSnapshotPolicy & {
-    projectId: string;
-    region: string;
-    labels: Record<string, string>;
-  }) => Promise<FoundationResourceStatus>;
+  ensureSnapshotPolicy: (
+    input: ManagedCloudNodeSnapshotPolicy & {
+      projectId: string;
+      region: string;
+      labels: Record<string, string>;
+    },
+  ) => Promise<FoundationResourceStatus>;
   ensureBudget: (input: {
     billingAccountId: string;
     displayName: string;
@@ -161,6 +163,9 @@ export type ManagedCloudNodeReleaseBootstrap = {
   cloudflaredBinaryUrl: string;
   cloudflaredBinaryDigest: string;
   cloudflaredVersion: string;
+  caddyArchiveUrl: string;
+  caddyArchiveDigest: string;
+  caddyVersion: string;
   trustedPublicKeys: Record<string, string>;
 };
 
@@ -232,22 +237,26 @@ export type ManagedCloudNodeClient = {
     member: string;
     role: 'roles/storage.objectViewer';
   }) => Promise<FoundationResourceStatus>;
-  ensureDataDisk: (input: ManagedCloudNodeDataDisk & {
-    projectId: string;
-    zone: string;
-    labels: Record<string, string>;
-  }) => Promise<FoundationResourceStatus>;
+  ensureDataDisk: (
+    input: ManagedCloudNodeDataDisk & {
+      projectId: string;
+      zone: string;
+      labels: Record<string, string>;
+    },
+  ) => Promise<FoundationResourceStatus>;
   ensureSnapshotPolicyAttachment: (input: {
     projectId: string;
     zone: string;
     diskName: string;
     policyName: string;
   }) => Promise<FoundationResourceStatus>;
-  ensureInstance: (input: ManagedCloudNodeInstance & {
-    projectId: string;
-    zone: string;
-    labels: Record<string, string>;
-  }) => Promise<FoundationResourceStatus>;
+  ensureInstance: (
+    input: ManagedCloudNodeInstance & {
+      projectId: string;
+      zone: string;
+      labels: Record<string, string>;
+    },
+  ) => Promise<FoundationResourceStatus>;
 };
 
 export type ManagedCloudNodeOperation = {
@@ -282,7 +291,9 @@ const requireNonEmpty = (value: string, name: string): string => {
 
 const RELEASE_CHANNELS = new Set(['stable', 'beta', 'canary', 'dev']);
 
-const requireReleaseChannel = (value: string): ManagedCloudNodeReleaseBootstrap['channel'] => {
+const requireReleaseChannel = (
+  value: string,
+): ManagedCloudNodeReleaseBootstrap['channel'] => {
   if (!RELEASE_CHANNELS.has(value)) {
     throw new ManagedCloudNodeError(
       'MANAGED_NODE_INPUT_INVALID',
@@ -296,7 +307,9 @@ const canonicalWorkspaceHost = (value: string): string => {
   const normalized = requireNonEmpty(value, 'workspaceHost');
   let parsed: URL;
   try {
-    parsed = new URL(normalized.includes('://') ? normalized : 'https://' + normalized);
+    parsed = new URL(
+      normalized.includes('://') ? normalized : 'https://' + normalized,
+    );
   } catch (error: unknown) {
     throw new ManagedCloudNodeError(
       'MANAGED_NODE_INPUT_INVALID',
@@ -304,7 +317,12 @@ const canonicalWorkspaceHost = (value: string): string => {
       { cause: error },
     );
   }
-  if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.port) {
+  if (
+    parsed.protocol !== 'https:' ||
+    parsed.username ||
+    parsed.password ||
+    parsed.port
+  ) {
     throw new ManagedCloudNodeError(
       'MANAGED_NODE_INPUT_INVALID',
       'workspaceHost must be an HTTPS hostname without credentials or a port',
@@ -313,7 +331,10 @@ const canonicalWorkspaceHost = (value: string): string => {
   return parsed.hostname.toLowerCase();
 };
 
-const trustedGcsUrl = (value: string, name: string): { url: string; bucket: string } => {
+const trustedGcsUrl = (
+  value: string,
+  name: string,
+): { url: string; bucket: string } => {
   const url = requireHttpsUrl(value, name);
   const parsed = new URL(url);
   const parts = parsed.pathname.split('/').filter(Boolean);
@@ -402,6 +423,7 @@ const renderManagedCloudNodeStartupScript = (input: {
   const cloudflaredDigest = input.release.cloudflaredBinaryDigest.slice(
     'sha256:'.length,
   );
+  const caddyDigest = input.release.caddyArchiveDigest.slice('sha256:'.length);
   const bundleDirectory = input.release.bootstrapBundleId.replace(':', '-');
   const onboarding = JSON.stringify({
     schemaVersion: 1,
@@ -428,6 +450,8 @@ const renderManagedCloudNodeStartupScript = (input: {
     `BUNDLE_DIR="$BOOTSTRAP_ROOT/${bundleDirectory}"`,
     'BUNDLE_ARCHIVE="$BOOTSTRAP_ROOT/runtime.tar.gz"',
     'CLOUDFLARED_PATH="$CONSUELO_HOME/bin/cloudflared"',
+    'CADDY_PATH="$CONSUELO_HOME/bin/caddy"',
+    'CADDY_ARCHIVE="$BOOTSTRAP_ROOT/caddy.tar.gz"',
     "METADATA_TOKEN_URL='http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token'",
     '',
     'write_status() {',
@@ -493,10 +517,41 @@ const renderManagedCloudNodeStartupScript = (input: {
     'chmod 0755 "$CLOUDFLARED_PATH"',
     'chown consuelo:consuelo "$CLOUDFLARED_PATH"',
     '',
+    'write_status installing-caddy',
+    `curl -fsSL ${shellSingleQuote(input.release.caddyArchiveUrl)} -o \"$CADDY_ARCHIVE\"`,
+    `printf '%s  %s\\n' ${shellSingleQuote(caddyDigest)} \"$CADDY_ARCHIVE\" | sha256sum -c -`,
+    'CADDY_EXTRACT_DIR="$(mktemp -d "$BOOTSTRAP_ROOT/caddy.XXXXXX")"',
+    'tar -xzf "$CADDY_ARCHIVE" -C "$CADDY_EXTRACT_DIR" caddy',
+    'install -m 0755 "$CADDY_EXTRACT_DIR/caddy" "$CADDY_PATH"',
+    'chown consuelo:consuelo "$CADDY_PATH"',
+    'rm -rf "$CADDY_EXTRACT_DIR"',
+    '',
+    'SYSTEMD_USER_DIR="$CONSUELO_USER_HOME/.config/systemd/user"',
+    'install -d -m 0700 -o consuelo -g consuelo "$SYSTEMD_USER_DIR"',
+    'cat > "$SYSTEMD_USER_DIR/consuelo-caddy.service" <<EOF',
+    '[Unit]',
+    'Description=Consuelo local Caddy ingress',
+    'After=network-online.target',
+    'Wants=network-online.target',
+    '',
+    '[Service]',
+    'Type=simple',
+    'Environment=HOME=$CONSUELO_USER_HOME',
+    'Environment=CONSUELO_HOME=$CONSUELO_HOME',
+    'ExecStart=$CADDY_PATH run --config $CONSUELO_HOME/node/caddy/Caddyfile --adapter caddyfile',
+    'Restart=on-failure',
+    'RestartSec=2',
+    '',
+    '[Install]',
+    'WantedBy=default.target',
+    'EOF',
+    'chmod 0600 "$SYSTEMD_USER_DIR/consuelo-caddy.service"',
+    'chown consuelo:consuelo "$SYSTEMD_USER_DIR/consuelo-caddy.service"',
+    '',
     'install -d -m 0700 "$CONSUELO_HOME/bootstrap"',
     `printf '%s\\n' ${shellSingleQuote(onboarding)} > "$CONSUELO_HOME/bootstrap/onboarding.json"`,
     'chmod 0600 "$CONSUELO_HOME/bootstrap/onboarding.json"',
-    'chown consuelo:consuelo "$CONSUELO_HOME"',
+    'chown -R consuelo:consuelo "$CONSUELO_HOME/bootstrap"',
     '',
     'write_status activating-runtime',
     'runuser -u consuelo -- env \\',
@@ -512,6 +567,12 @@ const renderManagedCloudNodeStartupScript = (input: {
     `  "$BUN_BIN" "$BUNDLE_DIR/scripts/lifecycle.ts" install --channel ${input.release.channel} --home "$CONSUELO_HOME" --json`,
     '',
     'write_status awaiting-enrollment',
+    'runuser -u consuelo -- env \\',
+    '  HOME="$CONSUELO_USER_HOME" \\',
+    '  XDG_CONFIG_HOME="$CONSUELO_USER_HOME/.config" \\',
+    '  XDG_RUNTIME_DIR="/run/user/$CONSUELO_UID" \\',
+    '  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$CONSUELO_UID/bus" \\',
+    '  systemctl --user enable --now consuelo-caddy.service',
     'if [ -f "$ENROLLMENT_STATUS_PATH" ] && jq -e \'.phase == "enrolled"\' "$ENROLLMENT_STATUS_PATH" >/dev/null 2>&1; then',
     '  write_status runtime-active enrolled',
     '  exit 0',
@@ -522,13 +583,12 @@ const renderManagedCloudNodeStartupScript = (input: {
     '  XDG_RUNTIME_DIR="/run/user/$CONSUELO_UID" \\',
     '  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$CONSUELO_UID/bus" \\',
     '  CONSUELO_HOME="$CONSUELO_HOME" \\',
-    '  nohup "$BUN_BIN" "$CONSUELO_HOME/runtime/current/scripts/managed-cloud-node-enroll.ts" \\',
+    '  "$BUN_BIN" "$CONSUELO_HOME/runtime/current/scripts/managed-cloud-node-enroll.ts" \\',
     '    --home "$CONSUELO_HOME" \\',
     '    --onboarding "$CONSUELO_HOME/bootstrap/onboarding.json" \\',
     '    --status "$ENROLLMENT_STATUS_PATH" \\',
-    '    > "$CONSUELO_HOME/bootstrap/enrollment.log" 2>&1 &',
-    '',
-    'write_status runtime-active enrollment-pending',
+    '    > "$CONSUELO_HOME/bootstrap/enrollment.log" 2>&1',
+    'write_status runtime-active enrolled',
     '',
   ].join('\n');
 };
@@ -563,7 +623,10 @@ export const planManagedCloudNode = (input: {
       `zone ${zone} is not in region ${region}`,
     );
   }
-  const releaseLocation = trustedGcsUrl(input.release.baseUrl, 'release.baseUrl');
+  const releaseLocation = trustedGcsUrl(
+    input.release.baseUrl,
+    'release.baseUrl',
+  );
   const bootstrapLocation = trustedGcsUrl(
     input.release.bootstrapBundleUrl,
     'release.bootstrapBundleUrl',
@@ -602,6 +665,18 @@ export const planManagedCloudNode = (input: {
       input.release.cloudflaredVersion,
       'release.cloudflaredVersion',
     ),
+    caddyArchiveUrl: requireHttpsUrl(
+      input.release.caddyArchiveUrl,
+      'release.caddyArchiveUrl',
+    ),
+    caddyArchiveDigest: requireSha256(
+      input.release.caddyArchiveDigest,
+      'release.caddyArchiveDigest',
+    ),
+    caddyVersion: requireNonEmpty(
+      input.release.caddyVersion,
+      'release.caddyVersion',
+    ),
     trustedPublicKeys: Object.fromEntries(
       Object.entries(input.release.trustedPublicKeys)
         .map(([key, value]) => [key.trim(), value.trim()] as const)
@@ -612,7 +687,8 @@ export const planManagedCloudNode = (input: {
     if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/i.test(publicKey)) {
       throw new ManagedCloudNodeError(
         'MANAGED_NODE_INPUT_INVALID',
-        'release.trustedPublicKeys must not contain private key material: ' + keyId,
+        'release.trustedPublicKeys must not contain private key material: ' +
+          keyId,
       );
     }
   }
@@ -623,19 +699,16 @@ export const planManagedCloudNode = (input: {
     );
   }
 
-  const instanceName = `consuelo-${resourceNodeId}`.slice(0, 63).replace(/-+$/g, '');
-  const dataDiskName = `${instanceName}-data`
+  const instanceName = `consuelo-${resourceNodeId}`
     .slice(0, 63)
     .replace(/-+$/g, '');
+  const dataDiskName = `${instanceName}-data`.slice(0, 63).replace(/-+$/g, '');
   const labels = {
     'consuelo-managed': 'true',
     'consuelo-environment': 'development',
     'consuelo-product': 'os-cloud',
     'consuelo-node-id': resourceNodeId,
-    'consuelo-workspace-id': normalizeResourceLabel(
-      workspaceId,
-      'workspaceId',
-    ),
+    'consuelo-workspace-id': normalizeResourceLabel(workspaceId, 'workspaceId'),
   };
   const home = '/var/lib/consuelo';
   const statusPath = `${home}/bootstrap/status.json`;
@@ -770,13 +843,15 @@ export const applyManagedCloudNode = async (input: {
     }
   };
 
-  const dataDiskStatus = await record(`data-disk:${input.plan.dataDisk.name}`, () =>
-    input.client.ensureDataDisk({
-      ...input.plan.dataDisk,
-      projectId: input.plan.projectId,
-      zone: input.plan.zone,
-      labels: input.plan.labels,
-    }),
+  const dataDiskStatus = await record(
+    `data-disk:${input.plan.dataDisk.name}`,
+    () =>
+      input.client.ensureDataDisk({
+        ...input.plan.dataDisk,
+        projectId: input.plan.projectId,
+        zone: input.plan.zone,
+        labels: input.plan.labels,
+      }),
   );
   for (const policyName of input.plan.dataDisk.snapshotPolicies) {
     await record(
@@ -1023,7 +1098,9 @@ export const applyManagedCloudNodeFoundation = async (input: {
   };
 
   for (const service of input.plan.services) {
-    await record(`service:${service}`, () => input.client.ensureService(service));
+    await record(`service:${service}`, () =>
+      input.client.ensureService(service),
+    );
   }
   await record(`network:${input.plan.network.name}`, () =>
     input.client.ensureNetwork({

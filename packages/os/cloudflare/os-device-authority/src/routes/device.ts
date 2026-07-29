@@ -60,10 +60,6 @@ async function handleDeviceRequest(
       const publicKey = (p.get('device_public_key_jwk') ?? '').trim();
       if (!publicKey)
         return json({ error: 'device_public_key_required' }, { status: 400 });
-      const requestedWorkspaceId = (p.get('workspace_id') ?? '').trim();
-      if (requestedWorkspaceId && !/^[A-Za-z0-9_-]{1,128}$/.test(requestedWorkspaceId)) {
-        return json({ error: 'invalid_workspace_id' }, { status: 400 });
-      }
       const requestedWorkspaceSlug =
         p.get('workspace_slug') ?? p.get('workspace_name') ?? '';
       const workspaceSlug = requestedWorkspaceSlug.trim()
@@ -87,7 +83,6 @@ async function handleDeviceRequest(
       const g: Grant = {
         hash: await hash(deviceCode),
         userCode: code,
-        ...(requestedWorkspaceId ? { workspaceId: requestedWorkspaceId } : {}),
         ...(workspaceSlug && workspaceHost
           ? { workspaceSlug, workspaceHost }
           : {}),

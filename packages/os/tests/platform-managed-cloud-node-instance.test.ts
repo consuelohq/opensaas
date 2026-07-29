@@ -30,15 +30,20 @@ type NodeConfig = {
     cloudflaredBinaryUrl: string;
     cloudflaredBinaryDigest: string;
     cloudflaredVersion: string;
+    caddyArchiveUrl: string;
+    caddyArchiveDigest: string;
+    caddyVersion: string;
     trustedPublicKeys: Record<string, string>;
   };
 };
 
 type PlatformContract = {
-  provisionManagedCloudNode: (input: NodeConfig & {
-    dryRun?: boolean;
-    client?: NodeClient;
-  }) => Promise<{
+  provisionManagedCloudNode: (
+    input: NodeConfig & {
+      dryRun?: boolean;
+      client?: NodeClient;
+    },
+  ) => Promise<{
     status: 'planned' | 'provisioned';
     plan: { nodeId: string; zone: string };
     operations: Array<{ resource: string; status: string }>;
@@ -97,6 +102,10 @@ const config: NodeConfig = {
     cloudflaredBinaryDigest:
       'sha256:9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17',
     cloudflaredVersion: '2026.7.3',
+    caddyArchiveUrl:
+      'https://github.com/caddyserver/caddy/releases/download/v2.11.4/caddy_2.11.4_linux_amd64.tar.gz',
+    caddyArchiveDigest: 'sha256:' + '4'.repeat(64),
+    caddyVersion: '2.11.4',
     trustedPublicKeys: {
       fixture: '-----BEGIN PUBLIC KEY-----\nfixture\n-----END PUBLIC KEY-----',
     },
@@ -106,7 +115,10 @@ const config: NodeConfig = {
 describe('platform managed cloud node instance boundary', () => {
   it('plans without provider authority and applies through the shared service', async () => {
     const { provisionManagedCloudNode } = await loadPlatform();
-    const planned = await provisionManagedCloudNode({ ...config, dryRun: true });
+    const planned = await provisionManagedCloudNode({
+      ...config,
+      dryRun: true,
+    });
     expect(planned).toMatchObject({
       status: 'planned',
       plan: { nodeId: 'ko-cloud-1', zone: 'us-east1-b' },

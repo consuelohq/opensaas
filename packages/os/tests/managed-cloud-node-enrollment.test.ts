@@ -40,6 +40,7 @@ type EnrollmentContract = {
         home: string;
         connectorId: string;
       }) => Promise<void>;
+      now: () => number;
       sleep: (milliseconds: number) => Promise<void>;
       writeStatus: (status: Record<string, unknown>) => void;
     };
@@ -90,8 +91,7 @@ const onboarding = {
 const deviceKeyPair = {
   algorithm: 'Ed25519' as const,
   publicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"public"}',
-  signingKeyJwk:
-    '{"kty":"OKP","crv":"Ed25519","x":"public","d":"private"}',
+  signingKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"public","d":"private"}',
 };
 
 const replacementDeviceKeyPair = {
@@ -149,12 +149,14 @@ describe('managed cloud node enrollment', () => {
     const statuses: Record<string, unknown>[] = [];
     const provisions: Record<string, unknown>[] = [];
     const activations: Array<{ home: string; connectorId: string }> = [];
+    const approvedWorkspaceId = onboarding.workspaceId;
     let pollCount = 0;
 
     const result = await runManagedCloudNodeEnrollment({
       home: '/var/lib/consuelo',
       onboarding,
       dependencies: {
+        now: () => Date.parse('2026-07-28T04:59:00.000Z'),
         loadOrCreateDeviceKeyPair: () => deviceKeyPair,
         requestDeviceCode: async (input) => {
           requests.push(input);
@@ -178,7 +180,7 @@ describe('managed cloud node enrollment', () => {
           if (pollCount === 1) return { status: 'pending', intervalSeconds: 5 };
           return {
             status: 'approved',
-            workspaceId: onboarding.workspaceId,
+            workspaceId: approvedWorkspaceId,
             workspaceSlug: onboarding.workspaceSlug,
             workspaceHost: onboarding.workspaceHost,
             nodeId: onboarding.nodeId,
@@ -207,6 +209,7 @@ describe('managed cloud node enrollment', () => {
       expect.objectContaining({
         clientId: 'consuelo-os-installer',
         scope: ['workspace:read', 'os:connector:register'],
+        workspaceId: onboarding.workspaceId,
         workspaceSlug: 'kokayi',
         workspaceHost: 'kokayi.consuelohq.com',
         nodeId: 'ko-cloud-1',
@@ -221,7 +224,7 @@ describe('managed cloud node enrollment', () => {
         mode: 'cloud',
         platform: 'linux',
         workspaceBootstrap: {
-          workspaceId: onboarding.workspaceId,
+          workspaceId: approvedWorkspaceId,
           workspaceSlug: onboarding.workspaceSlug,
           workspaceHost: onboarding.workspaceHost,
           nodeId: onboarding.nodeId,
@@ -261,16 +264,75 @@ describe('managed cloud node enrollment', () => {
     expect(statuses.at(-1)).toEqual({
       schemaVersion: 1,
       phase: 'enrolled',
-      workspaceId: onboarding.workspaceId,
+      workspaceId: approvedWorkspaceId,
       workspaceSlug: onboarding.workspaceSlug,
       nodeId: onboarding.nodeId,
       connectorId: 'connector_ko_cloud_1',
     });
     expect(result).toEqual({
       status: 'enrolled',
-      workspaceId: onboarding.workspaceId,
+      workspaceId: approvedWorkspaceId,
       nodeId: onboarding.nodeId,
       connectorId: 'connector_ko_cloud_1',
+    });
+  });
+
+  it('fails closed when the approved workspace ID differs from the managed-node plan', async () => {
+    const { runManagedCloudNodeEnrollment } = await loadContract();
+    const statuses: Record<string, unknown>[] = [];
+    let provisioned = false;
+    let activated = false;
+
+    await expect(
+      runManagedCloudNodeEnrollment({
+        home: '/var/lib/consuelo',
+        onboarding,
+        dependencies: {
+          now: () => Date.parse('2026-07-28T04:59:00.000Z'),
+          loadOrCreateDeviceKeyPair: () => deviceKeyPair,
+          requestDeviceCode: async () => ({
+            status: 'started',
+            deviceKeyPair,
+            session: {
+              deviceCode: 'device-secret',
+              userCode: 'ABCD-EFGH',
+              verificationUri: 'https://os.consuelohq.com/login/device',
+              verificationUriComplete:
+                'https://os.consuelohq.com/login/device?user_code=ABCDEFGH',
+              expiresAt: '2026-07-28T05:00:00.000Z',
+              intervalSeconds: 5,
+            },
+          }),
+          pollAccessToken: async () => ({
+            status: 'approved',
+            workspaceId: 'workspace_other',
+            workspaceSlug: onboarding.workspaceSlug,
+            workspaceHost: onboarding.workspaceHost,
+            nodeId: onboarding.nodeId,
+            nodeName: onboarding.nodeName,
+            nodeRole: 'member',
+            nodeStatus: 'created',
+            connectorId: 'connector_ko_cloud_1',
+            connectorBootstrapToken: 'connector-bootstrap-secret',
+            connectorBootstrapExpiresAt: '2026-07-28T05:05:00.000Z',
+            cloudflareTunnelToken: 'cloudflare-tunnel-secret',
+          }),
+          provision: () => {
+            provisioned = true;
+          },
+          activateHeartbeat: async () => {
+            activated = true;
+          },
+          sleep: async () => {},
+          writeStatus: (status) => statuses.push(status),
+        },
+      }),
+    ).rejects.toThrow(/DEVICE_GRANT_IDENTITY_MISMATCH/);
+    expect(provisioned).toBe(false);
+    expect(activated).toBe(false);
+    expect(statuses.at(-1)).toMatchObject({
+      phase: 'failed',
+      errorCode: 'DEVICE_GRANT_IDENTITY_MISMATCH',
     });
   });
 
@@ -284,6 +346,7 @@ describe('managed cloud node enrollment', () => {
         home: '/var/lib/consuelo',
         onboarding,
         dependencies: {
+          now: () => Date.parse('2026-07-28T04:59:00.000Z'),
           loadOrCreateDeviceKeyPair: () => deviceKeyPair,
           requestDeviceCode: async () => ({
             status: 'started',
@@ -330,6 +393,7 @@ describe('managed cloud node enrollment', () => {
         home: '/var/lib/consuelo',
         onboarding,
         dependencies: {
+          now: () => Date.parse('2026-07-28T04:59:00.000Z'),
           loadOrCreateDeviceKeyPair: () => deviceKeyPair,
           requestDeviceCode: async () => ({
             status: 'started',
@@ -424,14 +488,30 @@ describe('managed cloud node enrollment', () => {
         'consuelo-node-heartbeat.timer',
       ],
     ]);
-    expect(calls.every((call) => call.env.CONSUELO_HOME === '/var/lib/consuelo')).toBe(
-      true,
-    );
+    expect(
+      calls.every((call) => call.env.CONSUELO_HOME === '/var/lib/consuelo'),
+    ).toBe(true);
+
+    const runnerFailure = new Error('systemctl transport unavailable');
+    await expect(
+      activateManagedCloudNodeHeartbeat({
+        home: '/var/lib/consuelo',
+        connectorId: 'connector_ko_cloud_1',
+        run: async () => {
+          throw runnerFailure;
+        },
+      }),
+    ).rejects.toMatchObject({
+      name: 'ManagedCloudNodeEnrollmentError',
+      code: 'HEARTBEAT_ACTIVATION_FAILED',
+      cause: runnerFailure,
+    });
     expect(
       calls.every(
         (call) =>
           call.env.XDG_CONFIG_HOME ===
-          (process.env.XDG_CONFIG_HOME ?? join(process.env.HOME ?? '/var/lib/consuelo', '.config')),
+          (process.env.XDG_CONFIG_HOME ??
+            join(process.env.HOME ?? '/var/lib/consuelo', '.config')),
       ),
     ).toBe(true);
   });

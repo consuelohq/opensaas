@@ -38,12 +38,16 @@ const KNOWN_AGENT_NAMES = new Set<AgentName>([
   'pi',
 ]);
 
-function normalizeAgentNames(value: readonly AgentName[] | undefined): AgentName[] | undefined {
+function normalizeAgentNames(
+  value: readonly AgentName[] | undefined,
+): AgentName[] | undefined {
   if (value === undefined) return undefined;
   const names: AgentName[] = [];
   for (const candidate of value) {
     if (!KNOWN_AGENT_NAMES.has(candidate)) {
-      throw new Error('workspace node heartbeat agents must contain only known agent identifiers');
+      throw new Error(
+        'workspace node heartbeat agents must contain only known agent identifiers',
+      );
     }
     names.push(candidate);
   }
@@ -52,7 +56,8 @@ function normalizeAgentNames(value: readonly AgentName[] | undefined): AgentName
 
 function requiredString(value: string, label: string): string {
   const normalized = value.trim();
-  if (!normalized) throw new Error(`workspace node heartbeat ${label} is required`);
+  if (!normalized)
+    throw new Error(`workspace node heartbeat ${label} is required`);
   return normalized;
 }
 
@@ -67,10 +72,11 @@ function normalizeAuthorityOrigin(value: string): string {
 function normalizeConfig(
   config: WorkspaceNodeHeartbeatConfig,
 ): WorkspaceNodeHeartbeatConfig {
-  const capabilities = [...new Set(config.capabilities)]
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .sort();
+  const capabilities = [
+    ...new Set(
+      config.capabilities.map((value) => value.trim()).filter(Boolean),
+    ),
+  ].sort();
   if (capabilities.length > 32) {
     throw new Error(
       'workspace node heartbeat capabilities may contain at most 32 unique values',
@@ -99,7 +105,9 @@ function normalizeConfig(
 
 function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    throw new Error('workspace node heartbeat returned an invalid JSON response');
+    throw new Error(
+      'workspace node heartbeat returned an invalid JSON response',
+    );
   }
   const nodeId = (payload as { nodeId?: unknown }).nodeId;
   const presence = (payload as { presence?: unknown }).presence;
@@ -107,7 +115,9 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
     typeof nodeId !== 'string' ||
     !['online', 'stale', 'offline'].includes(String(presence))
   ) {
-    throw new Error('workspace node heartbeat returned an invalid JSON response');
+    throw new Error(
+      'workspace node heartbeat returned an invalid JSON response',
+    );
   }
   return {
     nodeId,

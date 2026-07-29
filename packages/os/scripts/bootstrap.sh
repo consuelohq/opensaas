@@ -857,11 +857,13 @@ ensure_portless() {
 
   case "${PORTLESS_ENABLED:-auto}" in
     0|false|no)
-      PORTLESS_BIN=""
-      PORTLESS_ENABLED="0"
-      PORTLESS_STATUS="skipped"
-      log "portless disabled; Consuelo will use http://127.0.0.1:46321"
-      return 0
+      if [ "$PORTLESS_REQUIRED" != "1" ] && [ "$PORTLESS_INSTALL" != "1" ]; then
+        PORTLESS_BIN=""
+        PORTLESS_ENABLED="0"
+        PORTLESS_STATUS="skipped"
+        log "portless disabled; Consuelo will use http://127.0.0.1:46321"
+        return 0
+      fi
       ;;
   esac
 

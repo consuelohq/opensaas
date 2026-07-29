@@ -34,6 +34,12 @@ type ManagedCloudNodeContract = {
       cloudflaredBinaryUrl: string;
       cloudflaredBinaryDigest: string;
       cloudflaredVersion: string;
+      caddyArchiveUrl: string;
+      caddyArchiveDigest: string;
+      caddyVersion: string;
+      caddyArchiveUrl: string;
+      caddyArchiveDigest: string;
+      caddyVersion: string;
       trustedPublicKeys: Record<string, string>;
     };
   }) => {
@@ -143,6 +149,10 @@ const release = {
   cloudflaredBinaryDigest:
     'sha256:9d71c677db00134c1bd4144b7783486b654ad281b1ea62b4972098d19f770f17',
   cloudflaredVersion: '2026.7.3',
+  caddyArchiveUrl:
+    'https://github.com/caddyserver/caddy/releases/download/v2.11.4/caddy_2.11.4_linux_amd64.tar.gz',
+  caddyArchiveDigest: 'sha256:' + '4'.repeat(64),
+  caddyVersion: '2.11.4',
   trustedPublicKeys: {
     'release-key-1': [
       '-----BEGIN PUBLIC KEY-----',
@@ -244,7 +254,9 @@ describe('managed cloud node instance contract', () => {
     expect(script).toContain('google-consuelo-data');
     expect(script).toContain('/var/lib/consuelo');
     expect(script).toContain(release.bootstrapBundleUrl);
-    expect(script).toContain(release.bootstrapBundleDigest.slice('sha256:'.length));
+    expect(script).toContain(
+      release.bootstrapBundleDigest.slice('sha256:'.length),
+    );
     expect(script).toContain('metadata.google.internal');
     expect(script).toContain('Metadata-Flavor: Google');
     expect(script).toContain('Authorization: Bearer $(gcp_access_token)');
@@ -273,7 +285,8 @@ describe('managed cloud node instance contract', () => {
   });
 
   it('plans and applies data disk, snapshot policies, and instance in stable order', async () => {
-    const { applyManagedCloudNode, planManagedCloudNode } = await loadContract();
+    const { applyManagedCloudNode, planManagedCloudNode } =
+      await loadContract();
     const plan = planManagedCloudNode(input);
     const calls: string[] = [];
     const client: ManagedCloudNodeClient = {
@@ -308,9 +321,9 @@ describe('managed cloud node instance contract', () => {
       'release-bucket',
       'instance',
     ]);
-    expect(applied.operations.every((operation) => operation.status === 'created')).toBe(
-      true,
-    );
+    expect(
+      applied.operations.every((operation) => operation.status === 'created'),
+    ).toBe(true);
   });
 
   it('preserves data for ordinary deletion and VM replacement', async () => {

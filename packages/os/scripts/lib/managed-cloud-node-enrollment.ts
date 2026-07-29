@@ -96,6 +96,7 @@ export type ManagedCloudNodeEnrollmentDependencies = {
     home: string;
     connectorId: string;
   }) => Promise<void>;
+  now: () => number;
   sleep: (milliseconds: number) => Promise<void>;
   writeStatus: (status: ManagedCloudNodeEnrollmentStatus) => void;
 };
@@ -143,7 +144,10 @@ const assertManagedCloudNodeDeviceKeyPair = (
   }
   try {
     const publicKey = JSON.parse(pair.publicKeyJwk) as Record<string, unknown>;
-    const signingKey = JSON.parse(pair.signingKeyJwk) as Record<string, unknown>;
+    const signingKey = JSON.parse(pair.signingKeyJwk) as Record<
+      string,
+      unknown
+    >;
     if (
       publicKey.kty !== 'OKP' ||
       publicKey.crv !== 'Ed25519' ||
@@ -280,7 +284,9 @@ export type ManagedCloudNodeSystemctlRunner = (input: {
   env: Record<string, string | undefined>;
 }) => Promise<ManagedCloudNodeSystemctlResult>;
 
-const defaultSystemctlRunner: ManagedCloudNodeSystemctlRunner = async (input) => {
+const defaultSystemctlRunner: ManagedCloudNodeSystemctlRunner = async (
+  input,
+) => {
   const processResult = Bun.spawnSync({
     cmd: input.command,
     env: input.env,
@@ -320,21 +326,26 @@ export const activateManagedCloudNodeHeartbeat = async (input: {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '')}.service`,
     ],
-    [
-      'systemctl',
-      '--user',
-      'enable',
-      '--now',
-      'consuelo-node-heartbeat.timer',
-    ],
+    ['systemctl', '--user', 'enable', '--now', 'consuelo-node-heartbeat.timer'],
   ];
   for (const command of commands) {
-    const result = await run({ command, env });
+    let result: ManagedCloudNodeSystemctlResult;
+    try {
+      result = await run({ command, env });
+    } catch (error: unknown) {
+      throw new ManagedCloudNodeEnrollmentError(
+        'HEARTBEAT_ACTIVATION_FAILED',
+        `${command.join(' ')} failed to execute`,
+        { cause: error },
+      );
+    }
     if (result.exitCode !== 0) {
       throw new ManagedCloudNodeEnrollmentError(
         'HEARTBEAT_ACTIVATION_FAILED',
         `${command.join(' ')} failed: ${
-          result.stderr.trim() || result.stdout.trim() || `exit ${result.exitCode}`
+          result.stderr.trim() ||
+          result.stdout.trim() ||
+          `exit ${result.exitCode}`
         }`,
       );
     }
@@ -366,6 +377,7 @@ export const runManagedCloudNodeEnrollment = async (input: {
     pollAccessToken: pollWorkspaceDeviceAccessToken,
     provision: provisionLocalOs,
     activateHeartbeat: activateManagedCloudNodeHeartbeat,
+    now: Date.now,
     sleep: defaultSleep,
     writeStatus: () => undefined,
     ...input.dependencies,
@@ -403,8 +415,25 @@ export const runManagedCloudNodeEnrollment = async (input: {
       nodeId: input.onboarding.nodeId,
     });
 
+    const expiresAtMs = Date.parse(session.expiresAt);
+    if (!Number.isFinite(expiresAtMs)) {
+      throw new ManagedCloudNodeEnrollmentError(
+        'DEVICE_CODE_INVALID',
+        'managed cloud node device code returned an invalid expiration',
+      );
+    }
+    const assertSessionActive = (): void => {
+      if (dependencies.now() >= expiresAtMs) {
+        throw new ManagedCloudNodeEnrollmentError(
+          'DEVICE_CODE_EXPIRED',
+          'managed cloud node device authorization expired',
+        );
+      }
+    };
+
     let intervalSeconds = session.intervalSeconds;
     while (true) {
+      assertSessionActive();
       const polled = await dependencies.pollAccessToken({
         clientId: MANAGED_CLOUD_NODE_DEVICE_CLIENT_ID,
         deviceCode: session.deviceCode,
@@ -478,7 +507,7 @@ export const runManagedCloudNodeEnrollment = async (input: {
         ? error.code
         : 'MANAGED_CLOUD_NODE_ENROLLMENT_FAILED';
     const message = error instanceof Error ? error.message : String(error);
-    input.dependencies?.writeStatus?.({
+    dependencies.writeStatus({
       schemaVersion: 1,
       phase: 'failed',
       errorCode: code,
