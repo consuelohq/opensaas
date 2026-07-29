@@ -169,6 +169,13 @@ describe('OS foundation finish-line regressions', () => {
     expect(script).not.toContain('nohup "$BUN_BIN"');
     expect(script).not.toContain('enrollment-pending');
     expect(script).toContain('write_status runtime-active enrolled');
+    expect(
+      script.indexOf('systemctl --user enable --now consuelo-caddy.service'),
+    ).toBeLessThan(
+      script.indexOf(
+        'if [ -f "$ENROLLMENT_STATUS_PATH" ] && jq -e \'.phase == "enrolled"\'',
+      ),
+    );
   });
 
   it('expires managed-node device grants locally instead of polling forever', async () => {

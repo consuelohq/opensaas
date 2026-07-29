@@ -873,7 +873,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(await upstreamRequests[0].text()).toBe('{"tool":"list"}');
   });
 
-  it('should return retryable JSON-RPC when the local MCP node is restarting', async () => {
+  it('should return retryable JSON-RPC when the local MCP node and error reporter fail', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();
     const reports: Array<{ request: Request; error: unknown }> = [];
@@ -899,7 +899,10 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
         },
       },
       internalSigningSecret: 'edge-test-secret',
-      reportError: (report) => reports.push(report),
+      reportError: (report) => {
+        reports.push(report);
+        throw new Error('logging unavailable');
+      },
       fetchUpstream: async () => {
         throw new Error('origin restart');
       },

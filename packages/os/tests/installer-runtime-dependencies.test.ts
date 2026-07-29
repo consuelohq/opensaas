@@ -304,9 +304,7 @@ describe('public installer runtime dependencies', () => {
     expect(summary.bunStatus).toBe('would_install');
     expect(summary.portlessStatus).toBe('skipped');
     expect(summary.cloudflaredStatus).toBe('would_install');
-    expect(summary.dependencies.runtime.portless.status).toBe(
-      'skipped',
-    );
+    expect(summary.dependencies.runtime.portless.status).toBe('skipped');
     expect(summary.dependencies.runtime.portless.path).toBeNull();
     expect(summary.dependencies.runtime.cloudflared.status).toBe(
       'would_install',
@@ -314,6 +312,35 @@ describe('public installer runtime dependencies', () => {
     expect(summary.dependencies.operator.wrangler.classification).toBe(
       'operator_only',
     );
+  });
+
+  it('should override the default-disabled Portless path when setup is explicitly requested', () => {
+    const scenarios = [
+      {
+        name: 'required',
+        overrides: { CONSUELO_OS_REQUIRE_PORTLESS: '1' },
+        message: 'dry-run: required portless is missing and would be installed',
+      },
+      {
+        name: 'explicit install',
+        overrides: { CONSUELO_OS_INSTALL_PORTLESS: '1' },
+        message: 'dry-run: optional portless is missing and would be installed',
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      const home = createTempHome(
+        `consuelo-os-installer-runtime-portless-${scenario.name.replace(' ', '-')}-`,
+      );
+      const result = runBootstrapDryRun(home, scenario.overrides);
+
+      expect(result.status).toBe(0);
+      expect(result.stderr).toContain(scenario.message);
+      expect(result.stderr).not.toContain('portless disabled');
+      expect(parseBootstrapSummary(result.stdout).portlessStatus).toBe(
+        'would_install',
+      );
+    }
   });
 
   it('should keep a hosted clean-machine dry-run non-mutating when source is absent', () => {
@@ -733,8 +760,7 @@ describe('public installer runtime dependencies', () => {
     const generatedDir = join(osHome, 'node', 'security', 'generated');
     const connectorLabel =
       'com.consuelo.os.cloudflared.connector-flat-uninstall';
-    const heartbeatLabel =
-      'com.consuelo.os.node-heartbeat.node-flat-uninstall';
+    const heartbeatLabel = 'com.consuelo.os.node-heartbeat.node-flat-uninstall';
     mkdirSync(generatedDir, { recursive: true });
     writeCloudflaredPlist(
       join(generatedDir, `${connectorLabel}.plist`),

@@ -113,7 +113,10 @@ export type WorkspaceCloudflareEdgeRouterInput = {
   reservedHostnames?: string[];
   now?: () => number;
   createNonce?: () => string;
-  reportError?: (input: { request: Request; error: unknown }) => void;
+  reportError?: (input: {
+    request: Request;
+    error: unknown;
+  }) => void | Promise<void>;
 };
 
 const EDGE_SIGNATURE_TIMESTAMP_HEADER = 'x-consuelo-edge-timestamp';
@@ -756,6 +759,16 @@ export const createWorkspaceCloudflareEdgeRouter = (
   const fetchUpstream = input.fetchUpstream ?? globalThis.fetch;
   const now = input.now ?? Date.now;
   const createNonce = input.createNonce ?? randomUUID;
+  const reportError = async (report: {
+    request: Request;
+    error: unknown;
+  }): Promise<void> => {
+    try {
+      await input.reportError?.(report);
+    } catch {
+      // Observability failure must not replace the router's fail-closed response.
+    }
+  };
   return {
     async fetch(request: Request): Promise<Response> {
       try {
@@ -992,7 +1005,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
 
         return await fetchUpstream(proxyRequest);
       } catch (error: unknown) {
-        input.reportError?.({ request, error });
+        await reportError({ request, error });
         const requestUrl = new URL(request.url);
         if (request.method === 'POST' && requestUrl.pathname === '/mcp') {
           return createMcpNodeUnavailableResponse();

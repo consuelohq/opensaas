@@ -29,8 +29,7 @@ started: 2026-07-29
 
 ## files changed
 
-- `packages/os/scripts/lib/managed-cloud-node-enrollment.ts`
-- `packages/os/tests/managed-cloud-node-enrollment.test.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
 
 ## workspace-owned: files changed
 
@@ -43,6 +42,7 @@ started: 2026-07-29
 - Attempted the full OS suite and retained its unrelated baseline failures; re-ran every changed and directly affected surface explicitly.
 - Addressed the current-head Codex P2 by restoring the approved workspace ID comparison against the trusted managed-node plan; the new regression failed before the implementation change and passed afterward.
 - Corrected the real clean-host runtime-bundle parity test to use a scoped 120-second timeout after the native Windows runner demonstrated that two full bundle builds can legitimately exceed the workflow's 15-second default; all Windows code, platform acceptance, and preceding distribution contracts passed before that timeout.
+- Addressed the final current-head review round: explicit Portless setup now escapes the default-disabled branch correctly, Caddy starts before an already-enrolled node can exit, and observability failures are contained without replacing the router's fail-closed response.
 
 ## workspace-owned: validation evidence
 
@@ -58,11 +58,14 @@ started: 2026-07-29
 - 2026-07-29 05:20:01 `review.run`: passed — OK
 - Current-head enrollment identity regression: red with an incorrectly accepted `workspace_other`, then green with 15/15 focused enrollment/finish-line tests passing.
 - Native Windows CI evidence: service build passed with zero warnings/errors, platform acceptance passed, 77 distribution tests passed, and only the two-build clean-host parity contract timed out at the global 15-second limit after roughly 55 seconds.
+- Current-head P1/P2 regressions: the new Portless and Caddy tests failed before implementation; after the fixes, installer/managed-node tests passed 26/26 and the explicitly enabled workspace gateway contract passed 26/26, including a throwing error reporter.
 - 2026-07-29 05:30:38 `verify`: passed — OK
 - 2026-07-29 05:32:12 `verify`: passed — OK
 - 2026-07-29 05:32:39 `review.run`: passed — OK
 - 2026-07-29 05:40:08 `verify`: passed — OK
 - 2026-07-29 05:40:46 `verify`: passed — OK
+- 2026-07-29 05:41:09 `review.run`: passed — OK
+- 2026-07-29 05:56:30 `verify`: passed — OK
 
 ## key decisions
 
@@ -93,6 +96,7 @@ started: 2026-07-29
 - Install state: assert dry-run creates no credentials and materialized credential files are born mode `0600`.
 - Local MCP bridge: assert 4xx retryability classification, bounded `Content-Length`, and malformed SSE frames do not discard valid frames.
 - Lifecycle/ingress: assert rejected health checks stay typed, `SERVICE_PREFLIGHT_FAILED` is modeled, equal proxy ports are rejected, Caddy receives only allowlisted environment, and required Portless overrides the default-disabled optional path.
+- Managed-node/edge recovery: assert Caddy activation precedes the enrolled-state early exit and error reporting remains best-effort for both safe MCP retry responses and generic fail-closed responses.
 - Registry/control plane: assert node deletion removes host index, grant failure state survives cleanup failure, pre-auth workspace IDs are not trusted, and MCP catch-all records a sanitized failure.
 - Enrollment/heartbeat: assert grant expiry is honored, approved workspace IDs match the trusted node plan, resolved status dependencies receive failures, capabilities deduplicate after trim, and non-Error causes remain attached.
 
@@ -108,7 +112,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/resolve-remaining-foundation-mainline-review-findings/verify.json`, `.task/os/resolve-remaining-foundation-mainline-review-findings/workpad.md`, `packages/os/tests/distribution/runtime-bundle.test.ts`
+- changed files: `.task/os/resolve-remaining-foundation-mainline-review-findings/workpad.md`, `packages/os/scripts/bootstrap.sh`, `packages/os/scripts/lib/managed-cloud-node.ts`, `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`, `packages/os/tests/cloudflare-edge-router.test.ts`, `packages/os/tests/foundation-finish-line-regressions.test.ts`, `packages/os/tests/installer-runtime-dependencies.test.ts`
 - matched rules: `auto:@consuelo/os:package-test`
 - selected suites: `@consuelo/os package test`
 - run results: `@consuelo/os package test` passed
