@@ -91,6 +91,7 @@ type WorkspaceCloudflareProvisioningClient = {
   putTunnelConfig: (input: {
     tunnelId: string;
     hostname: string;
+    httpHostHeader: string;
     localServiceUrl: string;
   }) => Promise<void>;
   createOrReuseWorkerRouteExclusion: (input: {
@@ -1523,6 +1524,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       'createOrReuseDnsRecord',
     ]);
     expect(calls.find((call) => call.operation === 'putTunnelConfig')?.body).toMatchObject({
+      httpHostHeader: 'kokayi.consuelohq.com',
       localServiceUrl: 'http://127.0.0.1:8787',
     });
     expect(calls.find(
@@ -1633,6 +1635,9 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
           {
             hostname: 'c-242bbe85b163ac3c32c7d9d6ce269707.consuelohq.com',
             service: 'http://127.0.0.1:46321',
+            originRequest: {
+              httpHostHeader: 'kokayi.consuelohq.com',
+            },
           },
           { service: 'http_status:404' },
         ],

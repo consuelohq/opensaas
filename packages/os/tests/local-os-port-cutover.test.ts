@@ -225,7 +225,7 @@ describe('prelaunch local OS port cutover', () => {
     expect(installSource).toContain('port: resolveLocalOsPortOverride()');
   });
 
-  it('should declare 46321 across every active default-port surface', () => {
+  it('should declare the OS process port and managed Caddy ingress across active surfaces', () => {
     const contracts: Array<[path: string, expected: string]> = [
       ['Dockerfile', 'EXPOSE 46321'],
       ['.env.example', 'CONSUELO_OS_PORT=46321'],
@@ -243,14 +243,6 @@ describe('prelaunch local OS port cutover', () => {
         'scripts/lib/trace-sites-live-smoke.ts',
         'http://127.0.0.1:46321/gateway/traces/recent',
       ],
-      [
-        'cloudflare/os-device-authority/src/constants.ts',
-        'http://127.0.0.1:46321',
-      ],
-      [
-        'cloudflare/os-device-authority/wrangler.toml',
-        'http://127.0.0.1:46321',
-      ],
       ['README.md', '127.0.0.1:46321'],
       ['SCRIPTS.md', '127.0.0.1:46321'],
       ['docs/runtime-surfaces.md', 'default local port is `46321`'],
@@ -260,6 +252,14 @@ describe('prelaunch local OS port cutover', () => {
     for (const [path, expected] of contracts) {
       const contents = source(path);
       expect(contents, path).toContain(expected);
+      expect(contents, path).not.toContain('8960');
+    }
+    for (const path of [
+      'cloudflare/os-device-authority/src/constants.ts',
+      'cloudflare/os-device-authority/wrangler.toml',
+    ]) {
+      const contents = source(path);
+      expect(contents, path).toContain('http://127.0.0.1:46320');
       expect(contents, path).not.toContain('8960');
     }
 
