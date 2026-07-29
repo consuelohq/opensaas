@@ -6,6 +6,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { provisionLocalOs } from '../scripts/lib/install-state';
 import {
   configureLocalAgents,
   detectLocalAgents,
@@ -123,6 +124,28 @@ describe('local agent connectivity', () => {
       { jsonrpc: '2.0', id: 1, result: { label: 'Consuelo ✓' } },
     ]);
     expect(complete.remainder.length).toBe(0);
+  });
+
+  it('uses the supplied user home when provisioning detects local agents', () => {
+    const codexHome = join(userHome, '.codex');
+    mkdirSync(codexHome, { recursive: true });
+    writeFileSync(join(codexHome, 'config.toml'), 'model = "gpt-5"\n');
+
+    const result = provisionLocalOs({
+      home: osHome,
+      userHome,
+      mode: 'local',
+    });
+
+    expect(result.agents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'codex',
+          homePath: codexHome,
+          detected: true,
+        }),
+      ]),
+    );
   });
 
   it('writes idempotent native MCP configuration for every supported client', () => {

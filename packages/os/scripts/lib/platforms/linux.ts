@@ -208,7 +208,7 @@ export function renderWorkspaceNodeHeartbeatSystemdUnits(input: {
 } {
   const paths = resolveLinuxPlatformPaths(input.userHome, {
     ...process.env,
-    XDG_CONFIG_HOME: join(resolve(input.userHome), '.config'),
+    HOME: resolve(input.userHome),
   });
   const serviceName = 'consuelo-node-heartbeat.service' as const;
   const timerName = 'consuelo-node-heartbeat.timer' as const;
@@ -276,7 +276,7 @@ export function renderWorkspaceCloudflaredSystemdUnit(input: {
   }
   const paths = resolveLinuxPlatformPaths(input.userHome, {
     ...process.env,
-    XDG_CONFIG_HOME: join(resolve(input.userHome), '.config'),
+    HOME: resolve(input.userHome),
   });
   const unitName = `consuelo-cloudflared-${systemdUnitSegment(
     input.connectorId,

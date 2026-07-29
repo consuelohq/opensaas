@@ -1108,8 +1108,11 @@ export function loadOsConfig(home?: string): OsConfig | null {
   return readJsonFile<OsConfig>(path.join(resolvedHome, 'config.json'));
 }
 
-export function detectAgents(home?: string): AgentDetection[] {
-  return detectLocalAgents({ home: resolveOsHome(home), userHome: os.homedir() });
+export function detectAgents(
+  home?: string,
+  userHome: string = os.homedir(),
+): AgentDetection[] {
+  return detectLocalAgents({ home: resolveOsHome(home), userHome });
 }
 
 function isJsonObject(value: unknown): value is JsonObject {
@@ -1838,7 +1841,7 @@ export function provisionLocalOs(
         persist: false,
       })
     : (() => {
-        const agents = detectAgents(home);
+        const agents = detectAgents(home, userHome);
         return {
           agents,
           records: toLocalAgentConfigRecords(agents),
@@ -1860,7 +1863,7 @@ export function provisionLocalOs(
     configPath,
     dbPath,
     actions,
-    agents: dryRun ? agentConfiguration.agents : detectAgents(home),
+    agents: dryRun ? agentConfiguration.agents : detectAgents(home, userHome),
   };
 }
 

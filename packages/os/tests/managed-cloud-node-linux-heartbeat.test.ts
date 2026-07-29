@@ -3,13 +3,15 @@ import os from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 type InstallStateContract = {
   provisionLocalOs: (options: Record<string, unknown>) => {
     actions: Array<{ path: string; message: string }>;
   };
 };
+
+afterEach(() => vi.unstubAllEnvs());
 
 async function loadContract(): Promise<InstallStateContract> {
   const modulePath = pathToFileURL(
@@ -23,6 +25,8 @@ describe('managed cloud node Linux heartbeat materialization', () => {
     const { provisionLocalOs } = await loadContract();
     const home = fs.mkdtempSync(join(os.tmpdir(), 'consuelo-cloud-heartbeat-'));
     const userHome = fs.mkdtempSync(join(os.tmpdir(), 'consuelo-cloud-user-'));
+    const xdgConfigHome = fs.mkdtempSync(join(os.tmpdir(), 'consuelo-cloud-xdg-'));
+    vi.stubEnv('XDG_CONFIG_HOME', xdgConfigHome);
 
     const result = provisionLocalOs({
       home,
@@ -55,7 +59,7 @@ describe('managed cloud node Linux heartbeat materialization', () => {
       'generated',
       'workspace-node-heartbeat.json',
     );
-    const systemdDir = join(userHome, '.config', 'systemd', 'user');
+    const systemdDir = join(xdgConfigHome, 'systemd', 'user');
     const servicePath = join(systemdDir, 'consuelo-node-heartbeat.service');
     const timerPath = join(systemdDir, 'consuelo-node-heartbeat.timer');
     const heartbeatConfig = JSON.parse(
