@@ -19,7 +19,7 @@ type WorkspaceRouteD1RouteTarget =
 type WorkspaceRouteD1Route = {
   surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
   pathPrefix: string;
-  auth: 'required';
+  auth: 'required' | 'workspace-session';
   status: 'active' | 'disabled';
   target: WorkspaceRouteD1RouteTarget;
 };
@@ -93,6 +93,15 @@ type WorkspaceRouteD1RegistryContract = {
       state?: 'active' | 'revoked';
       lastSeenAt?: number;
       heartbeatTtlMs?: number;
+    },
+  ) => Promise<void>;
+  upsertWorkspaceNodeTargetInD1: (
+    db: WorkspaceRouteD1Database,
+    input: {
+      record: WorkspaceRouteD1RecordInput;
+      target: NonNullable<WorkspaceRouteD1RecordInput['nodeTargets']>[number];
+      makeDefault?: boolean;
+      localServiceUrl?: string;
     },
   ) => Promise<void>;
 };
@@ -190,6 +199,7 @@ async function loadWorkspaceRouteD1RegistryContract(): Promise<WorkspaceRouteD1R
     'resolveWorkspaceRouteFromD1',
     'revokeWorkspaceHostnameInD1',
     'updateWorkspaceNodeTargetInD1',
+    'upsertWorkspaceNodeTargetInD1',
   ];
   const missingExports = requiredExports.filter(
     (name) => typeof module[name] !== 'function',
@@ -599,6 +609,123 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
       allowed: true,
       route: '/mcp',
       surface: 'os',
+    });
+  });
+
+  it('should merge missing OS routes into an existing site-only workspace record', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    const db = registry.createInMemoryWorkspaceRouteD1();
+    await registry.migrateWorkspaceRouteD1(db);
+    const nowMs = Date.parse('2026-07-29T22:30:00.000Z');
+
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'app',
+          pathPrefix: '/',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'service-upstream',
+            service: 'app',
+            upstreamUrl: 'https://app.consuelohq.com',
+          },
+        },
+      ],
+    });
+
+    await registry.upsertWorkspaceNodeTargetInD1(db, {
+      record: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        hostname: 'internal.consuelohq.com',
+        baseDomain: 'consuelohq.com',
+        provider: 'cloudflare',
+        owner: 'consuelo-os-cloud',
+        status: 'active',
+        routes: [
+          {
+            surface: 'os',
+            pathPrefix: '/gtm',
+            auth: 'workspace-session',
+            status: 'active',
+            target: {
+              kind: 'os-connector',
+              connectorId: 'connector_fresh',
+              connectorStatus: 'connected',
+              tunnelOriginUrl: 'https://fresh.connector.test',
+            },
+          },
+          {
+            surface: 'os',
+            pathPrefix: '/mcp',
+            auth: 'required',
+            status: 'active',
+            target: {
+              kind: 'os-connector',
+              connectorId: 'connector_fresh',
+              connectorStatus: 'connected',
+              tunnelOriginUrl: 'https://fresh.connector.test',
+            },
+          },
+        ],
+      },
+      target: {
+        nodeId: 'node-fresh',
+        connectorId: 'connector_fresh',
+        connectorStatus: 'connected',
+        tunnelOriginUrl: 'https://fresh.connector.test',
+        state: 'active',
+        lastSeenAt: nowMs,
+        heartbeatTtlMs: 60_000,
+      },
+      makeDefault: true,
+      localServiceUrl: 'http://127.0.0.1:46320',
+    });
+
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/mcp',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/mcp',
+      nodeId: 'node-fresh',
+      target: {
+        connectorId: 'connector_fresh',
+        tunnelOriginUrl: 'https://fresh.connector.test',
+      },
+    });
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/gtm',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/gtm',
+      nodeId: 'node-fresh',
+    });
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/health',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/',
+      surface: 'app',
     });
   });
 

@@ -27,7 +27,6 @@ describe('Cloudflare Worker release readiness', () => {
       'list',
       '--config',
       'cloudflare/workspace-edge/wrangler.toml',
-      '--json',
     ]]);
   });
 

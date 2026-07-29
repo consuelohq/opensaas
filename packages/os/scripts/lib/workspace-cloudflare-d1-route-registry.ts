@@ -742,7 +742,15 @@ export const upsertWorkspaceNodeTargetInD1 = async (
     const defaultTarget = targets.find(
       (candidate) => candidate.nodeId === defaultNodeId,
     );
-    const routes = base.routes.map((route) =>
+    const existingRouteKeys = new Set(
+      base.routes.map((route) => `${route.surface}:${route.pathPrefix}`),
+    );
+    const missingOsRoutes = input.record.routes.filter(
+      (route) =>
+        route.target.kind === 'os-connector' &&
+        !existingRouteKeys.has(`${route.surface}:${route.pathPrefix}`),
+    );
+    const routes = [...base.routes, ...missingOsRoutes].map((route) =>
       route.target.kind === 'os-connector' && defaultTarget
         ? { ...route, target: connectorTargetForNode(defaultTarget) }
         : cloneRoute(route),
@@ -751,7 +759,7 @@ export const upsertWorkspaceNodeTargetInD1 = async (
       db,
       record: base,
       target: input.target,
-      localServiceUrl: input.localServiceUrl ?? 'http://127.0.0.1:46321',
+      localServiceUrl: input.localServiceUrl ?? 'http://127.0.0.1:46320',
     });
     await writeStoredRecord(db, {
       ...base,

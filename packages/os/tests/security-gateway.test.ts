@@ -890,6 +890,9 @@ describe('Consuelo OS public gateway security contract', () => {
 
     expect(gateway.renderCaddyGatewayConfig(input)).toBe(caddyfile);
     expect(caddyfile).toContain('acme.consuelohq.com');
+    expect(caddyfile).toContain('http://:46320 {');
+    expect(caddyfile).toContain('bind 127.0.0.1');
+    expect(caddyfile).not.toContain('http://127.0.0.1:46320 {');
     expect(caddyfile).toContain('request_body');
     expect(caddyfile).toContain('max_size 4MB');
     expect(caddyfile).toContain('X-Content-Type-Options "nosniff"');
@@ -897,6 +900,8 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 {');
     expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Signature');
     expect(caddyfile).toContain('header_up -X-Consuelo-Route');
+    expect(caddyfile).not.toContain('header_up X-Forwarded-Host');
+    expect(caddyfile).not.toContain('header_up X-Forwarded-Proto');
     expect(caddyfile).toContain('dial_timeout 5s');
     expect(caddyfile).toContain('response_header_timeout 15s');
     expect(caddyfile).toContain('read_timeout 60s');
@@ -1443,5 +1448,4 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(response.text).not.toMatch(/INVALID_REQUEST/i);
   });
 });
-
 
