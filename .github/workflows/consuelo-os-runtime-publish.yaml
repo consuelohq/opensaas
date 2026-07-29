@@ -283,6 +283,14 @@ jobs:
         shell: bash
         run: |
           release_time="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq '.created_at')"
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/tags?per_page=100" \
+            --jq '.[] | select(.name | startswith("consuelo-os-v")) | .name' \
+            > .release/immutable-tags.txt
+          mapfile -t tags < .release/immutable-tags.txt
+          tag_args=()
+          for tag in "${tags[@]}"; do
+            tag_args+=(--immutable-tag "$tag")
+          done
           bun run --cwd packages/os release:channels -- publish \
             --channel dev \
             --bundle "${{ steps.publication.outputs.bundle }}" \
@@ -290,5 +298,6 @@ jobs:
             --state "../../${RELEASE_STATE_PATH}" \
             --expected-revision "${{ needs.plan.outputs.revision }}" \
             --now "${release_time}" \
+            "${tag_args[@]}" \
             --apply \
             --json

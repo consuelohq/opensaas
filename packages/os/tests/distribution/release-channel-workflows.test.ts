@@ -106,6 +106,12 @@ describe('Consuelo OS release-channel workflows', () => {
     );
     expect(workflow).not.toContain('mapfile -t tags < <(');
     expect(workflow).toContain('.release/immutable-tags.txt');
+    const publishStep = parsed.jobs?.publish?.steps?.find(
+      (step) => step.name === 'Publish immutable bytes and signed dev manifest',
+    );
+    expect(publishStep?.run).toContain('gh api --paginate');
+    expect(publishStep?.run).toContain('tag_args+=(--immutable-tag "$tag")');
+    expect(publishStep?.run).toContain('"${tag_args[@]}"');
     expect(workflow).toContain('actions/runs/${GITHUB_RUN_ID}');
     expect(workflow).toContain('--now \"${release_time}\"');
     expect(workflow).toContain('--source-root .');
