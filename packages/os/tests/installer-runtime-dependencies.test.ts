@@ -448,6 +448,56 @@ describe('public installer runtime dependencies', () => {
     expect(summary.daemonStatus).toBe('would_run');
   });
 
+  it('should reject an incomplete local source when the daemon installer is missing', () => {
+    const home = createTempHome(
+      'consuelo-os-installer-runtime-incomplete-local-source-',
+    );
+    const localRepo = join(home, 'local-repo');
+    const osScriptsDir = join(localRepo, 'packages', 'os', 'scripts');
+    const binDir = join(home, 'bin');
+    mkdirSync(osScriptsDir, { recursive: true });
+    mkdirSync(binDir, { recursive: true });
+    writeFileSync(join(osScriptsDir, 'install.ts'), 'export {};\n');
+    writeExecutable(join(binDir, 'bun'), '#!/bin/sh\nexit 0\n');
+
+    const result = spawnSync(
+      '/bin/bash',
+      [
+        join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'),
+        '--dry-run',
+        '--yes',
+        '--json',
+        '--mode',
+        'local',
+        '--install-daemons',
+      ],
+      {
+        cwd: localRepo,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          HOME: home,
+          CONSUELO_HOME: join(home, '.consuelo', 'os'),
+          CONSUELO_OS_SOURCE_DIR: join(home, 'source'),
+          CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
+          PATH: [binDir, SYSTEM_PATH].join(delimiter),
+        },
+      },
+    );
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('local Consuelo OS source is missing');
+    expect(result.stderr).toContain(
+      join(
+        'local-repo',
+        'packages',
+        'os',
+        'scripts',
+        'install-system-daemons.sh',
+      ),
+    );
+  });
+
   it('should enable Portless only when the optional enhancement is explicitly selected', () => {
     const home = createTempHome(
       'consuelo-os-installer-runtime-bootstrap-existing-portless-',
