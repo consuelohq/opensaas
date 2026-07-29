@@ -201,6 +201,7 @@ const CUSTOMER_PROVIDER_FILES = new Set([
   'tools/deployment-provider/facade.ts',
   'tools/deployment-provider/process.ts',
   'tools/deployment-provider/redaction.ts',
+  'tools/deployment-provider/schema.ts',
   'tools/deployment-provider/service.ts',
   'tools/deployment-provider/types.ts',
   'tools/deployment-provider/vercel.ts',
