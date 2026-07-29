@@ -129,8 +129,8 @@ type NativeConfigInspection = {
   error?: AgentConnectivityError;
 };
 
-const CONSUELO_MCP_NAME = 'consuelo';
-const LEGACY_CONSUELO_MCP_NAME = 'consuelo-os';
+const CONSUELO_MCP_NAME = 'os';
+const LEGACY_CONSUELO_MCP_NAMES = ['consuelo', 'consuelo-os'] as const;
 const CODEX_BLOCK_START = '# BEGIN CONSUELO MCP';
 const CODEX_BLOCK_END = '# END CONSUELO MCP';
 const LEGACY_CODEX_BLOCK_START = '# BEGIN CONSUELO OS MCP';
@@ -197,8 +197,11 @@ function localAgentMcpCommandSource(): string {
     'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
     'HOSTED_SCRIPT="$OS_HOME/runtime/current/scripts/mcp-stdio.ts"',
     'SOURCE_SCRIPT="$OS_HOME/scripts/mcp-stdio.ts"',
+    'PACKAGE_SCRIPT="${CONSUELO_OS_PACKAGE_ROOT:-}/scripts/mcp-stdio.ts"',
     'if [ -f "$HOSTED_SCRIPT" ]; then',
     '  MCP_SCRIPT="$HOSTED_SCRIPT"',
+    'elif [ -n "${CONSUELO_OS_PACKAGE_ROOT:-}" ] && [ -f "$PACKAGE_SCRIPT" ]; then',
+    '  MCP_SCRIPT="$PACKAGE_SCRIPT"',
     'elif [ -f "$SOURCE_SCRIPT" ]; then',
     '  MCP_SCRIPT="$SOURCE_SCRIPT"',
     'else',
@@ -330,7 +333,23 @@ function codexManagedBlock(home: string): string {
 }
 
 function candidateFingerprint(candidate: AgentCandidate, home: string): string {
-  const serverPath = path.join(home, 'scripts', 'mcp-stdio.ts');
+  const hostedServerPath = path.join(
+    home,
+    'runtime',
+    'current',
+    'scripts',
+    'mcp-stdio.ts',
+  );
+  const packageRoot = process.env.CONSUELO_OS_PACKAGE_ROOT;
+  const packageServerPath = packageRoot
+    ? path.join(packageRoot, 'scripts', 'mcp-stdio.ts')
+    : null;
+  const sourceServerPath = path.join(home, 'scripts', 'mcp-stdio.ts');
+  const serverPath = fs.existsSync(hostedServerPath)
+    ? hostedServerPath
+    : packageServerPath && fs.existsSync(packageServerPath)
+      ? packageServerPath
+      : sourceServerPath;
   const serverDigest = fs.existsSync(serverPath)
     ? createHash('sha256').update(fs.readFileSync(serverPath)).digest('hex')
     : 'missing';
@@ -339,6 +358,7 @@ function candidateFingerprint(candidate: AgentCandidate, home: string): string {
       ? codexManagedBlock(home)
       : expectedJsonEntry(candidate, home),
     commandSource: localAgentMcpCommandSource(),
+    serverPath,
     serverDigest,
   });
 }
@@ -698,7 +718,7 @@ function removeCodexConsueloSections(content: string): string {
     if (header !== undefined) {
       skipping = [
         CONSUELO_MCP_NAME,
-        LEGACY_CONSUELO_MCP_NAME,
+        ...LEGACY_CONSUELO_MCP_NAMES,
       ].some((name) =>
         header === `mcp_servers.${JSON.stringify(name)}` ||
         header === `mcp_servers.${JSON.stringify(name)}.env`
@@ -815,7 +835,9 @@ function configureJsonEffect(input: {
     const nextContainer = {
       ...(isJsonObject(existingContainer) ? existingContainer : {}),
     };
-    delete nextContainer[LEGACY_CONSUELO_MCP_NAME];
+    for (const legacyName of LEGACY_CONSUELO_MCP_NAMES) {
+      delete nextContainer[legacyName];
+    }
     const next: JsonObject = {
       ...current,
       ...(input.candidate.format === 'json-opencode' && typeof current.$schema !== 'string'

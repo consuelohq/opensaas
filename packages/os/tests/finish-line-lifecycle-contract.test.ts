@@ -37,7 +37,8 @@ describe('Consuelo finish-line lifecycle contract', () => {
   it('publishes the main local MCP as Consuelo and removes the legacy name', () => {
     const connectivity = read('scripts/lib/local-agent-connectivity.ts');
 
-    expect(connectivity).toContain("const CONSUELO_MCP_NAME = 'consuelo'");
+    expect(connectivity).toContain("const CONSUELO_MCP_NAME = 'os'");
+    expect(connectivity).toContain("'consuelo', 'consuelo-os'");
     expect(connectivity).toContain("path.join(home, 'bin', 'consuelo-mcp')");
     expect(connectivity).toContain('CONSUELO_AGENT_ID');
     expect(connectivity).toContain('remove legacy');

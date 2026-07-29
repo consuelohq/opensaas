@@ -121,7 +121,7 @@ Hidden machine/runtime state:
     update-plan.json
 ```
 
-Visible user-owned content, introduced through a migration only when the owning product surfaces are ready:
+Visible user-owned content, created immediately by every clean install:
 
 ```text
 ~/Consuelo/
@@ -133,7 +133,14 @@ Visible user-owned content, introduced through a migration only when the owning 
   Steering/
 ```
 
-Built-in tools, skills, scripts, and site templates execute from the immutable runtime bundle. Hidden component indexes record selection and provenance. User-authored tools, skills, sites, and steering live only in the visible user-owned tree. Do not maintain two editable copies of the same component.
+Built-in tools, scripts, and site templates execute from the immutable runtime
+bundle. Selected bundled skills are materialized as managed visible
+`SKILL.md` trees under `~/Consuelo/Skills/`, with hidden component indexes
+recording their selection, provenance, and update/merge state. `~/Consuelo/Tools/`
+is the custom-tool and built-in catalog surface; built-in executable code is
+not copied there. User-authored tools, skills, sites, and steering live only in
+the visible user-owned tree. Do not maintain two editable copies of the same
+component. Do not create `~/Consuelo/Scripts`.
 
 `system_prompt.md` remains a managed product policy in the runtime bundle. User steering belongs in `~/Consuelo/Steering/`; updates never overwrite it. Future workspace sync may synchronize approved user-owned content, but never secrets, node identity, local databases, logs, tunnel credentials, Caddy state, or the entire Consuelo home.
 
