@@ -189,6 +189,45 @@ describe('local OS install state', () => {
     ]));
   });
 
+  it('replaces an expired ChatGPT MCP credential during reprovisioning', () => {
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local' });
+    `);
+    const connectionPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'chatgpt-mcp.json',
+    );
+    const authPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'auth.json',
+    );
+    const before = JSON.parse(readFileSync(connectionPath, 'utf8')) as {
+      tokenId: string;
+      bearerToken: string;
+    };
+    const auth = JSON.parse(readFileSync(authPath, 'utf8')) as {
+      tokens: Record<string, { expiresAt: string }>;
+    };
+    auth.tokens[before.tokenId].expiresAt = '2020-01-01T00:00:00.000Z';
+    writeFileSync(authPath, JSON.stringify(auth, null, 2));
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local' });
+    `);
+    const after = JSON.parse(readFileSync(connectionPath, 'utf8')) as typeof before;
+
+    expect(after.tokenId).not.toBe(before.tokenId);
+    expect(after.bearerToken).not.toBe(before.bearerToken);
+  });
+
   it('reports existing generated security assets as existing on reprovision', () => {
     JSON.parse(runBunEval(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
@@ -584,6 +623,53 @@ describe('local OS install state', () => {
     expect(Object.keys(second.agents).sort()).toEqual(['codex', 'opencode']);
     expect(second.agents.codex).toEqual(first.agents.codex);
   });
+
+  it('replaces expired local-agent credentials during reprovisioning', () => {
+    mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local', connectAgents: ['opencode'] });
+    `);
+    const credentialPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'local-agent-mcp.json',
+    );
+    const authPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'auth.json',
+    );
+    const before = JSON.parse(readFileSync(credentialPath, 'utf8')) as {
+      agents: Record<string, { tokenId: string; bearerToken: string }>;
+    };
+    const auth = JSON.parse(readFileSync(authPath, 'utf8')) as {
+      tokens: Record<string, { expiresAt: string }>;
+    };
+    const previous = before.agents.opencode;
+    auth.tokens[previous.tokenId].expiresAt = '2020-01-01T00:00:00.000Z';
+    writeFileSync(authPath, JSON.stringify(auth, null, 2));
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local', connectAgents: ['opencode'] });
+    `);
+    const after = JSON.parse(readFileSync(credentialPath, 'utf8')) as typeof before;
+    const updatedAuth = JSON.parse(readFileSync(authPath, 'utf8')) as typeof auth;
+    const replacement = after.agents.opencode;
+
+    expect(replacement.tokenId).not.toBe(previous.tokenId);
+    expect(replacement.bearerToken).not.toBe(previous.bearerToken);
+    expect(Date.parse(updatedAuth.tokens[replacement.tokenId].expiresAt)).toBeGreaterThan(
+      Date.now(),
+    );
+  });
+
   it('materializes the canonical Artifacts site from persisted route-addressed artifacts', () => {
     const result = JSON.parse(runBunEval(`
       const { writeFileSync } = await import('node:fs');
