@@ -531,6 +531,8 @@ export function createReleaseProviderCommandBackend(
         'environment=' + input.environment,
         '-F',
         'auto_merge=false',
+        '-F',
+        'required_contexts[]',
         '-f',
         'payload[authority]=' + input.authority,
         '-f',
