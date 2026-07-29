@@ -36,6 +36,7 @@ import {
   createGatewaySecurityConfig,
   getAgentAppCredentialStatus,
   issueAgentAppToken,
+  type AgentAppCredentialStatus,
   updateAgentAppTokenScopes,
 } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
@@ -675,6 +676,16 @@ function renderGatewayAuthSmokeScript(input: {
   ].join('\n');
 }
 
+function isActiveUnexpiredCredential(
+  credential: AgentAppCredentialStatus | null,
+): credential is AgentAppCredentialStatus {
+  const expiresAt = credential ? Date.parse(credential.expiresAt) : Number.NaN;
+  return (
+    credential?.status === 'active' &&
+    Number.isFinite(expiresAt) &&
+    expiresAt > Date.now()
+  );
+}
 
 function materializeChatGptMcpConnection(input: {
   home: string;
@@ -698,7 +709,7 @@ function materializeChatGptMcpConnection(input: {
       config: input.config,
       tokenId: existing.tokenId,
     });
-    if (credential?.status === 'active') {
+    if (isActiveUnexpiredCredential(credential)) {
       updateAgentAppTokenScopes({
         config: input.config,
         tokenId: existing.tokenId,
@@ -781,7 +792,7 @@ function materializeLocalAgentMcpCredentials(input: {
         tokenId: candidate.tokenId,
       });
       if (
-        status?.status === 'active' &&
+        isActiveUnexpiredCredential(status) &&
         status.callerId === `local-agent:${agentName}` &&
         status.appId === agentName
       ) {

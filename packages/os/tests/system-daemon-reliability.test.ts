@@ -87,6 +87,39 @@ describe('macOS runtime service reliability', () => {
     ).toBe(false);
   });
 
+  it('should load the persisted Caddy binary when regenerating daemons from a clean shell', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-caddy-');
+    const scriptsDirectory = join(fixtureRoot, 'scripts');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const caddyBin = join(consueloHome, 'bin', 'caddy');
+    mkdirSync(scriptsDirectory, { recursive: true });
+    mkdirSync(join(consueloHome, 'bin'), { recursive: true });
+    copyFileSync(
+      resolve(osRoot, 'scripts/generate-system-daemons.sh'),
+      join(scriptsDirectory, 'generate-system-daemons.sh'),
+    );
+    writeExecutable(caddyBin, '#!/bin/bash\nexit 0\n');
+    writeFileSync(join(consueloHome, '.env'), `CADDY_BIN=${caddyBin}\n`);
+
+    const result = run('bash', [join(scriptsDirectory, 'generate-system-daemons.sh')], {
+      ...process.env,
+      HOME: home,
+      USER: process.env.USER ?? 'nobody',
+      CONSUELO_HOME: consueloHome,
+      CADDY_BIN: '',
+      PORTLESS_ENABLED: '0',
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    const caddyPlist = readFileSync(
+      join(scriptsDirectory, 'generated', 'com.consuelo.caddy.plist'),
+      'utf8',
+    );
+    expect(caddyPlist).toContain('<key>CADDY_BIN</key>');
+    expect(caddyPlist).toContain(`<string>${caddyBin}</string>`);
+  });
+
   it('should generate an AC-only availability assertion and scheduled watchdog when availability is explicitly enabled', () => {
     const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-');
     const scriptsDirectory = join(fixtureRoot, 'scripts');

@@ -64,6 +64,10 @@ if ! id -u "$consuelo_user" >/dev/null 2>&1; then
 fi
 consuelo_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$consuelo_user}}"
 consuelo_data_home="${CONSUELO_HOME:-$consuelo_home/.consuelo}"
+persisted_env_file="$consuelo_data_home/.env"
+if [ "$persisted_env_file" != "$env_file" ]; then
+  load_env_file "$persisted_env_file"
+fi
 log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"
 workspace_label="$(sanitize_label 'com.consuelo.system' "${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}")"
 caddy_label="$(sanitize_label 'com.consuelo.caddy' "${CADDY_DAEMON_LABEL:-com.consuelo.caddy}")"
