@@ -356,6 +356,7 @@ const approvedGrantMatchesOnboarding = (
   grant: ApprovedDeviceGrant,
   onboarding: ManagedCloudNodeOnboarding,
 ): boolean =>
+  grant.workspaceId === onboarding.workspaceId &&
   grant.workspaceSlug === onboarding.workspaceSlug &&
   grant.workspaceHost === onboarding.workspaceHost &&
   grant.nodeId === onboarding.nodeId;

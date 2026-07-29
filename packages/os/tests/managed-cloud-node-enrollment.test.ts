@@ -149,7 +149,7 @@ describe('managed cloud node enrollment', () => {
     const statuses: Record<string, unknown>[] = [];
     const provisions: Record<string, unknown>[] = [];
     const activations: Array<{ home: string; connectorId: string }> = [];
-    const approvedWorkspaceId = 'workspace_assigned_by_authority';
+    const approvedWorkspaceId = onboarding.workspaceId;
     let pollCount = 0;
 
     const result = await runManagedCloudNodeEnrollment({
@@ -274,6 +274,65 @@ describe('managed cloud node enrollment', () => {
       workspaceId: approvedWorkspaceId,
       nodeId: onboarding.nodeId,
       connectorId: 'connector_ko_cloud_1',
+    });
+  });
+
+  it('fails closed when the approved workspace ID differs from the managed-node plan', async () => {
+    const { runManagedCloudNodeEnrollment } = await loadContract();
+    const statuses: Record<string, unknown>[] = [];
+    let provisioned = false;
+    let activated = false;
+
+    await expect(
+      runManagedCloudNodeEnrollment({
+        home: '/var/lib/consuelo',
+        onboarding,
+        dependencies: {
+          now: () => Date.parse('2026-07-28T04:59:00.000Z'),
+          loadOrCreateDeviceKeyPair: () => deviceKeyPair,
+          requestDeviceCode: async () => ({
+            status: 'started',
+            deviceKeyPair,
+            session: {
+              deviceCode: 'device-secret',
+              userCode: 'ABCD-EFGH',
+              verificationUri: 'https://os.consuelohq.com/login/device',
+              verificationUriComplete:
+                'https://os.consuelohq.com/login/device?user_code=ABCDEFGH',
+              expiresAt: '2026-07-28T05:00:00.000Z',
+              intervalSeconds: 5,
+            },
+          }),
+          pollAccessToken: async () => ({
+            status: 'approved',
+            workspaceId: 'workspace_other',
+            workspaceSlug: onboarding.workspaceSlug,
+            workspaceHost: onboarding.workspaceHost,
+            nodeId: onboarding.nodeId,
+            nodeName: onboarding.nodeName,
+            nodeRole: 'member',
+            nodeStatus: 'created',
+            connectorId: 'connector_ko_cloud_1',
+            connectorBootstrapToken: 'connector-bootstrap-secret',
+            connectorBootstrapExpiresAt: '2026-07-28T05:05:00.000Z',
+            cloudflareTunnelToken: 'cloudflare-tunnel-secret',
+          }),
+          provision: () => {
+            provisioned = true;
+          },
+          activateHeartbeat: async () => {
+            activated = true;
+          },
+          sleep: async () => {},
+          writeStatus: (status) => statuses.push(status),
+        },
+      }),
+    ).rejects.toThrow(/DEVICE_GRANT_IDENTITY_MISMATCH/);
+    expect(provisioned).toBe(false);
+    expect(activated).toBe(false);
+    expect(statuses.at(-1)).toMatchObject({
+      phase: 'failed',
+      errorCode: 'DEVICE_GRANT_IDENTITY_MISMATCH',
     });
   });
 
