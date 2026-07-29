@@ -413,6 +413,39 @@ describe('runtime bundle contract', () => {
     ).toBe(false);
   });
 
+  it('excludes generated Windows service build products from default runtime discovery', async () => {
+    const root = createFixture({
+      'native/windows-service/Program.cs': 'public static class Program {}\n',
+      'native/windows-service/Consuelo.Windows.Service.csproj':
+        '<Project Sdk="Microsoft.NET.Sdk.Worker" />\n',
+    });
+    writeFixtureFile(
+      root,
+      'native/windows-service/obj/x64/Release/Consuelo.Windows.Service.csproj.FileListAbsolute.txt',
+      `${root}/native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe\n`,
+    );
+    writeFixtureFile(
+      root,
+      'native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe',
+      'host-specific generated binary\n',
+    );
+
+    const result = await computeReleaseFingerprint({ sourceRoot: root });
+    const paths = result.files.map((file) => file.path);
+
+    expect(paths).toContain('native/windows-service/Program.cs');
+    expect(paths).toContain(
+      'native/windows-service/Consuelo.Windows.Service.csproj',
+    );
+    expect(
+      paths.some(
+        (filePath) =>
+          filePath.startsWith('native/windows-service/obj/') ||
+          filePath.startsWith('native/windows-service/bin/'),
+      ),
+    ).toBe(false);
+  });
+
   it('classifies all customer deployment adapters separately from operator infrastructure', () => {
     for (const filePath of [
       'tools/deployment-provider/facade.ts',
