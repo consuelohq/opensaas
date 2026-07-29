@@ -1388,9 +1388,14 @@ open_workspace_launcher() {
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
   if [ ! -f "$os_dir/scripts/install-system-daemons.sh" ]; then
-    log "dry-run: would run: bash $os_dir/scripts/install-system-daemons.sh --dry-run --quiet"
-    DAEMON_STATUS="would_run"
-    return 0
+    case "$SOURCE_STATUS" in
+      would_download|would_refresh)
+        log "dry-run: would run: bash $os_dir/scripts/install-system-daemons.sh --dry-run --quiet"
+        DAEMON_STATUS="would_run"
+        return 0
+        ;;
+    esac
+    fail "$SOURCE_STATUS Consuelo OS source is missing $os_dir/scripts/install-system-daemons.sh"
   fi
   (
     cd "$os_dir"

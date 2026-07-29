@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restrict-hosted-dry-run-daemon-bypass",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1739,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1739",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1739",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1739/restrict-hosted-dry-run-daemon-bypass",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1739",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1739/restrict-hosted-dry-run-daemon-bypass",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restrict-hosted-dry-run-daemon-bypass",
+  "taskSession": "tsk_287a4c76b8ae",
+  "tmuxSession": "opensaas-os-restrict-hosted-dry-run-daemon-bypass-287a4c76",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restrict-hosted-dry-run-daemon-bypass/.task/os/restrict-hosted-dry-run-daemon-bypass/session.json",
+  "createdAt": "2026-07-29T15:57:41.175Z"
+}
