@@ -434,22 +434,26 @@ describe('release provider retry safety', () => {
     });
   });
 
-  it('resumes after a deployment interruption without replacing immutable bytes', async () => {
+  it('should resume without replacing immutable bytes when deployment creation is interrupted', async () => {
     const mutation = publicationMutation();
-    const archive = mutation.artifacts![PLATFORM_BUNDLE_ID].archivePath;
-    const signature = mutation.artifacts![PLATFORM_BUNDLE_ID].signaturePath;
     const fake = backend({
-      assetDigests: {
-        'runtime.tar.gz': digestFile(archive),
-        'runtime.tar.gz.sig': digestFile(signature),
-      },
       failAfter: 'deployment:consuelo-os-dev',
-      r2Digests: {
-        [`bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz`]: digestFile(archive),
-        [`bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz.sig`]: digestFile(signature),
-      },
       tagSha: SOURCE_COMMIT,
     });
+    const assetDigests = new Map<string, string>();
+    const r2Digests = new Map<string, string>();
+    const uploadGithubAsset = fake.uploadGithubAsset;
+    const putR2Object = fake.putR2Object;
+    fake.getGithubAssetDigest = async (_tag, name) => assetDigests.get(name) ?? null;
+    fake.uploadGithubAsset = async (value) => {
+      await uploadGithubAsset(value);
+      assetDigests.set(value.name, digestFile(value.path));
+    };
+    fake.getR2ObjectDigest = async (key) => r2Digests.get(key) ?? null;
+    fake.putR2Object = async (key, path) => {
+      await putR2Object(key, path);
+      r2Digests.set(key, digestFile(path));
+    };
     fake.deploymentExists = async () => fake.writes.includes('deployment:consuelo-os-dev');
 
     await expect(executeReleaseProviderMutation({
@@ -459,6 +463,10 @@ describe('release provider retry safety', () => {
     }, { backend: fake })).rejects.toThrow(
       'injected provider interruption after deployment:consuelo-os-dev',
     );
+    const immutableWriteCount = fake.writes.filter((write) =>
+      write.startsWith('asset:') || write.startsWith('r2:bundles/'),
+    ).length;
+    expect(immutableWriteCount).toBeGreaterThan(0);
 
     await executeReleaseProviderMutation({
       config,
@@ -467,8 +475,9 @@ describe('release provider retry safety', () => {
     }, { backend: fake });
 
     expect(fake.writes.filter((write) => write === 'deployment:consuelo-os-dev')).toHaveLength(1);
-    expect(fake.writes.some((write) => write.startsWith('asset:'))).toBe(false);
-    expect(fake.writes.some((write) => write.startsWith('r2:bundles/'))).toBe(false);
+    expect(fake.writes.filter((write) =>
+      write.startsWith('asset:') || write.startsWith('r2:bundles/'),
+    )).toHaveLength(immutableWriteCount);
     expect(fake.writes.at(-1)).toMatch(/^r2:state\/release-state\.json:/);
   });
 
