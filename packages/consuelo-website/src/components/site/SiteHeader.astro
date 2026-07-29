@@ -7,7 +7,8 @@ const cloudHref = 'https://os.consuelohq.com';
 
 <header class="os-header" data-os-header>
   <nav class="os-header__desktop" aria-label="Primary">
-    <a class="os-header__side-link" href={siteLinks.docs}>DOCS</a>
+    <a class="os-header__desktop-link" href="/blog">CONSUELO</a>
+    <a class="os-header__desktop-link" href={siteLinks.docs}>DOCS</a>
 
     <div class="os-header__identity">
       <a class="os-header__wordmark" href="/" aria-label="Consuelo OS home">
@@ -24,7 +25,8 @@ const cloudHref = 'https://os.consuelohq.com';
       </div>
     </div>
 
-    <a class="os-header__side-link" href={cloudHref}>CLOUD</a>
+    <a class="os-header__desktop-link" href="/pricing">PRICING</a>
+    <a class="os-header__desktop-link" href={cloudHref}>CLOUD</a>
   </nav>
 
   <nav class="os-header__mobile" aria-label="Mobile primary">
@@ -62,15 +64,22 @@ const cloudHref = 'https://os.consuelohq.com';
 
   .os-header__desktop {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr 1fr 1.25fr 1fr 1fr;
     align-items: start;
+    gap: 1rem;
     width: min(100%, 90rem);
     margin: 0 auto;
     padding: clamp(1.8rem, 4vw, 3.5rem) clamp(1.5rem, 4.8vw, 4rem);
+    text-align: center;
   }
 
-  .os-header__desktop > :last-child {
-    justify-self: end;
+  .os-header__desktop-link {
+    padding-block: 0.1rem;
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.72rem, 0.95vw, 0.86rem);
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    line-height: 1;
   }
 
   .os-header__side-link {
