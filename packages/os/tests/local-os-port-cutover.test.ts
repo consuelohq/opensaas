@@ -127,7 +127,8 @@ describe('prelaunch local OS port cutover', () => {
     expect(caddy).toContain('reverse_proxy 127.0.0.1:46321');
     expect(caddy).not.toContain('127.0.0.1:8960');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:46321/mcp');
-    expect(cloudflaredPlist).toContain('http://127.0.0.1:46321');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:46320');
+    expect(cloudflaredPlist).not.toContain('http://127.0.0.1:46321');
     expect(cloudflaredPlist).not.toContain('http://127.0.0.1:8960');
   });
 
@@ -161,7 +162,8 @@ describe('prelaunch local OS port cutover', () => {
     expect(config.port).toBe(47_001);
     expect(caddy).toContain('reverse_proxy 127.0.0.1:47001');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:47001/mcp');
-    expect(cloudflaredPlist).toContain('http://127.0.0.1:47001');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:46320');
+    expect(cloudflaredPlist).not.toContain('http://127.0.0.1:47001');
   });
 
   it('should honor an explicit port when reprovisioning persisted legacy state', () => {
@@ -213,7 +215,8 @@ describe('prelaunch local OS port cutover', () => {
     expect(config.port).toBe(8_960);
     expect(caddy).toContain('reverse_proxy 127.0.0.1:8960');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:8960/mcp');
-    expect(cloudflaredPlist).toContain('http://127.0.0.1:8960');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:46320');
+    expect(cloudflaredPlist).not.toContain('http://127.0.0.1:8960');
   });
 
   it('should pass the validated environment override into provisioning', () => {

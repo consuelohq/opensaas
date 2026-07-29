@@ -129,7 +129,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(JSON.stringify(auth)).not.toMatch(/local-consuelo-os|local\.consuelohq\.com/);
     expect(fs.existsSync(join(home, 'sites', 'index.html'))).toBe(true);
     expect(fs.existsSync(join(home, 'sites', 'pages', 'index.html'))).toBe(true);
-    expect(fs.existsSync(join(home, 'sites', 'office', 'data', 'artifacts.json'))).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'artifacts', 'data', 'catalog.json'))).toBe(true);
     expect(fs.existsSync(join(home, 'sites', 'traces', 'index.html'))).toBe(true);
     expect(fs.existsSync(join(home, 'sites', 'diffs', 'index.html'))).toBe(true);
   });
@@ -141,6 +141,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     const result = provisionLocalOs({
       home,
       mode: 'local',
+      platform: 'darwin',
       workspaceBootstrap: {
         workspaceId: 'workspace_123',
         workspaceSlug: 'kokayi',
@@ -300,7 +301,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'utf8',
     );
 
-    const provisionIndex = installSource.indexOf('const result = provisionLocalOs');
+    const provisionIndex = installSource.indexOf('provisionLocalOs({');
     const platformProvisioningIndex = installSource.indexOf('const platformProvisioning =');
     const payloadIndex = installSource.indexOf('const payload = {');
     const successIndex = installSource.indexOf('spin?.succeed');
@@ -328,6 +329,15 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     );
     const cliUiSource = fs.readFileSync(
       join(process.cwd(), 'scripts', 'lib', 'cli-ui.ts'),
+      'utf8',
+    );
+    const enrollmentSource = fs.readFileSync(
+      join(
+        process.cwd(),
+        'scripts',
+        'lib',
+        'managed-cloud-node-enrollment.ts',
+      ),
       'utf8',
     );
 
@@ -370,13 +380,23 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
     expect(installSource).toContain("message: 'enter workspace name'");
     expect(installSource).toContain('resolveWorkspaceIdentity');
-    expect(installSource).toContain('nodeSigningKeyJwk: deviceKeyPair.signingKeyJwk');
-    expect(installSource).toContain('nodePublicKeyJwk: deviceKeyPair.publicKeyJwk');
+    expect(installSource).toContain('workspaceBootstrapFromApprovedDeviceGrant');
+    expect(enrollmentSource).toContain(
+      'nodeSigningKeyJwk: deviceKeyPair.signingKeyJwk',
+    );
+    expect(enrollmentSource).toContain(
+      'nodePublicKeyJwk: deviceKeyPair.publicKeyJwk',
+    );
     expect(installSource).toContain('selection.deviceKeyPair');
     expect(installSource).toContain('liveDeviceCode.deviceKeyPair');
-    expect(installSource.indexOf('attemptWorkspaceDeviceLogin({')).toBeLessThan(
-      installSource.indexOf("message: 'enter workspace name'"),
+    const deviceLoginCallIndex = installSource.indexOf(
+      'const deviceLogin = await attemptWorkspaceDeviceLogin({',
     );
+    const workspaceIdentityCallIndex = installSource.indexOf(
+      'const workspaceIdentity = await resolveWorkspaceIdentity({',
+    );
+    expect(deviceLoginCallIndex).toBeGreaterThan(-1);
+    expect(workspaceIdentityCallIndex).toBeGreaterThan(deviceLoginCallIndex);
     expect(installSource).not.toContain('spaces become hyphens');
     expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
     expect(installSource).not.toContain('workspace slug:');

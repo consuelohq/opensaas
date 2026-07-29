@@ -6,6 +6,7 @@ import { prepareGrantApproval } from '../cloudflare/os-device-authority/src/serv
 import {
   createMemoryDeviceGrantStore,
   DurableStore,
+  WORKSPACE_NODE_NONCE_LIMIT,
 } from '../cloudflare/os-device-authority/src/stores';
 import type {
   Grant,
@@ -363,6 +364,43 @@ describe('workspace node management and presence', () => {
       nowMs,
     )).toBe(false);
     expect(transactions).toBe(2);
+  });
+
+  it('bounds durable heartbeat nonces per node and prunes expired claims', async () => {
+    const values = new Map<string, unknown>();
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => { values.set(key, value); },
+      delete: async (key: string) => { values.delete(key); },
+      transaction: async <T>(
+        callback: (transaction: StorageTransactionLike) => Promise<T>,
+      ) => callback(storage),
+    };
+    const store = new DurableStore(storage);
+    for (let index = 0; index < WORKSPACE_NODE_NONCE_LIMIT; index += 1) {
+      await expect(store.claimWorkspaceNodeNonce(
+        'node-member',
+        `nonce-${index}`,
+        baseNow + 300_000,
+        baseNow,
+      )).resolves.toBe(true);
+    }
+    await expect(store.claimWorkspaceNodeNonce(
+      'node-member',
+      'nonce-overflow',
+      baseNow + 300_000,
+      baseNow,
+    )).resolves.toBe(false);
+    await expect(store.claimWorkspaceNodeNonce(
+      'node-member',
+      'nonce-after-expiry',
+      baseNow + 600_001,
+      baseNow + 300_001,
+    )).resolves.toBe(true);
+    const indexed = values.get('wnnl:node-member') as unknown[];
+    expect(indexed).toHaveLength(1);
+    expect([...values.keys()].filter((key) => key.startsWith('wnn:node-member:')))
+      .toEqual(['wnn:node-member:nonce-after-expiry']);
   });
 
   it('retains accepted heartbeat nonces from receipt time', async () => {
@@ -787,17 +825,64 @@ describe('workspace node management and presence', () => {
     }));
     expect(invalidStatus.status).toBe(400);
 
+    const overflowBody = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: nowMs,
+      nonce: 'heartbeat-nonce-capability-overflow',
+      connectorStatus: 'connected',
+      capabilities: Array.from({ length: 33 }, (_, index) => `capability-${index}`),
+    });
+    const overflowSignature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: overflowBody,
+    });
+    const overflow = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-consuelo-node-signature': overflowSignature,
+      },
+      body: overflowBody,
+    }));
+    expect(overflow.status).toBe(400);
+
+    const disconnectedBody = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: nowMs,
+      nonce: 'heartbeat-nonce-disconnected',
+      connectorStatus: 'disconnected',
+      capabilities: ['mcp'],
+    });
+    const disconnectedSignature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: disconnectedBody,
+    });
+    const disconnected = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-consuelo-node-signature': disconnectedSignature,
+      },
+      body: disconnectedBody,
+    }));
+    expect(disconnected.status).toBe(200);
+    await expect(disconnected.json()).resolves.toMatchObject({
+      presence: 'offline',
+    });
+
     const auth = { authorization: 'Bearer workspace-heartbeat-token' };
     nowMs = baseNow + heartbeatTtlMs + 1;
     const stale = await handler(new Request(`${origin}/workspace/nodes`, { headers: auth }));
     await expect(stale.json()).resolves.toMatchObject({
-      presence: { online: 0, stale: 1, offline: 1 },
+      presence: { online: 0, stale: 0, offline: 2 },
     });
     const staleAgents = await handler(new Request(
       `${origin}/workspace/agents?workspace_host=${workspaceHost}`,
     ));
     await expect(staleAgents.json()).resolves.toMatchObject({
-      state: 'stale',
+      state: 'offline',
       connectedAgentCount: 2,
     });
     nowMs = baseNow + heartbeatTtlMs * 3 + 1;

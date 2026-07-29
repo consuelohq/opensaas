@@ -4,52 +4,24 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
   pull_request:
     paths:
-      - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/native/macos/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/scripts/testing/macos-alpha-package.sh
-      - packages/os/tests/windows-*.test.ts
-      - packages/os/tests/macos-platform.test.ts
-      - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
-      - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/docs/macos-platform.md
+      - '.github/workflows/consuelo-os-distribution-environments.yaml'
+      - '.github/workflows/consuelo-os-runtime-publish.yaml'
+      - 'packages/os/**'
+      - 'bun.lock'
+      - 'package.json'
   push:
     branches:
-      - main
       - stream/os-distribution
       - stream/os-native
     paths:
-      - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/native/macos/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/scripts/testing/macos-alpha-package.sh
-      - packages/os/tests/windows-*.test.ts
-      - packages/os/tests/macos-platform.test.ts
-      - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
-      - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/docs/macos-platform.md
+      - '.github/workflows/consuelo-os-distribution-environments.yaml'
+      - 'packages/os/**'
+      - 'bun.lock'
+      - 'package.json'
   workflow_dispatch:
-
 concurrency:
   group: consuelo-os-distribution-${{ github.ref }}
   cancel-in-progress: true

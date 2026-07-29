@@ -4,7 +4,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { runtimeLinkTypeForPlatform } from '../scripts/lib/lifecycle/runtime-links';
-import { runtimeReleaseDirectoryName } from '../scripts/lib/lifecycle/runtime-release-path';
+import {
+  runtimeBundleIdFromDirectoryName,
+  runtimeReleaseDirectoryName,
+} from '../scripts/lib/lifecycle/runtime-release-path';
 import {
   assertSupportedWindowsHost,
   createWindowsServiceController,
@@ -107,14 +110,24 @@ describe('Windows platform preflight and paths', () => {
     expect(runtimeLinkTypeForPlatform('linux')).toBe('dir');
   });
 
-  it('maps digest identities to Windows-safe release directories without changing bundle identity', () => {
+  it('maps digest identities to PATH-safe release directories on every platform without changing bundle identity', () => {
     const bundleId = `sha256:${'a'.repeat(64)}`;
+    const directoryName = `sha256-${'a'.repeat(64)}`;
 
-    expect(runtimeReleaseDirectoryName(bundleId, 'win32')).toBe(
-      `sha256-${'a'.repeat(64)}`,
+    expect(runtimeReleaseDirectoryName(bundleId, 'win32')).toBe(directoryName);
+    expect(runtimeReleaseDirectoryName(bundleId, 'darwin')).toBe(directoryName);
+    expect(runtimeReleaseDirectoryName(bundleId, 'linux')).toBe(directoryName);
+    expect(runtimeBundleIdFromDirectoryName(directoryName, 'win32')).toBe(
+      bundleId,
     );
-    expect(runtimeReleaseDirectoryName(bundleId, 'darwin')).toBe(bundleId);
-    expect(runtimeReleaseDirectoryName(bundleId, 'linux')).toBe(bundleId);
+    expect(runtimeBundleIdFromDirectoryName(directoryName, 'darwin')).toBe(
+      bundleId,
+    );
+    expect(runtimeBundleIdFromDirectoryName(directoryName, 'linux')).toBe(
+      bundleId,
+    );
+    expect(runtimeBundleIdFromDirectoryName(bundleId, 'darwin')).toBe(bundleId);
+    expect(runtimeBundleIdFromDirectoryName(bundleId, 'linux')).toBe(bundleId);
   });
 });
 
@@ -648,5 +661,21 @@ describe('Windows native service and workflow source contracts', () => {
     );
     expect(workflow).toContain('packages/os/native/windows-service/bin');
     expect(workflow).toContain('packages/os/native/windows-service/obj');
+  });
+
+  it('keeps Windows heartbeats inside the SCM-managed runtime', () => {
+    const installState = readFileSync(
+      resolve(osRoot, 'scripts', 'lib', 'install-state.ts'),
+      'utf8',
+    );
+    const serverMain = readFileSync(
+      resolve(osRoot, 'scripts', 'server', 'main.ts'),
+      'utf8',
+    );
+
+    expect(installState).toContain("else if (input.platform === 'darwin')");
+    expect(serverMain).toContain("process.platform === 'win32'");
+    expect(serverMain).toContain('startWorkspaceNodeHeartbeatScheduler');
+    expect(serverMain).toContain('workspace-node-heartbeat.json');
   });
 });

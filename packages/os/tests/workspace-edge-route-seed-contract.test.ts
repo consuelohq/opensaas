@@ -16,6 +16,7 @@ type WorkspaceEdgeRouteSeedInput = {
   siteSnapshotKey?: string;
   siteVersionId?: string;
   publishedSiteIds?: string[];
+  siteContentHashes?: Record<string, string>;
   connectorId?: string;
   tunnelOriginUrl?: string;
   localServiceUrl?: string;
@@ -87,7 +88,7 @@ contractDescribe('workspace edge route seed contract', () => {
       owner: 'consuelo-os-cloud',
       status: 'active',
     });
-    expect(record.routes.map((route) => route.pathPrefix)).toEqual([
+    expect(record.routes.filter((route) => route.status === 'active').map((route) => route.pathPrefix)).toEqual([
       '/',
       '/settings',
       '/gateway/traces/events',
@@ -103,9 +104,15 @@ contractDescribe('workspace edge route seed contract', () => {
       '/office',
       '/design-wiki',
     ]);
-    expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual([
+    expect(record.routes.filter(
+      (route) => route.target.kind === 'site-snapshot' && route.status === 'active',
+    )).toEqual([
       expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'workspace-session', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'private-preview' }) }),
     ]);
+    expect(record.routes.find((route) => route.pathPrefix === '/tools')).toMatchObject({
+      status: 'disabled',
+      target: { kind: 'site-snapshot', siteId: 'tools' },
+    });
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/gateway/traces/events',
@@ -233,6 +240,10 @@ contractDescribe('workspace edge route seed contract', () => {
       hostname: 'internal.consuelohq.com',
       siteSnapshotKey: 'sites/workspace_internal/launcher/sha256-release/index.html',
       siteVersionId: 'sha256-release',
+      siteContentHashes: {
+        launcher: 'a'.repeat(64),
+        tools: 'b'.repeat(64),
+      },
       publishedSiteIds: [
         'launcher',
         'artifacts',
@@ -273,6 +284,7 @@ contractDescribe('workspace edge route seed contract', () => {
         target: expect.objectContaining({
           siteId: 'tools',
           manifestKey: 'sites/workspace_internal/tools/sha256-release/index.html',
+          contentHash: 'b'.repeat(64),
         }),
       }),
       expect.objectContaining({
@@ -306,6 +318,11 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
       publishedSiteIds: ['launcher', 'not-a-site'],
     })).toThrow('workspace edge seed received unknown Site snapshot: not-a-site');
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: ['launcher'],
+      siteContentHashes: { launcher: 'not-a-sha256' },
+    })).toThrow('workspace edge seed received invalid site snapshot content hash');
   });
 
   it('should replace empty seed identity inputs with defaults before normalization', async () => {

@@ -1077,10 +1077,11 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements[0]).toContain('os-connector');
     expect(routeRegistry.statements[0]).toContain('"pathPrefix":"/"');
     expect(routeRegistry.statements[0]).toContain('sites/platform/launcher/sha256-test/index.html');
-    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/configuration"');
-    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/tools"');
-    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/environments"');
-    expect(routeRegistry.statements[0]).not.toContain('"pathPrefix":"/secrets"');
+    expect(routeRegistry.statements[0]).toContain('\"status\":\"disabled\"');
+    expect(routeRegistry.statements[0]).toContain('"pathPrefix":"/configuration"');
+    expect(routeRegistry.statements[0]).toContain('"pathPrefix":"/tools"');
+    expect(routeRegistry.statements[0]).toContain('"pathPrefix":"/environments"');
+    expect(routeRegistry.statements[0]).toContain('"pathPrefix":"/secrets"');
     expect(routeRegistry.statements[0]).not.toContain('cloudflare_tunnel_token_fixture');
     expect(routeRegistry.statements[0]).not.toContain('workspace.consuelohq.com');
   });
@@ -1281,6 +1282,10 @@ describe('os device authority worker', () => {
       expect(persisted, entryPoint).not.toHaveProperty('connectorToken');
       expect(persisted, entryPoint).not.toHaveProperty('cloudflareTunnelToken');
       expect(persisted, entryPoint).not.toHaveProperty('accessToken');
+      expect(
+        await store.listWorkspaceNodes('account_google_123'),
+        entryPoint,
+      ).toEqual([]);
       for (const credential of leakedCredentials) {
         expect(JSON.stringify(persisted), entryPoint).not.toContain(credential);
       }
@@ -1814,5 +1819,77 @@ describe('os device authority worker', () => {
     expect(approvedJson.device_public_key_thumbprint).toMatch(/^dpk_/);
     expect(approvedJson.device_public_key_bound).toBe(true);
     expect(JSON.stringify(approvedJson)).not.toMatch(/password|username|basic_auth/i);
+  });
+
+  it('preserves a durable workspace UUID through device approval, connector provisioning, routing, and bootstrap', async () => {
+    let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
+    const workspaceId = '1a99791c-b697-4877-8640-90e31d2b29ff';
+    const accountId = 'account_google_123';
+    const store = createMemoryDeviceGrantStore();
+    await store.putAccountWorkspace({
+      accountId,
+      workspaceId,
+      workspaceSlug: 'testing',
+      workspaceHost: 'testing.consuelohq.com',
+      updatedAt: currentMs,
+    });
+    const routeRegistry = createCapturedRouteRegistry();
+    const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => currentMs,
+      approvalAssertionSecret,
+      workspaceRouteRegistry: routeRegistry.binding,
+      workspaceConnectorProvisioner: connectorProvisioner.provisioner,
+    });
+    const { codeJson, deviceKeyPair } = await startGrant(handler);
+
+    const approve = await handler(new Request(`${origin}/login/device/approve`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-consuelo-account-assertion': await authAssertion({
+          accountId,
+          authMethod: 'google',
+          expiresAt: '2026-06-13T00:20:00.000Z',
+        }),
+      },
+      body: new URLSearchParams({
+        user_code: String(codeJson.user_code).replace('-', ''),
+      }).toString(),
+    }));
+    expect(approve.status).toBe(200);
+
+    currentMs += 6000;
+    const approved = await handler(new Request(CONSUELO_OAUTH_ACCESS_TOKEN_URL, {
+      method: 'POST',
+      ...form({
+        client_id: 'consuelo-os-installer',
+        device_code: String(codeJson.device_code),
+        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...await proofFields({
+          clientId: 'consuelo-os-installer',
+          deviceCode: String(codeJson.device_code),
+          deviceKeyPair,
+        }),
+      }),
+    }));
+    expect(approved.status).toBe(200);
+    await expect(approved.json()).resolves.toMatchObject({
+      workspace_id: workspaceId,
+      workspace_slug: 'testing',
+      workspace_host: 'testing.consuelohq.com',
+    });
+    expect(connectorProvisioner.calls).toEqual([
+      expect.objectContaining({ workspaceId }),
+    ]);
+    expect(routeRegistry.statements.join('\n')).toContain(workspaceId);
+    await expect(store.listWorkspaceNodes(accountId)).resolves.toEqual([
+      expect.objectContaining({ workspaceId }),
+    ]);
+    await expect(store.byAccountWorkspace(accountId)).resolves.toMatchObject({
+      workspaceId,
+    });
   });
 });

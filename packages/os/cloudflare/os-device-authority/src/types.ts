@@ -15,6 +15,7 @@ export type StrongerAuthMethod =
 export type Grant = {
   hash: string;
   userCode: string;
+  workspaceId?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
   status: GrantStatus;
@@ -36,6 +37,7 @@ export type Grant = {
   nodeName?: string;
   nodeRole?: WorkspaceNodeRole;
   nodeStatus?: WorkspaceNodeStatus;
+  nodeRegistrationVersion?: number;
   nodePlatform?: string;
   nodeArchitecture?: string;
   nodeChannel?: string;
@@ -294,6 +296,13 @@ export type Store = {
   ): Promise<WorkspaceBrowserSession | undefined>;
   delWorkspaceBrowserSession(tokenHash: string): Promise<void>;
   putWorkspaceNode(node: WorkspaceNode): Promise<void>;
+  delWorkspaceNode(accountId: string, nodeId: string): Promise<void>;
+  delWorkspaceNodeIfMatch(input: {
+    accountId: string;
+    nodeId: string;
+    updatedAt: number;
+    devicePublicKeyThumbprint: string;
+  }): Promise<boolean>;
   byWorkspaceNode(
     accountId: string,
     nodeId: string,

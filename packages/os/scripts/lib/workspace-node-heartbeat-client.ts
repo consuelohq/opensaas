@@ -70,8 +70,12 @@ function normalizeConfig(
   const capabilities = [...new Set(config.capabilities)]
     .map((value) => value.trim())
     .filter(Boolean)
-    .slice(0, 32)
     .sort();
+  if (capabilities.length > 32) {
+    throw new Error(
+      'workspace node heartbeat capabilities may contain at most 32 unique values',
+    );
+  }
   JSON.parse(requiredString(config.publicKeyJwk, 'public key'));
   JSON.parse(requiredString(config.signingKeyJwk, 'signing key'));
   if (

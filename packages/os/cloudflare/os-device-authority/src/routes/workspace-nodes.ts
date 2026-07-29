@@ -345,9 +345,15 @@ async function handleHeartbeat(
     ? [...new Set(body.capabilities.filter((value): value is string => typeof value === 'string'))]
         .map((value) => value.trim())
         .filter(Boolean)
-        .slice(0, 32)
         .sort()
     : [];
+  if (capabilities.length > 32) {
+    return errorResponse(
+      400,
+      'INVALID_HEARTBEAT_CAPABILITIES',
+      'Heartbeat capabilities may contain at most 32 unique values.',
+    );
+  }
   const hasAgents = Object.hasOwn(body, 'agents');
   const agents = hasAgents
     ? normalizeWorkspaceAgentNames(body.agents)

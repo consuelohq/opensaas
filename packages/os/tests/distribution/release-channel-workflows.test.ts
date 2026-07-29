@@ -20,11 +20,14 @@ type WorkflowStep = {
 type WorkflowJob = {
   environment?: string;
   needs?: string | string[];
+  permissions?: Record<string, string>;
   steps?: WorkflowStep[];
+  uses?: string;
 };
 
 type ReleaseWorkflow = {
   jobs?: Record<string, WorkflowJob>;
+  permissions?: Record<string, string>;
 };
 
 function parseWorkflow(path: string): ReleaseWorkflow {
@@ -41,13 +44,30 @@ function dependencyInstallSteps(workflow: string): WorkflowStep[] {
 describe('Consuelo OS release-channel workflows', () => {
   it('keeps pull requests validation-only and publishes dev only from main', () => {
     const workflow = read('.github/workflows/consuelo-os-runtime-publish.yaml');
+    const parsed = parseWorkflow('.github/workflows/consuelo-os-runtime-publish.yaml');
 
     expect(workflow).toContain('push:');
     expect(workflow).toContain('- main');
     expect(workflow).not.toContain('pull_request:');
     expect(workflow).not.toContain('workflow_dispatch:');
-    expect(workflow).toContain('contents: write');
-    expect(workflow).toContain('deployments: write');
+    expect(parsed.permissions).toEqual({ contents: 'read' });
+    expect(parsed.jobs?.['distribution-gate']).toMatchObject({
+      permissions: { contents: 'read' },
+      uses: './.github/workflows/consuelo-os-distribution-environments.yaml',
+    });
+    expect(parsed.jobs?.plan?.needs).toBe('distribution-gate');
+    expect(parsed.jobs?.build?.needs).toBe('plan');
+    expect(parsed.jobs?.publish?.needs).toEqual([
+      'distribution-gate',
+      'plan',
+      'build',
+    ]);
+    expect(parsed.jobs?.plan?.permissions).toBeUndefined();
+    expect(parsed.jobs?.build?.permissions).toBeUndefined();
+    expect(parsed.jobs?.publish?.permissions).toEqual({
+      contents: 'write',
+      deployments: 'write',
+    });
     expect(workflow).toContain('environment: consuelo / production');
     expect(workflow).toContain('runtime-bundle:fingerprint');
     expect(workflow).toContain('release:channels -- publish');
@@ -56,6 +76,13 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('darwin-arm64');
     expect(workflow).toContain('linux-x64');
     expect(workflow).toContain('windows-x64');
+    expect(workflow).toContain('Build Windows service host');
+    expect(workflow).toContain(
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
+    );
+    expect(workflow.indexOf('Build Windows service host')).toBeLessThan(
+      workflow.indexOf('Build runtime bundle exactly once'),
+    );
     expect(workflow).toContain('CLOUDFLARE_OS_RELEASE_API_TOKEN');
     expect(workflow).toContain('CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY');
     expect(workflow).not.toContain('release-state.json" \
