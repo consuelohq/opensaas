@@ -1334,6 +1334,53 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(upstreamRequests).toHaveLength(0);
   });
 
+  it('should fail closed when served snapshot bytes do not match the route hash', async () => {
+    const { createWorkspaceCloudflareEdgeRouter } =
+      await loadWorkspaceCloudflareEdgeRouterContract();
+    const snapshotHtml = '<!doctype html><title>corrupted snapshot</title>';
+    const router = createWorkspaceCloudflareEdgeRouter({
+      registry: {
+        async resolve() {
+          return {
+            allowed: true,
+            workspaceId: 'workspace_123',
+            hostname: 'kokayi.consuelohq.com',
+            route: '/',
+            surface: 'sites',
+            auth: 'public',
+            auditEvent: 'workspace.hostname.route.allowed',
+            target: {
+              kind: 'site-snapshot',
+              siteId: 'launcher',
+              versionId: 'version_corrupt',
+              manifestKey:
+                'sites/workspace_123/launcher/version_corrupt/index.html',
+              contentHash: createHash('sha256')
+                .update('expected snapshot')
+                .digest('hex'),
+              cachePolicy: 'static-shell',
+            },
+          };
+        },
+      },
+      siteSnapshots: {
+        r2: {
+          async get() {
+            return { text: async () => snapshotHtml };
+          },
+        },
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://kokayi.consuelohq.com/'),
+    );
+    const body = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(body).not.toContain('corrupted snapshot');
+  });
+
   it('should fail closed when a site snapshot cannot be read', async () => {
     const { createWorkspaceCloudflareEdgeRouter } =
       await loadWorkspaceCloudflareEdgeRouterContract();

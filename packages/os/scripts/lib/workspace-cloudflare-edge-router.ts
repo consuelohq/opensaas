@@ -1,4 +1,9 @@
-import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import {
+  createHash,
+  createHmac,
+  randomUUID,
+  timingSafeEqual,
+} from 'node:crypto';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -582,15 +587,20 @@ const createSiteSnapshotResponse = (input: {
     { kind: 'site-snapshot' }
   >;
 }): Response => {
+  const contentHash = createHash('sha256').update(input.html).digest('hex');
+  if (
+    input.target.contentHash &&
+    input.target.contentHash !== contentHash
+  ) {
+    throw new Error('served site snapshot does not match its route content hash');
+  }
   const headers = new Headers({
     'cache-control': siteSnapshotCacheControl(input.target.cachePolicy),
     'content-type': input.target.contentType ?? 'text/html; charset=utf-8',
     'x-consuelo-edge-cache-authority': SITE_SNAPSHOT_CACHE_AUTHORITY,
     'x-consuelo-site-version': input.target.versionId,
   });
-  if (input.target.contentHash) {
-    headers.set('x-consuelo-site-content-hash', input.target.contentHash);
-  }
+  headers.set('x-consuelo-site-content-hash', contentHash);
   return new Response(input.html, { status: 200, headers });
 };
 

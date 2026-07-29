@@ -1467,10 +1467,12 @@ export function renderCaddyGatewayConfig(input: {
       'Caddy ingress and local upstream ports must differ to prevent a proxy loop',
     );
   }
-  const mtlsBlock = input.mtls?.enabled
-    ? `\n  tls {\n    client_auth {\n      mode require_and_verify\n      trusted_ca_cert_file ${input.mtls.caFile}\n    }\n  }\n`
-    : '';
-  return `{\n  admin off\n  auto_https off\n}\n\nhttp://127.0.0.1:${ingressPort} {\n  bind 127.0.0.1\n  @workspace_host host ${input.workspaceHost}\n  handle @workspace_host {\n    encode zstd gzip\n    request_body {\n      max_size 4MB\n    }\n    header {\n      -Server\n      X-Content-Type-Options \"nosniff\"\n      Referrer-Policy \"no-referrer\"\n      Permissions-Policy \"camera=(), microphone=(), geolocation=()\"\n    }${mtlsBlock}\n    reverse_proxy ${input.upstream.host}:${input.upstream.port} {\n      header_up -X-Consuelo-Edge-Signature\n      header_up -X-Consuelo-Edge-Cache-Authority\n      header_up -X-Consuelo-Route\n      header_up -X-Consuelo-Surface\n      header_up -X-Consuelo-Connector-Id\n      header_up X-Forwarded-Host {host}\n      header_up X-Forwarded-Proto {scheme}\n      transport http {\n        dial_timeout 5s\n        response_header_timeout 15s\n        read_timeout 60s\n        write_timeout 60s\n      }\n    }\n  }\n  respond \"Misdirected Request\" 421\n}\n`;
+  if (input.mtls?.enabled) {
+    throw new Error(
+      'Caddy mTLS cannot be enabled on the plaintext loopback ingress',
+    );
+  }
+  return `{\n  admin off\n  auto_https off\n}\n\nhttp://127.0.0.1:${ingressPort} {\n  bind 127.0.0.1\n  @workspace_host host ${input.workspaceHost}\n  handle @workspace_host {\n    encode zstd gzip\n    request_body {\n      max_size 4MB\n    }\n    header {\n      -Server\n      X-Content-Type-Options \"nosniff\"\n      Referrer-Policy \"no-referrer\"\n      Permissions-Policy \"camera=(), microphone=(), geolocation=()\"\n    }\n    reverse_proxy ${input.upstream.host}:${input.upstream.port} {\n      header_up -X-Consuelo-Edge-Signature\n      header_up -X-Consuelo-Edge-Cache-Authority\n      header_up -X-Consuelo-Route\n      header_up -X-Consuelo-Surface\n      header_up -X-Consuelo-Connector-Id\n      header_up X-Forwarded-Host {host}\n      header_up X-Forwarded-Proto {scheme}\n      transport http {\n        dial_timeout 5s\n        response_header_timeout 15s\n        read_timeout 60s\n        write_timeout 60s\n      }\n    }\n  }\n  respond \"Misdirected Request\" 421\n}\n`;
 }
 
 export function createPublicRouteRegistry(input: {

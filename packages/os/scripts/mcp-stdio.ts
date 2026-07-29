@@ -24,60 +24,60 @@ function parseContentLength(header: string): number | null {
 }
 
 function takeMessage(): string | null {
-  if (buffer.length === 0) return null;
-
-  if (/^content-length:/i.test(buffer.subarray(0, 64).toString('ascii'))) {
-    const headerBoundary = contentLengthHeaderEnd(buffer);
-    if (!headerBoundary) {
-      if (buffer.length > MAX_MCP_STDIO_HEADER_BYTES) {
+  while (buffer.length > 0) {
+    if (/^content-length:/i.test(buffer.subarray(0, 64).toString('ascii'))) {
+      const headerBoundary = contentLengthHeaderEnd(buffer);
+      if (!headerBoundary) {
+        if (buffer.length > MAX_MCP_STDIO_HEADER_BYTES) {
+          throw new Error('MCP stdio request headers exceed the allowed size.');
+        }
+        return null;
+      }
+      if (headerBoundary.end > MAX_MCP_STDIO_HEADER_BYTES) {
         throw new Error('MCP stdio request headers exceed the allowed size.');
+      }
+      const header = buffer.subarray(0, headerBoundary.end).toString('ascii');
+      const length = parseContentLength(header);
+      if (!Number.isFinite(length) || length === null) {
+        throw new Error('MCP stdio request is missing Content-Length.');
+      }
+      if (length < 0 || length > MAX_MCP_STDIO_BODY_BYTES) {
+        throw new Error('MCP stdio request body exceeds the allowed size.');
+      }
+      const bodyStart = headerBoundary.end + headerBoundary.separatorLength;
+      const bodyEnd = bodyStart + length;
+      if (buffer.length < bodyEnd) return null;
+      const body = buffer.subarray(bodyStart, bodyEnd).toString('utf8');
+      buffer = buffer.subarray(bodyEnd);
+      while (
+        buffer.length > 0 &&
+        /\s/.test(String.fromCharCode(buffer[0] ?? 0))
+      ) {
+        buffer = buffer.subarray(1);
+      }
+      return body;
+    }
+
+    const newline = buffer.indexOf(0x0a);
+    if (newline < 0) {
+      if (buffer.length > MAX_MCP_STDIO_BODY_BYTES) {
+        throw new Error('MCP stdio request body exceeds the allowed size.');
       }
       return null;
     }
-    if (headerBoundary.end > MAX_MCP_STDIO_HEADER_BYTES) {
-      throw new Error('MCP stdio request headers exceed the allowed size.');
-    }
-    const header = buffer.subarray(0, headerBoundary.end).toString('ascii');
-    const length = parseContentLength(header);
-    if (!Number.isFinite(length) || length === null) {
-      throw new Error('MCP stdio request is missing Content-Length.');
-    }
-    if (length < 0 || length > MAX_MCP_STDIO_BODY_BYTES) {
+    if (newline > MAX_MCP_STDIO_BODY_BYTES) {
       throw new Error('MCP stdio request body exceeds the allowed size.');
     }
-    const bodyStart = headerBoundary.end + headerBoundary.separatorLength;
-    const bodyEnd = bodyStart + length;
-    if (buffer.length < bodyEnd) return null;
-    const body = buffer.subarray(bodyStart, bodyEnd).toString('utf8');
-    buffer = buffer.subarray(bodyEnd);
-    while (
-      buffer.length > 0 &&
-      /\s/.test(String.fromCharCode(buffer[0] ?? 0))
-    ) {
-      buffer = buffer.subarray(1);
-    }
-    return body;
+    const line = buffer.subarray(0, newline).toString('utf8').trim();
+    buffer = buffer.subarray(newline + 1);
+    if (line.length > 0) return line;
   }
-
-  const newline = buffer.indexOf(0x0a);
-  if (newline < 0) {
-    if (buffer.length > MAX_MCP_STDIO_BODY_BYTES) {
-      throw new Error('MCP stdio request body exceeds the allowed size.');
-    }
-    return null;
-  }
-  if (newline > MAX_MCP_STDIO_BODY_BYTES) {
-    throw new Error('MCP stdio request body exceeds the allowed size.');
-  }
-  const line = buffer.subarray(0, newline).toString('utf8').trim();
-  buffer = buffer.subarray(newline + 1);
-  return line.length > 0 ? line : takeMessage();
+  return null;
 }
 
 function writeMessage(message: JsonObject): void {
   const body = JSON.stringify(message);
-  const length = Buffer.byteLength(body, 'utf8');
-  process.stdout.write(`Content-Length: ${length}\r\n\r\n${body}`);
+  process.stdout.write(`${body}\n`);
 }
 
 async function main(): Promise<void> {

@@ -298,6 +298,7 @@ resolve_caddy_bin() {
 resolve_bun_bin() {
   (
     load_env_file "$env_file"
+    load_env_file "$state_env_file"
     if [ -n "${BUN_BIN:-}" ]; then
       printf '%s\n' "$BUN_BIN"
     else
