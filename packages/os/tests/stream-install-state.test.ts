@@ -67,20 +67,20 @@ describe('installed visible user tree', () => {
 
   it('preserves user-authored visible Steering content on upgrade', () => {
     provision();
-    const toolsPath = join(
+    const steeringInstructionsPath = join(
       tempUserHome,
       'Consuelo',
       'Steering',
       'AGENTS.md',
     );
     writeFileSync(
-      toolsPath,
+      steeringInstructionsPath,
       '# My exact tools instructions\n\nDo not replace this.\n',
     );
 
     const result = provision();
 
-    expect(readFileSync(toolsPath, 'utf8')).toBe(
+    expect(readFileSync(steeringInstructionsPath, 'utf8')).toBe(
       '# My exact tools instructions\n\nDo not replace this.\n',
     );
     expect(

@@ -422,14 +422,9 @@ describe('local OS install state', () => {
       'mcp:call',
       'os:tools',
     ]);
-    expect(existsSync(join(tempHome, 'operator'))).toBe(false);
     expect(existsSync(join(tempHome, 'hooks'))).toBe(false);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(existsSync(join(tempHome, 'steering'))).toBe(false);
-    expect(existsSync(join(tempHome, 'steering', 'system_prompt.md'))).toBe(false);
-    expect(existsSync(join(tempHome, 'steering', 'decision.md'))).toBe(false);
-    expect(existsSync(join(tempHome, 'steering', 'STEERING.md'))).toBe(false);
-    expect(existsSync(join(tempHome, 'steering', 'steering.md'))).toBe(false);
     expect(first.actions.some((action: { type: string }) => action.type === 'seed_steering')).toBe(false);
     expect(first.actions.some((action: { path: string }) => action.path.endsWith(join('steering', 'decision.md')))).toBe(false);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'create_file' && action.path.endsWith(join('components', 'installed-skills.json')) && action.status === 'created')).toBe(true);

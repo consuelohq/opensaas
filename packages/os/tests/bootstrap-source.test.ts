@@ -96,12 +96,13 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('wrangler');
   });
 
-  it('resolves the signed stable channel on every hosted install', () => {
+  it('should resolve the signed stable channel when a hosted install runs', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"');
-    expect(bootstrap).toContain('--refresh-source');
-    expect(bootstrap).toContain('--use-existing-source');
+    expect(bootstrap).toContain(
+      '--refresh-source|--use-existing-source) ;;',
+    );
     expect(bootstrap).toContain('SOURCE_STATUS="verified"');
     expect(bootstrap).not.toContain('REPO_ARCHIVE_URL');
   });
@@ -279,7 +280,12 @@ describe('bootstrap source refresh controls', () => {
   it('should install the immutable stable runtime instead of promoting repository source', () => {
     const bootstrap = readBootstrap();
     expect(bootstrap).toContain(
-      'RELEASE_BASE_URL="${CONSUELO_RELEASE_BASE_URL:-https://install.consuelohq.com/os/releases}"',
+      'HOSTED_RELEASE_BASE_URL="https://install.consuelohq.com/os/releases"',
+    );
+    expect(bootstrap).toContain('if [ "${CONSUELO_OS_DEV:-0}" = "1" ]; then');
+    expect(bootstrap).toContain('RELEASE_BASE_URL="$HOSTED_RELEASE_BASE_URL"');
+    expect(bootstrap).toContain(
+      'RELEASE_PUBLIC_KEYS_BASE64="$BAKED_RELEASE_PUBLIC_KEYS_BASE64"',
     );
     expect(bootstrap).toContain('/channels/${channel}.json');
     expect(bootstrap).toContain('verify_runtime_release');
@@ -289,7 +295,7 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('promote_hosted_runtime');
   });
 
-  it('should activate the verified runtime before onboarding and daemon installation', () => {
+  it('should activate the verified runtime after onboarding succeeds and before daemon installation', () => {
     const bootstrap = readBootstrap();
     const main = extractShellFunction(bootstrap, 'main');
     const daemonInstall = extractShellFunction(
@@ -301,7 +307,10 @@ describe('bootstrap source refresh controls', () => {
     expect(main.indexOf('install_verified_runtime')).toBeLessThan(
       main.indexOf('run_onboarding'),
     );
-    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
+    expect(main.indexOf('run_onboarding')).toBeLessThan(
+      main.indexOf('activate_verified_runtime'),
+    );
+    expect(main.indexOf('activate_verified_runtime')).toBeLessThan(
       main.indexOf('maybe_install_daemons'),
     );
     expect(daemonInstall).toContain('CONSUELO_HOME="$OS_HOME"');

@@ -58,7 +58,15 @@ export function trustedReleaseKeysJson(
   const encoded = env.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS?.trim();
   let keys: Record<string, string> = {};
   if (encoded) {
-    const parsed = JSON.parse(encoded) as unknown;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(encoded) as unknown;
+    } catch (error: unknown) {
+      throw new Error(
+        'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS is not valid JSON',
+        { cause: error },
+      );
+    }
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       throw new Error(
         'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS must be a JSON object',
@@ -264,23 +272,33 @@ export default {
         if (request.method !== 'GET' && request.method !== 'HEAD') {
           return new Response('Method not allowed\\n', {
             status: 405,
-            headers: { allow: 'GET, HEAD', 'x-content-type-options': 'nosniff' },
+            headers: {
+              allow: 'GET, HEAD',
+              'content-type': 'text/plain; charset=utf-8',
+              'x-content-type-options': 'nosniff',
+            },
           });
         }
         const key = url.pathname.slice(RELEASE_PATH.length);
-        const allowed = /^channels\\/(?:dev|canary|beta|stable)\\.json$/.test(key) ||
+        const allowed = /^channels\\/(?:dev|canary|beta|stable|nightly)\\.json$/.test(key) ||
           /^bundles\\/sha256:[a-f0-9]{64}\\/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$/.test(key);
         if (!allowed || key.includes('..')) {
           return new Response('Not found\\n', {
             status: 404,
-            headers: { 'x-content-type-options': 'nosniff' },
+            headers: {
+              'content-type': 'text/plain; charset=utf-8',
+              'x-content-type-options': 'nosniff',
+            },
           });
         }
         const object = await env.CONSUELO_OS_RELEASES.get(key);
         if (!object) {
           return new Response('Not found\\n', {
             status: 404,
-            headers: { 'x-content-type-options': 'nosniff' },
+            headers: {
+              'content-type': 'text/plain; charset=utf-8',
+              'x-content-type-options': 'nosniff',
+            },
           });
         }
         const headers = new Headers();
@@ -397,8 +415,7 @@ async function verifyInstallUrl(
 }
 
 async function main() {
-  try {
-    const options = parseArgs(process.argv.slice(2));
+  const options = parseArgs(process.argv.slice(2));
   options.pathname = normalizePathname(options.pathname);
 
   const bootstrapPath = resolve(REPO_ROOT, options.scriptPath);
@@ -413,7 +430,14 @@ async function main() {
   writeOut(`installUrl=${installUrl}`);
 
   if (options.verifyOnly) {
-    await verifyInstallUrl(installUrl, sha256, options);
+    try {
+      await verifyInstallUrl(installUrl, sha256, options);
+    } catch (error: unknown) {
+      throw new Error(
+        `Hosted installer verification failed for ${installUrl}`,
+        { cause: error },
+      );
+    }
     return;
   }
 
@@ -465,9 +489,6 @@ async function main() {
     } else {
       rmSync(tempDir, { recursive: true, force: true });
     }
-  }
-  } catch (error: unknown) {
-    throw error;
   }
 }
 

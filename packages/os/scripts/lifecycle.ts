@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -319,24 +319,42 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   }
 }
 
-function trustedReleaseKeysFromEnvironment(home?: string): Record<string, string> {
+function parseTrustedReleaseKeyMap(
+  parsed: unknown,
+  source: string,
+): Record<string, string> {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`${source} must be a JSON object`);
+  }
+  return Object.fromEntries(
+    Object.entries(parsed as Record<string, unknown>).map(([key, value]) => {
+      if (typeof value !== 'string' || !value.trim()) {
+        throw new Error(
+          `release public key ${key} from ${source} must be a non-empty PEM string`,
+        );
+      }
+      return [key, value];
+    }),
+  );
+}
+
+export function trustedReleaseKeysFromEnvironment(
+  home?: string,
+): Record<string, string> {
   const encoded = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
   if (encoded) {
-    const parsed = JSON.parse(encoded) as unknown;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(encoded) as unknown;
+    } catch (error: unknown) {
       throw new Error(
-        'CONSUELO_RELEASE_PUBLIC_KEYS_JSON must be a JSON object',
+        'CONSUELO_RELEASE_PUBLIC_KEYS_JSON is not valid JSON',
+        { cause: error },
       );
     }
-    return Object.fromEntries(
-      Object.entries(parsed as Record<string, unknown>).map(([key, value]) => {
-        if (typeof value !== 'string' || !value.trim()) {
-          throw new Error(
-            `release public key ${key} must be a non-empty PEM string`,
-          );
-        }
-        return [key, value];
-      }),
+    return parseTrustedReleaseKeyMap(
+      parsed,
+      'CONSUELO_RELEASE_PUBLIC_KEYS_JSON',
     );
   }
   const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
@@ -348,20 +366,34 @@ function trustedReleaseKeysFromEnvironment(home?: string): Record<string, string
     'trusted-release-keys.json',
   );
   try {
-    const parsed = JSON.parse(readFileSync(trustedKeysPath, 'utf8')) as unknown;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      throw new Error('trusted release key file must be a JSON object');
+    const stats = lstatSync(trustedKeysPath);
+    if (stats.isSymbolicLink() || !stats.isFile()) {
+      throw new Error(
+        `trusted release key file must be a regular file: ${trustedKeysPath}`,
+      );
     }
-    return Object.fromEntries(
-      Object.entries(parsed as Record<string, unknown>).map(([key, value]) => {
-        if (typeof value !== 'string' || !value.trim()) {
-          throw new Error(`release public key ${key} must be a non-empty PEM string`);
-        }
-        return [key, value];
-      }),
+    if (typeof process.getuid === 'function' && stats.uid !== process.getuid()) {
+      throw new Error(
+        `trusted release key file must be owned by the current user: ${trustedKeysPath}`,
+      );
+    }
+    if ((stats.mode & 0o022) !== 0) {
+      throw new Error(
+        `trusted release key file must not be group- or world-writable: ${trustedKeysPath}`,
+      );
+    }
+    const parsed = JSON.parse(readFileSync(trustedKeysPath, 'utf8')) as unknown;
+    return parseTrustedReleaseKeyMap(
+      parsed,
+      'trusted release key file',
     );
   } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return {};
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new Error(
+        `no trusted release keys are installed at ${trustedKeysPath}`,
+        { cause: error },
+      );
+    }
     throw error;
   }
 }
@@ -406,7 +438,7 @@ export const createDefaultLifecycleEngine = (input: {
   const osRoot = resolve(import.meta.dirname, '..');
   const port = process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
   const releaseBaseUrl =
-    process.env.CONSUELO_RELEASE_BASE_URL ?? DEFAULT_RELEASE_BASE_URL;
+    process.env.CONSUELO_RELEASE_BASE_URL?.trim() || DEFAULT_RELEASE_BASE_URL;
   return createLifecycleEngine({
     home: input.home,
     releaseSource: createHttpReleaseSource({

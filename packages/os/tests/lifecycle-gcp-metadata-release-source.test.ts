@@ -59,7 +59,7 @@ describe('GCP metadata-authenticated lifecycle release source', () => {
           return new Response(
             JSON.stringify({
               payload: {
-                bundleId: `sha256:${'1'.repeat(64)}`,
+                bundleId: `sha256:${'4'.repeat(64)}`,
                 channel: 'dev',
                 evidence: [{ kind: 'test', reference: 'metadata-source' }],
                 kind: 'consuelo-os-channel-manifest',

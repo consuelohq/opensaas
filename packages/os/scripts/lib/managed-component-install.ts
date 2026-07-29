@@ -315,6 +315,7 @@ export function provisionManagedComponentIndexes(input: {
 }): ManagedComponentProvisionAction[] {
   const actions: ManagedComponentProvisionAction[] = [];
   const upstream: ManagedComponentSource[] = [];
+  const runtimeComponents: ManagedComponentSource[] = [];
   const skillEntries: ComponentIndexEntry[] = [];
   const selected = new Set(input.selectedSkills);
 
@@ -322,14 +323,16 @@ export function provisionManagedComponentIndexes(input: {
     const id = bundledSkillId(skillDir);
     const content = treeFromDirectory(skillDir);
     const sourcePath = packageRelative(skillDir);
-    upstream.push({
+    const source: ManagedComponentSource = {
       id,
       kind: 'skill',
       sourcePath,
-      ...(selected.has(id) ? { localPath: path.posix.join('Skills', id) } : {}),
+      localPath: path.posix.join('Skills', id),
       content,
-    });
+    };
+    runtimeComponents.push(source);
     if (selected.has(id)) {
+      upstream.push(source);
       skillEntries.push({
         id,
         kind: 'skill',
@@ -338,12 +341,14 @@ export function provisionManagedComponentIndexes(input: {
         contentHash: hashComponentTree(content),
         ...compactSkill(readJsonObject(path.join(skillDir, 'skill.json'))),
       });
-      actions.push({
-        type: 'seed_skill',
-        path: path.join(input.userRoot ?? path.join(os.homedir(), 'Consuelo'), 'Skills', id),
-        status: input.dryRun ? 'planned' : 'created',
-        message: 'selected managed skill materialized in visible Skills',
-      });
+      if (input.dryRun) {
+        actions.push({
+          type: 'seed_skill',
+          path: path.join(input.userRoot ?? path.join(os.homedir(), 'Consuelo'), 'Skills', id),
+          status: 'planned',
+          message: 'selected managed skill materialization planned in visible Skills',
+        });
+      }
     }
   }
 
@@ -352,7 +357,9 @@ export function provisionManagedComponentIndexes(input: {
   for (const tool of readToolManifest().tools) {
     const sourcePath = packageRelative(TOOL_MANIFEST_PATH);
     const content = { 'tool.json': `${JSON.stringify(compactTool(tool), null, 2)}\n` };
-    upstream.push({ id: tool.name, kind: 'tool', sourcePath, content });
+    const source = { id: tool.name, kind: 'tool' as const, sourcePath, content };
+    upstream.push(source);
+    runtimeComponents.push(source);
     toolEntries.push({
       id: tool.name,
       kind: 'tool',
@@ -378,7 +385,7 @@ export function provisionManagedComponentIndexes(input: {
 
   const legacy = legacyEntries(input.home);
   actions.push(...legacy.actions);
-  const sourceBundle = runtimeBundleIdentity(upstream);
+  const sourceBundle = runtimeBundleIdentity(runtimeComponents);
   const componentsRoot = path.join(input.home, 'components');
   const skillsIndexPath = path.join(componentsRoot, 'installed-skills.json');
   const toolsIndexPath = path.join(componentsRoot, 'installed-tools.json');
@@ -416,20 +423,67 @@ export function provisionManagedComponentIndexes(input: {
 
   const previous = readExistingState(input.home);
   const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
+  const retainedProvenance = previous.provenance.filter((record) => {
+    if (record.ownership !== 'bundled-managed' || !record.localPath) {
+      return true;
+    }
+    return fs.existsSync(path.join(userRoot, record.localPath));
+  });
   let state = buildManagedComponentUpdateState({
     generatedAt: input.generatedAt,
     sourceBundle,
-    provenance: previous.provenance,
+    provenance: retainedProvenance,
     retainedContent: previous.content,
     upstream,
     localOverrides: snapshotManagedComponentLocalOverrides(userRoot, previous.provenance, upstream),
     custom: legacy.custom,
   });
   writeManagedComponentState(input.home, state);
-  applySafeManagedComponentItems({
+  const selectedSkillPlan = new Map(
+    state.plan.items
+      .filter((item) => item.kind === 'skill' && selected.has(item.id))
+      .map((item) => [item.id, item]),
+  );
+  const applyResult = applySafeManagedComponentItems({
     home: input.home,
     userRoot,
   });
+  const appliedKeys = new Set(applyResult.applied);
+  const skippedKeys = new Set(applyResult.skipped);
+  for (const id of [...selected].sort((left, right) => left.localeCompare(right))) {
+    const item = selectedSkillPlan.get(id);
+    const pathValue = path.join(userRoot, 'Skills', id);
+    if (!item) {
+      actions.push({
+        type: 'seed_skill',
+        path: pathValue,
+        status: 'skipped',
+        message: 'selected managed skill is unavailable in this runtime',
+      });
+      continue;
+    }
+    const applied = appliedKeys.has(item.key);
+    actions.push({
+      type: 'seed_skill',
+      path: pathValue,
+      status: item.action === 'install' && applied
+        ? 'created'
+        : ['update-clean', 'merge-clean'].includes(item.action) && applied
+          ? 'updated'
+          : skippedKeys.has(item.key) ||
+              item.requiresReview ||
+              ['conflict', 'detach'].includes(item.action)
+            ? 'skipped'
+            : 'preserved',
+      message: item.action === 'install' && applied
+        ? 'selected managed skill materialized in visible Skills'
+        : skippedKeys.has(item.key) ||
+            item.requiresReview ||
+            ['conflict', 'detach'].includes(item.action)
+          ? 'selected managed skill preserved for explicit conflict review'
+          : 'selected managed skill already present in visible Skills',
+    });
+  }
   const applied = readManagedComponentState(input.home);
   state = buildManagedComponentUpdateState({
     generatedAt: input.generatedAt,

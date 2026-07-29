@@ -340,10 +340,16 @@ function candidateFingerprint(candidate: AgentCandidate, home: string): string {
     'scripts',
     'mcp-stdio.ts',
   );
+  const packageRoot = process.env.CONSUELO_OS_PACKAGE_ROOT;
+  const packageServerPath = packageRoot
+    ? path.join(packageRoot, 'scripts', 'mcp-stdio.ts')
+    : null;
   const sourceServerPath = path.join(home, 'scripts', 'mcp-stdio.ts');
   const serverPath = fs.existsSync(hostedServerPath)
     ? hostedServerPath
-    : sourceServerPath;
+    : packageServerPath && fs.existsSync(packageServerPath)
+      ? packageServerPath
+      : sourceServerPath;
   const serverDigest = fs.existsSync(serverPath)
     ? createHash('sha256').update(fs.readFileSync(serverPath)).digest('hex')
     : 'missing';
@@ -352,6 +358,7 @@ function candidateFingerprint(candidate: AgentCandidate, home: string): string {
       ? codexManagedBlock(home)
       : expectedJsonEntry(candidate, home),
     commandSource: localAgentMcpCommandSource(),
+    serverPath,
     serverDigest,
   });
 }

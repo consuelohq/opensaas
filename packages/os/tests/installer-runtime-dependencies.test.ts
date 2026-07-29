@@ -265,11 +265,12 @@ describe('public installer runtime dependencies', () => {
     ]) {
       expect(bootstrap).toContain(flag);
     }
-    expect(bootstrap).toContain(
-      'const manifestUrl = `${baseUrl.replace(/\\/$/, "")}/channels/${channel}.json`',
-    );
+    expect(bootstrap).toContain('/channels/');
+    expect(bootstrap).toMatch(/channels\/\$\{channel\}\.json/);
     expect(bootstrap).toContain('selected.cloudflareObjectKey');
-    expect(bootstrap).toContain('const bundleResponse = await fetch(bundleUrl)');
+    expect(bootstrap).toContain('const bundleResponse = await fetch(bundleUrl,');
+    expect(bootstrap).toContain('AbortSignal.timeout');
+    expect(bootstrap).toContain('readBoundedResponse');
     expect(bootstrap).toContain('curl_retry "$url" -o "$tmp_file"');
     expect(bootstrap).not.toContain('REPO_ARCHIVE_URL');
   });

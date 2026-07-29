@@ -877,6 +877,14 @@ export function snapshotManagedComponentLocalOverrides(
   }>();
   for (const record of provenance) {
     if (record.ownership === 'custom' || !record.localPath) continue;
+    const target = resolveInside(userRoot, record.localPath);
+    if (
+      !pathExists(target) ||
+      lstatSync(target).isSymbolicLink() ||
+      !lstatSync(target).isDirectory()
+    ) {
+      continue;
+    }
     candidates.set(componentKey(record.kind, record.id), {
       id: record.id,
       kind: record.kind,
@@ -886,7 +894,13 @@ export function snapshotManagedComponentLocalOverrides(
   for (const source of upstream) {
     if (!source.localPath) continue;
     const target = resolveInside(userRoot, source.localPath);
-    if (!pathExists(target)) continue;
+    if (
+      !pathExists(target) ||
+      lstatSync(target).isSymbolicLink() ||
+      !lstatSync(target).isDirectory()
+    ) {
+      continue;
+    }
     candidates.set(componentKey(source.kind, source.id), {
       id: source.id,
       kind: source.kind,
@@ -1073,6 +1087,12 @@ export function applySafeManagedComponentItems(input: { home: string; userRoot: 
 
     const existing = findProvenance(state, item.key);
     if (item.action === 'remove-upstream') {
+      if (item.localPath) {
+        assertCurrentLocalMatches(input.userRoot, item);
+        const target = resolveInside(input.userRoot, item.localPath);
+        assertNoSymlinkPath(input.userRoot, target);
+        rmSync(target, { recursive: true, force: true });
+      }
       state.provenance = state.provenance.filter((record) => componentKey(record.kind, record.id) !== item.key);
       applied.push(item.key);
       continue;
@@ -1098,6 +1118,11 @@ export function applySafeManagedComponentItems(input: { home: string; userRoot: 
     const upstreamRef = item.upstreamContentRef ?? item.upstreamHash;
     if (!upstreamRef) throw new Error(`upstream content reference is missing: ${item.key}`);
     if (item.action === 'install' && item.localPath) {
+      const target = resolveInside(input.userRoot, item.localPath);
+      if (pathExists(target)) {
+        skipped.push(item.key);
+        continue;
+      }
       writeTree(
         input.userRoot,
         item.localPath,

@@ -485,9 +485,7 @@ function materializeVisibleUserRoot(input: {
   }
 
   const catalogPath = path.join(input.userRoot, 'Tools', 'BUILT_INS.md');
-  const toolManifest = JSON.parse(
-    fs.readFileSync(BUNDLED_TOOL_MANIFEST_PATH, 'utf8'),
-  ) as CanonicalToolManifest;
+  const toolManifest = readBundledToolManifest();
   const catalog = [
     '# OS built-in tools',
     '',

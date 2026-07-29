@@ -82,6 +82,7 @@ async function provisionAgentAndStartDaemon(agentName: AgentName): Promise<void>
       ...process.env,
       CONSUELO_HOME: osHome,
       CONSUELO_OS_PORT: String(port),
+      CONSUELO_RELEASE_PUBLIC_KEYS_JSON: '{}',
       HOME: userHome,
     },
     stdio: 'ignore',
@@ -473,5 +474,31 @@ describe('local agent connectivity', () => {
     expect(detectLocalAgents({ home: osHome, userHome }).find((agent) => agent.name === 'opencode')).toMatchObject({
       status: 'configured',
     });
+  });
+
+  it('requires re-verification when the package-root MCP server changes', async () => {
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    await provisionAgentAndStartDaemon('opencode');
+    await verifyLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+    expect(
+      detectLocalAgents({ home: osHome, userHome }).find(
+        (agent) => agent.name === 'opencode',
+      ),
+    ).toMatchObject({ status: 'verified' });
+
+    const packageRoot = join(osHome, 'package-root-fixture');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    writeFileSync(
+      packageServerPath,
+      readFileSync(join(process.cwd(), 'scripts', 'mcp-stdio.ts')),
+    );
+    process.env.CONSUELO_OS_PACKAGE_ROOT = packageRoot;
+
+    expect(
+      detectLocalAgents({ home: osHome, userHome }).find(
+        (agent) => agent.name === 'opencode',
+      ),
+    ).toMatchObject({ status: 'configured' });
   });
 });

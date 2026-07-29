@@ -15,5 +15,6 @@
   "taskSession": "tsk_10154d39d600",
   "tmuxSession": "opensaas-os-ship-approved-os-foundation-installer-runtime-an-10154d39",
   "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-approved-os-foundation-installer-runtime-and-connector/.task/os/ship-approved-os-foundation-installer-runtime-and-connector/session.json",
-  "createdAt": "2026-07-29T20:10:47.994Z"
+  "createdAt": "2026-07-29T20:10:47.994Z",
+  "taskPrNumber": 1743
 }

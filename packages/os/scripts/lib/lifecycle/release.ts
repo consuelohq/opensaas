@@ -143,6 +143,44 @@ function resolveReleaseManifestPayload(
       'release manifest promotedAt must be an ISO timestamp',
     );
   }
+  if (!Array.isArray(payload.platforms)) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      'release manifest platforms must be an array',
+    );
+  }
+  const platformFields = [
+    'platform',
+    'architecture',
+    'bundleId',
+    'archiveDigest',
+    'cloudflareObjectKey',
+  ] as const;
+  for (const [index, candidate] of payload.platforms.entries()) {
+    const candidateValue = candidate as unknown;
+    if (
+      typeof candidateValue !== 'object' ||
+      candidateValue === null ||
+      Array.isArray(candidateValue)
+    ) {
+      throw lifecycleError(
+        'MANIFEST_INVALID',
+        `release manifest platform ${index} must be an object`,
+      );
+    }
+    const candidateRecord = candidateValue as Record<string, unknown>;
+    for (const field of platformFields) {
+      if (
+        typeof candidateRecord[field] !== 'string' ||
+        candidateRecord[field].trim().length === 0
+      ) {
+        throw lifecycleError(
+          'MANIFEST_INVALID',
+          `release manifest platform ${index} ${field} is required`,
+        );
+      }
+    }
+  }
   const platform = target.platform ?? process.platform;
   const architecture = target.architecture ?? process.arch;
   const selected = payload.platforms.find(
@@ -168,17 +206,13 @@ function resolveReleaseManifestPayload(
       'release manifest archiveDigest must use sha256',
     );
   }
-  if (
-    !selected.cloudflareObjectKey ||
-    !selected.cloudflareObjectKey.startsWith(
-      `bundles/${selected.bundleId}/`,
-    ) ||
-    selected.cloudflareObjectKey.includes('..') ||
-    /^[a-z][a-z0-9+.-]*:/i.test(selected.cloudflareObjectKey)
-  ) {
+  const releaseObjectPattern = new RegExp(
+    `^bundles/${selected.bundleId}/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$`,
+  );
+  if (!releaseObjectPattern.test(selected.cloudflareObjectKey)) {
     throw lifecycleError(
       'MANIFEST_INVALID',
-      'release manifest cloudflareObjectKey must be a relative release object key',
+      'release manifest cloudflareObjectKey must match the immutable release object shape',
     );
   }
   return {
@@ -204,12 +238,28 @@ export function verifySignedReleaseManifest(
       `release manifest signing key is not trusted: ${manifest.signature.keyId}`,
     );
   }
+  if (manifest.signature.algorithm !== 'ed25519') {
+    throw lifecycleError(
+      'MANIFEST_SIGNATURE_INVALID',
+      `unsupported release manifest signature algorithm: ${String(manifest.signature.algorithm)}`,
+    );
+  }
+  let publicKey: ReturnType<typeof createPublicKey>;
+  try {
+    publicKey = createPublicKey(trustedKeys[manifest.signature.keyId]);
+  } catch (error: unknown) {
+    throw lifecycleError(
+      'MANIFEST_SIGNATURE_INVALID',
+      `trusted release key ${manifest.signature.keyId} is not usable`,
+      { cause: error },
+    );
+  }
   let accepted = false;
   try {
-    accepted = manifest.signature.algorithm === 'ed25519' && verify(
+    accepted = verify(
       null,
       Buffer.from(canonicalReleaseManifestPayload(manifest.payload)),
-      createPublicKey(trustedKeys[manifest.signature.keyId]),
+      publicKey,
       Buffer.from(manifest.signature.signature, 'base64url'),
     );
   } catch {

@@ -29,9 +29,16 @@ resolve_runtime_home() {
 RUNTIME_HOME="$(resolve_runtime_home)"
 RUNTIME_RELEASES_DIR="${CONSUELO_RUNTIME_RELEASES_DIR:-$OS_HOME/runtime/releases}"
 RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
-RELEASE_BASE_URL="${CONSUELO_RELEASE_BASE_URL:-https://install.consuelohq.com/os/releases}"
+HOSTED_RELEASE_BASE_URL="https://install.consuelohq.com/os/releases"
+BAKED_RELEASE_PUBLIC_KEYS_BASE64="__CONSUELO_RELEASE_PUBLIC_KEYS_BASE64__"
+if [ "${CONSUELO_OS_DEV:-0}" = "1" ]; then
+  RELEASE_BASE_URL="${CONSUELO_RELEASE_BASE_URL:-$HOSTED_RELEASE_BASE_URL}"
+  RELEASE_PUBLIC_KEYS_BASE64="${CONSUELO_RELEASE_PUBLIC_KEYS_BASE64:-$BAKED_RELEASE_PUBLIC_KEYS_BASE64}"
+else
+  RELEASE_BASE_URL="$HOSTED_RELEASE_BASE_URL"
+  RELEASE_PUBLIC_KEYS_BASE64="$BAKED_RELEASE_PUBLIC_KEYS_BASE64"
+fi
 RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"
-RELEASE_PUBLIC_KEYS_BASE64="${CONSUELO_RELEASE_PUBLIC_KEYS_BASE64:-__CONSUELO_RELEASE_PUBLIC_KEYS_BASE64__}"
 TRUSTED_RELEASE_KEYS_PATH="$OS_HOME/runtime/trusted-release-keys.json"
 ALLOW_GLOBAL_RUNTIME_LOOKUP="${CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP:-1}"
 CLOUDFLARED_REQUIRED="${CONSUELO_OS_REQUIRE_CLOUDFLARED:-1}"
@@ -83,10 +90,19 @@ PORTLESS_STATUS="pending"
 CLOUDFLARED_STATUS="pending"
 CADDY_STATUS="pending"
 SOURCE_STATUS="pending"
+PENDING_RUNTIME_RELEASE_DIR=""
+RUNTIME_STAGE_DIR=""
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
 CONTACT_URL="https://consuelohq.com/contact/"
 OS_MODE=""
+
+cleanup_runtime_stage() {
+  if [ -n "$RUNTIME_STAGE_DIR" ] && [ -d "$RUNTIME_STAGE_DIR" ]; then
+    rm -rf "$RUNTIME_STAGE_DIR"
+  fi
+}
+trap cleanup_runtime_stage EXIT
 
 usage() {
   cat <<'USAGE'
@@ -109,17 +125,18 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
-  --refresh-source  compatibility alias; hosted installs always resolve the current signed channel
-  --use-existing-source compatibility alias for repo-local development only
+  --refresh-source  accepted and ignored; hosted installs always resolve the current signed channel
+  --use-existing-source accepted and ignored; kept for older install commands
   --mode <mode>      local or cloud
   --json            print a machine-readable summary at the end
   --debug           print detailed daemon diagnostics
   --help, -h        show this help
 
 Environment overrides:
-  CONSUELO_RELEASE_BASE_URL    signed runtime release origin
+  CONSUELO_OS_DEV              set to 1 to permit development release-origin and key overrides
+  CONSUELO_RELEASE_BASE_URL    development-only signed runtime release origin
   CONSUELO_RELEASE_CHANNEL     release channel; defaults to stable
-  CONSUELO_RELEASE_PUBLIC_KEYS_BASE64 trusted Ed25519 release-key JSON
+  CONSUELO_RELEASE_PUBLIC_KEYS_BASE64 development-only trusted Ed25519 release-key JSON
   CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/bin
   CONSUELO_OS_DEV_DIAGNOSTICS  set to 1 to write temporary development install diagnostics
   PORTLESS_BIN                 absolute portless binary path to reuse
@@ -1095,6 +1112,43 @@ const canonicalize = (value: unknown): unknown => {
   }
   return value;
 };
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const readBoundedResponse = async (
+  response: Response,
+  maximumBytes: number,
+  label: string,
+): Promise<Uint8Array> => {
+  const lengthHeader = response.headers.get("content-length");
+  if (lengthHeader !== null) {
+    const declaredLength = Number(lengthHeader);
+    if (!Number.isSafeInteger(declaredLength) || declaredLength < 0) {
+      fail(`${label} has an invalid content length`);
+    }
+    if (declaredLength > maximumBytes) fail(`${label} exceeds the maximum accepted size`);
+  }
+  if (!response.body) fail(`${label} response body is missing`);
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > maximumBytes) {
+      await reader.cancel();
+      fail(`${label} exceeds the maximum accepted size`);
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+};
 const baseUrl = process.env.CONSUELO_RELEASE_BASE_URL ?? fail("release base URL is required");
 const channel = process.env.CONSUELO_RELEASE_CHANNEL ?? "stable";
 const keysEncoded = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_BASE64 ??
@@ -1103,46 +1157,74 @@ if (keysEncoded.startsWith("__CONSUELO_")) fail("hosted installer is missing tru
 const keysJson = Buffer.from(keysEncoded, "base64").toString("utf8");
 const trustedKeys = JSON.parse(keysJson) as Record<string, string>;
 const manifestUrl = `${baseUrl.replace(/\/$/, "")}/channels/${channel}.json`;
-const manifestResponse = await fetch(manifestUrl);
+const manifestResponse = await fetch(manifestUrl, {
+  signal: AbortSignal.timeout(30_000),
+});
 if (!manifestResponse.ok) fail(`release manifest request failed with HTTP ${manifestResponse.status}`);
-const manifest = await manifestResponse.json() as any;
+const manifestBytes = await readBoundedResponse(
+  manifestResponse,
+  1024 * 1024,
+  "release manifest",
+);
+let manifest: unknown;
+try {
+  manifest = JSON.parse(new TextDecoder().decode(manifestBytes)) as unknown;
+} catch {
+  fail("release manifest is not valid JSON");
+}
+if (!isRecord(manifest) || !isRecord(manifest.payload) || !isRecord(manifest.signature)) {
+  fail("release manifest contract is invalid");
+}
+const payload = manifest.payload;
+const signature = manifest.signature;
 if (
-  manifest?.payload?.kind !== "consuelo-os-channel-manifest" ||
-  manifest.payload.schemaVersion !== 1 ||
-  manifest.payload.channel !== channel ||
-  manifest?.signature?.algorithm !== "ed25519"
+  payload.kind !== "consuelo-os-channel-manifest" ||
+  payload.schemaVersion !== 1 ||
+  payload.channel !== channel ||
+  signature.algorithm !== "ed25519" ||
+  typeof signature.keyId !== "string" ||
+  typeof signature.signature !== "string" ||
+  !Array.isArray(payload.platforms)
 ) fail("release manifest contract is invalid");
-const publicKey = trustedKeys[manifest.signature.keyId] ??
-  fail(`release signing key is not trusted: ${String(manifest.signature.keyId)}`);
+const publicKey = trustedKeys[signature.keyId] ??
+  fail(`release signing key is not trusted: ${signature.keyId}`);
 const accepted = verify(
   null,
-  Buffer.from(JSON.stringify(canonicalize(manifest.payload))),
+  Buffer.from(JSON.stringify(canonicalize(payload))),
   createPublicKey(publicKey),
-  Buffer.from(manifest.signature.signature, "base64url"),
+  Buffer.from(signature.signature, "base64url"),
 );
 if (!accepted) fail("release manifest signature is invalid");
 const platform = process.platform;
 const architecture = process.arch;
-const selected = manifest.payload.platforms?.find(
-  (candidate: any) =>
-    candidate.platform === platform && candidate.architecture === architecture,
+const selected = payload.platforms.find(
+  (candidate: unknown) =>
+    isRecord(candidate) &&
+    candidate.platform === platform &&
+    candidate.architecture === architecture,
 ) ?? fail(`release does not publish ${platform}-${architecture}`);
 if (!/^sha256:[a-f0-9]{64}$/.test(selected.bundleId)) fail("runtime bundle ID is invalid");
 if (!/^sha256:[a-f0-9]{64}$/.test(selected.archiveDigest)) fail("runtime archive digest is invalid");
-const expectedBundlePrefix = `bundles/${selected.bundleId}/`;
+const releaseObjectPattern = new RegExp(
+  `^bundles/${selected.bundleId}/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$`,
+);
 if (
   typeof selected.cloudflareObjectKey !== "string" ||
-  !selected.cloudflareObjectKey.startsWith(expectedBundlePrefix) ||
-  selected.cloudflareObjectKey.includes("..") ||
-  /^[a-z][a-z0-9+.-]*:/i.test(selected.cloudflareObjectKey)
+  !releaseObjectPattern.test(selected.cloudflareObjectKey)
 ) fail("runtime release object key is invalid");
 const bundleUrl = new URL(
   selected.cloudflareObjectKey,
   `${baseUrl.replace(/\/$/, "")}/`,
 );
-const bundleResponse = await fetch(bundleUrl);
+const bundleResponse = await fetch(bundleUrl, {
+  signal: AbortSignal.timeout(600_000),
+});
 if (!bundleResponse.ok) fail(`runtime bundle request failed with HTTP ${bundleResponse.status}`);
-const bytes = new Uint8Array(await bundleResponse.arrayBuffer());
+const bytes = await readBoundedResponse(
+  bundleResponse,
+  512 * 1024 * 1024,
+  "runtime bundle",
+);
 const digest = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 if (digest !== selected.archiveDigest) fail("runtime bundle digest does not match signed release manifest");
 const output = process.env.CONSUELO_RELEASE_STAGE_DIR ?? fail("release stage directory is required");
@@ -1175,11 +1257,13 @@ install_verified_runtime() {
 
   require_command tar "Consuelo OS needs tar to unpack the verified runtime bundle."
   require_command mktemp "Consuelo OS needs mktemp to stage the verified runtime bundle safely."
-  local stage_dir bundle_id release_name release_dir extracted_dir temporary_link
+  local stage_dir bundle_id release_name release_dir extracted_dir
   stage_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-runtime.XXXXXX")"
+  RUNTIME_STAGE_DIR="$stage_dir"
   extracted_dir="$stage_dir/runtime"
   if ! verify_runtime_release "$stage_dir"; then
     rm -rf "$stage_dir"
+    RUNTIME_STAGE_DIR=""
     fail "signed Consuelo OS runtime verification failed"
   fi
   IFS= read -r bundle_id < "$stage_dir/bundle-id"
@@ -1188,36 +1272,57 @@ install_verified_runtime() {
   mkdir -p "$extracted_dir"
   if ! tar -xzf "$stage_dir/runtime.tar.gz" -C "$extracted_dir"; then
     rm -rf "$stage_dir"
+    RUNTIME_STAGE_DIR=""
     fail "verified Consuelo OS runtime could not be unpacked"
   fi
   if [ ! -f "$extracted_dir/scripts/install.ts" ] ||
     [ ! -f "$extracted_dir/runtime-bundle.manifest.json" ]; then
     rm -rf "$stage_dir"
+    RUNTIME_STAGE_DIR=""
     fail "verified Consuelo OS runtime is missing required entrypoints"
   fi
 
   mkdir -p "$RUNTIME_RELEASES_DIR" "$(dirname "$RUNTIME_HOME")"
-  if [ ! -d "$release_dir" ]; then
+  if [ -d "$release_dir" ]; then
+    if [ ! -f "$release_dir/scripts/install.ts" ] ||
+      [ ! -f "$release_dir/runtime-bundle.manifest.json" ]; then
+      fail "existing verified release directory is incomplete: $release_dir"
+    fi
+  else
     mv "$extracted_dir" "$release_dir"
   fi
   mkdir -p "$(dirname "$TRUSTED_RELEASE_KEYS_PATH")"
   mv "$stage_dir/trusted-release-keys.json" "$TRUSTED_RELEASE_KEYS_PATH"
   chmod 600 "$TRUSTED_RELEASE_KEYS_PATH"
+  rm -rf "$stage_dir"
+  RUNTIME_STAGE_DIR=""
+  PENDING_RUNTIME_RELEASE_DIR="$release_dir"
+  REPO_DIR="$release_dir"
+  SOURCE_STATUS="verified"
+}
+
+activate_verified_runtime() {
+  if [ "$SOURCE_STATUS" != "verified" ]; then
+    return 0
+  fi
+  [ -n "$PENDING_RUNTIME_RELEASE_DIR" ] &&
+    [ -d "$PENDING_RUNTIME_RELEASE_DIR" ] ||
+    fail "verified Consuelo OS runtime is not staged for activation"
+
+  local temporary_link
   temporary_link="${RUNTIME_HOME}.new.$$"
   rm -f "$temporary_link"
-  ln -s "$release_dir" "$temporary_link"
-  if [ -L "$RUNTIME_HOME" ] || [ -f "$RUNTIME_HOME" ]; then
-    rm -f "$RUNTIME_HOME"
-  elif [ -d "$RUNTIME_HOME" ]; then
+  ln -s "$PENDING_RUNTIME_RELEASE_DIR" "$temporary_link"
+  if [ -d "$RUNTIME_HOME" ] && [ ! -L "$RUNTIME_HOME" ]; then
     rmdir "$RUNTIME_HOME" ||
       fail "$RUNTIME_HOME contains unmanaged files and cannot be activated safely"
-  elif [ -e "$RUNTIME_HOME" ]; then
+  elif [ -e "$RUNTIME_HOME" ] && [ ! -L "$RUNTIME_HOME" ]; then
     fail "$RUNTIME_HOME cannot be replaced safely"
   fi
-  mv "$temporary_link" "$RUNTIME_HOME"
-  rm -rf "$stage_dir"
+  mv -f -h "$temporary_link" "$RUNTIME_HOME" ||
+    fail "verified Consuelo OS runtime could not be activated"
   REPO_DIR="$RUNTIME_HOME"
-  SOURCE_STATUS="verified"
+  PENDING_RUNTIME_RELEASE_DIR=""
 }
 
 install_runtime_dependencies() {
@@ -1530,6 +1635,7 @@ main() {
   install_verified_runtime
   ensure_dependencies
   run_onboarding
+  activate_verified_runtime
   maybe_install_daemons
   print_success_summary
   open_workspace_launcher

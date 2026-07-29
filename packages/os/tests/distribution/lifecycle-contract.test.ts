@@ -11,7 +11,7 @@ import { verifySignedReleaseManifest } from '../../scripts/lib/lifecycle/release
 describe('OS distribution lifecycle contracts', () => {
   // Worker 05 rollback, retention, and uninstall contracts are behavioral tests in
   // tests/lifecycle-retention-uninstall.test.ts.
-  it('resolves the published signed channel manifest to one platform runtime bundle', () => {
+  it('should resolve one platform runtime bundle when the signed channel manifest is trusted', () => {
     const { privateKey, publicKey } = generateKeyPairSync('ed25519');
     const keyId = 'fixture-release-key';
     const signer = createEd25519ChannelSigner({

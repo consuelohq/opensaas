@@ -1,6 +1,7 @@
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import fs from 'node:fs';
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -32,6 +33,7 @@ import {
   inspectLifecycleInstallState,
   loadLifecyclePreferences,
   noOpLifecycleMigrationRunner,
+  verifySignedReleaseManifest,
   type LifecycleEngine,
   type LifecycleRuntimeMaterializer,
   type LifecycleProgressEvent,
@@ -39,7 +41,10 @@ import {
   type ReleaseSource,
   type SignedReleaseManifest,
 } from '../scripts/lib/lifecycle';
-import { runLifecycleCli } from '../scripts/lifecycle';
+import {
+  runLifecycleCli,
+  trustedReleaseKeysFromEnvironment,
+} from '../scripts/lifecycle';
 
 const osRoot = resolve(import.meta.dirname, '..');
 const requiredRuntimePaths = [
@@ -451,6 +456,117 @@ describe('unified lifecycle engine', () => {
 
     await expect(engine.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'MANIFEST_SIGNATURE_INVALID' });
     expect(existsSync(join(tempHome, 'runtime', 'current'))).toBe(false);
+  });
+
+  it('rejects signed manifests with malformed platform collections using structured errors', () => {
+    const valid = signedManifest(bundle100);
+    for (const platforms of [null, ['invalid-platform-entry']]) {
+      const payload = {
+        ...valid.payload,
+        platforms,
+      };
+      const malformed = {
+        payload,
+        signature: {
+          ...valid.signature,
+          signature: sign(
+            null,
+            Buffer.from(canonicalReleaseJson(payload)),
+            privateKey,
+          ).toString('base64url'),
+        },
+      } as unknown as SignedReleaseManifest;
+
+      expect(() =>
+        verifySignedReleaseManifest(
+          malformed,
+          { [releaseKeyId]: publicKeyPem },
+        ),
+      ).toThrow(expect.objectContaining({ code: 'MANIFEST_INVALID' }));
+    }
+  });
+
+  it('distinguishes unsupported signature algorithms and unusable trusted keys', () => {
+    const valid = signedManifest(bundle100);
+    const unsupported = {
+      ...valid,
+      signature: { ...valid.signature, algorithm: 'rsa' },
+    } as unknown as SignedReleaseManifest;
+
+    expect(() =>
+      verifySignedReleaseManifest(
+        unsupported,
+        { [releaseKeyId]: publicKeyPem },
+      ),
+    ).toThrow(/unsupported release manifest signature algorithm/);
+    expect(() =>
+      verifySignedReleaseManifest(
+        valid,
+        { [releaseKeyId]: 'not-a-public-key' },
+      ),
+    ).toThrow(/trusted release key .* is not usable/);
+  });
+
+  it('rejects missing, writable, and symlinked file-based trust anchors', () => {
+    const publicKeysJson = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+    const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
+    const publicKey = process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+    delete process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+    delete process.env.CONSUELO_RELEASE_KEY_ID;
+    delete process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+    try {
+      expect(() => trustedReleaseKeysFromEnvironment(tempHome)).toThrow(
+        /no trusted release keys are installed/,
+      );
+
+      const runtimeDirectory = join(tempHome, 'runtime');
+      const trustedKeysPath = join(
+        runtimeDirectory,
+        'trusted-release-keys.json',
+      );
+      mkdirSync(runtimeDirectory, { recursive: true });
+      writeFileSync(
+        trustedKeysPath,
+        JSON.stringify({ [releaseKeyId]: publicKeyPem }),
+        { mode: 0o600 },
+      );
+      expect(trustedReleaseKeysFromEnvironment(tempHome)).toEqual({
+        [releaseKeyId]: publicKeyPem,
+      });
+
+      chmodSync(trustedKeysPath, 0o622);
+      expect(() => trustedReleaseKeysFromEnvironment(tempHome)).toThrow(
+        /must not be group- or world-writable/,
+      );
+
+      unlinkSync(trustedKeysPath);
+      const targetPath = join(runtimeDirectory, 'keys-target.json');
+      writeFileSync(
+        targetPath,
+        JSON.stringify({ [releaseKeyId]: publicKeyPem }),
+        { mode: 0o600 },
+      );
+      symlinkSync(targetPath, trustedKeysPath);
+      expect(() => trustedReleaseKeysFromEnvironment(tempHome)).toThrow(
+        /must be a regular file/,
+      );
+    } finally {
+      if (publicKeysJson === undefined) {
+        delete process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+      } else {
+        process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON = publicKeysJson;
+      }
+      if (keyId === undefined) {
+        delete process.env.CONSUELO_RELEASE_KEY_ID;
+      } else {
+        process.env.CONSUELO_RELEASE_KEY_ID = keyId;
+      }
+      if (publicKey === undefined) {
+        delete process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+      } else {
+        process.env.CONSUELO_RELEASE_PUBLIC_KEY = publicKey;
+      }
+    }
   });
 
   it('fails closed on an archive digest mismatch and leaves current untouched', async () => {
