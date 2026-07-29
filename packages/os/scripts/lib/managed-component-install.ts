@@ -205,17 +205,41 @@ function toolWrapperScript(tool: CanonicalToolEntry): string {
   const quotedName = shellSingleQuote(tool.name);
   const jsonName = shellSingleQuote(JSON.stringify(tool.name));
   const description = shellSingleQuote(tool.description ?? 'Consuelo OS tool.');
+  const runnerScript = tool.kind === 'facade-tool' ? 'tool-runner.ts' : 'os.ts';
   const runner = tool.kind === 'facade-tool'
-    ? `exec bun ./scripts/tool-runner.ts ${quotedName} "$INPUT"`
-    : `exec bun ./scripts/os.ts call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
+    ? `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/tool-runner.ts" ${quotedName} "$INPUT"`
+    : `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/os.ts" call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
   return [
     '#!/usr/bin/env bash',
     'set -euo pipefail',
     `TOOL_NAME=${quotedName}`,
     `TOOL_DESCRIPTION=${description}`,
     'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
-    'if [ ! -f "$OS_HOME/package.json" ] || [ ! -f "$OS_HOME/scripts/tool-runner.ts" ]; then',
-    '  printf "%s\\n" "error: Consuelo OS package root not found. Set CONSUELO_OS_HOME." >&2',
+    'BUN_EXECUTABLE="${BUN_BIN:-}"',
+    'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    'if [ -f "$OS_HOME/.env" ]; then',
+    '  while IFS= read -r line || [ -n "$line" ]; do',
+    '    case "$line" in',
+    '      BUN_BIN=*) [ -n "$BUN_EXECUTABLE" ] || BUN_EXECUTABLE="${line#BUN_BIN=}" ;;',
+    '      CONSUELO_OS_PACKAGE_ROOT=*) [ -n "$PACKAGE_ROOT" ] || PACKAGE_ROOT="${line#CONSUELO_OS_PACKAGE_ROOT=}" ;;',
+    '    esac',
+    '  done < "$OS_HOME/.env"',
+    'fi',
+    `if [ -n "$PACKAGE_ROOT" ] && [ -f "$PACKAGE_ROOT/scripts/${runnerScript}" ]; then`,
+    '  :',
+    `elif [ -f "$OS_HOME/runtime/current/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME/runtime/current"',
+    `elif [ -f "$OS_HOME/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME"',
+    'else',
+    '  printf "%s\\n" "error: Consuelo OS immutable runtime is not installed." >&2',
+    '  exit 1',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ]; then',
+    '  BUN_EXECUTABLE="$(command -v bun || true)"',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ] || [ ! -x "$BUN_EXECUTABLE" ]; then',
+    '  printf "%s\\n" "error: Consuelo OS cannot find the Bun executable. Re-run the installer." >&2',
     '  exit 1',
     'fi',
     'if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then',
@@ -229,7 +253,7 @@ function toolWrapperScript(tool: CanonicalToolEntry): string {
     'else',
     "  INPUT='{}'",
     'fi',
-    'cd "$OS_HOME"',
+    'cd "$PACKAGE_ROOT"',
     runner,
     '',
   ].join('\n');
