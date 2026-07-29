@@ -413,38 +413,70 @@ describe('runtime bundle contract', () => {
     ).toBe(false);
   });
 
-  it('should exclude Windows service intermediates when discovering the default runtime bundle', async () => {
+  it('should preserve the planned release fingerprint when building the Windows service host', async () => {
     const root = createFixture({
       'native/windows-service/Program.cs': 'public static class Program {}\n',
       'native/windows-service/Consuelo.Windows.Service.csproj':
         '<Project Sdk="Microsoft.NET.Sdk.Worker" />\n',
     });
+    const planned = await computeReleaseFingerprint({ sourceRoot: root });
+
     writeFixtureFile(
       root,
       'native/windows-service/obj/x64/Release/Consuelo.Windows.Service.csproj.FileListAbsolute.txt',
-      `${root}/native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe\n`,
+      `${root}/native/windows-service/bin/Release/Consuelo.Windows.Service.exe\n`,
     );
     writeFixtureFile(
       root,
-      'native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe',
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
       'host-specific generated binary\n',
     );
+    writeFixtureFile(
+      root,
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.pdb',
+      'host-specific debug symbols\n',
+    );
 
-    const result = await computeReleaseFingerprint({ sourceRoot: root });
-    const paths = result.files.map((file) => file.path);
+    const built = await buildRuntimeBundle(
+      buildOptions(root, { architecture: 'x64', platform: 'windows' }),
+    );
+    const paths = built.manifest.files.map((file) => file.path);
 
     expect(paths).toContain('native/windows-service/Program.cs');
     expect(paths).toContain(
       'native/windows-service/Consuelo.Windows.Service.csproj',
     );
     expect(paths).toContain(
-      'native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe',
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
     );
     expect(
       paths.some((filePath) =>
         filePath.startsWith('native/windows-service/obj/'),
       ),
     ).toBe(false);
+    expect(paths).not.toContain(
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.pdb',
+    );
+    expect(built.manifest.releaseFingerprint).toBe(
+      planned.releaseFingerprint,
+    );
+    expect(() => verifyRuntimeBundleArchive(built.archiveBytes)).not.toThrow();
+
+    writeFixtureFile(
+      root,
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
+      'different host-specific generated binary\n',
+    );
+    const rebuilt = await buildRuntimeBundle(
+      buildOptions(root, { architecture: 'x64', platform: 'windows' }),
+    );
+
+    expect(rebuilt.manifest.releaseFingerprint).toBe(
+      planned.releaseFingerprint,
+    );
+    expect(rebuilt.manifest.bundleId).not.toBe(built.manifest.bundleId);
+    expect(rebuilt.archiveDigest).not.toBe(built.archiveDigest);
+    expect(() => verifyRuntimeBundleArchive(rebuilt.archiveBytes)).not.toThrow();
   });
 
   it('classifies all customer deployment adapters separately from operator infrastructure', () => {
