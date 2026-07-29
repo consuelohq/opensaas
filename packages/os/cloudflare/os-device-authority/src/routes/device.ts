@@ -218,6 +218,7 @@ async function handleDeviceRequest(
       if (existingWorkspace) {
         assignGrantWorkspace({
           grant: g,
+          workspaceId: existingWorkspace.workspaceId,
           workspaceSlug: existingWorkspace.workspaceSlug,
           workspaceHost: existingWorkspace.workspaceHost,
         });

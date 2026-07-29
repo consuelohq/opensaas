@@ -1,6 +1,11 @@
 #!/usr/bin/env bun
 
+import path from 'node:path';
+
+import { resolveConsueloHomeLayout } from '../lib/consuelo-home';
 import { startDefaultNativeLifecycleEndpoint } from '../lib/native-lifecycle-endpoint';
+import { startWorkspaceNodeHeartbeatScheduler } from '../lib/workspace-node-heartbeat-scheduler';
+import { sendWorkspaceNodeHeartbeatFromConfig } from '../workspace-node-heartbeat';
 import { createLocalOsApp } from './app';
 import { loadLocalOsServerConfig } from './env';
 
@@ -22,6 +27,22 @@ if (import.meta.main) {
   } catch (error: unknown) {
     await lifecycleEndpoint?.close();
     throw error;
+  }
+
+  if (process.platform === 'win32') {
+    const heartbeatConfigPath = path.join(
+      resolveConsueloHomeLayout().nodeSecurityGeneratedDir,
+      'workspace-node-heartbeat.json',
+    );
+    startWorkspaceNodeHeartbeatScheduler({
+      configPath: heartbeatConfigPath,
+      send: sendWorkspaceNodeHeartbeatFromConfig,
+      onError(error: unknown) {
+        const message =
+          error instanceof Error ? error.message : 'workspace node heartbeat failed';
+        process.stderr.write(`[Consuelo OS] ${message}\n`);
+      },
+    });
   }
 
   process.stderr.write(

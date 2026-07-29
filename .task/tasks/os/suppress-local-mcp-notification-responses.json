@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/suppress-local-mcp-notification-responses",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1723,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1723",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1723",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1723/suppress-local-mcp-notification-responses",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1723",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1723/suppress-local-mcp-notification-responses",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-suppress-local-mcp-notification-responses",
+  "taskSession": "tsk_89588aaf70f0",
+  "tmuxSession": "opensaas-os-suppress-local-mcp-notification-responses-89588aaf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-suppress-local-mcp-notification-responses/.task/os/suppress-local-mcp-notification-responses/session.json",
+  "createdAt": "2026-07-29T07:18:19.285Z"
+}

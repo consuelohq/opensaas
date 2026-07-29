@@ -467,25 +467,53 @@ export function activateRuntimeRelease(input: {
 export function createHttpReleaseSource(input: {
   baseUrl: string;
   fetchImpl?: typeof fetch;
+  authorizationProvider?: () => Promise<string>;
 }): ReleaseSource {
   const fetchImpl = input.fetchImpl ?? fetch;
   const baseUrl = input.baseUrl.replace(/\/$/, '');
+  const parsedBaseUrl = new URL(baseUrl);
+  const releaseBucket = parsedBaseUrl.pathname.split('/').filter(Boolean)[0];
+  if (
+    input.authorizationProvider &&
+    (parsedBaseUrl.protocol !== 'https:' ||
+      parsedBaseUrl.hostname !== 'storage.googleapis.com' ||
+      !releaseBucket)
+  ) {
+    throw lifecycleError(
+      'RELEASE_SOURCE_INVALID',
+      'metadata authorization requires a bucket-scoped Google Cloud Storage release origin',
+    );
+  }
+  const authorizedPrefix = parsedBaseUrl.origin + '/' + releaseBucket + '/';
+  const fetchRelease = async (url: string): Promise<Response> => {
+    const requestUrl = new URL(url);
+    if (input.authorizationProvider && !requestUrl.toString().startsWith(authorizedPrefix)) {
+      throw lifecycleError(
+        'RELEASE_SOURCE_INVALID',
+        'refusing to send metadata authorization outside the configured release bucket',
+      );
+    }
+    const authorization = input.authorizationProvider
+      ? await input.authorizationProvider()
+      : undefined;
+    return fetchImpl(url, {
+      ...(authorization
+        ? { headers: { authorization } }
+        : {}),
+    });
+  };
   return {
     async fetchManifest(channel: LifecycleReleaseChannel) {
       try {
-        const response = await fetchImpl(`${baseUrl}/channels/${channel}.json`);
+        const response = await fetchRelease(
+          `${baseUrl}/channels/${channel}.json`,
+        );
         if (!response.ok) {
           throw new Error(
             `release manifest request failed with HTTP ${response.status}`,
           );
         }
         const manifest = (await response.json()) as SignedReleaseManifest;
-        if (manifest.payload?.bundleUrl) {
-          manifest.payload.bundleUrl = new URL(
-            manifest.payload.bundleUrl,
-            `${baseUrl}/`,
-          ).toString();
-        }
         return manifest;
       } catch (error: unknown) {
         throw new Error(
@@ -496,7 +524,9 @@ export function createHttpReleaseSource(input: {
     },
     async fetchBundle(url: string) {
       try {
-        const response = await fetchImpl(url);
+        const response = await fetchRelease(
+          new URL(url, `${baseUrl}/`).toString(),
+        );
         if (!response.ok) {
           throw new Error(
             `runtime bundle request failed with HTTP ${response.status}`,
@@ -512,3 +542,68 @@ export function createHttpReleaseSource(input: {
     },
   };
 }
+
+export const createGcpMetadataReleaseAuthorization = (input: {
+  fetchImpl?: typeof fetch;
+  now?: () => number;
+  metadataUrl?: string;
+} = {}): (() => Promise<string>) => {
+  const fetchImpl = input.fetchImpl ?? fetch;
+  const now = input.now ?? Date.now;
+  const metadataUrl =
+    input.metadataUrl ??
+    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token';
+  let cached:
+    | {
+        authorization: string;
+        refreshAfter: number;
+      }
+    | undefined;
+
+  return async (): Promise<string> => {
+    if (cached && now() < cached.refreshAfter) return cached.authorization;
+    let response: Response;
+    try {
+      response = await fetchImpl(metadataUrl, {
+        headers: { 'metadata-flavor': 'Google' },
+      });
+    } catch (error: unknown) {
+      throw new Error(
+        `failed to fetch GCP metadata token: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        { cause: error },
+      );
+    }
+    if (!response.ok) {
+      throw new Error(
+        `GCP metadata token request failed with HTTP ${response.status}`,
+      );
+    }
+    const payload = (await response.json()) as Record<string, unknown>;
+    const accessToken =
+      typeof payload.access_token === 'string'
+        ? payload.access_token.trim()
+        : '';
+    const tokenType =
+      typeof payload.token_type === 'string'
+        ? payload.token_type.trim()
+        : '';
+    const expiresIn =
+      typeof payload.expires_in === 'number' ? payload.expires_in : Number.NaN;
+    if (
+      !accessToken ||
+      tokenType.toLowerCase() !== 'bearer' ||
+      !Number.isFinite(expiresIn) ||
+      expiresIn <= 0
+    ) {
+      throw new Error('malformed metadata token response');
+    }
+    const authorization = `${tokenType} ${accessToken}`;
+    cached = {
+      authorization,
+      refreshAfter: now() + Math.max(1, expiresIn - 60) * 1_000,
+    };
+    return authorization;
+  };
+};

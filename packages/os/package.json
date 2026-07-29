@@ -87,10 +87,11 @@
     "semantic:embeddings": "bun ./scripts/semantic-embeddings.js",
     "cloudflare:workspace-edge:dev": "wrangler dev --config cloudflare/workspace-edge/wrangler.toml",
     "cloudflare:workspace-edge:deploy:dry-run": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run",
-    "cloudflare:workspace-edge:deploy": "wrangler deploy --config cloudflare/workspace-edge/wrangler.toml",
+    "cloudflare:workspace-edge:deploy": "bun ./scripts/deploy-cloudflare-worker.ts workspace-edge",
     "cloudflare:workspace-edge:migrate": "wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml",
     "cloudflare:workspace-edge:seed": "bun ./scripts/seed-workspace-edge-route.ts",
     "platform:managed-os-mcp-ingress:provision": "bun ./scripts/provision-managed-os-mcp-ingress-policy.ts",
+    "cloud:node": "bun ./scripts/managed-cloud-node.ts",
     "smoke:workspace-edge": "bun ./scripts/smoke-workspace-edge.ts",
     "media": "bun ./scripts/media.ts",
     "media:doctor": "bun ./scripts/media.ts doctor --json",
@@ -113,7 +114,9 @@
     "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check",
     "lifecycle": "bun ./scripts/lifecycle.ts",
     "windows-platform": "bun ./scripts/windows-platform.ts",
-    "managed-components": "bun ./scripts/managed-components.ts"
+    "managed-components": "bun ./scripts/managed-components.ts",
+    "cloudflare:device-authority:deploy:dry-run": "wrangler deploy --config cloudflare/os-device-authority/wrangler.toml --dry-run",
+    "cloudflare:device-authority:deploy": "bun ./scripts/deploy-cloudflare-worker.ts os-device-authority"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

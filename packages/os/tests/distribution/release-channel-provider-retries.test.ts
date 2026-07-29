@@ -6,7 +6,9 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  canonicalReleaseJson,
   createEmptyReleaseState,
+  planDevPublication,
   type ReleaseMutationResult,
   type ReleaseState,
 } from '../../scripts/lib/distribution/release-channels';
@@ -47,6 +49,7 @@ function publicationMutation(): ReleaseMutationResult {
   writeFileSync(signaturePath, 'signature-bytes');
   const state = createEmptyReleaseState();
   state.revision = 1;
+  state.allocations[SOURCE_COMMIT + ':' + FINGERPRINT] = '1.2.3';
   state.releases[RELEASE_SET_ID] = {
     bundleId: RELEASE_SET_ID,
     bundles: [{
@@ -205,46 +208,105 @@ const config: ReleaseProviderConfig = {
 };
 
 function backend(input: {
+  assetDigest?: string | null;
+  assetDigests?: Record<string, string | null>;
+  failAfter?: string;
   integrated?: boolean;
+  r2Digests?: Record<string, string | null>;
   remoteState?: ReleaseState | null;
   remoteStates?: Array<ReleaseState | null>;
   tagSha?: string | null;
-  assetDigest?: string | null;
-  assetDigests?: Record<string, string | null>;
-  r2Digests?: Record<string, string | null>;
-} = {}): ReleaseProviderBackend & { writes: string[] } {
+} = {}): ReleaseProviderBackend & { readonly currentState: ReleaseState | null; writes: string[] } {
   const writes: string[] = [];
   let releaseStateReads = 0;
+  let currentState = input.remoteState === undefined
+    ? createEmptyReleaseState()
+    : structuredClone(input.remoteState);
+  const record = (value: string): void => {
+    writes.push(value);
+    if (input.failAfter === value) throw new Error('injected provider interruption after ' + value);
+  };
   return {
+    get currentState() { return structuredClone(currentState); },
     writes,
-    async createDeployment(value) { writes.push(`deployment:${value.environment}`); },
-    async createGithubRelease(value) { writes.push(`release:${value.tag}`); },
-    async createProtectedRef(value) { writes.push(`create-ref:${value.channel}`); },
-    async createTag(value) { writes.push(`tag:${value.tag}`); },
+    async createDeployment(value) { record('deployment:' + value.environment); },
+    async createGithubRelease(value) { record('release:' + value.tag); },
+    async createProtectedRef(value) { record('create-ref:' + value.channel); },
+    async createTag(value) { record('tag:' + value.tag); },
     async deploymentExists() { return true; },
     async getGithubAssetDigest(_tag, name) { return input.assetDigests?.[name] ?? input.assetDigest ?? null; },
     async getGithubRelease() { return { prerelease: true }; },
     async getProtectedRefSha() { return SOURCE_COMMIT; },
     async getR2ObjectDigest(key) { return input.r2Digests?.[key] ?? null; },
     async getReleaseState() {
-      const sequenced = input.remoteStates?.[releaseStateReads];
+      const hasSequencedState = releaseStateReads < (input.remoteStates?.length ?? 0);
+      const sequenced = hasSequencedState ? input.remoteStates?.[releaseStateReads] : undefined;
       releaseStateReads += 1;
-      return sequenced ?? input.remoteState ?? createEmptyReleaseState();
+      return structuredClone(hasSequencedState ? sequenced ?? null : currentState);
     },
     async getTagSha() { return input.tagSha ?? null; },
     async isCommitIntegratedToMain() { return input.integrated ?? true; },
-    async putR2Object(key, path) { writes.push(`r2:${key}:${digestFile(path)}`); },
-    async updateGithubRelease(value) { writes.push(`update-release:${value.tag}`); },
-    async updateProtectedRef(value) { writes.push(`update-ref:${value.channel}`); },
-    async uploadGithubAsset(value) { writes.push(`asset:${value.name}:${digestFile(value.path)}`); },
+    async putR2Object(key, path) {
+      const value = 'r2:' + key + ':' + digestFile(path);
+      writes.push(value);
+      if (key === 'state/release-state.json') {
+        currentState = JSON.parse(readFileSync(path, 'utf8')) as ReleaseState;
+      }
+      if (input.failAfter === value || input.failAfter === 'r2:' + key) {
+        throw new Error('injected provider interruption after ' + value);
+      }
+    },
+    async updateGithubRelease(value) { record('update-release:' + value.tag); },
+    async updateProtectedRef(value) { record('update-ref:' + value.channel); },
+    async uploadGithubAsset(value) { record('asset:' + value.name + ':' + digestFile(value.path)); },
   };
 }
-
 afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { force: true, recursive: true });
 });
 
 describe('release provider retry safety', () => {
+  it('binds deployment identity to the manifest for its environment', async () => {
+    const mutation = promotionMutation();
+    const canary = mutation.state.channels.canary!;
+    mutation.state.channels.dev = {
+      payload: {
+        ...structuredClone(canary.payload),
+        channel: 'dev',
+        promotedAt: '2026-07-22T00:00:00.000Z',
+        revision: 1,
+        sourceChannel: null,
+      },
+      signature: {
+        ...structuredClone(canary.signature),
+        signature: 'older-dev-signature',
+        signedAt: '2026-07-22T00:00:00.000Z',
+      },
+    };
+    const remoteState = createEmptyReleaseState();
+    remoteState.revision = 1;
+    const fake = backend({ remoteState });
+    let deploymentIdentity:
+      | Parameters<ReleaseProviderBackend['createDeployment']>[0]
+      | undefined;
+    fake.deploymentExists = async (identity) => {
+      deploymentIdentity = identity;
+      return true;
+    };
+
+    await executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake });
+
+    const expectedManifestDigest = `sha256:${createHash('sha256')
+      .update(canonicalReleaseJson(canary))
+      .digest('hex')}`;
+    expect(deploymentIdentity?.environment).toBe('consuelo-os-canary');
+    expect(deploymentIdentity?.manifestDigest).toBe(expectedManifestDigest);
+  });
+
   it('skips exact immutable provider objects and commits state last', async () => {
     const mutation = publicationMutation();
     const archive = mutation.artifacts![PLATFORM_BUNDLE_ID].archivePath;
@@ -268,8 +330,9 @@ describe('release provider retry safety', () => {
       backend: fake,
     });
 
-    expect(fake.writes).toHaveLength(1);
+    expect(fake.writes).toHaveLength(2);
     expect(fake.writes[0]).toMatch(/^r2:state\/release-state\.json:/);
+    expect(fake.writes[1]).toMatch(/^r2:state\/release-state\.json:/);
   });
 
   it('rejects an immutable GitHub asset with a different digest', async () => {
@@ -286,7 +349,8 @@ describe('release provider retry safety', () => {
     }, { backend: fake })).rejects.toThrow(
       'GitHub release asset runtime.tar.gz already exists with a different digest',
     );
-    expect(fake.writes).toEqual([]);
+    expect(fake.writes).toHaveLength(1);
+    expect(fake.writes[0]).toMatch(/^r2:state\/release-state\.json:/);
   });
 
   it('rejects a stale remote release-state revision before provider mutation', async () => {
@@ -305,7 +369,7 @@ describe('release provider retry safety', () => {
     expect(fake.writes).toEqual([]);
   });
 
-  it('fails closed when remote release state changes before the final commit marker', async () => {
+  it('fails closed when remote release state changes before allocation reservation', async () => {
     const mutation = publicationMutation();
     const initialState = createEmptyReleaseState();
     const concurrentState = createEmptyReleaseState();
@@ -325,7 +389,7 @@ describe('release provider retry safety', () => {
       mutation,
       sourceCommit: SOURCE_COMMIT,
     }, { backend: fake })).rejects.toThrow(
-      'remote release state changed during provider mutation',
+      'remote release state changed before allocation reservation',
     );
     expect(fake.writes.some((write) => write.startsWith('r2:state/release-state.json:'))).toBe(false);
   });
@@ -344,6 +408,31 @@ describe('release provider retry safety', () => {
     expect(fake.writes).toEqual([]);
   });
 
+  it('persists the version allocation before an external provider interruption', async () => {
+    const mutation = publicationMutation();
+    const fake = backend({ failAfter: 'tag:' + TAG });
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'injected provider interruption after tag:' + TAG,
+    );
+
+    expect(fake.currentState?.allocations[SOURCE_COMMIT + ':' + FINGERPRINT]).toBe('1.2.3');
+    const retry = planDevPublication(fake.currentState!, {
+      immutableTags: [TAG],
+      releaseFingerprint: FINGERPRINT,
+      sourceCommit: SOURCE_COMMIT,
+    });
+    expect(retry).toMatchObject({
+      changed: true,
+      immutableTag: TAG,
+      retry: true,
+      version: '1.2.3',
+    });
+  });
   it('downloads and hashes a GitHub asset when digest metadata is unavailable', async () => {
     const remoteBytes = Buffer.from('remote-release-asset');
     const runner: ReleaseProviderCommandRunner = async (planned) => {
@@ -377,20 +466,35 @@ describe('release provider retry safety', () => {
     };
     const provider = createReleaseProviderCommandBackend(config, runner);
 
-    await provider.createDeployment({
+    const identity = {
+      authority: 'signed-r2-channel-manifest' as const,
       bundleId: RELEASE_SET_ID,
       environment: 'consuelo-os-dev',
+      manifestDigest: 'sha256:' + '5'.repeat(64),
+      platforms: [{
+        architecture: 'x64',
+        archiveDigest: 'sha256:' + '6'.repeat(64),
+        bundleId: PLATFORM_BUNDLE_ID,
+        platform: 'linux',
+      }],
+      releaseFingerprint: FINGERPRINT,
       sourceCommit: SOURCE_COMMIT,
-    });
+      version: '1.2.3',
+    };
+    await provider.createDeployment(identity);
 
     expect(captured?.purpose).toBe('create GitHub Deployment consuelo-os-dev');
     expect(captured?.args).toEqual(expect.arrayContaining([
-      `ref=${SOURCE_COMMIT}`,
+      'ref=' + SOURCE_COMMIT,
       'environment=consuelo-os-dev',
       'auto_merge=false',
-      'required_contexts[]',
-      `payload[bundleId]=${RELEASE_SET_ID}`,
+      'payload[authority]=signed-r2-channel-manifest',
     ]));
+    const encodedIdentity = captured?.args.find((argument) =>
+      argument.startsWith('payload[releaseIdentity]='),
+    )?.slice('payload[releaseIdentity]='.length);
+    expect(JSON.parse(encodedIdentity ?? 'null')).toEqual(identity);
+    expect(captured?.args).not.toContain('required_contexts[]');
   });
 
   it('requires the promoted source commit to be integrated to main before moving a protected ref', async () => {

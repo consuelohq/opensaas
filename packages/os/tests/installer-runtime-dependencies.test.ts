@@ -154,6 +154,31 @@ function resolveCutoverLocalHealthUrl(
   });
 }
 
+function resolvePersistedBunBin(
+  envFile: string,
+  stateEnvFile: string,
+): SpawnSyncReturns<string> {
+  const installer = readDaemonInstaller();
+  const script = [
+    extractShellFunction(installer, 'load_env_file'),
+    extractShellFunction(installer, 'resolve_bun_bin'),
+    'env_file="$ENV_FILE"',
+    'state_env_file="$STATE_ENV_FILE"',
+    'resolve_bun_bin',
+  ].join('\n');
+  const env = installerEnv({
+    ENV_FILE: envFile,
+    STATE_ENV_FILE: stateEnvFile,
+    PATH: SYSTEM_PATH,
+  });
+  delete env.BUN_BIN;
+
+  return spawnSync('/bin/bash', ['-c', script], {
+    encoding: 'utf8',
+    env,
+  });
+}
+
 function writeCloudflaredPlist(filePath: string, label: string): void {
   writeFileSync(
     filePath,
@@ -184,6 +209,20 @@ afterEach(() => {
 });
 
 describe('public installer runtime dependencies', () => {
+  it('should resolve Bun from flattened install state in a clean shell', () => {
+    const home = createTempHome('consuelo-os-installer-runtime-bun-state-');
+    const runtimeEnv = join(home, 'runtime.env');
+    const stateEnv = join(home, 'state.env');
+    const persistedBun = join(home, 'managed', 'bun');
+    writeFileSync(runtimeEnv, 'CONSUELO_OS_PORT=46321\n');
+    writeFileSync(stateEnv, `BUN_BIN=${persistedBun}\n`);
+
+    const result = resolvePersistedBunBin(runtimeEnv, stateEnv);
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout.trim()).toBe(persistedBun);
+  });
+
   it('should probe the configured daemon port during cutover', () => {
     const home = createTempHome('consuelo-os-installer-runtime-cutover-port-');
     const envFile = join(home, '.env');
@@ -281,7 +320,7 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
-  it('should use the regular local port when portless is absent on a clean dry-run PATH', () => {
+  it('should use the regular local port when Portless is disabled by default', () => {
     const home = createTempHome('consuelo-os-installer-runtime-bootstrap-');
     const result = runBootstrapDryRun(home);
 
@@ -290,7 +329,7 @@ describe('public installer runtime dependencies', () => {
       'dry-run: Bun is missing and would be installed',
     );
     expect(result.stderr).toContain(
-      'portless is not installed; Consuelo OS will use http://127.0.0.1:46321',
+      'portless disabled; Consuelo will use http://127.0.0.1:46321',
     );
     expect(result.stderr).toContain(
       'dry-run: cloudflared is missing and would be installed',
@@ -302,11 +341,9 @@ describe('public installer runtime dependencies', () => {
 
     const summary = parseBootstrapSummary(result.stdout);
     expect(summary.bunStatus).toBe('would_install');
-    expect(summary.portlessStatus).toBe('optional_missing');
+    expect(summary.portlessStatus).toBe('skipped');
     expect(summary.cloudflaredStatus).toBe('would_install');
-    expect(summary.dependencies.runtime.portless.status).toBe(
-      'optional_missing',
-    );
+    expect(summary.dependencies.runtime.portless.status).toBe('skipped');
     expect(summary.dependencies.runtime.portless.path).toBeNull();
     expect(summary.dependencies.runtime.cloudflared.status).toBe(
       'would_install',
@@ -314,6 +351,35 @@ describe('public installer runtime dependencies', () => {
     expect(summary.dependencies.operator.wrangler.classification).toBe(
       'operator_only',
     );
+  });
+
+  it('should override the default-disabled Portless path when setup is explicitly requested', () => {
+    const scenarios = [
+      {
+        name: 'required',
+        overrides: { CONSUELO_OS_REQUIRE_PORTLESS: '1' },
+        message: 'dry-run: required portless is missing and would be installed',
+      },
+      {
+        name: 'explicit install',
+        overrides: { CONSUELO_OS_INSTALL_PORTLESS: '1' },
+        message: 'dry-run: optional portless is missing and would be installed',
+      },
+    ];
+
+    for (const scenario of scenarios) {
+      const home = createTempHome(
+        `consuelo-os-installer-runtime-portless-${scenario.name.replace(' ', '-')}-`,
+      );
+      const result = runBootstrapDryRun(home, scenario.overrides);
+
+      expect(result.status).toBe(0);
+      expect(result.stderr).toContain(scenario.message);
+      expect(result.stderr).not.toContain('portless disabled');
+      expect(parseBootstrapSummary(result.stdout).portlessStatus).toBe(
+        'would_install',
+      );
+    }
   });
 
   it('should keep a hosted clean-machine dry-run non-mutating when source is absent', () => {
@@ -377,7 +443,7 @@ describe('public installer runtime dependencies', () => {
     expect(summary.onboardingStatus).toBe('would_run');
   });
 
-  it('should keep portless as an optional enhancement when it is already installed', () => {
+  it('should enable Portless only when the optional enhancement is explicitly selected', () => {
     const home = createTempHome(
       'consuelo-os-installer-runtime-bootstrap-existing-portless-',
     );
@@ -386,7 +452,10 @@ describe('public installer runtime dependencies', () => {
     mkdirSync(binDir, { recursive: true });
     writeExecutable(portlessBin, '#!/bin/sh\nexit 0\n');
 
-    const result = runBootstrapDryRun(home, { PORTLESS_BIN: portlessBin });
+    const result = runBootstrapDryRun(home, {
+      PORTLESS_BIN: portlessBin,
+      PORTLESS_ENABLED: '1',
+    });
 
     expect(result.status).toBe(0);
     expect(result.stderr).toContain('portless found: ' + portlessBin);
@@ -428,7 +497,7 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
-  it('should keep direct daemon dry-run usable when PATH portless exists and no env file exists', () => {
+  it('should keep direct daemon dry-run usable when PATH Portless is explicitly enabled', () => {
     const home = createTempHome('consuelo-os-installer-runtime-direct-daemon-');
     const binDir = join(home, 'bin');
     const portlessBin = join(binDir, 'portless');
@@ -449,6 +518,7 @@ describe('public installer runtime dependencies', () => {
           HOME: home,
           CONSUELO_DAEMON_HOME: home,
           PORTLESS_DAEMON_PATH: [binDir, SYSTEM_PATH].join(delimiter),
+          PORTLESS_ENABLED: '1',
           PATH: [binDir, SYSTEM_PATH].join(delimiter),
         }),
       },
@@ -494,7 +564,9 @@ describe('public installer runtime dependencies', () => {
     );
 
     expect(result.status).toBe(0);
-    expect(result.stdout).not.toContain('com.consuelo.portless.system');
+    expect(result.stdout).toContain(
+      'Services: com.consuelo.system, com.consuelo.caddy, com.consuelo.watchdog',
+    );
   });
   it('should use PATH portless only when direct daemon repair mode allows lookup', () => {
     const home = createTempHome('consuelo-os-installer-runtime-portless-path-');
@@ -582,7 +654,9 @@ describe('public installer runtime dependencies', () => {
       },
     );
     expect(absentResult.status).toBe(0);
-    expect(absentResult.stdout).not.toContain('com.consuelo.portless.system');
+    expect(absentResult.stdout).toContain(
+      'Services: com.consuelo.system, com.consuelo.caddy, com.consuelo.watchdog',
+    );
     expect(absentResult.stdout).not.toContain(
       'com.consuelo.os.cloudflared.connector-123',
     );
@@ -621,7 +695,9 @@ describe('public installer runtime dependencies', () => {
     );
 
     expect(presentResult.status).toBe(0);
-    expect(presentResult.stdout).not.toContain('com.consuelo.portless.system');
+    expect(presentResult.stdout).toContain(
+      'Services: com.consuelo.system, com.consuelo.caddy, com.consuelo.watchdog, com.consuelo.os.cloudflared.connector-123',
+    );
     expect(presentResult.stdout).toContain(
       'com.consuelo.os.cloudflared.connector-123',
     );
@@ -723,8 +799,7 @@ describe('public installer runtime dependencies', () => {
     const generatedDir = join(osHome, 'node', 'security', 'generated');
     const connectorLabel =
       'com.consuelo.os.cloudflared.connector-flat-uninstall';
-    const heartbeatLabel =
-      'com.consuelo.os.node-heartbeat.node-flat-uninstall';
+    const heartbeatLabel = 'com.consuelo.os.node-heartbeat.node-flat-uninstall';
     mkdirSync(generatedDir, { recursive: true });
     writeCloudflaredPlist(
       join(generatedDir, `${connectorLabel}.plist`),

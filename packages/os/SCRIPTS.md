@@ -121,7 +121,9 @@ every change — even tiny ones — follows this flow. no exceptions.
 12. bun run task:finish                                  # remove worktree, delete branch
 13. bun run tmp -- save handoffs "description"           # save memory for next agent
 ```
+
 the verify → push dependency:
+
 ```text
 verify ✓ → writes .task/verify.json stamp → task:push reads stamp → push succeeds
 no verify → no stamp → task:push rejects (unless --no-verify)
@@ -146,6 +148,7 @@ do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.
 **when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
 
 **after any write or patch, verify immediately:**
+
 ```bash
 bun run fs -- read <file> --from <range> --plain
 node --check <touched-js-file>
@@ -162,16 +165,16 @@ git status --porcelain -uall -- . ':!node_modules'
 
 recovery patterns for common failures. don't panic — diagnose first.
 
-| symptom | fix |
-|---------|-----|
-| stale metadata — scripts reference wrong branch/PR | branch-aware scripts ignore mismatched metadata; for a known worktree run `bun run task:init -- --area <area> --branch <branch> --pr <N>` |
-| worktree exists but task is done | `bun run task:finish` or `bun run task:cleanup -- --merged` |
-| pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
-| stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
-| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `code-call` with `--branch` or `--pr` |
-| task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --area <area> read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
-| task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
-| review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
+| symptom                                            | fix                                                                                                                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| stale metadata — scripts reference wrong branch/PR | branch-aware scripts ignore mismatched metadata; for a known worktree run `bun run task:init -- --area <area> --branch <branch> --pr <N>`                           |
+| worktree exists but task is done                   | `bun run task:finish` or `bun run task:cleanup -- --merged`                                                                                                         |
+| pushed but forgot to verify                        | run `bun run verify`, then push again (stamp updates)                                                                                                               |
+| stream conflict on merge                           | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko                                                                                      |
+| "Script not found"                                 | you're in a worktree. run scripts from repo root; use `task:fs` / `code-call` with `--branch` or `--pr`                                                             |
+| task:start fails — worktree already exists         | check if old task is needed: `bun run task:fs -- --area <area> read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
+| task:push rejects — no verify stamp                | run `bun run verify` first. or `--no-verify` to bypass (visible and logged)                                                                                         |
+| review fails on a file you didn't touch            | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours                                                                                |
 
 ---
 
@@ -180,6 +183,7 @@ recovery patterns for common failures. don't panic — diagnose first.
 before pushing, scan your diff for AI-generated slop. remove it before it hits the PR.
 
 check for:
+
 - extra comments that a human wouldn't add or that are inconsistent with the rest of the file
 - defensive try/catch blocks that are abnormal for that area of the codebase
 - casts to `any` to get around type issues instead of fixing the types
@@ -222,6 +226,7 @@ every script below follows this format: purpose → usage → helpers → failur
 wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
+
 ```bash
 bun run fs -- read src/foo.ts                          # full file, syntax highlighted, line numbers
 bun run fs -- read src/foo.ts --from 120 --to 180      # specific line range
@@ -231,6 +236,7 @@ bun run fs -- read src/foo.ts --json                    # structured json (autom
 ```
 
 **search**
+
 ```bash
 bun run fs -- search "pattern" packages/               # search files (excludes node_modules/.git/dist)
 bun run fs -- search "pattern" src/ --context 4        # with context lines
@@ -241,6 +247,7 @@ bun run fs -- search "pattern" packages/ --max-results 5  # cap matches
 ```
 
 **list**
+
 ```bash
 bun run fs -- list packages/workspace/scripts/         # directory listing
 bun run fs -- list packages/workspace/ --tree          # tree view
@@ -251,6 +258,7 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 ```
 
 **write**
+
 ```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
 bun run fs -- write src/new.ts --content-file /tmp/new.ts --mkdirs # create multiline file from file payload
@@ -258,8 +266,8 @@ bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwri
 bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
-
 **apply_patch**
+
 ```bash
 bun run fs -- apply-patch --patch-file /tmp/change.patch
 cat /tmp/change.patch | bun run fs -- apply-patch --stdin
@@ -269,12 +277,14 @@ bun run fs -- apply-patch --patch-text '*** Begin Patch ... *** End Patch'
 Use `apply_patch` for OpenCode/Codex-style marker patches with embedded project-relative paths such as `*** Update File: src/foo.ts`, `*** Add File: src/new.ts`, `*** Move to: src/renamed.ts`, and `*** Delete File: src/old.ts`. Prefer `--patch-file` or stdin for multiline payloads; reserve `--patch-text` for short patches.
 
 **http**
+
 ```bash
 bun run fs -- http get https://api.github.com          # GET request (wraps xh)
 bun run fs -- http post https://api.example.com key=val  # POST json
 ```
 
 **trash**
+
 ```bash
 bun run fs -- trash old-file.ts                        # move to trash (not permanent delete)
 bun run fs -- trash old-dir/                           # directory
@@ -282,6 +292,7 @@ bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```
 
 **fs failure modes**
+
 ```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
@@ -305,6 +316,7 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 ```
 
 **tips**
+
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
 - before `write --force` or `apply-patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
@@ -331,6 +343,7 @@ bun run task:fs -- --branch task/dialer/fix-thing apply-patch --patch-file /tmp/
 ```
 
 **common task:fs patterns**
+
 ```bash
 bun run task:fs -- --area dialer read .task/workpad.md          # acceptance criteria, progress
 bun run task:fs -- --area dialer read .task/current.json        # task metadata
@@ -344,6 +357,7 @@ task:fs only considers active worktrees whose `.task/current.json.taskBranch` ma
 successful `task:fs read <file>` calls also append a `file.read` event to `.task/evidence-log.json` and mirror it into the local workspace index database. this is the automatic read-tracking path for the explore/decision system.
 
 **task:fs failure modes**
+
 ```bash
 bad: bun run task:fs -- --area workspace-agents read .task/current.json
  → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
@@ -376,6 +390,7 @@ bun run code-call -- --branch task/dialer/fix-thing git diff --check
 ```
 
 **code-call failure modes**
+
 ```bash
 bad: bun run code-call -- --area workspace-agents git status
  → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
@@ -411,6 +426,7 @@ workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"noTests\":
 ```
 
 **review failure modes**
+
 ```bash
 bad: bun run review (from repo root, no task)
  → reviews main vs origin/main. shows 0 changed files if main is up to date.
@@ -438,6 +454,7 @@ bun run verify -- --base stream/dialer  # compare against specific ref
 ```
 
 **verify failure modes**
+
 ```text
 bad: verify fails on a package with no typecheck target
  → this is the harness being stricter, not broken code. the package was never typechecked.
@@ -476,6 +493,7 @@ bun run explore -- "refresh everything" --reindex
 ```
 
 **explore failure modes**
+
 ```text
 bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
@@ -565,6 +583,7 @@ bun run task:push -- --branch task/dialer/fix-thing --json
 ```
 
 **task:push failure modes**
+
 ```bash
 bad: bun run task:push -- --changed
  → error: missing required --message
@@ -576,7 +595,6 @@ bad: bun run task:push -- --message "fix: thing" --changed
 ```
 
 ---
-
 
 ### PR reference selectors
 
@@ -606,6 +624,7 @@ bun run task:start -- --json
 ```
 
 **task:start failure modes**
+
 ```bash
 bad: bun run task:start
  → error: missing required --area
@@ -621,7 +640,7 @@ bad: bun run task:start -- --area dialer --title "fix thing"
 
 ### task:pr — merge task→stream, create stream→main PR
 
-default behavior: (1) ensure task PR exists for task/* → stream/, (2) merge that task PR into the stream branch, (3) create or refresh the review PR for stream/ → main.
+default behavior: (1) ensure task PR exists for task/\* → stream/, (2) merge that task PR into the stream branch, (3) create or refresh the review PR for stream/ → main.
 
 ```bash
 bun run task:pr -- --branch task/dialer/fix-thing  # full flow: task→stream merge + stream→main PR
@@ -633,6 +652,7 @@ bun run task:pr -- --json
 ```
 
 **task:pr failure modes**
+
 ```bash
 bad: bun run task:pr (with stale .task/current.json)
  → error: .task/current.json belongs to branch X, but current branch is main
@@ -643,7 +663,7 @@ bad: bun run task:pr (with stale .task/current.json)
 
 ### task:prs — show PR links for current task
 
-shows both the task PR (task/* → stream/) and the review PR (stream/ → main).
+shows both the task PR (task/\* → stream/) and the review PR (stream/ → main).
 
 ```bash
 bun run task:prs -- --branch task/dialer/fix-thing  # show PR links for exact task
@@ -671,6 +691,7 @@ bun run task:finish -- --pr 213 --json
 ```
 
 **task:finish failure modes**
+
 ```bash
 bad: bun run task:finish (with stale .task/current.json)
  → runs against stale metadata. may report "finished" for an old task.
@@ -726,6 +747,7 @@ bun run stream:create -- --area research --json
 ```
 
 **stream:create failure modes**
+
 - an existing remote stream is rejected without mutation
 - a missing source branch is rejected before committing instruction files
 - remote commit/branch failures stop before the local tracking branch is created
@@ -743,6 +765,7 @@ bun run stream:sync -- --json
 ```
 
 **stream:sync failure modes**
+
 ```bash
 bad: bun run stream:sync
  → error: missing required --area
@@ -774,6 +797,7 @@ bun run pr-review -- 173 --json
 ```
 
 **pr-review helpers — full review-fix flow**
+
 ```bash
 bun run pr-review -- <pr>             # 1. fetch reviews
 bun run gh -- diff <pr>               # 2. see what changed
@@ -837,6 +861,7 @@ bun run memory -- categories         # list available categories
 ```
 
 **context failure modes**
+
 ```text
 bad: answering "what did we decide about X?" from memory alone
  → search first: bun run memory -- search "X"
@@ -959,10 +984,10 @@ inside the workspace MCP app, call the typed facade directly through `workspace.
 
 ```ts
 await workspace.call({
-  tool: "stream.context",
-  input: { area: "workspace-agents" },
-  timeout: 120
-})
+  tool: 'stream.context',
+  input: { area: 'workspace-agents' },
+  timeout: 120,
+});
 ```
 
 ---
@@ -989,8 +1014,6 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
 ---
-
-
 
 ---
 
@@ -1092,6 +1115,46 @@ bun run mac -- list /tmp --depth 1 --json
 bun run mac -- process list --json
 bun run mac -- port find --json
 ```
+
+---
+
+### cloud:node — managed cloud-node operator provisioning
+
+Runs the provider-neutral managed cloud-node application service through the GCP adapter. The command has two explicit modes:
+
+- `plan` returns the complete intended foundation without provider mutations.
+- `apply` idempotently ensures the same foundation and fails closed when an existing resource drifts from the approved contract.
+
+```bash
+bun --cwd packages/os run cloud:node -- plan \
+  --project <project-id> \
+  --billing-account <billing-account-id> \
+  --json
+
+bun --cwd packages/os run cloud:node -- apply \
+  --project <project-id> \
+  --billing-account <billing-account-id> \
+  --region us-east1 \
+  --budget-usd 100 \
+  --json
+```
+
+After the foundation is approved, plan and apply an individual retained-disk VM from the same operator boundary:
+
+```bash
+bun --cwd packages/os run cloud:node -- node-plan \
+  --config <managed-node-config.json> \
+  --json
+
+bun --cwd packages/os run cloud:node -- node-apply \
+  --config <managed-node-config.json> \
+  --json
+```
+
+The JSON config supplies `projectId`, workspace and node identity, optional region/zone/machine type, and the signed release bootstrap. Release bootstrap must include verified runtime, Cloudflared, and Caddy download URLs, SHA-256 digests, versions, and trusted release public keys. Keep credentials and provider tokens out of this file. `node-plan` performs no provider mutations; `node-apply` retains the data disk, creates or verifies the VM, and fails closed on material drift. The one-time data-disk format flag may change from `true` to `false` after first boot without making a safe repeat apply look like drift.
+The foundation includes required Google APIs, a custom VPC and subnet, IAP-only SSH ingress, the node service account and minimum logging/monitoring roles, daily and weekly snapshot schedules, and a project-scoped monthly budget. It does not provision a VM or data disk; node creation and recovery use the same application boundary in the next lifecycle stage.
+
+Cloud-admin authority remains separate from public install. Do not call this command from `install.ts`. Use `plan` before every operator `apply`, and treat duplicate names or resource drift as incidents to resolve rather than creating replacement resources.
 
 ---
 
@@ -1247,6 +1310,7 @@ use python for multi-file or multi-block edits. do not use huge `python3 -c "...
 always: make the python script fail loudly if the expected text is not found. always reread changed ranges after the script runs. always run `node --check` for touched .js scripts. always run `git status --porcelain -uall -- . ':!node_modules'` after large edits.
 
 **safe pattern — single edit**
+
 ```bash
 python3 <<'PY'
 from pathlib import Path
@@ -1268,6 +1332,7 @@ git status --porcelain -uall -- . ':!node_modules'
 ```
 
 **better pattern — many edits across files**
+
 ```bash
 cat > /tmp/workspace-edit.py <<'PY'
 from pathlib import Path
@@ -1297,6 +1362,7 @@ git status --porcelain -uall -- . ':!node_modules'
 ```
 
 **python edit failure modes**
+
 ```text
 bad: python replace script says "expected block not found"
  → the old string has different whitespace than the file. read the exact range with
@@ -1318,6 +1384,7 @@ cat /tmp/input.txt | bun run agent -- "clean this transcript"
 ```
 
 **rules**
+
 - keep prompts narrow and explicit
 - pass the model as `--provider/model` only when you need to override the default
 - use `bun run agent --` from `/Users/kokayi/Dev/opensaas`; do not call the pi proxy directly from random scripts unless the script owns that integration
@@ -1346,12 +1413,12 @@ bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
 
 **failure modes**
 
-| symptom | fix |
-|---------|-----|
-| `Script not found "agent"` | you're not in `/Users/kokayi/Dev/opensaas`, or `package.json` is missing this script |
-| request is slow | retry once; nvidia free api can land on slower capacity |
-| model output is too formal | tighten the prompt: "preserve casual tone, do not formalize" |
-| model hallucinates repo facts | ignore it and read files/logs; sub-agents do not replace evidence |
+| symptom                       | fix                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| `Script not found "agent"`    | you're not in `/Users/kokayi/Dev/opensaas`, or `package.json` is missing this script |
+| request is slow               | retry once; nvidia free api can land on slower capacity                              |
+| model output is too formal    | tighten the prompt: "preserve casual tone, do not formalize"                         |
+| model hallucinates repo facts | ignore it and read files/logs; sub-agents do not replace evidence                    |
 
 ---
 
@@ -1383,22 +1450,24 @@ these are installed globally. do not use them if a `bun run` script exists for t
 
 the scripts wrap these tools with sane defaults, exclusions, and logging. using the raw tools bypasses all of that.
 
-| tool | what it does | use the script instead |
-|------|-------------|----------------------|
-| `bat` | syntax-highlighted file reading | `bun run fs -- read` |
-| `rg` | fast regex search | `bun run fs -- search` |
-| `eza` | modern ls with tree view | `bun run fs -- list` |
-| `fd` | fast file finder | `bun run fs -- list --find` |
-| `xh` | http client | `bun run fs -- http` |
-| `trash` | safe delete | `bun run fs -- trash` |
-| `gh` | github CLI | `bun run gh` |
+| tool    | what it does                    | use the script instead      |
+| ------- | ------------------------------- | --------------------------- |
+| `bat`   | syntax-highlighted file reading | `bun run fs -- read`        |
+| `rg`    | fast regex search               | `bun run fs -- search`      |
+| `eza`   | modern ls with tree view        | `bun run fs -- list`        |
+| `fd`    | fast file finder                | `bun run fs -- list --find` |
+| `xh`    | http client                     | `bun run fs -- http`        |
+| `trash` | safe delete                     | `bun run fs -- trash`       |
+| `gh`    | github CLI                      | `bun run gh`                |
 
 **when raw CLI tools are acceptable:**
+
 - the script genuinely doesn't support what you need (rare — run `--help` first)
 - you need to pipe output between tools in a way the script can't handle
 - one-off system commands unrelated to the repo (e.g., `shortcuts --help`, `test -d`)
 
 **when raw CLI tools are not acceptable:**
+
 - reading, searching, or listing repo files (use `fs`)
 - reading or writing worktree files (use `task:fs`)
 - running commands in a worktree (use `code-call`)
@@ -1483,6 +1552,7 @@ bun run doctor -- --json
 ```bash
 bun run install:system-daemons
 ```
+
 Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. A workspace installation with registered node signing material also installs `com.consuelo.os.node-heartbeat.<node-id>`. That one-shot service re-inspects canonical local agent configuration on every 30-second run and includes only currently verified agent identifiers in the existing signed node heartbeat; paths, configuration contents, credentials, and signing material are never sent. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
 
 ### install:system-daemons:dry-run
@@ -1492,7 +1562,6 @@ bun run install:system-daemons:dry-run
 ```
 
 Generate and lint user LaunchAgent plist files plus shell syntax checks without installing, bootstrapping, or starting background services. Use this before local Mac testing.
-
 
 ## Sites page publishing
 
@@ -1539,9 +1608,6 @@ bun ./scripts/os.ts sites lease release --page trace-burn-intelligence --section
 ```
 
 Active leases are advisory but enforced by default. A different agent cannot patch or acquire the same section until the lease expires, is released, or Ko explicitly authorizes `--force-publish`.
-
-
-
 
 ## Trace watcher
 

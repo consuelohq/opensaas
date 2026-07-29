@@ -16,6 +16,7 @@ export type WorkspaceRouteD1RouteTarget =
       versionId: string;
       manifestKey: string;
       htmlKey?: string;
+      contentHash?: string;
       contentType?: string;
       cachePolicy: 'static-shell' | 'versioned-asset' | 'mutable-artifact' | 'private-preview';
     }
@@ -377,6 +378,7 @@ const nodePresence = (
   target: WorkspaceRouteD1NodeTarget,
   nowMs: number,
 ): 'online' | 'stale' | 'offline' => {
+  if (target.connectorStatus === 'disconnected') return 'offline';
   const ageMs = Math.max(0, nowMs - target.lastSeenAt);
   if (ageMs <= target.heartbeatTtlMs) return 'online';
   if (ageMs <= target.heartbeatTtlMs * 3) return 'stale';
@@ -399,6 +401,52 @@ export const createInMemoryWorkspaceRouteD1 = (): WorkspaceRouteD1Database => {
 
   return db;
 };
+const WORKSPACE_ROUTE_REGISTRY_TABLE_SQL = [
+  'CREATE TABLE workspace_route_registry',
+  '(hostname TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, workspace_slug TEXT NOT NULL, workspace_host TEXT NOT NULL,',
+  'base_domain TEXT NOT NULL, route_path_prefix TEXT NOT NULL,',
+  "route_surface TEXT NOT NULL CHECK (route_surface IN ('os', 'dialer', 'app', 'sites', 'twenty')),",
+  "route_status TEXT NOT NULL CHECK (route_status IN ('active', 'disabled')),",
+  "route_target_kind TEXT NOT NULL CHECK (route_target_kind IN ('service-upstream', 'os-connector', 'site-snapshot', 'consuelo-gateway-service', 'redirect')),",
+  'target_origin_url TEXT NOT NULL, connector_id TEXT,',
+  "connector_status TEXT CHECK (connector_status IN ('connected', 'disconnected') OR connector_status IS NULL),",
+  'record_json TEXT NOT NULL, revoked_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,',
+  'updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,',
+  'FOREIGN KEY (connector_id) REFERENCES workspace_connectors(connector_id))',
+].join(' ');
+
+const WORKSPACE_ROUTE_REGISTRY_LEGACY_REBUILD_SQL = [
+  'DROP TABLE IF EXISTS workspace_route_registry_next;',
+  WORKSPACE_ROUTE_REGISTRY_TABLE_SQL.replace(
+    'workspace_route_registry',
+    'workspace_route_registry_next',
+  ) + ';',
+  [
+    'INSERT INTO workspace_route_registry_next',
+    '(hostname, workspace_id, workspace_slug, workspace_host, base_domain, route_path_prefix, route_surface,',
+    'route_status, route_target_kind, target_origin_url, connector_id, connector_status, record_json,',
+    'revoked_at, created_at, updated_at)',
+    'SELECT hostname,',
+    "COALESCE(json_extract(record_json, '$.workspaceId'), 'legacy:' || hostname),",
+    "COALESCE(json_extract(record_json, '$.workspaceSlug'), hostname),",
+    "COALESCE(json_extract(record_json, '$.hostname'), hostname),",
+    "COALESCE(json_extract(record_json, '$.baseDomain'), ''),",
+    "COALESCE(json_extract(record_json, '$.routes[0].pathPrefix'), '/'),",
+    "COALESCE(json_extract(record_json, '$.routes[0].surface'), 'os'),",
+    "COALESCE(json_extract(record_json, '$.routes[0].status'), 'disabled'),",
+    "CASE WHEN json_extract(record_json, '$.routes[0].target.kind') IN",
+    "('service-upstream', 'os-connector', 'site-snapshot', 'consuelo-gateway-service', 'redirect')",
+    "THEN json_extract(record_json, '$.routes[0].target.kind') ELSE 'service-upstream' END,",
+    "COALESCE(json_extract(record_json, '$.routes[0].target.upstreamUrl'),",
+    "json_extract(record_json, '$.routes[0].target.tunnelOriginUrl'),",
+    "json_extract(record_json, '$.routes[0].target.location'), ''),",
+    'NULL, NULL, record_json, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP',
+    'FROM workspace_route_registry;',
+  ].join(' '),
+  'DROP TABLE workspace_route_registry;',
+  'ALTER TABLE workspace_route_registry_next RENAME TO workspace_route_registry;',
+].join('\n');
+
 export const migrateWorkspaceRouteD1 = async (
   db: WorkspaceRouteD1Database,
 ): Promise<void> => {
@@ -410,7 +458,8 @@ export const migrateWorkspaceRouteD1 = async (
       return;
     }
 
-    const statements = [
+    const prepared = getPreparedD1(db);
+    const bootstrapStatements = [
       [
         'CREATE TABLE IF NOT EXISTS workspace_connectors',
         '(connector_id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, workspace_host TEXT NOT NULL,',
@@ -419,19 +468,42 @@ export const migrateWorkspaceRouteD1 = async (
         "connector_status TEXT NOT NULL CHECK (connector_status IN ('connected', 'disconnected')),",
         'revoked_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)',
       ].join(' '),
-      [
+      WORKSPACE_ROUTE_REGISTRY_TABLE_SQL.replace(
+        'CREATE TABLE workspace_route_registry',
         'CREATE TABLE IF NOT EXISTS workspace_route_registry',
-        '(hostname TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, workspace_slug TEXT NOT NULL, workspace_host TEXT NOT NULL,',
-        'base_domain TEXT NOT NULL, route_path_prefix TEXT NOT NULL,',
-        "route_surface TEXT NOT NULL CHECK (route_surface IN ('os', 'dialer', 'app', 'sites', 'twenty')),",
-        "route_status TEXT NOT NULL CHECK (route_status IN ('active', 'disabled')),",
-        "route_target_kind TEXT NOT NULL CHECK (route_target_kind IN ('service-upstream', 'os-connector', 'site-snapshot', 'consuelo-gateway-service')),",
-        'target_origin_url TEXT NOT NULL, connector_id TEXT,',
-        "connector_status TEXT CHECK (connector_status IN ('connected', 'disconnected') OR connector_status IS NULL),",
-        'record_json TEXT NOT NULL, revoked_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,',
-        'updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,',
-        'FOREIGN KEY (connector_id) REFERENCES workspace_connectors(connector_id))',
-      ].join(' '),
+      ),
+    ];
+    for (const statement of bootstrapStatements) {
+      await prepared.prepare(statement).run();
+    }
+
+    const schema = await prepared
+      .prepare(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'workspace_route_registry' LIMIT 1",
+      )
+      .first<{ sql?: string }>();
+    const schemaSql = schema?.sql ?? '';
+    const requiredSchemaTokens = [
+      'workspace_id',
+      'workspace_slug',
+      'route_path_prefix',
+      'record_json',
+      'consuelo-gateway-service',
+      'redirect',
+    ];
+    if (
+      schemaSql &&
+      requiredSchemaTokens.some((token) => !schemaSql.includes(token))
+    ) {
+      if (!db.exec) {
+        throw new Error(
+          'legacy workspace route schema requires an executable D1 migration binding',
+        );
+      }
+      await db.exec(WORKSPACE_ROUTE_REGISTRY_LEGACY_REBUILD_SQL);
+    }
+
+    const indexStatements = [
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_workspace_route_registry_hostname_path ON workspace_route_registry(hostname, route_path_prefix)',
       'CREATE INDEX IF NOT EXISTS idx_workspace_route_registry_workspace_id ON workspace_route_registry(workspace_id)',
       'CREATE INDEX IF NOT EXISTS idx_workspace_route_registry_connector_id ON workspace_route_registry(connector_id)',
@@ -439,8 +511,7 @@ export const migrateWorkspaceRouteD1 = async (
       'CREATE INDEX IF NOT EXISTS idx_workspace_connectors_workspace_id ON workspace_connectors(workspace_id)',
       'CREATE INDEX IF NOT EXISTS idx_workspace_connectors_status ON workspace_connectors(connector_status)',
     ];
-    const prepared = getPreparedD1(db);
-    for (const statement of statements) {
+    for (const statement of indexStatements) {
       await prepared.prepare(statement).run();
     }
   } catch (error: unknown) {
@@ -479,11 +550,10 @@ export const resolveWorkspaceRouteFromD1 = async (
     }
 
     const route = [...record.routes]
-      .filter((candidate) => candidate.status === 'active')
       .sort((left, right) => right.pathPrefix.length - left.pathPrefix.length)
       .find((candidate) => matchesRoutePrefix(input.path, candidate.pathPrefix));
 
-    if (!route) {
+    if (!route || route.status !== 'active') {
       return denied({
         status: 404,
         errorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',

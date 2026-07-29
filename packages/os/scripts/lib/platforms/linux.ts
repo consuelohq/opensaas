@@ -143,10 +143,14 @@ export async function detectLinuxHost(input: {
 
 export function resolveLinuxPlatformPaths(home: string, environment: NodeJS.ProcessEnv = process.env): LinuxPlatformPaths {
   const resolvedHome = resolve(home);
-  const inferredUserHome = basename(resolvedHome) === '.consuelo'
-    ? dirname(resolvedHome)
-    : resolvedHome;
-  const configHome = resolve(environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'));
+  const inferredUserHome = environment.HOME
+    ? resolve(environment.HOME)
+    : basename(resolvedHome) === '.consuelo'
+      ? dirname(resolvedHome)
+      : resolvedHome;
+  const configHome = resolve(
+    environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'),
+  );
   const systemdUserDir = join(configHome, 'systemd', 'user');
   return {
     home: resolvedHome,
@@ -185,6 +189,130 @@ export function renderSystemdUserUnit(input: { home: string; bunExecutable: stri
     'WantedBy=default.target',
     '',
   ].join('\n');
+}
+
+export function renderWorkspaceNodeHeartbeatSystemdUnits(input: {
+  runtimeHome: string;
+  userHome: string;
+  bunExecutable: string;
+  heartbeatScriptPath: string;
+  heartbeatConfigPath: string;
+}): {
+  serviceName: 'consuelo-node-heartbeat.service';
+  timerName: 'consuelo-node-heartbeat.timer';
+  systemdUserDir: string;
+  servicePath: string;
+  timerPath: string;
+  service: string;
+  timer: string;
+} {
+  const paths = resolveLinuxPlatformPaths(input.userHome, {
+    ...process.env,
+    HOME: resolve(input.userHome),
+  });
+  const serviceName = 'consuelo-node-heartbeat.service' as const;
+  const timerName = 'consuelo-node-heartbeat.timer' as const;
+  return {
+    serviceName,
+    timerName,
+    systemdUserDir: paths.systemdUserDir,
+    servicePath: join(paths.systemdUserDir, serviceName),
+    timerPath: join(paths.systemdUserDir, timerName),
+    service: [
+      '[Unit]',
+      'Description=Consuelo OS workspace node heartbeat',
+      'After=network-online.target',
+      'Wants=network-online.target',
+      '',
+      '[Service]',
+      'Type=oneshot',
+      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.runtimeHome))}"`,
+      `ExecStart="${systemdEscape(resolve(input.bunExecutable))}" "${systemdEscape(resolve(input.heartbeatScriptPath))}" "--config" "${systemdEscape(resolve(input.heartbeatConfigPath))}"`,
+      'UMask=0077',
+      'NoNewPrivileges=true',
+      'PrivateTmp=true',
+      '',
+    ].join('\n'),
+    timer: [
+      '[Unit]',
+      'Description=Send Consuelo OS workspace node heartbeats',
+      '',
+      '[Timer]',
+      'OnBootSec=5',
+      'OnUnitActiveSec=30',
+      'Persistent=true',
+      `Unit=${serviceName}`,
+      '',
+      '[Install]',
+      'WantedBy=timers.target',
+      '',
+    ].join('\n'),
+  };
+}
+
+const systemdUnitSegment = (value: string): string => {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!normalized) throw new Error('systemd unit segment is required');
+  return normalized;
+};
+
+export function renderWorkspaceCloudflaredSystemdUnit(input: {
+  runtimeHome: string;
+  userHome: string;
+  connectorId: string;
+  programArguments: string[];
+}): {
+  unitName: string;
+  systemdUserDir: string;
+  unitPath: string;
+  service: string;
+} {
+  if (input.programArguments.length === 0) {
+    throw new Error('cloudflared systemd service requires program arguments');
+  }
+  const paths = resolveLinuxPlatformPaths(input.userHome, {
+    ...process.env,
+    HOME: resolve(input.userHome),
+  });
+  const unitName = `consuelo-cloudflared-${systemdUnitSegment(
+    input.connectorId,
+  )}.service`;
+  const execStart = input.programArguments
+    .map((argument) => `"${systemdEscape(resolveExecutableArgument(argument))}"`)
+    .join(' ');
+  return {
+    unitName,
+    systemdUserDir: paths.systemdUserDir,
+    unitPath: join(paths.systemdUserDir, unitName),
+    service: [
+      '[Unit]',
+      'Description=Consuelo OS workspace Cloudflare Tunnel',
+      'After=network-online.target',
+      'Wants=network-online.target',
+      '',
+      '[Service]',
+      'Type=simple',
+      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.runtimeHome))}"`,
+      `ExecStart=${execStart}`,
+      'Restart=always',
+      'RestartSec=5',
+      'UMask=0077',
+      'NoNewPrivileges=true',
+      'PrivateTmp=true',
+      '',
+      '[Install]',
+      'WantedBy=default.target',
+      '',
+    ].join('\n'),
+  };
+}
+
+function resolveExecutableArgument(argument: string): string {
+  return argument.startsWith('/') ? resolve(argument) : argument;
 }
 
 function ensurePrivateDirectory(path: string): void {

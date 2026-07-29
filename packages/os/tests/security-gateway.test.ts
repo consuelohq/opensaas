@@ -885,7 +885,6 @@ describe('Consuelo OS public gateway security contract', () => {
     const input = {
       workspaceHost: 'acme.consuelohq.com',
       upstream: { host: '127.0.0.1', port: 8850 },
-      mtls: { enabled: true, caFile: '/Users/example/.consuelo/os/security/generated/client-ca.pem' },
     };
     const caddyfile = gateway.renderCaddyGatewayConfig(input);
 
@@ -902,11 +901,26 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('response_header_timeout 15s');
     expect(caddyfile).toContain('read_timeout 60s');
     expect(caddyfile).toContain('write_timeout 60s');
-    expect(caddyfile).toContain('client_auth');
-    expect(caddyfile).toContain('require_and_verify');
+    expect(caddyfile).not.toContain('client_auth');
     expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
     expect(caddyfile).not.toContain('reverse_proxy :8850');
     expect(caddyfile).not.toContain('MCP_BEARER_TOKEN');
+  });
+
+  it('should reject mTLS when Caddy ingress uses a plaintext loopback listener', async () => {
+    const gateway = await loadGatewayModule();
+
+    expect(() =>
+      gateway.renderCaddyGatewayConfig({
+        workspaceHost: 'acme.consuelohq.com',
+        upstream: { host: '127.0.0.1', port: 8850 },
+        mtls: {
+          enabled: true,
+          caFile:
+            '/Users/example/.consuelo/security/generated/client-ca.pem',
+        },
+      }),
+    ).toThrow(/mTLS.*plaintext|plaintext.*mTLS/i);
   });
 
   it('routes public workspace URLs by workspace identity and fails closed for unknown tenants or paths', async () => {

@@ -12,6 +12,7 @@ export type WorkspaceEdgeRouteSeedInput = {
   siteSnapshotKey?: string;
   siteVersionId?: string;
   publishedSiteIds?: WorkspaceSiteSnapshotId[];
+  siteContentHashes?: Partial<Record<WorkspaceSiteSnapshotId, string>>;
   appUpstreamUrl?: string;
   connectorId?: string;
   tunnelOriginUrl?: string;
@@ -122,6 +123,14 @@ const siteVersionFromSnapshotKey = (siteSnapshotKey: string | undefined): string
   return match?.[1];
 };
 
+const normalizedContentHash = (contentHash: string | undefined): string | undefined => {
+  const normalized = trimmedValue(contentHash)?.toLowerCase();
+  if (normalized !== undefined && !/^[a-f0-9]{64}$/.test(normalized)) {
+    throw new Error('workspace edge seed received invalid site snapshot content hash');
+  }
+  return normalized;
+};
+
 const siteManifestKey = (input: {
   workspaceId: string;
   siteId: string;
@@ -139,13 +148,15 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
   workspaceId: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
+  contentHash?: string;
+  published: boolean;
 }): WorkspaceRouteD1Route => {
   const isLauncher = input.pathPrefix === '/' && input.siteId === 'launcher';
   return {
     surface: 'sites',
     pathPrefix: input.pathPrefix,
     auth: isLauncher ? 'workspace-session' : 'public',
-    status: 'active',
+    status: input.published ? 'active' : 'disabled',
     target: {
       kind: 'site-snapshot',
       siteId: input.siteId,
@@ -156,6 +167,9 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
         siteSnapshotKey: input.siteSnapshotKey,
         siteVersionId: input.siteVersionId,
       }),
+      ...(normalizedContentHash(input.contentHash)
+        ? { contentHash: normalizedContentHash(input.contentHash) }
+        : {}),
       contentType: DEFAULT_SITE_CONTENT_TYPE,
       cachePolicy: isLauncher ? 'private-preview' : 'static-shell',
     },
@@ -413,14 +427,14 @@ export const createWorkspaceEdgeRouteSeedRecord = (
       : [];
   const routes: WorkspaceRouteD1Route[] = [
     ...osRoutes,
-    ...SITE_SNAPSHOT_ROUTES
-      .filter((route) => publishedSiteIds.has(route.siteId))
-      .map((route) => buildSiteSnapshotRoute({
-        ...route,
-        workspaceId,
-        siteSnapshotKey: input.siteSnapshotKey,
-        siteVersionId: input.siteVersionId,
-      })),
+    ...SITE_SNAPSHOT_ROUTES.map((route) => buildSiteSnapshotRoute({
+      ...route,
+      workspaceId,
+      siteSnapshotKey: input.siteSnapshotKey,
+      siteVersionId: input.siteVersionId,
+      contentHash: input.siteContentHashes?.[route.siteId],
+      published: publishedSiteIds.has(route.siteId),
+    })),
     ...buildLegacyConfigurationRedirectRoutes(),
     ...buildTraceGatewayRoutes(),
     ...buildConfigurationGatewayRoutes(),

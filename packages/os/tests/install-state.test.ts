@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -187,6 +187,45 @@ describe('local OS install state', () => {
         message: 'ChatGPT MCP connection credential replaced',
       }),
     ]));
+  });
+
+  it('replaces an expired ChatGPT MCP credential during reprovisioning', () => {
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local' });
+    `);
+    const connectionPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'chatgpt-mcp.json',
+    );
+    const authPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'auth.json',
+    );
+    const before = JSON.parse(readFileSync(connectionPath, 'utf8')) as {
+      tokenId: string;
+      bearerToken: string;
+    };
+    const auth = JSON.parse(readFileSync(authPath, 'utf8')) as {
+      tokens: Record<string, { expiresAt: string }>;
+    };
+    auth.tokens[before.tokenId].expiresAt = '2020-01-01T00:00:00.000Z';
+    writeFileSync(authPath, JSON.stringify(auth, null, 2));
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local' });
+    `);
+    const after = JSON.parse(readFileSync(connectionPath, 'utf8')) as typeof before;
+
+    expect(after.tokenId).not.toBe(before.tokenId);
+    expect(after.bearerToken).not.toBe(before.bearerToken);
   });
 
   it('reports existing generated security assets as existing on reprovision', () => {
@@ -498,7 +537,7 @@ describe('local OS install state', () => {
     expect(globalYaml).not.toContain('connector_node_air');
   });
 
-  it('writes an OpenCode MCP config that exposes Consuelo OS tools', () => {
+  it('writes an OpenCode MCP config that exposes Consuelo tools', () => {
     mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
     writeFileSync(
       join(tempUserHome, '.config', 'opencode', 'opencode.json'),
@@ -515,16 +554,33 @@ describe('local OS install state', () => {
     const opencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, 'utf8'));
     expect(opencodeConfig.theme).toBe('system');
     expect(opencodeConfig.mcp.existing).toMatchObject({ type: 'local', enabled: true });
-    expect(opencodeConfig.mcp['consuelo-os']).toMatchObject({
+    expect(opencodeConfig.mcp.consuelo).toMatchObject({
       type: 'local',
       enabled: true,
       cwd: tempHome,
-      environment: { CONSUELO_HOME: tempHome },
+      environment: { CONSUELO_HOME: tempHome, CONSUELO_AGENT_ID: 'opencode' },
     });
-    expect(opencodeConfig.mcp['consuelo-os'].command).toEqual([
-      join(tempHome, 'bin', 'consuelo-os-mcp'),
+    expect(opencodeConfig.mcp.consuelo.command).toEqual([
+      join(tempHome, 'bin', 'consuelo-mcp'),
     ]);
-    expect(existsSync(join(tempHome, 'bin', 'consuelo-os-mcp'))).toBe(true);
+    expect(existsSync(join(tempHome, 'bin', 'consuelo-mcp'))).toBe(true);
+    expect(opencodeConfig.mcp['consuelo-os']).toBeUndefined();
+    const credentialPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'local-agent-mcp.json',
+    );
+    const credential = JSON.parse(readFileSync(credentialPath, 'utf8')) as {
+      localUrl: string;
+      agents: Record<string, { tokenId: string; bearerToken: string }>;
+    };
+    expect(statSync(credentialPath).mode & 0o777).toBe(0o600);
+    expect(credential.localUrl).toBe('http://127.0.0.1:46321/mcp');
+    expect(Object.keys(credential.agents)).toEqual(['opencode']);
+    expect(credential.agents.opencode?.tokenId).toEqual(expect.any(String));
+    expect(credential.agents.opencode?.bearerToken).toEqual(expect.any(String));
     expect(result.agents.find((agent: { name: string; status: string }) => agent.name === 'opencode')).toMatchObject({
       status: 'configured',
     });
@@ -536,6 +592,81 @@ describe('local OS install state', () => {
           message: expect.stringMatching(/OpenCode MCP/i),
         }),
       ]),
+    );
+  });
+
+  it('preserves credentials for previously configured agents during partial reconfiguration', () => {
+    mkdirSync(join(tempUserHome, '.codex'), { recursive: true });
+    mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local', connectAgents: ['codex', 'opencode'] });
+    `);
+    const credentialPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'local-agent-mcp.json',
+    );
+    const first = JSON.parse(readFileSync(credentialPath, 'utf8')) as {
+      agents: Record<string, { tokenId: string; bearerToken: string }>;
+    };
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local', connectAgents: ['opencode'] });
+    `);
+    const second = JSON.parse(readFileSync(credentialPath, 'utf8')) as typeof first;
+
+    expect(Object.keys(second.agents).sort()).toEqual(['codex', 'opencode']);
+    expect(second.agents.codex).toEqual(first.agents.codex);
+  });
+
+  it('replaces expired local-agent credentials during reprovisioning', () => {
+    mkdirSync(join(tempUserHome, '.config', 'opencode'), { recursive: true });
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local', connectAgents: ['opencode'] });
+    `);
+    const credentialPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'local-agent-mcp.json',
+    );
+    const authPath = join(
+      tempHome,
+      'node',
+      'security',
+      'generated',
+      'auth.json',
+    );
+    const before = JSON.parse(readFileSync(credentialPath, 'utf8')) as {
+      agents: Record<string, { tokenId: string; bearerToken: string }>;
+    };
+    const auth = JSON.parse(readFileSync(authPath, 'utf8')) as {
+      tokens: Record<string, { expiresAt: string }>;
+    };
+    const previous = before.agents.opencode;
+    auth.tokens[previous.tokenId].expiresAt = '2020-01-01T00:00:00.000Z';
+    writeFileSync(authPath, JSON.stringify(auth, null, 2));
+
+    runBunEval(`
+      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+      provisionLocalOs({ mode: 'local', connectAgents: ['opencode'] });
+    `);
+    const after = JSON.parse(readFileSync(credentialPath, 'utf8')) as typeof before;
+    const updatedAuth = JSON.parse(readFileSync(authPath, 'utf8')) as typeof auth;
+    const replacement = after.agents.opencode;
+
+    expect(replacement.tokenId).not.toBe(previous.tokenId);
+    expect(replacement.bearerToken).not.toBe(previous.bearerToken);
+    expect(Date.parse(updatedAuth.tokens[replacement.tokenId].expiresAt)).toBeGreaterThan(
+      Date.now(),
     );
   });
 
@@ -783,8 +914,9 @@ describe('local OS install state', () => {
     const configPath = join(tempUserHome, '.codex', 'config.toml');
     const config = readFileSync(configPath, 'utf8');
     expect(config).toContain('model = "gpt-5"');
-    expect(config).toContain('[mcp_servers."consuelo-os"]');
-    expect(config).toContain(JSON.stringify(join(tempHome, 'bin', 'consuelo-os-mcp')));
+    expect(config).toContain('[mcp_servers."consuelo"]');
+    expect(config).toContain(JSON.stringify(join(tempHome, 'bin', 'consuelo-mcp')));
+    expect(config).not.toContain('[mcp_servers.\"consuelo-os\"]');
     expect(existsSync(join(tempUserHome, '.codex', 'consuelo-os.json'))).toBe(false);
     expect(result.agents.find((agent: { name: string; status: string }) => agent.name === 'codex')).toMatchObject({
       status: 'configured',

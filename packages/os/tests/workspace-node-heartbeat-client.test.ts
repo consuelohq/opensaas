@@ -112,6 +112,21 @@ describe('workspace node heartbeat client', () => {
     })).toThrow(/known agent/i);
   });
 
+  it('rejects capability overflow instead of silently truncating the signed heartbeat', () => {
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    expect(() => createWorkspaceNodeHeartbeatClient({
+      config: {
+        authorityOrigin: 'https://os.consuelohq.com',
+        workspaceId: 'workspace_123',
+        nodeId: 'node_member',
+        connectorStatus: 'connected',
+        capabilities: Array.from({ length: 33 }, (_, index) => `capability-${index}`),
+        publicKeyJwk: deviceKeyPair.publicKeyJwk,
+        signingKeyJwk: deviceKeyPair.signingKeyJwk,
+      },
+    })).toThrow(/at most 32/i);
+  });
+
   it('fails closed on non-JSON and non-success authority responses without echoing the key', async () => {
     const deviceKeyPair = generateWorkspaceDeviceKeyPair();
     const config: WorkspaceNodeHeartbeatConfig = {

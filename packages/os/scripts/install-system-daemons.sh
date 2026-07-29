@@ -34,21 +34,28 @@ if ! id -u "$daemon_user" >/dev/null 2>&1; then
 fi
 daemon_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$daemon_user}}"
 consuelo_data_home="${CONSUELO_HOME:-$daemon_home/.consuelo}"
+state_env_file="$consuelo_data_home/.env"
 launch_agent_dir="$daemon_home/Library/LaunchAgents"
 log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
+caddy_label="${CADDY_DAEMON_LABEL:-com.consuelo.caddy}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
 availability_label="${CONSUELO_AVAILABILITY_LABEL:-com.consuelo.availability}"
 workspace_agent_plist="$launch_agent_dir/${workspace_label}.plist"
+caddy_agent_plist="$launch_agent_dir/${caddy_label}.plist"
 portless_agent_plist="$launch_agent_dir/${portless_label}.plist"
 watchdog_agent_plist="$launch_agent_dir/${watchdog_label}.plist"
 availability_agent_plist="$launch_agent_dir/${availability_label}.plist"
 workspace_generated_plist="$script_dir/generated/${workspace_label}.plist"
+caddy_generated_plist="$script_dir/generated/${caddy_label}.plist"
 portless_generated_plist="$script_dir/generated/${portless_label}.plist"
 watchdog_generated_plist="$script_dir/generated/${watchdog_label}.plist"
 availability_generated_plist="$script_dir/generated/${availability_label}.plist"
 cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
+caddyfile="${CONSUELO_CADDYFILE:-$consuelo_data_home/node/caddy/Caddyfile}"
+caddy_ingress_port="${CONSUELO_CADDY_INGRESS_PORT:-46320}"
+portless_backup_dir="$consuelo_data_home/node/portless-backup"
 cloudflared_labels=()
 cloudflared_generated_plists=()
 cloudflared_agent_plists=()
@@ -195,7 +202,7 @@ collect_heartbeat_plists() {
 }
 
 service_labels_csv() {
-  local labels="$workspace_label"
+  local labels="$workspace_label, $caddy_label"
   local label
   if [ "$portless_enabled" = "1" ]; then
     labels="$labels, $portless_label"
@@ -250,6 +257,56 @@ derive_connector_health_url() {
 })()
 '
 }
+
+derive_workspace_host() {
+  local config_file="$consuelo_data_home/config.json"
+  local bun_bin="${BUN_BIN:-}"
+  [ -f "$config_file" ] || return 1
+  if [ -z "$bun_bin" ]; then
+    bun_bin="$(command -v bun || true)"
+  fi
+  [ -n "$bun_bin" ] || return 1
+
+  CONSUELO_WORKSPACE_CONFIG_PATH="$config_file" "$bun_bin" --print '
+(() => {
+  const { readFileSync } = require("node:fs");
+  const config = JSON.parse(readFileSync(process.env.CONSUELO_WORKSPACE_CONFIG_PATH, "utf8"));
+  const host = String(config?.workspace?.host || "").trim().toLowerCase();
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host)) {
+    throw new Error("workspace host is missing or invalid");
+  }
+  return host;
+})()
+'
+}
+
+resolve_caddy_bin() {
+  (
+    load_env_file "$env_file"
+    load_env_file "$state_env_file"
+    managed_caddy_bin="$consuelo_data_home/bin/caddy"
+    if [ -n "${CADDY_BIN:-}" ]; then
+      printf '%s\n' "$CADDY_BIN"
+    elif [ -x "$managed_caddy_bin" ]; then
+      printf '%s\n' "$managed_caddy_bin"
+    else
+      command -v caddy || true
+    fi
+  )
+}
+
+resolve_bun_bin() {
+  (
+    load_env_file "$env_file"
+    load_env_file "$state_env_file"
+    if [ -n "${BUN_BIN:-}" ]; then
+      printf '%s\n' "$BUN_BIN"
+    else
+      command -v bun || true
+    fi
+  )
+}
+
 wait_for_health() {
   local url="$1"
   local attempts="$2"
@@ -266,6 +323,29 @@ wait_for_health() {
       fi
     fi
     sleep "$sleep_seconds"
+  done
+  return 1
+}
+
+wait_for_workspace_health() {
+  wait_for_health "$local_health_url" 20 1
+}
+
+wait_for_caddy_health() {
+  local workspace_host="$1"
+  local url="http://127.0.0.1:${caddy_ingress_port}/health"
+  local attempt
+  for attempt in $(seq 1 20); do
+    if [ "$debug" = "1" ]; then
+      if curl --fail --silent --show-error --max-time 5 --header "Host: $workspace_host" "$url" >/dev/null; then
+        return 0
+      fi
+    else
+      if curl --fail --silent --max-time 5 --header "Host: $workspace_host" "$url" >/dev/null 2>&1; then
+        return 0
+      fi
+    fi
+    sleep 1
   done
   return 1
 }
@@ -289,6 +369,27 @@ remove_disabled_agent() {
   rm -f "$plist"
 }
 
+retire_legacy_portless_services() {
+  local legacy_label legacy_plist timestamp
+  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  for legacy_label in com.consuelo.portless com.consuelo.portless.system; do
+    if [ "$portless_enabled" = "1" ] && [ "$legacy_label" = "$portless_label" ]; then
+      continue
+    fi
+    legacy_plist="$launch_agent_dir/${legacy_label}.plist"
+    if [ "$dry_run" -eq 1 ]; then
+      log "would retire recognized legacy Portless service: $legacy_label"
+      continue
+    fi
+    bootout_agent "$legacy_label"
+    if [ -f "$legacy_plist" ]; then
+      mkdir -p "$portless_backup_dir"
+      mv "$legacy_plist" "$portless_backup_dir/${legacy_label}.${timestamp}.plist"
+      log "retired legacy Portless service to $portless_backup_dir"
+    fi
+  done
+}
+
 rollback_agents() {
   local label
   log "rolling back user LaunchAgents"
@@ -305,6 +406,7 @@ rollback_agents() {
   if [ "$portless_enabled" = "1" ]; then
     bootout_agent "$portless_label"
   fi
+  bootout_agent "$caddy_label"
   bootout_agent "$workspace_label"
 }
 
@@ -312,6 +414,7 @@ print_repair_hint() {
   log "Consuelo OS services were not healthy after LaunchAgent setup."
   log "Log directory: $log_dir"
   log "System log: $log_dir/system.log"
+  log "Caddy log: $log_dir/caddy.log"
   if [ "$portless_enabled" = "1" ]; then
     log "Portless log: $log_dir/portless.log"
   fi
@@ -336,6 +439,7 @@ print_debug_state() {
   [ "$debug" = "1" ] || return 0
   local label
   launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
+  launchctl print "$launch_domain/$caddy_label" | sed -n '1,80p'
   if [ "$portless_enabled" = "1" ]; then
     launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
   fi
@@ -360,7 +464,7 @@ run_generate_daemons() {
 }
 
 run_plutil_lint() {
-  local plists=("$workspace_generated_plist" "$watchdog_generated_plist")
+  local plists=("$workspace_generated_plist" "$caddy_generated_plist" "$watchdog_generated_plist")
   local plist
   if [ "$availability_enabled" = "1" ]; then
     plists+=("$availability_generated_plist")
@@ -396,15 +500,31 @@ collect_cloudflared_plists
 collect_heartbeat_plists
 
 bash -n "$script_dir/start-consuelo-daemon.sh"
+bash -n "$script_dir/start-caddy-daemon.sh"
 bash -n "$script_dir/start-portless-daemon.sh"
 bash -n "$script_dir/workspace-watchdog.sh"
 bash -n "$script_dir/generate-system-daemons.sh"
 bash -n "$script_dir/install-system-daemons.sh"
 run_plutil_lint
 if [ "$dry_run" -eq 1 ]; then
+  retire_legacy_portless_services
   log "Services: $(service_labels_csv)"
   log "dry run complete; generated and linted user LaunchAgent plist files without installing services"
   exit 0
+fi
+
+caddy_bin="$(resolve_caddy_bin)"
+if [ -z "$caddy_bin" ] || [ ! -x "$caddy_bin" ]; then
+  log "managed Caddy binary is missing or not executable"
+  exit 1
+fi
+if [ ! -f "$caddyfile" ]; then
+  log "managed Caddyfile is missing: $caddyfile"
+  exit 1
+fi
+if ! "$caddy_bin" validate --config "$caddyfile" --adapter caddyfile >/dev/null; then
+  log "managed Caddyfile validation failed"
+  exit 1
 fi
 
 [ "$quiet" = "1" ] || log "running Consuelo OS smoke test on port $stage_port"
@@ -419,7 +539,10 @@ kill "$stage_pid" 2>/dev/null || true
 wait "$stage_pid" 2>/dev/null || true
 trap - EXIT
 
+retire_legacy_portless_services
+
 install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
+install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
 if [ "$portless_enabled" = "1" ]; then
   install -m 644 "$portless_generated_plist" "$portless_agent_plist"
 fi
@@ -449,12 +572,14 @@ fi
 if [ "$portless_enabled" = "1" ]; then
   bootout_agent "$portless_label"
 fi
+bootout_agent "$caddy_label"
 bootout_agent "$workspace_label"
 
 if [ "$availability_enabled" = "1" ]; then
   bootstrap_agent "$availability_label" "$availability_agent_plist"
 fi
 bootstrap_agent "$workspace_label" "$workspace_agent_plist"
+bootstrap_agent "$caddy_label" "$caddy_agent_plist"
 if [ "$portless_enabled" = "1" ]; then
   bootstrap_agent "$portless_label" "$portless_agent_plist"
 fi
@@ -466,8 +591,30 @@ for index in "${!heartbeat_labels[@]}"; do
 done
 bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 
-if ! wait_for_health "$local_health_url" 20 1; then
+if ! wait_for_workspace_health; then
   log "local Consuelo OS health failed after LaunchAgent cutover"
+  print_repair_hint
+  rollback_agents
+  exit 1
+fi
+
+workspace_host="$(derive_workspace_host || true)"
+if [ -z "$workspace_host" ]; then
+  log "workspace host could not be derived for the managed Caddy ingress check"
+  print_repair_hint
+  rollback_agents
+  exit 1
+fi
+if ! wait_for_caddy_health "$workspace_host"; then
+  log "managed Caddy ingress health failed after LaunchAgent cutover"
+  print_repair_hint
+  rollback_agents
+  exit 1
+fi
+
+bun_bin="$(resolve_bun_bin)"
+if [ -z "$bun_bin" ] || ! CONSUELO_HOME="$consuelo_data_home" "$bun_bin" "$script_dir/verify-local-agents.ts"; then
+  log "configured local-agent MCP transport verification failed after LaunchAgent cutover"
   print_repair_hint
   rollback_agents
   exit 1

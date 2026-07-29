@@ -36,9 +36,12 @@ CLOUDFLARED_REQUIRED="${CONSUELO_OS_REQUIRE_CLOUDFLARED:-1}"
 CLOUDFLARED_VERSION="${CONSUELO_CLOUDFLARED_VERSION:-2026.6.1}"
 CLOUDFLARED_DARWIN_ARM64_SHA256="f6d4c439c6c782b83264951d327989ce5e23373acc5942b872411601fedb020d"
 CLOUDFLARED_DARWIN_AMD64_SHA256="d7a66b525fe76820da6e5406611b61e48b40de682368ac00454d9158f085be4b"
+CADDY_VERSION="2.11.4"
+CADDY_DARWIN_ARM64_SHA256="9efb0af2d6cf09cfb5053c0e51721b9b3d4956d346234f39368d943d25a3c9a7"
+CADDY_DARWIN_AMD64_SHA256="34bc9e5cceee8d67844ef51da624f5b79e8d070f27236e050c3f0066a2dba534"
 
 MACOS_EXPECTED_SYSTEM_TOOLS=(curl tar mktemp launchctl plutil lsof script)
-INSTALLER_MANAGED_RUNTIME_BINARIES=(bun portless cloudflared)
+INSTALLER_MANAGED_RUNTIME_BINARIES=(bun caddy portless cloudflared)
 PACKAGE_MANAGED_DEPENDENCIES_DESCRIPTION="dependencies installed by bun install from packages/os/package.json"
 OPERATOR_ONLY_TOOLS=(
   wrangler
@@ -66,16 +69,18 @@ CHILD_INSTALL_TRANSCRIPT=""
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
-PORTLESS_ENABLED="${PORTLESS_ENABLED:-auto}"
+PORTLESS_ENABLED="${PORTLESS_ENABLED:-0}"
 PORTLESS_INSTALL="${CONSUELO_OS_INSTALL_PORTLESS:-0}"
 PORTLESS_REQUIRED="${CONSUELO_OS_REQUIRE_PORTLESS:-0}"
 CLOUDFLARED_BIN="${CLOUDFLARED_BIN:-}"
+CADDY_BIN="${CADDY_BIN:-}"
 REPO_DIR=""
 ONBOARDING_STATUS="pending"
 DAEMON_STATUS="pending"
 BUN_STATUS="pending"
 PORTLESS_STATUS="pending"
 CLOUDFLARED_STATUS="pending"
+CADDY_STATUS="pending"
 SOURCE_STATUS="pending"
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
@@ -236,6 +241,8 @@ emit_json_summary() {
   "portlessStatus": $(json_escape "$PORTLESS_STATUS"),
   "cloudflared": $(json_path_or_null "$CLOUDFLARED_BIN"),
   "cloudflaredStatus": $(json_escape "$CLOUDFLARED_STATUS"),
+  "caddy": $(json_path_or_null "$CADDY_BIN"),
+  "caddyStatus": $(json_escape "$CADDY_STATUS"),
   "sourceStatus": $(json_escape "$SOURCE_STATUS"),
   "dependencyStatus": $(json_escape "$DEPENDENCY_STATUS"),
   "onboardingStatus": $(json_escape "$ONBOARDING_STATUS"),
@@ -253,7 +260,8 @@ emit_json_summary() {
     "runtime": {
       "bun": { "classification": "installer_managed", "status": $(json_escape "$BUN_STATUS"), "path": $(json_path_or_null "$BUN_BIN") },
       "portless": { "classification": "optional_installer_managed", "status": $(json_escape "$PORTLESS_STATUS"), "path": $(json_path_or_null "$PORTLESS_BIN") },
-      "cloudflared": { "classification": "installer_managed", "status": $(json_escape "$CLOUDFLARED_STATUS"), "path": $(json_path_or_null "$CLOUDFLARED_BIN") }
+      "cloudflared": { "classification": "installer_managed", "status": $(json_escape "$CLOUDFLARED_STATUS"), "path": $(json_path_or_null "$CLOUDFLARED_BIN") },
+      "caddy": { "classification": "installer_managed", "status": $(json_escape "$CADDY_STATUS"), "path": $(json_path_or_null "$CADDY_BIN") }
     },
     "package": {
       "bunInstall": { "classification": "package_managed", "status": $(json_escape "$DEPENDENCY_STATUS"), "description": $(json_escape "$PACKAGE_MANAGED_DEPENDENCIES_DESCRIPTION") }
@@ -308,6 +316,9 @@ parse_args() {
 
   if [ "$INSTALL_DAEMONS" -eq 1 ] && [ "$SKIP_DAEMONS" -eq 1 ]; then
     fail "choose either --install-daemons or --skip-daemons, not both"
+  fi
+  if [ "$YES" -eq 1 ] && [ "$SKIP_DAEMONS" -eq 0 ]; then
+    INSTALL_DAEMONS=1
   fi
 }
 
@@ -809,16 +820,50 @@ install_cloudflared_runtime() {
   rm -rf "$tmp_dir"
 }
 
+install_caddy_runtime() {
+  local arch asset_arch asset_name target url sha tmp_dir archive_file
+  arch="$(runtime_arch)"
+  asset_arch="$arch"
+  asset_name="caddy_${CADDY_VERSION}_mac_${asset_arch}.tar.gz"
+  target="$RUNTIME_BIN_DIR/caddy"
+  url="${CONSUELO_CADDY_DOWNLOAD_URL:-https://github.com/caddyserver/caddy/releases/download/v${CADDY_VERSION}/${asset_name}}"
+
+  case "$asset_arch" in
+    arm64) sha="${CONSUELO_CADDY_SHA256:-$CADDY_DARWIN_ARM64_SHA256}" ;;
+    amd64) sha="${CONSUELO_CADDY_SHA256:-$CADDY_DARWIN_AMD64_SHA256}" ;;
+    *) fail "unsupported Caddy architecture: $asset_arch" ;;
+  esac
+
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-runtime-caddy.XXXXXX")"
+  archive_file="$tmp_dir/$asset_name"
+  if ! curl_retry "$url" -o "$archive_file"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  verify_sha256 "$archive_file" "$sha"
+  tar -xzf "$archive_file" -C "$tmp_dir"
+  if [ ! -f "$tmp_dir/caddy" ]; then
+    rm -rf "$tmp_dir"
+    fail "Caddy archive did not contain a caddy binary"
+  fi
+  mkdir -p "$(dirname "$target")"
+  mv "$tmp_dir/caddy" "$target"
+  chmod 755 "$target"
+  rm -rf "$tmp_dir"
+}
+
 ensure_portless() {
   local managed_path="$RUNTIME_BIN_DIR/portless"
 
   case "${PORTLESS_ENABLED:-auto}" in
     0|false|no)
-      PORTLESS_BIN=""
-      PORTLESS_ENABLED="0"
-      PORTLESS_STATUS="skipped"
-      log "portless disabled; Consuelo OS will use http://127.0.0.1:46321"
-      return 0
+      if [ "$PORTLESS_REQUIRED" != "1" ] && [ "$PORTLESS_INSTALL" != "1" ]; then
+        PORTLESS_BIN=""
+        PORTLESS_ENABLED="0"
+        PORTLESS_STATUS="skipped"
+        log "portless disabled; Consuelo will use http://127.0.0.1:46321"
+        return 0
+      fi
       ;;
   esac
 
@@ -860,7 +905,7 @@ ensure_portless() {
       if [ ! -x "$PORTLESS_BIN" ]; then
         PORTLESS_BIN=""
         PORTLESS_STATUS="optional_unavailable"
-        log "optional portless install finished without an executable; Consuelo OS will use http://127.0.0.1:46321"
+        log "optional portless install finished without an executable; Consuelo will use http://127.0.0.1:46321"
         return 0
       fi
       PORTLESS_ENABLED="1"
@@ -870,12 +915,12 @@ ensure_portless() {
     fi
     PORTLESS_BIN=""
     PORTLESS_STATUS="optional_unavailable"
-    log "optional portless install unavailable; Consuelo OS will use http://127.0.0.1:46321"
+    log "optional portless install unavailable; Consuelo will use http://127.0.0.1:46321"
     return 0
   fi
 
   PORTLESS_STATUS="optional_missing"
-  log "portless is not installed; Consuelo OS will use http://127.0.0.1:46321"
+  log "portless is not installed; Consuelo will use http://127.0.0.1:46321"
 }
 
 ensure_cloudflared() {
@@ -904,6 +949,42 @@ ensure_cloudflared() {
   fi
   CLOUDFLARED_STATUS="installed"
   log "cloudflared installed: $CLOUDFLARED_BIN"
+}
+
+caddy_version_matches() {
+  local candidate="$1"
+  [ -x "$candidate" ] || return 1
+  case "$("$candidate" version 2>/dev/null || true)" in
+    "v${CADDY_VERSION}"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+ensure_caddy() {
+  local managed_path="$RUNTIME_BIN_DIR/caddy"
+  local candidate=""
+
+  candidate="$(find_runtime_binary "${CADDY_BIN:-}" caddy "$managed_path" || true)"
+  if [ -n "$candidate" ] && caddy_version_matches "$candidate"; then
+    CADDY_BIN="$candidate"
+    CADDY_STATUS="present"
+    log "Caddy found: $CADDY_BIN"
+    return 0
+  fi
+
+  CADDY_BIN="$managed_path"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    CADDY_STATUS="would_install"
+    log "dry-run: pinned Caddy is missing and would be installed to $CADDY_BIN"
+    return 0
+  fi
+
+  run_with_loading_dots "Installing Caddy" install_caddy_runtime
+  if ! caddy_version_matches "$CADDY_BIN"; then
+    fail "Caddy install finished, but $CADDY_BIN is not version v$CADDY_VERSION."
+  fi
+  CADDY_STATUS="installed"
+  log "Caddy installed: $CADDY_BIN"
 }
 
 persist_env_value() {
@@ -961,7 +1042,8 @@ persist_runtime_paths() {
     persist_env_value "$env_file" PORTLESS_ENABLED "0"
   fi
   persist_env_value "$env_file" CLOUDFLARED_BIN "$CLOUDFLARED_BIN"
-  export BUN_BIN PORTLESS_BIN PORTLESS_ENABLED CLOUDFLARED_BIN
+  persist_env_value "$env_file" CADDY_BIN "$CADDY_BIN"
+  export BUN_BIN CADDY_BIN PORTLESS_BIN PORTLESS_ENABLED CLOUDFLARED_BIN
 }
 
 current_repo_dir() {
@@ -1396,6 +1478,7 @@ main() {
   prompt_dependency_setup
   ensure_bun
   ensure_portless
+  ensure_caddy
   ensure_cloudflared
   persist_runtime_paths
   resolve_source

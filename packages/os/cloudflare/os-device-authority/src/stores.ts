@@ -33,6 +33,13 @@ const isWorkspaceNode = (value: unknown): value is WorkspaceNode =>
   typeof (value as { nodeId?: unknown }).nodeId === 'string' &&
   typeof (value as { workspaceHost?: unknown }).workspaceHost === 'string';
 
+export const WORKSPACE_NODE_NONCE_LIMIT = 256;
+
+type WorkspaceNodeNonceClaim = {
+  nonce: string;
+  expiresAt: number;
+};
+
 export class DurableStore implements Store {
   constructor(private storage: StorageLike) {}
 
@@ -199,9 +206,7 @@ export class DurableStore implements Store {
   }
   async byMcpOAuthRefreshToken(tokenHash: string) {
     try {
-      return await this.storage.get<McpOAuthRefreshToken>(
-        `mrt:${tokenHash}`,
-      );
+      return await this.storage.get<McpOAuthRefreshToken>(`mrt:${tokenHash}`);
     } catch {
       throw new Error('mcp oauth refresh token read failed');
     }
@@ -254,22 +259,25 @@ export class DurableStore implements Store {
           ),
         );
         return memberships.filter(
-          (membership): membership is WorkspaceMembership => Boolean(membership),
+          (membership): membership is WorkspaceMembership =>
+            Boolean(membership),
         );
       }
       const workspace = await this.byAccountWorkspace(accountId);
       if (!workspace) return [];
-      return [{
-        accountId,
-        workspaceId:
-          workspace.workspaceId ??
-          `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
-        workspaceSlug: workspace.workspaceSlug,
-        workspaceHost: workspace.workspaceHost,
-        status: 'active' as const,
-        createdAt: workspace.updatedAt,
-        updatedAt: workspace.updatedAt,
-      }];
+      return [
+        {
+          accountId,
+          workspaceId:
+            workspace.workspaceId ??
+            `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
+          workspaceSlug: workspace.workspaceSlug,
+          workspaceHost: workspace.workspaceHost,
+          status: 'active' as const,
+          createdAt: workspace.updatedAt,
+          updatedAt: workspace.updatedAt,
+        },
+      ];
     } catch {
       throw new Error('workspace membership list failed');
     }
@@ -356,9 +364,13 @@ export class DurableStore implements Store {
   }
   async putWorkspaceNode(node: WorkspaceNode) {
     try {
-      const boundAccountId = await this.storage.get<string>(`wni:${node.nodeId}`);
+      const boundAccountId = await this.storage.get<string>(
+        `wni:${node.nodeId}`,
+      );
       if (boundAccountId && boundAccountId !== node.accountId) {
-        throw new Error('workspace node ID is already bound to another account');
+        throw new Error(
+          'workspace node ID is already bound to another account',
+        );
       }
       const nodeIds =
         (await this.storage.get<string[]>(`wnl:${node.accountId}`)) ?? [];
@@ -370,7 +382,10 @@ export class DurableStore implements Store {
       );
       await this.storage.put(`wni:${node.nodeId}`, node.accountId);
       if (!nodeIds.includes(node.nodeId)) {
-        await this.storage.put(`wnl:${node.accountId}`, [...nodeIds, node.nodeId]);
+        await this.storage.put(`wnl:${node.accountId}`, [
+          ...nodeIds,
+          node.nodeId,
+        ]);
       }
       if (!hostNodeIds.includes(node.nodeId)) {
         await this.storage.put(`wnh:${node.workspaceHost}`, [
@@ -382,6 +397,93 @@ export class DurableStore implements Store {
       throw new Error('workspace node write failed');
     }
   }
+  async delWorkspaceNode(accountId: string, nodeId: string) {
+    const remove = async (storage: StorageLike) => {
+      const boundAccountId = await storage.get<string>(`wni:${nodeId}`);
+      if (boundAccountId && boundAccountId !== accountId) {
+        throw new Error('workspace node ID is bound to another account');
+      }
+      const node = await storage.get<WorkspaceNode>(
+        `wn:${accountId}:${nodeId}`,
+      );
+      const nodeIds = (await storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+      const hostNodeIds = node
+        ? ((await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [])
+        : [];
+      await storage.delete(`wn:${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) {
+        await storage.delete(`wni:${nodeId}`);
+      }
+      await storage.put(
+        `wnl:${accountId}`,
+        nodeIds.filter((candidate) => candidate !== nodeId),
+      );
+      if (node) {
+        await storage.put(
+          `wnh:${node.workspaceHost}`,
+          hostNodeIds.filter((candidate) => candidate !== nodeId),
+        );
+      }
+    };
+    try {
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => remove(transaction));
+      } else {
+        await remove(this.storage);
+      }
+    } catch {
+      throw new Error('workspace node delete failed');
+    }
+  }
+  async delWorkspaceNodeIfMatch(input: {
+    accountId: string;
+    nodeId: string;
+    updatedAt: number;
+    devicePublicKeyThumbprint: string;
+  }): Promise<boolean> {
+    try {
+      let deleted = false;
+      const remove = async (storage: StorageLike) => {
+        try {
+          const node = await storage.get<WorkspaceNode>(
+            `wn:${input.accountId}:${input.nodeId}`,
+          );
+          if (
+            !node ||
+            node.updatedAt !== input.updatedAt ||
+            node.devicePublicKeyThumbprint !== input.devicePublicKeyThumbprint
+          )
+            return;
+          const nodeIds =
+            (await storage.get<string[]>(`wnl:${input.accountId}`)) ?? [];
+          const hostNodeIds =
+            (await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [];
+          await storage.delete(`wn:${input.accountId}:${input.nodeId}`);
+          await storage.delete(`wni:${input.nodeId}`);
+          await storage.put(
+            `wnl:${input.accountId}`,
+            nodeIds.filter((candidate) => candidate !== input.nodeId),
+          );
+          await storage.put(
+            `wnh:${node.workspaceHost}`,
+            hostNodeIds.filter((candidate) => candidate !== input.nodeId),
+          );
+          deleted = true;
+        } catch {
+          throw new Error('workspace node conditional delete failed');
+        }
+      };
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => remove(transaction));
+      } else {
+        await remove(this.storage);
+      }
+      return deleted;
+    } catch {
+      throw new Error('workspace node conditional delete failed');
+    }
+  }
+
   async byWorkspaceNode(accountId: string, nodeId: string) {
     try {
       const node = await this.storage.get<WorkspaceNode>(
@@ -399,8 +501,9 @@ export class DurableStore implements Store {
         ? await this.byWorkspaceNode(accountId, nodeId)
         : undefined;
       if (indexed) return indexed;
-      const matches = (await this.legacyWorkspaceNodes())
-        .filter((node) => node.nodeId === nodeId);
+      const matches = (await this.legacyWorkspaceNodes()).filter(
+        (node) => node.nodeId === nodeId,
+      );
       if (matches.length === 0) return undefined;
       if (matches.length > 1) {
         throw new Error('workspace node ID is bound to multiple accounts');
@@ -413,7 +516,9 @@ export class DurableStore implements Store {
   }
   async listWorkspaceNodes(accountId: string) {
     try {
-      const indexedNodeIds = await this.storage.get<string[]>(`wnl:${accountId}`);
+      const indexedNodeIds = await this.storage.get<string[]>(
+        `wnl:${accountId}`,
+      );
       if (indexedNodeIds === undefined) {
         const legacyNodes = await this.legacyWorkspaceNodes(`wn:${accountId}:`);
         return this.backfillWorkspaceNodeIndexes(legacyNodes);
@@ -429,10 +534,13 @@ export class DurableStore implements Store {
   }
   async listWorkspaceNodesByHost(workspaceHost: string) {
     try {
-      const indexedNodeIds = await this.storage.get<string[]>(`wnh:${workspaceHost}`);
+      const indexedNodeIds = await this.storage.get<string[]>(
+        `wnh:${workspaceHost}`,
+      );
       if (indexedNodeIds === undefined) {
-        const legacyNodes = (await this.legacyWorkspaceNodes())
-          .filter((node) => node.workspaceHost === workspaceHost);
+        const legacyNodes = (await this.legacyWorkspaceNodes()).filter(
+          (node) => node.workspaceHost === workspaceHost,
+        );
         return this.backfillWorkspaceNodeIndexes(legacyNodes);
       }
       const nodeIds = indexedNodeIds;
@@ -457,7 +565,20 @@ export class DurableStore implements Store {
       const key = `wnn:${nodeId}:${nonce}`;
       const existing = await storage.get<number>(key);
       if (existing && existing > nowMs) return false;
+      const indexKey = `wnnl:${nodeId}`;
+      const indexed =
+        (await storage.get<WorkspaceNodeNonceClaim[]>(indexKey)) ?? [];
+      const active: WorkspaceNodeNonceClaim[] = [];
+      for (const entry of indexed) {
+        if (entry.expiresAt <= nowMs) {
+          await storage.delete(`wnn:${nodeId}:${entry.nonce}`);
+        } else if (entry.nonce !== nonce) {
+          active.push(entry);
+        }
+      }
+      if (active.length >= WORKSPACE_NODE_NONCE_LIMIT) return false;
       await storage.put(key, expiresAt);
+      await storage.put(indexKey, [...active, { nonce, expiresAt }]);
       return true;
     };
     try {
@@ -477,7 +598,9 @@ export class DurableStore implements Store {
   }
   async byNodeBootstrapCredential(tokenHash: string) {
     try {
-      return await this.storage.get<NodeBootstrapCredential>(`nbc:${tokenHash}`);
+      return await this.storage.get<NodeBootstrapCredential>(
+        `nbc:${tokenHash}`,
+      );
     } catch {
       throw new Error('node bootstrap credential read failed');
     }
@@ -498,7 +621,9 @@ export class DurableStore implements Store {
   }
   async byWorkspaceAgentStatus(workspaceHost: string) {
     try {
-      return await this.storage.get<WorkspaceAgentStatus>(`was:${workspaceHost}`);
+      return await this.storage.get<WorkspaceAgentStatus>(
+        `was:${workspaceHost}`,
+      );
     } catch {
       throw new Error('workspace agent status read failed');
     }
@@ -523,7 +648,9 @@ export function createMemoryDeviceGrantStore(): Store {
   const workspaceNodeNonces = new Map<string, number>();
   const nodeBootstrapCredentials = new Map<string, NodeBootstrapCredential>();
   const workspaceAgentStatuses = new Map<string, WorkspaceAgentStatus>();
-  const cloneWorkspaceAgentStatus = (status: WorkspaceAgentStatus): WorkspaceAgentStatus => ({
+  const cloneWorkspaceAgentStatus = (
+    status: WorkspaceAgentStatus,
+  ): WorkspaceAgentStatus => ({
     ...status,
     nodes: Object.fromEntries(
       Object.entries(status.nodes).map(([nodeId, node]) => [
@@ -644,17 +771,23 @@ export function createMemoryDeviceGrantStore(): Store {
         .map((membership) => ({ ...membership }));
       if (explicit.length > 0) return Promise.resolve(explicit);
       const workspace = accountWorkspaces.get(accountId);
-      return Promise.resolve(workspace ? [{
-        accountId,
-        workspaceId:
-          workspace.workspaceId ??
-          `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
-        workspaceSlug: workspace.workspaceSlug,
-        workspaceHost: workspace.workspaceHost,
-        status: 'active' as const,
-        createdAt: workspace.updatedAt,
-        updatedAt: workspace.updatedAt,
-      }] : []);
+      return Promise.resolve(
+        workspace
+          ? [
+              {
+                accountId,
+                workspaceId:
+                  workspace.workspaceId ??
+                  `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
+                workspaceSlug: workspace.workspaceSlug,
+                workspaceHost: workspace.workspaceHost,
+                status: 'active' as const,
+                createdAt: workspace.updatedAt,
+                updatedAt: workspace.updatedAt,
+              },
+            ]
+          : [],
+      );
     },
     putAuthoritySession(session) {
       authoritySessions.set(session.tokenHash, { ...session });
@@ -710,6 +843,33 @@ export function createMemoryDeviceGrantStore(): Store {
       );
       return Promise.resolve();
     },
+    delWorkspaceNode(accountId, nodeId) {
+      const boundAccountId = workspaceNodeAccounts.get(nodeId);
+      if (boundAccountId && boundAccountId !== accountId) {
+        return Promise.reject(
+          new Error('workspace node ID is bound to another account'),
+        );
+      }
+      workspaceNodes.delete(`${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) workspaceNodeAccounts.delete(nodeId);
+      return Promise.resolve();
+    },
+    delWorkspaceNodeIfMatch(input) {
+      const key = `${input.accountId}:${input.nodeId}`;
+      const node = workspaceNodes.get(key);
+      if (
+        !node ||
+        node.updatedAt !== input.updatedAt ||
+        node.devicePublicKeyThumbprint !== input.devicePublicKeyThumbprint
+      )
+        return Promise.resolve(false);
+      workspaceNodes.delete(key);
+      if (workspaceNodeAccounts.get(input.nodeId) === input.accountId) {
+        workspaceNodeAccounts.delete(input.nodeId);
+      }
+      return Promise.resolve(true);
+    },
+
     byWorkspaceNode(accountId, nodeId) {
       const node = workspaceNodes.get(`${accountId}:${nodeId}`);
       return Promise.resolve(node ? cloneWorkspaceNode(node) : undefined);
@@ -739,6 +899,16 @@ export function createMemoryDeviceGrantStore(): Store {
       const key = `${nodeId}:${nonce}`;
       const existing = workspaceNodeNonces.get(key);
       if (existing && existing > nowMs) return Promise.resolve(false);
+      for (const [storedKey, storedExpiry] of workspaceNodeNonces) {
+        if (storedExpiry <= nowMs) workspaceNodeNonces.delete(storedKey);
+      }
+      const nodePrefix = `${nodeId}:`;
+      const activeClaims = [...workspaceNodeNonces.keys()].filter((storedKey) =>
+        storedKey.startsWith(nodePrefix),
+      ).length;
+      if (activeClaims >= WORKSPACE_NODE_NONCE_LIMIT) {
+        return Promise.resolve(false);
+      }
       workspaceNodeNonces.set(key, expiresAt);
       return Promise.resolve(true);
     },
@@ -755,12 +925,17 @@ export function createMemoryDeviceGrantStore(): Store {
       return Promise.resolve();
     },
     putWorkspaceAgentStatus(status) {
-      workspaceAgentStatuses.set(status.workspaceHost, cloneWorkspaceAgentStatus(status));
+      workspaceAgentStatuses.set(
+        status.workspaceHost,
+        cloneWorkspaceAgentStatus(status),
+      );
       return Promise.resolve();
     },
     byWorkspaceAgentStatus(workspaceHost) {
       const status = workspaceAgentStatuses.get(workspaceHost);
-      return Promise.resolve(status ? cloneWorkspaceAgentStatus(status) : undefined);
+      return Promise.resolve(
+        status ? cloneWorkspaceAgentStatus(status) : undefined,
+      );
     },
   };
 }

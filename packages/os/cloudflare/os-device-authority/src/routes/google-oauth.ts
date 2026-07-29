@@ -222,6 +222,7 @@ async function handleGoogleOAuthRequest(
       if (existingWorkspace) {
         assignGrantWorkspace({
           grant,
+          workspaceId: existingWorkspace.workspaceId,
           workspaceSlug: existingWorkspace.workspaceSlug,
           workspaceHost: existingWorkspace.workspaceHost,
         });

@@ -11,8 +11,7 @@ on:
       - 'package.json'
 
 permissions:
-  contents: write
-  deployments: write
+  contents: read
 
 concurrency:
   group: consuelo-os-release-state
@@ -22,8 +21,15 @@ env:
   RELEASE_STATE_PATH: .release/release-state.json
 
 jobs:
+  distribution-gate:
+    name: Validate distribution matrix
+    uses: ./.github/workflows/consuelo-os-distribution-environments.yaml
+    permissions:
+      contents: read
+
   plan:
     name: Plan dev publication
+    needs: distribution-gate
     runs-on: ubuntu-latest
     environment: consuelo / production
     outputs:
@@ -134,6 +140,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: microsoft/setup-msbuild@v2
+        if: matrix.platform == 'windows'
+      - name: Build Windows service host
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj /p:Configuration=Release /p:Platform=x64 /m
+          $serviceHost = 'packages/os/native/windows-service/bin/Release/Consuelo.Windows.Service.exe'
+          if (-not (Test-Path -LiteralPath $serviceHost -PathType Leaf)) {
+            throw "Windows service build did not produce $serviceHost"
+          }
       - name: Install dependencies
         working-directory: packages/os
         shell: bash
@@ -164,11 +181,15 @@ jobs:
   publish:
     name: Publish immutable release and dev pointer
     needs:
+      - distribution-gate
       - plan
       - build
     if: needs.plan.outputs.changed == 'true'
     runs-on: ubuntu-latest
     environment: consuelo / production
+    permissions:
+      contents: write
+      deployments: write
     steps:
       - uses: actions/checkout@v4
         with:

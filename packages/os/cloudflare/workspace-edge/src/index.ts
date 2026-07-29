@@ -65,7 +65,9 @@ const reportWorkspaceEdgeError = (input: {
   });
 };
 
-function authorityStub(env: WorkspaceEdgeEnvironment): AuthorityStub | undefined {
+function authorityStub(
+  env: WorkspaceEdgeEnvironment,
+): AuthorityStub | undefined {
   const namespace = env.OS_DEVICE_AUTHORITY;
   return namespace?.get(namespace.idFromName('global'));
 }
@@ -93,11 +95,15 @@ export function createWorkspaceEdgeHandler(
     registry,
     internalSigningSecret: env.CONSUELO_EDGE_SIGNING_SECRET,
     siteSnapshots: { r2: env.SITES_SNAPSHOTS },
-    ...(options.fetchUpstream
-      ? { fetchUpstream: options.fetchUpstream }
-      : {}),
+    ...(options.fetchUpstream ? { fetchUpstream: options.fetchUpstream } : {}),
     ...(options.now ? { now: options.now } : {}),
     ...(options.createNonce ? { createNonce: options.createNonce } : {}),
+    reportError: ({ request, error }) =>
+      reportWorkspaceEdgeError({
+        logger: env.WORKSPACE_EDGE_LOGGER,
+        request,
+        error,
+      }),
     authorizeWorkspaceSession: async ({
       request,
       workspaceId,

@@ -329,6 +329,12 @@ describe('runtime bundle contract', () => {
       'source-only',
     );
     expect(
+      classifyRuntimeBundlePath('scripts/lib/distribution/runtime-bundle.ts'),
+    ).toBe('runtime');
+    expect(classifyRuntimeBundlePath('assets/consuelo-mark.png')).toBe(
+      'runtime',
+    );
+    expect(
       classifyRuntimeBundlePath('manifests/schemas/tool-manifest.schema.json'),
     ).toBe('source-only');
     expect(
@@ -730,6 +736,14 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'scripts/lib/distribution/runtime-bundle.ts',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'assets/consuelo-mark.png',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
           path: 'tools/deployment-provider/facade.ts',
           role: 'customer-provider',
         }),
@@ -786,6 +800,55 @@ describe('runtime bundle contract', () => {
     expect(first.excludedCounts['operator-only']).toBeGreaterThan(0);
     expect(first.excludedCounts['test-only']).toBeGreaterThan(0);
     const archive = inspectRuntimeBundleArchive(first.archiveBytes);
+    const runtimeRoot = mkdtempSync(
+      join(tmpdir(), 'consuelo-runtime-bundle-smoke-'),
+    );
+    fixtureRoots.push(runtimeRoot);
+    for (const entry of archive.entries) {
+      const target = join(runtimeRoot, entry.path);
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, entry.bytes);
+      chmodSync(target, entry.mode);
+    }
+    const lifecycleStatus = spawnSync(
+      'bun',
+      [
+        join(runtimeRoot, 'scripts/lifecycle.ts'),
+        'status',
+        '--home',
+        join(runtimeRoot, 'home'),
+        '--json',
+      ],
+      { encoding: 'utf8' },
+    );
+    expect(lifecycleStatus.status, lifecycleStatus.stderr).toBe(0);
+    expect(JSON.parse(lifecycleStatus.stdout)).toMatchObject({
+      command: 'status',
+      ok: true,
+      result: { installState: 'no-install' },
+    });
+    const installedHome = join(runtimeRoot, 'installed-home');
+    const cloudInstall = spawnSync(
+      'bun',
+      [
+        join(runtimeRoot, 'scripts/install.ts'),
+        '--yes',
+        '--quiet',
+        '--skip-daemons',
+        '--mode',
+        'cloud',
+        '--home',
+        installedHome,
+        '--workspace-url',
+        'fixture.consuelohq.com',
+        '--workspace-slug',
+        'fixture',
+      ],
+      { encoding: 'utf8' },
+    );
+    expect(cloudInstall.status, cloudInstall.stderr).toBe(0);
+    expect(existsSync(join(installedHome, 'config.json'))).toBe(true);
+    expect(existsSync(join(installedHome, 'operator'))).toBe(false);
     const bundledSteering = archive.entries.find(
       (entry) => entry.path === 'steering/system_prompt.md',
     );
@@ -799,5 +862,5 @@ describe('runtime bundle contract', () => {
       'scripts/build-runtime-bundle.ts',
     );
     expect(() => verifyRuntimeBundleArchive(first.archiveBytes)).not.toThrow();
-  });
+  }, 120_000);
 });
