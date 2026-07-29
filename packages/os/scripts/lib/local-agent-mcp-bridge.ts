@@ -27,6 +27,19 @@ function requestId(body: string): unknown {
   }
 }
 
+function isJsonRpcNotification(body: string): boolean {
+  try {
+    const parsed = JSON.parse(body) as unknown;
+    return (
+      isJsonObject(parsed) &&
+      typeof parsed.method === 'string' &&
+      !Object.hasOwn(parsed, 'id')
+    );
+  } catch {
+    return false;
+  }
+}
+
 function unavailableResponse(body: string, retryable = true): JsonObject {
   return {
     jsonrpc: '2.0',
@@ -139,6 +152,7 @@ export function createLocalAgentMcpBridge(input: {
 
   return {
     async forward(body: string): Promise<JsonObject[]> {
+      const notification = isJsonRpcNotification(body);
       try {
         const response = await fetchImpl(localUrl, {
           method: 'POST',
@@ -154,6 +168,7 @@ export function createLocalAgentMcpBridge(input: {
         });
         const nextSessionId = response.headers.get('mcp-session-id');
         if (nextSessionId) mcpSessionId = nextSessionId;
+        if (notification) return [];
         if (response.status === 204) return [];
         if (!response.ok) {
           const retryable =
@@ -170,7 +185,7 @@ export function createLocalAgentMcpBridge(input: {
         const parsed = JSON.parse(responseBody) as unknown;
         return isJsonObject(parsed) ? [parsed] : [unavailableResponse(body)];
       } catch {
-        return [unavailableResponse(body)];
+        return notification ? [] : [unavailableResponse(body)];
       }
     },
   };
