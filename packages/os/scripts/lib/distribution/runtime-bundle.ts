@@ -249,6 +249,9 @@ const EXCLUDED_ROLES = new Set<RuntimeBundleContentRole>([
   'test-only',
 ]);
 
+const WINDOWS_SERVICE_HOST_PATH =
+  'native/windows-service/bin/Release/Consuelo.Windows.Service.exe';
+
 const TEXT_EXTENSIONS = new Set([
   '.cjs',
   '.css',
@@ -342,6 +345,12 @@ export function classifyRuntimeBundlePath(
   if (filePath.startsWith('hooks/')) return 'runtime';
   if (filePath.startsWith('native/macos/.build/')) return 'source-only';
   if (filePath.startsWith('native/windows-service/obj/')) {
+    return 'source-only';
+  }
+  if (
+    filePath.startsWith('native/windows-service/bin/') &&
+    filePath !== WINDOWS_SERVICE_HOST_PATH
+  ) {
     return 'source-only';
   }
   if (

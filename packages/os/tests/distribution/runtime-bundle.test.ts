@@ -25,6 +25,7 @@ import {
   inspectRuntimeBundleArchive,
   verifyRuntimeBundleArchive,
   type RuntimeBundleBuildOptions,
+  type RuntimeBundleFile,
 } from '../../scripts/lib/distribution/runtime-bundle';
 
 const fixtureRoots: string[] = [];
@@ -109,6 +110,25 @@ const canonicalizeBundleValue = (value: unknown): unknown => {
 
 const bundleIdForFixtureManifest = (manifest: unknown): string => {
   const canonicalJson = JSON.stringify(canonicalizeBundleValue(manifest));
+  return `sha256:${createHash('sha256').update(canonicalJson).digest('hex')}`;
+};
+
+const policyV1ReleaseFingerprintForFixtureFiles = (
+  files: RuntimeBundleFile[],
+): string => {
+  const canonicalJson = JSON.stringify(
+    canonicalizeBundleValue({
+      files: files.map(({ digest, mode, path, role, size }) => ({
+        digest,
+        mode,
+        path,
+        role,
+        size,
+      })),
+      policyVersion: 1,
+      schemaVersion: 1,
+    }),
+  );
   return `sha256:${createHash('sha256').update(canonicalJson).digest('hex')}`;
 };
 
@@ -413,7 +433,7 @@ describe('runtime bundle contract', () => {
     ).toBe(false);
   });
 
-  it('should exclude Windows service intermediates when discovering the default runtime bundle', async () => {
+  it('should preserve policy v1 when Windows builds the host', async () => {
     const root = createFixture({
       'native/windows-service/Program.cs': 'public static class Program {}\n',
       'native/windows-service/Consuelo.Windows.Service.csproj':
@@ -421,30 +441,80 @@ describe('runtime bundle contract', () => {
     });
     writeFixtureFile(
       root,
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
+      'host-specific generated binary\n',
+    );
+    const planned = await computeReleaseFingerprint({ sourceRoot: root });
+
+    writeFixtureFile(
+      root,
       'native/windows-service/obj/x64/Release/Consuelo.Windows.Service.csproj.FileListAbsolute.txt',
-      `${root}/native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe\n`,
+      `${root}/native/windows-service/bin/Release/Consuelo.Windows.Service.exe\n`,
     );
     writeFixtureFile(
       root,
-      'native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe',
-      'host-specific generated binary\n',
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.pdb',
+      'host-specific debug symbols\n',
     );
 
-    const result = await computeReleaseFingerprint({ sourceRoot: root });
-    const paths = result.files.map((file) => file.path);
+    const built = await buildRuntimeBundle(
+      buildOptions(root, { architecture: 'x64', platform: 'windows' }),
+    );
+    const paths = built.manifest.files.map((file) => file.path);
 
     expect(paths).toContain('native/windows-service/Program.cs');
     expect(paths).toContain(
       'native/windows-service/Consuelo.Windows.Service.csproj',
     );
     expect(paths).toContain(
-      'native/windows-service/bin/x64/Release/Consuelo.Windows.Service.exe',
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
     );
     expect(
       paths.some((filePath) =>
         filePath.startsWith('native/windows-service/obj/'),
       ),
     ).toBe(false);
+    expect(paths).not.toContain(
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.pdb',
+    );
+    expect(built.manifest.releaseFingerprint).toBe(planned.releaseFingerprint);
+    expect(built.manifest.releaseFingerprint).toBe(
+      policyV1ReleaseFingerprintForFixtureFiles(built.manifest.files),
+    );
+    expect(() => verifyRuntimeBundleArchive(built.archiveBytes)).not.toThrow();
+
+    const siblingBundles = await Promise.all([
+      buildRuntimeBundle(
+        buildOptions(root, { architecture: 'arm64', platform: 'darwin' }),
+      ),
+      buildRuntimeBundle(
+        buildOptions(root, { architecture: 'x64', platform: 'linux' }),
+      ),
+    ]);
+    expect(
+      siblingBundles.map(({ manifest }) => manifest.releaseFingerprint),
+    ).toEqual([planned.releaseFingerprint, planned.releaseFingerprint]);
+
+    writeFixtureFile(
+      root,
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
+      'different host-specific generated binary\n',
+    );
+    const rebuilt = await buildRuntimeBundle(
+      buildOptions(root, { architecture: 'x64', platform: 'windows' }),
+    );
+
+    expect(rebuilt.manifest.releaseFingerprint).not.toBe(
+      built.manifest.releaseFingerprint,
+    );
+    expect(rebuilt.manifest.releaseFingerprint).toBe(
+      policyV1ReleaseFingerprintForFixtureFiles(rebuilt.manifest.files),
+    );
+    expect(rebuilt.manifest.bundleId).not.toBe(built.manifest.bundleId);
+    expect(rebuilt.archiveDigest).not.toBe(built.archiveDigest);
+    expect(() =>
+      verifyRuntimeBundleArchive(rebuilt.archiveBytes),
+    ).not.toThrow();
   });
 
   it('classifies all customer deployment adapters separately from operator infrastructure', () => {
