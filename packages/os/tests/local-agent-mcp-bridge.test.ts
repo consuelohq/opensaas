@@ -115,4 +115,35 @@ describe('local agent MCP bridge', () => {
     }]);
     expect(JSON.stringify(responses)).not.toContain('local-secret');
   });
+
+  it('should suppress successful and failed responses to MCP notifications', async () => {
+    const notification = JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'notifications/initialized',
+      params: {},
+    });
+    const home = createCredentialHome();
+    const successful = createLocalAgentMcpBridge({
+      home,
+      agentId: 'codex',
+      fetchImpl: async () =>
+        Response.json({ jsonrpc: '2.0', id: null, result: {} }),
+    });
+    const rejected = createLocalAgentMcpBridge({
+      home,
+      agentId: 'codex',
+      fetchImpl: async () => new Response('unavailable', { status: 503 }),
+    });
+    const unreachable = createLocalAgentMcpBridge({
+      home,
+      agentId: 'codex',
+      fetchImpl: async () => {
+        throw new Error('connection refused');
+      },
+    });
+
+    await expect(successful.forward(notification)).resolves.toEqual([]);
+    await expect(rejected.forward(notification)).resolves.toEqual([]);
+    await expect(unreachable.forward(notification)).resolves.toEqual([]);
+  });
 });
