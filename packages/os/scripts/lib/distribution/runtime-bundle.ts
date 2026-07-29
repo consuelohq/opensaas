@@ -341,6 +341,9 @@ export function classifyRuntimeBundlePath(
     return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';
   if (filePath.startsWith('native/macos/.build/')) return 'source-only';
+  if (filePath.startsWith('native/windows-service/obj/')) {
+    return 'source-only';
+  }
   if (
     filePath.startsWith('native/windows-service/') ||
     filePath.startsWith('native/macos/')
