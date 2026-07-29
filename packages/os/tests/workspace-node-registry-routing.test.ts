@@ -46,34 +46,39 @@ const node = (input: {
   publicKeyJwk: string;
   publicKeyThumbprint: string;
   lastSeenAt?: number;
-}): WorkspaceNode => ({
-  accountId,
-  workspaceId,
-  workspaceSlug,
-  workspaceHost,
-  nodeId: input.nodeId,
-  nodeName: input.displayName,
-  displayName: input.displayName,
-  role: input.role,
-  platform: 'darwin',
-  architecture: 'arm64',
-  channel: 'stable',
-  connectorId: input.connectorId,
-  capabilities: ['mcp', 'tools'],
-  connectorStatus: 'connected',
-  state: 'active',
-  devicePublicKeyJwk: input.publicKeyJwk,
-  devicePublicKeyThumbprint: input.publicKeyThumbprint,
-  createdAt: baseNow,
-  updatedAt: baseNow,
-  lastSeenAt: input.lastSeenAt ?? baseNow,
-} as WorkspaceNode);
+}): WorkspaceNode =>
+  ({
+    accountId,
+    workspaceId,
+    workspaceSlug,
+    workspaceHost,
+    nodeId: input.nodeId,
+    nodeName: input.displayName,
+    displayName: input.displayName,
+    role: input.role,
+    platform: 'darwin',
+    architecture: 'arm64',
+    channel: 'stable',
+    connectorId: input.connectorId,
+    capabilities: ['mcp', 'tools'],
+    connectorStatus: 'connected',
+    state: 'active',
+    devicePublicKeyJwk: input.publicKeyJwk,
+    devicePublicKeyThumbprint: input.publicKeyThumbprint,
+    createdAt: baseNow,
+    updatedAt: baseNow,
+    lastSeenAt: input.lastSeenAt ?? baseNow,
+  }) as WorkspaceNode;
 
-async function authorizeWorkspace(store: ReturnType<typeof createMemoryDeviceGrantStore>, token: string, input?: {
-  account?: string;
-  host?: string;
-  scopes?: string[];
-}): Promise<void> {
+async function authorizeWorkspace(
+  store: ReturnType<typeof createMemoryDeviceGrantStore>,
+  token: string,
+  input?: {
+    account?: string;
+    host?: string;
+    scopes?: string[];
+  },
+): Promise<void> {
   const scopes = input?.scopes ?? [
     'workspace:read',
     'workspace:nodes:manage',
@@ -93,7 +98,9 @@ async function authorizeWorkspace(store: ReturnType<typeof createMemoryDeviceGra
   });
 }
 
-async function seedWorkspace(store: ReturnType<typeof createMemoryDeviceGrantStore>): Promise<{
+async function seedWorkspace(
+  store: ReturnType<typeof createMemoryDeviceGrantStore>,
+): Promise<{
   homeKey: ReturnType<typeof generateWorkspaceDeviceKeyPair>;
   memberKey: ReturnType<typeof generateWorkspaceDeviceKeyPair>;
 }> {
@@ -108,26 +115,37 @@ async function seedWorkspace(store: ReturnType<typeof createMemoryDeviceGrantSto
     defaultNodeId: 'node-home',
     updatedAt: baseNow,
   });
-  await store.putWorkspaceNode(node({
-    nodeId: 'node-home',
-    displayName: 'Mac Mini',
-    role: 'home',
-    connectorId: 'connector_node_home',
-    publicKeyJwk: homeKey.publicKeyJwk,
-    publicKeyThumbprint: await devicePublicKeyThumbprint(homeKey.publicKeyJwk),
-  }));
-  await store.putWorkspaceNode(node({
-    nodeId: 'node-member',
-    displayName: 'MacBook Air',
-    role: 'member',
-    connectorId: 'connector_node_member',
-    publicKeyJwk: memberKey.publicKeyJwk,
-    publicKeyThumbprint: await devicePublicKeyThumbprint(memberKey.publicKeyJwk),
-  }));
+  await store.putWorkspaceNode(
+    node({
+      nodeId: 'node-home',
+      displayName: 'Mac Mini',
+      role: 'home',
+      connectorId: 'connector_node_home',
+      publicKeyJwk: homeKey.publicKeyJwk,
+      publicKeyThumbprint: await devicePublicKeyThumbprint(
+        homeKey.publicKeyJwk,
+      ),
+    }),
+  );
+  await store.putWorkspaceNode(
+    node({
+      nodeId: 'node-member',
+      displayName: 'MacBook Air',
+      role: 'member',
+      connectorId: 'connector_node_member',
+      publicKeyJwk: memberKey.publicKeyJwk,
+      publicKeyThumbprint: await devicePublicKeyThumbprint(
+        memberKey.publicKeyJwk,
+      ),
+    }),
+  );
   return { homeKey, memberKey };
 }
 
-async function seedRoutes(db: ReturnType<typeof createInMemoryWorkspaceRouteD1>, nowMs = baseNow): Promise<void> {
+async function seedRoutes(
+  db: ReturnType<typeof createInMemoryWorkspaceRouteD1>,
+  nowMs = baseNow,
+): Promise<void> {
   await migrateWorkspaceRouteD1(db);
   await upsertWorkspaceHostnameInD1(db, {
     workspaceId,
@@ -204,10 +222,14 @@ describe('workspace node identity', () => {
       nowMs: baseNow,
     });
 
-    await expect(store.byWorkspaceNode(accountId, 'node-new')).resolves.toMatchObject({
+    await expect(
+      store.byWorkspaceNode(accountId, 'node-new'),
+    ).resolves.toMatchObject({
       connectorStatus: 'disconnected',
     });
-    expect((await store.byWorkspaceNode(accountId, 'node-new'))?.lastSeenAt).toBeUndefined();
+    expect(
+      (await store.byWorkspaceNode(accountId, 'node-new'))?.lastSeenAt,
+    ).toBeUndefined();
     expect(grant.nodeLastSeenAt).toBeUndefined();
   });
 
@@ -224,14 +246,18 @@ describe('workspace node identity', () => {
       defaultNodeId: 'node-home',
       updatedAt: baseNow,
     });
-    await store.putWorkspaceNode(node({
-      nodeId: 'node-home',
-      displayName: 'Mac Mini',
-      role: 'home',
-      connectorId: 'connector_node_home',
-      publicKeyJwk: existingKey.publicKeyJwk,
-      publicKeyThumbprint: await devicePublicKeyThumbprint(existingKey.publicKeyJwk),
-    }));
+    await store.putWorkspaceNode(
+      node({
+        nodeId: 'node-home',
+        displayName: 'Mac Mini',
+        role: 'home',
+        connectorId: 'connector_node_home',
+        publicKeyJwk: existingKey.publicKeyJwk,
+        publicKeyThumbprint: await devicePublicKeyThumbprint(
+          existingKey.publicKeyJwk,
+        ),
+      }),
+    );
     const grant: Grant = {
       hash: 'grant_hash',
       userCode: 'ABCD-EFGH',
@@ -242,18 +268,22 @@ describe('workspace node identity', () => {
       interval: 5,
       devicePublicKeyJwk: attackerKey.publicKeyJwk,
       deviceKeyAlgorithm: 'Ed25519',
-      devicePublicKeyThumbprint: await devicePublicKeyThumbprint(attackerKey.publicKeyJwk),
+      devicePublicKeyThumbprint: await devicePublicKeyThumbprint(
+        attackerKey.publicKeyJwk,
+      ),
       nodeId: 'node-home',
       nodeName: 'Attacker',
     };
 
-    await expect(prepareGrantApproval({
-      store,
-      grant,
-      accountId,
-      authMethod: 'google',
-      nowMs: baseNow,
-    })).rejects.toThrow('node identity key does not match');
+    await expect(
+      prepareGrantApproval({
+        store,
+        grant,
+        accountId,
+        authMethod: 'google',
+        nowMs: baseNow,
+      }),
+    ).rejects.toThrow('node identity key does not match');
   });
 });
 
@@ -266,7 +296,9 @@ describe('workspace node management and presence', () => {
       role: 'member',
       connectorId: 'connector_legacy_unindexed',
       publicKeyJwk: keyPair.publicKeyJwk,
-      publicKeyThumbprint: await devicePublicKeyThumbprint(keyPair.publicKeyJwk),
+      publicKeyThumbprint: await devicePublicKeyThumbprint(
+        keyPair.publicKeyJwk,
+      ),
     });
     const createLegacyStore = () => {
       const values = new Map<string, unknown>([
@@ -274,36 +306,85 @@ describe('workspace node management and presence', () => {
       ]);
       const storage: StorageLike = {
         get: async <T>(key: string) => values.get(key) as T | undefined,
-        put: async (key: string, value: unknown) => { values.set(key, value); },
+        put: async (key: string, value: unknown) => {
+          values.set(key, value);
+        },
         delete: async (key: string) => values.delete(key),
-        list: async <T>(options?: { prefix?: string }) => new Map(
-          [...values.entries()]
-            .filter(([key]) => !options?.prefix || key.startsWith(options.prefix))
-            .map(([key, value]) => [key, value as T]),
-        ),
+        list: async <T>(options?: { prefix?: string }) =>
+          new Map(
+            [...values.entries()]
+              .filter(
+                ([key]) => !options?.prefix || key.startsWith(options.prefix),
+              )
+              .map(([key, value]) => [key, value as T]),
+          ),
       };
       return { store: new DurableStore(storage), values };
     };
 
     const identity = createLegacyStore();
-    await expect(identity.store.byWorkspaceNodeId(rawNode.nodeId)).resolves.toMatchObject({
+    await expect(
+      identity.store.byWorkspaceNodeId(rawNode.nodeId),
+    ).resolves.toMatchObject({
       nodeId: rawNode.nodeId,
     });
     expect(identity.values.get(`wni:${rawNode.nodeId}`)).toBe(accountId);
     expect(identity.values.get(`wnl:${accountId}`)).toEqual([rawNode.nodeId]);
-    expect(identity.values.get(`wnh:${workspaceHost}`)).toEqual([rawNode.nodeId]);
+    expect(identity.values.get(`wnh:${workspaceHost}`)).toEqual([
+      rawNode.nodeId,
+    ]);
 
     const accountList = createLegacyStore();
-    await expect(accountList.store.listWorkspaceNodes(accountId)).resolves.toEqual([
-      expect.objectContaining({ nodeId: rawNode.nodeId }),
-    ]);
+    await expect(
+      accountList.store.listWorkspaceNodes(accountId),
+    ).resolves.toEqual([expect.objectContaining({ nodeId: rawNode.nodeId })]);
     expect(accountList.values.get(`wni:${rawNode.nodeId}`)).toBe(accountId);
 
     const hostList = createLegacyStore();
-    await expect(hostList.store.listWorkspaceNodesByHost(workspaceHost)).resolves.toEqual([
-      expect.objectContaining({ nodeId: rawNode.nodeId }),
+    await expect(
+      hostList.store.listWorkspaceNodesByHost(workspaceHost),
+    ).resolves.toEqual([expect.objectContaining({ nodeId: rawNode.nodeId })]);
+    expect(hostList.values.get(`wnh:${workspaceHost}`)).toEqual([
+      rawNode.nodeId,
     ]);
-    expect(hostList.values.get(`wnh:${workspaceHost}`)).toEqual([rawNode.nodeId]);
+  });
+
+  it('removes deleted durable nodes from the workspace host index', async () => {
+    const values = new Map<string, unknown>();
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => {
+        values.set(key, value);
+      },
+      delete: async (key: string) => {
+        values.delete(key);
+      },
+      transaction: async <T>(
+        callback: (transaction: StorageTransactionLike) => Promise<T>,
+      ) => callback(storage),
+    };
+    const store = new DurableStore(storage);
+    const keyPair = generateWorkspaceDeviceKeyPair();
+    const registered = node({
+      nodeId: 'node-deleted',
+      displayName: 'Deleted Mac',
+      role: 'member',
+      connectorId: 'connector_deleted',
+      publicKeyJwk: keyPair.publicKeyJwk,
+      publicKeyThumbprint: await devicePublicKeyThumbprint(
+        keyPair.publicKeyJwk,
+      ),
+    });
+
+    await store.putWorkspaceNode(registered);
+    expect(values.get(`wnh:${workspaceHost}`)).toEqual([registered.nodeId]);
+
+    await store.delWorkspaceNode(accountId, registered.nodeId);
+
+    expect(values.get(`wnh:${workspaceHost}`)).toEqual([]);
+    await expect(
+      store.listWorkspaceNodesByHost(workspaceHost),
+    ).resolves.toEqual([]);
   });
 
   it('keeps provisioned nodes offline until their first heartbeat', async () => {
@@ -319,9 +400,11 @@ describe('workspace node management and presence', () => {
       now: () => baseNow,
     });
 
-    const response = await handler(new Request(`${origin}/workspace/nodes`, {
-      headers: { authorization: 'Bearer workspace-never-seen-token' },
-    }));
+    const response = await handler(
+      new Request(`${origin}/workspace/nodes`, {
+        headers: { authorization: 'Bearer workspace-never-seen-token' },
+      }),
+    );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       presence: { online: 1, stale: 0, offline: 1 },
@@ -340,8 +423,12 @@ describe('workspace node management and presence', () => {
     let transactions = 0;
     const storage: StorageLike = {
       get: async <T>(key: string) => values.get(key) as T | undefined,
-      put: async (key: string, value: unknown) => { values.set(key, value); },
-      delete: async (key: string) => { values.delete(key); },
+      put: async (key: string, value: unknown) => {
+        values.set(key, value);
+      },
+      delete: async (key: string) => {
+        values.delete(key);
+      },
       transaction: async <T>(
         callback: (transaction: StorageTransactionLike) => Promise<T>,
       ) => {
@@ -351,18 +438,22 @@ describe('workspace node management and presence', () => {
     };
     const store = new DurableStore(storage);
     const nowMs = baseNow;
-    expect(await store.claimWorkspaceNodeNonce(
-      'node-member',
-      'nonce-transactional',
-      nowMs + 300_000,
-      nowMs,
-    )).toBe(true);
-    expect(await store.claimWorkspaceNodeNonce(
-      'node-member',
-      'nonce-transactional',
-      nowMs + 300_000,
-      nowMs,
-    )).toBe(false);
+    expect(
+      await store.claimWorkspaceNodeNonce(
+        'node-member',
+        'nonce-transactional',
+        nowMs + 300_000,
+        nowMs,
+      ),
+    ).toBe(true);
+    expect(
+      await store.claimWorkspaceNodeNonce(
+        'node-member',
+        'nonce-transactional',
+        nowMs + 300_000,
+        nowMs,
+      ),
+    ).toBe(false);
     expect(transactions).toBe(2);
   });
 
@@ -370,37 +461,48 @@ describe('workspace node management and presence', () => {
     const values = new Map<string, unknown>();
     const storage: StorageLike = {
       get: async <T>(key: string) => values.get(key) as T | undefined,
-      put: async (key: string, value: unknown) => { values.set(key, value); },
-      delete: async (key: string) => { values.delete(key); },
+      put: async (key: string, value: unknown) => {
+        values.set(key, value);
+      },
+      delete: async (key: string) => {
+        values.delete(key);
+      },
       transaction: async <T>(
         callback: (transaction: StorageTransactionLike) => Promise<T>,
       ) => callback(storage),
     };
     const store = new DurableStore(storage);
     for (let index = 0; index < WORKSPACE_NODE_NONCE_LIMIT; index += 1) {
-      await expect(store.claimWorkspaceNodeNonce(
+      await expect(
+        store.claimWorkspaceNodeNonce(
+          'node-member',
+          `nonce-${index}`,
+          baseNow + 300_000,
+          baseNow,
+        ),
+      ).resolves.toBe(true);
+    }
+    await expect(
+      store.claimWorkspaceNodeNonce(
         'node-member',
-        `nonce-${index}`,
+        'nonce-overflow',
         baseNow + 300_000,
         baseNow,
-      )).resolves.toBe(true);
-    }
-    await expect(store.claimWorkspaceNodeNonce(
-      'node-member',
-      'nonce-overflow',
-      baseNow + 300_000,
-      baseNow,
-    )).resolves.toBe(false);
-    await expect(store.claimWorkspaceNodeNonce(
-      'node-member',
-      'nonce-after-expiry',
-      baseNow + 600_001,
-      baseNow + 300_001,
-    )).resolves.toBe(true);
+      ),
+    ).resolves.toBe(false);
+    await expect(
+      store.claimWorkspaceNodeNonce(
+        'node-member',
+        'nonce-after-expiry',
+        baseNow + 600_001,
+        baseNow + 300_001,
+      ),
+    ).resolves.toBe(true);
     const indexed = values.get('wnnl:node-member') as unknown[];
     expect(indexed).toHaveLength(1);
-    expect([...values.keys()].filter((key) => key.startsWith('wnn:node-member:')))
-      .toEqual(['wnn:node-member:nonce-after-expiry']);
+    expect(
+      [...values.keys()].filter((key) => key.startsWith('wnn:node-member:')),
+    ).toEqual(['wnn:node-member:nonce-after-expiry']);
   });
 
   it('retains accepted heartbeat nonces from receipt time', async () => {
@@ -444,14 +546,16 @@ describe('workspace node management and presence', () => {
       payload: body,
     });
 
-    const response = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-consuelo-node-signature': signature,
-      },
-      body,
-    }));
+    const response = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': signature,
+        },
+        body,
+      }),
+    );
 
     expect(response.status).toBe(200);
     expect(nonceClaim).toEqual({
@@ -482,9 +586,13 @@ describe('workspace node management and presence', () => {
     });
     const auth = { authorization: 'Bearer workspace-node-token' };
 
-    const list = await handler(new Request(`${origin}/workspace/nodes?current_node_id=node-home`, { headers: auth }));
+    const list = await handler(
+      new Request(`${origin}/workspace/nodes?current_node_id=node-home`, {
+        headers: auth,
+      }),
+    );
     expect(list.status).toBe(200);
-    const initial = await list.json() as Record<string, unknown>;
+    const initial = (await list.json()) as Record<string, unknown>;
     expect(initial).toMatchObject({
       workspaceId,
       currentNodeId: 'node-home',
@@ -492,46 +600,64 @@ describe('workspace node management and presence', () => {
       nodeCount: 2,
       presence: { online: 2, stale: 0, offline: 0 },
     });
-    expect(JSON.stringify(initial)).not.toMatch(/publicKeyJwk|private|token|tunnelOriginUrl|localService|\/Users\//i);
+    expect(JSON.stringify(initial)).not.toMatch(
+      /publicKeyJwk|private|token|tunnelOriginUrl|localService|\/Users\//i,
+    );
 
-    const rename = await handler(new Request(`${origin}/workspace/nodes/node-member`, {
-      method: 'PATCH',
-      headers: { ...auth, 'content-type': 'application/json' },
-      body: JSON.stringify({ displayName: 'Travel Mac' }),
-    }));
+    const rename = await handler(
+      new Request(`${origin}/workspace/nodes/node-member`, {
+        method: 'PATCH',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ displayName: 'Travel Mac' }),
+      }),
+    );
     expect(rename.status).toBe(200);
-    await expect(rename.json()).resolves.toMatchObject({ node: { nodeId: 'node-member', displayName: 'Travel Mac' } });
+    await expect(rename.json()).resolves.toMatchObject({
+      node: { nodeId: 'node-member', displayName: 'Travel Mac' },
+    });
 
-    const select = await handler(new Request(`${origin}/workspace/nodes/default`, {
-      method: 'POST',
-      headers: { ...auth, 'content-type': 'application/json' },
-      body: JSON.stringify({ nodeId: 'node-member' }),
-    }));
+    const select = await handler(
+      new Request(`${origin}/workspace/nodes/default`, {
+        method: 'POST',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ nodeId: 'node-member' }),
+      }),
+    );
     expect(select.status).toBe(200);
-    await expect(select.json()).resolves.toMatchObject({ defaultNodeId: 'node-member' });
+    await expect(select.json()).resolves.toMatchObject({
+      defaultNodeId: 'node-member',
+    });
 
-    const revoke = await handler(new Request(`${origin}/workspace/nodes/node-member/revoke`, {
-      method: 'POST',
-      headers: auth,
-    }));
+    const revoke = await handler(
+      new Request(`${origin}/workspace/nodes/node-member/revoke`, {
+        method: 'POST',
+        headers: auth,
+      }),
+    );
     expect(revoke.status).toBe(200);
-    await expect(revoke.json()).resolves.toMatchObject({ node: { nodeId: 'node-member', state: 'revoked' } });
+    await expect(revoke.json()).resolves.toMatchObject({
+      node: { nodeId: 'node-member', state: 'revoked' },
+    });
 
     nowMs += 1;
-    const finalList = await handler(new Request(`${origin}/workspace/nodes`, { headers: auth }));
+    const finalList = await handler(
+      new Request(`${origin}/workspace/nodes`, { headers: auth }),
+    );
     await expect(finalList.json()).resolves.toMatchObject({
       defaultNodeId: 'node-member',
       nodeCount: 2,
     });
 
-    const untargetedRevokedCall = await handler(new Request(`${origin}/mcp`, {
-      method: 'POST',
-      headers: {
-        ...auth,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
-    }));
+    const untargetedRevokedCall = await handler(
+      new Request(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          ...auth,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+      }),
+    );
     expect(untargetedRevokedCall.status).toBe(404);
     await expect(untargetedRevokedCall.json()).resolves.toMatchObject({
       error: { code: 'WORKSPACE_NODE_REVOKED' },
@@ -556,7 +682,11 @@ describe('workspace node management and presence', () => {
     const auth = { authorization: 'Bearer workspace-read-only-token' };
 
     expect(
-      (await handler(new Request(origin + '/workspace/nodes', { headers: auth }))).status,
+      (
+        await handler(
+          new Request(origin + '/workspace/nodes', { headers: auth }),
+        )
+      ).status,
     ).toBe(200);
 
     const requests = [
@@ -599,7 +729,8 @@ describe('workspace node management and presence', () => {
       putAccountWorkspace: async (
         workspace: Parameters<typeof backingStore.putAccountWorkspace>[0],
       ) => {
-        if (failWorkspaceWrite) throw new Error('injected workspace write failure');
+        if (failWorkspaceWrite)
+          throw new Error('injected workspace write failure');
         return backingStore.putAccountWorkspace(workspace);
       },
       putWorkspaceNode: async (
@@ -619,31 +750,39 @@ describe('workspace node management and presence', () => {
     });
     const authorization = 'Bearer workspace-compensation-token';
 
-    const select = await handler(new Request(origin + '/workspace/nodes/default', {
-      method: 'POST',
-      headers: { authorization, 'content-type': 'application/json' },
-      body: JSON.stringify({ nodeId: 'node-member' }),
-    }));
+    const select = await handler(
+      new Request(origin + '/workspace/nodes/default', {
+        method: 'POST',
+        headers: { authorization, 'content-type': 'application/json' },
+        body: JSON.stringify({ nodeId: 'node-member' }),
+      }),
+    );
     expect(select.status).toBe(503);
-    await expect(resolveWorkspaceRouteFromD1(routes, {
-      host: workspaceHost,
-      path: '/mcp',
-      nowMs: baseNow,
-    })).resolves.toMatchObject({ allowed: true, nodeId: 'node-home' });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({ allowed: true, nodeId: 'node-home' });
 
     failWorkspaceWrite = false;
     failNodeWrite = true;
-    const revoke = await handler(new Request(
-      origin + '/workspace/nodes/node-member/revoke',
-      { method: 'POST', headers: { authorization } },
-    ));
+    const revoke = await handler(
+      new Request(origin + '/workspace/nodes/node-member/revoke', {
+        method: 'POST',
+        headers: { authorization },
+      }),
+    );
     expect(revoke.status).toBe(503);
-    await expect(resolveWorkspaceRouteFromD1(routes, {
-      host: workspaceHost,
-      path: '/mcp',
-      nodeId: 'node-member',
-      nowMs: baseNow,
-    })).resolves.toMatchObject({ allowed: true, nodeId: 'node-member' });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({ allowed: true, nodeId: 'node-member' });
     await expect(
       backingStore.byWorkspaceNode(accountId, 'node-member'),
     ).resolves.toMatchObject({ state: 'active' });
@@ -660,20 +799,23 @@ describe('workspace node management and presence', () => {
       provider: 'cloudflare',
       owner: 'consuelo-os-cloud',
       status: 'active',
-      routes: [{
-        surface: 'os',
-        pathPrefix: '/mcp',
-        auth: 'required',
-        status: 'active',
-        target: {
-          kind: 'os-connector',
-          connectorId: 'connector_legacy_home',
-          connectorStatus: 'connected',
-          tunnelOriginUrl: 'https://legacy-home.connector.test',
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_legacy_home',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://legacy-home.connector.test',
+          },
         },
-      }],
+      ],
     });
-    const registry = await import('../scripts/lib/workspace-cloudflare-d1-route-registry');
+    const registry =
+      await import('../scripts/lib/workspace-cloudflare-d1-route-registry');
     await registry.upsertWorkspaceNodeTargetInD1(routes, {
       record: {
         workspaceId,
@@ -683,18 +825,20 @@ describe('workspace node management and presence', () => {
         provider: 'cloudflare',
         owner: 'consuelo-os-cloud',
         status: 'active',
-        routes: [{
-          surface: 'os',
-          pathPrefix: '/mcp',
-          auth: 'required',
-          status: 'active',
-          target: {
-            kind: 'os-connector',
-            connectorId: 'connector_node_member',
-            connectorStatus: 'connected',
-            tunnelOriginUrl: 'https://member.connector.test',
+        routes: [
+          {
+            surface: 'os',
+            pathPrefix: '/mcp',
+            auth: 'required',
+            status: 'active',
+            target: {
+              kind: 'os-connector',
+              connectorId: 'connector_node_member',
+              connectorStatus: 'connected',
+              tunnelOriginUrl: 'https://member.connector.test',
+            },
           },
-        }],
+        ],
       },
       target: {
         nodeId: 'node-member',
@@ -707,11 +851,13 @@ describe('workspace node management and presence', () => {
       },
     });
 
-    await expect(resolveWorkspaceRouteFromD1(routes, {
-      host: workspaceHost,
-      path: '/mcp',
-      nowMs: baseNow,
-    })).resolves.toMatchObject({
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
       allowed: true,
       nodeId: workspaceSlug,
       target: {
@@ -719,12 +865,14 @@ describe('workspace node management and presence', () => {
         tunnelOriginUrl: 'https://legacy-home.connector.test',
       },
     });
-    await expect(resolveWorkspaceRouteFromD1(routes, {
-      host: workspaceHost,
-      path: '/mcp',
-      nodeId: 'node-member',
-      nowMs: baseNow,
-    })).resolves.toMatchObject({
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
       allowed: true,
       nodeId: 'node-member',
       target: { connectorId: 'connector_node_member' },
@@ -744,7 +892,12 @@ describe('workspace node management and presence', () => {
     await authorizeWorkspace(store, 'workspace-heartbeat-token');
     const routes = createInMemoryWorkspaceRouteD1();
     await seedRoutes(routes, baseNow - 300_000);
-    const handler = createOsDeviceAuthorityHandler({ store, origin, now: () => nowMs, workspaceRouteRegistry: routes });
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      workspaceRouteRegistry: routes,
+    });
     const body = JSON.stringify({
       workspaceId,
       nodeId: 'node-member',
@@ -754,12 +907,19 @@ describe('workspace node management and presence', () => {
       capabilities: ['mcp', 'tools'],
       agents: ['opencode', 'codex', 'codex'],
     });
-    const signature = createDevicePublicKeyProof({ deviceKeyPair: memberKey, payload: body });
-    const heartbeatRequest = () => new Request(`${origin}/workspace/nodes/heartbeat`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-consuelo-node-signature': signature },
-      body,
+    const signature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: body,
     });
+    const heartbeatRequest = () =>
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': signature,
+        },
+        body,
+      });
 
     const heartbeat = await handler(heartbeatRequest());
     expect(heartbeat.status).toBe(200);
@@ -768,15 +928,14 @@ describe('workspace node management and presence', () => {
       presence: 'online',
       agents: ['codex', 'opencode'],
     });
-    expect((await store.byWorkspaceNode(accountId, 'node-member'))?.agents).toEqual([
-      'codex',
-      'opencode',
-    ]);
+    expect(
+      (await store.byWorkspaceNode(accountId, 'node-member'))?.agents,
+    ).toEqual(['codex', 'opencode']);
     expect((await handler(heartbeatRequest())).status).toBe(409);
 
-    const onlineAgents = await handler(new Request(
-      `${origin}/workspace/agents?workspace_host=${workspaceHost}`,
-    ));
+    const onlineAgents = await handler(
+      new Request(`${origin}/workspace/agents?workspace_host=${workspaceHost}`),
+    );
     await expect(onlineAgents.json()).resolves.toMatchObject({
       state: 'online',
       connectedAgentCount: 2,
@@ -795,12 +954,20 @@ describe('workspace node management and presence', () => {
       capabilities: ['mcp'],
       agents: ['unknown-agent'],
     });
-    const invalidSignature = createDevicePublicKeyProof({ deviceKeyPair: memberKey, payload: invalidBody });
-    const invalidAgents = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-consuelo-node-signature': invalidSignature },
-      body: invalidBody,
-    }));
+    const invalidSignature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: invalidBody,
+    });
+    const invalidAgents = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': invalidSignature,
+        },
+        body: invalidBody,
+      }),
+    );
     expect(invalidAgents.status).toBe(400);
 
     const invalidStatusBody = JSON.stringify({
@@ -815,14 +982,16 @@ describe('workspace node management and presence', () => {
       deviceKeyPair: memberKey,
       payload: invalidStatusBody,
     });
-    const invalidStatus = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-consuelo-node-signature': invalidStatusSignature,
-      },
-      body: invalidStatusBody,
-    }));
+    const invalidStatus = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': invalidStatusSignature,
+        },
+        body: invalidStatusBody,
+      }),
+    );
     expect(invalidStatus.status).toBe(400);
 
     const overflowBody = JSON.stringify({
@@ -831,20 +1000,25 @@ describe('workspace node management and presence', () => {
       timestamp: nowMs,
       nonce: 'heartbeat-nonce-capability-overflow',
       connectorStatus: 'connected',
-      capabilities: Array.from({ length: 33 }, (_, index) => `capability-${index}`),
+      capabilities: Array.from(
+        { length: 33 },
+        (_, index) => `capability-${index}`,
+      ),
     });
     const overflowSignature = createDevicePublicKeyProof({
       deviceKeyPair: memberKey,
       payload: overflowBody,
     });
-    const overflow = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-consuelo-node-signature': overflowSignature,
-      },
-      body: overflowBody,
-    }));
+    const overflow = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': overflowSignature,
+        },
+        body: overflowBody,
+      }),
+    );
     expect(overflow.status).toBe(400);
 
     const disconnectedBody = JSON.stringify({
@@ -859,14 +1033,16 @@ describe('workspace node management and presence', () => {
       deviceKeyPair: memberKey,
       payload: disconnectedBody,
     });
-    const disconnected = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-consuelo-node-signature': disconnectedSignature,
-      },
-      body: disconnectedBody,
-    }));
+    const disconnected = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': disconnectedSignature,
+        },
+        body: disconnectedBody,
+      }),
+    );
     expect(disconnected.status).toBe(200);
     await expect(disconnected.json()).resolves.toMatchObject({
       presence: 'offline',
@@ -874,34 +1050,40 @@ describe('workspace node management and presence', () => {
 
     const auth = { authorization: 'Bearer workspace-heartbeat-token' };
     nowMs = baseNow + heartbeatTtlMs + 1;
-    const stale = await handler(new Request(`${origin}/workspace/nodes`, { headers: auth }));
+    const stale = await handler(
+      new Request(`${origin}/workspace/nodes`, { headers: auth }),
+    );
     await expect(stale.json()).resolves.toMatchObject({
       presence: { online: 0, stale: 0, offline: 2 },
     });
-    const staleAgents = await handler(new Request(
-      `${origin}/workspace/agents?workspace_host=${workspaceHost}`,
-    ));
+    const staleAgents = await handler(
+      new Request(`${origin}/workspace/agents?workspace_host=${workspaceHost}`),
+    );
     await expect(staleAgents.json()).resolves.toMatchObject({
       state: 'offline',
       connectedAgentCount: 2,
     });
     nowMs = baseNow + heartbeatTtlMs * 3 + 1;
-    const offline = await handler(new Request(`${origin}/workspace/nodes`, { headers: auth }));
+    const offline = await handler(
+      new Request(`${origin}/workspace/nodes`, { headers: auth }),
+    );
     await expect(offline.json()).resolves.toMatchObject({
       presence: { online: 0, stale: 0, offline: 2 },
     });
-    const offlineAgents = await handler(new Request(
-      `${origin}/workspace/agents?workspace_host=${workspaceHost}`,
-    ));
+    const offlineAgents = await handler(
+      new Request(`${origin}/workspace/agents?workspace_host=${workspaceHost}`),
+    );
     await expect(offlineAgents.json()).resolves.toMatchObject({
       state: 'offline',
       connectedAgentCount: 2,
     });
 
-    const revoke = await handler(new Request(`${origin}/workspace/nodes/node-member/revoke`, {
-      method: 'POST',
-      headers: auth,
-    }));
+    const revoke = await handler(
+      new Request(`${origin}/workspace/nodes/node-member/revoke`, {
+        method: 'POST',
+        headers: auth,
+      }),
+    );
     expect(revoke.status).toBe(200);
     const revokedBody = JSON.stringify({
       workspaceId,
@@ -911,23 +1093,39 @@ describe('workspace node management and presence', () => {
       connectorStatus: 'connected',
       capabilities: ['mcp'],
     });
-    const revokedSignature = createDevicePublicKeyProof({ deviceKeyPair: memberKey, payload: revokedBody });
-    const revokedHeartbeat = await handler(new Request(`${origin}/workspace/nodes/heartbeat`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-consuelo-node-signature': revokedSignature },
-      body: revokedBody,
-    }));
+    const revokedSignature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: revokedBody,
+    });
+    const revokedHeartbeat = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': revokedSignature,
+        },
+        body: revokedBody,
+      }),
+    );
     expect(revokedHeartbeat.status).toBe(403);
   });
 
   it('rejects cross-workspace node listing', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
-    await authorizeWorkspace(store, 'wrong-workspace-token', { host: 'other.consuelohq.com' });
-    const handler = createOsDeviceAuthorityHandler({ store, origin, now: () => baseNow });
-    const response = await handler(new Request(`${origin}/workspace/nodes?workspace_host=${workspaceHost}`, {
-      headers: { authorization: 'Bearer wrong-workspace-token' },
-    }));
+    await authorizeWorkspace(store, 'wrong-workspace-token', {
+      host: 'other.consuelohq.com',
+    });
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+    });
+    const response = await handler(
+      new Request(`${origin}/workspace/nodes?workspace_host=${workspaceHost}`, {
+        headers: { authorization: 'Bearer wrong-workspace-token' },
+      }),
+    );
     expect(response.status).toBe(403);
   });
 });
@@ -969,21 +1167,25 @@ describe('multi-node connector routing', () => {
       grant: grant('node-member', 'member'),
     });
 
-    await expect(resolveWorkspaceRouteFromD1(db, {
-      host: workspaceHost,
-      path: '/mcp',
-      nowMs: baseNow,
-    })).resolves.toMatchObject({
+    await expect(
+      resolveWorkspaceRouteFromD1(db, {
+        host: workspaceHost,
+        path: '/mcp',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
       allowed: true,
       nodeId: 'node-home',
       target: { connectorId: 'connector_node_home' },
     });
-    await expect(resolveWorkspaceRouteFromD1(db, {
-      host: workspaceHost,
-      path: '/mcp',
-      nodeId: 'node-member',
-      nowMs: baseNow,
-    })).resolves.toMatchObject({
+    await expect(
+      resolveWorkspaceRouteFromD1(db, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
       allowed: true,
       nodeId: 'node-member',
       target: { connectorId: 'connector_node_member' },
@@ -1049,35 +1251,44 @@ describe('multi-node connector routing', () => {
       },
     });
 
-    const explicit = await handler(new Request(`${origin}/mcp`, {
-      method: 'POST',
-      headers: {
-        authorization: 'Bearer central-node-token',
-        'content-type': 'application/json',
-        'x-consuelo-node-id': 'node-member',
-      },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
-    }));
+    const explicit = await handler(
+      new Request(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer central-node-token',
+          'content-type': 'application/json',
+          'x-consuelo-node-id': 'node-member',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+      }),
+    );
     expect(explicit.status).toBe(200);
     expect(upstreams.at(-1)).toBe('https://member.connector.test/mcp');
 
-    const implicit = await handler(new Request(`${origin}/mcp`, {
-      method: 'POST',
-      headers: { authorization: 'Bearer central-node-token', 'content-type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
-    }));
+    const implicit = await handler(
+      new Request(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer central-node-token',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
+      }),
+    );
     expect(implicit.status).toBe(200);
     expect(upstreams.at(-1)).toBe('https://home.connector.test/mcp');
 
-    const foreign = await handler(new Request(`${origin}/mcp`, {
-      method: 'POST',
-      headers: {
-        authorization: 'Bearer central-node-token',
-        'content-type': 'application/json',
-        'x-consuelo-node-id': 'node-from-other-workspace',
-      },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'tools/list' }),
-    }));
+    const foreign = await handler(
+      new Request(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer central-node-token',
+          'content-type': 'application/json',
+          'x-consuelo-node-id': 'node-from-other-workspace',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'tools/list' }),
+      }),
+    );
     expect(foreign.status).toBe(404);
     expect(upstreams).toHaveLength(2);
   });
@@ -1097,20 +1308,24 @@ describe('multi-node connector routing', () => {
       },
     });
 
-    const response = await router.fetch(new Request(`https://${workspaceHost}/mcp`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-consuelo-node-id': 'node-member',
-      },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
-    }));
+    const response = await router.fetch(
+      new Request(`https://${workspaceHost}/mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-id': 'node-member',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+      }),
+    );
 
     expect(response.status).toBe(200);
     expect(upstreams).toHaveLength(1);
     expect(upstreams[0]?.url).toBe('https://member.connector.test/mcp');
     expect(upstreams[0]?.headers.get('x-consuelo-node-id')).toBe('node-member');
-    expect(upstreams[0]?.headers.get('x-consuelo-connector-id')).toBe('connector_node_member');
+    expect(upstreams[0]?.headers.get('x-consuelo-connector-id')).toBe(
+      'connector_node_member',
+    );
   });
 
   it('keeps OAuth discovery available when the default node is stale while normal MCP routing remains offline', async () => {
@@ -1125,7 +1340,9 @@ describe('multi-node connector routing', () => {
     });
 
     const protectedResource = await router.fetch(
-      new Request(`https://${workspaceHost}/.well-known/oauth-protected-resource`),
+      new Request(
+        `https://${workspaceHost}/.well-known/oauth-protected-resource`,
+      ),
     );
     expect(protectedResource.status).toBe(200);
     await expect(protectedResource.json()).resolves.toMatchObject({
@@ -1134,7 +1351,9 @@ describe('multi-node connector routing', () => {
     });
 
     const authorizationServer = await router.fetch(
-      new Request(`https://${workspaceHost}/.well-known/oauth-authorization-server`),
+      new Request(
+        `https://${workspaceHost}/.well-known/oauth-authorization-server`,
+      ),
     );
     expect(authorizationServer.status).toBe(200);
     await expect(authorizationServer.json()).resolves.toMatchObject({

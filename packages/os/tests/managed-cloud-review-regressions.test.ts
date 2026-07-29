@@ -23,6 +23,10 @@ const release = {
     'https://github.com/cloudflare/cloudflared/releases/download/2026.7.3/cloudflared-linux-amd64',
   cloudflaredBinaryDigest: 'sha256:' + '3'.repeat(64),
   cloudflaredVersion: '2026.7.3',
+  caddyArchiveUrl:
+    'https://github.com/caddyserver/caddy/releases/download/v2.11.4/caddy_2.11.4_linux_amd64.tar.gz',
+  caddyArchiveDigest: 'sha256:' + '4'.repeat(64),
+  caddyVersion: '2.11.4',
   trustedPublicKeys: {
     release: [
       '-----BEGIN PUBLIC KEY-----',
@@ -90,7 +94,9 @@ describe('managed cloud review regressions', () => {
     expect(script).toContain('BOOT_DISK_FORMAT_MARKER');
     expect(script).toContain('HOME="$CONSUELO_USER_HOME"');
     expect(script).toContain('XDG_CONFIG_HOME="$CONSUELO_USER_HOME/.config"');
-    expect(script).not.toContain('chown -R');
+    expect(script).toContain(
+      'chown -R consuelo:consuelo "$CONSUELO_HOME/bootstrap"',
+    );
   });
 
   it('allocates distinct private subnet ranges for supported regions with NAT', () => {

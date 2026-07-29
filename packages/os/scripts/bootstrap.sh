@@ -857,6 +857,9 @@ ensure_portless() {
 
   case "${PORTLESS_ENABLED:-auto}" in
     0|false|no)
+      if [ "$PORTLESS_REQUIRED" = "1" ] || [ "$PORTLESS_INSTALL" = "1" ]; then
+        break
+      fi
       PORTLESS_BIN=""
       PORTLESS_ENABLED="0"
       PORTLESS_STATUS="skipped"

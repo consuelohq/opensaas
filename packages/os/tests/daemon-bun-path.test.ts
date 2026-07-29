@@ -1,10 +1,21 @@
-import { chmodSync, copyFileSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+  chmodSync,
+  copyFileSync,
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-const sourceScript = new URL('../scripts/start-consuelo-daemon.sh', import.meta.url).pathname;
+const sourceScript = new URL(
+  '../scripts/start-consuelo-daemon.sh',
+  import.meta.url,
+).pathname;
 const temporaryDirectories: string[] = [];
 
 function runDaemonWrapper(workspacePath: string): string {
@@ -22,23 +33,25 @@ function runDaemonWrapper(workspacePath: string): string {
   chmodSync(daemonScript, 0o755);
   chmodSync(bunBinary, 0o755);
 
-  const result = Bun.spawnSync({
-    cmd: ['/bin/bash', daemonScript],
+  const result = spawnSync('/bin/bash', [daemonScript], {
     env: {
+      ...process.env,
       HOME: root,
       USER: 'consuelo-test',
       BUN_BIN: bunBinary,
       WORKSPACE_DAEMON_HOME: root,
       WORKSPACE_DAEMON_USER: 'consuelo-test',
       WORKSPACE_DAEMON_CONSUELO_HOME: path.join(root, '.consuelo'),
-      WORKSPACE_DAEMON_PATH: workspacePath.replaceAll('{BUN_DIR}', bunDirectory),
+      WORKSPACE_DAEMON_PATH: workspacePath.replaceAll(
+        '{BUN_DIR}',
+        bunDirectory,
+      ),
     },
-    stdout: 'pipe',
-    stderr: 'pipe',
+    encoding: 'utf8',
   });
 
-  expect(result.exitCode).toBe(0);
-  return new TextDecoder().decode(result.stdout).trim();
+  expect(result.status).toBe(0);
+  return result.stdout.trim();
 }
 
 afterEach(() => {
@@ -58,7 +71,9 @@ describe('Consuelo OS daemon Bun PATH', () => {
 
   it('should preserve a single configured Bun directory when launchd PATH already contains it', () => {
     const outputPath = runDaemonWrapper('{BUN_DIR}:/usr/bin:/bin');
-    const bunSegments = outputPath.split(':').filter((segment) => segment.endsWith('/.bun/bin'));
+    const bunSegments = outputPath
+      .split(':')
+      .filter((segment) => segment.endsWith('/.bun/bin'));
 
     expect(bunSegments).toHaveLength(1);
     expect(outputPath.split(':').slice(-2)).toEqual(['/usr/bin', '/bin']);

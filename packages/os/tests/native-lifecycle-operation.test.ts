@@ -426,6 +426,13 @@ describe('native lifecycle detached operations', () => {
       temporaryRoots.push(home);
       const { engine, calls } = fakeEngine();
       const store = createNativeLifecycleOperationStore(home);
+      store.write({
+        schemaVersion: 1,
+        operationId: operation.operationId,
+        kind: operation.kind,
+        phase: 'queued',
+        updatedAt: '2026-07-27T02:59:59.000Z',
+      });
 
       await executeNativeLifecycleOperation({
         home,
@@ -457,6 +464,13 @@ describe('native lifecycle detached operations', () => {
     temporaryRoots.push(home);
     const { engine } = fakeEngine();
     const store = createNativeLifecycleOperationStore(home);
+    store.write({
+      schemaVersion: 1,
+      operationId: 'stale-update',
+      kind: 'update',
+      phase: 'queued',
+      updatedAt: '2026-07-27T02:59:59.000Z',
+    });
 
     await expect(
       executeNativeLifecycleOperation({

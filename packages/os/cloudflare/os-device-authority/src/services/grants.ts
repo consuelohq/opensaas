@@ -26,8 +26,7 @@ export function grantWorkspace(grant: Grant): {
     throw new Error('workspace is required before bootstrap can be issued');
   }
   return {
-    workspaceId:
-      grant.workspaceId ?? workspaceIdFromSlug(grant.workspaceSlug),
+    workspaceId: grant.workspaceId ?? workspaceIdFromSlug(grant.workspaceSlug),
     workspaceSlug: grant.workspaceSlug,
     workspaceHost: grant.workspaceHost,
   };
@@ -251,24 +250,28 @@ export async function failGrantWorkspaceRouteSetup(input: {
   delete input.grant.cloudflareTunnelToken;
   delete input.grant.accessToken;
   try {
-    if (
-      input.grant.nodeStatus === 'created' &&
-      input.grant.accountId &&
-      input.grant.nodeId &&
-      input.grant.nodeRegistrationVersion !== undefined
-    ) {
+    await input.store.put(input.grant);
+  } catch (error: unknown) {
+    throw new Error(
+      `grant failure persistence failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+  if (
+    input.grant.nodeStatus === 'created' &&
+    input.grant.accountId &&
+    input.grant.nodeId &&
+    input.grant.nodeRegistrationVersion !== undefined
+  ) {
+    try {
       await input.store.delWorkspaceNodeIfMatch({
         accountId: input.grant.accountId,
         nodeId: input.grant.nodeId,
         updatedAt: input.grant.nodeRegistrationVersion,
         devicePublicKeyThumbprint: input.grant.devicePublicKeyThumbprint,
       });
+    } catch {
+      // The durable failed grant is authoritative even when rollback cleanup fails.
     }
-    await input.store.put(input.grant);
-  } catch (error: unknown) {
-    throw new Error(
-      `grant failure persistence failed: ${error instanceof Error ? error.message : String(error)}`,
-    );
   }
   return failureMessage;
 }

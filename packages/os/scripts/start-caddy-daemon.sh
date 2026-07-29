@@ -4,6 +4,14 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
 env_file="$root_dir/.env"
+readonly CADDY_ALLOWED_ENV_KEYS="CADDY_BIN CADDY_DAEMON_HOME CADDY_DAEMON_USER CADDY_DAEMON_PATH CADDY_DAEMON_CONSUELO_HOME CONSUELO_HOME CONSUELO_CADDYFILE"
+
+is_allowed_caddy_env_key() {
+  case " $CADDY_ALLOWED_ENV_KEYS " in
+    *" $1 "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
 load_env_file() {
   local file="$1"
@@ -20,6 +28,7 @@ load_env_file() {
     case "$key" in
       ''|*[!A-Za-z0-9_]*|[0-9]*) continue ;;
     esac
+    is_allowed_caddy_env_key "$key" || continue
     value="${value%$'\r'}"
     value="${value%\"}"
     value="${value#\"}"

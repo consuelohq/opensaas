@@ -21,23 +21,25 @@ function isJsonObject(value: unknown): value is JsonObject {
 function requestId(body: string): unknown {
   try {
     const parsed = JSON.parse(body) as unknown;
-    return isJsonObject(parsed) ? parsed.id ?? null : null;
+    return isJsonObject(parsed) ? (parsed.id ?? null) : null;
   } catch {
     return null;
   }
 }
 
-function unavailableResponse(body: string): JsonObject {
+function unavailableResponse(body: string, retryable = true): JsonObject {
   return {
     jsonrpc: '2.0',
     id: requestId(body),
     error: {
       code: -32001,
-      message: 'Consuelo node is temporarily unavailable.',
+      message: retryable
+        ? 'Consuelo node is temporarily unavailable.'
+        : 'Consuelo node rejected the local MCP request.',
       data: {
         code: NODE_UNAVAILABLE_CODE,
-        retryable: true,
-        retryAfterSeconds: 2,
+        retryable,
+        ...(retryable ? { retryAfterSeconds: 2 } : {}),
       },
     },
   };
@@ -58,7 +60,9 @@ export function validateLocalMcpUrl(value: string): URL {
     port <= 0 ||
     port > 65_535
   ) {
-    throw new Error('Consuelo local MCP URL must be http://127.0.0.1:<port>/mcp.');
+    throw new Error(
+      'Consuelo local MCP URL must be http://127.0.0.1:<port>/mcp.',
+    );
   }
   return url;
 }
@@ -95,7 +99,9 @@ export function loadLocalAgentCredential(input: {
     typeof candidate.bearerToken !== 'string' ||
     candidate.bearerToken.length === 0
   ) {
-    throw new Error(`No Consuelo local MCP credential exists for ${input.agentId}.`);
+    throw new Error(
+      `No Consuelo local MCP credential exists for ${input.agentId}.`,
+    );
   }
   return {
     localUrl: validateLocalMcpUrl(parsed.localUrl),
@@ -112,8 +118,12 @@ function parseSseMessages(body: string): JsonObject[] {
     if (!line.startsWith('data:')) continue;
     const payload = line.slice(5).trim();
     if (payload.length === 0 || payload === '[DONE]') continue;
-    const parsed = JSON.parse(payload) as unknown;
-    if (isJsonObject(parsed)) messages.push(parsed);
+    try {
+      const parsed = JSON.parse(payload) as unknown;
+      if (isJsonObject(parsed)) messages.push(parsed);
+    } catch {
+      // A malformed SSE frame must not discard adjacent valid MCP messages.
+    }
   }
   return messages;
 }
@@ -145,7 +155,13 @@ export function createLocalAgentMcpBridge(input: {
         const nextSessionId = response.headers.get('mcp-session-id');
         if (nextSessionId) mcpSessionId = nextSessionId;
         if (response.status === 204) return [];
-        if (!response.ok) return [unavailableResponse(body)];
+        if (!response.ok) {
+          const retryable =
+            response.status === 408 ||
+            response.status === 429 ||
+            response.status >= 500;
+          return [unavailableResponse(body, retryable)];
+        }
         const responseBody = await response.text();
         const contentType = response.headers.get('content-type') ?? '';
         if (contentType.includes('text/event-stream')) {

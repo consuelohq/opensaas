@@ -136,7 +136,7 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
     return await client.send();
   } catch (error: unknown) {
     if (error instanceof Error) throw error;
-    throw new Error('workspace node heartbeat failed');
+    throw new Error('workspace node heartbeat failed', { cause: error });
   }
 }
 

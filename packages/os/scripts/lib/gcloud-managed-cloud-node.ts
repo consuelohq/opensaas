@@ -38,7 +38,8 @@ const commandFailure = (args: string[], result: GcloudCommandResult): Error =>
   );
 
 const isMissingResult = (result: GcloudCommandResult): boolean =>
-  result.exitCode !== 0 && /(?:NOT_FOUND|not found|was not found)/i.test(result.stderr);
+  result.exitCode !== 0 &&
+  /(?:NOT_FOUND|not found|was not found)/i.test(result.stderr);
 
 const runRequired = async (
   run: GcloudCommandRunner,
@@ -92,7 +93,9 @@ const resourceTail = (value: unknown): string => {
 };
 
 const failDrift = (resource: string, details: string): never => {
-  throw new Error(`managed cloud resource drift detected for ${resource}: ${details}`);
+  throw new Error(
+    `managed cloud resource drift detected for ${resource}: ${details}`,
+  );
 };
 
 const labelsArgument = (labels: Record<string, string>): string =>
@@ -122,23 +125,26 @@ const recordStrings = (record: JsonRecord, key: string): string[] =>
     : [];
 
 const recordEntries = (record: JsonRecord, key: string): JsonRecord[] =>
-  Array.isArray(record[key])
-    ? (record[key] as unknown[]).filter(isRecord)
-    : [];
+  Array.isArray(record[key]) ? (record[key] as unknown[]).filter(isRecord) : [];
 
 const labelsMatch = (
   existing: unknown,
   expected: Record<string, string>,
 ): boolean => {
   if (!isRecord(existing)) return false;
-  return Object.entries(expected).every(([key, value]) => existing[key] === value);
+  return Object.entries(expected).every(
+    ([key, value]) => existing[key] === value,
+  );
 };
 
 const metadataRecord = (resource: JsonRecord): Record<string, string> => {
   const metadata = isRecord(resource.metadata) ? resource.metadata : {};
   return Object.fromEntries(
     recordEntries(metadata, 'items')
-      .map((item) => [recordString(item, 'key'), recordString(item, 'value')] as const)
+      .map(
+        (item) =>
+          [recordString(item, 'key'), recordString(item, 'value')] as const,
+      )
       .filter(([key]) => key),
   );
 };
@@ -160,9 +166,18 @@ const ensureDataDiskMatches = (
     resourceTail(resource.type) !== input.type ||
     !labelsMatch(resource.labels, input.labels)
   ) {
-    failDrift(input.name, 'data disk does not match size, type, zone, or labels');
+    failDrift(
+      input.name,
+      'data disk does not match size, type, zone, or labels',
+    );
   }
 };
+
+const canonicalManagedNodeStartupScript = (value: string): string =>
+  value.replace(
+    /ALLOW_DATA_DISK_FORMAT='(?:true|false)'/,
+    "ALLOW_DATA_DISK_FORMAT='<one-time-authorization>'",
+  );
 
 const ensureInstanceMatches = (
   input: ManagedCloudNodeInstance & {
@@ -176,7 +191,9 @@ const ensureInstanceMatches = (
   const networkInterface = interfaces[0] ?? {};
   const serviceAccounts = recordEntries(resource, 'serviceAccounts');
   const serviceAccount = serviceAccounts[0] ?? {};
-  const tags = isRecord(resource.tags) ? recordStrings(resource.tags, 'items') : [];
+  const tags = isRecord(resource.tags)
+    ? recordStrings(resource.tags, 'items')
+    : [];
   const disks = recordEntries(resource, 'disks');
   const bootDisk = disks.find((disk) => recordBoolean(disk, 'boot') === true);
   const attachedDataDisk = disks.find(
@@ -187,7 +204,15 @@ const ensureInstanceMatches = (
     : {};
   const existingMetadata = metadataRecord(resource);
   const metadataMatches = Object.entries(input.metadata).every(
-    ([key, value]) => existingMetadata[key] === value,
+    ([key, value]) => {
+      if (key === 'startup-script') {
+        return (
+          canonicalManagedNodeStartupScript(existingMetadata[key] ?? '') ===
+          canonicalManagedNodeStartupScript(value)
+        );
+      }
+      return existingMetadata[key] === value;
+    },
   );
   const unexpectedExecutableMetadata = Object.keys(existingMetadata).some(
     (key) =>
@@ -236,7 +261,10 @@ const ensureInstanceMatches = (
 };
 
 const ensureNetworkMatches = (name: string, resource: JsonRecord): void => {
-  const autoCreateSubnetworks = recordBoolean(resource, 'autoCreateSubnetworks');
+  const autoCreateSubnetworks = recordBoolean(
+    resource,
+    'autoCreateSubnetworks',
+  );
   const routingConfig = isRecord(resource.routingConfig)
     ? resource.routingConfig
     : {};
@@ -300,7 +328,10 @@ const ensureNatMatches = (
     recordBoolean(logConfig, 'enable') !== input.logging.enabled ||
     recordString(logConfig, 'filter') !== input.logging.filter
   ) {
-    failDrift(input.name, 'Cloud NAT does not match source ranges, allocation, or logging');
+    failDrift(
+      input.name,
+      'Cloud NAT does not match source ranges, allocation, or logging',
+    );
   }
 };
 
@@ -383,7 +414,8 @@ const ensureSnapshotPolicyMatches = (
     scheduleMatches = days.some(
       (day) =>
         isRecord(day) &&
-        recordString(day, 'day').toLowerCase() === input.weekday?.toLowerCase() &&
+        recordString(day, 'day').toLowerCase() ===
+          input.weekday?.toLowerCase() &&
         recordString(day, 'startTime') === input.startTime,
     );
   }
@@ -752,7 +784,8 @@ export const createGcloudManagedCloudNodeFoundationClient = (input: {
       'None',
       '--quiet',
     ];
-    const sleep = input.sleep ?? ((milliseconds: number) => Bun.sleep(milliseconds));
+    const sleep =
+      input.sleep ?? ((milliseconds: number) => Bun.sleep(milliseconds));
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const result = await input.run(addArgs);
       if (result.exitCode === 0) return 'created';
@@ -782,7 +815,10 @@ export const createGcloudManagedCloudNodeFoundationClient = (input: {
         'json',
       ]);
     } catch (error: unknown) {
-      throw withContext(`failed to inspect snapshot policy ${policy.name}`, error);
+      throw withContext(
+        `failed to inspect snapshot policy ${policy.name}`,
+        error,
+      );
     }
     if (resource) {
       ensureSnapshotPolicyMatches(policy, resource);
@@ -832,18 +868,27 @@ export const createGcloudManagedCloudNodeFoundationClient = (input: {
     try {
       listed = await runRequired(input.run, listArgs);
     } catch (error: unknown) {
-      throw withContext(`failed to inspect budget ${budget.displayName}`, error);
+      throw withContext(
+        `failed to inspect budget ${budget.displayName}`,
+        error,
+      );
     }
     const parsed = parseJson(listed.stdout || '[]', commandText(listArgs));
     if (!Array.isArray(parsed)) {
-      throw new Error(`${commandText(listArgs)} returned a non-array budget list`);
+      throw new Error(
+        `${commandText(listArgs)} returned a non-array budget list`,
+      );
     }
     const matches = parsed.filter(
       (entry): entry is JsonRecord =>
-        isRecord(entry) && recordString(entry, 'displayName') === budget.displayName,
+        isRecord(entry) &&
+        recordString(entry, 'displayName') === budget.displayName,
     );
     if (matches.length > 1) {
-      failDrift(budget.displayName, 'multiple budgets have the same display name');
+      failDrift(
+        budget.displayName,
+        'multiple budgets have the same display name',
+      );
     }
     if (matches.length === 1) {
       const projectNumberArgs = [
@@ -853,7 +898,10 @@ export const createGcloudManagedCloudNodeFoundationClient = (input: {
         '--format',
         'value(projectNumber)',
       ];
-      const projectNumberResult = await runRequired(input.run, projectNumberArgs);
+      const projectNumberResult = await runRequired(
+        input.run,
+        projectNumberArgs,
+      );
       const projectNumber = projectNumberResult.stdout.trim();
       if (!/^\d+$/.test(projectNumber)) {
         throw new Error(
@@ -864,7 +912,8 @@ export const createGcloudManagedCloudNodeFoundationClient = (input: {
       if (
         budgetUnits(matches[0]) !== budget.amountUsd ||
         budgetCurrency(matches[0]) !== 'USD' ||
-        recordString(existingFilter, 'calendarPeriod').toUpperCase() !== 'MONTH' ||
+        recordString(existingFilter, 'calendarPeriod').toUpperCase() !==
+          'MONTH' ||
         !sameStrings(recordStrings(existingFilter, 'projects'), [
           `projects/${projectNumber}`,
         ]) ||
@@ -921,7 +970,10 @@ export const createGcloudManagedCloudNodeClient = (input: {
         'json',
       ]);
     } catch (error: unknown) {
-      throw withContext(`failed to inspect release bucket IAM for ${bucket}`, error);
+      throw withContext(
+        `failed to inspect release bucket IAM for ${bucket}`,
+        error,
+      );
     }
     if (!policy) throw new Error(`release bucket ${bucket} does not exist`);
     const alreadyBound = recordEntries(policy, 'bindings').some(
@@ -1014,12 +1066,15 @@ export const createGcloudManagedCloudNodeClient = (input: {
       );
     }
     if (resource) {
-      const policies = recordStrings(resource, 'resourcePolicies').map(resourceTail);
+      const policies = recordStrings(resource, 'resourcePolicies').map(
+        resourceTail,
+      );
       if (policies.includes(attachment.policyName)) return 'unchanged';
       if (policies.length > 0) {
         failDrift(
           attachment.diskName,
-          'data disk already has a different snapshot policy: ' + policies.join(', '),
+          'data disk already has a different snapshot policy: ' +
+            policies.join(', '),
         );
       }
     }
@@ -1083,7 +1138,10 @@ export const createGcloudManagedCloudNodeClient = (input: {
         return 'created';
       }
       if (status && status !== 'RUNNING') {
-        failDrift(instance.name, 'instance has unsupported runtime status ' + status);
+        failDrift(
+          instance.name,
+          'instance has unsupported runtime status ' + status,
+        );
       }
       return 'unchanged';
     }
@@ -1095,7 +1153,9 @@ export const createGcloudManagedCloudNodeClient = (input: {
       .join(',');
     const startupScript = instance.metadata['startup-script'];
     if (!startupScript) {
-      throw new Error(`instance ${instance.name} requires startup-script metadata`);
+      throw new Error(
+        `instance ${instance.name} requires startup-script metadata`,
+      );
     }
     const temporaryDirectory = mkdtempSync(
       join(tmpdir(), 'consuelo-cloud-node-'),
@@ -1155,8 +1215,8 @@ export const createGcloudManagedCloudNodeClient = (input: {
   },
 });
 
-export const createLocalGcloudCommandRunner = (): GcloudCommandRunner =>
-  async (args) => {
+export const createLocalGcloudCommandRunner =
+  (): GcloudCommandRunner => async (args) => {
     const process = Bun.spawnSync({
       cmd: ['gcloud', ...args],
       stdout: 'pipe',
