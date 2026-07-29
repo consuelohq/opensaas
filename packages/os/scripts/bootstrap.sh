@@ -1092,9 +1092,17 @@ download_source_archive() {
 download_source() {
   if [ "$DRY_RUN" -eq 1 ]; then
     REPO_DIR="$SOURCE_DIR"
-    if [ "$REFRESH_SOURCE" -eq 1 ] && [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-      SOURCE_STATUS="would_refresh"
-      log "dry-run: would refresh Consuelo OS source from $REPO_ARCHIVE_URL at $SOURCE_DIR"
+    if [ -e "$SOURCE_DIR" ] && [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+      fail "$SOURCE_DIR exists but does not contain packages/os/scripts/install.ts. Move it or set CONSUELO_OS_SOURCE_DIR to another temporary path."
+    fi
+    if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
+      if [ "$REFRESH_SOURCE" -eq 1 ]; then
+        SOURCE_STATUS="would_refresh"
+        log "dry-run: would refresh Consuelo OS source from $REPO_ARCHIVE_URL at $SOURCE_DIR"
+      else
+        SOURCE_STATUS="reused"
+        log "Using existing Consuelo OS source: $REPO_DIR"
+      fi
     else
       SOURCE_STATUS="would_download"
       log "dry-run: would download Consuelo OS source from $REPO_ARCHIVE_URL to $SOURCE_DIR"
@@ -1387,6 +1395,16 @@ open_workspace_launcher() {
 
 run_daemon_dry_run() {
   local os_dir="$REPO_DIR/packages/os"
+  if [ ! -f "$os_dir/scripts/install-system-daemons.sh" ]; then
+    case "$SOURCE_STATUS" in
+      would_download|would_refresh)
+        log "dry-run: would run: bash $os_dir/scripts/install-system-daemons.sh --dry-run --quiet"
+        DAEMON_STATUS="would_run"
+        return 0
+        ;;
+    esac
+    fail "$SOURCE_STATUS Consuelo OS source is missing $os_dir/scripts/install-system-daemons.sh"
+  fi
   (
     cd "$os_dir"
     CONSUELO_HOME="$OS_HOME" \
