@@ -306,6 +306,12 @@ describe('public installer runtime dependencies', () => {
       'persist_env_value "$env_file" BUN_BIN "$BUN_BIN"',
     );
     expect(bootstrap).toContain(
+      'persist_env_value "$env_file" CONSUELO_OS_PACKAGE_ROOT "$REPO_DIR"',
+    );
+    expect(bootstrap).toContain(
+      'remove_env_value "$env_file" CONSUELO_OS_PACKAGE_ROOT',
+    );
+    expect(bootstrap).toContain(
       'persist_env_value "$env_file" PORTLESS_ENABLED "1"',
     );
     expect(bootstrap).toContain('remove_env_value "$env_file" PORTLESS_BIN');
@@ -318,8 +324,12 @@ describe('public installer runtime dependencies', () => {
     expect(bootstrap.indexOf('ensure_portless')).toBeLessThan(
       bootstrap.indexOf('persist_runtime_paths'),
     );
-    expect(bootstrap.indexOf('persist_runtime_paths')).toBeLessThan(
-      bootstrap.indexOf('maybe_install_daemons'),
+    const main = extractShellFunction(bootstrap, 'main');
+    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
+      main.indexOf('persist_runtime_paths'),
+    );
+    expect(main.indexOf('persist_runtime_paths')).toBeLessThan(
+      main.indexOf('maybe_install_daemons'),
     );
   });
 

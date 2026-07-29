@@ -1052,6 +1052,11 @@ persist_runtime_paths() {
   fi
 
   persist_env_value "$env_file" BUN_BIN "$BUN_BIN"
+  if [ "$SOURCE_STATUS" = "local" ] && [ -n "$REPO_DIR" ]; then
+    persist_env_value "$env_file" CONSUELO_OS_PACKAGE_ROOT "$REPO_DIR"
+  else
+    remove_env_value "$env_file" CONSUELO_OS_PACKAGE_ROOT
+  fi
   if [ -n "$PORTLESS_BIN" ]; then
     persist_env_value "$env_file" PORTLESS_BIN "$PORTLESS_BIN"
     persist_env_value "$env_file" PORTLESS_ENABLED "1"
@@ -1283,10 +1288,28 @@ install_verified_runtime() {
   fi
 
   mkdir -p "$RUNTIME_RELEASES_DIR" "$(dirname "$RUNTIME_HOME")"
-  if [ -d "$release_dir" ]; then
+  if [ -L "$release_dir" ] || { [ -e "$release_dir" ] && [ ! -d "$release_dir" ]; }; then
+    fail "existing verified release path is not a directory: $release_dir"
+  elif [ -d "$release_dir" ]; then
     if [ ! -f "$release_dir/scripts/install.ts" ] ||
       [ ! -f "$release_dir/runtime-bundle.manifest.json" ]; then
-      fail "existing verified release directory is incomplete: $release_dir"
+      local active_release_dir release_dir_resolved stale_release_dir
+      active_release_dir=""
+      release_dir_resolved="$(cd "$release_dir" && pwd -P)"
+      if [ -L "$RUNTIME_HOME" ]; then
+        active_release_dir="$(cd "$RUNTIME_HOME" 2>/dev/null && pwd -P || true)"
+      fi
+      if [ -n "$active_release_dir" ] &&
+        [ "$active_release_dir" = "$release_dir_resolved" ]; then
+        fail "active verified release directory is incomplete: $release_dir"
+      fi
+      stale_release_dir="${release_dir}.stale.$$"
+      mv "$release_dir" "$stale_release_dir"
+      if ! mv "$extracted_dir" "$release_dir"; then
+        mv "$stale_release_dir" "$release_dir" || true
+        fail "verified Consuelo OS runtime could not replace the incomplete release"
+      fi
+      rm -rf "$stale_release_dir"
     fi
   else
     mv "$extracted_dir" "$release_dir"
@@ -1631,8 +1654,8 @@ main() {
   ensure_portless
   ensure_caddy
   ensure_cloudflared
-  persist_runtime_paths
   install_verified_runtime
+  persist_runtime_paths
   ensure_dependencies
   run_onboarding
   activate_verified_runtime

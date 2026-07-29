@@ -754,6 +754,43 @@ describe('unified lifecycle engine', () => {
     });
   });
 
+  it('allows status without installed release trust anchors', async () => {
+    const publicKeysJson = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+    const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
+    const publicKey = process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+    delete process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+    delete process.env.CONSUELO_RELEASE_KEY_ID;
+    delete process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+    try {
+      const exitCode = await runLifecycleCli(
+        ['status', '--home', tempHome, '--json'],
+        {
+          stdout: (value) => stdout.push(value),
+          stderr: (value) => stderr.push(value),
+        },
+      );
+
+      expect(exitCode).toBe(0);
+      expect(stderr).toEqual([]);
+      expect(JSON.parse(stdout.join(''))).toMatchObject({
+        schemaVersion: 1,
+        command: 'status',
+        ok: true,
+      });
+    } finally {
+      if (publicKeysJson === undefined)
+        delete process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+      else process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON = publicKeysJson;
+      if (keyId === undefined) delete process.env.CONSUELO_RELEASE_KEY_ID;
+      else process.env.CONSUELO_RELEASE_KEY_ID = keyId;
+      if (publicKey === undefined)
+        delete process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+      else process.env.CONSUELO_RELEASE_PUBLIC_KEY = publicKey;
+    }
+  });
+
   it('redacts secrets from structured progress and diagnostics events', () => {
     const events: LifecycleProgressEvent[] = [];
     const emit = createLifecycleProgressEmitter({

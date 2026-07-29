@@ -322,6 +322,31 @@ describe('bootstrap source refresh controls', () => {
     );
   });
 
+  it('repairs only inactive incomplete immutable release directories', () => {
+    const installRuntime = extractShellFunction(
+      readBootstrap(),
+      'install_verified_runtime',
+    );
+
+    expect(installRuntime).toContain(
+      'active verified release directory is incomplete',
+    );
+    expect(installRuntime).toContain(
+      'stale_release_dir="${release_dir}.stale.$$"',
+    );
+    expect(installRuntime).toContain(
+      'mv "$release_dir" "$stale_release_dir"',
+    );
+    expect(installRuntime).toContain(
+      'mv "$extracted_dir" "$release_dir"',
+    );
+    expect(installRuntime.indexOf(
+      '[ "$active_release_dir" = "$release_dir_resolved" ]',
+    )).toBeLessThan(
+      installRuntime.indexOf('mv "$release_dir" "$stale_release_dir"'),
+    );
+  });
+
   it('should redact child installer PTY transcripts before saving diagnostics when perl is available', () => {
     const bootstrap = readBootstrap();
 

@@ -1,3 +1,8 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -45,8 +50,12 @@ describe('hosted OS installer release worker', () => {
       { pathname: '/os' },
       'a'.repeat(64),
     );
-    const moduleUrl = `data:text/javascript;base64,${Buffer.from(worker).toString('base64')}`;
-    const generated = await import(/* @vite-ignore */ moduleUrl) as {
+    const moduleDirectory = mkdtempSync(
+      join(tmpdir(), 'consuelo-hosted-release-worker-'),
+    );
+    const modulePath = join(moduleDirectory, 'worker.mjs');
+    writeFileSync(modulePath, worker);
+    type GeneratedWorker = {
       default: {
         fetch(
           request: Request,
@@ -62,6 +71,15 @@ describe('hosted OS installer release worker', () => {
         ): Promise<Response>;
       };
     };
+    const generated = await (async (): Promise<GeneratedWorker> => {
+      try {
+        return await import(
+          /* @vite-ignore */ `${pathToFileURL(modulePath).href}?fixture=${Date.now()}`
+        ) as GeneratedWorker;
+      } finally {
+        rmSync(moduleDirectory, { recursive: true, force: true });
+      }
+    })();
     const requestedKeys: string[] = [];
     const env = {
       CONSUELO_OS_RELEASES: {

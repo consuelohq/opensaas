@@ -405,7 +405,55 @@ describe('local OS install state', () => {
     expect(lifecycleCommand).toContain(
       '$OS_HOME/runtime/current/scripts/lifecycle.ts',
     );
+    expect(lifecycleCommand).toContain(
+      'CONSUELO_OS_PACKAGE_ROOT=*',
+    );
+    expect(lifecycleCommand).toContain(
+      'BUN_BIN=*',
+    );
+    expect(lifecycleCommand).toContain(
+      'exec "$BUN_EXECUTABLE"',
+    );
     expect(lifecycleCommand).not.toContain('/Users/kokayi/');
+    const fakePackageRoot = join(tempHome, 'local-package');
+    const fakeBun = join(tempHome, 'managed-bun');
+    mkdirSync(join(fakePackageRoot, 'scripts'), { recursive: true });
+    writeFileSync(
+      join(fakePackageRoot, 'scripts', 'lifecycle.ts'),
+      '// lifecycle fixture\n',
+    );
+    writeFileSync(
+      fakeBun,
+      '#!/bin/bash\nprintf \'%s\\n\' "$@"\n',
+      { mode: 0o755 },
+    );
+    writeFileSync(
+      join(tempHome, '.env'),
+      [
+        `BUN_BIN=${fakeBun}`,
+        `CONSUELO_OS_PACKAGE_ROOT=${fakePackageRoot}`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+    const lifecycleInvocation = execFileSync(
+      join(tempHome, 'bin', 'consuelo'),
+      ['status', '--json'],
+      {
+        encoding: 'utf8',
+        env: {
+          CONSUELO_HOME: tempHome,
+          PATH: '/usr/bin:/bin',
+        },
+      },
+    );
+    expect(lifecycleInvocation).toContain(
+      join(fakePackageRoot, 'scripts', 'lifecycle.ts'),
+    );
+    expect(lifecycleInvocation).toContain('--home');
+    expect(lifecycleInvocation).toContain(tempHome);
+    expect(lifecycleInvocation).toContain('status');
+    expect(lifecycleInvocation).toContain('--json');
     expect(existsSync(join(tempHome, 'operator'))).toBe(false);
     const workspaceYaml = readFileSync(join(tempHome, 'workspaces', 'local-consuelo-os', 'shared', 'workspace.yaml'), 'utf8');
     expect(workspaceYaml).toContain('workspace:');

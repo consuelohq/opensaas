@@ -450,7 +450,8 @@ export const createDefaultLifecycleEngine = (input: {
           }
         : {}),
     }),
-    trustedReleaseKeys: trustedReleaseKeysFromEnvironment(input.home),
+    trustedReleaseKeys: () =>
+      trustedReleaseKeysFromEnvironment(input.home),
     service: createDefaultLifecycleServiceController({
       home: input.home,
       osRoot,
@@ -582,16 +583,15 @@ export async function runLifecycleCli(
     return 0;
   }
 
-  const engine =
-    dependencies.engine ??
-    createDefaultLifecycleEngine({
-      home: parsed.home,
-      quiet: parsed.quiet,
-      json: parsed.json,
-      progress: (event) => stderr(renderLifecycleProgress(event)),
-    });
-
   try {
+    const engine =
+      dependencies.engine ??
+      createDefaultLifecycleEngine({
+        home: parsed.home,
+        quiet: parsed.quiet,
+        json: parsed.json,
+        progress: (event) => stderr(renderLifecycleProgress(event)),
+      });
     const result = await executeCommand(parsed, engine);
     if (parsed.json)
       stdout(
