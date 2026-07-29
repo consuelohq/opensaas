@@ -433,6 +433,54 @@ describe('release provider retry safety', () => {
       version: '1.2.3',
     });
   });
+
+  it('should resume without replacing immutable bytes when deployment creation is interrupted', async () => {
+    const mutation = publicationMutation();
+    const fake = backend({
+      failAfter: 'deployment:consuelo-os-dev',
+      tagSha: SOURCE_COMMIT,
+    });
+    const assetDigests = new Map<string, string>();
+    const r2Digests = new Map<string, string>();
+    const uploadGithubAsset = fake.uploadGithubAsset;
+    const putR2Object = fake.putR2Object;
+    fake.getGithubAssetDigest = async (_tag, name) => assetDigests.get(name) ?? null;
+    fake.uploadGithubAsset = async (value) => {
+      await uploadGithubAsset(value);
+      assetDigests.set(value.name, digestFile(value.path));
+    };
+    fake.getR2ObjectDigest = async (key) => r2Digests.get(key) ?? null;
+    fake.putR2Object = async (key, path) => {
+      await putR2Object(key, path);
+      r2Digests.set(key, digestFile(path));
+    };
+    fake.deploymentExists = async () => fake.writes.includes('deployment:consuelo-os-dev');
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'injected provider interruption after deployment:consuelo-os-dev',
+    );
+    const immutableWriteCount = fake.writes.filter((write) =>
+      write.startsWith('asset:') || write.startsWith('r2:bundles/'),
+    ).length;
+    expect(immutableWriteCount).toBeGreaterThan(0);
+
+    await executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake });
+
+    expect(fake.writes.filter((write) => write === 'deployment:consuelo-os-dev')).toHaveLength(1);
+    expect(fake.writes.filter((write) =>
+      write.startsWith('asset:') || write.startsWith('r2:bundles/'),
+    )).toHaveLength(immutableWriteCount);
+    expect(fake.writes.at(-1)).toMatch(/^r2:state\/release-state\.json:/);
+  });
+
   it('downloads and hashes a GitHub asset when digest metadata is unavailable', async () => {
     const remoteBytes = Buffer.from('remote-release-asset');
     const runner: ReleaseProviderCommandRunner = async (planned) => {
@@ -494,7 +542,9 @@ describe('release provider retry safety', () => {
       argument.startsWith('payload[releaseIdentity]='),
     )?.slice('payload[releaseIdentity]='.length);
     expect(JSON.parse(encodedIdentity ?? 'null')).toEqual(identity);
-    expect(captured?.args).not.toContain('required_contexts[]');
+    const requiredContextsIndex = captured?.args.indexOf('required_contexts[]') ?? -1;
+    expect(requiredContextsIndex).toBeGreaterThan(0);
+    expect(captured?.args[requiredContextsIndex - 1]).toBe('-F');
   });
 
   it('requires the promoted source commit to be integrated to main before moving a protected ref', async () => {

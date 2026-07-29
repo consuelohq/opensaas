@@ -531,6 +531,9 @@ export function createReleaseProviderCommandBackend(
         'environment=' + input.environment,
         '-F',
         'auto_merge=false',
+        // The workflow gates this job first; inheriting contexts here includes this running job.
+        '-F',
+        'required_contexts[]',
         '-f',
         'payload[authority]=' + input.authority,
         '-f',
