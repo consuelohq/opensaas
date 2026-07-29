@@ -8,26 +8,27 @@ const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const readSource = (path) => readFile(join(packageRoot, path), 'utf8');
 
 describe('Consuelo OS homepage presentation', () => {
-  test('should keep the mobile hero compact with one full-width sign-in action', async () => {
+  test('should present the new rotating-assistant hero without a post-paint type fitter', async () => {
     const hero = await readSource('src/components/home/HomeHero.astro');
 
     expect(hero).not.toContain('DOWNLOAD LOCALLY');
-    expect(hero).toContain('width: min(100%, 31rem);');
-    expect(hero).toContain('min-height: calc(100svh - 4rem);');
-    expect(hero.match(/<span data-hero-line>/g)).toHaveLength(3);
-  });
-
-  test('should keep three authored hero lines stable without a post-paint fitter', async () => {
-    const hero = await readSource('src/components/home/HomeHero.astro');
-
+    expect(hero).toContain('Make');
+    expect(hero).toContain('data-assistant-name="ChatGPT"');
+    expect(hero).toContain('data-assistant-name="Claude"');
+    expect(hero).toContain('data-active-assistant="ChatGPT"');
+    expect(hero).toContain('your true assistant');
+    expect(hero).toContain(
+      'AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization',
+    );
+    expect(hero).not.toContain('OPEN SOURCE');
+    expect(hero).not.toContain('MIT LICENSE');
+    expect(hero).toContain("import gsap from 'gsap'");
     expect(hero).not.toContain('@chenglou/pretext');
     expect(hero).not.toContain('new ResizeObserver');
     expect(hero).not.toContain('document.fonts.ready');
-    expect(hero).not.toContain("heading.style.setProperty('--hero-title-size'");
-    expect(hero).toContain('font-size: clamp(2.15rem, 9.25vw, 6.25rem);');
-    expect(hero).toContain('.os-hero h1 > span {');
-    expect(hero).toContain('display: block;');
-    expect(hero).not.toContain('.os-hero h1 > span:nth-child(2)::after');
+    expect(hero).not.toContain("style.setProperty('--hero-heading-size'");
+    expect(hero).toContain('font-size: clamp(');
+    expect(hero).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
   });
 
   test('should preload the Latin variable fonts used by the landing page', async () => {
