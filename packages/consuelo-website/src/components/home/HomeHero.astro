@@ -1,11 +1,13 @@
 ---
-import { INSTALL_COMMAND } from '../../data/home-content';
+import { homeHeroRotatingAssistant, INSTALL_COMMAND } from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
 };
 
 const { sectionId = 'intro' } = Astro.props as Props;
+const heroCopy = homeHeroRotatingAssistant;
+const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
 ---
 
 <section class="os-hero" id={sectionId} data-section="hero">
@@ -17,28 +19,28 @@ const { sectionId = 'intro' } = Astro.props as Props;
   </div>
 
   <div class="os-hero__content">
-    <h1 data-hero-heading aria-label="Make ChatGPT or Claude your true assistant">
+    <h1 data-hero-heading aria-label={heroCopy.ariaLabel}>
       <span class="os-hero__heading-line">
-        <span>Make</span>
+        <span>{heroCopy.prefix}</span>
         <span
           class="os-hero__assistant-rotator"
           data-assistant-rotator
-          data-active-assistant="ChatGPT"
+          data-active-assistant={primaryAssistant}
           aria-hidden="true"
         >
-          <span data-assistant-name="ChatGPT">ChatGPT</span>
-          <span data-assistant-name="Claude">Claude</span>
+          <span data-assistant-name={primaryAssistant}>{primaryAssistant}</span>
+          <span data-assistant-name={secondaryAssistant}>{secondaryAssistant}</span>
         </span>
       </span>
-      <span class="os-hero__heading-line">your true assistant</span>
+      <span class="os-hero__heading-line">{heroCopy.suffix}</span>
     </h1>
     <p class="os-hero__subtitle">
-      AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization
+      {heroCopy.subtitle}
     </p>
 
     <div class="os-hero__actions">
       <a class="os-hero__button" href="https://os.consuelohq.com">
-        SIGN IN
+        {heroCopy.signInLabel}
         <svg class="os-hero__button-arrow" viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
           <rect x="0" y="0" width="1" height="9" />
           <rect x="1" y="1" width="1" height="1" />
@@ -52,18 +54,17 @@ const { sectionId = 'intro' } = Astro.props as Props;
       </a>
     </div>
 
-    <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
+    <button class="os-hero__command" type="button" data-copy-install aria-label={heroCopy.copyInstallAriaLabel}>
       <code>{INSTALL_COMMAND}</code>
-      <span data-copy-label>COPY</span>
+      <span data-copy-label>{heroCopy.copyLabel}</span>
     </button>
   </div>
 </section>
 
-<script define:vars={{ INSTALL_COMMAND }}>
+<script define:vars={{ INSTALL_COMMAND, copyLabel: heroCopy.copyLabel }}>
   const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
     (label) => label instanceof HTMLElement,
   );
-  const defaultLabels = new Map(labels.map((label) => [label, label.textContent ?? '']));
 
   document.querySelectorAll('[data-copy-install]').forEach((button) => {
     button.addEventListener('click', async () => {
@@ -82,7 +83,7 @@ const { sectionId = 'intro' } = Astro.props as Props;
       });
       window.setTimeout(() => {
         labels.forEach((label) => {
-          label.textContent = defaultLabels.get(label) ?? '';
+          label.textContent = copyLabel;
         });
       }, 1500);
     });
@@ -92,46 +93,171 @@ const { sectionId = 'intro' } = Astro.props as Props;
 <script>
   import gsap from 'gsap';
 
+  // Hero/editorial motion contract: translation max 32px (animations.md).
+  const HERO_NAME_OFFSET_PX = 32;
+  const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+  const ROTATION_EASE = 'power3.inOut';
+  const ROTATION_DURATION = 0.52;
+
+  const hero = document.querySelector('[data-section="hero"]');
   const rotator = document.querySelector('[data-assistant-rotator]');
-  const chatGpt = document.querySelector('[data-assistant-name="ChatGPT"]');
-  const claude = document.querySelector('[data-assistant-name="Claude"]');
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const primaryName = document.querySelector('[data-assistant-name="ChatGPT"]');
+  const secondaryName = document.querySelector('[data-assistant-name="Claude"]');
+  const reduceMotion = window.matchMedia(REDUCED_MOTION_QUERY);
 
-  if (
+  let timeline: gsap.core.Timeline | null = null;
+  let context: gsap.Context | null = null;
+  let visibilityObserver: IntersectionObserver | null = null;
+  let isHeroVisible = true;
+
+  const hasRotatorNodes = () =>
     rotator instanceof HTMLElement &&
-    chatGpt instanceof HTMLElement &&
-    claude instanceof HTMLElement &&
-    !reduceMotion.matches
-  ) {
-    let timeline: gsap.core.Timeline | null = null;
-    const context = gsap.context(() => {
-      gsap.set(chatGpt, { autoAlpha: 1, yPercent: 0 });
-      gsap.set(claude, { autoAlpha: 0, yPercent: 110 });
+    primaryName instanceof HTMLElement &&
+    secondaryName instanceof HTMLElement;
 
-      timeline = gsap.timeline({ repeat: -1 });
+  const clearInlineMotionStyles = () => {
+    if (!(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
+      return;
+    }
+
+    for (const node of [primaryName, secondaryName]) {
+      node.style.removeProperty('opacity');
+      node.style.removeProperty('visibility');
+      node.style.removeProperty('transform');
+    }
+  };
+
+  const resetActiveAssistant = () => {
+    if (!(rotator instanceof HTMLElement)) {
+      return;
+    }
+
+    rotator.dataset.activeAssistant = 'ChatGPT';
+  };
+
+  const destroyRotation = () => {
+    visibilityObserver?.disconnect();
+    visibilityObserver = null;
+    timeline?.kill();
+    timeline = null;
+    context?.revert();
+    context = null;
+    clearInlineMotionStyles();
+    resetActiveAssistant();
+  };
+
+  const syncTimelinePlayback = () => {
+    if (!timeline) {
+      return;
+    }
+
+    if (isHeroVisible && !reduceMotion.matches) {
+      timeline.play();
+      return;
+    }
+
+    timeline.pause();
+  };
+
+  const bindVisibilityObserver = () => {
+    if (!(hero instanceof HTMLElement) || typeof IntersectionObserver === 'undefined') {
+      isHeroVisible = true;
+      syncTimelinePlayback();
+      return;
+    }
+
+    visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        isHeroVisible = entry?.isIntersecting ?? false;
+        syncTimelinePlayback();
+      },
+      { threshold: 0.15 },
+    );
+    visibilityObserver.observe(hero);
+  };
+
+  const startRotation = () => {
+    if (!hasRotatorNodes() || reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    if (!(rotator instanceof HTMLElement) || !(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
+      return;
+    }
+
+    destroyRotation();
+
+    context = gsap.context(() => {
+      gsap.set(primaryName, { autoAlpha: 1, y: 0 });
+      gsap.set(secondaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX });
+
+      timeline = gsap.timeline({
+        repeat: -1,
+        paused: true,
+      });
+
       timeline
-        .to(chatGpt, { autoAlpha: 0, yPercent: -110, duration: 0.52, ease: 'power3.inOut' }, 2.4)
-        .to(claude, { autoAlpha: 1, yPercent: 0, duration: 0.52, ease: 'power3.inOut' }, '<')
+        .to(
+          primaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          2.4,
+        )
+        .to(
+          secondaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
         .call(() => {
           rotator.dataset.activeAssistant = 'Claude';
         })
-        .set(chatGpt, { autoAlpha: 0, yPercent: 110 }, '+=2.6')
-        .to(claude, { autoAlpha: 0, yPercent: -110, duration: 0.52, ease: 'power3.inOut' }, '<')
-        .to(chatGpt, { autoAlpha: 1, yPercent: 0, duration: 0.52, ease: 'power3.inOut' }, '<')
+        .set(primaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX }, '+=2.6')
+        .to(
+          secondaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .to(
+          primaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
         .call(() => {
           rotator.dataset.activeAssistant = 'ChatGPT';
         });
     }, rotator);
 
-    window.addEventListener(
-      'pagehide',
-      () => {
-        timeline?.kill();
-        context.revert();
-      },
-      { once: true },
-    );
-  }
+    bindVisibilityObserver();
+    syncTimelinePlayback();
+  };
+
+  const handleReducedMotionChange = () => {
+    if (reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    startRotation();
+  };
+
+  const handlePageHide = () => {
+    destroyRotation();
+  };
+
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (!event.persisted) {
+      return;
+    }
+
+    isHeroVisible = true;
+    startRotation();
+  };
+
+  startRotation();
+  reduceMotion.addEventListener('change', handleReducedMotionChange);
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('pageshow', handlePageShow);
 </script>
 
 <style>
