@@ -569,6 +569,35 @@ describe('unified lifecycle engine', () => {
     }
   });
 
+  it('should reject partial legacy release-key environment configuration', () => {
+    const publicKeysJson = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+    const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
+    const publicKey = process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+    delete process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+    try {
+      process.env.CONSUELO_RELEASE_KEY_ID = releaseKeyId;
+      delete process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+      expect(() => trustedReleaseKeysFromEnvironment(tempHome)).toThrow(
+        /must be configured together/,
+      );
+
+      delete process.env.CONSUELO_RELEASE_KEY_ID;
+      process.env.CONSUELO_RELEASE_PUBLIC_KEY = publicKeyPem;
+      expect(() => trustedReleaseKeysFromEnvironment(tempHome)).toThrow(
+        /must be configured together/,
+      );
+    } finally {
+      if (publicKeysJson === undefined)
+        delete process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
+      else process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON = publicKeysJson;
+      if (keyId === undefined) delete process.env.CONSUELO_RELEASE_KEY_ID;
+      else process.env.CONSUELO_RELEASE_KEY_ID = keyId;
+      if (publicKey === undefined)
+        delete process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+      else process.env.CONSUELO_RELEASE_PUBLIC_KEY = publicKey;
+    }
+  });
+
   it('fails closed on an archive digest mismatch and leaves current untouched', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });

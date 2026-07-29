@@ -99,7 +99,12 @@ describe('bootstrap source refresh controls', () => {
   it('should resolve the signed stable channel when a hosted install runs', () => {
     const bootstrap = readBootstrap();
 
-    expect(bootstrap).toContain('RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"');
+    expect(bootstrap).toContain(
+      'RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"',
+    );
+    expect(bootstrap).toMatch(
+      /if \[ "\$\{CONSUELO_OS_DEV:-0\}" = "1" \]; then[\s\S]*RELEASE_CHANNEL="\$\{CONSUELO_RELEASE_CHANNEL:-stable\}"[\s\S]*else[\s\S]*RELEASE_CHANNEL="stable"/,
+    );
     expect(bootstrap).toContain(
       '--refresh-source|--use-existing-source) ;;',
     );
@@ -322,7 +327,7 @@ describe('bootstrap source refresh controls', () => {
     );
   });
 
-  it('repairs only inactive incomplete immutable release directories', () => {
+  it('should repair only inactive incomplete immutable release directories', () => {
     const installRuntime = extractShellFunction(
       readBootstrap(),
       'install_verified_runtime',

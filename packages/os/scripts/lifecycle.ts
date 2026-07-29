@@ -90,7 +90,7 @@ function nextValue(argv: string[], index: number, flag: string): string {
 function parseArgs(argv: string[]): ParsedLifecycleArgs {
   const positional: string[] = [];
   const parsed: ParsedLifecycleArgs = {
-    command: argv[0] ?? 'status',
+    command: 'status',
     positional,
     check: false,
     yes: false,
@@ -101,7 +101,8 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
     quiet: false,
   };
 
-  for (let index = 1; index < argv.length; index += 1) {
+  let command: string | undefined;
+  for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--json') parsed.json = true;
     else if (arg === '--quiet') parsed.quiet = true;
@@ -130,9 +131,11 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
     } else if (arg.startsWith('-')) {
       throw new Error(`unknown lifecycle option: ${arg}`);
     } else {
-      positional.push(arg);
+      if (command === undefined) command = arg;
+      else positional.push(arg);
     }
   }
+  if (parsed.command !== 'help') parsed.command = command ?? 'status';
   return parsed;
 }
 
@@ -359,6 +362,11 @@ export function trustedReleaseKeysFromEnvironment(
   }
   const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
   const publicKey = process.env.CONSUELO_RELEASE_PUBLIC_KEY;
+  if (Boolean(keyId) !== Boolean(publicKey)) {
+    throw new Error(
+      'CONSUELO_RELEASE_KEY_ID and CONSUELO_RELEASE_PUBLIC_KEY must be configured together',
+    );
+  }
   if (keyId && publicKey) return { [keyId]: publicKey };
   const trustedKeysPath = resolve(
     resolveLifecyclePaths(home).home,

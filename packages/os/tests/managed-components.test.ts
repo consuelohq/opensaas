@@ -25,6 +25,7 @@ import {
   refreshManagedComponentPlan,
   requiredManagedContentBaseRefs,
   restoreManagedComponentDefault,
+  snapshotManagedComponentLocalOverrides,
   writeManagedComponentState,
   type ComponentTree,
   type ManagedComponentProvenance,
@@ -530,6 +531,47 @@ describe('managed metadata migration and ownership', () => {
 });
 
 describe('managed component provisioning integration', () => {
+  it('should run built-in tool wrappers from the active runtime with persisted Bun', () => {
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: [],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:00:00.000Z',
+      userRoot,
+    });
+    const runtimeRoot = join(home, 'runtime', 'current');
+    const runnerPath = join(runtimeRoot, 'scripts', 'tool-runner.ts');
+    const bunExecutable = join(home, 'managed-bun');
+    mkdirSync(join(runtimeRoot, 'scripts'), { recursive: true });
+    writeFileSync(runnerPath, '// tool runner fixture\n');
+    writeFileSync(
+      bunExecutable,
+      '#!/bin/bash\nprintf \'%s\\n\' "$@"\n',
+      { mode: 0o755 },
+    );
+    writeFileSync(
+      join(home, '.env'),
+      `BUN_BIN=${bunExecutable}\n`,
+      { mode: 0o600 },
+    );
+
+    const result = spawnSync(join(home, 'bin', 'status'), ['{"ok":true}'], {
+      encoding: 'utf8',
+      env: {
+        CONSUELO_HOME: home,
+        HOME: userRoot,
+        PATH: '/usr/bin:/bin',
+      },
+    });
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe('');
+    expect(result.stdout.trim().split('\n')).toEqual([
+      runnerPath,
+      'status',
+      '{"ok":true}',
+    ]);
+  });
+
   it('should remove a clean visible skill and preserve a modified skill when it is deselected', () => {
     const firstActions = provisionManagedComponentIndexes({
       home,
@@ -641,9 +683,52 @@ describe('managed component provisioning integration', () => {
       expect.objectContaining({
         type: 'seed_skill',
         path: skillPath,
-        status: 'preserved',
+        status: 'skipped',
       }),
     ]));
+
+    const current = readManagedComponentState(home);
+    const changedUpstream = [{
+      id: 'task',
+      kind: 'skill' as const,
+      sourcePath: 'skills/task',
+      localPath: 'Skills/task',
+      content: { 'SKILL.md': '# changed upstream\n' },
+    }];
+    const localOverrides = snapshotManagedComponentLocalOverrides(
+      userRoot,
+      current.provenance,
+      changedUpstream,
+    );
+    expect(localOverrides).toEqual([
+      expect.objectContaining({
+        id: 'task',
+        kind: 'skill',
+        localPath: 'Skills/task',
+        obstruction: 'file',
+      }),
+    ]);
+    const obstructed = buildManagedComponentUpdateState({
+      generatedAt: '2026-07-23T00:03:00.000Z',
+      sourceBundle: {
+        bundleId: 'sha256:changed',
+        version: '1.2.1',
+      },
+      provenance: current.provenance,
+      retainedContent: current.content,
+      upstream: changedUpstream,
+      localOverrides,
+      custom: [],
+    });
+    expect(
+      obstructed.plan.items.find(
+        (item) => item.key === key('skill', 'task'),
+      ),
+    ).toMatchObject({
+      action: 'conflict',
+      requiresReview: true,
+      resolutionState: 'conflict',
+    });
   });
 
   it('loads a configured visible local tree when rebuilding the production update plan', () => {
