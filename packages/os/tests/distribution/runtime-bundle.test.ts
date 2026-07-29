@@ -326,6 +326,9 @@ describe('runtime bundle contract', () => {
     expect(
       classifyRuntimeBundlePath('tools/deployment-provider/types.ts'),
     ).toBe('customer-provider');
+    expect(
+      classifyRuntimeBundlePath('tools/deployment-provider/schema.ts'),
+    ).toBe('customer-provider');
     expect(classifyRuntimeBundlePath('tools/filesystem/manifest.ts')).toBe(
       'source-only',
     );
@@ -852,6 +855,10 @@ describe('runtime bundle contract', () => {
         }),
         expect.objectContaining({
           path: 'tools/deployment-provider/service.ts',
+          role: 'customer-provider',
+        }),
+        expect.objectContaining({
+          path: 'tools/deployment-provider/schema.ts',
           role: 'customer-provider',
         }),
         expect.objectContaining({
