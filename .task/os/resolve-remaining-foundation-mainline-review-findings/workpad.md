@@ -29,38 +29,8 @@ started: 2026-07-29
 
 ## files changed
 
-- `packages/os/SCRIPTS.md`
-- `packages/os/cloudflare/os-device-authority/src/routes/device.ts`
-- `packages/os/cloudflare/os-device-authority/src/services/grants.ts`
-- `packages/os/cloudflare/os-device-authority/src/stores.ts`
-- `packages/os/cloudflare/workspace-edge/src/index.ts`
-- `packages/os/scripts/bootstrap.sh`
-- `packages/os/scripts/install-tty.test.ts`
-- `packages/os/scripts/lib/gcloud-managed-cloud-node.ts`
-- `packages/os/scripts/lib/lifecycle/engine.ts`
-- `packages/os/scripts/lib/lifecycle/errors.ts`
-- `packages/os/scripts/lib/local-agent-mcp-bridge.ts`
 - `packages/os/scripts/lib/managed-cloud-node-enrollment.ts`
-- `packages/os/scripts/lib/managed-cloud-node.ts`
-- `packages/os/scripts/lib/security-gateway.ts`
-- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
-- `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
-- `packages/os/scripts/mcp-stdio.ts`
-- `packages/os/scripts/start-caddy-daemon.sh`
-- `packages/os/scripts/workspace-node-heartbeat.ts`
-- `packages/os/tests/cloudflare-edge-router.test.ts`
-- `packages/os/tests/daemon-bun-path.test.ts`
-- `packages/os/tests/gcloud-managed-cloud-node-instance.test.ts`
-- `packages/os/tests/install-workspace-bootstrap-contract.test.ts`
 - `packages/os/tests/managed-cloud-node-enrollment.test.ts`
-- `packages/os/tests/managed-cloud-node-instance-contract.test.ts`
-- `packages/os/tests/managed-cloud-review-regressions.test.ts`
-- `packages/os/tests/native-lifecycle-operation.test.ts`
-- `packages/os/tests/oauth-device-page-contract.test.ts`
-- `packages/os/tests/os-device-authority-worker.test.ts`
-- `packages/os/tests/platform-managed-cloud-node-instance.test.ts`
-- `packages/os/tests/workspace-node-registry-routing.test.ts`
-- `packages/os/tests/foundation-finish-line-regressions.test.ts`
 
 ## workspace-owned: files changed
 
@@ -72,6 +42,7 @@ started: 2026-07-29
 - Added failing finish-line contracts, implemented the production fixes, then repaired stale baseline tests in the directly affected installer/lifecycle surfaces.
 - Attempted the full OS suite and retained its unrelated baseline failures; re-ran every changed and directly affected surface explicitly.
 - Addressed the current-head Codex P2 by restoring the approved workspace ID comparison against the trusted managed-node plan; the new regression failed before the implementation change and passed afterward.
+- Corrected the real clean-host runtime-bundle parity test to use a scoped 120-second timeout after the native Windows runner demonstrated that two full bundle builds can legitimately exceed the workflow's 15-second default; all Windows code, platform acceptance, and preceding distribution contracts passed before that timeout.
 
 ## workspace-owned: validation evidence
 
@@ -86,8 +57,12 @@ started: 2026-07-29
 - 2026-07-29 05:18:55 `verify`: passed — OK
 - 2026-07-29 05:20:01 `review.run`: passed — OK
 - Current-head enrollment identity regression: red with an incorrectly accepted `workspace_other`, then green with 15/15 focused enrollment/finish-line tests passing.
+- Native Windows CI evidence: service build passed with zero warnings/errors, platform acceptance passed, 77 distribution tests passed, and only the two-build clean-host parity contract timed out at the global 15-second limit after roughly 55 seconds.
 - 2026-07-29 05:30:38 `verify`: passed — OK
 - 2026-07-29 05:32:12 `verify`: passed — OK
+- 2026-07-29 05:32:39 `review.run`: passed — OK
+- 2026-07-29 05:40:08 `verify`: passed — OK
+- 2026-07-29 05:40:46 `verify`: passed — OK
 
 ## key decisions
 
@@ -133,7 +108,7 @@ bun run task:finish
 
 ## workspace-owned: test selection
 
-- changed files: `.task/os/resolve-remaining-foundation-mainline-review-findings/verify.json`, `.task/os/resolve-remaining-foundation-mainline-review-findings/workpad.md`, `packages/os/scripts/lib/managed-cloud-node-enrollment.ts`, `packages/os/tests/managed-cloud-node-enrollment.test.ts`
+- changed files: `.task/os/resolve-remaining-foundation-mainline-review-findings/verify.json`, `.task/os/resolve-remaining-foundation-mainline-review-findings/workpad.md`, `packages/os/tests/distribution/runtime-bundle.test.ts`
 - matched rules: `auto:@consuelo/os:package-test`
 - selected suites: `@consuelo/os package test`
 - run results: `@consuelo/os package test` passed
