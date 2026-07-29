@@ -433,6 +433,45 @@ describe('release provider retry safety', () => {
       version: '1.2.3',
     });
   });
+
+  it('resumes after a deployment interruption without replacing immutable bytes', async () => {
+    const mutation = publicationMutation();
+    const archive = mutation.artifacts![PLATFORM_BUNDLE_ID].archivePath;
+    const signature = mutation.artifacts![PLATFORM_BUNDLE_ID].signaturePath;
+    const fake = backend({
+      assetDigests: {
+        'runtime.tar.gz': digestFile(archive),
+        'runtime.tar.gz.sig': digestFile(signature),
+      },
+      failAfter: 'deployment:consuelo-os-dev',
+      r2Digests: {
+        [`bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz`]: digestFile(archive),
+        [`bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz.sig`]: digestFile(signature),
+      },
+      tagSha: SOURCE_COMMIT,
+    });
+    fake.deploymentExists = async () => fake.writes.includes('deployment:consuelo-os-dev');
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'injected provider interruption after deployment:consuelo-os-dev',
+    );
+
+    await executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake });
+
+    expect(fake.writes.filter((write) => write === 'deployment:consuelo-os-dev')).toHaveLength(1);
+    expect(fake.writes.some((write) => write.startsWith('asset:'))).toBe(false);
+    expect(fake.writes.some((write) => write.startsWith('r2:bundles/'))).toBe(false);
+    expect(fake.writes.at(-1)).toMatch(/^r2:state\/release-state\.json:/);
+  });
+
   it('downloads and hashes a GitHub asset when digest metadata is unavailable', async () => {
     const remoteBytes = Buffer.from('remote-release-asset');
     const runner: ReleaseProviderCommandRunner = async (planned) => {
@@ -494,7 +533,9 @@ describe('release provider retry safety', () => {
       argument.startsWith('payload[releaseIdentity]='),
     )?.slice('payload[releaseIdentity]='.length);
     expect(JSON.parse(encodedIdentity ?? 'null')).toEqual(identity);
-    expect(captured?.args).not.toContain('required_contexts[]');
+    const requiredContextsIndex = captured?.args.indexOf('required_contexts[]') ?? -1;
+    expect(requiredContextsIndex).toBeGreaterThan(0);
+    expect(captured?.args[requiredContextsIndex - 1]).toBe('-F');
   });
 
   it('requires the promoted source commit to be integrated to main before moving a protected ref', async () => {
