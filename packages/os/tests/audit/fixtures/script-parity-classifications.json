@@ -1564,6 +1564,14 @@
     "scripts/lib/workspace-project-cwd.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned resolution of a workspace project checkout for tool cwd; depends on OS home layout and has no workspace counterpart."
+    },
+    "scripts/login.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned operator sign-in ceremony; node-local token handling with no workspace script counterpart."
+    },
+    "scripts/lib/operator-login.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned PKCE loopback login flow for the operator CLI; no workspace counterpart."
     }
   },
   "highRiskScripts": [
