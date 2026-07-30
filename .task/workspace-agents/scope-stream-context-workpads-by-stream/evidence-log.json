@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+  "events": [
+    {
+      "id": "491fb96f-9ebc-4ca0-bc9e-7fcba4d206a0",
+      "occurred_at": "2026-06-02T00:54:27.707Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "af7820b0-a651-4d96-a2bd-e2a29bf35298",
+      "occurred_at": "2026-06-02T00:54:34.105Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "a6166929-0134-4cb3-9d16-5313e63f4c5f",
+      "occurred_at": "2026-06-02T00:55:48.480Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "e682b71f-8620-44d4-b2f7-f9dedd14c71f",
+      "occurred_at": "2026-06-02T00:55:53.202Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-workpad.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "42ed7e6d-52b0-4ac0-9ce1-02162f59efda",
+      "occurred_at": "2026-06-02T00:55:57.689Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/validation.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "4b0e878f-f93e-490d-bcda-6190ff44d902",
+      "occurred_at": "2026-06-02T00:56:32.582Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "8c27b877-2928-42ce-96eb-4489ffb0cc0f",
+      "occurred_at": "2026-06-02T00:57:31.755Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "0da96bfd-f900-4f33-a036-0e44dc614afd",
+      "occurred_at": "2026-06-02T00:58:35.356Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "447706a3-65be-4ca2-814d-8bd9af7c2bc7",
+      "occurred_at": "2026-06-02T00:59:03.938Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "5e932133-f699-4568-b018-d135fd65ced1",
+      "occurred_at": "2026-06-02T00:59:50.878Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "6db797ed-8049-4561-94dd-1565c3deffcc",
+      "occurred_at": "2026-06-02T01:00:55.308Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "f46a1eca-c181-454e-8ad6-b7b69fe0f045",
+      "occurred_at": "2026-06-02T01:01:15.493Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "62f6cb0b-d773-4bb5-b284-800db1d57a00",
+      "occurred_at": "2026-06-02T01:01:41.829Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "8762d137-292b-432c-a7b1-16e3ba6f0fd5",
+      "occurred_at": "2026-06-02T01:03:30.947Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "0ee41bc4-f41c-40ed-954d-f4f0809d1d69",
+      "occurred_at": "2026-06-02T01:03:41.202Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "81e75809-a707-447a-82ae-712c3517299d",
+      "occurred_at": "2026-06-02T01:04:10.390Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "9679f5e2-73c9-4ec3-b0b3-ed3093f7cc07",
+      "occurred_at": "2026-06-02T01:04:19.749Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "59ce3fb5-6608-4826-89f6-b66d31048c64",
+      "occurred_at": "2026-06-02T01:04:54.106Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "4e2653c6-b09a-4a24-940f-2ff6877918d8",
+      "occurred_at": "2026-06-02T01:05:13.753Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "d7ce20c2-dda5-4ba2-92a8-8a67dbf1adbc",
+      "occurred_at": "2026-06-02T01:09:28.989Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "9090b121-82b5-4f03-815e-09a4975f967c",
+      "occurred_at": "2026-06-02T01:10:07.393Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    },
+    {
+      "id": "735e9c20-8c5a-4ca1-887c-d99cdd8ed5c6",
+      "occurred_at": "2026-06-02T01:13:57.188Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-stream-context-workpads-by-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-stream-context-workpads-by-stream"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-02T01:13:57.239Z"
+}
