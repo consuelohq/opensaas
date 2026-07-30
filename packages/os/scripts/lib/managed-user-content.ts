@@ -20,7 +20,7 @@ import path from 'node:path';
  */
 
 export const USER_SYSTEM_PROMPT = 'system.md';
-export const USER_STEERING_EXAMPLE = 'example-steering.md';
+export const USER_SYSTEM_EXAMPLE = 'example-system.md';
 
 export type ManagedUserContentAction = {
   path: string;
@@ -68,7 +68,7 @@ export function userSystemPromptTemplate(): string {
     'Anything here is appended to the steering every agent receives, after the built-in runtime',
     'steering. This file is yours: OS seeds it once and never overwrites it on update.',
     '',
-    `See \`${USER_STEERING_EXAMPLE}\` in this folder for a worked example — steal whatever is useful.`,
+    `See \`${USER_SYSTEM_EXAMPLE}\` in this folder for a worked example — steal whatever is useful.`,
     'That file is only ever an example; it is never loaded into steering.',
     '',
     'Any other `.md` in this directory is loaded too, in filename order.',
@@ -100,7 +100,7 @@ export function userSystemPromptTemplate(): string {
 export function steeringExampleTemplate(steeringBody?: string): string {
   const header = [
     '<!--',
-    '  example-steering.md',
+    '  example-system.md',
     '',
     `  This is Consuelo's own steering, verbatim. It is NOT loaded: OS excludes this filename, so`,
     '  nothing here reaches an agent no matter what it says. Every other .md in this folder IS',
@@ -181,7 +181,7 @@ export function reconcileManagedUserContent(input: {
   );
   actions.push(
     refresh(
-      path.join(input.userRoot, 'Steering', USER_STEERING_EXAMPLE),
+      path.join(input.userRoot, 'Steering', USER_SYSTEM_EXAMPLE),
       steeringExampleTemplate(input.steeringBody),
     ),
   );

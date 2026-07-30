@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   reconcileManagedUserContent,
-  USER_STEERING_EXAMPLE,
+  USER_SYSTEM_EXAMPLE,
   USER_SYSTEM_PROMPT,
 } from '../scripts/lib/managed-user-content';
 import {
@@ -62,7 +62,7 @@ describe('managed user content', () => {
       const actions = reconcile();
 
       expect(fs.existsSync(at('Steering', USER_SYSTEM_PROMPT))).toBe(true);
-      expect(fs.existsSync(at('Steering', USER_STEERING_EXAMPLE))).toBe(true);
+      expect(fs.existsSync(at('Steering', USER_SYSTEM_EXAMPLE))).toBe(true);
       expect(fs.existsSync(at('Tools', 'TOOLS.md'))).toBe(true);
       expect(actions.every((action) => action.status === 'created')).toBe(true);
     });
@@ -71,7 +71,7 @@ describe('managed user content', () => {
       reconcile();
       for (const file of [
         at('Steering', USER_SYSTEM_PROMPT),
-        at('Steering', USER_STEERING_EXAMPLE),
+        at('Steering', USER_SYSTEM_EXAMPLE),
         at('Tools', 'TOOLS.md'),
       ]) {
         expect(fs.statSync(file).mode & 0o777).toBe(0o600);
@@ -90,13 +90,13 @@ describe('managed user content', () => {
     it('points the user at the example and tells them to steal from it', () => {
       reconcile();
       const prompt = read('Steering', USER_SYSTEM_PROMPT);
-      expect(prompt).toContain(USER_STEERING_EXAMPLE);
+      expect(prompt).toContain(USER_SYSTEM_EXAMPLE);
       expect(prompt).toContain('steal');
     });
 
     it('marks the example as not loaded and points at the real file', () => {
       reconcile();
-      const example = read('Steering', USER_STEERING_EXAMPLE);
+      const example = read('Steering', USER_SYSTEM_EXAMPLE);
       expect(example).toContain('NOT loaded');
       expect(example).toContain(USER_SYSTEM_PROMPT);
     });
@@ -104,7 +104,7 @@ describe('managed user content', () => {
     it('reproduces the bundled steering verbatim as the example', () => {
       const steeringBody = '# System Prompt\n\n## Alignment First\n\nStop and resolve.\n';
       reconcileManagedUserContent({ userRoot, tools, steeringBody });
-      const example = read('Steering', USER_STEERING_EXAMPLE);
+      const example = read('Steering', USER_SYSTEM_EXAMPLE);
 
       expect(example).toContain('## Alignment First');
       expect(example).toContain('Stop and resolve.');
@@ -114,7 +114,7 @@ describe('managed user content', () => {
 
     it('degrades to a placeholder when the release carries no steering', () => {
       reconcileManagedUserContent({ userRoot, tools });
-      expect(read('Steering', USER_STEERING_EXAMPLE)).toContain(
+      expect(read('Steering', USER_SYSTEM_EXAMPLE)).toContain(
         'could not be read',
       );
     });
@@ -163,9 +163,9 @@ describe('managed user content', () => {
 
     it('restores the example if the user deletes it', () => {
       reconcile();
-      fs.rmSync(at('Steering', USER_STEERING_EXAMPLE));
+      fs.rmSync(at('Steering', USER_SYSTEM_EXAMPLE));
       reconcile();
-      expect(fs.existsSync(at('Steering', USER_STEERING_EXAMPLE))).toBe(true);
+      expect(fs.existsSync(at('Steering', USER_SYSTEM_EXAMPLE))).toBe(true);
     });
 
     it('is idempotent: a second run changes nothing', () => {
@@ -212,7 +212,7 @@ describe('managed user content', () => {
 
       reconcileManagedUserContentForRelease({ releasePath, userRoot });
 
-      expect(read('Steering', USER_STEERING_EXAMPLE)).toContain(
+      expect(read('Steering', USER_SYSTEM_EXAMPLE)).toContain(
         '## Reuse Before Invention',
       );
     });
