@@ -133,8 +133,31 @@ export function resolveWorkspaceProjectCwd(input: {
  * try/catch, so all the failure handling for this lookup lives here and the function simply returns
  * undefined when anything is missing or unreadable.
  */
+/**
+ * Resolves the OS home from the environment.
+ *
+ * The daemon plist exports WORKSPACE_DAEMON_CONSUELO_HOME rather than CONSUELO_HOME, so reading
+ * only the latter resolved to nothing inside the server process — precisely where tool cwd
+ * resolution matters. A candidate only counts if it actually contains consuelo.yaml, so a stale or
+ * empty directory does not shadow a real home.
+ */
+export function resolveOsHomeFromEnvironment(): string | undefined {
+  const candidates = [
+    process.env.CONSUELO_HOME,
+    process.env.WORKSPACE_DAEMON_CONSUELO_HOME,
+    process.env.HOME ? path.join(process.env.HOME, '.consuelo') : undefined,
+  ];
+  for (const candidate of candidates) {
+    const trimmed = candidate?.trim();
+    if (trimmed && fs.existsSync(path.join(trimmed, 'consuelo.yaml'))) {
+      return trimmed;
+    }
+  }
+  return undefined;
+}
+
 export function resolveActiveWorkspaceProjectCwd(
-  home = process.env.CONSUELO_HOME,
+  home = resolveOsHomeFromEnvironment(),
 ): string | undefined {
   if (!home) return undefined;
   try {

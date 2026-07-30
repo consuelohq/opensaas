@@ -7,6 +7,7 @@ import {
   type ManagedUserContentAction,
 } from './managed-user-content';
 import { ensureNodeEncryptionKey } from './node-encryption-key-file';
+import { resolveOsHomeFromEnvironment } from './workspace-project-cwd';
 
 /**
  * Reconciles visible user content against a specific runtime release.
@@ -88,7 +89,7 @@ export function reconcileManagedUserContentForRelease(input: {
  * before onboarding completes.
  */
 export function ensureNodeEncryptionKeyForHome(
-  home = process.env.CONSUELO_HOME,
+  home = resolveOsHomeFromEnvironment(),
 ): string | undefined {
   if (!home) return undefined;
   try {

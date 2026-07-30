@@ -165,6 +165,11 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
     <string>${consuelo_home}</string>
     <key>WORKSPACE_DAEMON_CONSUELO_HOME</key>
     <string>${consuelo_data_home}</string>
+    <!-- Canonical name. Runtime code reads CONSUELO_HOME; exporting only the WORKSPACE_DAEMON_
+         prefixed form left it unset inside the server process, so anything resolving the OS home
+         from the environment silently fell back to the runtime release directory. -->
+    <key>CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
     <key>WORKSPACE_DAEMON_USER</key>
     <string>${consuelo_user}</string>
     <key>WORKSPACE_DAEMON_PATH</key>
