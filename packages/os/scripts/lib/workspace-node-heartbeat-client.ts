@@ -17,6 +17,15 @@ export type WorkspaceNodeHeartbeatConfig = {
   capabilities: string[];
   publicKeyJwk: string;
   signingKeyJwk: string;
+  /**
+   * Public half of the node's credential-encryption key.
+   *
+   * Published so a setup surface can seal a credential to this node without the control plane
+   * being able to open it. Without this the remote ceremony requires hand-carrying the key file
+   * between machines, which is not a product. Optional because a node installed before the key
+   * existed has none until its next release activation.
+   */
+  encryptionPublicKeyJwk?: string;
 };
 
 export type WorkspaceNodeHeartbeatResult = {
@@ -100,6 +109,10 @@ function normalizeConfig(
     capabilities,
     publicKeyJwk: config.publicKeyJwk,
     signingKeyJwk: config.signingKeyJwk,
+    ...(typeof config.encryptionPublicKeyJwk === 'string' &&
+    config.encryptionPublicKeyJwk.trim() !== ''
+      ? { encryptionPublicKeyJwk: config.encryptionPublicKeyJwk.trim() }
+      : {}),
   };
 }
 
@@ -152,6 +165,10 @@ export function createWorkspaceNodeHeartbeatClient(input: {
         nonce: requiredString(createNonce(), 'nonce'),
         connectorStatus: config.connectorStatus,
         capabilities: config.capabilities,
+        // Inside the signed payload, so the authority can trust the key it is asked to publish.
+        ...(config.encryptionPublicKeyJwk
+          ? { encryptionPublicKeyJwk: config.encryptionPublicKeyJwk }
+          : {}),
         ...(agents === undefined ? {} : { agents }),
       });
       const signature = createDevicePublicKeyProof({ deviceKeyPair, payload });
