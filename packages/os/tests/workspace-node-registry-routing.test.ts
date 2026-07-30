@@ -285,6 +285,145 @@ describe('workspace node identity', () => {
       }),
     ).rejects.toThrow('node identity key does not match');
   });
+
+  it('accepts a declared identity replacement, which is what reinstalling a node produces', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    const existingKey = generateWorkspaceDeviceKeyPair();
+    const reinstalledKey = generateWorkspaceDeviceKeyPair();
+    await store.putWorkspaceNode(
+      node({
+        nodeId: 'node-home',
+        displayName: 'Mac Mini',
+        role: 'home',
+        connectorId: 'connector_node_home',
+        publicKeyJwk: existingKey.publicKeyJwk,
+        publicKeyThumbprint: await devicePublicKeyThumbprint(
+          existingKey.publicKeyJwk,
+        ),
+      }),
+    );
+    const grant: Grant = {
+      hash: 'grant_hash',
+      userCode: 'ABCD-EFGH',
+      workspaceSlug,
+      workspaceHost,
+      status: 'pending',
+      expiresAt: baseNow + 300_000,
+      interval: 5,
+      devicePublicKeyJwk: reinstalledKey.publicKeyJwk,
+      deviceKeyAlgorithm: 'Ed25519',
+      devicePublicKeyThumbprint: await devicePublicKeyThumbprint(
+        reinstalledKey.publicKeyJwk,
+      ),
+      nodeId: 'node-home',
+      nodeName: 'Mac Mini',
+      nodeIdentityReplacement: true,
+    };
+
+    const approved = await prepareGrantApproval({
+      store,
+      grant,
+      accountId,
+      authMethod: 'google',
+      nowMs: baseNow,
+    });
+
+    expect(approved.nodeIdentityRotatedAt).toBe(baseNow);
+    expect(approved.nodeStatus).toBe('reconnected');
+    const stored = await store.byWorkspaceNode(accountId, 'node-home');
+    expect(stored?.devicePublicKeyThumbprint).toBe(
+      await devicePublicKeyThumbprint(reinstalledKey.publicKeyJwk),
+    );
+  });
+
+  it('does not stamp a rotation when the identity key is unchanged', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    const keyPair = generateWorkspaceDeviceKeyPair();
+    const thumbprint = await devicePublicKeyThumbprint(keyPair.publicKeyJwk);
+    await store.putWorkspaceNode(
+      node({
+        nodeId: 'node-home',
+        displayName: 'Mac Mini',
+        role: 'home',
+        connectorId: 'connector_node_home',
+        publicKeyJwk: keyPair.publicKeyJwk,
+        publicKeyThumbprint: thumbprint,
+      }),
+    );
+
+    const approved = await prepareGrantApproval({
+      store,
+      grant: {
+        hash: 'grant_hash',
+        userCode: 'ABCD-EFGH',
+        workspaceSlug,
+        workspaceHost,
+        status: 'pending',
+        expiresAt: baseNow + 300_000,
+        interval: 5,
+        devicePublicKeyJwk: keyPair.publicKeyJwk,
+        deviceKeyAlgorithm: 'Ed25519',
+        devicePublicKeyThumbprint: thumbprint,
+        nodeId: 'node-home',
+        nodeName: 'Mac Mini',
+        nodeIdentityReplacement: true,
+      },
+      accountId,
+      authMethod: 'google',
+      nowMs: baseNow,
+    });
+
+    expect(approved.nodeIdentityRotatedAt).toBeUndefined();
+  });
+
+  it('refuses to resurrect a revoked node even with a declared replacement', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    const existingKey = generateWorkspaceDeviceKeyPair();
+    const reinstalledKey = generateWorkspaceDeviceKeyPair();
+    await store.putWorkspaceNode({
+      // The shared `node()` helper does not model state, so revoke explicitly.
+      ...node({
+        nodeId: 'node-home',
+        displayName: 'Mac Mini',
+        role: 'home',
+        connectorId: 'connector_node_home',
+        publicKeyJwk: existingKey.publicKeyJwk,
+        publicKeyThumbprint: await devicePublicKeyThumbprint(
+          existingKey.publicKeyJwk,
+        ),
+      }),
+      state: 'revoked',
+    });
+
+    await expect(
+      prepareGrantApproval({
+        store,
+        grant: {
+          hash: 'grant_hash',
+          userCode: 'ABCD-EFGH',
+          workspaceSlug,
+          workspaceHost,
+          status: 'pending',
+          expiresAt: baseNow + 300_000,
+          interval: 5,
+          devicePublicKeyJwk: reinstalledKey.publicKeyJwk,
+          deviceKeyAlgorithm: 'Ed25519',
+          devicePublicKeyThumbprint: await devicePublicKeyThumbprint(
+            reinstalledKey.publicKeyJwk,
+          ),
+          nodeId: 'node-home',
+          nodeName: 'Mac Mini',
+          nodeIdentityReplacement: true,
+        },
+        accountId,
+        authMethod: 'google',
+        nowMs: baseNow,
+      }),
+    ).rejects.toThrow('revoked');
+  });
 });
 
 describe('workspace node management and presence', () => {

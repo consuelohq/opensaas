@@ -107,15 +107,25 @@ export async function registerGrantNode(input: {
       input.accountId,
       nodeId,
     );
-    if (
-      existingNode &&
+    const identityChanged =
+      existingNode !== undefined &&
       existingNode.devicePublicKeyThumbprint !==
-        input.grant.devicePublicKeyThumbprint
-    ) {
+        input.grant.devicePublicKeyThumbprint;
+    if (identityChanged && input.grant.nodeIdentityReplacement !== true) {
+      // Default stays fail-closed: a mismatched key on an existing node id is a hijack attempt
+      // unless the operator explicitly declared a replacement.
       throw new Error('node identity key does not match the registered node');
     }
+    // Revocation is checked after the identity rule so a revoked node reports as revoked rather
+    // than as a key mismatch, and so a replacement can never resurrect a revoked node.
     if (existingNode?.state === 'revoked') {
       throw new Error('workspace node has been revoked');
+    }
+    if (identityChanged) {
+      // Reaching here means the account owner completed an interactive authorization for a node
+      // they already own and asked to replace its identity, which is exactly what reinstalling a
+      // machine produces. Recording the rotation keeps it visible in the node registry.
+      input.grant.nodeIdentityRotatedAt = input.nowMs;
     }
     const role =
       existingNode?.role ?? (existingWorkspace?.homeNodeId ? 'member' : 'home');
