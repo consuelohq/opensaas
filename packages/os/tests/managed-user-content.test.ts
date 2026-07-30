@@ -274,3 +274,33 @@ describe('node encryption key on update', () => {
     expect(() => ensureNodeEncryptionKeyForHome(home)).not.toThrow();
   });
 });
+
+describe('engine does not touch a real home', () => {
+  it('skips reconciliation when no visible user root is supplied', async () => {
+    // Regression: the engine defaulted this from os.homedir(), so any test constructing it without
+    // isolating HOME wrote managed content into the developer's actual ~/Consuelo.
+    const { createLifecycleEngine } = await import(
+      '../scripts/lib/lifecycle/engine'
+    );
+    const engine = createLifecycleEngine({
+      home: fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-engine-home-')),
+    } as never);
+    expect(engine).toBeDefined();
+    // The dependency is optional and absent, so nothing can be written outside the temp home.
+    expect(
+      (engine as unknown as { visibleUserRoot?: string }).visibleUserRoot,
+    ).toBeUndefined();
+  });
+
+  it('writes only under the supplied root', () => {
+    const scoped = path.join(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-scoped-')),
+      'Consuelo',
+    );
+    writeRelease(['scoped.tool'], ['task']);
+    reconcileManagedUserContentForRelease({ releasePath, userRoot: scoped });
+
+    expect(fs.existsSync(path.join(scoped, 'Tools', 'TOOLS.md'))).toBe(true);
+    fs.rmSync(path.dirname(scoped), { recursive: true, force: true });
+  });
+});

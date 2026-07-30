@@ -55,6 +55,14 @@ import type {
 } from './types';
 
 export type LifecycleEngineDependencies = {
+  /**
+   * Visible ~/Consuelo root for managed user content.
+   *
+   * Deliberately required from the caller rather than defaulted from os.homedir(). Defaulting made
+   * the engine write into the developer's real home whenever a test constructed it without
+   * isolating HOME. Callers that omit it skip user-content reconciliation entirely.
+   */
+  visibleUserRoot?: string;
   home?: string;
   releaseSource: ReleaseSource;
   trustedReleaseKeys:
@@ -295,9 +303,12 @@ export function createLifecycleEngine(
       // the skills index. Failures here must not fail the release, because the runtime is already
       // live and usable without this content.
       try {
-        reconcileManagedUserContentForRelease({
-          releasePath: input.nextReleasePath,
-        });
+        if (dependencies.visibleUserRoot) {
+          reconcileManagedUserContentForRelease({
+            releasePath: input.nextReleasePath,
+            userRoot: dependencies.visibleUserRoot,
+          });
+        }
         ensureNodeEncryptionKeyForHome(home);
       } catch {
         // Reported by the next doctor run rather than rolling back a good release.

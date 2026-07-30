@@ -23,6 +23,7 @@ import {
   type LifecycleReleaseChannel,
   type LifecycleServiceController,
 } from './lib/lifecycle';
+import { resolveVisibleUserRoot } from './lib/managed-user-content-release';
 import { createLinuxPlatformAdapter } from './lib/platforms/linux';
 import { createWindowsServiceController } from './lib/windows-platform';
 
@@ -449,6 +450,7 @@ export const createDefaultLifecycleEngine = (input: {
     process.env.CONSUELO_RELEASE_BASE_URL?.trim() || DEFAULT_RELEASE_BASE_URL;
   return createLifecycleEngine({
     home: input.home,
+    visibleUserRoot: resolveVisibleUserRoot(),
     releaseSource: createHttpReleaseSource({
       baseUrl: releaseBaseUrl,
       ...(process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH === '1'
