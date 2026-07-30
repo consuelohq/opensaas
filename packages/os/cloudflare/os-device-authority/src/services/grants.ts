@@ -126,6 +126,10 @@ export async function registerGrantNode(input: {
       // they already own and asked to replace its identity, which is exactly what reinstalling a
       // machine produces. Recording the rotation keeps it visible in the node registry.
       input.grant.nodeIdentityRotatedAt = input.nowMs;
+      // Retained so the rollback path can put the working key back if route provisioning fails.
+      input.grant.nodeReplacedPublicKeyJwk = existingNode!.devicePublicKeyJwk;
+      input.grant.nodeReplacedThumbprint =
+        existingNode!.devicePublicKeyThumbprint;
     }
     const role =
       existingNode?.role ?? (existingWorkspace?.homeNodeId ? 'member' : 'home');
@@ -213,6 +217,12 @@ export async function prepareGrantApproval(input: {
   }
 }
 
+/** Clears the retained previous identity once the approval has committed. */
+export function clearRetainedReplacedIdentity(grant: Grant): void {
+  delete grant.nodeReplacedPublicKeyJwk;
+  delete grant.nodeReplacedThumbprint;
+}
+
 export async function commitGrantApproval(input: {
   store: Store;
   grant: Grant;
@@ -270,6 +280,31 @@ export async function failGrantWorkspaceRouteSetup(input: {
     throw new Error(
       `grant failure persistence failed: ${error instanceof Error ? error.message : String(error)}`,
     );
+  }
+  // A replaced identity must be put back before anything else. The installer that triggered this
+  // gets no bootstrap material either way, but the existing installation keeps working with the
+  // key it still holds instead of being locked out by a half-applied rotation.
+  if (
+    input.grant.nodeReplacedPublicKeyJwk &&
+    input.grant.nodeReplacedThumbprint &&
+    input.grant.accountId &&
+    input.grant.nodeId
+  ) {
+    try {
+      const current = await input.store.byWorkspaceNode(
+        input.grant.accountId,
+        input.grant.nodeId,
+      );
+      if (current) {
+        await input.store.putWorkspaceNode({
+          ...current,
+          devicePublicKeyJwk: input.grant.nodeReplacedPublicKeyJwk,
+          devicePublicKeyThumbprint: input.grant.nodeReplacedThumbprint,
+        });
+      }
+    } catch {
+      // The durable failed grant is authoritative even when rollback cleanup fails.
+    }
   }
   if (
     input.grant.nodeStatus === 'created' &&

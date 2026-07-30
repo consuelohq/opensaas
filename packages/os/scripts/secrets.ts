@@ -46,9 +46,32 @@ const USAGE = `usage: secrets <command>
                                  install an envelope delivered to this node
   remove <BINDING>               remove a binding from this node
 
+flags:
+  --json                         emit a single structured JSON object
+  --quiet                        suppress human-oriented output
+
 values are read from stdin only, never from arguments:
   printf %s "$TOKEN" | secrets set GITHUB_TOKEN
 `;
+
+/**
+ * Output contract. AGENTS.md requires --json and --quiet on project CLI surfaces so automation can
+ * parse a stable shape or suppress output entirely. Values are never part of either mode.
+ */
+type OutputMode = { json: boolean; quiet: boolean };
+
+const emit = (
+  mode: OutputMode,
+  human: string,
+  structured: Record<string, unknown>,
+): void => {
+  if (mode.json) {
+    process.stdout.write(`${JSON.stringify(structured)}\n`);
+    return;
+  }
+  if (mode.quiet) return;
+  process.stdout.write(`${human}\n`);
+};
 
 type Context = {
   home: string;
@@ -69,8 +92,14 @@ const ceremonyActor = (context: Context) => ({
   nodeId: context.nodeId,
 });
 
+let outputMode: OutputMode = { json: false, quiet: false };
+
 const die = (message: string, code = 1): never => {
-  process.stderr.write(`${message}\n`);
+  if (outputMode.json) {
+    process.stderr.write(`${JSON.stringify({ ok: false, error: message })}\n`);
+  } else {
+    process.stderr.write(`${message}\n`);
+  }
   process.exit(code);
 };
 
@@ -153,19 +182,27 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
         workspaceId: context.workspaceId,
         nodeId: context.nodeId,
       });
-    process.stdout.write(`${JSON.stringify(published, null, 2)}\n`);
+    emit(
+      outputMode,
+      JSON.stringify(published, null, 2),
+      { ok: true, command: 'node-key', ...published },
+    );
   },
 
   status: (argv, context) => {
     const bindingId = argv[0] ?? die('status requires a binding');
-    process.stdout.write(
-      `${credentialStatus({
-        home: context.home,
-        workspaceId: context.workspaceId,
-        nodeId: context.nodeId,
-        bindingId,
-      })}\n`,
-    );
+    const status = credentialStatus({
+      home: context.home,
+      workspaceId: context.workspaceId,
+      nodeId: context.nodeId,
+      bindingId,
+    });
+    emit(outputMode, status, {
+      ok: true,
+      command: 'status',
+      bindingId,
+      status,
+    });
   },
 
   list: (_argv, context) => {
@@ -174,13 +211,15 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
       workspaceId: context.workspaceId,
       nodeId: context.nodeId,
     });
-    if (entries.length === 0) {
-      process.stdout.write('no credentials are set on this node\n');
-      return;
-    }
-    for (const entry of entries) {
-      process.stdout.write(`${entry.status.padEnd(8)} ${entry.bindingId}\n`);
-    }
+    emit(
+      outputMode,
+      entries.length === 0
+        ? 'no credentials are set on this node'
+        : entries
+            .map((entry) => `${entry.status.padEnd(8)} ${entry.bindingId}`)
+            .join('\n'),
+      { ok: true, command: 'list', credentials: entries },
+    );
   },
 
   set: async (argv, context) => {
@@ -222,7 +261,12 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
       }),
       actor: ceremonyActor(context),
     });
-    process.stdout.write(`set ${bindingId} on ${context.nodeId}\n`);
+    emit(outputMode, `set ${bindingId} on ${context.nodeId}`, {
+      ok: true,
+      command: 'set',
+      bindingId,
+      nodeId: context.nodeId,
+    });
   },
 
   seal: async (argv, context) => {
@@ -263,7 +307,11 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
     if (outFile) {
       fs.writeFileSync(outFile, serialized, { mode: 0o600 });
       fs.chmodSync(outFile, 0o600);
-      process.stdout.write(`sealed ${bindingId} for ${targetNodeId} -> ${outFile}\n`);
+      emit(
+        outputMode,
+        `sealed ${bindingId} for ${targetNodeId} -> ${outFile}`,
+        { ok: true, command: 'seal', bindingId, nodeId: targetNodeId, out: outFile },
+      );
       return;
     }
     process.stdout.write(serialized);
@@ -291,7 +339,12 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
       envelope,
       actor: ceremonyActor(context),
     });
-    process.stdout.write(`installed ${bindingId} on ${context.nodeId}\n`);
+    emit(outputMode, `installed ${bindingId} on ${context.nodeId}`, {
+      ok: true,
+      command: 'install',
+      bindingId,
+      nodeId: context.nodeId,
+    });
   },
 
   remove: (argv, context) => {
@@ -301,12 +354,25 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
       bindingId,
       actor: ceremonyActor(context),
     });
-    process.stdout.write(`removed ${bindingId} from ${context.nodeId}\n`);
+    emit(outputMode, `removed ${bindingId} from ${context.nodeId}`, {
+      ok: true,
+      command: 'remove',
+      bindingId,
+      nodeId: context.nodeId,
+    });
   },
 };
 
 async function main(): Promise<void> {
-  const [command, ...rest] = process.argv.slice(2);
+  const raw = process.argv.slice(2);
+  outputMode = {
+    json: raw.includes('--json'),
+    quiet: raw.includes('--quiet'),
+  };
+  // Strip output flags wherever they appear, so a leading flag is not mistaken for a command and a
+  // trailing one is not mistaken for a binding.
+  const argv = raw.filter((arg) => arg !== '--json' && arg !== '--quiet');
+  const [command, ...rest] = argv;
   if (!command || command === '--help' || command === '-h') {
     process.stdout.write(USAGE);
     return;

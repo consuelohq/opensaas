@@ -382,6 +382,67 @@ describe('workspace node identity', () => {
     expect(approved.nodeIdentityRotatedAt).toBeUndefined();
   });
 
+  it('restores the previous key when route provisioning fails after a replacement', async () => {
+    const { failGrantWorkspaceRouteSetup } = await import(
+      '../cloudflare/os-device-authority/src/services/grants'
+    );
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    const existingKey = generateWorkspaceDeviceKeyPair();
+    const reinstalledKey = generateWorkspaceDeviceKeyPair();
+    const existingThumbprint = await devicePublicKeyThumbprint(
+      existingKey.publicKeyJwk,
+    );
+    await store.putWorkspaceNode(
+      node({
+        nodeId: 'node-home',
+        displayName: 'Mac Mini',
+        role: 'home',
+        connectorId: 'connector_node_home',
+        publicKeyJwk: existingKey.publicKeyJwk,
+        publicKeyThumbprint: existingThumbprint,
+      }),
+    );
+    const grant: Grant = {
+      hash: 'grant_hash',
+      userCode: 'ABCD-EFGH',
+      workspaceSlug,
+      workspaceHost,
+      status: 'pending',
+      expiresAt: baseNow + 300_000,
+      interval: 5,
+      devicePublicKeyJwk: reinstalledKey.publicKeyJwk,
+      deviceKeyAlgorithm: 'Ed25519',
+      devicePublicKeyThumbprint: await devicePublicKeyThumbprint(
+        reinstalledKey.publicKeyJwk,
+      ),
+      nodeId: 'node-home',
+      nodeName: 'Mac Mini',
+      nodeIdentityReplacement: true,
+    };
+
+    const approved = await prepareGrantApproval({
+      store,
+      grant,
+      accountId,
+      authMethod: 'google',
+      nowMs: baseNow,
+    });
+    expect(approved.nodeReplacedThumbprint).toBe(existingThumbprint);
+
+    // Route provisioning runs after the key swap; a failure here must not lock out the existing
+    // installation, which still holds only the previous key.
+    await failGrantWorkspaceRouteSetup({
+      store,
+      grant: approved,
+      error: new Error('route provisioning exploded'),
+    });
+
+    const restored = await store.byWorkspaceNode(accountId, 'node-home');
+    expect(restored?.devicePublicKeyJwk).toBe(existingKey.publicKeyJwk);
+    expect(restored?.devicePublicKeyThumbprint).toBe(existingThumbprint);
+  });
+
   it('refuses to resurrect a revoked node even with a declared replacement', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);

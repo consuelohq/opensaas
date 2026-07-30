@@ -98,13 +98,50 @@ export function ensureNodeEncryptionKeyForHome(
     const workspaceId = /^activeWorkspace:\s*(\S+)\s*$/m.exec(raw)?.[1];
     const nodeId = /^activeNode:\s*(\S+)\s*$/m.exec(raw)?.[1];
     if (!workspaceId || !nodeId) return undefined;
-    return ensureNodeEncryptionKey({
+    const published = ensureNodeEncryptionKey({
       nodeHome: path.join(home, 'node'),
       workspaceId,
       nodeId,
     }).publicKeyJwk;
+    // Publish it into the heartbeat config too. A key minted here is created after install wrote
+    // that file, so without this the control plane never learns about a key created during an
+    // update and the node still cannot receive a sealed credential.
+    publishEncryptionKeyToHeartbeatConfig({ home, publicKeyJwk: published });
+    return published;
   } catch (_error: unknown) {
     // A key that cannot be minted is surfaced by doctor; it must not fail a release activation.
     return undefined;
+  }
+}
+
+/**
+ * Records the node's encryption public key in the heartbeat config so the next heartbeat carries
+ * it. Best effort: a node whose heartbeat config is absent or unreadable is still usable, it just
+ * cannot receive sealed credentials until the config is repaired.
+ */
+function publishEncryptionKeyToHeartbeatConfig(input: {
+  home: string;
+  publicKeyJwk: string;
+}): void {
+  const file = path.join(
+    input.home,
+    'node',
+    'security',
+    'generated',
+    'workspace-node-heartbeat.json',
+  );
+  try {
+    if (!fs.existsSync(file)) return;
+    const config = readJson<Record<string, unknown>>(file);
+    if (!config) return;
+    if (config.encryptionPublicKeyJwk === input.publicKeyJwk) return;
+    fs.writeFileSync(
+      file,
+      `${JSON.stringify({ ...config, encryptionPublicKeyJwk: input.publicKeyJwk }, null, 2)}\n`,
+      { mode: 0o600 },
+    );
+    fs.chmodSync(file, 0o600);
+  } catch (_error: unknown) {
+    // Surfaced by doctor rather than failing an accepted release.
   }
 }

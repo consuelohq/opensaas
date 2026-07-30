@@ -117,7 +117,8 @@
     "managed-components": "bun ./scripts/managed-components.ts",
     "cloudflare:device-authority:deploy:dry-run": "wrangler deploy --config cloudflare/os-device-authority/wrangler.toml --dry-run",
     "cloudflare:device-authority:deploy": "bun ./scripts/deploy-cloudflare-worker.ts os-device-authority",
-    "login": "bun ./scripts/login.ts"
+    "login": "bun ./scripts/login.ts",
+    "secrets": "bun ./scripts/secrets.ts"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

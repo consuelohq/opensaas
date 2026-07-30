@@ -46,6 +46,13 @@ export type Grant = {
   nodeIdentityReplacement?: boolean;
   /** Stamped by the control plane when a replacement is accepted. */
   nodeIdentityRotatedAt?: number;
+  /**
+   * Previous device identity, retained only between accepting a replacement and committing the
+   * approval. Route provisioning runs after the key swap, so without these a provisioning failure
+   * would leave the existing installation unable to authenticate with the key it still holds.
+   */
+  nodeReplacedPublicKeyJwk?: string;
+  nodeReplacedThumbprint?: string;
   nodePlatform?: string;
   nodeArchitecture?: string;
   nodeChannel?: string;
