@@ -51,7 +51,7 @@ const isGitRepository = (candidate: string): boolean => {
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
     return top.length > 0;
-  } catch {
+  } catch (_error: unknown) {
     return false;
   }
 };
@@ -69,7 +69,7 @@ export function resolveWorkspaceProjectCwdFromConfig(input: {
   let resolved: { projectId: string; repo: string };
   try {
     resolved = resolveProjectRepository(input.config, input.projectId);
-  } catch {
+  } catch (_error: unknown) {
     return undefined;
   }
 
@@ -114,7 +114,7 @@ export function resolveWorkspaceProjectCwd(input: {
   let config: ConsueloWorkspaceYamlConfig;
   try {
     config = loadWorkspaceYamlConfig(file);
-  } catch {
+  } catch (_error: unknown) {
     // A malformed workspace.yaml is surfaced by the config surfaces that own it. Tool cwd
     // resolution degrades to the previous fallback rather than taking every tool down with it.
     return undefined;
@@ -145,7 +145,7 @@ export function resolveActiveWorkspaceProjectCwd(
     if (!workspaceId) return undefined;
     const nodeId = /^activeNode:\s*(\S+)\s*$/m.exec(raw)?.[1];
     return resolveWorkspaceProjectCwd({ home, workspaceId, nodeId })?.cwd;
-  } catch {
+  } catch (_error: unknown) {
     return undefined;
   }
 }

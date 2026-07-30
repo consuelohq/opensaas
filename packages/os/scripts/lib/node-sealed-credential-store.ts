@@ -148,7 +148,7 @@ const ensureStoreDir = (home: string): string => {
     fs.mkdirSync(dir, { recursive: true, mode: DIR_MODE });
     // mkdir honours umask, so tighten explicitly rather than trusting the create mode.
     fs.chmodSync(dir, DIR_MODE);
-  } catch (error) {
+  } catch (error: unknown) {
     fail(
       'PersistenceFailure',
       `sealed credential store directory could not be created: ${(error as Error).message}`,
@@ -167,10 +167,10 @@ const writeRecord = (file: string, record: SealedCredentialRecord): void => {
     });
     fs.chmodSync(temp, FILE_MODE);
     fs.renameSync(temp, file);
-  } catch (error) {
+  } catch (error: unknown) {
     try {
       fs.rmSync(temp, { force: true });
-    } catch {
+    } catch (_error: unknown) {
       // The rename already failed; a failed cleanup must not mask the original error.
     }
     fail(
@@ -184,13 +184,13 @@ const readRecord = (file: string): SealedCredentialRecord | undefined => {
   let raw: string;
   try {
     raw = fs.readFileSync(file, 'utf8');
-  } catch {
+  } catch (_error: unknown) {
     return undefined;
   }
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
-  } catch {
+  } catch (_error: unknown) {
     return fail(
       'RecordCorrupt',
       'sealed credential record is not valid JSON',
@@ -328,7 +328,7 @@ export function resolveCredentialForBroker(input: {
       decipher.update(Buffer.from(record!.ciphertext, 'base64')),
       decipher.final(),
     ]).toString('utf8');
-  } catch {
+  } catch (_error: unknown) {
     return fail(
       'RecordCorrupt',
       'sealed credential record could not be decrypted on this node',
@@ -371,7 +371,7 @@ export function listSealedCredentials(input: {
   let entries: string[];
   try {
     entries = fs.readdirSync(dir);
-  } catch {
+  } catch (_error: unknown) {
     return [];
   }
   const workspaceId = requiredIdentifier(input.workspaceId, 'workspace ID');
@@ -405,7 +405,7 @@ export function removeSealedCredential(input: {
   const file = recordPath(input.home, validBindingId(input.bindingId));
   try {
     fs.rmSync(file, { force: true });
-  } catch (error) {
+  } catch (error: unknown) {
     fail(
       'PersistenceFailure',
       `sealed credential record could not be removed: ${(error as Error).message}`,

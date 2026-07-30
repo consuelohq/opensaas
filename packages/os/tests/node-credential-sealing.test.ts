@@ -325,7 +325,7 @@ describe('node credential sealing', () => {
           envelope,
         });
         throw new Error('expected open to fail');
-      } catch (error) {
+      } catch (error: unknown) {
         const serialized = `${(error as Error).name}: ${(error as Error).message}`;
         expect(serialized).not.toContain(secret);
         expect(serialized).not.toContain(envelope.ciphertext);
@@ -337,7 +337,7 @@ describe('node credential sealing', () => {
       try {
         sealTo('not-json');
         throw new Error('expected seal to fail');
-      } catch (error) {
+      } catch (error: unknown) {
         expect(error).toMatchObject({
           _tag: 'NodeCredentialSealingError',
           code: 'InvalidKey',

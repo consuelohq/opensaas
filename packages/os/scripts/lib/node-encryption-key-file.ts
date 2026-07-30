@@ -92,7 +92,7 @@ const writeKeyFile = (file: string, contents: NodeEncryptionKeyFile): void => {
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true, mode: DIR_MODE });
     fs.chmodSync(path.dirname(file), DIR_MODE);
-  } catch (error) {
+  } catch (error: unknown) {
     fail(
       'PersistenceFailure',
       `node encryption key directory could not be created: ${(error as Error).message}`,
@@ -104,7 +104,7 @@ const writeKeyFile = (file: string, contents: NodeEncryptionKeyFile): void => {
     });
     // writeFileSync honours umask on create, so tighten explicitly.
     fs.chmodSync(file, FILE_MODE);
-  } catch (error) {
+  } catch (error: unknown) {
     fail(
       'PersistenceFailure',
       `node encryption key could not be written: ${(error as Error).message}`,
@@ -116,13 +116,13 @@ const readKeyFile = (file: string): NodeEncryptionKeyFile | undefined => {
   let raw: string;
   try {
     raw = fs.readFileSync(file, 'utf8');
-  } catch {
+  } catch (_error: unknown) {
     return undefined;
   }
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
-  } catch {
+  } catch (_error: unknown) {
     return fail('KeyCorrupt', 'node encryption key file is not valid JSON') as never;
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {

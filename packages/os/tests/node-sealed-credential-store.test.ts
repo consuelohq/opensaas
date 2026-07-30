@@ -293,7 +293,7 @@ describe('node sealed credential store', () => {
       try {
         resolve();
         throw new Error('expected resolve to fail');
-      } catch (error) {
+      } catch (error: unknown) {
         expect(error).toMatchObject({
           _tag: 'NodeSealedCredentialStoreError',
           code: 'CredentialNotFound',
@@ -412,7 +412,7 @@ describe('node sealed credential store', () => {
       try {
         resolve();
         throw new Error('expected resolve to fail');
-      } catch (error) {
+      } catch (error: unknown) {
         expect(error).toMatchObject({ code: 'RecordCorrupt' });
       }
     });

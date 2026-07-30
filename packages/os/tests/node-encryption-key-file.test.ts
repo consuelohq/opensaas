@@ -143,7 +143,7 @@ describe('node encryption key file', () => {
       try {
         loadNodeEncryptionPrivateKey({ nodeHome, ...owner });
         throw new Error('expected load to fail');
-      } catch (error) {
+      } catch (error: unknown) {
         expect(error).toMatchObject({
           _tag: 'NodeEncryptionKeyError',
           code: 'KeyNotFound',

@@ -141,7 +141,7 @@ const parseJwk = (value: string, label: string): Record<string, unknown> => {
   let parsed: unknown;
   try {
     parsed = JSON.parse(value);
-  } catch {
+  } catch (_error: unknown) {
     return fail('InvalidKey', `${label} is not valid JSON`) as never;
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
@@ -164,7 +164,7 @@ const publicKeyFromJwk = (value: string, label: string) => {
   }
   try {
     return createPublicKey({ key: jwk as never, format: 'jwk' });
-  } catch {
+  } catch (_error: unknown) {
     return fail('InvalidKey', `${label} is not a usable X25519 public key`) as never;
   }
 };
@@ -176,7 +176,7 @@ const privateKeyFromJwk = (value: string, label: string) => {
   }
   try {
     return createPrivateKey({ key: jwk as never, format: 'jwk' });
-  } catch {
+  } catch (_error: unknown) {
     return fail('InvalidKey', `${label} is not a usable X25519 private key`) as never;
   }
 };
@@ -376,7 +376,7 @@ export function openSealedCredential(input: {
       decipher.final(),
     ]);
     return plaintext.toString('utf8');
-  } catch {
+  } catch (_error: unknown) {
     // The underlying error can distinguish tag failure from padding shape. Collapse to one code so
     // callers cannot use failure detail as a decryption oracle.
     return fail(

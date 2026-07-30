@@ -146,7 +146,7 @@ export async function withCredential<A>(
         bindingId,
         scriptId,
       });
-    } catch {
+    } catch (_error: unknown) {
       // An unwritable audit log must not become a covert way to resolve a credential without a
       // record, but it also must not mask the caller's real error. Resolution failures already
       // throw; for the success path the caller's operation has not run yet, so surface it.
@@ -182,7 +182,7 @@ export async function withCredential<A>(
       nodeId: request.policy.nodeId,
       bindingId,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     const missing =
       (error as { code?: string }).code === 'CredentialNotFound';
     audit(missing ? 'credential_missing' : 'credential_failed', 'failed');

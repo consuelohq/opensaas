@@ -310,7 +310,7 @@ export function createLifecycleEngine(
           });
         }
         ensureNodeEncryptionKeyForHome(home);
-      } catch {
+      } catch (_error: unknown) {
         // Reported by the next doctor run rather than rolling back a good release.
       }
       if (dependencies.hooks?.afterActivate) {

@@ -127,7 +127,7 @@ const readJsonFile = <T>(file: string, label: string): T => {
   if (!fs.existsSync(file)) die(`${label} not found: ${file}`);
   try {
     return JSON.parse(fs.readFileSync(file, 'utf8')) as T;
-  } catch {
+  } catch (_error: unknown) {
     return die(`${label} is not valid JSON: ${file}`) as never;
   }
 };
@@ -173,7 +173,16 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
 
   set: async (argv, context) => {
     const bindingId = argv[0] ?? die('set requires a binding');
-    const value = await readValueFromStdin();
+    // Read the value inside its own guard so a stdin failure cannot surface a partial message that
+    // includes anything already buffered.
+    let value: string;
+    try {
+      value = await readValueFromStdin();
+    } catch (error: unknown) {
+      return die(
+        error instanceof Error ? error.message : 'reading the value failed',
+      );
+    }
     const published = ensureNodeEncryptionKey({
       nodeHome: context.nodeHome,
       workspaceId: context.workspaceId,
@@ -218,6 +227,16 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
         `public key file belongs to ${published.nodeId}, not ${targetNodeId}`,
       );
     }
+    // Read the value under its own guard, so a stdin failure is reported without the partially
+    // consumed input reaching an error message.
+    let plaintext: string;
+    try {
+      plaintext = await readValueFromStdin();
+    } catch (error: unknown) {
+      return die(
+        error instanceof Error ? error.message : 'reading the value failed',
+      );
+    }
     const envelope = sealCredential({
       recipientPublicKeyJwk: published.publicKeyJwk,
       recipient: {
@@ -225,7 +244,7 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
         nodeId: targetNodeId!,
         bindingId,
       },
-      plaintext: await readValueFromStdin(),
+      plaintext,
     });
     const serialized = `${JSON.stringify(envelope, null, 2)}\n`;
     if (outFile) {
@@ -281,7 +300,7 @@ async function main(): Promise<void> {
   }
   try {
     await handler(rest, readContext());
-  } catch (error) {
+  } catch (error: unknown) {
     // Typed failures from the credential modules already carry safe messages with no value or key
     // material in them, so the message can be surfaced directly.
     die((error as Error).message ?? 'secrets command failed');

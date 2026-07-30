@@ -22,7 +22,7 @@ import { ensureNodeEncryptionKey } from './node-encryption-key-file';
 const readJson = <T>(file: string): T | undefined => {
   try {
     return JSON.parse(fs.readFileSync(file, 'utf8')) as T;
-  } catch {
+  } catch (_error: unknown) {
     return undefined;
   }
 };
@@ -103,7 +103,7 @@ export function ensureNodeEncryptionKeyForHome(
       workspaceId,
       nodeId,
     }).publicKeyJwk;
-  } catch {
+  } catch (_error: unknown) {
     // A key that cannot be minted is surfaced by doctor; it must not fail a release activation.
     return undefined;
   }

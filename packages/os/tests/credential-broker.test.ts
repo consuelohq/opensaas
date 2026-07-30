@@ -323,7 +323,7 @@ describe('credential broker', () => {
           throw new Error('operation exploded');
         });
         throw new Error('expected failure');
-      } catch (error) {
+      } catch (error: unknown) {
         expect((error as Error).message).not.toContain(secret);
       }
     });
