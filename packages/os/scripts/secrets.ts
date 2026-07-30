@@ -57,6 +57,18 @@ type Context = {
   nodeId: string;
 };
 
+/**
+ * The ceremony is a human action at a terminal, so the actor is the operator rather than an agent.
+ * Recorded so a credential appearing on a node is always attributable.
+ */
+const ceremonyActor = (context: Context) => ({
+  actorType: 'user' as const,
+  actorId: 'operator:cli',
+  workspaceId: context.workspaceId,
+  correlationId: `secrets_${Date.now().toString(36)}`,
+  nodeId: context.nodeId,
+});
+
 const die = (message: string, code = 1): never => {
   process.stderr.write(`${message}\n`);
   process.exit(code);
@@ -208,6 +220,7 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
         recipient,
         plaintext: value,
       }),
+      actor: ceremonyActor(context),
     });
     process.stdout.write(`set ${bindingId} on ${context.nodeId}\n`);
   },
@@ -276,13 +289,18 @@ const commands: Record<string, (argv: string[], context: Context) => Promise<voi
         bindingId,
       },
       envelope,
+      actor: ceremonyActor(context),
     });
     process.stdout.write(`installed ${bindingId} on ${context.nodeId}\n`);
   },
 
   remove: (argv, context) => {
     const bindingId = argv[0] ?? die('remove requires a binding');
-    removeSealedCredential({ home: context.home, bindingId });
+    removeSealedCredential({
+      home: context.home,
+      bindingId,
+      actor: ceremonyActor(context),
+    });
     process.stdout.write(`removed ${bindingId} from ${context.nodeId}\n`);
   },
 };

@@ -507,11 +507,21 @@ function materializeVisibleUserRoot(input: {
   }
 
   // Shared with the update path so an existing user who never reinstalls still receives this.
+  // The steering body must be passed here too: without it a fresh install writes the "could not be
+  // read" fallback as the example, even though the bundled steering is sitting right there.
+  const steeringSource = path.join(
+    PACKAGE_ROOT,
+    'steering',
+    'system_prompt.md',
+  );
   const reconciled = reconcileManagedUserContent({
     userRoot: input.userRoot,
     tools: toolManifest.tools,
     skillsIndex: fs.existsSync(skillsIndexSource)
       ? fs.readFileSync(skillsIndexSource, 'utf8')
+      : undefined,
+    steeringBody: fs.existsSync(steeringSource)
+      ? fs.readFileSync(steeringSource, 'utf8')
       : undefined,
   });
   for (const action of reconciled) {

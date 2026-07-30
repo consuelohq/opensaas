@@ -8,6 +8,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
+  recordCredentialControlPlaneAuditEvent,
+  type ControlPlaneAuditActor,
+} from './control-plane-audit';
+import {
   openSealedCredential,
   type SealedCredentialEnvelope,
   type SealedCredentialRecipient,
@@ -221,6 +225,8 @@ export function installSealedCredential(input: {
   recipient: SealedCredentialRecipient;
   envelope: SealedCredentialEnvelope;
   now?: () => Date;
+  /** Omit only where no actor is meaningful, such as a migration. */
+  actor?: ControlPlaneAuditActor;
 }): SealedCredentialDescriptor {
   const bindingId = validBindingId(input.recipient?.bindingId);
   const workspaceId = requiredIdentifier(
@@ -269,6 +275,19 @@ export function installSealedCredential(input: {
 
   ensureStoreDir(input.home);
   writeRecord(recordPath(input.home, bindingId), record);
+
+  // Mutations are audited alongside resolutions, so the record of who put a credential on a node
+  // is as durable as the record of who used it.
+  if (input.actor) {
+    recordCredentialControlPlaneAuditEvent({
+      home: input.home,
+      actor: input.actor,
+      event: 'credential.installed',
+      reasonCode: 'credential_installed',
+      outcome: 'allowed',
+      bindingId,
+    });
+  }
 
   return {
     workspaceId: record.workspaceId,
@@ -401,6 +420,7 @@ export function listSealedCredentials(input: {
 export function removeSealedCredential(input: {
   home: string;
   bindingId: string;
+  actor?: ControlPlaneAuditActor;
 }): { removed: boolean } {
   const file = recordPath(input.home, validBindingId(input.bindingId));
   try {
@@ -410,6 +430,16 @@ export function removeSealedCredential(input: {
       'PersistenceFailure',
       `sealed credential record could not be removed: ${(error as Error).message}`,
     );
+  }
+  if (input.actor) {
+    recordCredentialControlPlaneAuditEvent({
+      home: input.home,
+      actor: input.actor,
+      event: 'credential.removed',
+      reasonCode: 'credential_removed',
+      outcome: 'allowed',
+      bindingId: validBindingId(input.bindingId),
+    });
   }
   return { removed: true };
 }

@@ -335,6 +335,10 @@ describe('workspace node identity', () => {
     expect(stored?.devicePublicKeyThumbprint).toBe(
       await devicePublicKeyThumbprint(reinstalledKey.publicKeyJwk),
     );
+    // The stored JWK must rotate with the thumbprint. Keeping the old key beside a new thumbprint
+    // makes heartbeat verification check against a key the node no longer holds.
+    expect(stored?.devicePublicKeyJwk).toBe(reinstalledKey.publicKeyJwk);
+    expect(stored?.devicePublicKeyJwk).not.toBe(existingKey.publicKeyJwk);
   });
 
   it('does not stamp a rotation when the identity key is unchanged', async () => {

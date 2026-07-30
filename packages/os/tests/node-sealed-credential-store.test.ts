@@ -437,3 +437,58 @@ describe('node sealed credential store', () => {
     });
   });
 });
+
+describe('credential mutation audit', () => {
+  const actor = {
+    actorType: 'user' as const,
+    actorId: 'operator:cli',
+    workspaceId: recipient.workspaceId,
+    correlationId: 'corr_audit',
+    nodeId: recipient.nodeId,
+  };
+
+  const auditEvents = (): Record<string, unknown>[] => {
+    const file = path.join(home, 'logs', 'control-plane-audit.jsonl');
+    if (!fs.existsSync(file)) return [];
+    return fs
+      .readFileSync(file, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  };
+
+  it('records an install without leaking the value', () => {
+    installSealedCredential({
+      home,
+      nodePrivateKeyJwk: keyPair.privateKeyJwk,
+      recipient,
+      envelope: seal(),
+      actor,
+    });
+
+    const events = auditEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      event: 'credential.installed',
+      reasonCode: 'credential_installed',
+      outcome: 'allowed',
+      safeMetadata: { bindingId: recipient.bindingId, source: 'node-sealed' },
+    });
+    expect(JSON.stringify(events[0])).not.toContain(secret);
+  });
+
+  it('records a removal', () => {
+    install();
+    removeSealedCredential({ home, bindingId: recipient.bindingId, actor });
+    expect(auditEvents().pop()).toMatchObject({
+      event: 'credential.removed',
+      reasonCode: 'credential_removed',
+    });
+  });
+
+  it('stays silent when no actor is supplied', () => {
+    install();
+    removeSealedCredential({ home, bindingId: recipient.bindingId });
+    expect(auditEvents()).toEqual([]);
+  });
+});

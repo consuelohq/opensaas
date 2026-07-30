@@ -294,25 +294,6 @@ export function createLifecycleEngine(
         previousReleasePath: input.previousReleasePath,
       });
       activated = true;
-      // Reconcile visible user content against the release that was just activated.
-      //
-      // This deliberately does not sit behind the optional afterActivate hook: nothing supplies
-      // that hook, so it would silently never run. Provisioning previously happened only during
-      // install, which meant an existing user running `consuelo update` — the normal path, since
-      // almost nobody reinstalls — never received the seeded system prompt, the tool catalog, or
-      // the skills index. Failures here must not fail the release, because the runtime is already
-      // live and usable without this content.
-      try {
-        if (dependencies.visibleUserRoot) {
-          reconcileManagedUserContentForRelease({
-            releasePath: input.nextReleasePath,
-            userRoot: dependencies.visibleUserRoot,
-          });
-        }
-        ensureNodeEncryptionKeyForHome(home);
-      } catch (_error: unknown) {
-        // Reported by the next doctor run rather than rolling back a good release.
-      }
       if (dependencies.hooks?.afterActivate) {
         await dependencies.hooks.afterActivate({
           home,
@@ -349,6 +330,25 @@ export function createLifecycleEngine(
           version: input.manifest.version,
         },
       );
+      // Reconcile visible user content only once the release is health-accepted.
+      //
+      // Doing this straight after activation wrote the catalog, skills index, and example from a
+      // candidate release that a failed health check would then roll back, leaving user-visible
+      // content describing a runtime the node is no longer running. It deliberately does not sit
+      // behind the optional afterActivate hook, because nothing supplies that hook and it would
+      // silently never run. Failures here must not fail the release: the runtime is already live
+      // and usable without this content.
+      try {
+        if (dependencies.visibleUserRoot) {
+          reconcileManagedUserContentForRelease({
+            releasePath: input.nextReleasePath,
+            userRoot: dependencies.visibleUserRoot,
+          });
+        }
+        ensureNodeEncryptionKeyForHome(home);
+      } catch (_error: unknown) {
+        // Reported by the next doctor run rather than failing an accepted release.
+      }
       clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {

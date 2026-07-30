@@ -162,8 +162,13 @@ export async function registerGrantNode(input: {
         existingNode?.connectorStatus ??
         (existingNode?.lastSeenAt === undefined ? 'disconnected' : 'connected'),
       state: existingNode?.state ?? 'active',
-      devicePublicKeyJwk:
-        existingNode?.devicePublicKeyJwk ?? input.grant.devicePublicKeyJwk,
+      // On an accepted replacement the grant's key is the new identity. Preferring the existing
+      // JWK here would store the new thumbprint beside the old key, and heartbeat verification
+      // reads the stored JWK — so the rotated node would authenticate against a key it no longer
+      // holds and fail every heartbeat.
+      devicePublicKeyJwk: identityChanged
+        ? input.grant.devicePublicKeyJwk
+        : (existingNode?.devicePublicKeyJwk ?? input.grant.devicePublicKeyJwk),
       devicePublicKeyThumbprint: input.grant.devicePublicKeyThumbprint,
       createdAt: existingNode?.createdAt ?? input.nowMs,
       updatedAt: input.nowMs,
