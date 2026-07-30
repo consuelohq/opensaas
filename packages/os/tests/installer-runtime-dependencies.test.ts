@@ -641,10 +641,13 @@ describe('public installer runtime dependencies', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('com.consuelo.portless.system');
+    // Generated under the OS home, not the runtime release, so the immutable bundle stays intact.
     const plist = readFileSync(
       join(
-        PACKAGE_ROOT,
-        'scripts',
+        home,
+        '.consuelo',
+        'node',
+        'security',
         'generated',
         'com.consuelo.portless.system.plist',
       ),
@@ -898,8 +901,10 @@ describe('public installer runtime dependencies', () => {
 
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toContain(connectorLabel);
+    // Generated plists live under the OS home rather than in the runtime release, so writing them
+    // cannot make the immutable bundle fail its own fingerprint check.
     const systemPlist = readFileSync(
-      join(PACKAGE_ROOT, 'scripts', 'generated', 'com.consuelo.system.plist'),
+      join(osHome, 'node', 'security', 'generated', 'com.consuelo.system.plist'),
       'utf8',
     );
     expect(systemPlist).toContain('<key>WORKSPACE_DAEMON_CONSUELO_HOME</key>');

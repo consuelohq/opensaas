@@ -3,7 +3,11 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
-generated_dir="$script_dir/generated"
+# Generated plists must not land inside the runtime release: that directory is an immutable,
+# fingerprinted bundle, and writing into it makes every node that has ever started its services
+# report installState "corrupt" because the files are absent from the bundle manifest. This is the
+# same mutable location the cloudflared plist already uses.
+generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-${CONSUELO_HOME:-$HOME/.consuelo}/node/security/generated}"
 env_file="$root_dir/.env"
 mkdir -p "$generated_dir"
 
