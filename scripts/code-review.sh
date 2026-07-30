@@ -365,9 +365,14 @@ if [ -n "$CHANGED_FILES" ]; then
     [ -z "$pkg" ] && continue
     # verify the package has a project.json (is an nx project)
     [ ! -f "packages/$pkg/project.json" ] && continue
-    PKG_OUTPUT=$(npx nx typecheck "$pkg" 2>&1) || {
+    # The nx project name is not always the directory name: os is consuelo-os, workspace is
+    # openworkspace, api is @consuelo/api, and three others differ too. Passing the directory name
+    # made nx fail with "Cannot find project", which this step reported as a type error and which
+    # blocked every push touching those packages.
+    PROJECT_NAME=$(node -e "try{process.stdout.write(require('./packages/$pkg/project.json').name||'$pkg')}catch(e){process.stdout.write('$pkg')}")
+    PKG_OUTPUT=$(npx nx typecheck "$PROJECT_NAME" 2>&1) || {
       FAIL=1
-      TYPECHECK_OUTPUT="${TYPECHECK_OUTPUT}\n--- $pkg ---\n${PKG_OUTPUT}"
+      TYPECHECK_OUTPUT="${TYPECHECK_OUTPUT}\n--- $PROJECT_NAME ---\n${PKG_OUTPUT}"
     }
   done <<< "$AFFECTED_PACKAGES"
 fi

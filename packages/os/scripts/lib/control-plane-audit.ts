@@ -51,9 +51,42 @@ export type EnvironmentControlPlaneAuditEvent = {
   };
 };
 
+/**
+ * Credential events record that a resolution was attempted and how it ended. `outcome` is not
+ * narrowed to 'allowed' here because a denied or failed resolution must be auditable too — the
+ * contract requires an event "whether the resolution succeeds or fails".
+ *
+ * safeMetadata deliberately carries no value, length, prefix, suffix, hash, or fingerprint of the
+ * credential. Everything in it is already known to the control plane.
+ */
+export type CredentialControlPlaneAuditEvent = {
+  event: 'credential.resolved' | 'credential.installed' | 'credential.removed';
+  reasonCode:
+    | 'credential_resolved'
+    | 'credential_missing'
+    | 'credential_denied'
+    | 'credential_failed'
+    | 'credential_installed'
+    | 'credential_removed';
+  correlationId: string;
+  actorType: ControlPlaneAuditActor['actorType'];
+  actorId: string;
+  workspaceId: string;
+  nodeId?: string;
+  applicationId?: string;
+  outcome: 'allowed' | 'denied' | 'failed';
+  timestamp: string;
+  safeMetadata: {
+    bindingId: string;
+    scriptId?: string;
+    source: 'node-sealed';
+  };
+};
+
 export type ControlPlaneAuditEvent =
   | ConfigurationControlPlaneAuditEvent
-  | EnvironmentControlPlaneAuditEvent;
+  | EnvironmentControlPlaneAuditEvent
+  | CredentialControlPlaneAuditEvent;
 
 export function controlPlaneAuditPath(home: string): string {
   return path.join(home, 'logs', 'control-plane-audit.jsonl');
@@ -142,6 +175,39 @@ export function recordEnvironmentControlPlaneAuditEvent(input: {
         : 0,
       labelCount: input.environment.labels.length,
       metadataKeys: Object.keys(input.environment.metadata).sort(),
+    },
+  };
+  appendControlPlaneAuditEvent(input.home, event);
+  return event;
+}
+
+export function recordCredentialControlPlaneAuditEvent(input: {
+  home: string;
+  actor: ControlPlaneAuditActor;
+  event: CredentialControlPlaneAuditEvent['event'];
+  reasonCode: CredentialControlPlaneAuditEvent['reasonCode'];
+  outcome: CredentialControlPlaneAuditEvent['outcome'];
+  bindingId: string;
+  scriptId?: string;
+  now?: () => Date;
+}): CredentialControlPlaneAuditEvent {
+  const event: CredentialControlPlaneAuditEvent = {
+    event: input.event,
+    reasonCode: input.reasonCode,
+    correlationId: input.actor.correlationId,
+    actorType: input.actor.actorType,
+    actorId: input.actor.actorId,
+    workspaceId: input.actor.workspaceId,
+    ...(input.actor.nodeId ? { nodeId: input.actor.nodeId } : {}),
+    ...(input.actor.applicationId
+      ? { applicationId: input.actor.applicationId }
+      : {}),
+    outcome: input.outcome,
+    timestamp: (input.now?.() ?? new Date()).toISOString(),
+    safeMetadata: {
+      bindingId: input.bindingId,
+      ...(input.scriptId ? { scriptId: input.scriptId } : {}),
+      source: 'node-sealed',
     },
   };
   appendControlPlaneAuditEvent(input.home, event);

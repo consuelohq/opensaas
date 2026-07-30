@@ -466,9 +466,12 @@ describe('local OS install state', () => {
     expect(workspaceYaml).toContain('workspace:');
     expect(workspaceYaml).toContain('projects:');
     const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    // The central router endpoint authenticates with OAuth and resolves the workspace from the
+    // Google account; it rejects node-issued gateway bearers. The bearer is loopback-only.
     expect(chatgptMcp).toMatchObject({
-      auth: 'bearer',
+      auth: 'oauth',
       url: 'https://os.consuelohq.com/mcp',
+      localAuth: 'bearer',
       localUrl: 'http://127.0.0.1:46321/mcp',
     });
     expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
@@ -489,7 +492,13 @@ describe('local OS install state', () => {
     }
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Scripts'))).toBe(false);
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Skills', 'task', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(tempUserHome, 'Consuelo', 'Tools', 'BUILT_INS.md'))).toBe(true);
+    // BUILT_INS.md was renamed to TOOLS.md, which also documents how to view and edit tools.
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Tools', 'TOOLS.md'))).toBe(true);
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Tools', 'BUILT_INS.md'))).toBe(false);
+    // Steering was created empty, leaving no file to edit; the system prompt is seeded and readable.
+    const systemPrompt = join(tempUserHome, 'Consuelo', 'Steering', 'system.md');
+    expect(existsSync(systemPrompt)).toBe(true);
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Skills', 'skills.json'))).toBe(true);
     expect(first.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'created')).toBe(true);
     const installedRegistry = JSON.parse(readFileSync(join(tempHome, 'components', 'installed-skills.json'), 'utf8'));
     const installedTaskSkill = installedRegistry.selected.find((skill: { id: string }) => skill.id === 'task');

@@ -26,6 +26,11 @@ import {
   type LocalAgentConfigRecord,
   type LocalAgentDetection,
 } from './local-agent-connectivity';
+import {
+  ensureNodeEncryptionKey,
+  nodeEncryptionKeyPath,
+} from './node-encryption-key-file';
+import { reconcileManagedUserContent } from './managed-user-content';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { provisionManagedComponentIndexes } from './managed-component-install';
 import {
@@ -136,9 +141,10 @@ export type ProvisionAction = {
     | 'seed_steering'
     | 'seed_skill'
     | 'seed_tool'
-    | 'seed_operator';
+    | 'seed_operator'
+    | 'remove_file';
   path: string;
-  status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped';
+  status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped' | 'removed';
   message: string;
 };
 
@@ -484,36 +490,47 @@ function materializeVisibleUserRoot(input: {
     if (!input.dryRun) fs.mkdirSync(targetPath, { recursive: true });
   }
 
-  const catalogPath = path.join(input.userRoot, 'Tools', 'BUILT_INS.md');
   const toolManifest = readBundledToolManifest();
-  const catalog = [
-    '# OS built-in tools',
-    '',
-    'Built-in tools execute from the active immutable OS runtime. Add custom tools beside this catalog; updates never replace them.',
-    '',
-    ...toolManifest.tools
-      .slice()
-      .sort((left, right) => left.name.localeCompare(right.name))
-      .map((tool) => `- \`${tool.name}\`${tool.description ? ` — ${tool.description}` : ''}`),
-    '',
-  ].join('\n');
-  const existingCatalog = fs.existsSync(catalogPath)
-    ? fs.readFileSync(catalogPath, 'utf8')
-    : null;
-  actions.push({
-    type: 'create_file',
-    path: catalogPath,
-    status: existingCatalog === catalog
-      ? 'preserved'
-      : input.dryRun
-        ? 'planned'
-        : existingCatalog === null
-          ? 'created'
-          : 'updated',
-    message: 'immutable runtime tool catalog written to visible Tools',
+  const skillsIndexSource = path.join(PACKAGE_ROOT, 'skills', 'skills.json');
+  if (input.dryRun) {
+    return [
+      ...actions,
+      ...['Steering/system.md', 'Steering/example-steering.md', 'Tools/TOOLS.md', 'Skills/skills.json'].map(
+        (relative) => ({
+          type: 'create_file' as const,
+          path: path.join(input.userRoot, ...relative.split('/')),
+          status: 'planned' as const,
+          message: 'managed user content planned',
+        }),
+      ),
+    ];
+  }
+
+  // Shared with the update path so an existing user who never reinstalls still receives this.
+  // The steering body must be passed here too: without it a fresh install writes the "could not be
+  // read" fallback as the example, even though the bundled steering is sitting right there.
+  const steeringSource = path.join(
+    PACKAGE_ROOT,
+    'steering',
+    'system_prompt.md',
+  );
+  const reconciled = reconcileManagedUserContent({
+    userRoot: input.userRoot,
+    tools: toolManifest.tools,
+    skillsIndex: fs.existsSync(skillsIndexSource)
+      ? fs.readFileSync(skillsIndexSource, 'utf8')
+      : undefined,
+    steeringBody: fs.existsSync(steeringSource)
+      ? fs.readFileSync(steeringSource, 'utf8')
+      : undefined,
   });
-  if (!input.dryRun && existingCatalog !== catalog) {
-    fs.writeFileSync(catalogPath, catalog, { mode: 0o600 });
+  for (const action of reconciled) {
+    actions.push({
+      type: 'create_file',
+      path: action.path,
+      status: action.status === 'unchanged' ? 'preserved' : action.status,
+      message: `managed user content (${action.ownership})`,
+    });
   }
   return actions;
 }
@@ -559,6 +576,21 @@ function materializeLifecycleCommand(
     'fi',
     'COMMAND="$1"',
     'shift',
+    '# Commands that are not lifecycle operations run their own script. Without this, `consuelo',
+    '# secrets` and `consuelo login` reach the lifecycle CLI, which does not know them, and the',
+    '# documented invocations fail with an unknown-command error.',
+    'RUNTIME_DIR="$(dirname "$LIFECYCLE_SCRIPT")"',
+    'case "$COMMAND" in',
+    '  secrets|login)',
+    '    STANDALONE="$RUNTIME_DIR/$COMMAND.ts"',
+    '    if [ ! -f "$STANDALONE" ]; then',
+    '      echo "OS command $COMMAND is not present in this runtime. Run: consuelo update" >&2',
+    '      exit 1',
+    '    fi',
+    '    export CONSUELO_HOME="$OS_HOME"',
+    '    exec "$BUN_EXECUTABLE" "$STANDALONE" "$@"',
+    '    ;;',
+    'esac',
     'exec "$BUN_EXECUTABLE" "$LIFECYCLE_SCRIPT" "$COMMAND" --home "$OS_HOME" "$@"',
     '',
   ].join('\n');
@@ -694,11 +726,17 @@ function materializeChatGptMcpConnection(input: {
       if (
         existing.url !== CHATGPT_MCP_URL ||
         existing.localUrl !== localUrl ||
+        existing.auth !== 'oauth' ||
+        existing.localAuth !== 'bearer' ||
         JSON.stringify(existing.scopes) !== JSON.stringify(scopes)
       ) {
         writeJsonFile(targetPath, {
           ...existing,
+          // Migrate connection files written before the auth kinds were separated, which claimed
+          // bearer auth for an endpoint that only accepts OAuth.
+          auth: 'oauth',
           url: CHATGPT_MCP_URL,
+          localAuth: 'bearer',
           localUrl,
           scopes,
           updatedAt: nowIso(),
@@ -725,8 +763,13 @@ function materializeChatGptMcpConnection(input: {
   writeJsonFile(targetPath, {
     version: 1,
     kind: 'consuelo-chatgpt-mcp-connection',
-    auth: 'bearer',
+    // The central endpoint is a router: it authenticates the user with OAuth and resolves their
+    // workspace from the Google account, so every user installs the same URL. It does not accept
+    // node-issued gateway bearers, so advertising `auth: bearer` for it produced a connection file
+    // that could never authenticate. The bearer below is loopback-only and is labelled as such.
+    auth: 'oauth',
     url: CHATGPT_MCP_URL,
+    localAuth: 'bearer',
     localUrl: `http://127.0.0.1:${input.port}/mcp`,
     tokenId: token.tokenId,
     bearerToken: token.bearerToken,
@@ -998,6 +1041,25 @@ function materializeWorkspaceConnectorBootstrap(input: {
       'logs',
       'workspace-node-heartbeat.log',
     );
+    // Mint the node's credential-encryption key before the heartbeat config is written, so the
+    // first heartbeat already carries the public half and a setup surface can seal to this node
+    // without waiting for a second cycle. Idempotent: an existing key is reused, never rotated,
+    // because rotating here would orphan every credential already sealed to this node.
+    const nodeEncryptionKey = input.dryRun
+      ? undefined
+      : ensureNodeEncryptionKey({
+          nodeHome: input.nodeHome,
+          workspaceId: input.workspaceBootstrap.workspaceId,
+          nodeId: input.workspaceBootstrap.nodeId,
+        });
+    if (nodeEncryptionKey || input.dryRun) {
+      actions.push({
+        type: 'create_file',
+        path: nodeEncryptionKeyPath(input.nodeHome),
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'node credential encryption key configured',
+      });
+    }
     writeJsonFile(
       heartbeatConfigPath,
       {
@@ -1014,6 +1076,11 @@ function materializeWorkspaceConnectorBootstrap(input: {
         ].sort(),
         publicKeyJwk: input.workspaceBootstrap.nodePublicKeyJwk,
         signingKeyJwk: input.workspaceBootstrap.nodeSigningKeyJwk,
+        // Public half only. This is what lets the control plane relay a sealed credential to this
+        // node without ever being able to open it.
+        ...(nodeEncryptionKey
+          ? { encryptionPublicKeyJwk: nodeEncryptionKey.publicKeyJwk }
+          : {}),
       },
       input.dryRun,
     );

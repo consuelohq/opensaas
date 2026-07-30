@@ -83,7 +83,7 @@ describe('macOS runtime service reliability', () => {
 
     expect(result.status, result.stderr).toBe(0);
     expect(
-      existsSync(join(scriptsDirectory, 'generated', 'com.consuelo.availability.plist')),
+      existsSync(join(consueloHome, 'node', 'security', 'generated', 'com.consuelo.availability.plist')),
     ).toBe(false);
   });
 
@@ -113,7 +113,7 @@ describe('macOS runtime service reliability', () => {
 
     expect(result.status, result.stderr).toBe(0);
     const caddyPlist = readFileSync(
-      join(scriptsDirectory, 'generated', 'com.consuelo.caddy.plist'),
+      join(consueloHome, 'node', 'security', 'generated', 'com.consuelo.caddy.plist'),
       'utf8',
     );
     expect(caddyPlist).toContain('<key>CADDY_BIN</key>');
@@ -142,7 +142,8 @@ describe('macOS runtime service reliability', () => {
     });
 
     expect(result.status, result.stderr).toBe(0);
-    const generatedDirectory = join(scriptsDirectory, 'generated');
+    // Generated plists live outside the runtime release so they cannot break its fingerprint.
+    const generatedDirectory = join(consueloHome, 'node', 'security', 'generated');
     const availability = readFileSync(
       join(generatedDirectory, 'com.consuelo.availability.plist'),
       'utf8',

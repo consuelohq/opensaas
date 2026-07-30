@@ -94,6 +94,71 @@ describe('workspace node heartbeat client', () => {
     expect(JSON.stringify(first)).not.toContain(deviceKeyPair.signingKeyJwk);
   });
 
+  it('publishes the node encryption public key inside the signed payload', async () => {
+    // Without this the control plane never learns the key, so the remote credential ceremony
+    // requires hand-carrying the key file between machines.
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const encryptionPublicKeyJwk = JSON.stringify({
+      crv: 'X25519',
+      x: 'tUU-1YUcj6RmuQPTUdJSkM66w9VxUSh1TLmg5sI-fDc',
+      kty: 'OKP',
+    });
+    let sent: Request | undefined;
+    const client = createWorkspaceNodeHeartbeatClient({
+      config: {
+        authorityOrigin: 'https://os.consuelohq.com',
+        workspaceId: 'workspace_123',
+        nodeId: 'node_member',
+        connectorStatus: 'connected',
+        capabilities: ['tools', 'mcp'],
+        publicKeyJwk: deviceKeyPair.publicKeyJwk,
+        signingKeyJwk: deviceKeyPair.signingKeyJwk,
+        encryptionPublicKeyJwk,
+      },
+      now: () => baseNow,
+      createNonce: () => 'nonce-enc',
+      fetchImpl: async (request) => {
+        sent = request;
+        return Response.json({ nodeId: 'node_member', presence: 'online' });
+      },
+    });
+
+    await client.send();
+    const body = JSON.parse(await sent!.clone().text());
+    expect(body.encryptionPublicKeyJwk).toBe(encryptionPublicKeyJwk);
+    // Only the public half may travel.
+    expect(await sent!.clone().text()).not.toContain(
+      JSON.parse(deviceKeyPair.signingKeyJwk).d,
+    );
+  });
+
+  it('omits the encryption key when a node predates it', async () => {
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    let sent: Request | undefined;
+    const client = createWorkspaceNodeHeartbeatClient({
+      config: {
+        authorityOrigin: 'https://os.consuelohq.com',
+        workspaceId: 'workspace_123',
+        nodeId: 'node_member',
+        connectorStatus: 'connected',
+        capabilities: ['tools'],
+        publicKeyJwk: deviceKeyPair.publicKeyJwk,
+        signingKeyJwk: deviceKeyPair.signingKeyJwk,
+      },
+      now: () => baseNow,
+      createNonce: () => 'nonce-none',
+      fetchImpl: async (request) => {
+        sent = request;
+        return Response.json({ nodeId: 'node_member', presence: 'online' });
+      },
+    });
+
+    await client.send();
+    expect(
+      JSON.parse(await sent!.clone().text()).encryptionPublicKeyJwk,
+    ).toBeUndefined();
+  });
+
   it('rejects unknown agent identifiers before signing or sending a heartbeat', () => {
     const deviceKeyPair = generateWorkspaceDeviceKeyPair();
     const config: WorkspaceNodeHeartbeatConfig = {

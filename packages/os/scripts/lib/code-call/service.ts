@@ -1,6 +1,7 @@
 import { Effect } from 'effect';
 
 import { createToolResult, createTraceId, getErrorMessage } from '../facade/errors';
+import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import { codeCallServiceError, isCodeCallServiceError, type CodeCallServiceError } from './errors';
 import { resolveSafeCwdEffect, resolveSafeFileEffect } from './location';
 import { truncateOutputEffect } from './output';
@@ -137,7 +138,11 @@ export function executeCodeCallEffect(input: CodeCallInput, context: CodeCallCon
   };
 
   const program = Effect.gen(function* () {
-    const contextCwd = context.cwd || process.cwd();
+    // An explicit context cwd always wins. Otherwise prefer the workspace's configured project
+    // checkout over the server process cwd, which for a launchd or systemd service is not a git
+    // repository and leaves every repo-aware tool unable to find a root.
+    const contextCwd =
+      context.cwd || resolveActiveWorkspaceProjectCwd() || process.cwd();
     const normalized = yield* normalizeCodeCallInputEffect(input);
     fallback.language = normalized.language;
     fallback.requestedLanguage = normalized.requestedLanguage;

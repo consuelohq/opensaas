@@ -968,12 +968,17 @@ describe('runtime bundle contract', () => {
     const bundledSteering = archive.entries.find(
       (entry) => entry.path === 'steering/system_prompt.md',
     );
-    expect(bundledSteering?.bytes.toString('utf8')).toContain(
-      '/Users/.../Dev/opensaas',
-    );
-    expect(bundledSteering?.bytes.toString('utf8')).not.toContain(
-      '/Users/kokayi/',
-    );
+    const bundledSteeringText = bundledSteering?.bytes.toString('utf8') ?? '';
+    // The property that matters is that no real home path ships to customers. Any absolute
+    // /Users path in the steering must be the redacted placeholder form. This previously pinned
+    // one exact literal from an older revision, which broke as soon as the bundle was resynced
+    // from the canonical workspace steering without testing anything real.
+    for (const match of bundledSteeringText.match(/\/Users\/[^\s`|)]*/g) ?? []) {
+      expect(match.startsWith('/Users/.../')).toBe(true);
+    }
+    expect(bundledSteeringText).not.toContain('/Users/kokayi/');
+    // The bundle is what actually reaches agents, so the governance rules must be in it.
+    expect(bundledSteeringText).toContain('Alignment First');
     expect(readFileSync(join(packageRoot, 'Dockerfile'), 'utf8')).toContain(
       'scripts/build-runtime-bundle.ts',
     );

@@ -56,7 +56,13 @@ function readIfExists(filePath: string): string {
 }
 
 const PRIMARY_STEERING_FILES = ['system_prompt.md'] as const;
-const EXCLUDED_STEERING_FILES = new Set(['steering.md', 'decision.md']);
+// example-system.md is documentation for the user, not instructions for an agent. It is excluded
+// by name so its sample rules can never be mistaken for real ones.
+const EXCLUDED_STEERING_FILES = new Set([
+  'steering.md',
+  'decision.md',
+  'example-system.md',
+]);
 
 function visibleSteeringDir(): string {
   const userHome = process.env.CONSUELO_USER_HOME?.trim() || os.homedir();
