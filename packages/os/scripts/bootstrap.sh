@@ -1739,6 +1739,51 @@ maybe_install_daemons() {
   DAEMON_STATUS="installed"
 }
 
+# The installer writes $OS_HOME/bin/consuelo but has never put that directory on PATH, so a fresh
+# install left the documented `consuelo` command unavailable. Appended idempotently to the shell rc,
+# and only there: the running installer cannot change the parent shell.
+ensure_command_on_path() {
+  local bin_dir="$OS_HOME/bin"
+  local rc_file=""
+
+  case "$(basename "${SHELL:-}")" in
+    zsh) rc_file="$HOME/.zshrc" ;;
+    bash)
+      if [ -f "$HOME/.bash_profile" ]; then rc_file="$HOME/.bash_profile"; else rc_file="$HOME/.bashrc"; fi
+      ;;
+    *) rc_file="" ;;
+  esac
+
+  # An unrelated binary of the same name silently shadows ours, which reads as OS being broken
+  # rather than as a name collision.
+  local existing
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
+    log ""
+    log "Warning: another 'consuelo' is already on PATH at $existing"
+    log "It will shadow Consuelo OS. Remove it, or put $bin_dir earlier on PATH."
+  fi
+
+  if [ -z "$rc_file" ]; then
+    PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
+    return 0
+  fi
+
+  if [ -f "$rc_file" ] && grep -qF "$bin_dir" "$rc_file" 2>/dev/null; then
+    PATH_HINT="Already on PATH via $rc_file"
+    return 0
+  fi
+
+  {
+    printf '\n# Consuelo OS\n'
+    printf 'export PATH="%s:$PATH"\n' "$bin_dir"
+  } >> "$rc_file" 2>/dev/null || {
+    PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
+    return 0
+  }
+  PATH_HINT="Added $bin_dir to PATH in $rc_file — open a new terminal to use it"
+}
+
 print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
 
@@ -1747,6 +1792,11 @@ print_success_summary() {
   log ""
   log "Consuelo OS setup complete"
   log "Home: $os_home"
+  if [ -n "${PATH_HINT:-}" ]; then
+    log "$PATH_HINT"
+  fi
+  log ""
+  log "Try:  consuelo status"
 }
 
 main() {
@@ -1767,6 +1817,7 @@ main() {
   run_onboarding
   activate_verified_runtime
   maybe_install_daemons
+  ensure_command_on_path
   print_success_summary
   open_workspace_launcher
   emit_json_summary
