@@ -30,6 +30,7 @@ import {
   ensureNodeEncryptionKey,
   nodeEncryptionKeyPath,
 } from './node-encryption-key-file';
+import { reconcileManagedUserContent } from './managed-user-content';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { provisionManagedComponentIndexes } from './managed-component-install';
 import {
@@ -489,164 +490,37 @@ function materializeVisibleUserRoot(input: {
     if (!input.dryRun) fs.mkdirSync(targetPath, { recursive: true });
   }
 
-  const catalogPath = path.join(input.userRoot, 'Tools', 'TOOLS.md');
   const toolManifest = readBundledToolManifest();
-  const catalog = [
-    '# OS tools',
-    '',
-    'A tool is a thin façade. The bun script beside it is what actually executes, which is why',
-    'credential grants and permissions are declared against the script rather than the façade name.',
-    '',
-    '## Viewing and editing',
-    '',
-    'Built-in tools ship inside the active immutable runtime and are replaced on every update, so',
-    'edits there do not survive. To change one, copy it into this directory and edit the copy —',
-    'anything here is yours and is never overwritten.',
-    '',
-    '| what | where |',
-    '| --- | --- |',
-    '| built-in tool façades | `~/.consuelo/runtime/current/tools/` |',
-    '| the scripts they wrap | `~/.consuelo/runtime/current/scripts/` |',
-    '| your own tools | `~/Consuelo/Tools/` (this directory) |',
-    '| your system prompt | `~/Consuelo/Steering/system.md` |',
-    '',
-    '## Built-in catalog',
-    '',
-    ...toolManifest.tools
-      .slice()
-      .sort((left, right) => left.name.localeCompare(right.name))
-      .map((tool) => `- \`${tool.name}\`${tool.description ? ` — ${tool.description}` : ''}`),
-    '',
-  ].join('\n');
-  const existingCatalog = fs.existsSync(catalogPath)
-    ? fs.readFileSync(catalogPath, 'utf8')
-    : null;
-  actions.push({
-    type: 'create_file',
-    path: catalogPath,
-    status: existingCatalog === catalog
-      ? 'preserved'
-      : input.dryRun
-        ? 'planned'
-        : existingCatalog === null
-          ? 'created'
-          : 'updated',
-    message: 'immutable runtime tool catalog written to visible Tools',
+  const skillsIndexSource = path.join(PACKAGE_ROOT, 'skills', 'skills.json');
+  if (input.dryRun) {
+    return [
+      ...actions,
+      ...['Steering/system.md', 'Steering/example-steering.md', 'Tools/TOOLS.md', 'Skills/skills.json'].map(
+        (relative) => ({
+          type: 'create_file' as const,
+          path: path.join(input.userRoot, ...relative.split('/')),
+          status: 'planned' as const,
+          message: 'managed user content planned',
+        }),
+      ),
+    ];
+  }
+
+  // Shared with the update path so an existing user who never reinstalls still receives this.
+  const reconciled = reconcileManagedUserContent({
+    userRoot: input.userRoot,
+    tools: toolManifest.tools,
+    skillsIndex: fs.existsSync(skillsIndexSource)
+      ? fs.readFileSync(skillsIndexSource, 'utf8')
+      : undefined,
   });
-  if (!input.dryRun && existingCatalog !== catalog) {
-    fs.writeFileSync(catalogPath, catalog, { mode: 0o600 });
-  }
-
-  // Remove the previous filename so Tools does not end up holding two catalogs that drift apart.
-  const legacyCatalogPath = path.join(input.userRoot, 'Tools', 'BUILT_INS.md');
-  if (fs.existsSync(legacyCatalogPath)) {
+  for (const action of reconciled) {
     actions.push({
-      type: 'remove_file',
-      path: legacyCatalogPath,
-      status: input.dryRun ? 'planned' : 'removed',
-      message: 'superseded BUILT_INS.md catalog removed in favour of TOOLS.md',
-    });
-    if (!input.dryRun) fs.rmSync(legacyCatalogPath, { force: true });
-  }
-
-  actions.push(...materializeUserSteering(input));
-  actions.push(...materializeVisibleSkillsIndex(input));
-  return actions;
-}
-
-/**
- * Writes the skills index next to the seeded skill directories.
- *
- * The runtime already ships `skills/skills.json`, but it stayed buried inside the immutable bundle,
- * so `~/Consuelo/Skills` listed directories with no way to see what any of them were for without
- * opening each SKILL.md. This is regenerated on every install because it describes built-in skills
- * rather than user content.
- */
-function materializeVisibleSkillsIndex(input: {
-  userRoot: string;
-  dryRun: boolean;
-}): ProvisionAction[] {
-  const indexPath = path.join(input.userRoot, 'Skills', 'skills.json');
-  const source = path.join(PACKAGE_ROOT, 'skills', 'skills.json');
-  if (!fs.existsSync(source)) return [];
-  const contents = fs.readFileSync(source, 'utf8');
-  const existing = fs.existsSync(indexPath)
-    ? fs.readFileSync(indexPath, 'utf8')
-    : null;
-  const actions: ProvisionAction[] = [{
-    type: 'create_file',
-    path: indexPath,
-    status: existing === contents
-      ? 'preserved'
-      : input.dryRun
-        ? 'planned'
-        : existing === null
-          ? 'created'
-          : 'updated',
-    message: 'runtime skills index surfaced to visible Skills',
-  }];
-  if (!input.dryRun && existing !== contents) {
-    fs.mkdirSync(path.dirname(indexPath), { recursive: true });
-    fs.writeFileSync(indexPath, contents, { mode: 0o600 });
-  }
-  return actions;
-}
-
-/**
- * Seeds the editable steering overlay.
- *
- * `Steering/` was created empty, so there was no file to edit and no documented way to influence
- * steering at all. The overlay is seeded once and then left alone on every subsequent install,
- * because it is user-owned content and an update must never overwrite what someone wrote.
- */
-function materializeUserSteering(input: {
-  userRoot: string;
-  dryRun: boolean;
-}): ProvisionAction[] {
-  const steeringPath = path.join(input.userRoot, 'Steering', 'system.md');
-  if (fs.existsSync(steeringPath)) {
-    return [{
       type: 'create_file',
-      path: steeringPath,
-      status: 'preserved',
-      message: 'user system prompt preserved',
-    }];
-  }
-  const template = [
-    '# Your system prompt',
-    '',
-    'Anything here is appended to the steering every agent receives, after the built-in runtime',
-    'steering. This file is yours: OS seeds it once and never overwrites it on update.',
-    '',
-    'Any other `.md` in this directory is picked up too, in filename order. Note that the names',
-    '`steering.md` and `decision.md` are reserved and are deliberately skipped, so do not use them.',
-    '',
-    'Changes are picked up when the OS service reloads. To apply immediately:',
-    '',
-    '```sh',
-    'consuelo restart',
-    '```',
-    '',
-    'The built-in steering this extends lives in the immutable runtime at',
-    '`~/.consuelo/runtime/current/steering/system_prompt.md` and is replaced on every update, so',
-    'edit this file instead of that one.',
-    '',
-    '## House rules',
-    '',
-    '<!-- Add project conventions, tone, or constraints here. -->',
-    '',
-  ].join('\n');
-  const actions: ProvisionAction[] = [{
-    // Reported as create_file, not seed_steering: seed_steering is reserved for the OS home's
-    // steering directory, which must stay absent, and a test asserts that invariant.
-    type: 'create_file',
-    path: steeringPath,
-    status: input.dryRun ? 'planned' : 'created',
-    message: 'user system prompt seeded',
-  }];
-  if (!input.dryRun) {
-    fs.mkdirSync(path.dirname(steeringPath), { recursive: true });
-    fs.writeFileSync(steeringPath, template, { mode: 0o600 });
+      path: action.path,
+      status: action.status === 'unchanged' ? 'preserved' : action.status,
+      message: `managed user content (${action.ownership})`,
+    });
   }
   return actions;
 }

@@ -10,6 +10,10 @@ import {
 import { createLifecycleProgressEmitter } from './diagnostics';
 import { asLifecycleError, lifecycleError } from './errors';
 import { acquireLifecycleLock } from './lock';
+import {
+  ensureNodeEncryptionKeyForHome,
+  reconcileManagedUserContentForRelease,
+} from '../managed-user-content-release';
 import { noOpLifecycleMigrationRunner } from './migrations';
 import { noOpLifecycleRuntimeMaterializer } from './runtime';
 import { resolveLifecyclePaths } from './paths';
@@ -282,6 +286,22 @@ export function createLifecycleEngine(
         previousReleasePath: input.previousReleasePath,
       });
       activated = true;
+      // Reconcile visible user content against the release that was just activated.
+      //
+      // This deliberately does not sit behind the optional afterActivate hook: nothing supplies
+      // that hook, so it would silently never run. Provisioning previously happened only during
+      // install, which meant an existing user running `consuelo update` — the normal path, since
+      // almost nobody reinstalls — never received the seeded system prompt, the tool catalog, or
+      // the skills index. Failures here must not fail the release, because the runtime is already
+      // live and usable without this content.
+      try {
+        reconcileManagedUserContentForRelease({
+          releasePath: input.nextReleasePath,
+        });
+        ensureNodeEncryptionKeyForHome(home);
+      } catch {
+        // Reported by the next doctor run rather than rolling back a good release.
+      }
       if (dependencies.hooks?.afterActivate) {
         await dependencies.hooks.afterActivate({
           home,
