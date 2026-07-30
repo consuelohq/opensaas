@@ -12,7 +12,10 @@ import {
 import { createLogger } from '@consuelo/logger';
 
 import { getSharedPool } from '../shared/db.js';
-
+import {
+  persistPostCallAnalysisWithDisposition,
+  type CallDisposition,
+} from './post-call-disposition.js';
 const logger = createLogger('api:post-call-analysis');
 
 const POST_CALL_MODEL = 'openai/gpt-oss-120b';
@@ -23,9 +26,6 @@ const MAX_TRANSCRIPT_ENTRIES_IN_PROMPT = 48;
 
 const SQL_GET_CALL_ANALYSIS_CONTEXT =
   'SELECT c.id::text AS id, c.call_sid, c.workspace_id::text AS workspace_id, c.transcript, c.analysis, c.outcome, c.start_time, c.end_time, ct.name AS contact_name FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE (c.id::text = $1 OR c.call_sid = $1) AND c.workspace_id = $2 LIMIT 1';
-const SQL_PERSIST_ANALYSIS =
-  'UPDATE calls SET analysis = $1, updated_at = NOW() WHERE (id::text = $2 OR call_sid = $2) AND workspace_id = $3 RETURNING id';
-
 const analysisRunsByCall = new Map<
   string,
   Promise<GeneratedPostCallAnalysis>
@@ -34,6 +34,8 @@ const analysisRunsByCall = new Map<
 type GeneratedPostCallAnalysis = {
   analysis: PersistedCallAnalytics;
   source: 'generated' | 'persisted';
+  committedDisposition: CallDisposition | null;
+  requiresManualDisposition: boolean;
 };
 
 type ValidatedPostCallAnalysisResult = {
@@ -377,18 +379,18 @@ const persistCallAnalysis = async (
   callId: string,
   workspaceId: string,
   analysis: PersistedCallAnalytics,
-): Promise<void> => {
+): Promise<{
+  committedDisposition: CallDisposition | null;
+  requiresManualDisposition: boolean;
+}> => {
   try {
     const pool = await getPool();
-    const { rows } = await pool.query(SQL_PERSIST_ANALYSIS, [
-      JSON.stringify(analysis),
+
+    return await persistPostCallAnalysisWithDisposition(pool, {
       callId,
       workspaceId,
-    ]);
-
-    if (rows.length === 0) {
-      throw new Error('Call not found');
-    }
+      analysis,
+    });
   } catch (error: unknown) {
     Sentry.captureException(error);
     throw error;
@@ -585,19 +587,39 @@ export const generatePostCallAnalysis = async (
     }
 
     if (!options?.force && isPersistedCallAnalytics(row.analysis)) {
-      return { analysis: row.analysis, source: 'persisted' };
+      const committedDisposition =
+        typeof row.outcome === 'string'
+          ? (row.outcome as CallDisposition)
+          : null;
+
+      return {
+        analysis: row.analysis,
+        source: 'persisted',
+        committedDisposition,
+        requiresManualDisposition: committedDisposition === null,
+      };
     }
 
     const analysis = await generateFreshCallAnalysis(row, callId, workspaceId);
-    await persistCallAnalysis(callId, workspaceId, analysis);
+    const dispositionResult = await persistCallAnalysis(
+      callId,
+      workspaceId,
+      analysis,
+    );
     logger.info('post_call_analysis.generated', {
       action: 'post_call_analysis.generated',
       callId,
       workspaceId,
       source: options?.force === true ? 'forced' : 'automatic',
+      committedDisposition: dispositionResult.committedDisposition,
+      requiresManualDisposition: dispositionResult.requiresManualDisposition,
     });
 
-    return { analysis, source: 'generated' };
+    return {
+      analysis,
+      source: 'generated',
+      ...dispositionResult,
+    };
   })();
 
   analysisRunsByCall.set(runKey, run);

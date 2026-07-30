@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/harden-post-call-disposition-pipeline",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 609,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/609",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/609",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/609/harden-post-call-disposition-pipeline",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/609",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/609/harden-post-call-disposition-pipeline",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-harden-post-call-disposition-pipeline",
+  "taskSession": "tsk_889bb3cc42de",
+  "tmuxSession": "opensaas-dialer-harden-post-call-disposition-pipeline-889bb3cc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-harden-post-call-disposition-pipeline/.task/dialer/harden-post-call-disposition-pipeline/session.json",
+  "createdAt": "2026-05-26T18:35:32.349Z"
+}

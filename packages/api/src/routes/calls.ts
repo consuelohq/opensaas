@@ -691,15 +691,20 @@ export const callRoutes = (): RouteDefinition[] => {
 
         try {
           const force = req.query?.force === 'true' || req.query?.force === '1';
-          const { analysis, source } = await generatePostCallAnalysis(
-            callId,
-            auth.workspaceId,
-            { force },
-          );
+          const {
+            analysis,
+            source,
+            committedDisposition,
+            requiresManualDisposition,
+          } = await generatePostCallAnalysis(callId, auth.workspaceId, {
+            force,
+          });
 
           res.status(source === 'generated' ? 201 : 200).json({
             data: analysis,
             source,
+            committedDisposition,
+            requiresManualDisposition,
           });
           (await getCallsLogger()).info('call.analysis', {
             action: 'call.analysis',
