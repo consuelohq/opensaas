@@ -698,11 +698,17 @@ function materializeChatGptMcpConnection(input: {
       if (
         existing.url !== CHATGPT_MCP_URL ||
         existing.localUrl !== localUrl ||
+        existing.auth !== 'oauth' ||
+        existing.localAuth !== 'bearer' ||
         JSON.stringify(existing.scopes) !== JSON.stringify(scopes)
       ) {
         writeJsonFile(targetPath, {
           ...existing,
+          // Migrate connection files written before the auth kinds were separated, which claimed
+          // bearer auth for an endpoint that only accepts OAuth.
+          auth: 'oauth',
           url: CHATGPT_MCP_URL,
+          localAuth: 'bearer',
           localUrl,
           scopes,
           updatedAt: nowIso(),
@@ -729,8 +735,13 @@ function materializeChatGptMcpConnection(input: {
   writeJsonFile(targetPath, {
     version: 1,
     kind: 'consuelo-chatgpt-mcp-connection',
-    auth: 'bearer',
+    // The central endpoint is a router: it authenticates the user with OAuth and resolves their
+    // workspace from the Google account, so every user installs the same URL. It does not accept
+    // node-issued gateway bearers, so advertising `auth: bearer` for it produced a connection file
+    // that could never authenticate. The bearer below is loopback-only and is labelled as such.
+    auth: 'oauth',
     url: CHATGPT_MCP_URL,
+    localAuth: 'bearer',
     localUrl: `http://127.0.0.1:${input.port}/mcp`,
     tokenId: token.tokenId,
     bearerToken: token.bearerToken,

@@ -466,9 +466,12 @@ describe('local OS install state', () => {
     expect(workspaceYaml).toContain('workspace:');
     expect(workspaceYaml).toContain('projects:');
     const chatgptMcp = JSON.parse(readFileSync(join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json'), 'utf8'));
+    // The central router endpoint authenticates with OAuth and resolves the workspace from the
+    // Google account; it rejects node-issued gateway bearers. The bearer is loopback-only.
     expect(chatgptMcp).toMatchObject({
-      auth: 'bearer',
+      auth: 'oauth',
       url: 'https://os.consuelohq.com/mcp',
+      localAuth: 'bearer',
       localUrl: 'http://127.0.0.1:46321/mcp',
     });
     expect(chatgptMcp.bearerToken).toMatch(/^cst_/);
