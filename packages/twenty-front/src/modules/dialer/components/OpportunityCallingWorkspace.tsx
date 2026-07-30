@@ -3,6 +3,10 @@ import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
 import { OpportunityCallAnalyticsTab } from '@/dialer/components/OpportunityCallAnalyticsTab';
 import { OpportunityCallCoachingTab } from '@/dialer/components/OpportunityCallCoachingTab';
 import { OpportunityCallPeopleTab } from '@/dialer/components/OpportunityCallPeopleTab';
+import {
+  PostCallWrapUpModal,
+  type PostCallWrapUpMode,
+} from '@/dialer/components/PostCallWrapUpModal';
 import { QueuePanel } from '@/dialer/components/QueuePanel';
 import { useCoaching } from '@/dialer/hooks/useCoaching';
 import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
@@ -10,7 +14,9 @@ import { useOpportunityQueueWorkspace } from '@/dialer/hooks/useOpportunityQueue
 import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
 import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
+import { postCallAnalysisState } from '@/dialer/states/coachingState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
+import { activeQueueState } from '@/dialer/states/queueState';
 import { PageLayoutInitializationQueryEffect } from '@/page-layout/components/PageLayoutInitializationQueryEffect';
 import { PageLayoutRelationWidgetsSyncEffect } from '@/page-layout/components/PageLayoutRelationWidgetsSyncEffect';
 import { PageLayoutMainContent } from '@/page-layout/PageLayoutMainContent';
@@ -21,7 +27,7 @@ import { PageLayoutComponentInstanceContext } from '@/page-layout/states/context
 import { TabList } from '@/ui/layout/tab-list/components/TabList';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { SettingsPath } from 'twenty-shared/types';
@@ -73,6 +79,27 @@ const StyledSettingsPanel = styled.div`
   padding: ${({ theme }) => theme.spacing(4)};
 `;
 
+const POST_CALL_WRAP_UP_COUNTDOWN_SECONDS = 3;
+
+const mapAnalysisOutcomeToDisposition = (outcome?: string | null) => {
+  switch (outcome) {
+    case 'interested':
+      return 'connected';
+    case 'not_interested':
+      return 'not-interested';
+    case 'callback_scheduled':
+      return 'follow-up';
+    case 'voicemail':
+      return 'voicemail';
+    case 'no_answer':
+      return 'no-answer';
+    case 'wrong_number':
+      return 'wrong-number';
+    default:
+      return null;
+  }
+};
+
 type OpportunityCallingWorkspaceProps = {
   listId: string;
   pageLayoutId: string;
@@ -91,10 +118,13 @@ const OpportunityCallingWorkspaceContent = ({
 
   const { currentPageLayout } = useCurrentPageLayout();
   const callAssistMode = useRecoilValue(callAssistModeState);
+  const activeQueue = useRecoilValue(activeQueueState);
+  const postCallAnalysis = useRecoilValue(postCallAnalysisState);
   const { status: callStatus } = useRecoilValue(callStateAtom);
   const { selectedScript } = useCoachingScripts();
   const {
     wrapUpState,
+    currentQueueItem,
     continueList,
     endList,
     pauseList,
@@ -106,6 +136,116 @@ const OpportunityCallingWorkspaceContent = ({
   const navigateSettings = useNavigateSettings();
   const [selectedTabId, setSelectedTabId] = useState('coaching');
   const activeScriptLabel = selectedScript?.name ?? '';
+  const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(true);
+  const [autoAdvanceCancelled, setAutoAdvanceCancelled] = useState(false);
+  const [countdownSeconds, setCountdownSeconds] = useState(
+    POST_CALL_WRAP_UP_COUNTDOWN_SECONDS,
+  );
+  const [selectedManualDisposition, setSelectedManualDisposition] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    setAutoAdvanceEnabled(activeQueue?.settings.autoAdvance ?? true);
+  }, [activeQueue?.id, activeQueue?.settings.autoAdvance]);
+
+  useEffect(() => {
+    setAutoAdvanceCancelled(false);
+    setSelectedManualDisposition(null);
+    setCountdownSeconds(POST_CALL_WRAP_UP_COUNTDOWN_SECONDS);
+  }, [wrapUpState?.listMemberId]);
+
+  const suggestedDisposition = useMemo(() => {
+    if (!wrapUpState) {
+      return null;
+    }
+
+    if (wrapUpState.outcome === 'no-answer') {
+      return 'no-answer';
+    }
+
+    if (postCallAnalysis?.callId !== wrapUpState.callSid) {
+      return null;
+    }
+
+    return mapAnalysisOutcomeToDisposition(postCallAnalysis?.outcome);
+  }, [postCallAnalysis?.callId, postCallAnalysis?.outcome, wrapUpState]);
+
+  const selectedDispositionForAdvance =
+    suggestedDisposition ?? selectedManualDisposition;
+
+  const wrapUpMode = useMemo<PostCallWrapUpMode>(() => {
+    if (selectedDispositionForAdvance === null) {
+      return 'manual-disposition';
+    }
+
+    if (autoAdvanceEnabled && !autoAdvanceCancelled) {
+      return 'auto-advance';
+    }
+
+    return 'manual-advance';
+  }, [autoAdvanceCancelled, autoAdvanceEnabled, selectedDispositionForAdvance]);
+
+  const wrapUpContactName = useMemo(() => {
+    const contactFullName = [
+      currentQueueItem?.contact.firstName,
+      currentQueueItem?.contact.lastName,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
+      currentQueueItem?.contact.name ??
+      (contactFullName.length > 0 ? contactFullName : null) ??
+      currentQueueItem?.contact.phone ??
+      t`Current contact`
+    );
+  }, [currentQueueItem]);
+
+  const handleAdvanceToNextCall = useCallback(() => {
+    if (selectedDispositionForAdvance === null) {
+      return;
+    }
+
+    void continueList(selectedDispositionForAdvance);
+  }, [continueList, selectedDispositionForAdvance]);
+
+  const handleCancelAutoAdvance = useCallback(() => {
+    setAutoAdvanceCancelled(true);
+  }, []);
+
+  const handleAutoAdvanceChange = useCallback((enabled: boolean) => {
+    setAutoAdvanceEnabled(enabled);
+    setAutoAdvanceCancelled(!enabled);
+    setCountdownSeconds(POST_CALL_WRAP_UP_COUNTDOWN_SECONDS);
+  }, []);
+
+  useEffect(() => {
+    if (
+      !wrapUpState ||
+      wrapUpMode !== 'auto-advance' ||
+      selectedDispositionForAdvance === null
+    ) {
+      return;
+    }
+
+    setCountdownSeconds(POST_CALL_WRAP_UP_COUNTDOWN_SECONDS);
+
+    const countdownInterval = window.setInterval(() => {
+      setCountdownSeconds((currentCountdownSeconds) =>
+        Math.max(currentCountdownSeconds - 1, 0),
+      );
+    }, 1000);
+
+    const advanceTimer = window.setTimeout(() => {
+      void continueList(selectedDispositionForAdvance);
+    }, POST_CALL_WRAP_UP_COUNTDOWN_SECONDS * 1000);
+
+    return () => {
+      window.clearInterval(countdownInterval);
+      window.clearTimeout(advanceTimer);
+    };
+  }, [continueList, selectedDispositionForAdvance, wrapUpMode, wrapUpState]);
 
   const baseTabs = useMemo(() => {
     return (currentPageLayout?.tabs ?? [])
@@ -145,6 +285,23 @@ const OpportunityCallingWorkspaceContent = ({
 
   return (
     <StyledContainer>
+      {wrapUpState && (
+        <PostCallWrapUpModal
+          isOpen
+          mode={wrapUpMode}
+          contactName={wrapUpContactName}
+          durationSeconds={wrapUpState.duration}
+          disposition={selectedDispositionForAdvance}
+          countdownSeconds={countdownSeconds}
+          autoAdvanceEnabled={autoAdvanceEnabled}
+          selectedDisposition={selectedManualDisposition}
+          onAdvance={handleAdvanceToNextCall}
+          onCancelAutoAdvance={handleCancelAutoAdvance}
+          onAutoAdvanceChange={handleAutoAdvanceChange}
+          onSelectDisposition={setSelectedManualDisposition}
+        />
+      )}
+
       <StyledSidebar>
         <QueuePanel
           onPauseQueue={pauseList}
@@ -169,7 +326,7 @@ const OpportunityCallingWorkspaceContent = ({
           )}
           {selectedTabId === 'analytics' && (
             <OpportunityCallAnalyticsTab
-              wrapUpState={wrapUpState}
+              wrapUpState={null}
               onContinueList={continueList}
               onEndList={endList}
             />
