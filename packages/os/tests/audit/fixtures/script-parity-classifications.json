@@ -1532,6 +1532,38 @@
     "scripts/workspace.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/secrets.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned credential setup ceremony; value handling is node-local and intentionally has no workspace script counterpart."
+    },
+    "scripts/lib/node-credential-sealing.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned sealed credential delivery primitive for self-hosted nodes; node-local by design with no workspace counterpart."
+    },
+    "scripts/lib/node-sealed-credential-store.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned at-rest credential custody on a node; node-local by design with no workspace counterpart."
+    },
+    "scripts/lib/node-encryption-key-file.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned node encryption key lifecycle; per-node material that must never exist in the workspace tree."
+    },
+    "scripts/lib/credential-broker.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned runtime credential injection boundary; resolves node-local material and has no workspace counterpart."
+    },
+    "scripts/lib/managed-user-content.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned reconciliation of the visible ~/Consuelo tree; install and update lifecycle behavior with no workspace counterpart."
+    },
+    "scripts/lib/managed-user-content-release.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned release-scoped user content reconciliation; reads the activated runtime bundle and has no workspace counterpart."
+    },
+    "scripts/lib/workspace-project-cwd.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned resolution of a workspace project checkout for tool cwd; depends on OS home layout and has no workspace counterpart."
     }
   },
   "highRiskScripts": [

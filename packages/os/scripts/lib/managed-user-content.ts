@@ -90,40 +90,40 @@ export function userSystemPromptTemplate(): string {
   ].join('\n');
 }
 
-export function steeringExampleTemplate(): string {
-  return [
-    '# Example steering — never loaded',
+/**
+ * The example is the real bundled steering, verbatim, behind a header.
+ *
+ * It is generated from the same source the runtime loads, so the two cannot drift: a user reading
+ * the example is reading exactly what their agents are actually given. It is excluded from steering
+ * by filename, which is why it can safely contain a full instruction document.
+ */
+export function steeringExampleTemplate(steeringBody?: string): string {
+  const header = [
+    '<!--',
+    '  example-steering.md',
     '',
-    'This file is a reference only. OS excludes it from steering by name, so nothing here reaches',
-    `an agent. Steal whatever is useful into \`${USER_SYSTEM_PROMPT}\`, which *is* loaded.`,
+    `  This is Consuelo's own steering, verbatim. It is NOT loaded: OS excludes this filename, so`,
+    '  nothing here reaches an agent no matter what it says. Every other .md in this folder IS',
+    '  loaded, so do not rename this file unless you mean it.',
     '',
-    'It is regenerated on every update, so do not edit it — your changes would be replaced.',
+    `  Steal whatever is useful into ${USER_SYSTEM_PROMPT}, which is loaded.`,
     '',
-    '---',
-    '',
-    '## House rules',
-    '',
-    '- Match the conventions already in the file you are editing over any general style preference.',
-    '- Ask before adding a dependency; prefer the standard library.',
-    '- Never commit directly to `main`.',
-    '',
-    '## Tone',
-    '',
-    '- Be direct. Skip preamble and restating the question.',
-    '- Say plainly when something is uncertain or when a check was skipped.',
-    '',
-    '## Project context',
-    '',
-    '- The production database is read-only from development machines.',
-    '- Deploys go out through CI; nobody deploys from a laptop.',
-    '',
-    '## Definition of done',
-    '',
-    '- Tests written and passing, and the full suite compared against its baseline.',
-    '- No new type errors.',
-    '- Behaviour verified by running it, not only by reading the diff.',
+    '  Regenerated on every update from the same steering the runtime serves, so your edits here',
+    '  would be replaced. Edit ' + USER_SYSTEM_PROMPT + ' instead.',
+    '-->',
     '',
   ].join('\n');
+
+  if (!steeringBody) {
+    return [
+      header,
+      '# Example steering',
+      '',
+      'The bundled steering could not be read from this release, so there is nothing to show here.',
+      '',
+    ].join('\n');
+  }
+  return `${header}${steeringBody.endsWith('\n') ? steeringBody : `${steeringBody}\n`}`;
 }
 
 export function toolCatalogTemplate(
@@ -168,6 +168,8 @@ export function reconcileManagedUserContent(input: {
   userRoot: string;
   tools: ReadonlyArray<{ name: string; description?: string }>;
   skillsIndex?: string;
+  /** The bundled steering, reproduced verbatim as the example. */
+  steeringBody?: string;
 }): ManagedUserContentAction[] {
   const actions: ManagedUserContentAction[] = [];
 
@@ -180,7 +182,7 @@ export function reconcileManagedUserContent(input: {
   actions.push(
     refresh(
       path.join(input.userRoot, 'Steering', USER_STEERING_EXAMPLE),
-      steeringExampleTemplate(),
+      steeringExampleTemplate(input.steeringBody),
     ),
   );
   actions.push(

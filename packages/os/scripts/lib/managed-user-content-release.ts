@@ -57,7 +57,22 @@ export function reconcileManagedUserContentForRelease(input: {
     ? fs.readFileSync(skillsIndexPath, 'utf8')
     : undefined;
 
-  return reconcileManagedUserContent({ userRoot, tools, skillsIndex });
+  // Read from the release being activated, so the example is exactly the steering this node serves.
+  const steeringPath = path.join(
+    input.releasePath,
+    'steering',
+    'system_prompt.md',
+  );
+  const steeringBody = fs.existsSync(steeringPath)
+    ? fs.readFileSync(steeringPath, 'utf8')
+    : undefined;
+
+  return reconcileManagedUserContent({
+    userRoot,
+    tools,
+    skillsIndex,
+    steeringBody,
+  });
 }
 
 /**

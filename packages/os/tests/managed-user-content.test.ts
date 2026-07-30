@@ -94,11 +94,29 @@ describe('managed user content', () => {
       expect(prompt).toContain('steal');
     });
 
-    it('marks the example as never loaded', () => {
+    it('marks the example as not loaded and points at the real file', () => {
       reconcile();
       const example = read('Steering', USER_STEERING_EXAMPLE);
-      expect(example).toContain('never loaded');
+      expect(example).toContain('NOT loaded');
       expect(example).toContain(USER_SYSTEM_PROMPT);
+    });
+
+    it('reproduces the bundled steering verbatim as the example', () => {
+      const steeringBody = '# System Prompt\n\n## Alignment First\n\nStop and resolve.\n';
+      reconcileManagedUserContent({ userRoot, tools, steeringBody });
+      const example = read('Steering', USER_STEERING_EXAMPLE);
+
+      expect(example).toContain('## Alignment First');
+      expect(example).toContain('Stop and resolve.');
+      // The header is an HTML comment so the document below it renders unchanged.
+      expect(example.startsWith('<!--')).toBe(true);
+    });
+
+    it('degrades to a placeholder when the release carries no steering', () => {
+      reconcileManagedUserContent({ userRoot, tools });
+      expect(read('Steering', USER_STEERING_EXAMPLE)).toContain(
+        'could not be read',
+      );
     });
   });
 
@@ -184,6 +202,21 @@ describe('managed user content', () => {
   });
 
   describe('reconciling against a release directory', () => {
+    it('reproduces the release steering as the example', () => {
+      writeRelease(['t'], ['task']);
+      fs.mkdirSync(path.join(releasePath, 'steering'), { recursive: true });
+      fs.writeFileSync(
+        path.join(releasePath, 'steering', 'system_prompt.md'),
+        '# System Prompt\n\n## Reuse Before Invention\n',
+      );
+
+      reconcileManagedUserContentForRelease({ releasePath, userRoot });
+
+      expect(read('Steering', USER_STEERING_EXAMPLE)).toContain(
+        '## Reuse Before Invention',
+      );
+    });
+
     it('reads the catalog and skills index out of the activated release', () => {
       writeRelease(['release.tool.a', 'release.tool.b'], ['task', 'sites']);
 
