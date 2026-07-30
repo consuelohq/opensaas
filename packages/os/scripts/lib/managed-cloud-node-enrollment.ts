@@ -397,6 +397,12 @@ export const runManagedCloudNodeEnrollment = async (input: {
       nodeId: input.onboarding.nodeId,
       nodeName: input.onboarding.nodeName,
       deviceKeyPair,
+      // Reprovisioning a cloud node mints a fresh device key while the control plane still holds
+      // the previous one for this node id, so registration rejected the mismatch and the node
+      // could never be re-enrolled. Operator-run provisioning of a node the operator already owns
+      // is exactly an identity replacement, and the browser consent in this same flow is what
+      // authorizes it. The control plane still refuses a mismatch without this declaration.
+      nodeIdentityReplacement: true,
     });
     if (requested.status !== 'started') {
       throw new ManagedCloudNodeEnrollmentError(

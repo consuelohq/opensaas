@@ -61,3 +61,39 @@ describe('gateway auth workspace ownership', () => {
     ).not.toThrow();
   });
 });
+
+describe('managed cloud node enrollment declares identity replacement', () => {
+  it('sends nodeIdentityReplacement so a reprovisioned node can re-enrol', async () => {
+    // A wipe-and-reprovision mints a new device key while the control plane still holds the old
+    // one for this node id. Without the declaration the mismatch is rejected and the node is stuck.
+    const { runManagedCloudNodeEnrollment } = await import(
+      '../scripts/lib/managed-cloud-node-enrollment'
+    );
+    let sent: Record<string, unknown> | undefined;
+
+    await runManagedCloudNodeEnrollment({
+      home: '/tmp/unused-managed-node',
+      onboarding: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        workspaceHost: 'internal.consuelohq.com',
+        nodeId: 'cloud-1',
+        nodeName: 'Cloud node',
+      },
+      dependencies: {
+        loadOrCreateDeviceKeyPair: () => ({
+          algorithm: 'Ed25519',
+          publicKeyJwk: '{}',
+          signingKeyJwk: '{}',
+        }),
+        requestDeviceCode: async (input: Record<string, unknown>) => {
+          sent = input;
+          return { status: 'error', message: 'stop after request' };
+        },
+      },
+    } as never).catch(() => undefined);
+
+    expect(sent?.nodeIdentityReplacement).toBe(true);
+    expect(sent?.nodeId).toBe('cloud-1');
+  });
+});
