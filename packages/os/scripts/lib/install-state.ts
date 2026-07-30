@@ -43,6 +43,7 @@ import {
   issueAgentAppToken,
   type AgentAppCredentialStatus,
   updateAgentAppTokenScopes,
+  PLACEHOLDER_WORKSPACE_ID,
 } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
 import { validateBundledSkills } from './skills';
@@ -1706,7 +1707,7 @@ export function provisionLocalOs(
         workspaceHost: workspaceBootstrap.workspaceHost,
       }
     : existingIdentity ?? {
-        workspaceId: 'local-consuelo-os',
+        workspaceId: PLACEHOLDER_WORKSPACE_ID,
         workspaceSlug: 'local',
         workspaceHost: 'local.consuelohq.com',
       };

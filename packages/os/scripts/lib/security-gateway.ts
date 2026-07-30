@@ -761,6 +761,12 @@ function requirePrivateUpstream(upstream: {
   }
 }
 
+/**
+ * Workspace id written by install before a node has enrolled. It is not a real workspace; it exists
+ * so a node is usable locally while it waits for authority enrollment to give it a true identity.
+ */
+export const PLACEHOLDER_WORKSPACE_ID = 'local-consuelo-os';
+
 export function createGatewaySecurityConfig(input: {
   home: string;
   workspaceId: string;
@@ -780,12 +786,25 @@ export function createGatewaySecurityConfig(input: {
   const existing = fs.existsSync(generatedAuthPath)
     ? readStoredAuthFile(generatedAuthPath)
     : null;
-  if (existing && existing.workspaceId !== input.workspaceId) {
+  // A managed cloud node installs before it enrolls. Install deliberately seeds no workspace
+  // identity, so it writes auth under the local placeholder; enrollment then arrives with the real
+  // workspace. Refusing that takeover meant no managed cloud node could ever come online. The
+  // protection that matters — never reusing auth between two real workspaces — is unchanged.
+  const existingIsUnenrolledPlaceholder =
+    existing?.workspaceId === PLACEHOLDER_WORKSPACE_ID;
+  if (
+    existing &&
+    existing.workspaceId !== input.workspaceId &&
+    !existingIsUnenrolledPlaceholder
+  ) {
     throw new Error('existing generated auth belongs to a different workspace');
   }
   const stored: StoredAuthConfig = existing
     ? {
         ...existing,
+        // On a placeholder takeover the record must adopt the real workspace, otherwise the next
+        // call sees the placeholder again and the node never settles on its true identity.
+        workspaceId: input.workspaceId,
         workspaceSlug: input.workspaceSlug,
         workspaceHost: input.workspaceHost,
         tokenIssuer: existing.tokenIssuer || 'consuelo-os-gateway',
