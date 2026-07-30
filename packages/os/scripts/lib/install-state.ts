@@ -26,6 +26,10 @@ import {
   type LocalAgentConfigRecord,
   type LocalAgentDetection,
 } from './local-agent-connectivity';
+import {
+  ensureNodeEncryptionKey,
+  nodeEncryptionKeyPath,
+} from './node-encryption-key-file';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
 import { provisionManagedComponentIndexes } from './managed-component-install';
 import {
@@ -998,6 +1002,25 @@ function materializeWorkspaceConnectorBootstrap(input: {
       'logs',
       'workspace-node-heartbeat.log',
     );
+    // Mint the node's credential-encryption key before the heartbeat config is written, so the
+    // first heartbeat already carries the public half and a setup surface can seal to this node
+    // without waiting for a second cycle. Idempotent: an existing key is reused, never rotated,
+    // because rotating here would orphan every credential already sealed to this node.
+    const nodeEncryptionKey = input.dryRun
+      ? undefined
+      : ensureNodeEncryptionKey({
+          nodeHome: input.nodeHome,
+          workspaceId: input.workspaceBootstrap.workspaceId,
+          nodeId: input.workspaceBootstrap.nodeId,
+        });
+    if (nodeEncryptionKey || input.dryRun) {
+      actions.push({
+        type: 'create_file',
+        path: nodeEncryptionKeyPath(input.nodeHome),
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'node credential encryption key configured',
+      });
+    }
     writeJsonFile(
       heartbeatConfigPath,
       {
@@ -1014,6 +1037,11 @@ function materializeWorkspaceConnectorBootstrap(input: {
         ].sort(),
         publicKeyJwk: input.workspaceBootstrap.nodePublicKeyJwk,
         signingKeyJwk: input.workspaceBootstrap.nodeSigningKeyJwk,
+        // Public half only. This is what lets the control plane relay a sealed credential to this
+        // node without ever being able to open it.
+        ...(nodeEncryptionKey
+          ? { encryptionPublicKeyJwk: nodeEncryptionKey.publicKeyJwk }
+          : {}),
       },
       input.dryRun,
     );
