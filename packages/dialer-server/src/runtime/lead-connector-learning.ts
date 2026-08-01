@@ -25,10 +25,10 @@ const CREATE_OUTCOMES_INDEX_SQL = `
 export const initializeLeadConnectorDialerLearning = (
   database: LeadConnectorDatabase,
 ): Promise<void> =>
-  Promise.all([
-    database.query(CREATE_OUTCOMES_TABLE_SQL),
-    database.query(CREATE_OUTCOMES_INDEX_SQL),
-  ]).then(() => undefined);
+  database
+    .query(CREATE_OUTCOMES_TABLE_SQL)
+    .then(() => database.query(CREATE_OUTCOMES_INDEX_SQL))
+    .then(() => undefined);
 
 const outcomeForCall = (
   record: ParallelTelemetryRecord,
