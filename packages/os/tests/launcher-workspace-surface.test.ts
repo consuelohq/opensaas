@@ -54,10 +54,12 @@ describe('L4 meta values align under their labels', () => {
 });
 
 describe('L3 the agent list survives a failed status fetch', () => {
-  it('server-renders the agents it was given', () => {
+  it('never bakes local agent names into the cacheable document', () => {
+    // The launcher is cached and served on the workspace host, so agent names arrive only via the
+    // authenticated per-viewer status fetch.
     const html = render();
-    expect(html).toContain('Claude');
-    expect(html).toContain('Codex');
+    expect(html).not.toContain('<li>Claude</li>');
+    expect(html).not.toContain('<li>Codex</li>');
   });
 
   it('does not clear the list when the status fetch fails', () => {
@@ -67,7 +69,14 @@ describe('L3 the agent list survives a failed status fetch', () => {
     expect(cat).not.toMatch(/listElement\.replaceChildren\(\)/);
   });
 
-  it('skips the status fetch on reserved hosts', () => {
-    expect(render()).toContain('RESERVED_LAUNCHER_HOSTS');
+  it('only probes the host the launcher was built for', () => {
+    // Shared hosts are not workspaces; probing them always failed, and the failure erased the list.
+    const html = render();
+    expect(html).toContain(`const launcherWorkspaceHost = "${WORKSPACE}"`);
+    expect(html).toContain('workspaceHost === launcherWorkspaceHost');
+  });
+
+  it('does not probe at all when no workspace host is known', () => {
+    expect(render(null)).toContain('const launcherWorkspaceHost = null');
   });
 });
