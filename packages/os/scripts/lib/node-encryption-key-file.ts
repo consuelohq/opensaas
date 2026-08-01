@@ -5,6 +5,7 @@ import {
   generateNodeEncryptionKeyPair,
   nodeEncryptionPublicKeyFromPrivate,
 } from './node-credential-sealing';
+import { isUnenrolledPlaceholderIdentity } from './unenrolled-placeholder-identity';
 
 /**
  * Lifecycle for the node's long-lived X25519 credential-encryption key.
@@ -159,19 +160,27 @@ export function ensureNodeEncryptionKey(input: {
   const file = nodeEncryptionKeyPath(input.nodeHome);
 
   const existing = readKeyFile(file);
+  const ownerChanged = existing
+    ? existing.workspaceId !== workspaceId || existing.nodeId !== nodeId
+    : false;
   if (existing) {
     // A key belonging to a different workspace or node means this home was moved or copied. Fail
     // loudly rather than handing back a key whose sealed credentials cannot be opened here.
-    if (existing.workspaceId !== workspaceId || existing.nodeId !== nodeId) {
+    // The one safe exception is the placeholder identity install stamps before enrollment knows
+    // the real workspace: that node was never reachable, so nothing can have been sealed to it.
+    if (ownerChanged && !isUnenrolledPlaceholderIdentity(existing)) {
       fail(
         'KeyOwnerMismatch',
         'node encryption key belongs to a different workspace or node',
       );
     }
-    return publicView(existing);
+    if (!ownerChanged) {
+      return publicView(existing);
+    }
   }
 
   const keyPair = generateNodeEncryptionKeyPair();
+  const timestamp = (input.now?.() ?? new Date()).toISOString();
   const contents: NodeEncryptionKeyFile = {
     version: FILE_VERSION,
     kind: 'consuelo-node-encryption-key',
@@ -180,7 +189,9 @@ export function ensureNodeEncryptionKey(input: {
     nodeId,
     publicKeyJwk: keyPair.publicKeyJwk,
     privateKeyJwk: keyPair.privateKeyJwk,
-    createdAt: (input.now?.() ?? new Date()).toISOString(),
+    createdAt: timestamp,
+    // Adopting a placeholder key replaces material, so record it as a rotation, not a first mint.
+    ...(ownerChanged ? { rotatedAt: timestamp } : {}),
   };
   writeKeyFile(file, contents);
   return publicView(contents);

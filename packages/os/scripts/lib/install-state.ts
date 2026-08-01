@@ -49,6 +49,7 @@ import { materializeSites as materializeRuntimeSites } from './sites';
 import { validateBundledSkills } from './skills';
 import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
+import { PLACEHOLDER_NODE_ID } from './unenrolled-placeholder-identity';
 
 export type OsMode = 'local' | 'cloud';
 export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
@@ -1714,7 +1715,7 @@ export function provisionLocalOs(
   const nodeId = workspaceBootstrap?.nodeId ??
     workspaceBootstrap?.connectorId ??
     existingIdentity?.node?.nodeId ??
-    'local';
+    PLACEHOLDER_NODE_ID;
   const nodeName = workspaceBootstrap?.nodeName ??
     existingIdentity?.node?.nodeName ??
     (os.hostname() || 'local');

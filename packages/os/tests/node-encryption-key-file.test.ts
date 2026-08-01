@@ -199,3 +199,44 @@ describe('node encryption key file', () => {
     });
   });
 });
+
+describe('unenrolled placeholder adoption', () => {
+  // install runs before enrollment and stamps this identity, so every fresh cloud node reaches
+  // enrollment already holding a key whose owner does not match the workspace it is joining.
+  const placeholder = { workspaceId: 'local-consuelo-os', nodeId: 'local' };
+
+  it('adopts a placeholder key into the enrolled identity', () => {
+    const seeded = ensureNodeEncryptionKey({ nodeHome, ...placeholder });
+    const adopted = ensureNodeEncryptionKey({ nodeHome, ...owner });
+
+    expect(adopted).toMatchObject({ workspaceId, nodeId });
+    expect(adopted.publicKeyJwk).not.toBe(seeded.publicKeyJwk);
+    expect(adopted.rotatedAt).toEqual(expect.any(String));
+  });
+
+  it('leaves the adopted key openable by the enrolled node', () => {
+    ensureNodeEncryptionKey({ nodeHome, ...placeholder });
+    const adopted = ensureNodeEncryptionKey({ nodeHome, ...owner });
+    const envelope = sealCredential({
+      recipientPublicKeyJwk: adopted.publicKeyJwk,
+      recipient: { workspaceId, nodeId, bindingId: 'GITHUB_TOKEN' },
+      plaintext: 'ghp_value',
+    });
+
+    expect(
+      openSealedCredential({
+        recipientPrivateKeyJwk: loadNodeEncryptionPrivateKey({ nodeHome, ...owner }),
+        expectedRecipient: { workspaceId, nodeId, bindingId: 'GITHUB_TOKEN' },
+        envelope,
+      }),
+    ).toBe('ghp_value');
+  });
+
+  it('still refuses a key owned by a different real node', () => {
+    ensureNodeEncryptionKey({ nodeHome, workspaceId, nodeId: 'node_other' });
+
+    expect(() => ensureNodeEncryptionKey({ nodeHome, ...owner })).toThrowError(
+      /different workspace or node/,
+    );
+  });
+});

@@ -306,12 +306,24 @@ export const activateManagedCloudNodeHeartbeat = async (input: {
   run?: ManagedCloudNodeSystemctlRunner;
 }): Promise<void> => {
   const run = input.run ?? defaultSystemctlRunner;
+  // systemctl --user needs the caller's session bus. A service unit or a detached provisioner
+  // frequently has neither variable set, and systemd then fails with "Failed to connect to bus: No
+  // medium found", which names nothing useful. Derive both from the uid when absent, and never
+  // override a value the caller set deliberately.
+  const runtimeDir =
+    process.env.XDG_RUNTIME_DIR ??
+    (process.getuid ? `/run/user/${process.getuid()}` : undefined);
+  const busAddress =
+    process.env.DBUS_SESSION_BUS_ADDRESS ??
+    (runtimeDir ? `unix:path=${runtimeDir}/bus` : undefined);
   const env = {
     ...process.env,
     CONSUELO_HOME: input.home,
     XDG_CONFIG_HOME:
       process.env.XDG_CONFIG_HOME ??
       join(process.env.HOME ?? input.home, '.config'),
+    ...(runtimeDir ? { XDG_RUNTIME_DIR: runtimeDir } : {}),
+    ...(busAddress ? { DBUS_SESSION_BUS_ADDRESS: busAddress } : {}),
   };
   const commands = [
     ['systemctl', '--user', 'daemon-reload'],

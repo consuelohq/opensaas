@@ -516,3 +516,54 @@ describe('managed cloud node enrollment', () => {
     ).toBe(true);
   });
 });
+
+describe('heartbeat activation environment', () => {
+  const capturedEnv = async (
+    overrides: Record<string, string | undefined>,
+  ): Promise<Record<string, string | undefined>> => {
+    const { activateManagedCloudNodeHeartbeat } = await loadContract();
+    const saved = { ...process.env };
+    for (const [key, value] of Object.entries(overrides)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    try {
+      let captured: Record<string, string | undefined> = {};
+      await activateManagedCloudNodeHeartbeat({
+        home: '/var/lib/consuelo',
+        connectorId: 'connector_ko_cloud_1',
+        run: async (input) => {
+          captured = input.env;
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+      return captured;
+    } finally {
+      for (const key of Object.keys(process.env)) delete process.env[key];
+      Object.assign(process.env, saved);
+    }
+  };
+
+  it('derives the user bus from the uid when the caller has none', async () => {
+    // A service unit or detached provisioner inherits neither, and systemd then reports only
+    // "Failed to connect to bus: No medium found".
+    const env = await capturedEnv({
+      XDG_RUNTIME_DIR: undefined,
+      DBUS_SESSION_BUS_ADDRESS: undefined,
+    });
+    const uid = process.getuid?.();
+
+    expect(env.XDG_RUNTIME_DIR).toBe(`/run/user/${uid}`);
+    expect(env.DBUS_SESSION_BUS_ADDRESS).toBe(`unix:path=/run/user/${uid}/bus`);
+  });
+
+  it('never overrides a bus the caller set deliberately', async () => {
+    const env = await capturedEnv({
+      XDG_RUNTIME_DIR: '/run/user/4242',
+      DBUS_SESSION_BUS_ADDRESS: 'unix:path=/custom/bus',
+    });
+
+    expect(env.XDG_RUNTIME_DIR).toBe('/run/user/4242');
+    expect(env.DBUS_SESSION_BUS_ADDRESS).toBe('unix:path=/custom/bus');
+  });
+});

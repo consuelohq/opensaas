@@ -53,3 +53,33 @@ describe('managed cloud node enrollment CLI', () => {
     expect(source).toContain('writeManagedCloudNodeEnrollmentStatus');
   });
 });
+
+describe('entrypoint liveness', () => {
+  // Regression: the entrypoint used main().catch(...). The module body then completes while the
+  // enrollment poll is still pending, bun drains the event loop and exits 0 mid-poll, and the
+  // operator authorization lands on a process that no longer exists. Observed on a cloud node as
+  // beforeExit 0 then exit 0 roughly 8s in, with no output and no status write, which is why the
+  // status file stayed on awaiting_authorization forever.
+  //
+  // Asserted at the source level on purpose: the device endpoints are hardcoded constants with no
+  // env override, so a real poll loop cannot be driven in a test without reaching production, and
+  // adding an override would make the authority redirectable.
+  const source = readFileSync(
+    join(process.cwd(), 'scripts', 'managed-cloud-node-enroll.ts'),
+    'utf8',
+  );
+
+  it('awaits main so the poll cannot outlive the process', () => {
+    expect(source).toContain('await main()');
+  });
+
+  it('never fires main and forgets it', () => {
+    // Comments are stripped so prose describing the old shape cannot satisfy or break the check.
+    const code = source
+      .split('\n')
+      .filter((line) => !line.trim().startsWith('//'))
+      .join('\n');
+
+    expect(code).not.toMatch(/main\(\)\s*\.catch/);
+  });
+});

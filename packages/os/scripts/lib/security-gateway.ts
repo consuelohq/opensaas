@@ -20,6 +20,7 @@ import {
   grantsRequiredScope,
   normalizeGrantedScopes,
 } from './tool-scope-authorization';
+import { PLACEHOLDER_WORKSPACE_ID } from './unenrolled-placeholder-identity';
 
 type JsonObject = Record<string, unknown>;
 type SignatureAlgorithm = 'ed25519';
@@ -765,7 +766,7 @@ function requirePrivateUpstream(upstream: {
  * Workspace id written by install before a node has enrolled. It is not a real workspace; it exists
  * so a node is usable locally while it waits for authority enrollment to give it a true identity.
  */
-export const PLACEHOLDER_WORKSPACE_ID = 'local-consuelo-os';
+export { PLACEHOLDER_WORKSPACE_ID };
 
 export function createGatewaySecurityConfig(input: {
   home: string;
