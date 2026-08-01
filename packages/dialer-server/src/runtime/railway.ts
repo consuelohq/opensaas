@@ -43,6 +43,11 @@ import {
   resolveProviderCallerId,
   resolveTwilioProviderCredentials,
 } from './twilio-provider-mode';
+import {
+  initializeLeadConnectorDialerLearning,
+  recordLeadConnectorAttemptTelemetry,
+} from './lead-connector-learning';
+import { rankPredictiveLeadConnectorTargets } from './predictive-target-ranking';
 
 export type RailwayEnvironment = Record<string, string | undefined>;
 
@@ -116,6 +121,10 @@ const tryEffect = <A>(operation: string, run: () => Promise<A>) =>
     try: run,
     catch: (cause) => infrastructureFailure(operation, cause),
   });
+
+const writeRuntimeEvent = (event: Record<string, unknown>): void => {
+  process.stdout.write(`${JSON.stringify(event)}\n`);
+};
 
 const syncEffect = <A>(operation: string, run: () => A) =>
   Effect.try({
@@ -342,8 +351,14 @@ export const createRailwayDialerApplicationLayers = async (
   resources: RailwayRuntimeResources = {},
 ): Promise<DialerApplicationLayers> => {
   try {
-    const redis =
-      resources.redis ?? (await createSharedResources(environment)).redis;
+    const shared = resources.redis
+      ? null
+      : await createSharedResources(environment);
+    const redis = resources.redis ?? shared!.redis;
+    const database = resources.database ?? shared?.database ?? null;
+    if (database) {
+      await initializeLeadConnectorDialerLearning(database);
+    }
     const runtime = createDialerRuntime(environment, redis);
     const pendingQueues = new Map<string, CallableTarget[]>();
     const safeTo = safeNumbers(
@@ -383,7 +398,7 @@ export const createRailwayDialerApplicationLayers = async (
         requestedFanout,
         fallbackPhonesByContactId,
       }) =>
-        syncEffect('resolve-queue-targets', () => {
+        tryEffect('resolve-queue-targets', () => {
           const key = `${workspaceId}:${queueId}`;
           const pending = pendingQueues.get(key) ?? [];
           pendingQueues.delete(key);
@@ -393,8 +408,25 @@ export const createRailwayDialerApplicationLayers = async (
               phone: normalizePhone(phone),
             }),
           );
-          const targets = pending.length > 0 ? pending : fallback;
-          return targets.slice(0, requestedFanout);
+          const candidates = pending.length > 0 ? pending : fallback;
+          const ranking = database
+            ? rankPredictiveLeadConnectorTargets({
+                database,
+                workspaceId,
+                targets: candidates,
+                timezone:
+                  environment.DIALER_LOCAL_TIMEZONE ?? 'America/New_York',
+                callableWindowEndHour: Number(
+                  environment.DIALER_CALLABLE_WINDOW_END_HOUR ?? '20',
+                ),
+                onFallback: (details) =>
+                  writeRuntimeEvent({
+                    event: 'dialer.predictive.fifo_fallback',
+                    ...details,
+                  }),
+              })
+            : Promise.resolve(candidates);
+          return ranking.then((ranked) => ranked.slice(0, requestedFanout));
         }),
       createDirectQueue: () => Effect.succeed(`direct:${randomUUID()}`),
     };
@@ -687,17 +719,28 @@ export const createRailwayDialerApplicationLayers = async (
           runtime.liveDialer.parallel.markTelemetryEmittedIfAbsent(groupId),
         ),
       recordTelemetry: (record: ParallelTelemetryRecord) =>
-        Effect.sync(() => {
-          process.stdout.write(
-            `${JSON.stringify({
+        tryEffect('record-telemetry', () => {
+          const persistence = database
+            ? recordLeadConnectorAttemptTelemetry(
+                database,
+                record,
+                (_message, details) =>
+                  writeRuntimeEvent({
+                    event: 'dialer.learning.persistence_unavailable',
+                    ...details,
+                  }),
+              )
+            : Promise.resolve(true);
+          return persistence.then(() => {
+            writeRuntimeEvent({
               event: 'dialer.parallel.completed',
               groupId: record.group.groupId,
               workspaceId: record.group.workspaceId,
               profileId: record.group.profile.id,
               success: record.success,
               winnerRate: record.telemetry.winnerRate,
-            })}\n`,
-          );
+            });
+          });
         }),
     };
 
