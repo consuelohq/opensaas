@@ -13,6 +13,7 @@ import {
   type ParallelCompatibilityRuntimeService,
 } from '../ports/parallel-compatibility';
 import { DialerIdGenerator } from '../ports/id-generator';
+import type { ParallelGroup } from '../types';
 import { startDialerCall } from './start-dialer-call';
 import { processParallelCallback } from './process-parallel-callback';
 
@@ -224,6 +225,64 @@ describe('dialer compatibility application contracts', () => {
         answeredBy: 'human',
       },
     ]);
+  });
+
+  it('records terminal telemetry for an all-no-answer group', async () => {
+    const group: ParallelGroup = {
+      groupId: 'pg-no-answer',
+      conferenceName: 'conference-no-answer',
+      status: 'completed',
+      winnerSid: null,
+      calls: [
+        {
+          callSid: 'CA_no_answer',
+          customerNumber: '+15551111111',
+          fromNumber: '+15553333333',
+          position: 1,
+          status: 'no-answer',
+          contactId: 'contact-1',
+          dialStartedAt: '2026-08-01T12:00:00.000Z',
+          terminatedAt: '2026-08-01T12:00:30.000Z',
+        },
+      ],
+      workspaceId: 'workspace-1',
+      queueId: 'queue-1',
+      userId: 'user-1',
+      createdAt: '2026-08-01T12:00:00.000Z',
+      completedAt: '2026-08-01T12:00:30.000Z',
+      profile: {
+        id: 'balanced',
+        fanout: 1,
+        staggerMs: 0,
+        amdPolicy: 'human-or-unknown',
+        terminationPolicy: 'winner-take-all',
+      },
+      resolverReason: 'test',
+      cleanupFailures: [],
+    };
+    let telemetryRecords = 0;
+    const service = parallelRuntime({
+      getGroupIdForCall: () => Effect.succeed(group.groupId),
+      getGroup: () => Effect.succeed(group),
+      claimTelemetryEmission: () => Effect.succeed(true),
+      recordTelemetry: (record) =>
+        Effect.sync(() => {
+          telemetryRecords += 1;
+          expect(record.success).toBe(false);
+          expect(record.group.groupId).toBe(group.groupId);
+        }),
+    });
+
+    await Effect.runPromise(
+      processParallelCallback({
+        callSid: 'CA_no_answer',
+        callStatus: 'no-answer',
+      }).pipe(
+        Effect.provide(Layer.succeed(ParallelCompatibilityRuntime, service)),
+      ),
+    );
+
+    expect(telemetryRecords).toBe(1);
   });
 
   it('preserves typed callback failures from the shared runtime', async () => {

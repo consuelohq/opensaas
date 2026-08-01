@@ -88,7 +88,10 @@ export const processParallelCallback = (input: ParallelCallbackInput) =>
       yield* runtime.releaseCallerIdLocks(runtime.getReleasableNumbers(group));
     }
 
-    if (terminalCallback && winnerCallback && group.winnerSid !== null) {
+    const completedWithoutWinner =
+      group.status === 'completed' && group.winnerSid === null;
+    const terminalWinner = winnerCallback && group.winnerSid !== null;
+    if (terminalCallback && (terminalWinner || completedWithoutWinner)) {
       const claimed = yield* runtime.claimTelemetryEmission(groupId);
       if (claimed) {
         yield* runtime.recordTelemetry({

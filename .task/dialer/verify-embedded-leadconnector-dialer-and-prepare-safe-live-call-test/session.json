@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ea884f46944d",
+  "tmuxSession": "opensaas-dialer-verify-embedded-leadconnector-dialer-and-prepare-ea884f46",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/verify-embedded-leadconnector-dialer-and-prepare-safe-live-call-test",
+  "branch": "task/dialer/verify-embedded-leadconnector-dialer-and-prepare-safe-live-call-test",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-embedded-leadconnector-dialer-and-prepare-safe-live-call-test",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-embedded-leadconnector-dialer-and-prepare-safe-live-call-test",
+  "prNumber": 1753,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1753",
+  "createdAt": "2026-08-01T16:06:41.295Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-verify-embedded-leadconnector-dialer-and-prepare-safe-live-call-test/.task/dialer/verify-embedded-leadconnector-dialer-and-prepare-safe-live-call-test/session.json"
+}
