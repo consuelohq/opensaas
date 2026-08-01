@@ -116,7 +116,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/gateway/traces/events',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-live-endpoints',
@@ -126,7 +126,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/traces',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-read-layer',
@@ -136,7 +136,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/configuration/overlay',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-write-endpoints',
@@ -146,7 +146,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/configuration',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-read-endpoints',
@@ -156,7 +156,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/settings/overlay',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-write-endpoints',
@@ -166,7 +166,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/settings',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-read-endpoints',
@@ -176,7 +176,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/environments/upsert',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'environment-sites-write-endpoints',
@@ -186,7 +186,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/environments/delete',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'environment-sites-write-endpoints',
@@ -196,7 +196,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/environments',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'environment-sites-read-endpoints',
@@ -211,7 +211,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/artifacts',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'artifacts-sites-read-layer',

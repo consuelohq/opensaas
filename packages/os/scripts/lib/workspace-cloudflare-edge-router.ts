@@ -948,8 +948,12 @@ export const createWorkspaceCloudflareEdgeRouter = (
         if (resolution.target.kind === 'consuelo-gateway-service') {
           const internalSigningSecret = input.internalSigningSecret?.trim();
 
+          // A workspace-session route was already authorized above. A browser cannot produce
+          // an internal edge signature, so demanding one here rejected every real dashboard
+          // viewer. Mirrors the site-snapshot branch.
           if (
             resolution.auth !== 'public' &&
+            resolution.auth !== 'workspace-session' &&
             (!internalSigningSecret ||
               !isSignedInternalEdgeRequest({
                 request,
