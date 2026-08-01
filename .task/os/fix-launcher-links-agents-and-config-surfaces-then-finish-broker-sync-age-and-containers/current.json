@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-launcher-links-agents-and-config-surfaces-then-finish-broker-sync-age-and-containers",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1752,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1752",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1752",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1752/fix-launcher-links-agents-and-config-surfaces-then-finish-broker-sync-age-and-containers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1752",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1752/fix-launcher-links-agents-and-config-surfaces-then-finish-broker-sync-age-and-containers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-links-agents-and-config-surfaces-then-finish-broker-sync-age-and-containers",
+  "taskSession": "tsk_80d1f59d2b7d",
+  "tmuxSession": "opensaas-os-fix-launcher-links-agents-and-config-surfaces-th-80d1f59d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-links-agents-and-config-surfaces-then-finish-broker-sync-age-and-containers/.task/os/fix-launcher-links-agents-and-config-surfaces-then-finish-broker-sync-age-and-containers/session.json",
+  "createdAt": "2026-08-01T02:49:39.241Z"
+}
