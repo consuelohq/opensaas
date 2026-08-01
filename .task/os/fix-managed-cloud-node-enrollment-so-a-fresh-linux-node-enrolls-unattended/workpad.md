@@ -73,3 +73,14 @@ bun run task:finish
    first and seeds the unenrolled placeholder identity (`local-consuelo-os` / `local`), minting an
    encryption key under that owner. Enrollment then calls `ensureNodeEncryptionKey` with the real
    workspace and node and hits the owner-mismatch guard: `KeyOwnerMismatch`.
+
+## proof on a throwaway node (0.1.20 stable)
+
+A VM created from nothing reached awaiting_authorization in 75s and enrolled on a single
+authorization, with no hand-patching:
+
+- poller alive at 150s where the old build exited 0 at 8s
+- key file ended as workspace_internal / cloud-2 with rotatedAt set: the placeholder was adopted
+- systemctl --user units came up, so heartbeat activation succeeded
+
+The node was deleted afterwards along with its data disk.
