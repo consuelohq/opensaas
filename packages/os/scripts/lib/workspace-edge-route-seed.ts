@@ -335,6 +335,22 @@ const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
+// Read-only: the Secrets surface lists which bindings exist, never their values.
+const buildSecretsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/secrets',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'secrets-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/secrets/*',
+      publicSiteRouteFamily: '/secrets/*',
+    },
+  },
+];
+
 const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
@@ -440,6 +456,7 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     ...buildConfigurationGatewayRoutes(),
     ...buildEnvironmentGatewayRoutes(),
     ...buildArtifactsGatewayRoutes(),
+    ...buildSecretsGatewayRoutes(),
     ...buildLegacyArtifactRedirectRoutes(),
   ];
 

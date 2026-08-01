@@ -86,3 +86,18 @@ bun run task:finish
 ### deploy and verify
 - D1 ship to the cloud node and verify there
 - D2 environment variables end to end, best effort only per ko
+
+## blocking discovery: the gateway data plane is a stub
+
+createConsueloGatewayServiceResponse (edge router ~608) answers every /gateway/* request with a
+service DESCRIPTOR, not data:
+
+  { ok, publicBoundary, workspace, route: { serviceName, gatewayRouteFamily, ... } }
+
+fetchUpstream is referenced once, at the os-connector branch. The gateway branch never proxies to
+the node. So /gateway/traces/recent, /gateway/configuration and /gateway/environments all return a
+descriptor; the dashboards cannot parse it and fall back to "unavailable".
+
+The auth fix was necessary but is NOT sufficient. Fixing C1, C2, R1 and C3 for real requires
+implementing gateway dispatch: proxy the gateway path to the workspace node connector origin under
+an internal signature, mirroring the os-connector branch, including SSE for /gateway/traces/events.
