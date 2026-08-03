@@ -2,6 +2,7 @@ import './styles.css';
 
 import { createLeadConnectorEmbedApi } from './api-client.js';
 import { createLeadConnectorAgentVoice } from './agent-voice.js';
+import { resolveLeadConnectorContactName } from './contact-label.js';
 import { createLeadConnectorEmbedController } from './controller.js';
 import {
   LEAD_CONNECTOR_PARENT_ORIGINS,
@@ -144,7 +145,7 @@ root.addEventListener('click', (event) => {
     const target = normalizeClickToCallTarget({
       phone,
       contactId,
-      name: contact?.name ?? null,
+      name: contact ? resolveLeadConnectorContactName(contact) : null,
     });
     if (target) controller.selectTarget(target);
   }
@@ -160,7 +161,7 @@ root.addEventListener('click', (event) => {
     const target = normalizeClickToCallTarget({
       phone: contact.phone,
       contactId: contact.id,
-      name: contact.name,
+      name: resolveLeadConnectorContactName(contact),
       opportunityId: opportunity.id,
     });
     if (target) controller.selectTarget(target);

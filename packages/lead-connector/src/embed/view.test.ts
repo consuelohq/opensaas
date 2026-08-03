@@ -63,17 +63,60 @@ describe('LeadConnector embed view', () => {
     expect(resolveLeadConnectorSurface('/overlay')).toBe('overlay');
     expect(resolveLeadConnectorSurface('/overlay/session')).toBe('overlay');
   });
-  it('renders the sidebar route as an administration surface without active call controls', () => {
-    const html = renderLeadConnectorEmbed(createInitialEmbedState(), {
-      surface: 'admin',
-    });
+  it('renders the sidebar route as an operator workspace with callable CRM records', () => {
+    const state = reduceEmbedState(
+      reduceEmbedState(createInitialEmbedState(), {
+        type: 'AUTHENTICATED',
+        token: 'embed-token',
+        expiresAt: '2026-08-03T23:30:00.000Z',
+      }),
+      {
+        type: 'RESOURCES_LOADED',
+        contacts: [
+          {
+            id: 'contact-1',
+            firstName: 'Test',
+            lastName: 'Contact',
+            name: 'Test Contact',
+            email: 'test@example.test',
+            phone: '+15550100123',
+            tags: ['follow-up'],
+          },
+        ],
+        contactTotal: 73,
+        opportunities: [
+          {
+            id: 'opportunity-1',
+            name: 'Test Opportunity',
+            contactId: 'contact-1',
+            pipelineId: 'pipeline-1',
+            stageId: 'stage-1',
+            status: 'open',
+            monetaryValue: 1250,
+          },
+        ],
+        opportunityTotal: 144,
+        pipelines: [
+          {
+            id: 'pipeline-1',
+            name: 'Marketing Pipeline',
+            stages: [{ id: 'stage-1', name: 'New Lead', position: 0 }],
+          },
+        ],
+      },
+    );
+    const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
+
     expect(html).toContain('data-surface="admin"');
-    expect(html).toContain('Overview');
-    expect(html).toContain('Analytics');
-    expect(html).toContain('Diagnostics');
-    expect(html).toContain('Caller IDs');
-    expect(html).not.toContain('data-action="start-single"');
-    expect(html).not.toContain('data-form="disposition"');
+    expect(html).toContain('Operator workspace');
+    expect(html).toContain('data-field="search"');
+    expect(html).toContain('Test Contact');
+    expect(html).toContain('data-action="select-contact"');
+    expect(html).toContain('Test Opportunity');
+    expect(html).toContain('data-action="select-opportunity"');
+    expect(html).toContain('Connection and browser checks');
+    expect(html).not.toContain('will appear here');
+    expect(html).not.toContain('will be added');
   });
 
   it('renders API-reported resource totals instead of capped loaded-array lengths', () => {
@@ -93,6 +136,52 @@ describe('LeadConnector embed view', () => {
     expect(html).toContain(
       '<span>Opportunities available</span><strong>144</strong>',
     );
+  });
+
+  it('renders callable contacts and opportunities in a ready overlay', () => {
+    const state = reduceEmbedState(
+      reduceEmbedState(createInitialEmbedState(), {
+        type: 'AUTHENTICATED',
+        token: 'embed-token',
+        expiresAt: '2026-08-03T23:30:00.000Z',
+      }),
+      {
+        type: 'RESOURCES_LOADED',
+        contacts: [
+          {
+            id: 'contact-1',
+            firstName: 'Test',
+            lastName: 'Contact',
+            name: 'Test Contact',
+            email: null,
+            phone: '+15550100123',
+            tags: [],
+          },
+        ],
+        contactTotal: 1,
+        opportunities: [
+          {
+            id: 'opportunity-1',
+            name: 'Test Opportunity',
+            contactId: 'contact-1',
+            pipelineId: null,
+            stageId: null,
+            status: 'open',
+            monetaryValue: null,
+          },
+        ],
+        opportunityTotal: 1,
+        pipelines: [],
+      },
+    );
+
+    const html = renderLeadConnectorEmbed(state, { surface: 'overlay' });
+    expect(html).toContain('Choose someone to call');
+    expect(html).toContain('data-field="search"');
+    expect(html).toContain('Test Contact');
+    expect(html).toContain('data-action="select-contact"');
+    expect(html).toContain('Test Opportunity');
+    expect(html).toContain('data-action="select-opportunity"');
   });
 
   it('renders only target confirmation and next actions before a call starts', () => {
