@@ -29,6 +29,7 @@ import type { DialerIdGeneratorService } from '../ports/id-generator.js';
 import { ParallelStateStore } from '../ports/parallel-state-store.js';
 import type { ParallelStateStoreService } from '../ports/parallel-state-store.js';
 import { ACTIVE_CALL_TTL_SECONDS } from './caller-id.js';
+import type { CallerIdLockService } from './caller-id.js';
 import type {
   ParallelDialOptions,
   ParallelDialResult,
@@ -50,6 +51,7 @@ type ParallelRuntimeLayer = Layer.Layer<ParallelRuntimeServices, never, never>;
 
 export class ParallelDialerService {
   private readonly runtimeLayer: ParallelRuntimeLayer;
+  private callerIdLock?: CallerIdLockService;
 
   constructor(
     credentials: TwilioCredentials | undefined,
@@ -69,6 +71,39 @@ export class ParallelDialerService {
     return Effect.runPromise(program.pipe(Effect.provide(this.runtimeLayer)));
   }
 
+  withCallerIdLock(service: CallerIdLockService): this {
+    this.callerIdLock = service;
+    return this;
+  }
+
+  private releaseTerminalCallerIdLocks(
+    group: ParallelGroup | null,
+  ): Promise<void> {
+    const callerIdLock = this.callerIdLock;
+    if (
+      !callerIdLock ||
+      !group ||
+      !['completed', 'failed'].includes(group.status)
+    ) {
+      return Promise.resolve();
+    }
+    const numbers = Array.from(
+      new Set(group.calls.map((call) => call.fromNumber).filter(Boolean)),
+    );
+    return Promise.all(
+      numbers.map((number) => callerIdLock.releaseLockByNumber(number)),
+    ).then(() => undefined);
+  }
+
+  private getStoredGroup(groupId: string): Promise<ParallelGroup | null> {
+    return this.run(
+      Effect.gen(function* () {
+        const state = yield* ParallelStateStore;
+        return yield* state.getGroup(groupId);
+      }),
+    );
+  }
+
   initiateGroup(options: ParallelDialOptions): Promise<ParallelDialResult> {
     return this.run(startParallelSession(options));
   }
@@ -84,25 +119,39 @@ export class ParallelDialerService {
   }
 
   getGroup(groupId: string): Promise<ParallelGroup | null> {
-    return this.run(getCallSession(groupId));
+    return this.run(getCallSession(groupId)).then((group) =>
+      this.releaseTerminalCallerIdLocks(group).then(() => group),
+    );
   }
 
   getGroupForWorkspace(
     groupId: string,
     workspaceId: string,
   ): Promise<ParallelGroup | null> {
-    return this.run(getCallSessionForWorkspace(groupId, workspaceId));
+    return this.run(getCallSessionForWorkspace(groupId, workspaceId)).then(
+      (group) => this.releaseTerminalCallerIdLocks(group).then(() => group),
+    );
   }
 
   terminateGroup(groupId: string): Promise<void> {
-    return this.run(terminateCallSession(groupId));
+    return this.run(terminateCallSession(groupId))
+      .then(() => this.getStoredGroup(groupId))
+      .then((group) => this.releaseTerminalCallerIdLocks(group));
   }
 
   terminateGroupForWorkspace(
     groupId: string,
     workspaceId: string,
   ): Promise<boolean> {
-    return this.run(terminateCallSessionForWorkspace(groupId, workspaceId));
+    return this.run(
+      terminateCallSessionForWorkspace(groupId, workspaceId),
+    ).then((terminated) =>
+      terminated
+        ? this.getStoredGroup(groupId)
+            .then((group) => this.releaseTerminalCallerIdLocks(group))
+            .then(() => true)
+        : false,
+    );
   }
 
   retryPendingCleanup(groupId: string): Promise<{
