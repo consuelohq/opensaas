@@ -15,6 +15,7 @@ import {
 import { DialerIdGenerator } from '../ports/id-generator';
 import type { ParallelGroup } from '../types';
 import { startDialerCall } from './start-dialer-call';
+import { markParallelAgentReady } from './parallel-compatibility-application';
 import { processParallelCallback } from './process-parallel-callback';
 
 const context = { workspaceId: 'workspace-1', userId: 'user-1' };
@@ -140,6 +141,7 @@ const parallelRuntime = (
   getGroupForWorkspace: () => Effect.succeed(null),
   generateCustomerTwiml: () => Effect.succeed(null),
   terminateGroupForWorkspace: () => Effect.succeed(false),
+  retryPendingCleanup: () => Effect.succeed({ retried: 0, remaining: 0 }),
   claimTelemetryEmission: () => Effect.succeed(false),
   recordTelemetry: () => Effect.void,
   ...overrides,
@@ -196,6 +198,66 @@ describe('dialer compatibility application contracts', () => {
       'create-queue:workspace-1',
       'mock:workspace-1',
     ]);
+  });
+
+  it('retries winner cleanup after the browser agent media leg becomes ready', async () => {
+    let cleanupAttempts = 0;
+    const group: ParallelGroup = {
+      groupId: 'pg-agent-ready',
+      conferenceName: 'conference-agent-ready',
+      status: 'connected',
+      winnerSid: 'CA_winner',
+      calls: [],
+      workspaceId: 'workspace-1',
+      queueId: 'queue-1',
+      userId: 'user-1',
+      createdAt: '2026-08-03T18:00:00.000Z',
+      resolverReason: 'test',
+      profile: {
+        id: 'balanced',
+        fanout: 1,
+        staggerMs: 0,
+        amdPolicy: 'human-only',
+        terminationPolicy: 'winner-take-all',
+      },
+      cleanupFailures: [
+        {
+          action: 'unmute-winner',
+          callSid: 'CA_winner',
+          message: 'Active conference not found',
+          attempts: 1,
+          firstFailedAt: '2026-08-03T18:00:01.000Z',
+          lastFailedAt: '2026-08-03T18:00:01.000Z',
+          retryable: true,
+        },
+      ],
+    };
+    const service = parallelRuntime({
+      getGroupForWorkspace: () => Effect.succeed(group),
+      retryPendingCleanup: () =>
+        Effect.sync(() => {
+          cleanupAttempts += 1;
+          return cleanupAttempts === 1
+            ? { retried: 1, remaining: 1 }
+            : { retried: 1, remaining: 0 };
+        }),
+    });
+
+    const result = await Effect.runPromise(
+      markParallelAgentReady({
+        groupId: group.groupId,
+        workspaceId: group.workspaceId,
+      }).pipe(
+        Effect.provide(Layer.succeed(ParallelCompatibilityRuntime, service)),
+      ),
+    );
+
+    expect(cleanupAttempts).toBe(2);
+    expect(result).toEqual({
+      groupId: group.groupId,
+      status: 'connected',
+      remainingCleanup: 0,
+    });
   });
 
   it('invokes the shared callback runtime exactly once and returns its lifecycle result', async () => {

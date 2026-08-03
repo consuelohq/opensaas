@@ -261,7 +261,10 @@ describe('ParallelDialerService', () => {
         limit: 1,
       });
       expect(mockClient.conferences).toHaveBeenCalledWith('CF_parallel');
-      expect(mockParticipantUpdate).toHaveBeenCalledWith({ muted: false });
+      expect(mockParticipantUpdate).toHaveBeenCalledWith({
+        muted: false,
+        endConferenceOnExit: true,
+      });
     });
 
     it('should mark group completed when all calls resolve with no winner', async () => {
@@ -356,7 +359,12 @@ describe('ParallelDialerService', () => {
 
       expect(twiml).toContain('muted="true"');
       expect(twiml).toContain('beep="false"');
-      expect(twiml).toContain('startConferenceOnEnter="true"');
+      expect(twiml).toContain('startConferenceOnEnter="false"');
+      expect(twiml).toContain('endConferenceOnExit="false"');
+      expect(twiml).toContain('waitUrl=""');
+      expect(twiml).toContain(
+        `participantLabel="customer-${result.calls[0].callSid}"`,
+      );
     });
 
     it('should join the selected winner unmuted', async () => {

@@ -24,6 +24,7 @@
     "configure:sandbox-menu": "bun ./scripts/configure-sandbox-menu.ts"
   },
   "dependencies": {
+    "@twilio/voice-sdk": "^2.12.1",
     "effect": "^3.21.3"
   },
   "devDependencies": {

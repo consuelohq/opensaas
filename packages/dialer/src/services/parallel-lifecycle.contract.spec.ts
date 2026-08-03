@@ -12,7 +12,10 @@ type Deferred<T> = {
 };
 
 type CleanupAwareParallelDialer = ParallelDialerService & {
-  retryPendingCleanup(groupId: string): Promise<void>;
+  retryPendingCleanup(groupId: string): Promise<{
+    retried: number;
+    remaining: number;
+  }>;
   getGroupForWorkspace(
     groupId: string,
     workspaceId: string,
@@ -104,6 +107,25 @@ describe('parallel dial lifecycle contract', () => {
     mockParticipantUpdate.mockResolvedValue({});
   });
 
+  it('keeps customer legs muted without provider hold music until the agent starts the conference', async () => {
+    const result = await service.initiateGroup({
+      ...baseOptions,
+      customerNumbers: baseOptions.customerNumbers.slice(0, 1),
+      fromNumbers: baseOptions.fromNumbers.slice(0, 1),
+      profile: { ...profile, fanout: 1 },
+    });
+
+    const twiml = await service.generateCustomerTwiml(result.calls[0].callSid);
+
+    expect(twiml).toContain('startConferenceOnEnter="false"');
+    expect(twiml).toContain('endConferenceOnExit="false"');
+    expect(twiml).toContain('waitUrl=""');
+    expect(twiml).toContain('muted="true"');
+    expect(twiml).toContain(
+      `participantLabel="customer-${result.calls[0].callSid}"`,
+    );
+  });
+
   it('retains a callback that arrives while later legs are still being created', async () => {
     const secondCall = deferred<{ sid: string }>();
     mockCallsCreate
@@ -155,6 +177,10 @@ describe('parallel dial lifecycle contract', () => {
       group?.calls.filter((call) => call.status === 'in-progress'),
     ).toHaveLength(1);
     expect(mockParticipantUpdate).toHaveBeenCalledTimes(1);
+    expect(mockParticipantUpdate).toHaveBeenCalledWith({
+      muted: false,
+      endConferenceOnExit: true,
+    });
   });
 
   it('claims telemetry emission exactly once under concurrent callbacks', async () => {
@@ -241,7 +267,33 @@ describe('parallel dial lifecycle contract', () => {
 
     const reconciledGroup = await service.getGroup(result.groupId);
     expect(reconciledGroup?.cleanupFailures).toEqual([]);
-    expect(mockParticipantUpdate).toHaveBeenCalledWith({ muted: false });
+    expect(mockParticipantUpdate).toHaveBeenCalledWith({
+      muted: false,
+      endConferenceOnExit: true,
+    });
+  });
+
+  it('completes the group when the selected winner hangs up', async () => {
+    const result = await service.initiateGroup({
+      ...baseOptions,
+      customerNumbers: baseOptions.customerNumbers.slice(0, 2),
+      fromNumbers: baseOptions.fromNumbers.slice(0, 2),
+      profile: { ...profile, fanout: 2 },
+    });
+    const [winner] = result.calls;
+
+    await service.handleStatusCallback(winner.callSid, 'in-progress', 'human');
+    await service.handleStatusCallback(winner.callSid, 'completed');
+
+    const completed = await service.getGroup(result.groupId);
+    expect(completed?.status).toBe('completed');
+    expect(completed?.completedAt).toBeDefined();
+    expect(completed?.cleanupFailures).not.toContainEqual(
+      expect.objectContaining({
+        action: 'unmute-winner',
+        callSid: winner.callSid,
+      }),
+    );
   });
 
   it('persists workspace ownership and rejects cross-workspace access', async () => {

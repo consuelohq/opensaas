@@ -1,3 +1,5 @@
+import { Dialer, type TwilioCredentials } from '@consuelo/dialer';
+
 import type { DialerApplicationLayers } from '../application';
 import { createEffectDialerApplication } from '../application';
 import type { DialerServerDependencies } from '../contracts';
@@ -80,6 +82,14 @@ export async function loadDialerServerRuntime(
     const identities = parseIdentities(
       environment.DIALER_SERVER_AUTH_IDENTITIES_JSON?.trim() || '[]',
     );
+    const voiceCredentials: TwilioCredentials = {
+      accountSid: required(environment, 'TWILIO_ACCOUNT_SID'),
+      authToken: required(environment, 'TWILIO_AUTH_TOKEN'),
+      apiKey: environment.TWILIO_API_KEY?.trim(),
+      apiSecret: environment.TWILIO_API_SECRET?.trim(),
+      twimlAppSid: environment.TWILIO_TWIML_APP_SID?.trim(),
+    };
+    const voiceDialer = new Dialer({ credentials: voiceCredentials });
     const staticAuthenticator = createBearerAuthenticator(identities);
     const embedSessions = createEmbedSessionService({
       secret: required(environment, 'DIALER_SERVER_EMBED_SESSION_SECRET'),
@@ -117,6 +127,7 @@ export async function loadDialerServerRuntime(
         verifyTwilioSignature: createTwilioSignatureVerifier(
           required(environment, 'TWILIO_AUTH_TOKEN'),
         ),
+        issueVoiceToken: (identity) => voiceDialer.getToken(identity.userId),
       },
     };
   } catch (error: unknown) {

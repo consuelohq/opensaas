@@ -100,6 +100,12 @@ export type ParallelCompatibilityRuntimeService = {
     groupId: string,
     workspaceId: string,
   ) => Effect.Effect<boolean, DialerApplicationError>;
+  retryPendingCleanup: (
+    groupId: string,
+  ) => Effect.Effect<
+    { retried: number; remaining: number },
+    DialerApplicationError
+  >;
   claimTelemetryEmission: (
     groupId: string,
   ) => Effect.Effect<boolean, DialerApplicationError>;
@@ -136,6 +142,7 @@ export type ValidateParallelDialCommand = {
 
 export type ParallelGroupStatusResult = {
   groupId: string;
+  conferenceName: string;
   status: string;
   winnerSid: string | null;
   winner: ParallelCall | null;
@@ -147,6 +154,23 @@ export type ParallelGroupStatusResult = {
     amdResult?: string;
     contactId?: string;
   }>;
+};
+
+
+export type ParallelAgentTwimlInput = {
+  sessionId?: string;
+  clientIdentity?: string;
+};
+
+export type MarkParallelAgentReadyCommand = {
+  groupId: string;
+  workspaceId: string;
+};
+
+export type MarkParallelAgentReadyResult = {
+  groupId: string;
+  status: string;
+  remainingCleanup: number;
 };
 
 export type TerminateParallelGroupCommand = {

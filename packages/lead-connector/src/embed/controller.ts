@@ -1,4 +1,5 @@
 import type { LeadConnectorEmbedApi } from './api-client.js';
+import type { LeadConnectorAgentVoice } from './agent-voice.js';
 import { EmbedSessionExpiredError } from './api-client.js';
 import type { LeadConnectorClickToCallTarget } from './protocol.js';
 import {
@@ -15,6 +16,7 @@ export type LeadConnectorEmbedController = ReturnType<
 
 export const createLeadConnectorEmbedController = (input: {
   api: LeadConnectorEmbedApi;
+  voice: LeadConnectorAgentVoice;
   initialState?: LeadConnectorEmbedState;
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
@@ -182,6 +184,7 @@ export const createLeadConnectorEmbedController = (input: {
           return;
         }
         dispatch({ type: 'START_REQUESTED', strategy });
+        await input.voice.prepare();
         const targets =
           strategy === 'single'
             ? state.selectedTargets.slice(0, 1)
@@ -207,6 +210,22 @@ export const createLeadConnectorEmbedController = (input: {
         const result = await run(() => input.api.startCallSession(request));
         if (!result) return;
         const statusId = result.providerGroupId ?? result.sessionId;
+        try {
+          await input.voice.connect(statusId);
+          const ready = await run(() => input.api.markAgentReady(statusId));
+          if (!ready) {
+            input.voice.disconnect();
+            await input.api.terminateCallSession(statusId).catch(() => undefined);
+            return;
+          }
+          if (ready.remainingCleanup > 0) {
+            throw new Error('Agent conference did not become ready');
+          }
+        } catch (error: unknown) {
+          input.voice.disconnect();
+          await input.api.terminateCallSession(statusId).catch(() => undefined);
+          throw error;
+        }
         const session = await run(() => input.api.getCallSession(statusId));
         if (session) dispatch({ type: 'SESSION_UPDATED', session });
       } catch (error: unknown) {
@@ -229,6 +248,7 @@ export const createLeadConnectorEmbedController = (input: {
       try {
         const sessionId = state.activeSessionId;
         dispatch({ type: 'STOP_REQUESTED' });
+        input.voice.disconnect();
         if (!sessionId) return;
         await run(() => input.api.terminateCallSession(sessionId));
       } catch (error: unknown) {
@@ -239,6 +259,7 @@ export const createLeadConnectorEmbedController = (input: {
       try {
         const sessionId = state.activeSessionId;
         dispatch({ type: 'STOP_REQUESTED' });
+        input.voice.disconnect();
         if (!sessionId) return;
         await run(() => input.api.terminateCallSession(sessionId));
       } catch (error: unknown) {

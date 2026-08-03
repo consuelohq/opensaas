@@ -1,6 +1,7 @@
 import './styles.css';
 
 import { createLeadConnectorEmbedApi } from './api-client.js';
+import { createLeadConnectorAgentVoice } from './agent-voice.js';
 import { createLeadConnectorEmbedController } from './controller.js';
 import {
   LEAD_CONNECTOR_PARENT_ORIGINS,
@@ -17,7 +18,8 @@ const surface = resolveLeadConnectorSurface(window.location.pathname);
 document.body.dataset.surface = surface;
 
 const api = createLeadConnectorEmbedApi({ baseUrl: window.location.origin });
-const controller = createLeadConnectorEmbedController({ api });
+const voice = createLeadConnectorAgentVoice({ getToken: api.getVoiceToken });
+const controller = createLeadConnectorEmbedController({ api, voice });
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let bootstrapTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -231,5 +233,6 @@ bridge.requestUserContext();
 window.addEventListener('beforeunload', () => {
   completeBootstrap();
   stopRefresh();
+  voice.disconnect();
   bridge.stop();
 });

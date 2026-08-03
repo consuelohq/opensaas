@@ -114,7 +114,7 @@ export const createTwilioCallProviderLayer = (
             await twilio
               .conferences(conferenceSid)
               .participants(callSid)
-              .update({ muted: false });
+              .update({ muted: false, endConferenceOnExit: true });
           } catch (cause: unknown) {
             throw asProviderFailure('unmute-winner', cause);
           }

@@ -4602,6 +4602,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@consuelo/lead-connector@workspace:packages/lead-connector"
   dependencies:
+    "@twilio/voice-sdk": "npm:^2.12.1"
     "@types/bun": "npm:latest"
     effect: "npm:^3.21.3"
     typescript: "npm:5.9.2"

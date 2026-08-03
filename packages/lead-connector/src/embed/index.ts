@@ -34,6 +34,8 @@ export {
 } from './api-client.js';
 export type { LeadConnectorEmbedApi } from './api-client.js';
 
+export { createLeadConnectorAgentVoice } from './agent-voice.js';
+export type { LeadConnectorAgentVoice } from './agent-voice.js';
 export { createLeadConnectorEmbedController } from './controller.js';
 export type { LeadConnectorEmbedController } from './controller.js';
 export { renderLeadConnectorEmbed } from './view.js';

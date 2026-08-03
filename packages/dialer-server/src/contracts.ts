@@ -1,11 +1,14 @@
 import type {
   DialerApplicationError,
   DialerCallStartResult,
+  MarkParallelAgentReadyResult,
+  ParallelAgentTwimlInput,
   ParallelCallbackInput,
   ParallelCallbackResult,
   ParallelGroupStatusResult,
   ParallelTwimlInput,
   StartDialerCallCommand,
+  VoiceToken,
 } from '@consuelo/dialer';
 import type {
   LeadConnectorContact,
@@ -46,6 +49,13 @@ export type DialerServerApplication = {
   generateTwilioCustomerTwiml: (
     input: ParallelTwimlInput,
   ) => Effect.Effect<string, DialerApplicationError>;
+  generateTwilioAgentTwiml: (
+    input: ParallelAgentTwimlInput,
+  ) => Effect.Effect<string, DialerApplicationError>;
+  markAgentReady: (command: {
+    sessionId: string;
+    workspaceId: string;
+  }) => Effect.Effect<MarkParallelAgentReadyResult, DialerApplicationError>;
 };
 
 export type TwilioSignatureInput = {
@@ -120,6 +130,7 @@ export type DialerServerDependencies = {
   application: DialerServerApplication;
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;
+  issueVoiceToken?: (identity: DialerIdentity) => Promise<VoiceToken>;
   issueEmbedSession?: (
     identity: LeadConnectorEmbedIdentity,
   ) => Promise<{ token: string; expiresAt: string }>;
