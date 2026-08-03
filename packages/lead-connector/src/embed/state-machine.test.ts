@@ -86,6 +86,33 @@ describe('LeadConnector embed state machine', () => {
     ]);
   });
 
+  it('projects a terminal session as wrap-up even when the winner SID remains populated', () => {
+    const state = reduceEmbedState(createInitialEmbedState(), {
+      type: 'SESSION_UPDATED',
+      session: {
+        groupId: 'group-1',
+        status: 'completed',
+        winnerSid: 'call-1',
+        winner: null,
+        calls: [
+          {
+            callSid: 'call-1',
+            customerNumber: '+15550100123',
+            position: 0,
+            status: 'completed',
+            amdResult: 'human',
+            contactId: 'contact-1',
+          },
+        ],
+      },
+    });
+
+    expect(state.phase).toBe('wrapping-up');
+    expect(state.callLegs).toEqual([
+      expect.objectContaining({ callSid: 'call-1', role: 'winner' }),
+    ]);
+  });
+
   it('supports pause, resume, stop, wrap-up, completion, recoverable failure, and retry', () => {
     let state = reduceEmbedState(createInitialEmbedState(), { type: 'PAUSED' });
     expect(state.phase).toBe('paused');

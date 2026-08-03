@@ -4,6 +4,7 @@ import { EmbedSessionExpiredError } from './api-client.js';
 import type { LeadConnectorClickToCallTarget } from './protocol.js';
 import {
   createInitialEmbedState,
+  isTerminalEmbedSession,
   reduceEmbedState,
   removeEmbedTarget,
   selectEmbedTarget,
@@ -20,6 +21,7 @@ export const createLeadConnectorEmbedController = (input: {
   initialState?: LeadConnectorEmbedState;
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
+  let activeVoiceSessionId: string | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -56,6 +58,19 @@ export const createLeadConnectorEmbedController = (input: {
       dispatch({ type: 'FAILED', code, message, recoverable });
       return null;
     }
+  };
+
+  const disconnectVoice = (): void => {
+    if (!activeVoiceSessionId) return;
+    activeVoiceSessionId = null;
+    input.voice.disconnect();
+  };
+
+  const projectSession = (
+    session: Parameters<typeof isTerminalEmbedSession>[0],
+  ): void => {
+    if (isTerminalEmbedSession(session)) disconnectVoice();
+    dispatch({ type: 'SESSION_UPDATED', session });
   };
 
   const reportUnexpectedFailure = (error: unknown): void => {
@@ -210,24 +225,27 @@ export const createLeadConnectorEmbedController = (input: {
         const result = await run(() => input.api.startCallSession(request));
         if (!result) return;
         const statusId = result.providerGroupId ?? result.sessionId;
+        activeVoiceSessionId = statusId;
         try {
           await input.voice.connect(statusId);
           const ready = await run(() => input.api.markAgentReady(statusId));
           if (!ready) {
-            input.voice.disconnect();
-            await input.api.terminateCallSession(statusId).catch(() => undefined);
+            disconnectVoice();
+            await input.api
+              .terminateCallSession(statusId)
+              .catch(() => undefined);
             return;
           }
           if (ready.remainingCleanup > 0) {
             throw new Error('Agent conference did not become ready');
           }
         } catch (error: unknown) {
-          input.voice.disconnect();
+          disconnectVoice();
           await input.api.terminateCallSession(statusId).catch(() => undefined);
           throw error;
         }
         const session = await run(() => input.api.getCallSession(statusId));
-        if (session) dispatch({ type: 'SESSION_UPDATED', session });
+        if (session) projectSession(session);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }
@@ -237,7 +255,7 @@ export const createLeadConnectorEmbedController = (input: {
         const sessionId = state.activeSessionId;
         if (!sessionId) return;
         const session = await run(() => input.api.getCallSession(sessionId));
-        if (session) dispatch({ type: 'SESSION_UPDATED', session });
+        if (session) projectSession(session);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }
@@ -248,7 +266,7 @@ export const createLeadConnectorEmbedController = (input: {
       try {
         const sessionId = state.activeSessionId;
         dispatch({ type: 'STOP_REQUESTED' });
-        input.voice.disconnect();
+        disconnectVoice();
         if (!sessionId) return;
         await run(() => input.api.terminateCallSession(sessionId));
       } catch (error: unknown) {
@@ -259,7 +277,7 @@ export const createLeadConnectorEmbedController = (input: {
       try {
         const sessionId = state.activeSessionId;
         dispatch({ type: 'STOP_REQUESTED' });
-        input.voice.disconnect();
+        disconnectVoice();
         if (!sessionId) return;
         await run(() => input.api.terminateCallSession(sessionId));
       } catch (error: unknown) {

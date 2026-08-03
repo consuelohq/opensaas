@@ -11,90 +11,94 @@ const createVoice = () => ({
   disconnect: mock(() => undefined),
 });
 
-const createApi = () => ({
-  setSessionToken: mock(() => undefined),
-  createEmbedSession: mock(async () => ({
-    token: 'embed-token',
-    expiresAt: '2026-07-24T02:00:00.000Z',
-  })),
-  listContacts: mock(async () => ({
-    contacts: [
+const createApi = () =>
+  ({
+    setSessionToken: mock(() => undefined),
+    createEmbedSession: mock(async () => ({
+      token: 'embed-token',
+      expiresAt: '2026-07-24T02:00:00.000Z',
+    })),
+    listContacts: mock(async () => ({
+      contacts: [
+        {
+          id: 'contact-1',
+          firstName: 'Test',
+          lastName: 'Contact',
+          name: 'Test Contact',
+          email: null,
+          phone: '+15550100123',
+          tags: [],
+        },
+      ],
+      total: 73,
+      nextCursor: null,
+    })),
+    searchOpportunities: mock(async () => ({
+      opportunities: [
+        {
+          id: 'opportunity-1',
+          name: 'Renewal',
+          contactId: 'contact-1',
+          pipelineId: 'pipeline-1',
+          stageId: 'stage-1',
+          status: 'open',
+          monetaryValue: 100,
+        },
+      ],
+      total: 144,
+    })),
+    listPipelines: mock(async () => [
       {
-        id: 'contact-1',
-        firstName: 'Test',
-        lastName: 'Contact',
-        name: 'Test Contact',
-        email: null,
-        phone: '+15550100123',
-        tags: [],
+        id: 'pipeline-1',
+        name: 'Sales',
+        stages: [{ id: 'stage-1', name: 'Qualified', position: 0 }],
       },
-    ],
-    total: 73,
-    nextCursor: null,
-  })),
-  searchOpportunities: mock(async () => ({
-    opportunities: [
-      {
-        id: 'opportunity-1',
-        name: 'Renewal',
-        contactId: 'contact-1',
-        pipelineId: 'pipeline-1',
-        stageId: 'stage-1',
-        status: 'open',
-        monetaryValue: 100,
-      },
-    ],
-    total: 144,
-  })),
-  listPipelines: mock(async () => [
-    {
-      id: 'pipeline-1',
-      name: 'Sales',
-      stages: [{ id: 'stage-1', name: 'Qualified', position: 0 }],
-    },
-  ]),
-  startCallSession: mock(async () => ({
-    sessionId: 'session-1',
-    providerGroupId: 'group-1',
-    status: 'dialing',
-    calls: [],
-  })),
-  getCallSession: mock(async () => ({
-    groupId: 'group-1',
-    status: 'connected',
-    winnerSid: 'call-1',
-    winner: null,
-    calls: [
-      {
-        callSid: 'call-1',
-        customerNumber: '+15550100123',
-        contactId: 'contact-1',
-        position: 0,
-        status: 'in-progress',
-        amdResult: 'human',
-      },
-    ],
-  })),
-  markAgentReady: mock(async () => ({
-    groupId: 'group-1',
-    status: 'connected',
-    remainingCleanup: 0,
-  })),
-  getVoiceToken: mock(async () => ({
-    token: 'voice-token',
-    identity: 'user_user-1',
-    ttl: 3600,
-  })),
-  terminateCallSession: mock(async () => ({
-    groupId: 'group-1',
-    status: 'completed' as const,
-  })),
-  recordDisposition: mock(async () => ({ recorded: true as const })),
-} satisfies LeadConnectorEmbedApi);
+    ]),
+    startCallSession: mock(async () => ({
+      sessionId: 'session-1',
+      providerGroupId: 'group-1',
+      status: 'dialing',
+      calls: [],
+    })),
+    getCallSession: mock(async () => ({
+      groupId: 'group-1',
+      status: 'connected',
+      winnerSid: 'call-1',
+      winner: null,
+      calls: [
+        {
+          callSid: 'call-1',
+          customerNumber: '+15550100123',
+          contactId: 'contact-1',
+          position: 0,
+          status: 'in-progress',
+          amdResult: 'human',
+        },
+      ],
+    })),
+    markAgentReady: mock(async () => ({
+      groupId: 'group-1',
+      status: 'connected',
+      remainingCleanup: 0,
+    })),
+    getVoiceToken: mock(async () => ({
+      token: 'voice-token',
+      identity: 'user_user-1',
+      ttl: 3600,
+    })),
+    terminateCallSession: mock(async () => ({
+      groupId: 'group-1',
+      status: 'completed' as const,
+    })),
+    recordDisposition: mock(async () => ({ recorded: true as const })),
+  }) satisfies LeadConnectorEmbedApi;
 
 describe('LeadConnector embed controller', () => {
   it('projects a recoverable parent authentication failure instead of remaining in booting', () => {
-    const controller = createLeadConnectorEmbedController({ api: createApi(), voice: createVoice() });
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice: createVoice(),
+    });
     controller.fail({
       code: 'EMBED_PARENT_UNAVAILABLE',
       message: 'Open the dialer from the LeadConnector custom menu.',
@@ -175,6 +179,72 @@ describe('LeadConnector embed controller', () => {
     expect(controller.getState().phase).toBe('completed');
   });
 
+  it('disconnects the browser agent exactly once when a refreshed session becomes terminal', async () => {
+    let statusReads = 0;
+    const api: LeadConnectorEmbedApi = {
+      ...createApi(),
+      getCallSession: mock(async () => {
+        statusReads += 1;
+        if (statusReads === 1) {
+          return {
+            groupId: 'group-1',
+            status: 'connected',
+            winnerSid: 'call-1',
+            winner: null,
+            calls: [
+              {
+                callSid: 'call-1',
+                customerNumber: '+15550100123',
+                contactId: 'contact-1',
+                position: 0,
+                status: 'in-progress',
+                amdResult: 'human',
+              },
+            ],
+          };
+        }
+        return {
+          groupId: 'group-1',
+          status: 'completed',
+          winnerSid: null,
+          winner: null,
+          calls: [
+            {
+              callSid: 'call-1',
+              customerNumber: '+15550100123',
+              contactId: 'contact-1',
+              position: 0,
+              status: 'completed',
+              amdResult: 'machine',
+            },
+          ],
+        };
+      }),
+    };
+    const voice = createVoice();
+    const controller = createLeadConnectorEmbedController({ api, voice });
+    await controller.authenticate('opaque-parent-ciphertext');
+    const target = normalizeClickToCallTarget({
+      phone: '+15550100123',
+      contactId: 'contact-1',
+      name: 'Test Contact',
+    });
+    controller.selectTarget(target!);
+    await controller.startCall('single');
+    expect(voice.disconnect).not.toHaveBeenCalled();
+
+    await controller.refreshSession();
+    expect(voice.disconnect).toHaveBeenCalledTimes(1);
+    expect(controller.getState()).toMatchObject({
+      phase: 'wrapping-up',
+      activeSessionId: 'group-1',
+      callSession: { status: 'completed', winnerSid: null },
+    });
+
+    await controller.refreshSession();
+    expect(voice.disconnect).toHaveBeenCalledTimes(1);
+  });
+
   it('terminates customer fanout when the browser agent cannot join', async () => {
     const api = createApi();
     const voice = createVoice();
@@ -229,7 +299,10 @@ describe('LeadConnector embed controller', () => {
 
   it('searches resources with pipeline and stage filters and supports queue pause and resume', async () => {
     const api = createApi();
-    const controller = createLeadConnectorEmbedController({ api, voice: createVoice() });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
     await controller.authenticate('opaque-parent-ciphertext');
     await controller.searchContacts('Test');
     await controller.searchOpportunities({
@@ -255,7 +328,10 @@ describe('LeadConnector embed controller', () => {
 
   it('starts multiline calls through the queue predictive contract', async () => {
     const api = createApi();
-    const controller = createLeadConnectorEmbedController({ api, voice: createVoice() });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
     await controller.authenticate('opaque-parent-ciphertext');
     for (const [index, phone] of ['+15550100123', '+15550100124'].entries()) {
       const target = normalizeClickToCallTarget({
@@ -281,7 +357,10 @@ describe('LeadConnector embed controller', () => {
     api.listPipelines = mock(async () => {
       throw new EmbedSessionExpiredError();
     });
-    const controller = createLeadConnectorEmbedController({ api, voice: createVoice() });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
     await controller.authenticate('opaque-parent-ciphertext');
     expect(controller.getState()).toMatchObject({
       phase: 'authenticating',

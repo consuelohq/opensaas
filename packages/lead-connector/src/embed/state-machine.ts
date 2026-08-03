@@ -117,10 +117,22 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   error: null,
 });
 
+const TERMINAL_SESSION_STATUSES = new Set([
+  'completed',
+  'terminated',
+  'canceled',
+  'failed',
+]);
+
+export const isTerminalEmbedSession = (session: EmbedCallSession): boolean =>
+  TERMINAL_SESSION_STATUSES.has(session.status.toLowerCase());
+
 const phaseFromSession = (
   session: EmbedCallSession,
 ): LeadConnectorEmbedPhase => {
   const status = session.status.toLowerCase();
+  if (isTerminalEmbedSession(session))
+    return status === 'failed' ? 'failed' : 'wrapping-up';
   if (
     session.winnerSid ||
     ['connected', 'in-progress', 'answered'].includes(status)
@@ -128,9 +140,6 @@ const phaseFromSession = (
     return 'connected';
   }
   if (status === 'ringing') return 'ringing';
-  if (['completed', 'terminated', 'canceled'].includes(status))
-    return 'wrapping-up';
-  if (status === 'failed') return 'failed';
   return 'dialing';
 };
 
