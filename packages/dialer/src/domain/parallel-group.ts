@@ -26,18 +26,20 @@ export const createParallelGroup = (
   cleanupFailures: [],
 });
 
-export const cloneParallelGroup = (group: ParallelGroup): ParallelGroup => ({
-  ...group,
-  calls: group.calls.map((call) => ({ ...call })),
-  cleanupFailures: (group.cleanupFailures ?? []).map((failure) => ({
-    ...failure,
-  })),
-});
+export const cloneParallelGroup = (group: ParallelGroup): ParallelGroup => {
+  const cleanupFailures = Array.isArray(group.cleanupFailures)
+    ? group.cleanupFailures
+    : [];
 
-export const hydrateParallelGroup = (group: ParallelGroup): ParallelGroup => ({
-  ...cloneParallelGroup(group),
-  cleanupFailures: group.cleanupFailures ?? [],
-});
+  return {
+    ...group,
+    calls: group.calls.map((call) => ({ ...call })),
+    cleanupFailures: cleanupFailures.map((failure) => ({ ...failure })),
+  };
+};
+
+export const hydrateParallelGroup = (group: ParallelGroup): ParallelGroup =>
+  cloneParallelGroup(group);
 
 export const completeGroupIfResolved = (
   group: ParallelGroup,
