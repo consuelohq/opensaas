@@ -41,6 +41,7 @@ const createDependencies = (
     getCallSession: mock(() =>
       Effect.succeed({
         groupId: 'group-1',
+        conferenceName: 'conference-1',
         status: 'dialing',
         winnerSid: null,
         winner: null,
@@ -54,11 +55,20 @@ const createDependencies = (
       Effect.succeed({ received: true as const, groupId: 'group-1' }),
     ),
     generateTwilioCustomerTwiml: mock(() => Effect.succeed('<Response />')),
+    generateTwilioAgentTwiml: mock(() => Effect.succeed('<Response />')),
+    markAgentReady: mock(() =>
+      Effect.succeed({ groupId: 'group-1', status: 'connected', remainingCleanup: 0 }),
+    ),
   };
   return {
     application,
     authenticate: mock(async () => identity),
     verifyTwilioSignature: mock(async () => true),
+    issueVoiceToken: mock(async () => ({
+      token: 'voice-token',
+      identity: 'user_user-1',
+      ttl: 3600,
+    })),
     ...overrides,
   } satisfies DialerServerDependencies;
 };
@@ -141,6 +151,31 @@ describe('dialer-server HTTP contracts', () => {
       sessionId: 'group-1',
       workspaceId: 'workspace-1',
       userId: 'user-1',
+    });
+  });
+
+  it('issues an authenticated browser voice token and marks the agent participant ready', async () => {
+    const dependencies = createDependencies();
+    const app = createDialerServer(dependencies);
+
+    const token = await app.fetch(authenticatedRequest('/v1/voice/token'));
+    expect(token.status).toBe(200);
+    expect(await token.json()).toEqual({
+      token: 'voice-token',
+      identity: 'user_user-1',
+      ttl: 3600,
+    });
+    expect(dependencies.issueVoiceToken).toHaveBeenCalledWith(identity);
+
+    const ready = await app.fetch(
+      authenticatedRequest('/v1/call-sessions/group-1/agent-ready', {
+        method: 'POST',
+      }),
+    );
+    expect(ready.status).toBe(200);
+    expect(dependencies.application.markAgentReady).toHaveBeenCalledWith({
+      sessionId: 'group-1',
+      workspaceId: 'workspace-1',
     });
   });
 

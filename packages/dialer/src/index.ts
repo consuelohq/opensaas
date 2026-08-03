@@ -33,8 +33,10 @@ export { startParallelSession } from './application/start-parallel-session.js';
 export type { StartParallelSessionOptions } from './application/start-parallel-session.js';
 export { processProviderCallback } from './application/process-provider-callback.js';
 export {
+  generateParallelAgentTwiml,
   generateParallelCustomerTwiml,
   getParallelGroupStatus,
+  markParallelAgentReady,
   initiateParallelDial,
   terminateParallelGroup,
   validateParallelDial,
@@ -117,6 +119,9 @@ export type {
 } from './ports/dialer-call-start.js';
 export { ParallelCompatibilityRuntime } from './ports/parallel-compatibility.js';
 export type {
+  MarkParallelAgentReadyCommand,
+  MarkParallelAgentReadyResult,
+  ParallelAgentTwimlInput,
   ParallelCallbackInput,
   ParallelCallbackResult,
   ParallelCompatibilityRuntimeService,

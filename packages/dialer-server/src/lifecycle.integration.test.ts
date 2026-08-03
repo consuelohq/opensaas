@@ -187,6 +187,8 @@ describe('dialer-server in-memory lifecycle', () => {
         terminateCallSessionForWorkspace(groupId, workspaceId).pipe(
           Effect.provide(coreLayer),
         ),
+      retryPendingCleanup: () =>
+        Effect.succeed({ retried: 0, remaining: 0 }),
       claimTelemetryEmission: claimTelemetry,
       recordTelemetry: () =>
         Effect.sync(() => {

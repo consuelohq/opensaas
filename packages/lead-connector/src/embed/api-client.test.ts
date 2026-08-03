@@ -39,6 +39,10 @@ describe('LeadConnector embed API client', () => {
           },
           201,
         );
+      if (path === '/v1/voice/token')
+        return jsonResponse({ token: 'voice-token', identity: 'user_user-1', ttl: 3600 });
+      if (path === '/v1/call-sessions/group-1/agent-ready')
+        return jsonResponse({ groupId: 'group-1', status: 'connected', remainingCleanup: 0 });
       if (path === '/v1/call-sessions/group-1' && request.method === 'GET')
         return jsonResponse({
           groupId: 'group-1',
@@ -72,6 +76,8 @@ describe('LeadConnector embed API client', () => {
       targetPhone: '+15550100123',
       contactId: 'contact-1',
     });
+    await api.getVoiceToken();
+    await api.markAgentReady('group-1');
     await api.getCallSession('group-1');
     await api.terminateCallSession('group-1');
     await api.recordDisposition({
@@ -80,7 +86,7 @@ describe('LeadConnector embed API client', () => {
       note: 'Follow up',
       tags: ['called'],
     });
-    expect(requests).toHaveLength(8);
+    expect(requests).toHaveLength(10);
     expect(requests[0]?.headers.get('authorization')).toBeNull();
     expect(await requests[0]?.json()).toEqual({
       encryptedData: 'opaque-parent-ciphertext',

@@ -105,8 +105,14 @@ export class ParallelDialerService {
     return this.run(terminateCallSessionForWorkspace(groupId, workspaceId));
   }
 
-  retryPendingCleanup(groupId: string): Promise<void> {
-    return this.run(retryPendingCleanup(groupId).pipe(Effect.asVoid));
+  retryPendingCleanup(groupId: string): Promise<{
+    retried: number;
+    remaining: number;
+  }> {
+    return this.run(retryPendingCleanup(groupId)).then((result) => ({
+      retried: result.retried,
+      remaining: result.remaining,
+    }));
   }
 
   generateCustomerTwiml(callSid: string): Promise<string | null> {
@@ -126,7 +132,7 @@ export class ParallelDialerService {
           '<?xml version="1.0" encoding="UTF-8"?>',
           '<Response>',
           '<Dial>',
-          `<Conference beep="false" muted="${muted}" startConferenceOnEnter="true" endConferenceOnExit="false">${group.conferenceName}</Conference>`,
+          `<Conference beep="false" muted="${muted}" startConferenceOnEnter="false" endConferenceOnExit="false" waitUrl="" participantLabel="customer-${callSid}">${group.conferenceName}</Conference>`,
           '</Dial>',
           '</Response>',
         ].join('');

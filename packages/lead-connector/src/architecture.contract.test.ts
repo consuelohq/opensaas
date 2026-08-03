@@ -47,21 +47,45 @@ const publicSurfaceFiles = [
 ];
 
 describe('LeadConnector public architecture and branding contracts', () => {
-  it('has no Twenty, NestJS, GraphQL, Twilio, or dialer lifecycle dependency', async () => {
+  it('keeps server telephony and dialer lifecycle dependencies out of the LeadConnector package', async () => {
     const files = await readPublicSource();
-    const source = files.map(({ content }) => content).join('\n');
     const forbiddenDependencies = [
       '@consuelo/dialer',
       'twenty-server',
       'twenty-front',
       '@nestjs/',
       'graphql',
-      'twilio',
     ];
 
-    for (const dependency of forbiddenDependencies) {
-      expect(source.toLowerCase()).not.toContain(dependency.toLowerCase());
+    for (const { path, content } of files) {
+      const normalized = content.toLowerCase();
+      for (const dependency of forbiddenDependencies) {
+        expect(
+          normalized,
+          `${path} imported forbidden server/runtime dependency ${dependency}`,
+        ).not.toContain(dependency.toLowerCase());
+      }
+      if (!path.endsWith('/embed/agent-voice.ts')) {
+        expect(
+          normalized,
+          `${path} leaked telephony SDK usage outside the isolated browser adapter`,
+        ).not.toContain('twilio');
+      }
     }
+
+    const browserVoice = files.find(({ path }) =>
+      path.endsWith('/embed/agent-voice.ts'),
+    );
+    expect(browserVoice?.content).toContain(
+      "from '@twilio/voice-sdk'",
+    );
+    expect(browserVoice?.content).not.toContain("from 'twilio'");
+
+    const packageJson = JSON.parse(
+      await readFile(resolve(packageRoot, 'package.json'), 'utf8'),
+    ) as { dependencies?: Record<string, string> };
+    expect(packageJson.dependencies?.['@twilio/voice-sdk']).toBe('^2.12.1');
+    expect(packageJson.dependencies?.twilio).toBeUndefined();
   });
 
   it('uses LeadConnector naming on every customer-visible and public package surface', async () => {

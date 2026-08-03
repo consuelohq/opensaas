@@ -16,6 +16,12 @@ const createDependencies = () =>
       generateTwilioCustomerTwiml: mock(() =>
         Effect.succeed('<Response><Dial /></Response>'),
       ),
+      generateTwilioAgentTwiml: mock(() =>
+        Effect.succeed('<Response><Dial><Conference>conference-1</Conference></Dial></Response>'),
+      ),
+      markAgentReady: mock(() =>
+        Effect.succeed({ groupId: 'group-1', status: 'connected', remainingCleanup: 0 }),
+      ),
     },
     authenticate: mock(async () => null),
     verifyTwilioSignature: mock(async () => true),
@@ -115,6 +121,28 @@ describe('Twilio webhook boundary', () => {
       answeredBy: 'machine_start',
       callDuration: undefined,
       dialCallDuration: '3',
+    });
+  });
+
+  it('verifies the browser agent webhook and returns agent conference TwiML', async () => {
+    const dependencies = createDependencies();
+    const body = 'CallSid=CA_AGENT&From=client%3Auser_user-1&SessionId=group-1';
+    const response = await createDialerServer(dependencies).fetch(
+      new Request('https://dialer.test/webhooks/twilio/agent-twiml', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'signature',
+        },
+        body,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/xml');
+    expect(dependencies.application.generateTwilioAgentTwiml).toHaveBeenCalledWith({
+      sessionId: 'group-1',
+      clientIdentity: 'user_user-1',
     });
   });
 

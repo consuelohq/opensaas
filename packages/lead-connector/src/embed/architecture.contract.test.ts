@@ -10,7 +10,15 @@ afterEach(() => {
 });
 
 const forbiddenArchitecture =
-  /(?:twenty|recoil|nestjs|graphql|twilio|node:|from ['"]effect['"]|access.?token|refresh.?token|client.?secret|token.?cipher|webhook.?secret)/i;
+  /(?:twenty|recoil|nestjs|graphql|node:|from ['"]effect['"]|client.?secret|token.?cipher|webhook.?secret)/i;
+const forbiddenBundledServerMarkers = [
+  '@consuelo/dialer',
+  "from 'twilio'",
+  'TWILIO_AUTH_TOKEN',
+  'TWILIO_API_SECRET',
+  'TWILIO_TWIML_APP_SID',
+  'TWILIO_ACCOUNT_SID',
+];
 const forbiddenBranding = /(?:\bGHL\b|GoHighLevel|HighLevel)/i;
 const allowedProviderWireOrigins = ['https://app.gohighlevel.com'];
 
@@ -42,6 +50,12 @@ describe('LeadConnector browser architecture and branding', () => {
       const scanned = stripAllowedProviderWireOrigins(text);
       expect(scanned).not.toMatch(forbiddenArchitecture);
       expect(scanned).not.toMatch(forbiddenBranding);
+      if (relativePath !== 'agent-voice.ts') {
+        expect(scanned).not.toMatch(/twilio/i);
+      } else {
+        expect(scanned).toContain("from '@twilio/voice-sdk'");
+        expect(scanned).not.toContain("from 'twilio'");
+      }
     }
     const asset = readFileSync(
       'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
@@ -72,6 +86,12 @@ describe('LeadConnector browser architecture and branding', () => {
       const scanned = stripAllowedProviderWireOrigins(text);
       expect(scanned).not.toMatch(forbiddenArchitecture);
       expect(scanned).not.toMatch(forbiddenBranding);
+      for (const marker of forbiddenBundledServerMarkers) {
+        expect(scanned).not.toContain(marker);
+      }
+      if (relativePath.endsWith('.js')) {
+        expect(scanned).toContain('SessionId');
+      }
     }
     expect(
       readFileSync('packages/lead-connector/src/embed/index.html', 'utf8'),

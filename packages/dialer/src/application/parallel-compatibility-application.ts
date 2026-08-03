@@ -9,6 +9,9 @@ import {
   ParallelCompatibilityRuntime,
   type ParallelDialCommand,
   type ParallelDialBody,
+  type MarkParallelAgentReadyCommand,
+  type MarkParallelAgentReadyResult,
+  type ParallelAgentTwimlInput,
   type ParallelGroupStatusResult,
   type ParallelTwimlInput,
   type TerminateParallelGroupCommand,
@@ -225,6 +228,7 @@ export const getParallelGroupStatus = (input: {
       : null;
     return {
       groupId: group.groupId,
+      conferenceName: group.conferenceName,
       status: group.status,
       winnerSid: group.winnerSid,
       winner,
@@ -324,3 +328,86 @@ export const generateParallelCustomerTwiml = (input: ParallelTwimlInput) =>
   });
 
 export type { ParallelDialResult };
+
+const escapeXml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+export const generateParallelAgentTwiml = (input: ParallelAgentTwimlInput) =>
+  Effect.gen(function* () {
+    const runtime = yield* ParallelCompatibilityRuntime;
+    const sessionId = readRequiredString(input.sessionId, 'SessionId');
+    const clientIdentity = readRequiredString(
+      input.clientIdentity,
+      'client identity',
+    );
+    const group = yield* runtime.getGroup(sessionId);
+    if (!group || clientIdentity !== `user_${group.userId}`) {
+      return yield* Effect.fail(
+        new DialerNotFoundError({
+          code: 'PARALLEL_GROUP_NOT_FOUND',
+          message: 'Parallel group not found',
+          retryable: false,
+        }),
+      );
+    }
+    if (group.status === 'completed' || group.status === 'failed') {
+      return '<?xml version="1.0" encoding="UTF-8"?><Response><Hangup /></Response>';
+    }
+    return [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<Response>',
+      '<Dial>',
+      `<Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="true" waitUrl="" participantLabel="agent">${escapeXml(group.conferenceName)}</Conference>`,
+      '</Dial>',
+      '</Response>',
+    ].join('');
+  });
+
+const AGENT_READY_CLEANUP_RETRY_LIMIT = 6;
+const AGENT_READY_CLEANUP_RETRY_DELAY_MS = 100;
+
+export const markParallelAgentReady = (
+  command: MarkParallelAgentReadyCommand,
+) =>
+  Effect.gen(function* () {
+    const runtime = yield* ParallelCompatibilityRuntime;
+    const group = yield* runtime.getGroupForWorkspace(
+      command.groupId,
+      command.workspaceId,
+    );
+    if (!group) {
+      return yield* Effect.fail(
+        new DialerNotFoundError({
+          code: 'PARALLEL_GROUP_NOT_FOUND',
+          message: 'Parallel group not found',
+          retryable: false,
+        }),
+      );
+    }
+    let cleanup = { retried: 0, remaining: group.cleanupFailures.length };
+    for (let attempt = 0; attempt < AGENT_READY_CLEANUP_RETRY_LIMIT; attempt += 1) {
+      cleanup = yield* runtime.retryPendingCleanup(command.groupId);
+      if (
+        cleanup.remaining === 0 ||
+        cleanup.retried === 0 ||
+        attempt === AGENT_READY_CLEANUP_RETRY_LIMIT - 1
+      ) {
+        break;
+      }
+      yield* Effect.sleep(AGENT_READY_CLEANUP_RETRY_DELAY_MS);
+    }
+    const refreshed = yield* runtime.getGroupForWorkspace(
+      command.groupId,
+      command.workspaceId,
+    );
+    return {
+      groupId: command.groupId,
+      status: refreshed?.status ?? group.status,
+      remainingCleanup: cleanup.remaining,
+    } satisfies MarkParallelAgentReadyResult;
+  }).pipe(Effect.withSpan('dialer.mark_parallel_agent_ready'));

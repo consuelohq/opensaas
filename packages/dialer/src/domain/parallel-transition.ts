@@ -5,6 +5,7 @@ import {
   isTerminalCallStatus,
 } from './parallel-call.js';
 import {
+  clearCleanupFailure,
   cloneParallelGroup,
   completeGroupIfResolved,
 } from './parallel-group.js';
@@ -70,6 +71,29 @@ export const planProviderCallbackTransition = (
   group.calls[callIndex] = call;
   const actions: ParallelTransitionAction[] = [];
   const humanLike = isHumanLikeAnswer(group.profile, call.amdResult);
+
+  if (group.winnerSid === event.callSid && isTerminalCallStatus(call.status)) {
+    group = clearCleanupFailure(group, 'unmute-winner', event.callSid);
+    for (const candidate of group.calls) {
+      if (
+        candidate.callSid !== event.callSid &&
+        !isTerminalCallStatus(candidate.status)
+      ) {
+        actions.push({ type: 'terminate-call', callSid: candidate.callSid });
+      }
+    }
+    return {
+      ok: true,
+      plan: {
+        group: {
+          ...group,
+          status: 'completed',
+          completedAt: event.occurredAt,
+        },
+        actions,
+      },
+    };
+  }
 
   if (event.callStatus === 'in-progress' && humanLike) {
     if (group.winnerSid === event.callSid) {

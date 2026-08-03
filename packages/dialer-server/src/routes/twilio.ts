@@ -38,6 +38,36 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
     }
   });
 
+  routes.post('/webhooks/twilio/agent-twiml', async (context) => {
+    try {
+      const verified = await verifyAndParseTwilioRequest(context, dependencies);
+      if (verified instanceof Response) return verified;
+      const sessionId = verified.params.SessionId;
+      const from = verified.params.From ?? '';
+      const clientIdentity = from.startsWith('client:')
+        ? from.slice('client:'.length)
+        : '';
+      if (!sessionId || !clientIdentity) {
+        return invalidRequestResponse(
+          context,
+          'SessionId and client identity are required',
+        );
+      }
+      const result = await runApplicationEffect(
+        dependencies.application.generateTwilioAgentTwiml({
+          sessionId,
+          clientIdentity,
+        }),
+      );
+      if (!result.ok) return dialerErrorResponse(context, result.error);
+      return context.body(result.value, 200, {
+        'content-type': 'text/xml; charset=UTF-8',
+      });
+    } catch (error: unknown) {
+      return dialerErrorResponse(context, error);
+    }
+  });
+
   routes.post('/webhooks/twilio/customer-twiml', async (context) => {
     try {
       const verified = await verifyAndParseTwilioRequest(context, dependencies);

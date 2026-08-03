@@ -120,6 +120,18 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         status: string;
         calls: EmbedCallSession['calls'];
       }>('/v1/call-sessions', { method: 'POST', body: JSON.stringify(input) }),
+    getVoiceToken: () =>
+      request<{ token: string; identity: string; ttl: number }>(
+        '/v1/voice/token',
+      ),
+    markAgentReady: (sessionId: string) =>
+      request<{
+        groupId: string;
+        status: string;
+        remainingCleanup: number;
+      }>(`/v1/call-sessions/${encodeURIComponent(sessionId)}/agent-ready`, {
+        method: 'POST',
+      }),
     getCallSession: (sessionId: string) =>
       request<EmbedCallSession>(
         `/v1/call-sessions/${encodeURIComponent(sessionId)}`,

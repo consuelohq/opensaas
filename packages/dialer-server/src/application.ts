@@ -1,6 +1,8 @@
 import {
+  generateParallelAgentTwiml,
   generateParallelCustomerTwiml,
   getParallelGroupStatus,
+  markParallelAgentReady,
   initiateParallelDial,
   processParallelCallback,
   startDialerCall,
@@ -47,6 +49,14 @@ export const createEffectDialerApplication = (
     generateParallelCustomerTwiml(input).pipe(
       Effect.provide(layers.parallelLayer),
     ),
+  generateTwilioAgentTwiml: (input) =>
+    generateParallelAgentTwiml(input).pipe(
+      Effect.provide(layers.parallelLayer),
+    ),
+  markAgentReady: ({ sessionId, workspaceId }) =>
+    markParallelAgentReady({ groupId: sessionId, workspaceId }).pipe(
+      Effect.provide(layers.parallelLayer),
+    ),
 });
 
 export const createParallelOnlyApplication = (
@@ -55,6 +65,8 @@ export const createParallelOnlyApplication = (
   DialerServerApplication,
   | 'processTwilioStatus'
   | 'generateTwilioCustomerTwiml'
+  | 'generateTwilioAgentTwiml'
+  | 'markAgentReady'
   | 'getCallSession'
   | 'terminateCallSession'
 > => ({
@@ -70,6 +82,12 @@ export const createParallelOnlyApplication = (
     processParallelCallback(input).pipe(Effect.provide(parallelLayer)),
   generateTwilioCustomerTwiml: (input) =>
     generateParallelCustomerTwiml(input).pipe(Effect.provide(parallelLayer)),
+  generateTwilioAgentTwiml: (input) =>
+    generateParallelAgentTwiml(input).pipe(Effect.provide(parallelLayer)),
+  markAgentReady: ({ sessionId, workspaceId }) =>
+    markParallelAgentReady({ groupId: sessionId, workspaceId }).pipe(
+      Effect.provide(parallelLayer),
+    ),
 });
 
 export const createLegacyParallelStart =

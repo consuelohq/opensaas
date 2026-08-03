@@ -18,6 +18,8 @@ const createDependencies = (): DialerServerDependencies => ({
     terminateCallSession: () => Effect.die('not used'),
     processTwilioStatus: () => Effect.die('not used'),
     generateTwilioCustomerTwiml: () => Effect.die('not used'),
+    generateTwilioAgentTwiml: () => Effect.die('not used'),
+    markAgentReady: () => Effect.die('not used'),
   },
   authenticate: mock(async () => null),
   verifyTwilioSignature: mock(async () => true),

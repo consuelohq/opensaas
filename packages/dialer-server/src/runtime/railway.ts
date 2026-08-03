@@ -714,6 +714,10 @@ export const createRailwayDialerApplicationLayers = async (
             workspaceId,
           ),
         ),
+      retryPendingCleanup: (groupId) =>
+        tryEffect('retry-pending-cleanup', () =>
+          runtime.liveDialer.parallel.retryPendingCleanup(groupId),
+        ),
       claimTelemetryEmission: (groupId) =>
         tryEffect('claim-telemetry-emission', () =>
           runtime.liveDialer.parallel.markTelemetryEmittedIfAbsent(groupId),

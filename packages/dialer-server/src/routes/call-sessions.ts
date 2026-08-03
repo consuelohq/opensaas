@@ -68,6 +68,23 @@ export const createCallSessionRoutes = (
     }
   });
 
+  routes.post('/v1/call-sessions/:sessionId/agent-ready', async (context) => {
+    try {
+      const identity = context.get('identity');
+      const result = await runApplicationEffect(
+        dependencies.application.markAgentReady({
+          sessionId: context.req.param('sessionId'),
+          workspaceId: identity.workspaceId,
+        }),
+      );
+      return result.ok
+        ? context.json(result.value)
+        : dialerErrorResponse(context, result.error);
+    } catch (error: unknown) {
+      return dialerErrorResponse(context, error);
+    }
+  });
+
   routes.post('/v1/call-sessions/:sessionId/terminate', async (context) => {
     try {
       const identity = context.get('identity');

@@ -101,6 +101,53 @@ describe('parallel provider callback transition', () => {
     ]);
   });
 
+  it('completes the group and clears stale winner unmute when the winner becomes terminal', () => {
+    const group = baseGroup();
+    group.winnerSid = 'CA_first';
+    group.status = 'connected';
+    group.connectedAt = now;
+    group.calls[0] = {
+      ...group.calls[0],
+      status: 'in-progress',
+      amdResult: 'human',
+      answeredAt: now,
+    };
+    group.cleanupFailures = [
+      {
+        action: 'unmute-winner',
+        callSid: 'CA_first',
+        message: 'Active conference not found',
+        attempts: 1,
+        firstFailedAt: now,
+        lastFailedAt: now,
+        retryable: true,
+      },
+    ];
+    const completedAt = '2026-07-23T12:01:00.000Z';
+
+    const result = planProviderCallbackTransition(group, {
+      callSid: 'CA_first',
+      callStatus: 'completed',
+      occurredAt: completedAt,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.plan.group).toEqual(
+      expect.objectContaining({
+        status: 'completed',
+        completedAt,
+      }),
+    );
+    expect(result.plan.group.calls[0]).toEqual(
+      expect.objectContaining({ status: 'completed', terminatedAt: completedAt }),
+    );
+    expect(result.plan.group.cleanupFailures).toEqual([]);
+    expect(result.plan.actions).toEqual([
+      { type: 'terminate-call', callSid: 'CA_second' },
+    ]);
+  });
+
   it('plans machine termination without selecting a winner', () => {
     const result = planProviderCallbackTransition(baseGroup(), {
       callSid: 'CA_first',
