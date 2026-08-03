@@ -1,6 +1,27 @@
 import type { ParallelTelemetryRecord } from '@consuelo/dialer';
 import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
+const CREATE_ATTEMPT_LEDGER_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS contact_attempt_ledger (
+    workspace_id text NOT NULL,
+    contact_id text NOT NULL,
+    last_attempt_at timestamptz,
+    attempts_total integer NOT NULL DEFAULT 0,
+    attempts_today integer NOT NULL DEFAULT 0,
+    attempts_this_week integer NOT NULL DEFAULT 0,
+    outcomes jsonb NOT NULL DEFAULT '[]'::jsonb,
+    day_window_start timestamptz NOT NULL DEFAULT date_trunc('day', now()),
+    week_window_start timestamptz NOT NULL DEFAULT date_trunc('week', now()),
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (workspace_id, contact_id)
+  )
+`;
+
+const CREATE_ATTEMPT_LEDGER_INDEX_SQL = `
+  CREATE INDEX IF NOT EXISTS idx_contact_attempt_ledger_last_attempt
+    ON contact_attempt_ledger (workspace_id, last_attempt_at DESC)
+`;
+
 const CREATE_OUTCOMES_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS consuelo_lead_connector_call_outcomes (
     id bigserial PRIMARY KEY,
@@ -26,7 +47,9 @@ export const initializeLeadConnectorDialerLearning = (
   database: LeadConnectorDatabase,
 ): Promise<void> =>
   database
-    .query(CREATE_OUTCOMES_TABLE_SQL)
+    .query(CREATE_ATTEMPT_LEDGER_TABLE_SQL)
+    .then(() => database.query(CREATE_ATTEMPT_LEDGER_INDEX_SQL))
+    .then(() => database.query(CREATE_OUTCOMES_TABLE_SQL))
     .then(() => database.query(CREATE_OUTCOMES_INDEX_SQL))
     .then(() => undefined);
 
@@ -119,7 +142,7 @@ type LearningWarningLogger = (
   details: { workspaceId: string; groupId: string; error: string },
 ) => void;
 
- export const recordLeadConnectorAttemptTelemetry = async (
+export const recordLeadConnectorAttemptTelemetry = async (
   database: LeadConnectorDatabase,
   record: ParallelTelemetryRecord,
   logWarning?: LearningWarningLogger,
