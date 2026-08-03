@@ -238,6 +238,33 @@ describe('parallel dial lifecycle contract', () => {
     ).toBe('completed');
   });
 
+  it('does not persist a false winner-unmute failure before the participant enters', async () => {
+    const result = await service.initiateGroup({
+      ...baseOptions,
+      customerNumbers: baseOptions.customerNumbers.slice(0, 1),
+      fromNumbers: baseOptions.fromNumbers.slice(0, 1),
+      profile: { ...profile, fanout: 1 },
+    });
+    const [winner] = result.calls;
+
+    mockParticipantUpdate.mockRejectedValueOnce({
+      status: 404,
+      code: 20404,
+      message:
+        'The requested resource /Conferences/CF_parallel/Participants/CA_call_1.json was not found',
+    });
+    await service.handleStatusCallback(winner.callSid, 'in-progress', 'human');
+
+    const connected = await service.getGroup(result.groupId);
+    expect(connected?.status).toBe('connected');
+    expect(connected?.winnerSid).toBe(winner.callSid);
+    expect(connected?.cleanupFailures).toEqual([]);
+
+    const twiml = await service.generateCustomerTwiml(winner.callSid);
+    expect(twiml).toContain('muted="false"');
+    expect(twiml).toContain('endConferenceOnExit="false"');
+  });
+
   it('records failed winner unmute and clears it after reconciliation succeeds', async () => {
     const result = await service.initiateGroup({
       ...baseOptions,

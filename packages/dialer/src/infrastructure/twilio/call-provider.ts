@@ -20,6 +20,23 @@ const retryableProviderFailure = (cause: unknown): boolean => {
   return typeof status !== 'number' || status === 429 || status >= 500;
 };
 
+const isMissingConferenceParticipant = (cause: unknown): boolean => {
+  if (typeof cause !== 'object' || cause === null || !('status' in cause)) {
+    return false;
+  }
+  const status = (cause as { status?: unknown }).status;
+  const code = 'code' in cause ? (cause as { code?: unknown }).code : undefined;
+  const message =
+    'message' in cause &&
+    typeof (cause as { message?: unknown }).message === 'string'
+      ? (cause as { message: string }).message
+      : '';
+  return (
+    status === 404 &&
+    (code === 20404 || message.toLowerCase().includes('/participants/'))
+  );
+};
+
 const providerFailure = (
   operation: 'create-call' | 'terminate-call' | 'unmute-winner',
   cause: unknown,
@@ -111,10 +128,15 @@ export const createTwilioCallProviderLayer = (
             });
             const conferenceSid = conferences[0]?.sid;
             if (!conferenceSid) throw new Error('Active conference not found');
-            await twilio
-              .conferences(conferenceSid)
-              .participants(callSid)
-              .update({ muted: false, endConferenceOnExit: true });
+            try {
+              await twilio
+                .conferences(conferenceSid)
+                .participants(callSid)
+                .update({ muted: false, endConferenceOnExit: true });
+            } catch (cause: unknown) {
+              // Winner-aware TwiML joins a not-yet-created participant unmuted.
+              if (!isMissingConferenceParticipant(cause)) throw cause;
+            }
           } catch (cause: unknown) {
             throw asProviderFailure('unmute-winner', cause);
           }
