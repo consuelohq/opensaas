@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_25358f691894",
+  "tmuxSession": "opensaas-dialer-allow-twilio-voice-signaling-in-leadconnector-cs-25358f69",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/allow-twilio-voice-signaling-in-leadconnector-csp",
+  "branch": "task/dialer/allow-twilio-voice-signaling-in-leadconnector-csp",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-allow-twilio-voice-signaling-in-leadconnector-csp",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-allow-twilio-voice-signaling-in-leadconnector-csp",
+  "prNumber": 1759,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1759",
+  "createdAt": "2026-08-03T21:13:43.813Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-allow-twilio-voice-signaling-in-leadconnector-csp/.task/dialer/allow-twilio-voice-signaling-in-leadconnector-csp/session.json"
+}

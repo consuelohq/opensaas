@@ -9,6 +9,11 @@ export type LeadConnectorEdgeEnvironment = {
 
 export type LeadConnectorEdgeFetch = (request: Request) => Promise<Response>;
 
+const BROWSER_VOICE_CONNECT_SOURCES = [
+  'https://*.twilio.com',
+  'wss://*.twilio.com',
+] as const;
+
 const PROXY_PREFIXES = [
   '/v1/',
   '/webhooks/',
@@ -54,7 +59,7 @@ const iframeSafeResponse = (response: Response): Response => {
   headers.delete('x-frame-options');
   headers.set(
     'content-security-policy',
-    `default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors ${LEAD_CONNECTOR_PARENT_ORIGINS.join(' ')}`,
+    `default-src 'self'; connect-src 'self' ${BROWSER_VOICE_CONNECT_SOURCES.join(' ')}; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors ${LEAD_CONNECTOR_PARENT_ORIGINS.join(' ')}`,
   );
   headers.set('permissions-policy', 'microphone=(self)');
   headers.set('referrer-policy', 'strict-origin-when-cross-origin');

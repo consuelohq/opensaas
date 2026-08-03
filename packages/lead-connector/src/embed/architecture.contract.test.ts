@@ -20,7 +20,11 @@ const forbiddenBundledServerMarkers = [
   'TWILIO_ACCOUNT_SID',
 ];
 const forbiddenBranding = /(?:\bGHL\b|GoHighLevel|HighLevel)/i;
-const allowedProviderWireOrigins = ['https://app.gohighlevel.com'];
+const allowedProviderWireOrigins = [
+  'https://app.gohighlevel.com',
+  'https://*.twilio.com',
+  'wss://*.twilio.com',
+];
 
 const stripAllowedProviderWireOrigins = (text: string): string => {
   let scanned = text;
