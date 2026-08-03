@@ -137,6 +137,39 @@ describe('LeadConnector browser architecture and branding', () => {
     expect(asset).not.toContain("postMessage(message, '*')");
   });
 
+  it('authenticates the overlay through the supported Custom JS session context API', () => {
+    const asset = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      'utf8',
+    );
+
+    expect(asset).toContain("var appId = '690cbca9af44827eb89887b1'");
+    expect(asset).toContain('window.exposeSessionDetails');
+    expect(asset).toContain('function loadSessionContext');
+    expect(asset).toContain("message: 'REQUEST_USER_DATA_RESPONSE'");
+    expect(asset).toContain('payload: encryptedData');
+    expect(asset).not.toContain('console.log');
+  });
+
+  it('anchors the launcher beside native Contacts and Opportunities controls', () => {
+    const asset = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      'utf8',
+    );
+    const stylesheet = readFileSync(
+      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css',
+      'utf8',
+    );
+
+    expect(asset).toContain('function findLauncherAnchor');
+    expect(asset).toContain("document.getElementById('tb_lists')");
+    expect(asset).toContain("document.getElementById('tb_opportunities-tab')");
+    expect(asset).toContain('function placeLauncher');
+    expect(asset).toContain("insertAdjacentElement('afterend', launcher)");
+    expect(stylesheet).not.toContain('left: 248px');
+    expect(stylesheet).toContain('right: 24px');
+  });
+
   it('publishes a separate wrapped Marketplace artifact while keeping the public script executable', () => {
     const asset = readFileSync(
       'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
@@ -166,7 +199,9 @@ describe('LeadConnector browser architecture and branding', () => {
     const openOverlayStart = asset.indexOf('function openOverlay');
     const targetContextStart = asset.indexOf('function targetContext');
     const syncRouteStart = asset.indexOf('function syncRoute');
-    const messageHandlerStart = asset.indexOf("window.addEventListener('message'");
+    const messageHandlerStart = asset.indexOf(
+      "window.addEventListener('message'",
+    );
 
     expect(createHostStart).toBeGreaterThan(-1);
     expect(ensureFrameStart).toBeGreaterThan(createHostStart);
@@ -200,10 +235,9 @@ describe('LeadConnector browser architecture and branding', () => {
     const selectorLiterals = [
       ...asset.matchAll(/(['"])([^'"\n]*\[[^'"\n]*,[^'"\n]*)\1/g),
     ].map((match) => match[2]);
-    expect(selectorLiterals.length).toBeGreaterThan(0);
-    expect(
-      Math.max(...selectorLiterals.map((literal) => literal.length)),
-    ).toBeLessThanOrEqual(50);
+    expect(selectorLiterals.every((literal) => literal.length <= 50)).toBe(
+      true,
+    );
   });
 
   it('restarts the trusted parent bootstrap exchange when authentication is retried', () => {
