@@ -4,6 +4,13 @@ import { resolve } from 'node:path';
 
 import { createLeadConnectorEdgeWorker } from './cloudflare-worker';
 
+const expectTwilioVoiceConnectivity = (response: Response): void => {
+  const policy = response.headers.get('content-security-policy');
+  expect(policy).toContain(
+    "connect-src 'self' https://*.twilio.com wss://*.twilio.com",
+  );
+};
+
 const createEnvironment = () => {
   const originRequests: Request[] = [];
   const assetRequests: Request[] = [];
@@ -86,6 +93,7 @@ describe('LeadConnector Cloudflare embed edge', () => {
       expect(response.headers.get('permissions-policy')).toContain(
         'microphone',
       );
+      expectTwilioVoiceConnectivity(response);
     }
   });
 
@@ -107,5 +115,6 @@ describe('LeadConnector Cloudflare embed edge', () => {
       'frame-ancestors https://app.leadconnectorhq.com https://app.msgsndr.com https://app.gohighlevel.com',
     );
     expect(response.headers.get('permissions-policy')).toContain('microphone');
+    expectTwilioVoiceConnectivity(response);
   });
 });

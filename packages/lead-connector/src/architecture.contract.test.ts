@@ -30,6 +30,19 @@ const readPublicSource = async () => {
   );
 };
 
+const allowedProviderWireOrigins = [
+  'https://*.twilio.com',
+  'wss://*.twilio.com',
+];
+
+const stripAllowedProviderWireOrigins = (text: string): string => {
+  let scanned = text;
+  for (const origin of allowedProviderWireOrigins) {
+    scanned = scanned.replaceAll(origin, 'https://voice-provider.example');
+  }
+  return scanned;
+};
+
 const publicSurfaceFiles = [
   resolve(packageRoot, 'package.json'),
   resolve(repositoryRoot, 'packages/dialer-server/package.json'),
@@ -58,7 +71,7 @@ describe('LeadConnector public architecture and branding contracts', () => {
     ];
 
     for (const { path, content } of files) {
-      const normalized = content.toLowerCase();
+      const normalized = stripAllowedProviderWireOrigins(content).toLowerCase();
       for (const dependency of forbiddenDependencies) {
         expect(
           normalized,
