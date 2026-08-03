@@ -4,6 +4,7 @@ import {
   ParallelDialerService,
   InMemoryParallelStore,
 } from './parallel-dialer';
+import { CallerIdLockService, InMemoryLockStore } from './caller-id';
 
 const mockCallsCreate = jest.fn();
 const mockCallUpdate = jest.fn();
@@ -420,6 +421,30 @@ describe('ParallelDialerService', () => {
       await service.terminateGroup(result.groupId);
       // should only terminate the 2 remaining calls, not the already-completed one
       expect(mockCallUpdate).toHaveBeenCalledTimes(2);
+    });
+
+    it('should release caller ID locks when stale lookup force-completes a group', async () => {
+      const lockService = new CallerIdLockService(new InMemoryLockStore());
+      service.withCallerIdLock(lockService);
+      const result = await service.initiateGroup(baseOpts);
+      for (const call of result.calls) {
+        await lockService.acquireLock(
+          call.fromNumber,
+          baseOpts.userId,
+          call.callSid,
+        );
+      }
+      const raw = await store.getGroup(result.groupId);
+      expect(raw).not.toBeNull();
+      const group = JSON.parse(raw!);
+      group.createdAt = new Date(Date.now() - 61_000).toISOString();
+      await store.setGroup(result.groupId, JSON.stringify(group), 300);
+
+      await service.getGroup(result.groupId);
+
+      for (const call of result.calls) {
+        expect(await lockService.isNumberAvailable(call.fromNumber)).toBe(true);
+      }
     });
 
     it('should complete stale dialing groups on lookup', async () => {
