@@ -154,12 +154,40 @@ const searchLeadConnectorOpportunityPage = (input: {
         headers: providerHeaders(accessToken),
         body: {
           locationId: installation.locationId,
-          ...(input.query ? { query: input.query } : {}),
-          ...(input.pipelineId ? { pipelineId: input.pipelineId } : {}),
-          ...(input.stageId ? { pipelineStageId: input.stageId } : {}),
-          ...(input.status ? { status: input.status } : {}),
+          query: input.query ?? '',
+          sort: [{ field: 'date_added', direction: 'desc' }],
+          filters: [
+            ...(input.pipelineId
+              ? [
+                  {
+                    field: 'pipeline_id',
+                    operator: 'eq',
+                    value: [input.pipelineId],
+                  },
+                ]
+              : []),
+            ...(input.stageId
+              ? [
+                  {
+                    field: 'pipeline_stage_id',
+                    operator: 'eq',
+                    value: [input.stageId],
+                  },
+                ]
+              : []),
+            ...(input.status
+              ? [
+                  {
+                    field: 'status',
+                    operator: 'eq',
+                    value: [input.status],
+                  },
+                ]
+              : []),
+          ],
           ...(input.limit ? { limit: input.limit } : {}),
           ...(input.page ? { page: input.page } : {}),
+          includeTopRelations: true,
         },
       },
       'search-opportunities',

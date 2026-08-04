@@ -591,20 +591,45 @@ describe('LeadConnector token and resource contracts', () => {
     expect(searches).toHaveLength(2);
     expect(searches.map((request) => request.body)).toEqual([
       expect.objectContaining({
-        pipelineId: 'pipeline-1',
-        pipelineStageId: 'stage-1',
-        status: 'open',
+        query: '',
+        filters: [
+          { field: 'pipeline_id', operator: 'eq', value: ['pipeline-1'] },
+          {
+            field: 'pipeline_stage_id',
+            operator: 'eq',
+            value: ['stage-1'],
+          },
+          { field: 'status', operator: 'eq', value: ['open'] },
+        ],
         limit: 100,
         page: 1,
+        includeTopRelations: true,
       }),
       expect.objectContaining({
-        pipelineId: 'pipeline-1',
-        pipelineStageId: 'stage-1',
-        status: 'open',
+        query: '',
+        filters: [
+          { field: 'pipeline_id', operator: 'eq', value: ['pipeline-1'] },
+          {
+            field: 'pipeline_stage_id',
+            operator: 'eq',
+            value: ['stage-1'],
+          },
+          { field: 'status', operator: 'eq', value: ['open'] },
+        ],
         limit: 100,
         page: 2,
+        includeTopRelations: true,
       }),
     ]);
+    for (const request of searches) {
+      expect(request.body).not.toEqual(
+        expect.objectContaining({
+          pipelineId: expect.anything(),
+          pipelineStageId: expect.anything(),
+          status: expect.anything(),
+        }),
+      );
+    }
     expect(
       harness.state.requests.filter((request) =>
         request.url.endsWith('/contacts/contact-1'),
