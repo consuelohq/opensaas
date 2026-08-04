@@ -34,16 +34,26 @@ const shouldProxy = (pathname: string): boolean =>
     prefix.endsWith('/') ? pathname.startsWith(prefix) : pathname === prefix,
   );
 
-const assetRequest = (request: Request): Request => {
+type AssetRequest = {
+  request: Request;
+  applicationShell: boolean;
+};
+
+const assetRequest = (request: Request): AssetRequest => {
   const source = new URL(request.url);
   if (
     ['GET', 'HEAD'].includes(request.method) &&
     APPLICATION_SHELL_PATHS.has(source.pathname)
   ) {
     source.pathname = '/';
-    return new Request(source, request);
+    source.search = '';
+    source.searchParams.set('__shell', crypto.randomUUID());
+    return {
+      request: new Request(source, request),
+      applicationShell: true,
+    };
   }
-  return request;
+  return { request, applicationShell: false };
 };
 
 const originUrl = (request: Request, origin: string): URL => {
@@ -54,8 +64,12 @@ const originUrl = (request: Request, origin: string): URL => {
   return target;
 };
 
-const iframeSafeResponse = (response: Response): Response => {
+const iframeSafeResponse = (
+  response: Response,
+  applicationShell: boolean,
+): Response => {
   const headers = new Headers(response.headers);
+  if (applicationShell) headers.set('cache-control', 'no-store');
   headers.delete('x-frame-options');
   headers.set(
     'content-security-policy',
@@ -90,8 +104,9 @@ export const createLeadConnectorEdgeWorker = (
       const proxied = new Request(target, request);
       return fetchOrigin(proxied);
     }
-    return environment.ASSETS.fetch(assetRequest(request)).then(
-      iframeSafeResponse,
+    const asset = assetRequest(request);
+    return environment.ASSETS.fetch(asset.request).then((response) =>
+      iframeSafeResponse(response, asset.applicationShell),
     );
   },
 });
