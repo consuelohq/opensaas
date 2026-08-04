@@ -26,8 +26,13 @@ Configure the Railway service to use `/packages/dialer-server/railway.json` as i
 - `POST /v1/call-sessions`
 - `GET /v1/call-sessions/:sessionId`
 - `POST /v1/call-sessions/:sessionId/terminate`
+- `GET /v1/calls/active`
+- `GET /v1/calls?status=&cursor=&limit=`
+- `GET /v1/calls/:callId`
+- `GET /v1/calls/:callId/transcript`
 - `POST /webhooks/twilio/status`
 - `POST /webhooks/twilio/customer-twiml`
+- `GET /webhooks/twilio/media` (Twilio-signed WebSocket upgrade)
 - `POST /v1/integrations/leadconnector/oauth`
 - `GET /v1/integrations/leadconnector/callback`
 - `POST /v1/webhooks/leadconnector`
@@ -64,8 +69,27 @@ Production safety and optional provider modes:
 - `DIALER_SERVER_EMBED_SESSION_TTL_SECONDS`
 - `DIALER_SERVER_AUTH_IDENTITIES_JSON` for temporary non-embed compatibility clients
 - `DIALER_SERVER_RUNTIME_MODULE` only when overriding the built-in Railway composition
+- `GROQ_API_KEY` when at least one workspace has explicitly enabled transcription
+- `GROQ_TRANSCRIPTION_MODEL` (defaults to `whisper-large-v3-turbo`)
+- `DIALER_TRANSCRIPTION_CHUNK_BYTES` (defaults to 160,000, about 20 seconds per track)
+- `DIALER_TRANSCRIPTION_MAX_BUFFER_BYTES` (defaults to 240,000, about 30 seconds per track)
+- `DIALER_TRANSCRIPTION_TIMEOUT_MS`, `DIALER_TRANSCRIPTION_MAX_CONCURRENCY`, and `DIALER_TRANSCRIPTION_MAX_SESSIONS`
 
 Do not put secret values in repository files, logs, transcripts, browser bundles, or Cloudflare static variables.
+
+## Transcription and privacy
+
+Transcription is disabled by default for every workspace through `dialer_workspace_settings.transcription_enabled`. Enabling it is an explicit workspace administration action; startup never silently opts a workspace in.
+
+Twilio sends separate inbound and outbound μ-law tracks. The server keeps at most the configured buffer limit in memory, gives each track only one in-flight transcription owner, wraps claimed audio in an 8 kHz mono μ-law WAV, and discards the claimed bytes after processing. Only transcript text and provider metadata are stored. WAV, MP3, μ-law payloads, raw Media Stream frames, and call recordings are never persisted or sent to the browser.
+
+The default concurrency limit is four provider requests across all sessions, with a maximum of 100 in-memory sessions. Backpressure or provider timeout marks the transcript failed, clears both buffers, and leaves the carrier call running. Process startup marks stale `pending` or `processing` transcripts failed with `PROCESS_RESTARTED` so interrupted work is visible rather than stranded.
+
+Speaker labels remain `inbound` and `outbound`: the current customer conference leg does not prove that its outbound track contains only the representative. The schema can accept customer, representative, unknown, and future transfer participants once topology-specific attribution is proven.
+
+## Transfer follow-up seam
+
+Transfer controls are intentionally absent from both LeadConnector surfaces. A follow-up should add focused Effect operations such as `initiateTransfer`, `beginTransferConsultation`, `completeTransfer`, and `cancelTransfer` to the call-operations application, backed by the existing conference service in `packages/dialer/src/services/conference.ts`. Thin authenticated Hono adapters should live under `/v1/calls/:callId/transfers` and translate only validated requests and typed failures. The existing `dialer_call_events` table already supports `transfer_initiated`, `transfer_consulting`, `transfer_completed`, `transfer_cancelled`, and `transfer_failed`, so no historical call-record rewrite is required.
 
 ## Cloudflare edge contract
 
@@ -91,6 +115,13 @@ Provider-test validation requires the documented Keychain exports and never plac
 
 ```bash
 bun packages/dialer-server/scripts/validate-provider-test.ts
+```
+
+The Groq adapter has a separate, explicit integration check using deterministic synthetic μ-law silence. It makes no carrier call and refuses to run without both opt-in and credential presence:
+
+```bash
+DIALER_RUN_GROQ_TRANSCRIPTION_INTEGRATION=1 \
+  bun packages/dialer-server/scripts/validate-groq-transcription.ts
 ```
 
 Live calls require Ko's explicit authorization for the exact scope.

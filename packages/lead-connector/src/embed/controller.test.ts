@@ -90,6 +90,14 @@ const createApi = () =>
       groupId: 'group-1',
       status: 'completed' as const,
     })),
+    listActiveCalls: mock(async () => []),
+    listCallHistory: mock(async () => ({ calls: [], nextCursor: null })),
+    getCallDetail: mock(async (callId: string) => ({
+      id: callId,
+      status: 'completed',
+      calls: [],
+    })),
+    getCallTranscript: mock(async () => []),
     recordDisposition: mock(async () => ({ recorded: true as const })),
   }) satisfies LeadConnectorEmbedApi;
 
@@ -154,6 +162,17 @@ describe('LeadConnector embed controller', () => {
       requestedFanout: 1,
       targetPhone: '+15550100123',
       contactId: 'contact-1',
+      contactName: 'Test Contact',
+      opportunityId: 'opportunity-1',
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+      opportunitySnapshot: {
+        id: 'opportunity-1',
+        status: 'open',
+        monetaryValue: 100,
+        pipelineId: 'pipeline-1',
+        stageId: 'stage-1',
+      },
     });
     expect(api.getCallSession).toHaveBeenCalledWith('group-1');
     expect(controller.getState()).toMatchObject({
@@ -171,6 +190,7 @@ describe('LeadConnector embed controller', () => {
       tags: ['called'],
     });
     expect(api.recordDisposition).toHaveBeenCalledWith({
+      sessionId: 'session-1',
       contactId: 'contact-1',
       disposition: 'connected',
       note: 'Follow up',

@@ -15,6 +15,7 @@ import {
 export type StartDialerCallCommand = {
   workspaceId: string;
   userId: string;
+  sessionId?: string;
   input: StartDialerCallInput;
 };
 
@@ -144,7 +145,7 @@ export const startDialerCall = (command: StartDialerCallCommand) =>
       command.input.callMode === 'live' ||
       command.input.callMode === 'twilio-test';
     const requestedFanout = Math.max(1, command.input.requestedFanout);
-    const sessionId = yield* ids.generateDialerSessionId;
+    const sessionId = command.sessionId ?? (yield* ids.generateDialerSessionId);
     const context = {
       workspaceId: command.workspaceId,
       userId: command.userId,

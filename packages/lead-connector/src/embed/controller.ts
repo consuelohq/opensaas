@@ -22,6 +22,7 @@ export const createLeadConnectorEmbedController = (input: {
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
   let activeVoiceSessionId: string | null = null;
+  let activeRecordSessionId: string | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -104,6 +105,24 @@ export const createLeadConnectorEmbedController = (input: {
     }
   };
 
+  const loadCallOperations = async (): Promise<void> => {
+    try {
+      const calls = await run(() =>
+        Promise.all([
+          input.api.listActiveCalls(),
+          input.api.listCallHistory({ limit: 50 }),
+        ]).then(([activeCalls, history]) => ({
+          activeCalls,
+          callHistory: history.calls,
+          nextCursor: history.nextCursor,
+        })),
+      );
+      if (calls) dispatch({ type: 'CALLS_LOADED', ...calls });
+    } catch (error: unknown) {
+      reportUnexpectedFailure(error);
+    }
+  };
+
   return {
     getState: (): LeadConnectorEmbedState => state,
     subscribe: (listener: (next: LeadConnectorEmbedState) => void) => {
@@ -124,12 +143,46 @@ export const createLeadConnectorEmbedController = (input: {
           token: session.token,
           expiresAt: session.expiresAt,
         });
-        await loadResources();
+        await Promise.all([loadResources(), loadCallOperations()]);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }
     },
     loadResources,
+    loadCallOperations,
+    loadMoreCallHistory: async (): Promise<void> => {
+      try {
+        const cursor = state.callHistoryCursor;
+        if (!cursor) return;
+        const history = await run(() =>
+          input.api.listCallHistory({ cursor, limit: 50 }),
+        );
+        if (history) {
+          dispatch({
+            type: 'CALL_HISTORY_APPENDED',
+            calls: history.calls,
+            nextCursor: history.nextCursor,
+          });
+        }
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      }
+    },
+    selectCall: async (callId: string): Promise<void> => {
+      try {
+        const selected = await run(() =>
+          Promise.all([
+            input.api.getCallDetail(callId),
+            input.api.getCallTranscript(callId),
+          ]),
+        );
+        if (!selected) return;
+        dispatch({ type: 'CALL_DETAIL_LOADED', detail: selected[0] });
+        dispatch({ type: 'CALL_TRANSCRIPT_LOADED', segments: selected[1] });
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      }
+    },
     searchContacts: async (query: string): Promise<void> => {
       try {
         dispatch({ type: 'FILTERS_CHANGED', filters: { query } });
@@ -206,13 +259,32 @@ export const createLeadConnectorEmbedController = (input: {
             : state.selectedTargets;
         const request =
           strategy === 'single'
-            ? {
-                source: 'direct',
-                selectionStrategy: 'single',
-                requestedFanout: 1,
-                targetPhone: targets[0]?.phone,
-                contactId: targets[0]?.contactId ?? undefined,
-              }
+            ? (() => {
+                const target = targets[0];
+                const opportunity = state.opportunities.find(
+                  (item) => item.id === target?.opportunityId,
+                );
+                return {
+                  source: 'direct',
+                  selectionStrategy: 'single',
+                  requestedFanout: 1,
+                  targetPhone: target?.phone,
+                  contactId: target?.contactId ?? undefined,
+                  contactName: target?.name ?? undefined,
+                  opportunityId: opportunity?.id,
+                  pipelineId: opportunity?.pipelineId ?? undefined,
+                  stageId: opportunity?.stageId ?? undefined,
+                  opportunitySnapshot: opportunity
+                    ? {
+                        id: opportunity.id,
+                        status: opportunity.status,
+                        monetaryValue: opportunity.monetaryValue,
+                        pipelineId: opportunity.pipelineId,
+                        stageId: opportunity.stageId,
+                      }
+                    : undefined,
+                };
+              })()
             : {
                 source: 'queue',
                 selectionStrategy: 'predictive',
@@ -226,6 +298,7 @@ export const createLeadConnectorEmbedController = (input: {
         if (!result) return;
         const statusId = result.providerGroupId ?? result.sessionId;
         activeVoiceSessionId = statusId;
+        activeRecordSessionId = result.sessionId;
         try {
           await input.voice.connect(statusId);
           const ready = await run(() => input.api.markAgentReady(statusId));
@@ -302,10 +375,24 @@ export const createLeadConnectorEmbedController = (input: {
           });
           return;
         }
+        const sessionId = activeRecordSessionId;
+        if (!sessionId) {
+          dispatch({
+            type: 'FAILED',
+            code: 'CALL_SESSION_REQUIRED',
+            message: 'A call session is required to record a disposition',
+            recoverable: true,
+          });
+          return;
+        }
         const result = await run(() =>
-          input.api.recordDisposition({ contactId, ...inputValue }),
+          input.api.recordDisposition({ sessionId, contactId, ...inputValue }),
         );
-        if (result?.recorded) dispatch({ type: 'DISPOSITION_SUBMITTED' });
+        if (result?.recorded) {
+          activeRecordSessionId = null;
+          dispatch({ type: 'DISPOSITION_SUBMITTED' });
+          await loadCallOperations();
+        }
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }

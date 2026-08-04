@@ -40,9 +40,17 @@ describe('LeadConnector embed API client', () => {
           201,
         );
       if (path === '/v1/voice/token')
-        return jsonResponse({ token: 'voice-token', identity: 'user_user-1', ttl: 3600 });
+        return jsonResponse({
+          token: 'voice-token',
+          identity: 'user_user-1',
+          ttl: 3600,
+        });
       if (path === '/v1/call-sessions/group-1/agent-ready')
-        return jsonResponse({ groupId: 'group-1', status: 'connected', remainingCleanup: 0 });
+        return jsonResponse({
+          groupId: 'group-1',
+          status: 'connected',
+          remainingCleanup: 0,
+        });
       if (path === '/v1/call-sessions/group-1' && request.method === 'GET')
         return jsonResponse({
           groupId: 'group-1',
@@ -53,6 +61,13 @@ describe('LeadConnector embed API client', () => {
         });
       if (path.endsWith('/terminate'))
         return jsonResponse({ groupId: 'group-1', status: 'completed' });
+      if (path === '/v1/calls/active') return jsonResponse({ calls: [] });
+      if (path === '/v1/calls')
+        return jsonResponse({ calls: [], nextCursor: null });
+      if (path === '/v1/calls/history-1/transcript')
+        return jsonResponse({ segments: [] });
+      if (path === '/v1/calls/history-1')
+        return jsonResponse({ id: 'history-1', calls: [] });
       if (path.endsWith('/dispositions'))
         return jsonResponse({ recorded: true });
       return jsonResponse({ error: { code: 'NOT_FOUND' } }, 404);
@@ -80,13 +95,18 @@ describe('LeadConnector embed API client', () => {
     await api.markAgentReady('group-1');
     await api.getCallSession('group-1');
     await api.terminateCallSession('group-1');
+    await api.listActiveCalls();
+    await api.listCallHistory({ status: 'completed', limit: 25 });
+    await api.getCallDetail('history-1');
+    await api.getCallTranscript('history-1');
     await api.recordDisposition({
+      sessionId: 'group-1',
       contactId: 'contact-1',
       disposition: 'connected',
       note: 'Follow up',
       tags: ['called'],
     });
-    expect(requests).toHaveLength(10);
+    expect(requests).toHaveLength(14);
     expect(requests[0]?.headers.get('authorization')).toBeNull();
     expect(await requests[0]?.json()).toEqual({
       encryptedData: 'opaque-parent-ciphertext',

@@ -56,6 +56,128 @@ const connectedState = (): LeadConnectorEmbedState =>
   });
 
 describe('LeadConnector embed view', () => {
+  it('prioritizes active calls and date-grouped history as one card per dialer session', () => {
+    const state = {
+      ...createInitialEmbedState(),
+      activeCalls: [
+        {
+          id: 'active-session-1',
+          representative: 'Ada Rep',
+          contactName: 'Test Contact',
+          status: 'connected',
+          elapsedSeconds: 42,
+          activeLineCount: 1,
+          transcriptStatus: 'processing',
+          calls: [{ providerCallId: 'CA-active', role: 'winner' }],
+        },
+      ],
+      callHistory: [
+        {
+          id: 'history-session-1',
+          representative: 'Ada Rep',
+          contactName: 'Test Contact',
+          status: 'completed',
+          startedAt: '2026-08-04T12:00:00.000Z',
+          durationSeconds: 120,
+          requestedFanout: 3,
+          actualFanout: 3,
+          disposition: 'connected',
+          transcriptStatus: 'ready',
+          opportunity: { status: 'open', monetaryValue: 1250 },
+          calls: [
+            { providerCallId: 'CA-1', role: 'winner' },
+            { providerCallId: 'CA-2', role: 'loser' },
+            { providerCallId: 'CA-3', role: 'loser' },
+          ],
+        },
+      ],
+      selectedCallDetail: null,
+      selectedCallTranscript: [],
+    } as LeadConnectorEmbedState;
+    const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
+
+    expect(html.indexOf('Active calls')).toBeGreaterThan(-1);
+    expect(html.indexOf('Call history')).toBeGreaterThan(
+      html.indexOf('Active calls'),
+    );
+    expect(html).toContain('data-call-session="active-session-1"');
+    expect(html).toContain('data-call-session="history-session-1"');
+    expect(html.match(/data-call-session="history-session-1"/g)).toHaveLength(
+      1,
+    );
+    expect(html).toContain('3 attempts');
+    expect(html).toContain('Transcript processing');
+    expect(html).toContain('Transcript ready');
+    expect(html).not.toContain('data-action="transfer"');
+  });
+
+  it('keeps transcript and coaching panels out of the compact operator overlay', () => {
+    const html = renderLeadConnectorEmbed(connectedState(), {
+      surface: 'overlay',
+    });
+    expect(html).not.toContain('Call transcript');
+    expect(html).not.toContain('Coaching');
+    expect(html).not.toContain('data-action="transfer"');
+  });
+
+  it('renders transcript, disposition, opportunity snapshots, and child attempts in call detail', () => {
+    const detail: LeadConnectorEmbedState['selectedCallDetail'] = {
+      id: 'history-session-1',
+      status: 'completed',
+      disposition: 'connected',
+      note: 'Follow up',
+      tags: ['called'],
+      crmSyncStatus: 'synced',
+      transcriptStatus: 'ready',
+      opportunity: { status: 'open', monetaryValue: 1250 },
+      currentOpportunity: { status: 'won', monetaryValue: 1500 },
+      calls: [
+        {
+          providerCallId: 'CA-1',
+          role: 'winner',
+          status: 'completed',
+          durationSeconds: 120,
+        },
+      ],
+      transferEvents: [
+        {
+          id: 'transfer-1',
+          type: 'warm_transfer_requested',
+          createdAt: '2026-08-04T16:16:42.000Z',
+          metadata: { providerPayload: 'must remain hidden' },
+        },
+      ],
+    };
+    const state = {
+      ...createInitialEmbedState(),
+      selectedCallDetail: detail,
+      selectedCallTranscript: [
+        {
+          id: 'segment-1',
+          sequence: 1,
+          track: 'inbound',
+          speaker: 'inbound',
+          text: 'Hello there',
+          startMs: 0,
+          endMs: 500,
+        },
+      ],
+    } as LeadConnectorEmbedState;
+    const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
+    expect(html).toContain('Call transcript');
+    expect(html).toContain('Hello there');
+    expect(html).toContain('connected');
+    expect(html).toContain('Original opportunity');
+    expect(html).toContain('Current opportunity');
+    expect(html).toContain('Provider attempts');
+    expect(html).toContain('Transfer events');
+    expect(html).toContain('Warm transfer requested');
+    expect(html).toContain('2026-08-04 16:16 UTC');
+    expect(html).not.toContain('providerPayload');
+    expect(html).not.toContain('must remain hidden');
+    expect(html).not.toContain('data-action="transfer"');
+  });
+
   it('resolves root and admin to administration while reserving overlay paths for calling', () => {
     expect(resolveLeadConnectorSurface('/')).toBe('admin');
     expect(resolveLeadConnectorSurface('/admin')).toBe('admin');

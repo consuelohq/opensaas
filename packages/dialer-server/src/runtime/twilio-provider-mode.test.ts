@@ -44,6 +44,7 @@ describe('Twilio provider test mode', () => {
   it('passes the magic From number unchanged into the provider group request', () => {
     const request = buildProviderGroupOptions(
       {
+        sessionId: 'session-test',
         workspaceId: 'workspace-test',
         queueId: 'queue-test',
         userId: 'user-test',
@@ -54,6 +55,7 @@ describe('Twilio provider test mode', () => {
     );
 
     expect(request.fromNumbers).toEqual([TWILIO_TEST_FROM_NUMBER]);
+    expect(request.dialerSessionId).toBe('session-test');
     expect(request.statusCallbackUrl).toBe(
       'https://dialer.example.test/webhooks/twilio/status',
     );

@@ -50,6 +50,65 @@ export type EmbedFilters = {
   stageId: string | null;
 };
 
+export type EmbedAdminCall = {
+  id: string;
+  representative?: string | null;
+  contactId?: string | null;
+  contactName?: string | null;
+  queueId?: string | null;
+  status: string;
+  elapsedSeconds?: number;
+  activeLineCount?: number;
+  transcriptStatus?: 'pending' | 'processing' | 'ready' | 'failed' | null;
+  startedAt?: string | null;
+  durationSeconds?: number | null;
+  requestedFanout?: number | null;
+  actualFanout?: number | null;
+  disposition?: string | null;
+  note?: string | null;
+  tags?: string[];
+  crmSyncStatus?: 'pending' | 'synced' | 'failed' | null;
+  opportunity?: {
+    id?: string | null;
+    status?: string | null;
+    monetaryValue?: number | null;
+    pipelineId?: string | null;
+    stageId?: string | null;
+  } | null;
+  currentOpportunity?: {
+    id?: string | null;
+    status?: string | null;
+    monetaryValue?: number | null;
+    pipelineId?: string | null;
+    stageId?: string | null;
+  } | null;
+  calls: Array<{
+    providerCallId: string;
+    role?: 'active' | 'winner' | 'loser' | null;
+    status?: string | null;
+    callerIdentity?: string | null;
+    amdResult?: string | null;
+    terminalOutcome?: string | null;
+    durationSeconds?: number | null;
+  }>;
+  transferEvents?: Array<{
+    id: string;
+    type: string;
+    createdAt: string;
+    metadata?: Record<string, unknown>;
+  }>;
+};
+
+export type EmbedTranscriptSegment = {
+  id: string;
+  sequence: number;
+  track: 'inbound' | 'outbound';
+  speaker: string;
+  text: string;
+  startMs?: number | null;
+  endMs?: number | null;
+};
+
 export type EmbedFailure = {
   code: string;
   message: string;
@@ -72,6 +131,11 @@ export type LeadConnectorEmbedState = {
   activeSessionId: string | null;
   callSession: EmbedCallSession | null;
   callLegs: EmbedCallLeg[];
+  activeCalls: EmbedAdminCall[];
+  callHistory: EmbedAdminCall[];
+  callHistoryCursor: string | null;
+  selectedCallDetail: EmbedAdminCall | null;
+  selectedCallTranscript: EmbedTranscriptSegment[];
   error: EmbedFailure | null;
 };
 
@@ -93,6 +157,22 @@ export type EmbedStateEvent =
   | { type: 'RESUMED' }
   | { type: 'STOP_REQUESTED' }
   | { type: 'DISPOSITION_SUBMITTED' }
+  | {
+      type: 'CALLS_LOADED';
+      activeCalls: EmbedAdminCall[];
+      callHistory: EmbedAdminCall[];
+      nextCursor: string | null;
+    }
+  | {
+      type: 'CALL_HISTORY_APPENDED';
+      calls: EmbedAdminCall[];
+      nextCursor: string | null;
+    }
+  | { type: 'CALL_DETAIL_LOADED'; detail: EmbedAdminCall }
+  | {
+      type: 'CALL_TRANSCRIPT_LOADED';
+      segments: EmbedTranscriptSegment[];
+    }
   | { type: 'FAILED'; code: string; message: string; recoverable: boolean }
   | { type: 'RETRY_REQUESTED' }
   | { type: 'SESSION_EXPIRED' }
@@ -114,6 +194,11 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   activeSessionId: null,
   callSession: null,
   callLegs: [],
+  activeCalls: [],
+  callHistory: [],
+  callHistoryCursor: null,
+  selectedCallDetail: null,
+  selectedCallTranscript: [],
   error: null,
 });
 
@@ -221,6 +306,27 @@ export const reduceEmbedState = (
       return { ...state, phase: 'wrapping-up' };
     case 'DISPOSITION_SUBMITTED':
       return { ...state, phase: 'completed', selectedTargets: [], error: null };
+    case 'CALLS_LOADED':
+      return {
+        ...state,
+        activeCalls: event.activeCalls,
+        callHistory: event.callHistory,
+        callHistoryCursor: event.nextCursor,
+      };
+    case 'CALL_HISTORY_APPENDED': {
+      const callsById = new Map(
+        [...state.callHistory, ...event.calls].map((call) => [call.id, call]),
+      );
+      return {
+        ...state,
+        callHistory: [...callsById.values()],
+        callHistoryCursor: event.nextCursor,
+      };
+    }
+    case 'CALL_DETAIL_LOADED':
+      return { ...state, selectedCallDetail: event.detail };
+    case 'CALL_TRANSCRIPT_LOADED':
+      return { ...state, selectedCallTranscript: event.segments };
     case 'FAILED':
       return {
         ...state,

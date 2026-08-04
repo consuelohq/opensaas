@@ -332,6 +332,7 @@ export type ParallelCleanupFailure = {
 // Full parallel dial group state (stored in redis)
 export type ParallelGroup = {
   groupId: string;
+  dialerSessionId?: string;
   conferenceName: string;
   status: ParallelGroupStatus;
   winnerSid: string | null;
@@ -352,6 +353,7 @@ export type ParallelGroup = {
 /** Options for initiating a parallel dial batch */
 export interface ParallelDialOptions {
   workspaceId: string;
+  dialerSessionId?: string;
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];

@@ -176,4 +176,25 @@ describe('LeadConnector embed state machine', () => {
       }),
     ).toEqual([opportunities[0]]);
   });
+
+  it('appends cursor-paginated history without duplicating sessions', () => {
+    const call = { id: 'session-1', status: 'completed', calls: [] };
+    let state = reduceEmbedState(createInitialEmbedState(), {
+      type: 'CALLS_LOADED',
+      activeCalls: [],
+      callHistory: [call],
+      nextCursor: 'cursor-2',
+    });
+    state = reduceEmbedState(state, {
+      type: 'CALL_HISTORY_APPENDED',
+      calls: [call, { id: 'session-2', status: 'completed', calls: [] }],
+      nextCursor: null,
+    });
+
+    expect(state.callHistory.map((candidate) => candidate.id)).toEqual([
+      'session-1',
+      'session-2',
+    ]);
+    expect(state.callHistoryCursor).toBeNull();
+  });
 });

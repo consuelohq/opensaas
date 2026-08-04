@@ -132,6 +132,12 @@ root.addEventListener('click', (event) => {
   if (action === 'resume') controller.resume();
   if (action === 'stop') void controller.stop();
   if (action === 'hang-up') void controller.hangUp();
+  if (action === 'select-call' && actionElement.dataset.callId) {
+    void controller.selectCall(actionElement.dataset.callId);
+  }
+  if (action === 'load-more-history') {
+    void controller.loadMoreCallHistory();
+  }
   if (action === 'remove-target' && actionElement.dataset.dedupeKey) {
     controller.removeTarget(actionElement.dataset.dedupeKey);
   }

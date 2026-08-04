@@ -1,7 +1,11 @@
 import { Dialer, type TwilioCredentials } from '@consuelo/dialer';
 
 import type { DialerApplicationLayers } from '../application';
-import { createEffectDialerApplication } from '../application';
+import {
+  createCallHistoryDialerApplication,
+  createEffectDialerApplication,
+} from '../application';
+import type { createCallOperationsApplication } from '../call-operations/application';
 import type { DialerServerDependencies } from '../contracts';
 import { runApplicationEffect } from '../effect-runner';
 import {
@@ -21,6 +25,11 @@ type RuntimeModule = {
   createLeadConnectorApplicationLayer?: (
     environment: DialerServerEnvironment,
   ) => Promise<LeadConnectorApplicationLayer> | LeadConnectorApplicationLayer;
+  createCallOperationsApplicationRuntime?: (
+    environment: DialerServerEnvironment,
+  ) =>
+    | Promise<ReturnType<typeof createCallOperationsApplication>>
+    | ReturnType<typeof createCallOperationsApplication>;
 };
 
 export type DialerServerRuntimeConfig = {
@@ -73,6 +82,9 @@ export async function loadDialerServerRuntime(
       );
     }
     const layers = await imported.createDialerApplicationLayers(environment);
+    const callOperations = imported.createCallOperationsApplicationRuntime
+      ? await imported.createCallOperationsApplicationRuntime(environment)
+      : undefined;
     const leadConnectorLayer = imported.createLeadConnectorApplicationLayer
       ? await imported.createLeadConnectorApplicationLayer(environment)
       : null;
@@ -120,7 +132,23 @@ export async function loadDialerServerRuntime(
       hostname: environment.HOST?.trim() || '0.0.0.0',
       port: Number(environment.PORT || '3000'),
       dependencies: {
-        application: createEffectDialerApplication(layers),
+        application: callOperations
+          ? createCallHistoryDialerApplication(
+              createEffectDialerApplication(layers),
+              callOperations,
+              (operation, error) => {
+                process.stderr.write(
+                  `${JSON.stringify({
+                    event: 'dialer.call_history.persistence_failed',
+                    operation,
+                    message:
+                      error instanceof Error ? error.message : String(error),
+                  })}\n`,
+                );
+              },
+            )
+          : createEffectDialerApplication(layers),
+        callOperations,
         authenticate,
         issueEmbedSession: embedSessions.issue,
         leadConnector,
