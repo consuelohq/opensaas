@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 
 import type { ParallelGroup } from '@consuelo/dialer';
 
@@ -440,9 +441,10 @@ describe('ParallelService initiateParallelDial', () => {
 
   it('should log the safe create stage and error details when group creation fails', async () => {
     const { service, group, mockDialer } = createService();
-    const err = new Error('twilio unavailable');
+    const err = new Error('twilio unavailable for +14155552671');
 
-    err.stack = 'Error: twilio unavailable';
+    err.stack =
+      'Error: twilio unavailable for +14155552671\n    at provider (+14155552671)';
     mockDialer.parallel.initiateGroup.mockRejectedValueOnce(err);
 
     const loggerErrorSpy = jest
@@ -461,7 +463,7 @@ describe('ParallelService initiateParallelDial', () => {
           },
         }),
       ).rejects.toMatchObject({
-        response: expect.objectContaining({ message: 'twilio unavailable' }),
+        response: expect.objectContaining({ code: 'PARALLEL_DIAL_FAILED' }),
       });
 
       expect(loggerErrorSpy).toHaveBeenCalledWith(
@@ -474,8 +476,20 @@ describe('ParallelService initiateParallelDial', () => {
           customerNumberCount: 2,
           fromNumberCount: 2,
           errorName: 'Error',
-          errorMessage: 'twilio unavailable',
-          errorStack: 'Error: twilio unavailable',
+          errorMessage: 'twilio unavailable for ***2671',
+          errorStack:
+            'Error: twilio unavailable for ***2671\n    at provider (***2671)',
+        }),
+      );
+
+      expect(Sentry.captureException).toHaveBeenCalledWith(
+        err,
+        expect.objectContaining({
+          extra: expect.objectContaining({
+            errorMessage: 'twilio unavailable for ***2671',
+            errorStack:
+              'Error: twilio unavailable for ***2671\n    at provider (***2671)',
+          }),
         }),
       );
 

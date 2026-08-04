@@ -381,7 +381,7 @@ export class ParallelService {
       return {
         name: cause.name,
         message: this.redactPhoneNumbers(cause.message),
-        stack: cause.stack,
+        stack: cause.stack ? this.redactPhoneNumbers(cause.stack) : undefined,
       };
     }
     return {

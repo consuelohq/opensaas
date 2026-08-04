@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/redact-provider-stacks-from-dialer-stream",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1774,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1774",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1774",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1774/redact-provider-stacks-from-dialer-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1774",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1774/redact-provider-stacks-from-dialer-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redact-provider-stacks-from-dialer-stream",
+  "taskSession": "tsk_45395b302224",
+  "tmuxSession": "opensaas-dialer-redact-provider-stacks-from-dialer-stream-45395b30",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redact-provider-stacks-from-dialer-stream/.task/dialer/redact-provider-stacks-from-dialer-stream/session.json",
+  "createdAt": "2026-08-04T20:49:14.976Z"
+}
