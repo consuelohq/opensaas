@@ -40,6 +40,8 @@ export const createCallSessionRoutes = (
         dependencies.application.startCallSession({
           workspaceId: identity.workspaceId,
           userId: identity.userId,
+          installationId: identity.installationId,
+          locationId: identity.locationId,
           input: input as never,
         }),
       );

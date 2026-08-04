@@ -9,7 +9,8 @@
     "build": "mkdir -p ./dist && bun build ./src/main.ts --compile --outfile ./dist/dialer-server",
     "start": "./dist/dialer-server",
     "validate:local-runtime": "bun ./scripts/validate-local-runtime.ts",
-    "validate:provider-test": "bun ./scripts/validate-provider-test.ts"
+    "validate:provider-test": "bun ./scripts/validate-provider-test.ts",
+    "validate:groq-transcription": "bun ./scripts/validate-groq-transcription.ts"
   },
   "dependencies": {
     "@consuelo/dialer": "workspace:*",

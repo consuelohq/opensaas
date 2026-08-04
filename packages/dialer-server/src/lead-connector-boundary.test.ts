@@ -66,6 +66,46 @@ const createDependencies = (): DialerServerDependencies => ({
 });
 
 describe('dialer-server LeadConnector boundary', () => {
+  it('persists dispositions locally before mirroring them to LeadConnector', async () => {
+    const dependencies = createDependencies();
+    const operations: string[] = [];
+    dependencies.callOperations = {
+      recordDisposition: () =>
+        Effect.sync(() => {
+          operations.push('local');
+        }),
+      setCrmSyncStatus: ({ status }: { status: string }) =>
+        Effect.sync(() => {
+          operations.push(`sync:${status}`);
+        }),
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    dependencies.leadConnector!.recordDisposition = mock(() =>
+      Effect.sync(() => {
+        operations.push('provider');
+        return { recorded: true as const };
+      }),
+    );
+
+    const response = await createDialerServer(dependencies).request(
+      '/v1/integrations/leadconnector/dispositions',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer test-token',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: 'session-1',
+          contactId: 'contact-1',
+          disposition: 'connected',
+        }),
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(operations).toEqual(['local', 'provider', 'sync:synced']);
+  });
+
   it('preserves the authenticated OAuth start route and legacy response shape', async () => {
     const dependencies = createDependencies();
     const response = await createDialerServer(dependencies).request(

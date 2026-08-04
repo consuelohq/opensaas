@@ -12,6 +12,7 @@ type ProviderEnvironment = Record<string, string | undefined>;
 
 type ProviderGroupInput = {
   workspaceId: string;
+  sessionId: string;
   queueId: string;
   userId: string;
   targets: Array<{ contactId: string; phone: string }>;
@@ -71,6 +72,7 @@ export const buildProviderGroupOptions = (
   publicUrl: string,
 ): ParallelDialOptions => ({
   workspaceId: input.workspaceId,
+  dialerSessionId: input.sessionId,
   customerNumbers: input.targets.map((target) => target.phone),
   queueId: input.queueId,
   contactIds: input.targets.map((target) => target.contactId),

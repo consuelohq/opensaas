@@ -3,7 +3,11 @@ import type {
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
 } from '../contracts/index.js';
-import type { EmbedCallSession } from './state-machine.js';
+import type {
+  EmbedAdminCall,
+  EmbedCallSession,
+  EmbedTranscriptSegment,
+} from './state-machine.js';
 
 export class EmbedSessionExpiredError extends Error {
   readonly code = 'SESSION_EXPIRED';
@@ -141,7 +145,31 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
         `/v1/call-sessions/${encodeURIComponent(sessionId)}/terminate`,
         { method: 'POST' },
       ),
+    listActiveCalls: () =>
+      request<{ calls: EmbedAdminCall[] }>('/v1/calls/active').then(
+        (result) => result.calls,
+      ),
+    listCallHistory: (
+      input: { status?: string; cursor?: string; limit?: number } = {},
+    ) => {
+      const query = new URLSearchParams();
+      if (input.status) query.set('status', input.status);
+      if (input.cursor) query.set('cursor', input.cursor);
+      if (input.limit) query.set('limit', String(input.limit));
+      const suffix = query.size > 0 ? `?${query.toString()}` : '';
+      return request<{
+        calls: EmbedAdminCall[];
+        nextCursor: string | null;
+      }>(`/v1/calls${suffix}`);
+    },
+    getCallDetail: (callId: string) =>
+      request<EmbedAdminCall>(`/v1/calls/${encodeURIComponent(callId)}`),
+    getCallTranscript: (callId: string) =>
+      request<{ segments: EmbedTranscriptSegment[] }>(
+        `/v1/calls/${encodeURIComponent(callId)}/transcript`,
+      ).then((result) => result.segments),
     recordDisposition: (input: {
+      sessionId: string;
       contactId: string;
       disposition: string;
       note?: string;

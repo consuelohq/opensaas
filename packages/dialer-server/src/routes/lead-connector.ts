@@ -2,7 +2,11 @@ import { Hono } from 'hono';
 
 import type { DialerServerDependencies } from '../contracts';
 import { runApplicationEffect } from '../effect-runner';
-import { invalidRequestResponse, leadConnectorErrorResponse } from '../errors';
+import {
+  dialerErrorResponse,
+  invalidRequestResponse,
+  leadConnectorErrorResponse,
+} from '../errors';
 import type { DialerVariables } from '../middleware/auth';
 
 const readJsonObject = async (
@@ -170,12 +174,27 @@ export const createLeadConnectorAuthenticatedRoutes = (
           );
         }
         const identity = context.get('identity');
+        const sessionId = readOptionalString(body.sessionId);
         const tags = Array.isArray(body.tags)
           ? body.tags.filter(
               (tag): tag is string =>
                 typeof tag === 'string' && tag.trim().length > 0,
             )
           : undefined;
+        if (sessionId && dependencies.callOperations) {
+          const localResult = await runApplicationEffect(
+            dependencies.callOperations.recordDisposition({
+              workspaceId: identity.workspaceId,
+              sessionId,
+              disposition,
+              note: readOptionalString(body.note),
+              tags,
+            }),
+          );
+          if (!localResult.ok) {
+            return dialerErrorResponse(context, localResult.error);
+          }
+        }
         const result = await runApplicationEffect(
           application.recordDisposition({
             workspaceId: identity.workspaceId,
@@ -185,8 +204,18 @@ export const createLeadConnectorAuthenticatedRoutes = (
             tags,
           }),
         );
+        if (sessionId && dependencies.callOperations) {
+          await runApplicationEffect(
+            dependencies.callOperations.setCrmSyncStatus({
+              workspaceId: identity.workspaceId,
+              sessionId,
+              status: result.ok ? 'synced' : 'failed',
+              ...(!result.ok ? { errorCode: 'LEADCONNECTOR_SYNC_FAILED' } : {}),
+            }),
+          );
+        }
         return result.ok
-          ? context.json(result.value)
+          ? context.json({ ...result.value, crmSyncStatus: 'synced' })
           : leadConnectorErrorResponse(context, result.error);
       } catch (error: unknown) {
         return leadConnectorErrorResponse(context, error);

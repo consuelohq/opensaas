@@ -17,10 +17,16 @@ const createDependencies = () =>
         Effect.succeed('<Response><Dial /></Response>'),
       ),
       generateTwilioAgentTwiml: mock(() =>
-        Effect.succeed('<Response><Dial><Conference>conference-1</Conference></Dial></Response>'),
+        Effect.succeed(
+          '<Response><Dial><Conference>conference-1</Conference></Dial></Response>',
+        ),
       ),
       markAgentReady: mock(() =>
-        Effect.succeed({ groupId: 'group-1', status: 'connected', remainingCleanup: 0 }),
+        Effect.succeed({
+          groupId: 'group-1',
+          status: 'connected',
+          remainingCleanup: 0,
+        }),
       ),
     },
     authenticate: mock(async () => null),
@@ -140,7 +146,9 @@ describe('Twilio webhook boundary', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/xml');
-    expect(dependencies.application.generateTwilioAgentTwiml).toHaveBeenCalledWith({
+    expect(
+      dependencies.application.generateTwilioAgentTwiml,
+    ).toHaveBeenCalledWith({
       sessionId: 'group-1',
       clientIdentity: 'user_user-1',
     });
@@ -161,5 +169,27 @@ describe('Twilio webhook boundary', () => {
     );
     expect(response.status).toBe(401);
     expect(dependencies.application.processTwilioStatus).not.toHaveBeenCalled();
+  });
+
+  it('requires a valid provider signature before a Media Stream upgrade', async () => {
+    const dependencies = createDependencies();
+    dependencies.verifyTwilioSignature.mockImplementation(async () => false);
+    const response = await createDialerServer(dependencies).fetch(
+      new Request('https://dialer.test/webhooks/twilio/media', {
+        headers: {
+          connection: 'upgrade',
+          upgrade: 'websocket',
+          'x-twilio-signature': 'bad',
+        },
+      }),
+    );
+    expect(response.status).toBe(401);
+    expect(dependencies.verifyTwilioSignature).toHaveBeenCalledWith({
+      contentType: '',
+      params: {},
+      rawBody: '',
+      signature: 'bad',
+      url: 'https://dialer.test/webhooks/twilio/media',
+    });
   });
 });

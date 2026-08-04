@@ -12,7 +12,9 @@ import {
   createLeadConnectorAuthenticatedRoutes,
   createLeadConnectorPublicRoutes,
 } from './routes/lead-connector';
+import { createCallOperationsRoutes } from './routes/calls';
 import { createTwilioRoutes } from './routes/twilio';
+import { createTwilioMediaRoutes } from './routes/twilio-media';
 import { createVoiceRoutes } from './routes/voice';
 
 export function createDialerServer(dependencies: DialerServerDependencies) {
@@ -22,9 +24,11 @@ export function createDialerServer(dependencies: DialerServerDependencies) {
   app.route('/', createEmbedRoutes(dependencies));
   app.use('/v1/*', createAuthenticationMiddleware(dependencies));
   app.route('/', createCallSessionRoutes(dependencies));
+  app.route('/', createCallOperationsRoutes(dependencies));
   app.route('/', createVoiceRoutes(dependencies));
   app.route('/', createLeadConnectorAuthenticatedRoutes(dependencies));
   app.route('/', createTwilioRoutes(dependencies));
+  app.route('/', createTwilioMediaRoutes(dependencies));
   app.notFound((context) =>
     context.json(
       {

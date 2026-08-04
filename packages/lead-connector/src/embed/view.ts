@@ -20,7 +20,7 @@ const maskPhone = (phone: string): string => {
 };
 
 const phaseLabel = (phase: string): string =>
-  phase.replaceAll('-', ' ').replace(/^./, (value) => value.toUpperCase());
+  phase.replaceAll(/[-_]/g, ' ').replace(/^./, (value) => value.toUpperCase());
 
 const targetLabel = (
   target: LeadConnectorEmbedState['selectedTargets'][number] | undefined,
@@ -254,6 +254,142 @@ const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
   return `<section class="overlay-stage overlay-stage--complete"><div class="success-mark" aria-hidden="true">✓</div><div><p class="eyebrow">Saved</p><h1>Updated in LeadConnector</h1><p>The call outcome is complete.</p></div></section>`;
 };
 
+const transcriptLabel = (
+  status: LeadConnectorEmbedState['callHistory'][number]['transcriptStatus'],
+): string => (status ? `Transcript ${status}` : 'Transcript unavailable');
+
+const callIdentity = (
+  call: LeadConnectorEmbedState['callHistory'][number],
+): string =>
+  escapeHtml(
+    call.contactName ??
+      call.contactId ??
+      (call.queueId ? `Queue ${call.queueId}` : null) ??
+      call.representative ??
+      'Call session',
+  );
+
+const maskProviderId = (value: string): string =>
+  value.length > 6 ? `••••${value.slice(-6)}` : 'Provider call';
+
+const formatEventTime = (value: string): string => {
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp)
+    ? `${new Date(timestamp).toISOString().slice(0, 16).replace('T', ' ')} UTC`
+    : 'Unknown time';
+};
+
+const renderAdminCallCard = (
+  call: LeadConnectorEmbedState['callHistory'][number],
+  active: boolean,
+): string => {
+  const attemptCount = call.calls.length;
+  const duration = active
+    ? `${call.elapsedSeconds ?? 0}s elapsed`
+    : call.durationSeconds != null
+      ? `${call.durationSeconds}s`
+      : 'Duration unavailable';
+  const startedTime = call.startedAt?.slice(11, 16);
+  const winner = call.calls.find((attempt) => attempt.role === 'winner');
+  return `<button type="button" class="call-card${active ? ' call-card--active' : ''}" data-action="select-call" data-call-id="${escapeHtml(call.id)}" data-call-session="${escapeHtml(call.id)}">
+    <span class="call-card__identity"><strong>${callIdentity(call)}</strong><small>${escapeHtml(call.representative ?? 'Representative unavailable')}</small></span>
+    <span class="call-card__status"><strong>${escapeHtml(phaseLabel(call.status))}</strong><small>${escapeHtml(duration)}</small></span>
+    <span class="call-card__attempts">${attemptCount} ${attemptCount === 1 ? 'attempt' : 'attempts'}${call.activeLineCount != null ? ` · ${call.activeLineCount} active` : ''}${winner ? ` · Human winner ${escapeHtml(maskProviderId(winner.providerCallId))}` : ''}</span>
+    <span class="call-card__transcript">${startedTime ? `${escapeHtml(startedTime)} · ` : ''}${call.disposition ? `${escapeHtml(call.disposition)} · ` : ''}${call.opportunity?.status ? `${escapeHtml(call.opportunity.status)} · ` : ''}${escapeHtml(transcriptLabel(call.transcriptStatus))}</span>
+  </button>`;
+};
+
+const renderCallHistoryGroups = (state: LeadConnectorEmbedState): string => {
+  const groups = new Map<string, typeof state.callHistory>();
+  for (const call of state.callHistory) {
+    const date = call.startedAt?.slice(0, 10) ?? 'Unknown date';
+    groups.set(date, [...(groups.get(date) ?? []), call]);
+  }
+  if (groups.size === 0) {
+    return '<p class="resource-empty">No completed call sessions yet.</p>';
+  }
+  return [...groups.entries()]
+    .map(
+      ([date, calls]) =>
+        `<section class="call-history-group"><h3>${escapeHtml(date)}</h3><div class="call-card-list">${calls
+          .map((call) => renderAdminCallCard(call, false))
+          .join('')}</div></section>`,
+    )
+    .join('');
+};
+
+const renderCallDetail = (state: LeadConnectorEmbedState): string => {
+  const detail = state.selectedCallDetail;
+  if (!detail) {
+    return '<div class="session-empty"><strong>Select a call session</strong><p>Open a session to review its attempts, CRM snapshot, and transcript state.</p></div>';
+  }
+  const originalOpportunity = detail.opportunity;
+  const currentOpportunity = detail.currentOpportunity;
+  const attempts = detail.calls
+    .map(
+      (attempt) =>
+        `<li><strong>${escapeHtml(attempt.role ?? 'attempt')}</strong><span>${escapeHtml(maskProviderId(attempt.providerCallId))}</span><span>${escapeHtml(phaseLabel(attempt.status ?? 'unknown'))}</span><span>${attempt.durationSeconds != null ? `${attempt.durationSeconds}s` : '—'}</span></li>`,
+    )
+    .join('');
+  const transfers = detail.transferEvents ?? [];
+  const transferEvents =
+    transfers.length > 0
+      ? `<ol class="transfer-event-list">${transfers
+          .map(
+            (event) =>
+              `<li><strong>${escapeHtml(phaseLabel(event.type))}</strong><time datetime="${escapeHtml(event.createdAt)}">${escapeHtml(formatEventTime(event.createdAt))}</time></li>`,
+          )
+          .join('')}</ol>`
+      : '<p class="resource-empty">No transfer events.</p>';
+  const transcript =
+    detail.transcriptStatus === 'ready'
+      ? state.selectedCallTranscript.length > 0
+        ? `<ol class="transcript-list">${state.selectedCallTranscript
+            .map(
+              (segment) =>
+                `<li><strong>${escapeHtml(phaseLabel(segment.speaker))}${segment.startMs != null ? ` · ${(segment.startMs / 1_000).toFixed(1)}s` : ''}</strong><p>${escapeHtml(segment.text)}</p></li>`,
+            )
+            .join('')}</ol>`
+        : '<p class="resource-empty">The transcript is ready but has no text segments.</p>'
+      : `<p class="resource-empty">${escapeHtml(transcriptLabel(detail.transcriptStatus))}.</p>`;
+  return `<div class="call-detail" data-call-detail="${escapeHtml(detail.id)}">
+    <header><div><p class="eyebrow">Call details</p><h3>${callIdentity(detail)}</h3></div><span class="status-pill">${escapeHtml(phaseLabel(detail.status))}</span></header>
+    <dl class="detail-list">
+      <div><dt>Attempts</dt><dd>${detail.calls.length}</dd></div>
+      <div><dt>Disposition</dt><dd>${escapeHtml(detail.disposition ?? 'Not set')}</dd></div>
+      <div><dt>CRM sync</dt><dd>${escapeHtml(detail.crmSyncStatus ?? 'Not started')}</dd></div>
+      <div><dt>Notes</dt><dd>${escapeHtml(detail.note ?? 'None')}</dd></div>
+      <div><dt>Tags</dt><dd>${escapeHtml(detail.tags?.join(', ') || 'None')}</dd></div>
+      <div><dt>Original opportunity</dt><dd>${escapeHtml(originalOpportunity?.status ?? 'Unavailable')}${originalOpportunity?.monetaryValue != null ? ` · $${originalOpportunity.monetaryValue}` : ''}${originalOpportunity?.stageId ? ` · Stage ${escapeHtml(originalOpportunity.stageId)}` : ''}</dd></div>
+      <div><dt>Current opportunity</dt><dd>${escapeHtml(currentOpportunity?.status ?? 'Unavailable')}${currentOpportunity?.monetaryValue != null ? ` · $${currentOpportunity.monetaryValue}` : ''}${currentOpportunity?.stageId ? ` · Stage ${escapeHtml(currentOpportunity.stageId)}` : ''}</dd></div>
+    </dl>
+    <section class="attempt-panel"><h3>Provider attempts</h3><ol class="attempt-list">${attempts}</ol></section>
+    <section class="transcript-panel"><h3>Call transcript</h3>${transcript}</section>
+    <section class="transfer-event-panel"><h3>Transfer events</h3>${transferEvents}</section>
+    <details class="call-diagnostics"><summary>Diagnostics</summary><p>${escapeHtml(detail.id)} · ${detail.calls.length} provider attempts</p></details>
+  </div>`;
+};
+
+const renderAdminCallOperations = (state: LeadConnectorEmbedState): string => `
+  <section class="call-operations" aria-label="Call operations">
+    <article class="operator-panel call-operations__active">
+      <header class="panel-heading"><div><p class="eyebrow">Live operations</p><h2>Active calls</h2></div><span>${state.activeCalls.length}</span></header>
+      <div class="call-card-list">${
+        state.activeCalls.length > 0
+          ? state.activeCalls
+              .map((call) => renderAdminCallCard(call, true))
+              .join('')
+          : '<p class="resource-empty">No active call sessions.</p>'
+      }</div>
+    </article>
+    <article class="operator-panel call-operations__history">
+      <header class="panel-heading"><div><p class="eyebrow">Durable records</p><h2>Call history</h2></div><span>${state.callHistory.length}</span></header>
+      ${renderCallHistoryGroups(state)}
+      ${state.callHistoryCursor ? '<button type="button" class="button button--secondary" data-action="load-more-history">Load more call history</button>' : ''}
+    </article>
+    <aside class="operator-panel call-operations__detail">${renderCallDetail(state)}</aside>
+  </section>`;
+
 const renderAdmin = (state: LeadConnectorEmbedState): string => {
   const connectionLabel = ['booting', 'authenticating'].includes(state.phase)
     ? 'Connecting'
@@ -278,6 +414,8 @@ const renderAdmin = (state: LeadConnectorEmbedState): string => {
         <article class="metric"><span>Pipelines connected</span><strong>${state.pipelines.length}</strong></article>
         <article class="metric"><span>Session state</span><strong>${escapeHtml(phaseLabel(state.phase))}</strong></article>
       </section>
+
+      ${renderAdminCallOperations(state)}
 
       <section class="operator-layout">
         <article class="operator-panel operator-panel--records">

@@ -7,6 +7,7 @@ import type {
   ParallelCallbackResult,
   ParallelGroupStatusResult,
   ParallelTwimlInput,
+  StartDialerCallInput,
   StartDialerCallCommand,
   VoiceToken,
 } from '@consuelo/dialer';
@@ -20,6 +21,8 @@ import type {
 } from '@consuelo/lead-connector';
 import type { Effect } from 'effect';
 
+import type { createCallOperationsApplication } from './call-operations/application';
+
 export type DialerIdentity = {
   workspaceId: string;
   userId: string;
@@ -27,9 +30,31 @@ export type DialerIdentity = {
   locationId?: string;
 };
 
+export type DialerServerStartCallCommand = Omit<
+  StartDialerCallCommand,
+  'input'
+> & {
+  installationId?: string;
+  locationId?: string;
+  representativeName?: string;
+  input: StartDialerCallInput & {
+    contactName?: string;
+    opportunityId?: string;
+    pipelineId?: string;
+    stageId?: string;
+    opportunitySnapshot?: {
+      id?: string | null;
+      status?: string | null;
+      monetaryValue?: number | null;
+      pipelineId?: string | null;
+      stageId?: string | null;
+    };
+  };
+};
+
 export type DialerServerApplication = {
   startCallSession: (
-    command: StartDialerCallCommand,
+    command: DialerServerStartCallCommand,
   ) => Effect.Effect<DialerCallStartResult, DialerApplicationError>;
   getCallSession: (command: {
     sessionId: string;
@@ -56,6 +81,13 @@ export type DialerServerApplication = {
     sessionId: string;
     workspaceId: string;
   }) => Effect.Effect<MarkParallelAgentReadyResult, DialerApplicationError>;
+  resolveTwilioCallContext?: (input: { callSid: string }) => Effect.Effect<
+    {
+      workspaceId: string;
+      dialerSessionId: string | null;
+    } | null,
+    DialerApplicationError
+  >;
 };
 
 export type TwilioSignatureInput = {
@@ -128,6 +160,7 @@ export type LeadConnectorServerApplication = {
 
 export type DialerServerDependencies = {
   application: DialerServerApplication;
+  callOperations?: ReturnType<typeof createCallOperationsApplication>;
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;
   issueVoiceToken?: (identity: DialerIdentity) => Promise<VoiceToken>;

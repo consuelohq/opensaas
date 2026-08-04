@@ -143,7 +143,10 @@ describe('dialer-server embed and LeadConnector resources', () => {
       },
     );
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ recorded: true });
+    expect(await response.json()).toEqual({
+      recorded: true,
+      crmSyncStatus: 'synced',
+    });
     expect(dependencies.leadConnector?.recordDisposition).toHaveBeenCalledWith({
       workspaceId: 'workspace-1',
       contactId: 'contact-1',

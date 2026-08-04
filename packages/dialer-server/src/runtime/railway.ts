@@ -37,6 +37,12 @@ import {
 import { Effect, Layer } from 'effect';
 
 import type { DialerApplicationLayers } from '../application';
+import { createCallOperationsApplication } from '../call-operations/application';
+import { createGroqSpeechToTextProvider } from '../call-operations/groq';
+import {
+  createPostgresCallOperationsRepository,
+  initializeCallOperationsPersistence,
+} from '../call-operations/persistence';
 import type { LeadConnectorApplicationLayer } from '../lead-connector-application';
 import {
   buildProviderGroupOptions,
@@ -63,7 +69,7 @@ type PgPoolLike = {
   query: <T>(
     text: string,
     values?: readonly unknown[],
-  ) => Promise<{ rows: T[] }>;
+  ) => Promise<{ rows: T[]; rowCount?: number | null }>;
 };
 
 type IoredisLike = {
@@ -92,6 +98,18 @@ const commaSeparated = (value: string | undefined): string[] =>
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean);
+
+const positiveInteger = (
+  environment: RailwayEnvironment,
+  key: string,
+  fallback: number,
+): number => {
+  const value = Number(environment[key] ?? fallback);
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${key} must be a positive integer`);
+  }
+  return value;
+};
 
 const normalizePhone = (value: unknown): string => {
   const normalized = String(value ?? '').replace(/[\s().-]/g, '');
@@ -297,6 +315,79 @@ export const createRailwayLeadConnectorApplicationLayer = async (
     );
   } catch (cause: unknown) {
     throw new Error('LeadConnector runtime composition failed', { cause });
+  }
+};
+
+export const createRailwayCallOperationsApplication = async (
+  environment: RailwayEnvironment,
+  resources: RailwayRuntimeResources = {},
+) => {
+  try {
+    const shared = resources.database
+      ? null
+      : await createSharedResources(environment);
+    const database = resources.database ?? shared!.database;
+    await initializeCallOperationsPersistence(database);
+    const repository = createPostgresCallOperationsRepository(database);
+    const recovered = await Effect.runPromise(
+      repository.recoverInterruptedTranscriptions(),
+    );
+    if (recovered > 0) {
+      writeRuntimeEvent({
+        event: 'dialer.transcription.recovered',
+        count: recovered,
+      });
+    }
+    const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL');
+    const streamUrl = new URL('/webhooks/twilio/media', publicUrl);
+    streamUrl.protocol = streamUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+    const chunkBytes = positiveInteger(
+      environment,
+      'DIALER_TRANSCRIPTION_CHUNK_BYTES',
+      160_000,
+    );
+    const maxBufferBytesPerTrack = positiveInteger(
+      environment,
+      'DIALER_TRANSCRIPTION_MAX_BUFFER_BYTES',
+      240_000,
+    );
+    if (maxBufferBytesPerTrack < chunkBytes) {
+      throw new Error(
+        'DIALER_TRANSCRIPTION_MAX_BUFFER_BYTES must be at least DIALER_TRANSCRIPTION_CHUNK_BYTES',
+      );
+    }
+    return createCallOperationsApplication({
+      repository,
+      speechToTextProvider: createGroqSpeechToTextProvider({
+        apiKey: environment.GROQ_API_KEY?.trim() ?? '',
+        baseUrl: environment.GROQ_API_BASE_URL?.trim(),
+      }),
+      config: {
+        model:
+          environment.GROQ_TRANSCRIPTION_MODEL?.trim() ??
+          'whisper-large-v3-turbo',
+        chunkBytes,
+        maxBufferBytesPerTrack,
+        providerTimeoutMs: positiveInteger(
+          environment,
+          'DIALER_TRANSCRIPTION_TIMEOUT_MS',
+          30_000,
+        ),
+        maxConcurrentTranscriptions: positiveInteger(
+          environment,
+          'DIALER_TRANSCRIPTION_MAX_CONCURRENCY',
+          4,
+        ),
+        maxSessions: positiveInteger(
+          environment,
+          'DIALER_TRANSCRIPTION_MAX_SESSIONS',
+          100,
+        ),
+        streamUrl: streamUrl.toString(),
+      },
+    });
+  } catch (cause: unknown) {
+    throw new Error('Call operations runtime composition failed', { cause });
   }
 };
 
@@ -769,3 +860,5 @@ export const createDialerApplicationLayers =
   createRailwayDialerApplicationLayers;
 export const createLeadConnectorApplicationLayer =
   createRailwayLeadConnectorApplicationLayer;
+export const createCallOperationsApplicationRuntime =
+  createRailwayCallOperationsApplication;
