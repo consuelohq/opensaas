@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   cpSync,
   mkdirSync,
@@ -24,10 +25,20 @@ if (!result.success) {
   for (const log of result.logs) process.stderr.write(`${log.message}\n`);
   process.exit(1);
 }
-cpSync(
+const assetVersion = (fileName: 'main.css' | 'main.js'): string =>
+  createHash('sha256')
+    .update(readFileSync(join(outputDirectory, fileName)))
+    .digest('hex')
+    .slice(0, 16);
+
+const indexTemplate = readFileSync(
   join(packageRoot, 'src', 'embed', 'index.html'),
-  join(outputDirectory, 'index.html'),
+  'utf8',
 );
+const versionedIndex = indexTemplate
+  .replace('./main.css', `./main.css?v=${assetVersion('main.css')}`)
+  .replace('./main.js', `./main.js?v=${assetVersion('main.js')}`);
+writeFileSync(join(outputDirectory, 'index.html'), versionedIndex);
 cpSync(
   join(
     packageRoot,
