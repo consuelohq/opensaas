@@ -1,0 +1,249 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/lead-connector-sandbox-parity",
+  "base": "origin/stream/dialer",
+  "headSha": "f866e8f6eaec3909283ad6db4fbdb00b7d59e990",
+  "changeHash": "a221e2fb6201172f665c8c961f641719acf0ce0facacd7cda6393a93bcd30287",
+  "changedFiles": [
+    "packages/dialer-server/compatibility-cutover.json",
+    "packages/dialer-server/src/compatibility-cutover.contract.test.ts",
+    "packages/lead-connector/src/application.contract.test.ts",
+    "packages/lead-connector/src/application/oauth.ts",
+    "packages/lead-connector/src/application/tokens.ts",
+    "packages/lead-connector/src/contracts/index.ts",
+    "packages/lead-connector/src/embed/architecture.contract.test.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+    "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+    "packages/lead-connector/src/infrastructure.contract.test.ts",
+    "packages/lead-connector/src/infrastructure/fetch-transport.ts",
+    "packages/lead-connector/src/persistent-stores.contract.test.ts",
+    "packages/lead-connector/wrangler.jsonc"
+  ],
+  "verifiedAt": "2026-07-27T03:14:16.430Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/lead-connector-sandbox-parity/current.json",
+        ".task/dialer/lead-connector-sandbox-parity/evidence-log.json",
+        ".task/dialer/lead-connector-sandbox-parity/read-log.json",
+        ".task/dialer/lead-connector-sandbox-parity/session.json",
+        ".task/dialer/lead-connector-sandbox-parity/verify.json",
+        ".task/dialer/lead-connector-sandbox-parity/workpad.md",
+        ".task/tasks/dialer/lead-connector-sandbox-parity.json",
+        "packages/dialer-server/compatibility-cutover.json",
+        "packages/dialer-server/src/compatibility-cutover.contract.test.ts",
+        "packages/lead-connector/src/application.contract.test.ts",
+        "packages/lead-connector/src/application/oauth.ts",
+        "packages/lead-connector/src/application/tokens.ts",
+        "packages/lead-connector/src/contracts/index.ts",
+        "packages/lead-connector/src/embed/architecture.contract.test.ts",
+        "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+        "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+        "packages/lead-connector/src/infrastructure.contract.test.ts",
+        "packages/lead-connector/src/infrastructure/fetch-transport.ts",
+        "packages/lead-connector/src/persistent-stores.contract.test.ts",
+        "packages/lead-connector/wrangler.jsonc"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/compatibility-cutover.json",
+            "packages/dialer-server/src/compatibility-cutover.contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/application.contract.test.ts",
+            "packages/lead-connector/src/application/oauth.ts",
+            "packages/lead-connector/src/application/tokens.ts",
+            "packages/lead-connector/src/contracts/index.ts",
+            "packages/lead-connector/src/embed/architecture.contract.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+            "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+            "packages/lead-connector/src/infrastructure.contract.test.ts",
+            "packages/lead-connector/src/infrastructure/fetch-transport.ts",
+            "packages/lead-connector/src/persistent-stores.contract.test.ts",
+            "packages/lead-connector/wrangler.jsonc"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/dialer-server.",
+          "matchedFiles": [
+            "packages/dialer-server/compatibility-cutover.json",
+            "packages/dialer-server/src/compatibility-cutover.contract.test.ts"
+          ],
+          "origin": "auto"
+        },
+        {
+          "id": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/lead-connector.",
+          "matchedFiles": [
+            "packages/lead-connector/src/application.contract.test.ts",
+            "packages/lead-connector/src/application/oauth.ts",
+            "packages/lead-connector/src/application/tokens.ts",
+            "packages/lead-connector/src/contracts/index.ts",
+            "packages/lead-connector/src/embed/architecture.contract.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+            "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+            "packages/lead-connector/src/infrastructure.contract.test.ts",
+            "packages/lead-connector/src/infrastructure/fetch-transport.ts",
+            "packages/lead-connector/src/persistent-stores.contract.test.ts",
+            "packages/lead-connector/wrangler.jsonc"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 701,
+          "outputTail": " use case per route [0.53ms]\n(pass) dialer-server HTTP contracts > fails closed before invoking an application use case when identity is absent [0.26ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.80ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.30ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.24ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.19ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.16ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.12ms]\n\npackages/dialer-server/src/embed-boundary.test.ts:\n(pass) dialer-server embed and LeadConnector resources > exchanges encrypted parent context for a short-lived scoped embed session [0.63ms]\n(pass) dialer-server embed and LeadConnector resources > loads contacts, opportunities, and pipelines through thin authenticated handlers [2.22ms]\n(pass) dialer-server embed and LeadConnector resources > writes a disposition through the provider application without provider logic in the route [0.34ms]\n\npackages/dialer-server/src/lifecycle.integration.test.ts:\n(pass) dialer-server in-memory lifecycle > starts through Hono, selects one winner, terminates the loser, completes, and releases locks [19.63ms]\n\npackages/dialer-server/src/architecture.test.ts:\n(pass) dialer-server architecture > is a private Hono package with a Bun-only process boundary [0.32ms]\n(pass) dialer-server architecture > has zero Twenty, NestJS, GraphQL, or forbidden provider branding leakage [2.09ms]\n(pass) dialer-server architecture > keeps dialer decisions out of route and middleware source [0.25ms]\n\npackages/dialer-server/src/embed-bootstrap.contract.test.ts:\n(pass) dialer-server production embed bootstrap > exchanges opaque encrypted parent context without accepting browser provider secrets [0.41ms]\n(pass) dialer-server production embed bootstrap > rejects malformed bootstrap input before invoking provider application behavior [0.16ms]\n\npackages/dialer-server/src/lead-connector-boundary.test.ts:\n(pass) dialer-server LeadConnector boundary > preserves the authenticated OAuth start route and legacy response shape [0.94ms]\n(pass) dialer-server LeadConnector boundary > keeps the OAuth callback public and state-authenticated [0.25ms]\n(pass) dialer-server LeadConnector boundary > passes raw webhook bytes and provider-owned headers without exposing internal state [0.24ms]\n(pass) dialer-server LeadConnector boundary > maps provider denial, invalid state, and invalid signatures to stable public errors [0.51ms]\n\npackages/dialer-server/src/twilio-boundary.test.ts:\n(pass) Twilio webhook boundary > verifies form callbacks against the exact forwarded public URL and parsed form fields [0.26ms]\n(pass) Twilio webhook boundary > verifies JSON callbacks against the exact raw body representation [0.14ms]\n(pass) Twilio webhook boundary > preserves provider-owned TwiML fields and returns XML [0.21ms]\n(pass) Twilio webhook boundary > rejects invalid signatures without invoking application behavior [0.10ms]\n\npackages/dialer-server/src/runtime/embed-session.test.ts:\n(pass) dialer-server embed sessions > issues a short-lived token that authenticates the original workspace and user [0.31ms]\n(pass) dialer-server embed sessions > rejects expired, malformed, and tampered tokens [0.10ms]\n(pass) dialer-server embed sessions > binds sessions to installation and location and revalidates them on every request [0.08ms]\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.61ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [1.19ms]\n\n 36 pass\n 0 fail\n 191 expect() calls\nRan 36 tests across 10 files. [693.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 368,
+          "outputTail": "s a typed expiration error for an expired embed session [0.06ms]\n\npackages/lead-connector/src/embed/protocol.test.ts:\n(pass) LeadConnector embed protocol > requests encrypted platform user context from the exact trusted parent origin [0.16ms]\n(pass) LeadConnector embed protocol > accepts a versioned handshake only from a trusted parent and responds to that exact origin [0.04ms]\n(pass) LeadConnector embed protocol > rejects untrusted origins and reports protocol version mismatches [0.03ms]\n(pass) LeadConnector embed protocol > rejects a trusted-origin message that did not come from the parent window [0.02ms]\n(pass) LeadConnector embed protocol > normalizes click-to-call targets and produces a stable dedupe key [0.05ms]\n\npackages/lead-connector/src/embed/cloudflare-worker.test.ts:\n(pass) LeadConnector Cloudflare embed edge > deploys the browser application build rather than TypeScript library output [0.05ms]\n(pass) LeadConnector Cloudflare embed edge > proxies only dialer API, OAuth, webhook, and health paths to Railway [0.15ms]\n(pass) LeadConnector Cloudflare embed edge > serves the embed as an iframe-safe static asset without proxying arbitrary paths [0.22ms]\n\npackages/lead-connector/src/embed/state-machine.test.ts:\n(pass) LeadConnector embed state machine > authenticates, loads resources, selects one deduplicated target, and starts a single call [0.08ms]\n(pass) LeadConnector embed state machine > projects parallel backend state with exactly one human winner and losing legs [0.06ms]\n(pass) LeadConnector embed state machine > supports pause, resume, stop, wrap-up, completion, recoverable failure, and retry [0.03ms]\n(pass) LeadConnector embed state machine > treats session expiration as recoverable reauthentication without retaining the token [0.02ms]\n(pass) LeadConnector embed state machine > filters opportunities by query, pipeline, and stage [0.04ms]\n\npackages/lead-connector/src/embed/controller.test.ts:\n(pass) LeadConnector embed controller > projects a recoverable parent authentication failure instead of remaining in booting [0.09ms]\n(pass) LeadConnector embed controller > authenticates, loads resources, starts a backend-authoritative call, terminates, and writes disposition [0.46ms]\n(pass) LeadConnector embed controller > searches resources with pipeline and stage filters and supports queue pause and resume [0.14ms]\n(pass) LeadConnector embed controller > starts multiline calls through the queue predictive contract [0.17ms]\n(pass) LeadConnector embed controller > expires and reauthenticates without retaining the expired browser token [0.09ms]\n\npackages/lead-connector/src/embed/view.test.ts:\n(pass) LeadConnector embed view > renders responsive controls, microphone guidance, selected context, and winner/loser presentation [0.17ms]\n\npackages/lead-connector/src/embed/architecture.contract.test.ts:\n(pass) LeadConnector browser architecture and branding > contains no forbidden branding or server/runtime dependencies in browser source and public assets [0.98ms]\n(pass) LeadConnector browser architecture and branding > builds a browser-only bundle without forbidden dependencies or branding [2.25ms]\n(pass) LeadConnector browser architecture and branding > targets the actual approved live or sandbox custom-page origin for click-to-call messages [0.06ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.19ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.05ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.05ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.27ms]\n\n 52 pass\n 0 fail\n 312 expect() calls\nRan 52 tests across 14 files. [359.00ms]\n"
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5,
+          "outputTail": "ecation             Determine whether or not deprecation warnings result in errors.\n      --title=<val>                   Set the process title\n      --zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (6 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    mkdir -p ./dist && bun build ./src/main.ts --compile --outfile ./dist/dialer-server\n\n  $ bun run start\n    ./dist/dialer-server\n\n  $ bun run validate:local-runtime\n    bun ./scripts/validate-local-runtime.ts\n\n  $ bun run validate:provider-test\n    bun ./scripts/validate-provider-test.ts\n\n"
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4,
+          "outputTail": "eprecation.\n      --throw-deprecation             Determine whether or not deprecation warnings result in errors.\n      --title=<val>                   Set the process title\n      --zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (6 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    tsc && bun run build:embed\n\n  $ bun run build:embed\n    bun ./scripts/build-embed.ts\n\n  $ bun run deploy:embed\n    bun run build:embed && wrangler deploy --config wrangler.jsonc\n\n  $ bun run configure:sandbox-menu\n    bun ./scripts/configure-sandbox-menu.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

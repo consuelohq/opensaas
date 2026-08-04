@@ -314,6 +314,8 @@
       "packages/consuelo-design",
       "packages/create-twenty-app",
       "packages/dialer",
+      "packages/dialer-server",
+      "packages/lead-connector",
       "packages/logger",
       "packages/metering",
       "packages/sdk",

@@ -11,19 +11,12 @@ import {
 
 // ---- module mocks (hoisted by jest) ----
 
-jest.mock('@consuelo/dialer', () => {
-  const selectNumberFn = jest.fn();
-  return {
-    LocalPresenceService: jest.fn().mockImplementation(() => ({
-      selectNumber: selectNumberFn,
-    })),
-    extractAreaCode: jest.fn((num: string) => {
-      const match = num.match(/^\+1(\d{3})/);
-      return match ? match[1] : null;
-    }),
-    __mockSelectNumber: selectNumberFn,
-  };
-});
+jest.mock('@consuelo/dialer', () => ({
+  extractAreaCode: jest.fn((num: string) => {
+    const match = num.match(/^\+1(\d{3})/);
+    return match ? match[1] : null;
+  }),
+}));
 
 jest.mock('../../shared/dialer', () => ({
   sharedDialer: jest.fn(),
@@ -48,12 +41,10 @@ jest.mock('@consuelo/logger', () => ({
 // ---- import after mocks ----
 
 import { localPresenceRoutes } from '../local-presence';
-import { sharedCallerIdLockService, getDialerForWorkspace } from '../../shared/dialer';
-
-// access the mock selectNumber through the mocked LocalPresenceService instance
-// the constructor was called at module level in local-presence.ts during import
-const { LocalPresenceService } = jest.requireMock('@consuelo/dialer') as { LocalPresenceService: jest.Mock };
-const mockSelectNumber = LocalPresenceService.mock.results[0]?.value?.selectNumber as jest.Mock;
+import {
+  sharedCallerIdLockService,
+  getDialerForWorkspace,
+} from '../../shared/dialer';
 
 // wire up mock instances after import
 const mockGetUserLocks = jest.fn();
@@ -64,11 +55,17 @@ const mockLockServiceInstance = {
 };
 
 const mockIsCallCompleted = jest.fn();
+const mockListNumbers = jest.fn();
+const mockResolveCallerId = jest.fn();
 const mockDialerInstance = {
   isCallCompleted: mockIsCallCompleted,
+  listNumbers: mockListNumbers,
+  resolveCallerId: mockResolveCallerId,
 };
 
-(sharedCallerIdLockService as unknown as jest.Mock).mockReturnValue(mockLockServiceInstance);
+(sharedCallerIdLockService as unknown as jest.Mock).mockReturnValue(
+  mockLockServiceInstance,
+);
 (getDialerForWorkspace as jest.Mock).mockResolvedValue(mockDialerInstance);
 
 // ---- helpers ----
@@ -85,11 +82,14 @@ const findRoute = (method: string, path: string): Route => {
 const exec = (route: Route, req?: Partial<ApiRequest>) =>
   executeHandler(route.handler, req);
 
-const authReq = (overrides?: Partial<ApiRequest>) =>
-  ({ ...createAuthenticatedRequest(overrides) });
+const authReq = (overrides?: Partial<ApiRequest>) => ({
+  ...createAuthenticatedRequest(overrides),
+});
 
 const noAuthReq = (overrides?: Partial<ApiRequest>) =>
-  ({ auth: undefined, ...overrides } as Partial<ApiRequest> & { auth: undefined });
+  ({ auth: undefined, ...overrides }) as Partial<ApiRequest> & {
+    auth: undefined;
+  };
 
 // ---- setup ----
 
@@ -123,13 +123,17 @@ describe('POST /v1/local-presence/toggle', () => {
   it('returns 401 without auth', async () => {
     const res = await exec(route(), noAuthReq({ body: { enabled: true } }));
     expect(res.statusCode).toBe(401);
-    expect((res.body as { error: { code: string } }).error.code).toBe('UNAUTHORIZED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'UNAUTHORIZED',
+    );
   });
 
   it('returns 400 when enabled is missing', async () => {
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('BAD_REQUEST');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'BAD_REQUEST',
+    );
   });
 
   it('returns 400 when enabled is not boolean', async () => {
@@ -146,70 +150,115 @@ describe('GET /v1/local-presence/preview', () => {
   const route = () => findRoute('GET', '/v1/local-presence/preview');
 
   it('returns preview with local match', async () => {
-    mockSelectNumber.mockResolvedValueOnce({
-      phoneNumber: '+15551234567',
-      areaCode: '555',
+    mockResolveCallerId.mockResolvedValueOnce({
+      callerIdNumber: '+15551234567',
       localMatch: true,
       proximityMatch: false,
       distanceMiles: 0,
       isPrimary: false,
       customerAreaCode: '555',
+      selectionMethod: 'exact-area-code',
     });
-    const res = await exec(route(), authReq({
-      query: {
-        phoneNumber: '+15551234567',
-        fromNumbers: '+15559876543,+15551111111',
-      },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        query: {
+          phoneNumber: '+15551234567',
+          fromNumbers: '+15559876543,+15551111111',
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
     expect((res.body as { localMatch: boolean }).localMatch).toBe(true);
   });
 
   it('returns primary fallback when no match', async () => {
-    mockSelectNumber.mockResolvedValueOnce(null);
-    const res = await exec(route(), authReq({
-      query: {
-        phoneNumber: '+15551234567',
-        fromNumbers: '+15559876543',
-      },
-    }));
+    mockResolveCallerId.mockResolvedValueOnce({
+      callerIdNumber: '+15559876543',
+      localMatch: false,
+      proximityMatch: false,
+      isPrimary: true,
+      customerAreaCode: '555',
+      selectionMethod: 'primary-fallback',
+    });
+    const res = await exec(
+      route(),
+      authReq({
+        query: {
+          phoneNumber: '+15551234567',
+          fromNumbers: '+15559876543',
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
     expect((res.body as { isPrimary: boolean }).isPrimary).toBe(true);
     expect((res.body as { localMatch: boolean }).localMatch).toBe(false);
   });
 
   it('returns 401 without auth', async () => {
-    const res = await exec(route(), noAuthReq({
-      query: { phoneNumber: '+15551234567', fromNumbers: '+15559876543' },
-    }));
+    const res = await exec(
+      route(),
+      noAuthReq({
+        query: { phoneNumber: '+15551234567', fromNumbers: '+15559876543' },
+      }),
+    );
     expect(res.statusCode).toBe(401);
   });
 
   it('returns 400 for missing phoneNumber', async () => {
-    const res = await exec(route(), authReq({
-      query: { fromNumbers: '+15559876543' },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        query: { fromNumbers: '+15559876543' },
+      }),
+    );
     expect(res.statusCode).toBe(400);
   });
 
   it('returns 400 for invalid phoneNumber', async () => {
-    const res = await exec(route(), authReq({
-      query: { phoneNumber: '555-bad', fromNumbers: '+15559876543' },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        query: { phoneNumber: '555-bad', fromNumbers: '+15559876543' },
+      }),
+    );
     expect(res.statusCode).toBe(400);
   });
 
-  it('returns 400 for missing fromNumbers', async () => {
-    const res = await exec(route(), authReq({
-      query: { phoneNumber: '+15551234567' },
-    }));
-    expect(res.statusCode).toBe(400);
+  it('uses workspace account numbers when fromNumbers is omitted', async () => {
+    mockListNumbers.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15559876543',
+        areaCode: '555',
+        isPrimary: true,
+        isActive: true,
+      },
+    ]);
+    mockResolveCallerId.mockResolvedValueOnce({
+      callerIdNumber: '+15559876543',
+      localMatch: false,
+      proximityMatch: false,
+      isPrimary: true,
+      customerAreaCode: '555',
+      selectionMethod: 'primary-fallback',
+    });
+
+    const res = await exec(
+      route(),
+      authReq({ query: { phoneNumber: '+15551234567' } }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(mockListNumbers).toHaveBeenCalledTimes(1);
   });
 
   it('returns 400 when all fromNumbers are invalid', async () => {
-    const res = await exec(route(), authReq({
-      query: { phoneNumber: '+15551234567', fromNumbers: 'bad,also-bad' },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        query: { phoneNumber: '+15551234567', fromNumbers: 'bad,also-bad' },
+      }),
+    );
     expect(res.statusCode).toBe(400);
   });
 });
@@ -225,7 +274,12 @@ describe('GET /v1/caller-id/locks', () => {
     const now = new Date();
     const later = new Date(now.getTime() + 300000);
     mockGetUserLocks.mockResolvedValueOnce([
-      { phoneNumber: '+15551234567', callSid: 'CA-001', acquiredAt: now, expiresAt: later },
+      {
+        phoneNumber: '+15551234567',
+        callSid: 'CA-001',
+        acquiredAt: now,
+        expiresAt: later,
+      },
     ]);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
@@ -249,7 +303,9 @@ describe('GET /v1/caller-id/locks', () => {
     mockGetUserLocks.mockRejectedValueOnce(new Error('redis down'));
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(500);
-    expect((res.body as { error: { code: string } }).error.code).toBe('LOCKS_FETCH_FAILED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'LOCKS_FETCH_FAILED',
+    );
   });
 });
 
@@ -264,7 +320,12 @@ describe('POST /v1/caller-id/locks/cleanup', () => {
     const now = new Date();
     const later = new Date(now.getTime() + 300000);
     mockGetUserLocks.mockResolvedValueOnce([
-      { phoneNumber: '+15551234567', callSid: 'CA-001', acquiredAt: now, expiresAt: later },
+      {
+        phoneNumber: '+15551234567',
+        callSid: 'CA-001',
+        acquiredAt: now,
+        expiresAt: later,
+      },
     ]);
     mockIsCallCompleted.mockResolvedValueOnce(true);
     mockReleaseLock.mockResolvedValueOnce(undefined);
@@ -279,7 +340,12 @@ describe('POST /v1/caller-id/locks/cleanup', () => {
     const now = new Date();
     const later = new Date(now.getTime() + 300000);
     mockGetUserLocks.mockResolvedValueOnce([
-      { phoneNumber: '+15551234567', callSid: 'CA-001', acquiredAt: now, expiresAt: later },
+      {
+        phoneNumber: '+15551234567',
+        callSid: 'CA-001',
+        acquiredAt: now,
+        expiresAt: later,
+      },
     ]);
     mockIsCallCompleted.mockResolvedValueOnce(false);
 
@@ -298,7 +364,12 @@ describe('POST /v1/caller-id/locks/cleanup', () => {
     const now = new Date();
     const later = new Date(now.getTime() + 300000);
     mockGetUserLocks.mockResolvedValueOnce([
-      { phoneNumber: '+15551234567', callSid: 'CA-001', acquiredAt: now, expiresAt: later },
+      {
+        phoneNumber: '+15551234567',
+        callSid: 'CA-001',
+        acquiredAt: now,
+        expiresAt: later,
+      },
     ]);
     mockIsCallCompleted.mockRejectedValueOnce(new Error('twilio error'));
     mockReleaseLock.mockResolvedValueOnce(undefined);

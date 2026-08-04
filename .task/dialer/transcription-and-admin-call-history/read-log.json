@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/dialer-server/src/main.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/src/application/start-parallel-session.ts",
+    "packages/dialer/src/services/parallel-dialer.ts",
+    "packages/lead-connector/src/embed/view.test.ts",
+    "packages/lead-connector/src/embed/view.ts"
+  ],
+  "updatedAt": "2026-08-04T17:15:59.286Z"
+}

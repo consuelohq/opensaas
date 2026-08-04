@@ -7,6 +7,7 @@ import {
   type ProfileKey,
 } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
+import type { ApiResponse } from '../types.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import {
@@ -61,6 +62,20 @@ interface ParallelDialBody {
 const isProfileKey = (value: unknown): value is ProfileKey =>
   value === 'balanced' || value === 'aggressive' || value === 'conservative';
 
+const respondWithError = (
+  res: ApiResponse,
+  status: number,
+  code: string,
+  message: string,
+  context: Record<string, unknown>,
+): void => {
+  Sentry.captureException(new Error(message), {
+    level: status >= 500 ? 'error' : 'warning',
+    extra: { ...context, status, code },
+  });
+  res.status(status).json({ error: { code, message } });
+};
+
 /** /v1/calls/parallel routes — parallel dialing (power dialer) */
 export const parallelRoutes = (): RouteDefinition[] => [
   // --- literal routes first (ROUTE_ORDER) ---
@@ -72,20 +87,21 @@ export const parallelRoutes = (): RouteDefinition[] => [
       const userId = req.auth?.userId;
       const workspaceId = req.auth?.workspaceId;
       if (!userId || !workspaceId) {
-        res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        respondWithError(res, 401, 'UNAUTHORIZED', 'Auth required', {
+          context: 'parallel_dial_auth',
         });
         return;
       }
 
       const body = req.body as ParallelDialBody | undefined;
       if (!body?.customerNumbers || !body.queueId) {
-        res.status(400).json({
-          error: {
-            code: 'INVALID_REQUEST',
-            message: 'Requires customerNumbers and a queueId',
-          },
-        });
+        respondWithError(
+          res,
+          400,
+          'INVALID_REQUEST',
+          'Requires customerNumbers and a queueId',
+          { context: 'parallel_dial_input' },
+        );
         return;
       }
 
@@ -93,12 +109,13 @@ export const parallelRoutes = (): RouteDefinition[] => [
         (n) => !E164_REGEX.test(n),
       );
       if (invalidNumbers.length > 0) {
-        res.status(400).json({
-          error: {
-            code: 'INVALID_PHONE',
-            message: `Invalid E.164 numbers: ${invalidNumbers.join(', ')}`,
-          },
-        });
+        respondWithError(
+          res,
+          400,
+          'INVALID_PHONE',
+          `Invalid E.164 numbers: ${invalidNumbers.join(', ')}`,
+          { context: 'parallel_dial_phone_validation' },
+        );
         return;
       }
 
@@ -113,12 +130,13 @@ export const parallelRoutes = (): RouteDefinition[] => [
         });
 
         if (body.customerNumbers.length !== strategy.profile.fanout) {
-          res.status(400).json({
-            error: {
-              code: 'INVALID_REQUEST',
-              message: `Profile ${strategy.profile.id} requires exactly ${strategy.profile.fanout} customerNumbers`,
-            },
-          });
+          respondWithError(
+            res,
+            400,
+            'INVALID_REQUEST',
+            `Profile ${strategy.profile.id} requires exactly ${strategy.profile.fanout} customerNumbers`,
+            { context: 'parallel_dial_fanout', profileId: strategy.profile.id },
+          );
           return;
         }
 
@@ -161,12 +179,13 @@ export const parallelRoutes = (): RouteDefinition[] => [
             for (const acquiredFromNumber of acquiredFromNumbers) {
               await getLockService().releaseLockByNumber(acquiredFromNumber);
             }
-            res.status(409).json({
-              error: {
-                code: 'CALLER_ID_LOCKED',
-                message: `Caller ID ${fromNumber} is in use`,
-              },
-            });
+            respondWithError(
+              res,
+              409,
+              'CALLER_ID_LOCKED',
+              `Caller ID ${fromNumber} is in use`,
+              { context: 'parallel_dial_caller_id_lock' },
+            );
             return;
           }
 
@@ -177,6 +196,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
         let result: ParallelDialResult;
         try {
           result = await dialer.parallel.initiateGroup({
+            workspaceId,
             customerNumbers: body.customerNumbers,
             queueId: body.queueId,
             contactIds: body.contactIds,
@@ -211,9 +231,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
         );
         const message =
           err instanceof Error ? err.message : 'Parallel dial failed';
-        res
-          .status(500)
-          .json({ error: { code: 'PARALLEL_DIAL_FAILED', message } });
+        respondWithError(res, 500, 'PARALLEL_DIAL_FAILED', message, {
+          context: 'parallel_dial_response',
+          queueId: body.queueId,
+        });
       }
     }),
   },
@@ -225,8 +246,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
       const userId = req.auth?.userId;
       const workspaceId = req.auth?.workspaceId;
       if (!userId || !workspaceId) {
-        res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        respondWithError(res, 401, 'UNAUTHORIZED', 'Auth required', {
+          context: 'parallel_validate_auth',
         });
         return;
       }
@@ -278,7 +299,9 @@ export const parallelRoutes = (): RouteDefinition[] => [
         );
         const message =
           err instanceof Error ? err.message : 'Validation failed';
-        res.status(500).json({ error: { code: 'VALIDATION_FAILED', message } });
+        respondWithError(res, 500, 'VALIDATION_FAILED', message, {
+          context: 'parallel_validate_response',
+        });
       }
     }),
   },
@@ -294,12 +317,13 @@ export const parallelRoutes = (): RouteDefinition[] => [
       const answeredBy = body?.AnsweredBy;
 
       if (!callSid || !callStatus) {
-        res.status(400).json({
-          error: {
-            code: 'INVALID_REQUEST',
-            message: 'Missing CallSid or CallStatus',
-          },
-        });
+        respondWithError(
+          res,
+          400,
+          'INVALID_REQUEST',
+          'Missing CallSid or CallStatus',
+          { context: 'parallel_status_callback_input' },
+        );
         return;
       }
 
@@ -351,7 +375,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
         );
         const message =
           err instanceof Error ? err.message : 'Status callback failed';
-        res.status(500).json({ error: { code: 'CALLBACK_FAILED', message } });
+        respondWithError(res, 500, 'CALLBACK_FAILED', message, {
+          context: 'parallel_status_callback_response',
+          callSid,
+        });
       }
     }),
   },
@@ -365,8 +392,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
       const callSid = body?.CallSid;
 
       if (!callSid) {
-        res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'Missing CallSid' },
+        respondWithError(res, 400, 'INVALID_REQUEST', 'Missing CallSid', {
+          context: 'parallel_customer_twiml_input',
         });
         return;
       }
@@ -375,12 +402,13 @@ export const parallelRoutes = (): RouteDefinition[] => [
         const twiml =
           await getLegacyDialer().parallel.generateCustomerTwiml(callSid);
         if (!twiml) {
-          res.status(404).json({
-            error: {
-              code: 'GROUP_NOT_FOUND',
-              message: 'No parallel group for this call',
-            },
-          });
+          respondWithError(
+            res,
+            404,
+            'GROUP_NOT_FOUND',
+            'No parallel group for this call',
+            { context: 'parallel_customer_twiml_group', callSid },
+          );
           return;
         }
 
@@ -397,7 +425,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
         );
         const message =
           err instanceof Error ? err.message : 'TwiML generation failed';
-        res.status(500).json({ error: { code: 'TWIML_FAILED', message } });
+        respondWithError(res, 500, 'TWIML_FAILED', message, {
+          context: 'parallel_customer_twiml_response',
+          callSid,
+        });
       }
     }),
   },
@@ -411,16 +442,16 @@ export const parallelRoutes = (): RouteDefinition[] => [
       const userId = req.auth?.userId;
       const workspaceId = req.auth?.workspaceId;
       if (!userId || !workspaceId) {
-        res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        respondWithError(res, 401, 'UNAUTHORIZED', 'Auth required', {
+          context: 'parallel_group_auth',
         });
         return;
       }
 
       const groupId = req.params?.groupId;
       if (!groupId) {
-        res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'Missing groupId' },
+        respondWithError(res, 400, 'INVALID_REQUEST', 'Missing groupId', {
+          context: 'parallel_group_input',
         });
         return;
       }
@@ -428,14 +459,15 @@ export const parallelRoutes = (): RouteDefinition[] => [
       try {
         const dialer = await getDialerForWorkspace(workspaceId);
         const group: ParallelGroup | null =
-          await dialer.parallel.getGroup(groupId);
+          await dialer.parallel.getGroupForWorkspace(groupId, workspaceId);
         if (!group) {
-          res.status(404).json({
-            error: {
-              code: 'GROUP_NOT_FOUND',
-              message: 'Parallel group not found',
-            },
-          });
+          respondWithError(
+            res,
+            404,
+            'GROUP_NOT_FOUND',
+            'Parallel group not found',
+            { context: 'parallel_group_lookup', groupId, workspaceId },
+          );
           return;
         }
 
@@ -470,9 +502,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
         );
         const message =
           err instanceof Error ? err.message : 'Group lookup failed';
-        res
-          .status(500)
-          .json({ error: { code: 'GROUP_LOOKUP_FAILED', message } });
+        respondWithError(res, 500, 'GROUP_LOOKUP_FAILED', message, {
+          context: 'parallel_group_lookup_response',
+          groupId,
+        });
       }
     }),
   },
@@ -484,30 +517,34 @@ export const parallelRoutes = (): RouteDefinition[] => [
       const userId = req.auth?.userId;
       const workspaceId = req.auth?.workspaceId;
       if (!userId || !workspaceId) {
-        res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        respondWithError(res, 401, 'UNAUTHORIZED', 'Auth required', {
+          context: 'parallel_terminate_auth',
         });
         return;
       }
 
       const groupId = req.params?.groupId;
       if (!groupId) {
-        res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'Missing groupId' },
+        respondWithError(res, 400, 'INVALID_REQUEST', 'Missing groupId', {
+          context: 'parallel_terminate_input',
         });
         return;
       }
 
       try {
         const dialer = await getDialerForWorkspace(workspaceId);
-        const group = await dialer.parallel.getGroup(groupId);
+        const group = await dialer.parallel.getGroupForWorkspace(
+          groupId,
+          workspaceId,
+        );
         if (!group) {
-          res.status(404).json({
-            error: {
-              code: 'GROUP_NOT_FOUND',
-              message: 'Parallel group not found',
-            },
-          });
+          respondWithError(
+            res,
+            404,
+            'GROUP_NOT_FOUND',
+            'Parallel group not found',
+            { context: 'parallel_terminate_lookup', groupId, workspaceId },
+          );
           return;
         }
 
@@ -517,7 +554,16 @@ export const parallelRoutes = (): RouteDefinition[] => [
           }
         }
 
-        await dialer.parallel.terminateGroup(groupId);
+        const terminated = await dialer.parallel.terminateGroupForWorkspace(
+          groupId,
+          workspaceId,
+        );
+        if (!terminated) {
+          Sentry.captureException(
+            new Error('Parallel termination group disappeared'),
+            { extra: { groupId, workspaceId } },
+          );
+        }
         res.status(200).json({ groupId, status: 'completed' });
         (await getLogger())?.info('parallel.terminated', {
           action: 'parallel.terminated',
@@ -534,7 +580,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
           },
         );
         const message = err instanceof Error ? err.message : 'Terminate failed';
-        res.status(500).json({ error: { code: 'TERMINATE_FAILED', message } });
+        respondWithError(res, 500, 'TERMINATE_FAILED', message, {
+          context: 'parallel_terminate_response',
+          groupId,
+        });
       }
     }),
   },
