@@ -223,9 +223,9 @@ describe('dialer-server in-memory lifecycle', () => {
     };
     const runtime: DialerCallRuntimeService = {
       assertSafeTargetsAllowed: () => Effect.void,
-      resolveCallerIds: ({ targetCount }) =>
+      resolveCallerIds: ({ targets }) =>
         Effect.succeed(
-          numbers.slice(0, targetCount).map((number) => number.phoneNumber),
+          numbers.slice(0, targets.length).map((number) => number.phoneNumber),
         ),
       initiateProviderCalls: (input) =>
         Effect.gen(function* () {

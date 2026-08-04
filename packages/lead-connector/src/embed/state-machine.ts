@@ -50,6 +50,23 @@ export type EmbedFilters = {
   stageId: string | null;
 };
 
+export type EmbedDialerSetup = {
+  mode: 'queue' | 'single';
+  callingMode: 'predictive' | 'single';
+  requestedFanout: 1 | 2 | 3;
+  preferLocalPresence: boolean;
+  callerIdNumber: string | null;
+};
+
+export type EmbedQueueSelection = {
+  pipelineId: string;
+  pipelineName: string;
+  stageId: string;
+  stageName: string;
+  opportunityTotal: number;
+  callableTotal: number;
+};
+
 export type EmbedAdminCall = {
   id: string;
   representative?: string | null;
@@ -126,6 +143,9 @@ export type LeadConnectorEmbedState = {
   opportunityTotal: number;
   pipelines: LeadConnectorPipeline[];
   filters: EmbedFilters;
+  setup: EmbedDialerSetup;
+  selectedQueue: EmbedQueueSelection | null;
+  resourcesRefreshing: boolean;
   selectedTargets: LeadConnectorClickToCallTarget[];
   selectionStrategy: 'single' | 'predictive';
   activeSessionId: string | null;
@@ -151,6 +171,14 @@ export type EmbedStateEvent =
       pipelines: LeadConnectorPipeline[];
     }
   | { type: 'FILTERS_CHANGED'; filters: Partial<EmbedFilters> }
+  | { type: 'RESOURCES_REFRESH_STARTED' }
+  | { type: 'RESOURCES_REFRESH_FINISHED' }
+  | { type: 'SETUP_CHANGED'; setup: Partial<EmbedDialerSetup> }
+  | {
+      type: 'QUEUE_SELECTED';
+      queue: EmbedQueueSelection;
+      targets: LeadConnectorClickToCallTarget[];
+    }
   | { type: 'START_REQUESTED'; strategy: 'single' | 'predictive' }
   | { type: 'SESSION_UPDATED'; session: EmbedCallSession }
   | { type: 'PAUSED' }
@@ -176,6 +204,7 @@ export type EmbedStateEvent =
   | { type: 'FAILED'; code: string; message: string; recoverable: boolean }
   | { type: 'RETRY_REQUESTED' }
   | { type: 'SESSION_EXPIRED' }
+  | { type: 'RETURN_HOME' }
   | { type: 'RESET' };
 
 export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
@@ -189,6 +218,15 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   opportunityTotal: 0,
   pipelines: [],
   filters: { query: '', pipelineId: null, stageId: null },
+  setup: {
+    mode: 'queue',
+    callingMode: 'predictive',
+    requestedFanout: 1,
+    preferLocalPresence: true,
+    callerIdNumber: null,
+  },
+  selectedQueue: null,
+  resourcesRefreshing: false,
   selectedTargets: [],
   selectionStrategy: 'single',
   activeSessionId: null,
@@ -262,9 +300,35 @@ export const reduceEmbedState = (
         opportunities: event.opportunities,
         opportunityTotal: event.opportunityTotal,
         pipelines: event.pipelines,
+        resourcesRefreshing: false,
       };
     case 'FILTERS_CHANGED':
       return { ...state, filters: { ...state.filters, ...event.filters } };
+    case 'RESOURCES_REFRESH_STARTED':
+      return { ...state, resourcesRefreshing: true };
+    case 'RESOURCES_REFRESH_FINISHED':
+      return { ...state, resourcesRefreshing: false };
+    case 'SETUP_CHANGED': {
+      const setup = { ...state.setup, ...event.setup };
+      if (setup.mode === 'single' || setup.callingMode === 'single') {
+        setup.callingMode = 'single';
+        setup.requestedFanout = 1;
+      }
+      return {
+        ...state,
+        setup,
+        selectedQueue: setup.mode === 'single' ? null : state.selectedQueue,
+      };
+    }
+    case 'QUEUE_SELECTED':
+      return {
+        ...state,
+        phase: 'ready',
+        setup: { ...state.setup, mode: 'queue' },
+        selectedQueue: event.queue,
+        selectedTargets: event.targets,
+        error: null,
+      };
     case 'START_REQUESTED':
       return {
         ...state,
@@ -305,7 +369,20 @@ export const reduceEmbedState = (
     case 'STOP_REQUESTED':
       return { ...state, phase: 'wrapping-up' };
     case 'DISPOSITION_SUBMITTED':
-      return { ...state, phase: 'completed', selectedTargets: [], error: null };
+    case 'RETURN_HOME':
+      return {
+        ...state,
+        phase: 'ready',
+        resumePhase: null,
+        activeSessionId: null,
+        callSession: null,
+        callLegs: [],
+        selectedCallDetail: null,
+        selectedCallTranscript: [],
+        selectedTargets:
+          state.setup.mode === 'single' ? [] : state.selectedTargets,
+        error: null,
+      };
     case 'CALLS_LOADED':
       return {
         ...state,
@@ -374,6 +451,13 @@ export const selectEmbedTarget = (
   return {
     ...state,
     phase: 'target-selected',
+    setup: {
+      ...state.setup,
+      mode: 'single',
+      callingMode: 'single',
+      requestedFanout: 1,
+    },
+    selectedQueue: null,
     selectedTargets: [...state.selectedTargets, target],
   };
 };

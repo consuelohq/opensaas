@@ -17,6 +17,7 @@ import type {
   LeadConnectorError,
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
+  LeadConnectorQueuePreview,
   LeadConnectorWebhookProcessResult,
 } from '@consuelo/lead-connector';
 import type { Effect } from 'effect';
@@ -143,6 +144,11 @@ export type LeadConnectorServerApplication = {
   listPipelines: (
     workspaceId: string,
   ) => Effect.Effect<LeadConnectorPipeline[], LeadConnectorError>;
+  resolveQueueCandidates: (input: {
+    workspaceId: string;
+    pipelineId: string;
+    stageId: string;
+  }) => Effect.Effect<LeadConnectorQueuePreview, LeadConnectorError>;
   recordDisposition: (input: {
     workspaceId: string;
     contactId: string;

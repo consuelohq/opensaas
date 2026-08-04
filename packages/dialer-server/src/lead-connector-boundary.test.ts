@@ -52,6 +52,18 @@ const createDependencies = (): DialerServerDependencies => ({
       Effect.succeed({ opportunities: [], total: 0 }),
     ),
     listPipelines: mock(() => Effect.succeed([])),
+    resolveQueueCandidates: mock(() =>
+      Effect.succeed({
+        pipelineId: 'pipeline-1',
+        pipelineName: 'Pipeline',
+        stageId: 'stage-1',
+        stageName: 'Stage',
+        opportunityTotal: 0,
+        callableTotal: 0,
+        truncated: false,
+        candidates: [],
+      }),
+    ),
     recordDisposition: mock(() => Effect.succeed({ recorded: true as const })),
     exchangeEmbedBootstrap: mock(() =>
       Effect.succeed({

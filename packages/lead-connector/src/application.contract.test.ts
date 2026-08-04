@@ -24,6 +24,7 @@ import {
   listLeadConnectorContacts,
   listLeadConnectorPipelines,
   recordLeadConnectorDisposition,
+  resolveLeadConnectorQueueCandidates,
   searchLeadConnectorOpportunities,
   type LeadConnectorHttpRequest,
   type LeadConnectorInstallation,
@@ -450,6 +451,165 @@ describe('LeadConnector token and resource contracts', () => {
     expect(harness.state.requests[0].body).toEqual(
       expect.objectContaining({ locationId: 'location-1', query: 'renewal' }),
     );
+  });
+
+
+  it('paginates a pipeline stage and reuses embedded contacts before hydrating missing phones', async () => {
+    const harness = makeHarness((request) => {
+      if (request.url.endsWith('/opportunities/search')) {
+        const page =
+          (request.body as { page?: number } | undefined)?.page ?? 1;
+        if (page === 1) {
+          return {
+            opportunities: [
+              {
+                id: 'opportunity-1',
+                name: 'Kokayi Cobb',
+                contactId: 'contact-1',
+                pipelineId: 'pipeline-1',
+                pipelineStageId: 'stage-1',
+                status: 'open',
+                monetaryValue: 100,
+                contact: {
+                  id: 'contact-1',
+                  name: 'Kokayi Cobb',
+                  phone: '+15550100123',
+                  tags: [],
+                },
+              },
+              {
+                id: 'opportunity-2',
+                name: 'No phone deal',
+                contactId: 'contact-2',
+                pipelineId: 'pipeline-1',
+                pipelineStageId: 'stage-1',
+                status: 'open',
+                monetaryValue: 200,
+                contact: {
+                  id: 'contact-2',
+                  name: 'No Phone',
+                  phone: null,
+                  tags: [],
+                },
+              },
+            ],
+            meta: { total: 3, currentPage: 1, nextPage: 2 },
+          };
+        }
+        return {
+          opportunities: [
+            {
+              id: 'opportunity-3',
+              name: 'Hydrated deal',
+              contactId: 'contact-3',
+              pipelineId: 'pipeline-1',
+              pipelineStageId: 'stage-1',
+              status: 'open',
+              monetaryValue: 300,
+            },
+          ],
+          meta: { total: 3, currentPage: 2, nextPage: null },
+        };
+      }
+      if (request.url.includes('/opportunities/pipelines')) {
+        return {
+          pipelines: [
+            {
+              id: 'pipeline-1',
+              name: 'Marketing Pipeline',
+              stages: [{ id: 'stage-1', name: 'Hot Lead', position: 1 }],
+            },
+          ],
+        };
+      }
+      if (request.url.endsWith('/contacts/contact-2')) {
+        return {
+          contact: {
+            id: 'contact-2',
+            name: 'No Phone',
+            phone: null,
+            tags: [],
+          },
+        };
+      }
+      if (request.url.endsWith('/contacts/contact-3')) {
+        return {
+          contact: {
+            id: 'contact-3',
+            name: 'Hydrated Contact',
+            phone: '+15550100125',
+            tags: [],
+          },
+        };
+      }
+      return {};
+    });
+    harness.state.installationsByWorkspace.set(
+      'workspace-1',
+      connectedInstallation(),
+    );
+    harness.state.workspaceByLocation.set('location-1', 'workspace-1');
+
+    const result = await Effect.runPromise(
+      resolveLeadConnectorQueueCandidates({
+        workspaceId: 'workspace-1',
+        pipelineId: 'pipeline-1',
+        stageId: 'stage-1',
+      }).pipe(Effect.provide(harness.layer)),
+    );
+
+    expect(result).toEqual({
+      pipelineId: 'pipeline-1',
+      pipelineName: 'Marketing Pipeline',
+      stageId: 'stage-1',
+      stageName: 'Hot Lead',
+      opportunityTotal: 3,
+      callableTotal: 2,
+      truncated: false,
+      candidates: [
+        {
+          opportunityId: 'opportunity-1',
+          contactId: 'contact-1',
+          contactName: 'Kokayi Cobb',
+          phone: '+15550100123',
+          status: 'open',
+          monetaryValue: 100,
+        },
+        {
+          opportunityId: 'opportunity-3',
+          contactId: 'contact-3',
+          contactName: 'Hydrated Contact',
+          phone: '+15550100125',
+          status: 'open',
+          monetaryValue: 300,
+        },
+      ],
+    });
+    const searches = harness.state.requests.filter((request) =>
+      request.url.endsWith('/opportunities/search'),
+    );
+    expect(searches).toHaveLength(2);
+    expect(searches.map((request) => request.body)).toEqual([
+      expect.objectContaining({
+        pipelineId: 'pipeline-1',
+        pipelineStageId: 'stage-1',
+        status: 'open',
+        limit: 100,
+        page: 1,
+      }),
+      expect.objectContaining({
+        pipelineId: 'pipeline-1',
+        pipelineStageId: 'stage-1',
+        status: 'open',
+        limit: 100,
+        page: 2,
+      }),
+    ]);
+    expect(
+      harness.state.requests.filter((request) =>
+        request.url.endsWith('/contacts/contact-1'),
+      ),
+    ).toHaveLength(0);
   });
 
   it('maps provider contacts without importing customer-system entities', async () => {

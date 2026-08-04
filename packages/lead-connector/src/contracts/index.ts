@@ -91,6 +91,26 @@ export type LeadConnectorPipeline = {
   stages: LeadConnectorPipelineStage[];
 };
 
+export type LeadConnectorQueueCandidate = {
+  opportunityId: string;
+  contactId: string;
+  contactName: string;
+  phone: string;
+  status: string | null;
+  monetaryValue: number | null;
+};
+
+export type LeadConnectorQueuePreview = {
+  pipelineId: string;
+  pipelineName: string;
+  stageId: string;
+  stageName: string;
+  opportunityTotal: number;
+  callableTotal: number;
+  truncated: boolean;
+  candidates: LeadConnectorQueueCandidate[];
+};
+
 export type LeadConnectorWebhookEventType =
   | 'contact.created'
   | 'contact.deleted'

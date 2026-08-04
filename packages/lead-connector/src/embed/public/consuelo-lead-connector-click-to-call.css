@@ -3,7 +3,7 @@
   top: 92px;
   right: 24px;
   z-index: 2147483000;
-  width: 390px;
+  width: 620px;
   max-width: calc(100vw - 32px);
   pointer-events: none;
   font-family:
@@ -66,9 +66,9 @@
 }
 
 #consuelo-dialer-overlay-host .consuelo-dialer-panel {
-  width: 390px;
+  width: 620px;
   max-width: calc(100vw - 32px);
-  height: min(640px, calc(100vh - 112px));
+  height: min(760px, calc(100vh - 112px));
   overflow: hidden;
   border: 1px solid #d0d5dd;
   border-radius: 14px;

@@ -1,7 +1,4 @@
-import type {
-  LeadConnectorContact,
-  LeadConnectorOpportunity,
-} from '../contracts/index.js';
+import type { LeadConnectorContact } from '../contracts/index.js';
 import { resolveLeadConnectorContactName } from './contact-label.js';
 import type { LeadConnectorSurface } from './surface.js';
 import type { LeadConnectorEmbedState } from './state-machine.js';
@@ -33,12 +30,6 @@ const targetLabel = (
 
 const contactLabel = (contact: LeadConnectorContact): string =>
   escapeHtml(resolveLeadConnectorContactName(contact) ?? 'Unnamed contact');
-
-const opportunityContact = (
-  state: LeadConnectorEmbedState,
-  opportunity: LeadConnectorOpportunity,
-): LeadConnectorContact | undefined =>
-  state.contacts.find((contact) => contact.id === opportunity.contactId);
 
 const renderError = (state: LeadConnectorEmbedState): string =>
   state.error
@@ -114,75 +105,71 @@ const renderContactRows = (
     .join('');
 };
 
-const renderOpportunityRows = (
-  state: LeadConnectorEmbedState,
-  limit: number,
-): string => {
-  const opportunities = state.opportunities
-    .map((opportunity) => ({
-      opportunity,
-      contact: opportunityContact(state, opportunity),
-    }))
-    .filter(({ contact }) => Boolean(contact?.phone))
-    .slice(0, limit);
-  if (opportunities.length === 0) {
-    return '<p class="resource-empty">No callable opportunities match this view.</p>';
-  }
-  return opportunities
+const renderQueueOptions = (state: LeadConnectorEmbedState): string =>
+  state.pipelines
     .map(
-      ({
-        opportunity,
-        contact,
-      }) => `<button type="button" class="resource-row" data-action="select-opportunity" data-opportunity-id="${escapeHtml(opportunity.id)}">
-        <span class="resource-row__identity"><strong>${escapeHtml(opportunity.name)}</strong><small>${contactLabel(contact!)} · ${maskPhone(contact?.phone ?? '')}</small></span>
-        <span class="resource-row__action">Call</span>
-      </button>`,
+      (pipeline) => `<optgroup label="${escapeHtml(pipeline.name)}">${pipeline.stages
+        .map((stage) => {
+          const selected =
+            state.selectedQueue?.pipelineId === pipeline.id &&
+            state.selectedQueue.stageId === stage.id;
+          return `<option value="${escapeHtml(`${pipeline.id}:${stage.id}`)}"${selected ? ' selected' : ''}>${escapeHtml(stage.name)}</option>`;
+        })
+        .join('')}</optgroup>`,
     )
     .join('');
-};
 
-const renderPipelineFilters = (state: LeadConnectorEmbedState): string => {
-  const pipeline = state.pipelines.find(
-    (candidate) => candidate.id === state.filters.pipelineId,
-  );
-  return `<div class="resource-filters">
-    <label><span>Pipeline</span><select data-field="pipeline"><option value="">All pipelines</option>${state.pipelines
-      .map(
-        (candidate) =>
-          `<option value="${escapeHtml(candidate.id)}"${candidate.id === state.filters.pipelineId ? ' selected' : ''}>${escapeHtml(candidate.name)}</option>`,
-      )
-      .join('')}</select></label>
-    <label><span>Stage</span><select data-field="stage"${pipeline ? '' : ' disabled'}><option value="">All stages</option>${(
-      pipeline?.stages ?? []
-    )
-      .map(
-        (stage) =>
-          `<option value="${escapeHtml(stage.id)}"${stage.id === state.filters.stageId ? ' selected' : ''}>${escapeHtml(stage.name)}</option>`,
-      )
-      .join('')}</select></label>
+const renderQueueSummary = (state: LeadConnectorEmbedState): string => {
+  const queue = state.selectedQueue;
+  if (!queue) {
+    return '<p class="setup-hint">Choose a LeadConnector pipeline stage. Each stage is treated as one predictive calling list.</p>';
+  }
+  return `<div class="queue-summary">
+    <div><span>${escapeHtml(queue.pipelineName)}</span><strong>${escapeHtml(queue.stageName)}</strong></div>
+    <div><span>${queue.opportunityTotal} opportunities</span><strong>${queue.callableTotal} callable</strong></div>
   </div>`;
 };
 
-const renderResourceBrowser = (
+const renderCallSetup = (
   state: LeadConnectorEmbedState,
-  mode: 'admin' | 'overlay',
+  surface: 'admin' | 'overlay',
 ): string => {
-  const compact = mode === 'overlay';
-  const limit = compact ? 4 : 8;
-  return `<section class="resource-browser resource-browser--${mode}" aria-label="Contacts and opportunities">
-    <div class="resource-search">
-      <label><span>Search contacts and opportunities</span><input type="search" data-field="search" value="${escapeHtml(state.filters.query)}" placeholder="Name, email, phone, or opportunity" autocomplete="off" /></label>
-      ${compact ? '' : renderPipelineFilters(state)}
+  const queueMode = state.setup.mode === 'queue';
+  const canStart =
+    state.sessionToken !== null &&
+    state.selectedTargets.length > 0 &&
+    (queueMode ? state.selectedQueue !== null : true);
+  return `<section class="call-setup call-setup--${surface}" aria-label="Call setup">
+    <div class="setup-heading">
+      <div><p class="eyebrow">Call setup</p><h2>Who do you want to call?</h2><p>Choose a list or dial a single number.</p></div>
+      <button type="button" class="icon-button refresh-button" data-action="refresh-resources" aria-label="Refresh CRM data">${state.resourcesRefreshing ? '↻' : '↻'}</button>
     </div>
-    <div class="resource-columns">
-      <article class="resource-group">
-        <header><div><p class="eyebrow">Contacts</p><h3>People</h3></div><span>${state.contactTotal}</span></header>
-        <div class="resource-list">${renderContactRows(state, limit)}</div>
-      </article>
-      <article class="resource-group">
-        <header><div><p class="eyebrow">Opportunities</p><h3>Deals</h3></div><span>${state.opportunityTotal}</span></header>
-        <div class="resource-list">${renderOpportunityRows(state, limit)}</div>
-      </article>
+    <div class="setup-tabs" role="tablist" aria-label="Call target mode">
+      <button type="button" role="tab" aria-selected="${queueMode}" class="setup-tab${queueMode ? ' is-active' : ''}" data-action="setup-queue">Choose list</button>
+      <button type="button" role="tab" aria-selected="${!queueMode}" class="setup-tab${!queueMode ? ' is-active' : ''}" data-action="setup-single">Single dial</button>
+    </div>
+    <div class="setup-fields">
+      ${
+        queueMode
+          ? `<label class="setup-field setup-field--wide"><span>Choose list</span><select data-field="queue"><option value="">— Select a pipeline stage —</option>${renderQueueOptions(state)}</select></label>${renderQueueSummary(state)}`
+          : `<div class="single-dial-panel">
+              <label class="setup-field setup-field--wide"><span>Phone number</span><div class="input-action"><input type="tel" data-field="single-phone" placeholder="(555) 555-0123" autocomplete="tel" /><button type="button" class="button button--secondary" data-action="select-single-number">Use number</button></div></label>
+              <label class="setup-field setup-field--wide"><span>Find a contact</span><input type="search" data-field="search" value="${escapeHtml(state.filters.query)}" placeholder="Name, email, or phone" autocomplete="off" /></label>
+              <div class="single-contact-list">${renderContactRows(state, surface === 'overlay' ? 4 : 8)}</div>
+            </div>`
+      }
+      <label class="setup-field setup-field--wide"><span>Call from</span><select data-field="caller-id"><option value="">Automatic caller ID</option></select></label>
+      <label class="check-field"><input type="checkbox" data-field="local-presence"${state.setup.preferLocalPresence ? ' checked' : ''} /><span>Prefer local presence calling</span></label>
+      ${
+        queueMode
+          ? `<label class="setup-field setup-field--wide"><span>Calling mode</span><select data-field="calling-mode"><option value="predictive"${state.setup.callingMode === 'predictive' ? ' selected' : ''}>Predictive Dialer (recommended)</option><option value="single"${state.setup.callingMode === 'single' ? ' selected' : ''}>Single (one call at a time)</option></select></label>
+             <label class="setup-field setup-field--wide"><span>Number of lines</span><select data-field="line-count"${state.setup.callingMode === 'single' ? ' disabled' : ''}><option value="1"${state.setup.requestedFanout === 1 ? ' selected' : ''}>One</option><option value="2"${state.setup.requestedFanout === 2 ? ' selected' : ''}>Two</option><option value="3"${state.setup.requestedFanout === 3 ? ' selected' : ''}>Three</option></select></label>`
+          : ''
+      }
+    </div>
+    <div class="setup-actions">
+      <button type="button" class="button button--secondary" data-action="refresh-resources">Refresh CRM</button>
+      <button type="button" class="button button--primary" data-action="start-configured"${canStart ? '' : ' disabled'}>${queueMode && state.selectedQueue ? `Call ${escapeHtml(state.selectedQueue.stageName)}` : queueMode ? 'Start Dialer' : 'Call now'}</button>
     </div>
   </section>`;
 };
@@ -193,13 +180,19 @@ const renderWrapUp = (state: LeadConnectorEmbedState): string => {
     (candidate) =>
       candidate.contactId && candidate.contactId === winner?.contactId,
   );
+  if (!winner) {
+    return `<section class="overlay-stage overlay-stage--wrap-up">
+      <div class="stage-heading"><p class="eyebrow">Batch complete</p><h1>No human answer</h1><p>The attempt outcomes were saved. Return to the setup to continue this list or choose another one.</p></div>
+      <button type="button" class="button button--primary" data-action="return-home">Return to dialer</button>
+    </section>`;
+  }
   return `<section class="overlay-stage overlay-stage--wrap-up">
       <div class="stage-heading"><p class="eyebrow">Wrap-up</p><h1>Call complete</h1><p>${targetLabel(target ?? state.selectedTargets[0])}</p></div>
       <form class="wrap-up-form" data-form="disposition">
         <label>Outcome<select name="disposition"><option value="connected">Connected</option><option value="no-answer">No answer</option><option value="voicemail">Voicemail</option><option value="follow-up">Follow up</option></select></label>
         <label>Note<textarea name="note" rows="3" placeholder="Add a short follow-up note"></textarea></label>
         <details><summary>More details</summary><label>Tags<input name="tags" placeholder="called, follow-up" /></label></details>
-        <button type="submit" class="button button--primary" data-action="submit-disposition">Save and close</button>
+        <div class="primary-actions"><button type="button" class="button button--secondary" data-action="return-home">Skip disposition</button><button type="submit" class="button button--primary" data-action="submit-disposition">Save and close</button></div>
       </form>
     </section>`;
 };
@@ -210,7 +203,7 @@ const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
     return `<section class="overlay-stage overlay-stage--loading"><span class="spinner" aria-hidden="true"></span><div><p class="eyebrow">Secure session</p><h1>Connecting…</h1><p>Loading the current location and operator context.</p></div></section>`;
   }
   if (state.phase === 'ready') {
-    return `<section class="overlay-stage overlay-stage--browser"><div class="stage-heading"><p class="eyebrow">Ready</p><h1>Choose someone to call</h1><p>Select a callable CRM record below or use a phone action on the current page.</p></div>${renderResourceBrowser(state, 'overlay')}</section>`;
+    return renderCallSetup(state, 'overlay');
   }
   if (state.phase === 'target-selected') {
     const count = state.selectedTargets.length;
@@ -398,46 +391,44 @@ const renderAdmin = (state: LeadConnectorEmbedState): string => {
       : state.sessionToken
         ? 'Connected'
         : 'Waiting for context';
-  const active = !['ready', 'completed'].includes(state.phase);
+  const setupVisible = state.phase === 'ready';
   return `
     <main class="surface-shell admin-shell" data-surface="admin" data-phase="${escapeHtml(state.phase)}">
-      <header class="operator-header">
-        <div><p class="eyebrow">Consuelo Dialer</p><h1>Operator workspace</h1><p class="lede">Find a CRM record, confirm the number, and start or manage the current calling session from one place.</p></div>
+      <header class="operator-header operator-header--setup">
+        <div><p class="eyebrow">Consuelo Dialer</p><h1>Who do you want to call?</h1><p class="lede">Choose a LeadConnector stage as a predictive queue or dial one person directly.</p></div>
         <span class="status-pill">${escapeHtml(connectionLabel)}</span>
       </header>
 
       ${renderError(state)}
 
-      <section class="metric-grid" aria-label="Workspace overview">
-        <article class="metric"><span>Contacts available</span><strong>${state.contactTotal}</strong></article>
-        <article class="metric"><span>Opportunities available</span><strong>${state.opportunityTotal}</strong></article>
-        <article class="metric"><span>Pipelines connected</span><strong>${state.pipelines.length}</strong></article>
-        <article class="metric"><span>Session state</span><strong>${escapeHtml(phaseLabel(state.phase))}</strong></article>
+      <section class="admin-setup-layout">
+        <article class="operator-panel operator-panel--setup">
+          ${setupVisible ? renderCallSetup(state, 'admin') : renderOverlayStage(state)}
+        </article>
+        <aside class="operator-panel setup-context">
+          <p class="eyebrow">Current setup</p>
+          <h2>${state.selectedQueue ? escapeHtml(state.selectedQueue.stageName) : state.setup.mode === 'single' ? 'Single dial' : 'No list selected'}</h2>
+          <dl class="detail-list">
+            <div><dt>Mode</dt><dd>${state.setup.mode === 'queue' ? escapeHtml(phaseLabel(state.setup.callingMode)) : 'Single'}</dd></div>
+            <div><dt>Lines</dt><dd>${state.setup.mode === 'queue' ? state.setup.requestedFanout : 1}</dd></div>
+            <div><dt>Local presence</dt><dd>${state.setup.preferLocalPresence ? 'Preferred' : 'Off'}</dd></div>
+            <div><dt>CRM refresh</dt><dd>${state.resourcesRefreshing ? 'Refreshing' : 'Live'}</dd></div>
+          </dl>
+        </aside>
       </section>
 
       ${renderAdminCallOperations(state)}
 
-      <section class="operator-layout">
-        <article class="operator-panel operator-panel--records">
-          <header class="panel-heading"><div><p class="eyebrow">CRM records</p><h2>Choose who to call</h2></div><span>Live data</span></header>
-          ${renderResourceBrowser(state, 'admin')}
-        </article>
-        <aside class="operator-stack">
-          <article class="operator-panel operator-panel--session">
-            <header class="panel-heading"><div><p class="eyebrow">Current session</p><h2>${active ? 'Calling controls' : 'No active call'}</h2></div><span>${escapeHtml(phaseLabel(state.phase))}</span></header>
-            ${active ? renderOverlayStage(state) : '<div class="session-empty"><strong>Ready for the next record</strong><p>Select a contact or opportunity from the workspace. The number is confirmed before any call begins.</p></div>'}
-          </article>
-          <article class="operator-panel operator-panel--checks">
-            <header class="panel-heading"><div><p class="eyebrow">Diagnostics</p><h2>Connection and browser checks</h2></div></header>
-            <dl class="detail-list">
-              <div><dt>CRM session</dt><dd>${state.sessionToken ? 'Authenticated' : connectionLabel}</dd></div>
-              <div><dt>Resource sync</dt><dd>${state.contacts.length + state.opportunities.length > 0 ? 'Loaded' : 'Waiting'}</dd></div>
-              <div><dt>Microphone</dt><dd>Checked before calling</dd></div>
-              <div><dt>Calling surface</dt><dd>Contacts and Opportunities</dd></div>
-            </dl>
-          </article>
-        </aside>
-      </section>
+      <details class="operator-panel admin-diagnostics">
+        <summary>Connection and browser checks</summary>
+        <dl class="detail-list">
+          <div><dt>CRM session</dt><dd>${state.sessionToken ? 'Authenticated' : connectionLabel}</dd></div>
+          <div><dt>Contacts</dt><dd>${state.contactTotal}</dd></div>
+          <div><dt>Opportunities</dt><dd>${state.opportunityTotal}</dd></div>
+          <div><dt>Pipelines</dt><dd>${state.pipelines.length}</dd></div>
+          <div><dt>Microphone</dt><dd>Checked before calling</dd></div>
+        </dl>
+      </details>
     </main>
   `;
 };

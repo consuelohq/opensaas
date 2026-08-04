@@ -22,6 +22,7 @@ const api = createLeadConnectorEmbedApi({ baseUrl: window.location.origin });
 const voice = createLeadConnectorAgentVoice({ getToken: api.getVoiceToken });
 const controller = createLeadConnectorEmbedController({ api, voice });
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
+let resourceTimer: ReturnType<typeof setInterval> | null = null;
 let bootstrapTimer: ReturnType<typeof setTimeout> | null = null;
 
 const failBootstrap = (): void => {
@@ -126,6 +127,22 @@ root.addEventListener('click', (event) => {
     bootstrapTimer = setTimeout(failBootstrap, 5000);
     bridge.requestUserContext();
   }
+  if (action === 'setup-queue') {
+    controller.updateSetup({ mode: 'queue', callingMode: 'predictive' });
+  }
+  if (action === 'setup-single') {
+    controller.updateSetup({ mode: 'single', callingMode: 'single', requestedFanout: 1 });
+  }
+  if (action === 'refresh-resources') void controller.refreshResources();
+  if (action === 'return-home') controller.returnHome();
+  if (action === 'start-configured') void controller.startConfiguredCall();
+  if (action === 'select-single-number') {
+    const field = root.querySelector<HTMLInputElement>('[data-field="single-phone"]');
+    const target = field
+      ? normalizeClickToCallTarget({ phone: field.value })
+      : null;
+    if (target) controller.selectTarget(target);
+  }
   if (action === 'start-single') void controller.startCall('single');
   if (action === 'start-parallel') void controller.startCall('predictive');
   if (action === 'pause') controller.pause();
@@ -180,6 +197,29 @@ root.addEventListener('change', (event) => {
     !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)
   )
     return;
+  if (target.dataset.field === 'queue') {
+    const [pipelineId, stageId] = target.value.split(':');
+    if (pipelineId && stageId) {
+      void controller.selectQueue({ pipelineId, stageId });
+    }
+  }
+  if (target.dataset.field === 'calling-mode') {
+    controller.updateSetup({
+      callingMode: target.value === 'single' ? 'single' : 'predictive',
+    });
+  }
+  if (target.dataset.field === 'line-count') {
+    const requestedFanout = Number(target.value);
+    if (requestedFanout === 1 || requestedFanout === 2 || requestedFanout === 3) {
+      controller.updateSetup({ requestedFanout });
+    }
+  }
+  if (target.dataset.field === 'local-presence' && target instanceof HTMLInputElement) {
+    controller.updateSetup({ preferLocalPresence: target.checked });
+  }
+  if (target.dataset.field === 'caller-id') {
+    controller.updateSetup({ callerIdNumber: target.value || null });
+  }
   if (target.dataset.field === 'pipeline') {
     void controller.searchOpportunities({
       query: controller.getState().filters.query,
@@ -234,12 +274,28 @@ root.addEventListener('submit', (event) => {
   });
 });
 
+const refreshIdleResources = (): void => {
+  void controller.refreshResources();
+};
+
+const handleVisibility = (): void => {
+  if (document.visibilityState === 'visible') refreshIdleResources();
+};
+
+window.addEventListener('focus', refreshIdleResources);
+document.addEventListener('visibilitychange', handleVisibility);
+resourceTimer = setInterval(refreshIdleResources, 10_000);
+
 bridge.start();
 bootstrapTimer = setTimeout(failBootstrap, 5000);
 bridge.requestUserContext();
 window.addEventListener('beforeunload', () => {
   completeBootstrap();
   stopRefresh();
+  if (resourceTimer) clearInterval(resourceTimer);
+  resourceTimer = null;
+  window.removeEventListener('focus', refreshIdleResources);
+  document.removeEventListener('visibilitychange', handleVisibility);
   voice.disconnect();
   bridge.stop();
 });
