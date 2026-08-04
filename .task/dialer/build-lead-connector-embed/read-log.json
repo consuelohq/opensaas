@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/dialer/build-lead-connector-embed/workpad.md",
+    ".task/dialer/extract-lead-connector/workpad.md",
+    "packages/dialer-server/src/app.ts",
+    "packages/dialer-server/src/runtime/environment.ts",
+    "packages/workspace/scripts/git-diff.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-24T02:08:59.846Z"
+}

@@ -1,0 +1,138 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/allow-twilio-voice-signaling-in-leadconnector-csp",
+  "base": "origin/stream/dialer",
+  "headSha": "a342f8df607a69f080b18ea2ea5207e17e18677b",
+  "changeHash": "34792bb66e97b319074dad710148207866d5520e770774f96e648fc178bca512",
+  "changedFiles": [
+    "packages/lead-connector/src/architecture.contract.test.ts",
+    "packages/lead-connector/src/embed/architecture.contract.test.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.ts"
+  ],
+  "verifiedAt": "2026-08-03T21:17:55.081Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/allow-twilio-voice-signaling-in-leadconnector-csp/current.json",
+        ".task/dialer/allow-twilio-voice-signaling-in-leadconnector-csp/session.json",
+        ".task/dialer/allow-twilio-voice-signaling-in-leadconnector-csp/workpad.md",
+        ".task/tasks/dialer/allow-twilio-voice-signaling-in-leadconnector-csp.json",
+        "packages/lead-connector/src/architecture.contract.test.ts",
+        "packages/lead-connector/src/embed/architecture.contract.test.ts",
+        "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+        "packages/lead-connector/src/embed/cloudflare-worker.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/architecture.contract.test.ts",
+            "packages/lead-connector/src/embed/architecture.contract.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/lead-connector.",
+          "matchedFiles": [
+            "packages/lead-connector/src/architecture.contract.test.ts",
+            "packages/lead-connector/src/embed/architecture.contract.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 307,
+          "outputTail": "e machine > filters opportunities by query, pipeline, and stage [0.03ms]\n\npackages/lead-connector/src/embed/controller.test.ts:\n(pass) LeadConnector embed controller > projects a recoverable parent authentication failure instead of remaining in booting [0.10ms]\n(pass) LeadConnector embed controller > authenticates, loads resources, starts a backend-authoritative call, terminates, and writes disposition [0.54ms]\n(pass) LeadConnector embed controller > terminates customer fanout when the browser agent cannot join [0.15ms]\n(pass) LeadConnector embed controller > terminates customer fanout when conference reconciliation remains unresolved [0.07ms]\n(pass) LeadConnector embed controller > searches resources with pipeline and stage filters and supports queue pause and resume [0.18ms]\n(pass) LeadConnector embed controller > starts multiline calls through the queue predictive contract [0.12ms]\n(pass) LeadConnector embed controller > expires and reauthenticates without retaining the expired browser token [0.08ms]\n\npackages/lead-connector/src/embed/view.test.ts:\n(pass) LeadConnector embed view > resolves root and admin to administration while reserving overlay paths for calling [0.02ms]\n(pass) LeadConnector embed view > renders the sidebar route as an administration surface without active call controls [0.08ms]\n(pass) LeadConnector embed view > renders API-reported resource totals instead of capped loaded-array lengths [0.03ms]\n(pass) LeadConnector embed view > renders only target confirmation and next actions before a call starts [0.12ms]\n(pass) LeadConnector embed view > offers multiline dialing only after multiple targets are selected [0.03ms]\n(pass) LeadConnector embed view > renders a progressive starting state without future connected or wrap-up controls [0.02ms]\n(pass) LeadConnector embed view > focuses the human winner and summarizes losing legs while connected [0.05ms]\n(pass) LeadConnector embed view > reveals wrap-up only after the call reaches a terminal state [0.04ms]\n\npackages/lead-connector/src/embed/architecture.contract.test.ts:\n(pass) LeadConnector browser architecture and branding > contains no forbidden branding or server/runtime dependencies in browser source and public assets [1.60ms]\n(pass) LeadConnector browser architecture and branding > builds a browser-only bundle without forbidden dependencies or branding [9.82ms]\n(pass) LeadConnector browser architecture and branding > targets the actual approved live or sandbox custom-page origin for click-to-call messages [0.05ms]\n(pass) LeadConnector browser architecture and branding > owns one route-aware launcher and one compact overlay iframe lifecycle [0.04ms]\n(pass) LeadConnector browser architecture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.19ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.05ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.17ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.34ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.13ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.05ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.23ms]\n\n 68 pass\n 0 fail\n 640 expect() calls\nRan 68 tests across 15 files. [301.00ms]\n"
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 6,
+          "outputTail": "eprecation.\n      --throw-deprecation             Determine whether or not deprecation warnings result in errors.\n      --title=<val>                   Set the process title\n      --zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (6 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    tsc && bun run build:embed\n\n  $ bun run build:embed\n    bun ./scripts/build-embed.ts\n\n  $ bun run deploy:embed\n    bun run build:embed && wrangler deploy --config wrangler.jsonc\n\n  $ bun run configure:sandbox-menu\n    bun ./scripts/configure-sandbox-menu.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

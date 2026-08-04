@@ -2,19 +2,19 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2360,
-    "mappedTestCount": 2291,
-    "unmappedTestCount": 69,
-    "ruleCount": 29,
-    "explicitRuleCount": 10,
-    "autoRuleCount": 19,
-    "projectCount": 13,
-    "packageTestScriptCount": 17,
+    "testFileCount": 2404,
+    "mappedTestCount": 2331,
+    "unmappedTestCount": 73,
+    "ruleCount": 34,
+    "explicitRuleCount": 13,
+    "autoRuleCount": 21,
+    "projectCount": 15,
+    "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 112,
+      "packages/os/tests": 131,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
-      "packages/workspace/tests": 45,
+      "packages/workspace/tests": 49,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/utils": 31,
@@ -60,6 +60,8 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
+      "packages/consuelo-website/tests": 10,
+      "packages/dialer/src/services": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -70,8 +72,6 @@
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group": 10,
       "packages/twenty-server/test/integration/metadata/suites/view-filter/utils": 10,
       "packages/twenty-server/test/integration/utils": 10,
-      "packages/consuelo-website/tests": 9,
-      "packages/dialer/src/services": 9,
       "packages/documentation/tests": 9,
       "packages/twenty-front/src/modules/object-record/utils": 9,
       "packages/twenty-front/src/modules/workflow/workflow-trigger/utils": 9,
@@ -130,6 +130,8 @@
       "packages/twenty-server/test/integration/metadata/suites/front-component": 6,
       "packages/twenty-shared/src/utils/validation": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
+      "packages/dialer-server/src": 5,
+      "packages/os/tests/distribution": 5,
       "packages/twenty-front/src/modules/apollo/utils": 5,
       "packages/twenty-front/src/modules/auth/sign-in-up/hooks": 5,
       "packages/twenty-front/src/modules/dialer/hooks": 5,
@@ -138,6 +140,7 @@
       "packages/twenty-front/src/utils/format": 5,
       "packages/twenty-sdk/src/cli/utilities/entity": 5,
       "packages/twenty-server/src/engine/api/common/common-query-runners/common-create-many-query-runner/utils": 5,
+      "packages/twenty-server/src/engine/core-modules/consuelo-api/services": 5,
       "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils": 5,
       "packages/twenty-server/src/modules/workflow/workflow-executor/utils": 5,
       "packages/twenty-server/test/integration/metadata/suites/dashboard": 5,
@@ -148,6 +151,7 @@
       "packages/twenty-server/test/integration/metadata/suites/utils": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
+      "packages/lead-connector/src": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
       "packages/twenty-front/src/modules/favorites/hooks": 4,
@@ -162,7 +166,6 @@
       "packages/twenty-front/src/modules/ui/utilities/focus/hooks": 4,
       "packages/twenty-front/src/modules/workflow/workflow-steps/workflow-actions/utils": 4,
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/utils": 4,
-      "packages/twenty-server/src/engine/core-modules/consuelo-api/services": 4,
       "packages/twenty-server/src/engine/core-modules/domain/subdomain-manager/utils/__test__": 4,
       "packages/twenty-server/src/engine/core-modules/twenty-config/decorators": 4,
       "packages/twenty-server/src/engine/core-modules/two-factor-authentication": 4,
@@ -226,6 +229,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
+      "packages/dialer/src/application": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/facade": 2,
@@ -322,6 +326,7 @@
       "packages/consuelo-design/upstream/open-design/tools/dev/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
       "packages/dialer/src": 1,
+      "packages/dialer/src/domain": 1,
       "packages/os/tests/fixtures": 1,
       "packages/twenty-front/src/modules/accounts/utils": 1,
       "packages/twenty-front/src/modules/action-menu/actions/record-actions/utils": 1,
@@ -454,6 +459,7 @@
       "packages/twenty-server/src/engine/core-modules/client-config": 1,
       "packages/twenty-server/src/engine/core-modules/client-config/services": 1,
       "packages/twenty-server/src/engine/core-modules/cloudflare/guards": 1,
+      "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers": 1,
       "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers": 1,
       "packages/twenty-server/src/engine/core-modules/dns-manager/services": 1,
       "packages/twenty-server/src/engine/core-modules/domain/domain-server-config/services/__test__": 1,
@@ -594,11 +600,12 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 276,
-      "spec": 145,
+      "test": 313,
+      "spec": 151,
       "other": 7,
       "tests-dir": 6,
-      "e2e": 1
+      "e2e": 1,
+      "integration": 1
     }
   },
   "rules": [
@@ -700,9 +707,7 @@
     },
     {
       "id": "trace-watch",
-      "source": [
-        "packages/os/scripts/trace-watch.ts"
-      ],
+      "source": ["packages/os/scripts/trace-watch.ts"],
       "tests": [
         {
           "name": "OS trace watcher behavior",
@@ -744,18 +749,63 @@
       "origin": "explicit"
     },
     {
-      "id": "dialer-package",
+      "id": "trace-site-pagination",
       "source": [
-        "packages/dialer/**"
+        "packages/os/scripts/lib/trace-sites-gateway-*.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/scripts/server/services/trace-gateway.ts",
+        "packages/os/tests/trace-gateway-service.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/trace-site-inspector/**",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
       ],
       "tests": [
         {
-          "name": "dialer specs",
+          "name": "trace gateway history endpoints",
           "command": [
             "bun",
-            "test",
-            "packages/dialer/src"
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
           ]
+        },
+        {
+          "name": "trace gateway DB resolution",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-gateway-service.test.ts"
+          ]
+        },
+        {
+          "name": "trace site inspector pagination",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/workspace",
+            "tests/trace-site-inspector.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "dialer-package",
+      "source": ["packages/dialer/**"],
+      "tests": [
+        {
+          "name": "dialer specs",
+          "command": ["bun", "test", "packages/dialer/src"]
         }
       ],
       "critical": true,
@@ -763,17 +813,43 @@
       "origin": "explicit"
     },
     {
-      "id": "api-package",
-      "source": [
-        "packages/api/**"
+      "id": "dialer-server-package",
+      "source": ["packages/dialer-server/**"],
+      "tests": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": ["bun", "test", "packages/dialer-server/src"]
+        }
       ],
+      "critical": true,
+      "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+      "origin": "explicit"
+    },
+    {
+      "id": "lead-connector-package",
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": ["bun", "test", "packages/lead-connector/src"]
+        }
+      ],
+      "critical": true,
+      "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+      "origin": "explicit"
+    },
+    {
+      "id": "api-package",
+      "source": ["packages/api/**"],
       "tests": [
         {
           "name": "api specs",
           "command": [
-            "bun",
-            "test",
-            "packages/api/src"
+            "bunx",
+            "jest",
+            "--config",
+            "packages/api/jest.config.mjs",
+            "--runInBand"
           ]
         }
       ],
@@ -791,12 +867,7 @@
       "tests": [
         {
           "name": "twenty-server affected test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ]
+          "command": ["npx", "nx", "test", "twenty-server"]
         }
       ],
       "critical": true,
@@ -805,18 +876,11 @@
     },
     {
       "id": "twenty-front-project",
-      "source": [
-        "packages/twenty-front/**"
-      ],
+      "source": ["packages/twenty-front/**"],
       "tests": [
         {
           "name": "twenty-front test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front"
-          ]
+          "command": ["npx", "nx", "test", "twenty-front"]
         }
       ],
       "critical": false,
@@ -825,19 +889,11 @@
     },
     {
       "id": "auto:@consuelo/core:package-test",
-      "source": [
-        "packages/consuelo-core/**"
-      ],
+      "source": ["packages/consuelo-core/**"],
       "tests": [
         {
           "name": "@consuelo/core package test",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/consuelo-core",
-            "run",
-            "test"
-          ]
+          "command": ["bun", "--cwd", "packages/consuelo-core", "run", "test"]
         }
       ],
       "critical": false,
@@ -845,20 +901,25 @@
       "origin": "auto"
     },
     {
-      "id": "auto:@consuelo/diff-cockpit:package-test",
-      "source": [
-        "packages/diff-cockpit/**"
+      "id": "auto:@consuelo/dialer-server:package-test",
+      "source": ["packages/dialer-server/**"],
+      "tests": [
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": ["bun", "--cwd", "packages/dialer-server", "run", "test"]
+        }
       ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/dialer-server.",
+      "origin": "auto"
+    },
+    {
+      "id": "auto:@consuelo/diff-cockpit:package-test",
+      "source": ["packages/diff-cockpit/**"],
       "tests": [
         {
           "name": "@consuelo/diff-cockpit package test",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/diff-cockpit",
-            "run",
-            "test"
-          ]
+          "command": ["bun", "--cwd", "packages/diff-cockpit", "run", "test"]
         }
       ],
       "critical": false,
@@ -866,20 +927,25 @@
       "origin": "auto"
     },
     {
-      "id": "auto:@consuelo/os:package-test",
-      "source": [
-        "packages/os/**"
+      "id": "auto:@consuelo/lead-connector:package-test",
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": ["bun", "--cwd", "packages/lead-connector", "run", "test"]
+        }
       ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/lead-connector.",
+      "origin": "auto"
+    },
+    {
+      "id": "auto:@consuelo/os:package-test",
+      "source": ["packages/os/**"],
       "tests": [
         {
           "name": "@consuelo/os package test",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "run",
-            "test"
-          ]
+          "command": ["bun", "--cwd", "packages/os", "run", "test"]
         }
       ],
       "critical": false,
@@ -909,9 +975,7 @@
     },
     {
       "id": "auto:@open-design/e2e:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/e2e/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/e2e/**"],
       "tests": [
         {
           "name": "@open-design/e2e package test",
@@ -993,9 +1057,7 @@
     },
     {
       "id": "auto:@open-design/tools-dev:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/tools/dev/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/tools/dev/**"],
       "tests": [
         {
           "name": "@open-design/tools-dev package test",
@@ -1014,9 +1076,7 @@
     },
     {
       "id": "auto:@open-design/tools-pack:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/tools/pack/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/tools/pack/**"],
       "tests": [
         {
           "name": "@open-design/tools-pack package test",
@@ -1035,9 +1095,7 @@
     },
     {
       "id": "auto:@open-design/web:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/apps/web/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/apps/web/**"],
       "tests": [
         {
           "name": "@open-design/web package test",
@@ -1056,9 +1114,7 @@
     },
     {
       "id": "auto:open-design:package-test",
-      "source": [
-        "packages/consuelo-design/upstream/open-design/**"
-      ],
+      "source": ["packages/consuelo-design/upstream/open-design/**"],
       "tests": [
         {
           "name": "open-design package test",
@@ -1077,9 +1133,7 @@
     },
     {
       "id": "auto:twenty-e2e-testing:test",
-      "source": [
-        "packages/twenty-e2e-testing/**"
-      ],
+      "source": ["packages/twenty-e2e-testing/**"],
       "tests": [
         {
           "name": "twenty-e2e-testing test",
@@ -1098,9 +1152,7 @@
     },
     {
       "id": "auto:twenty-eslint-rules:test",
-      "source": [
-        "packages/eslint-rules/**"
-      ],
+      "source": ["packages/eslint-rules/**"],
       "tests": [
         {
           "name": "twenty-eslint-rules test",
@@ -1119,19 +1171,11 @@
     },
     {
       "id": "auto:twenty-front:test",
-      "source": [
-        "packages/twenty-front/**"
-      ],
+      "source": ["packages/twenty-front/**"],
       "tests": [
         {
           "name": "twenty-front test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-front", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1140,19 +1184,11 @@
     },
     {
       "id": "auto:twenty-sdk:test",
-      "source": [
-        "packages/twenty-sdk/**"
-      ],
+      "source": ["packages/twenty-sdk/**"],
       "tests": [
         {
           "name": "twenty-sdk test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-sdk",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-sdk", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1161,19 +1197,11 @@
     },
     {
       "id": "auto:twenty-server:test",
-      "source": [
-        "packages/twenty-server/**"
-      ],
+      "source": ["packages/twenty-server/**"],
       "tests": [
         {
           "name": "twenty-server test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-server", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1182,19 +1210,11 @@
     },
     {
       "id": "auto:twenty-shared:test",
-      "source": [
-        "packages/twenty-shared/**"
-      ],
+      "source": ["packages/twenty-shared/**"],
       "tests": [
         {
           "name": "twenty-shared test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-shared",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-shared", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1203,19 +1223,11 @@
     },
     {
       "id": "auto:twenty-ui:test",
-      "source": [
-        "packages/twenty-ui/**"
-      ],
+      "source": ["packages/twenty-ui/**"],
       "tests": [
         {
           "name": "twenty-ui test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-ui",
-            "--coverage=false"
-          ]
+          "command": ["npx", "nx", "test", "twenty-ui", "--coverage=false"]
         }
       ],
       "critical": false,
@@ -1630,6 +1642,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/consuelo-website/tests/footer-art.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
@@ -1670,8 +1687,48 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer-server/src/app.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/architecture.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lead-connector-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lifecycle.integration.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/twilio-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/application/adapter-application.spec.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/application/parallel-application.spec.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "spec"
+    },
+    {
       "path": "packages/dialer/src/dialer.spec.ts",
       "group": "packages/dialer/src",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/domain/parallel-transition.spec.ts",
+      "group": "packages/dialer/src/domain",
       "kind": "spec"
     },
     {
@@ -1701,6 +1758,11 @@
     },
     {
       "path": "packages/dialer/src/services/parallel-dialer.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/parallel-lifecycle.contract.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
     },
@@ -1845,6 +1907,26 @@
       "kind": "spec"
     },
     {
+      "path": "packages/lead-connector/src/application.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/architecture.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/infrastructure.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/webhook.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/scripts/compact-daemon-output.test.ts",
       "group": "packages/os/scripts",
       "kind": "test"
@@ -1950,6 +2032,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/code-call-snapshot.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/code-call.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -1966,6 +2053,11 @@
     },
     {
       "path": "packages/os/tests/consuelo-sites-artifacts-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-environment-adapter.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2010,12 +2102,57 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/distribution/environment-probe.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/fixture-harness.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/lifecycle-contract.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/local-container-runner.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/workflow-contract.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/doctor-logs.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/doctor-redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-sites-gateway-endpoints.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2136,6 +2273,11 @@
     },
     {
       "path": "packages/os/tests/manifest-overlay.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-gateway-action-scopes.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2315,6 +2457,16 @@
       "kind": "tests-dir"
     },
     {
+      "path": "packages/os/tests/memory-adjacent.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/oauth-device-http-client.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2336,6 +2488,11 @@
     },
     {
       "path": "packages/os/tests/os-call-artifacts.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-agent-status.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2430,6 +2587,21 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/senior-engineer-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/settings-gateway.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2461,6 +2633,26 @@
     },
     {
       "path": "packages/os/tests/skills-registry.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-context-memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-install-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-service.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-executable-discovery.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2500,7 +2692,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/task-start-output.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/tool-manifest.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tool-scope-authorization.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -7375,6 +7577,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers",
+      "kind": "spec"
+    },
+    {
       "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/guards/dialer-call-permission.guard.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/guards",
       "kind": "spec"
@@ -7387,6 +7594,11 @@
     {
       "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/services",
       "kind": "spec"
     },
     {
@@ -12785,6 +12997,11 @@
       "kind": "__tests__"
     },
     {
+      "path": "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/audit/audit.test.ts",
       "group": "packages/workspace/tests/audit",
       "kind": "test"
@@ -12831,6 +13048,16 @@
     },
     {
       "path": "packages/workspace/tests/deploy-wrappers.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/dialer-validation-runbook.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -13000,6 +13227,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/verification.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -13032,6 +13264,7 @@
     "packages/consuelo-website/tests/blog-refresh.test.mjs",
     "packages/consuelo-website/tests/blog-toc-responsive.test.mjs",
     "packages/consuelo-website/tests/brand-assets.test.mjs",
+    "packages/consuelo-website/tests/footer-art.test.mjs",
     "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
     "packages/consuelo-website/tests/homepage-responsive.test.mjs",
     "packages/consuelo-website/tests/pricing-interactions.test.mjs",
@@ -13049,6 +13282,7 @@
     "packages/documentation/tests/secure.test.ts",
     "packages/documentation/tests/sites.test.ts",
     "packages/documentation/tests/start.test.ts",
+    "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
     "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
@@ -13058,6 +13292,8 @@
     "packages/workspace/tests/codemode.test.ts",
     "packages/workspace/tests/context-trace.test.js",
     "packages/workspace/tests/deploy-wrappers.test.js",
+    "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+    "packages/workspace/tests/dialer-validation-runbook.test.ts",
     "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
@@ -13089,7 +13325,7 @@
     "packages/workspace/tests/tool-manifest.test.ts",
     "packages/workspace/tests/tools-search-v2.test.ts",
     "packages/workspace/tests/trace-home.test.ts",
-    "packages/workspace/tests/trace-site-inspector.test.ts",
+    "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
     "packages/workspace/tests/verification.test.js",
     "packages/workspace/tests/wait.test.js",
     "packages/workspace/tests/website-deploy.test.js",
@@ -13114,12 +13350,18 @@
       "lint": false
     },
     {
+      "name": "@consuelo/dialer-server",
+      "root": "packages/dialer-server",
+      "file": "packages/dialer-server/project.json",
+      "testTargets": [],
+      "typecheck": true,
+      "lint": false
+    },
+    {
       "name": "documentation",
       "root": "packages/documentation",
       "file": "packages/documentation/project.json",
-      "testTargets": [
-        "test-translation"
-      ],
+      "testTargets": ["test-translation"],
       "typecheck": false,
       "lint": false
     },
@@ -13127,11 +13369,17 @@
       "name": "twenty-eslint-rules",
       "root": "packages/eslint-rules",
       "file": "packages/eslint-rules/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/project.json",
+      "testTargets": [],
+      "typecheck": true,
+      "lint": false
     },
     {
       "name": "@consuelo/logger",
@@ -13153,12 +13401,7 @@
       "name": "twenty-e2e-testing",
       "root": "packages/twenty-e2e-testing",
       "file": "packages/twenty-e2e-testing/project.json",
-      "testTargets": [
-        "test",
-        "test:ui",
-        "test:debug",
-        "test:report"
-      ],
+      "testTargets": ["test", "test:ui", "test:debug", "test:report"],
       "typecheck": false,
       "lint": false
     },
@@ -13166,11 +13409,7 @@
       "name": "twenty-front",
       "root": "packages/twenty-front",
       "file": "packages/twenty-front/project.json",
-      "testTargets": [
-        "test",
-        "storybook:test",
-        "storybook:test:no-coverage"
-      ],
+      "testTargets": ["test", "storybook:test", "storybook:test:no-coverage"],
       "typecheck": true,
       "lint": true
     },
@@ -13193,12 +13432,7 @@
       "name": "twenty-server",
       "root": "packages/twenty-server",
       "file": "packages/twenty-server/project.json",
-      "testTargets": [
-        "test:integration",
-        "test",
-        "test:debug",
-        "jest"
-      ],
+      "testTargets": ["test:integration", "test", "test:debug", "jest"],
       "typecheck": true,
       "lint": true
     },
@@ -13206,9 +13440,7 @@
       "name": "twenty-shared",
       "root": "packages/twenty-shared",
       "file": "packages/twenty-shared/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": ["test"],
       "typecheck": true,
       "lint": true
     },
@@ -13216,11 +13448,7 @@
       "name": "twenty-ui",
       "root": "packages/twenty-ui",
       "file": "packages/twenty-ui/project.json",
-      "testTargets": [
-        "test",
-        "storybook:test",
-        "storybook:test:no-coverage"
-      ],
+      "testTargets": ["test", "storybook:test", "storybook:test:no-coverage"],
       "typecheck": true,
       "lint": true
     },
@@ -13352,6 +13580,14 @@
       }
     },
     {
+      "name": "@consuelo/dialer-server",
+      "root": "packages/dialer-server",
+      "file": "packages/dialer-server/package.json",
+      "scripts": {
+        "test": "bun test src"
+      }
+    },
+    {
       "name": "@consuelo/diff-cockpit",
       "root": "packages/diff-cockpit",
       "file": "packages/diff-cockpit/package.json",
@@ -13382,6 +13618,14 @@
         "test:reference": "bun test tests/reference.test.ts",
         "test:reference-browser": "bun scripts/test-reference-browser.mjs",
         "test:review-cleanup": "bun test tests/review-cleanup.test.ts"
+      }
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/package.json",
+      "scripts": {
+        "test": "bun test src"
       }
     },
     {

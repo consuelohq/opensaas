@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# pre-push code review — enforces 16 mandatory rules from CODING-STANDARDS.md
+# pre-push code review — enforces 17 mandatory rules from CODING-STANDARDS.md
 # runs on changed files vs main. exit 1 = block push.
 set -euo pipefail
 
@@ -13,23 +13,26 @@ PASS=0
 FAIL=0
 WARNINGS=""
 
-# get changed .ts/.tsx files vs main (all packages, exclude deleted)
-# check committed diff first, then fall back to staged+unstaged (agent may not have committed yet)
-CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- 'packages/*/src/**/*.ts' 'packages/*/src/**/*.tsx' 2>/dev/null || echo "")
-if [ -z "$CHANGED_FILES" ]; then
-  CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR HEAD -- 'packages/*/src/**/*.ts' 'packages/*/src/**/*.tsx' 2>/dev/null || echo "")
-fi
-if [ -z "$CHANGED_FILES" ]; then
-  CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR --staged -- 'packages/*/src/**/*.ts' 'packages/*/src/**/*.tsx' 2>/dev/null || echo "")
-fi
-CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v '^$' | sort -u || true)
+# Collect every changed file first so non-TypeScript dialer contracts can trigger
+# runtime validation. Check committed diff first, then staged and unstaged work.
+ALL_CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD 2>/dev/null || echo "")
+ALL_CHANGED_FILES="${ALL_CHANGED_FILES}
+$(git diff --name-only --diff-filter=ACMR HEAD 2>/dev/null || echo "")
+$(git diff --name-only --diff-filter=ACMR --staged 2>/dev/null || echo "")
+$(git ls-files --others --exclude-standard 2>/dev/null || echo "")"
+ALL_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -v '^$' | sort -u || true)
 
-if [ -z "$CHANGED_FILES" ]; then
-  echo -e "${GREEN}no changed .ts/.tsx files to review${NC}"
+CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^packages/[^/]+/src/.*\.(ts|tsx)$' || true)
+DIALER_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^(areas/dialer/AGENTS\.md|scripts/code-review\.sh|packages/workspace/scripts/run-dialer-scenario\.ts|packages/workspace/tests/dialer-.*\.test\.ts|packages/dialer/src/.*\.ts|packages/dialer-server/(package\.json|project\.json|src/.*\.ts)|packages/lead-connector/(MIGRATION\.md|package\.json|project\.json|tsconfig\.json|src/.*\.ts)|packages/twenty-front/src/modules/dialer/.*\.(ts|tsx)|packages/twenty-server/src/engine/core-modules/consuelo-api/(controllers/parallel\.controller\.ts|guards/twilio-signature\.guard\.ts|resolvers/dialer-call-start\.resolver\.ts|services/(dialer-call-start|legacy-dialer|parallel|parallel-posterior|parallel-strategy-resolver).*\.ts))$' || true)
+
+if [ -z "$CHANGED_FILES" ] && [ -z "$DIALER_CHANGED_FILES" ]; then
+  echo -e "${GREEN}no changed source or dialer-critical files to review${NC}"
   exit 0
 fi
 
-echo -e "${BOLD}code review: checking $(echo "$CHANGED_FILES" | wc -l | tr -d ' ') files${NC}"
+SOURCE_FILE_COUNT=$(printf '%s\n' "$CHANGED_FILES" | grep -c . || true)
+DIALER_FILE_COUNT=$(printf '%s\n' "$DIALER_CHANGED_FILES" | grep -c . || true)
+echo -e "${BOLD}code review: checking ${SOURCE_FILE_COUNT} source file(s), ${DIALER_FILE_COUNT} dialer-critical file(s)${NC}"
 echo ""
 
 # helper: report a violation
@@ -302,6 +305,7 @@ if [ -f "$PROMPT_FILE" ] && [ -n "$CHANGED_FILES" ]; then
   # confirmation file must exist AND be newer than the prompt file
   if [ -f "$CONFIRM_FILE" ] && [ "$CONFIRM_FILE" -nt "$PROMPT_FILE" ]; then
     echo -e "${GREEN}PASS${NC} (confirmed)"
+    PASS=$((PASS + 1))
   else
     echo -e "${RED}FAIL${NC}"
     echo ""
@@ -314,6 +318,7 @@ if [ -f "$PROMPT_FILE" ] && [ -n "$CHANGED_FILES" ]; then
   fi
 else
   echo -e "${GREEN}PASS${NC} (no changed files to verify)"
+  PASS=$((PASS + 1))
 fi
 SPEC_FAIL=$FAIL
 
@@ -388,10 +393,90 @@ else
 fi
 TYPECHECK_FAIL=$FAIL
 
+# 17. DIALER_TESTS — run the durable runbook contract and focused product suites
+# only when a dialer-critical file changed. Live Twilio calls never run here.
+echo -n "  DIALER_TESTS ..... "
+FAIL=0
+DIALER_TEST_OUTPUT=""
+if [ -n "$DIALER_CHANGED_FILES" ]; then
+  WORKSPACE_DIALER_OUTPUT=$(bun run --cwd packages/workspace test -- \
+    tests/dialer-validation-runbook.test.ts \
+    tests/dialer-scenario-workspace-selection.test.ts 2>&1) || {
+    FAIL=1
+    DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
+--- workspace dialer contracts ---
+${WORKSPACE_DIALER_OUTPUT}"
+  }
+
+  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/twenty-server/src/engine/core-modules/consuelo-api/'; then
+    SERVER_DIALER_OUTPUT=$(npx jest \
+      packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts \
+      packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts \
+      --config=packages/twenty-server/jest.config.mjs \
+      --runInBand 2>&1) || {
+      FAIL=1
+      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
+--- twenty-server dialer tests ---
+${SERVER_DIALER_OUTPUT}"
+    }
+  fi
+
+  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/dialer/src/'; then
+    PACKAGE_DIALER_OUTPUT=$(npx jest \
+      packages/dialer/src/services/caller-id.spec.ts \
+      packages/dialer/src/services/parallel-dialer.spec.ts \
+      --config=packages/dialer/jest.config.mjs \
+      --runInBand 2>&1) || {
+      FAIL=1
+      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
+--- @consuelo/dialer tests ---
+${PACKAGE_DIALER_OUTPUT}"
+    }
+  fi
+
+
+  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/dialer-server/'; then
+    DIALER_SERVER_OUTPUT=$(bun test packages/dialer-server/src 2>&1) || {
+      FAIL=1
+      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
+--- dialer-server Hono tests ---
+${DIALER_SERVER_OUTPUT}"
+    }
+  fi
+  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/lead-connector/'; then
+    LEAD_CONNECTOR_OUTPUT=$(bun test packages/lead-connector/src 2>&1) || {
+      FAIL=1
+      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
+--- LeadConnector provider contracts ---
+${LEAD_CONNECTOR_OUTPUT}"
+    }
+  fi
+  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/twenty-front/src/modules/dialer/'; then
+    FRONT_DIALER_OUTPUT=$(npx jest \
+      packages/twenty-front/src/modules/dialer/utils/__tests__/backend-queue-session.test.ts \
+      --config=packages/twenty-front/jest.config.mjs \
+      --runInBand 2>&1) || {
+      FAIL=1
+      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
+--- twenty-front dialer tests ---
+${FRONT_DIALER_OUTPUT}"
+    }
+  fi
+fi
+if [ $FAIL -eq 0 ]; then echo -e "${GREEN}PASS${NC}"; PASS=$((PASS + 1))
+else
+  echo -e "${RED}FAIL${NC}"
+  WARNINGS="${WARNINGS}  ${RED}FAIL${NC} [DIALER_TESTS] focused dialer validation failed:
+"
+  DIALER_TEST_SUMMARY=$(echo -e "$DIALER_TEST_OUTPUT" | tail -80)
+  WARNINGS="${WARNINGS}${DIALER_TEST_SUMMARY}
+"
+fi
+DIALER_TESTS_FAIL=$FAIL
 
 # summary
-TOTAL_CHECKS=16
-TOTAL_FAIL=$((LOGGING_FAIL + SENTRY_FAIL + PHONE_FAIL + SQL_FAIL + ERROR_FAIL + TYPE_FAIL + SECRETS_FAIL + TODO_FAIL + IMPORT_FAIL + ROUTE_FAIL + CATCH_FAIL + OPTIONAL_IMPORT_FAIL + STUB_FAIL + SPEC_FAIL + ESLINT_FAIL + TYPECHECK_FAIL))
+TOTAL_CHECKS=17
+TOTAL_FAIL=$((LOGGING_FAIL + SENTRY_FAIL + PHONE_FAIL + SQL_FAIL + ERROR_FAIL + TYPE_FAIL + SECRETS_FAIL + TODO_FAIL + IMPORT_FAIL + ROUTE_FAIL + CATCH_FAIL + OPTIONAL_IMPORT_FAIL + STUB_FAIL + SPEC_FAIL + ESLINT_FAIL + TYPECHECK_FAIL + DIALER_TESTS_FAIL))
 echo ""
 if [ $TOTAL_FAIL -gt 0 ]; then
   echo -e "${BOLD}violations:${NC}"
